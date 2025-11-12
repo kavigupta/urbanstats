@@ -544,15 +544,20 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
                     ...defaults,
                 }
                 setTextBoxesWithUndo([...textBoxes, offsetInsetInBounds(newTextBox, textBoxes)])
+                selectionProperty.value = { index: textBoxes.length, range: { index: 0, length: 0 } }
             },
             modify: (i, e) => {
                 setTextBoxesWithUndo(textBoxes.map((textBox, j) => i === j ? { ...textBox, ...e } : textBox))
             },
             delete: (i) => {
                 setTextBoxesWithUndo(textBoxes.filter((_, j) => j !== i))
+                if (selectionProperty.value?.index === i) {
+                    selectionProperty.value = undefined
+                }
             },
             duplicate: (i) => {
                 setTextBoxesWithUndo([...textBoxes, offsetInsetInBounds(textBoxes[i], textBoxes)])
+                selectionProperty.value = { index: textBoxes.length, range: { index: 0, length: 0 } }
             },
             moveUp: (i) => {
                 assert(i + 1 < textBoxes.length, `Cannot move text box ${i} up, already top`)
@@ -566,6 +571,9 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
                             return textBox
                     }
                 }))
+                if (selectionProperty.value?.index === i) {
+                    selectionProperty.value = { ...selectionProperty.value, index: i + 1 }
+                }
             },
             moveDown: (i) => {
                 assert(i > 0, `Cannot move inset ${i} down, already bottom`)
@@ -579,6 +587,9 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
                             return textBox
                     }
                 }))
+                if (selectionProperty.value?.index === i) {
+                    selectionProperty.value = { ...selectionProperty.value, index: i - 1 }
+                }
             },
             edited: textBoxes,
         },
