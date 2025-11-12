@@ -1,7 +1,7 @@
 import '../common.css'
 import '../components/quiz.css'
 
-import React, { ReactNode, useMemo, useRef } from 'react'
+import React, { ReactNode, useMemo, useState } from 'react'
 import { isFirefox } from 'react-device-detect'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
@@ -21,7 +21,7 @@ interface MapProps {
 }
 
 function Map({ longname, color, attribution }: MapProps): ReactNode {
-    const mapRef = useRef<MapRef>(null)
+    const [mapRef, setMapRef] = useState<MapRef | null>(null)
 
     const features = useMemo(() => polygonFeatureCollection(
         [
@@ -38,7 +38,7 @@ function Map({ longname, color, attribution }: MapProps): ReactNode {
 
     return (
         <CommonMaplibreMap
-            ref={mapRef}
+            ref={setMapRef}
             attributionControl={false}
         >
             <PolygonFeatureCollection features={readyFeatures} clickable={false} />

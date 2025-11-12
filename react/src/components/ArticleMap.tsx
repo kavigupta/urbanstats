@@ -1,4 +1,4 @@
-import React, { ReactNode, useMemo, useRef } from 'react'
+import React, { ReactNode, useMemo, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
@@ -19,7 +19,7 @@ interface ArticleMapProps {
 }
 
 export function ArticleMap(props: ArticleMapProps): ReactNode {
-    const mapRef = useRef<MapRef>(null)
+    const [mapRef, setMapRef] = useState<MapRef | null>(null)
 
     const features = useArticleFeatures(props).use()
 
@@ -29,7 +29,7 @@ export function ArticleMap(props: ArticleMapProps): ReactNode {
 
     return (
         <CommonMaplibreMap
-            ref={mapRef}
+            ref={setMapRef}
         >
             <PolygonFeatureCollection features={readyFeatures} clickable={true} />
             <FullscreenControl position="top-left" />
