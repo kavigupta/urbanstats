@@ -53,24 +53,25 @@ function _CommonMaplibreMap(props: MapProps, ref: React.Ref<MapRef>): ReactNode 
 // eslint-disable-next-line no-restricted-syntax -- Is a function component
 export const CommonMaplibreMap = React.forwardRef(_CommonMaplibreMap)
 
-export function useZoomFirstFeature(mapRef: React.RefObject<MapRef>, features: (GeoJSON.Feature | typeof waiting)[]): void {
+// We don't use refs on these to avoid races, as the mapRef may be assigned after the feature has loaded
+export function useZoomFirstFeature(mapRef: MapRef | null, features: (GeoJSON.Feature | typeof waiting)[]): void {
     const firstFeature = features.length > 0 ? features[0] : undefined
 
     useEffect(() => {
         if (firstFeature === undefined || firstFeature === waiting) {
             return
         }
-        mapRef.current?.fitBounds(boundingBox(firstFeature.geometry), { animate: false, padding: defaultMapPadding })
+        mapRef?.fitBounds(boundingBox(firstFeature.geometry), { animate: false, padding: defaultMapPadding })
     }, [mapRef, firstFeature]) // Don't depend on all features or we keep zooming as they load
 }
 
-export function useZoomAllFeatures(mapRef: React.RefObject<MapRef>, features: (GeoJSON.Feature | typeof waiting)[], readyFeatures: GeoJSON.Feature[]): void {
+export function useZoomAllFeatures(mapRef: MapRef | null, features: (GeoJSON.Feature | typeof waiting)[], readyFeatures: GeoJSON.Feature[]): void {
     useEffect(() => {
         if (readyFeatures.length < features.length) {
             return
         }
         // Only zoom once all features are ready
-        mapRef.current?.fitBounds(extendBoxes(readyFeatures.map(f => boundingBox(f.geometry))), { animate: false, padding: defaultMapPadding })
+        mapRef?.fitBounds(extendBoxes(readyFeatures.map(f => boundingBox(f.geometry))), { animate: false, padding: defaultMapPadding })
     }, [mapRef, features, readyFeatures])
 }
 

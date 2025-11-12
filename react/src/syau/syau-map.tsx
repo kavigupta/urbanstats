@@ -1,6 +1,6 @@
 import stableStringify from 'json-stable-stringify'
 import maplibregl from 'maplibre-gl'
-import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useEffect, useMemo, useState } from 'react'
 import { FullscreenControl, Layer, LngLatLike, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
 import { Basemap, CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection } from '../components/map-common'
@@ -21,7 +21,7 @@ interface SYAUMapProps {
 }
 
 export function SYAUMap(props: SYAUMapProps): ReactNode {
-    const mapRef = useRef<MapRef>(null)
+    const [mapRef, setMapRef] = useState<MapRef | null>(null)
 
     const [markersOnScreen, setMarkersOnScreen] = useState(new Map<string, maplibregl.Marker>())
     const [polysOnScreen, setPolysOnScreen] = useState<{ name: string, isGuessed: boolean }[]>([])
@@ -48,16 +48,14 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
     }, [props.centroids, props.isGuessed, props.longnames, props.population, props.populationOrdinals])
 
     const updateMarkers = (): void => {
-        const map = mapRef.current
-
-        if (map === null) {
+        if (mapRef === null) {
             return
         }
 
         const newMarkers = new Map<string, maplibregl.Marker>()
         const newPolys: { name: string, isGuessed: boolean }[] = []
 
-        const features = map.querySourceFeatures('centroids')
+        const features = mapRef.querySourceFeatures('centroids')
 
         for (const feature of features) {
             const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
@@ -107,7 +105,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
                     element: el,
                 }).setLngLat(coords)
 
-                marker.addTo(map.getMap())
+                marker.addTo(mapRef.getMap())
 
                 newMarkers.set(featureId, marker)
                 markersOnScreen.set(featureId, marker)
@@ -138,7 +136,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
 
     return (
         <CommonMaplibreMap
-            ref={mapRef}
+            ref={setMapRef}
             onMove={updateMarkers}
             onData={updateMarkers}
             style={{ height: 600 }}
