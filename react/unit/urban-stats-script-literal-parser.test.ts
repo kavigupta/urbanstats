@@ -1,9 +1,11 @@
 import assert from 'assert/strict'
 import test from 'node:test'
 
+import { UrbanStatsASTExpression } from '../src/urban-stats-script/ast'
 import { defaultConstants } from '../src/urban-stats-script/constants/constants'
 import * as l from '../src/urban-stats-script/literal-parser'
 import { unparse } from '../src/urban-stats-script/parser'
+import { replace } from '../src/utils/array-edits'
 
 import { parseExpr, parseProgram } from './urban-stats-script-utils'
 
@@ -14,12 +16,21 @@ void test('object', () => {
     )
 })
 
-void test('edit', () => {
+void test('edit object', () => {
     assert.equal(
         unparse(
             l.object({ a: l.number(), b: l.edit(l.number()) })
-                .parse(parseExpr('{a: 1, b: 2}'), defaultConstants).b.edit(parseExpr('3'))),
+                .parse(parseExpr('{a: 1, b: 2}'), defaultConstants).b.edit(parseExpr('3'))!),
         '{a: 1, b: 3}',
+    )
+})
+
+void test('remove from object', () => {
+    assert.equal(
+        unparse(
+            l.object({ a: l.number(), b: l.edit(l.number()) })
+                .parse(parseExpr('{a: 1, b: 2}'), defaultConstants).b.edit(undefined)!),
+        '{a: 1}',
     )
 })
 
@@ -95,12 +106,43 @@ void test('call', () => {
         unnamedArgs: [l.string(), l.boolean()],
     })
     assert.deepEqual(
-        parser.parse(parseExpr('bar("hi", true, foo=7)'), defaultConstants),
+        parser.parse(parseExpr('bar("hi", foo=7, true)'), defaultConstants),
         { fn: 'bar', namedArgs: { foo: 7 }, unnamedArgs: ['hi', true] },
     )
     assert.throws(
         () => parser.parse(parseExpr('bar("hi", foo="no", true)'), defaultConstants),
     )
+})
+
+void test('edit call', () => {
+    assert.equal(
+        unparse(
+            l.call({ fn: l.edit(l.ignore()), namedArgs: {}, unnamedArgs: [l.number()] })
+                .parse(parseExpr('sin(1)'), defaultConstants).fn.edit(parseExpr('cos'))!),
+        'cos(1)',
+    )
+})
+
+void test('remove named argument call', () => {
+    assert.equal(
+        unparse(
+            l.call({ fn: l.ignore(), namedArgs: { a: l.edit(l.ignore()) }, unnamedArgs: [] })
+                .parse(parseExpr('fn(a=1)'), defaultConstants).namedArgs.a.edit(undefined)!),
+        'fn()',
+    )
+})
+
+void test('remove unnamed argument', () => {
+    assert.equal(
+        unparse(
+            l.call({ fn: l.ignore(), namedArgs: {}, unnamedArgs: [l.edit(l.ignore())] })
+                .parse(parseExpr('fn(1)'), defaultConstants).unnamedArgs[0].edit(undefined)!),
+        'fn()',
+    )
+})
+
+void test('error when not enough named args', () => {
+    assert.throws(() => l.call({ fn: l.ignore(), namedArgs: {}, unnamedArgs: [l.ignore()] }).parse(parseExpr('fn()'), defaultConstants))
 })
 
 void test('deconstruct', () => {
@@ -128,7 +170,7 @@ void test('deconstruct', () => {
     // edit deconstruct
     const editSchema = l.deconstruct(l.call({ fn: l.ignore(), namedArgs: {}, unnamedArgs: [l.number(), l.number(), l.edit(l.number())] }))
     assert.equal(
-        unparse(editSchema.parse(parseExpr('colorBlue'), defaultConstants).unnamedArgs[2].edit(parseExpr('1'))),
+        unparse(editSchema.parse(parseExpr('colorBlue'), defaultConstants).unnamedArgs[2].edit(parseExpr('1'))!),
         'rgb(0.353, 0.49, 1)',
     )
 })
@@ -136,7 +178,7 @@ void test('deconstruct', () => {
 void test('reparse', () => {
     // Should parse and reparse the expression when editing
     const parser = l.reparse('testBlock', [{ type: 'number' }], l.edit(l.number()))
-    const editResult = parser.parse(parseExpr('5'), defaultConstants).edit(parseExpr('4'))
+    const editResult = parser.parse(parseExpr('5'), defaultConstants).edit(parseExpr('4'))!
     assert.equal(editResult.type, 'constant')
     assert.deepEqual(editResult.value.location.start.block, { type: 'single', ident: 'testBlock' })
 })
@@ -161,6 +203,8 @@ void test('statements', () => {
     assert.throws(
         () => parser.parse(undefined, defaultConstants),
     )
+    // throws when not enough statements
+    assert.throws(() => parser.parse(parseProgram('1;'), defaultConstants), 'not enough statements')
 })
 
 void test('ignore', () => {
@@ -203,6 +247,30 @@ void test('edit statements', () => {
     assert.partialDeepStrictEqual(parsed, [1, { currentValue: 2 }])
 
     // Edit the second statement
-    const edited = parsed[1].edit(parseExpr('3'))
+    const edited = parsed[1].edit(parseExpr('3'))!
     assert.equal(unparse(edited), '1;\n3')
+})
+
+void test('editable vector', () => {
+    assert.equal(
+        unparse(
+            l.editableVector(l.number())
+                .parse(parseExpr('[1,2,3]'), defaultConstants)
+                .edit(replace<UrbanStatsASTExpression>(i => i, [1, 2], []))),
+        '[1, 3]')
+})
+
+void test('edit condition', () => {
+    const stmt = parseProgram('condition (true); 5')
+    const parser = l.condition({ condition: l.edit(l.boolean()), rest: [l.expression(l.number())] })
+    assert.equal(unparse(parser.parse(stmt, defaultConstants).condition.edit(parseExpr('false'))!), 'condition (false)\n5')
+    assert.throws(
+        () => parser.parse(stmt, defaultConstants).condition.edit(undefined),
+    )
+})
+
+void test('customNode', () => {
+    assert.equal(l.customNodeExpr(l.identifier('x')).parse(parseExpr('customNode("x")'), defaultConstants), 'x')
+    assert.equal(unparse(l.customNodeExpr(l.edit(l.identifier('x'))).parse(parseExpr('customNode("x")'), defaultConstants).edit(parseExpr('y'))!), 'customNode("y")')
+    assert.equal(l.customNodeExpr(l.edit(l.identifier('x'))).parse(parseExpr('customNode("x")'), defaultConstants).edit(undefined), undefined)
 })
