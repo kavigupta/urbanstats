@@ -8,6 +8,7 @@ import { useColors } from '../../page_template/colors'
 import { useSetting } from '../../page_template/settings'
 import { PageTemplate } from '../../page_template/template'
 import { Inset } from '../../urban-stats-script/constants/insets'
+import { documentLength } from '../../urban-stats-script/constants/rich-text'
 import { defaults, TextBox } from '../../urban-stats-script/constants/text-box'
 import { useUndoRedo } from '../../urban-stats-script/editor-utils'
 import { unparse } from '../../urban-stats-script/parser'
@@ -557,7 +558,7 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
             },
             duplicate: (i) => {
                 setTextBoxesWithUndo([...textBoxes, offsetInsetInBounds(textBoxes[i], textBoxes)])
-                selectionProperty.value = { index: textBoxes.length, range: { index: 0, length: 0 } }
+                selectionProperty.value = { index: textBoxes.length, range: { index: 0, length: documentLength(textBoxes[i].text) } }
             },
             moveUp: (i) => {
                 assert(i + 1 < textBoxes.length, `Cannot move text box ${i} up, already top`)

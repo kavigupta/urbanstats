@@ -9,6 +9,10 @@ import { Color, hexToColor } from './color-utils'
 
 export type RichTextDocument = RichTextSegment[]
 
+export function documentLength(document: RichTextDocument): number {
+    return document.reduce((sum, segment) => sum + (typeof segment.insert === 'string' ? segment.insert.length : 1), 0)
+}
+
 export const richTextAttributesSchema = z.object({
     size: z.optional(z.string().transform((s) => {
         if (!s.endsWith('px')) {
