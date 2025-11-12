@@ -123,6 +123,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/juxtastat/friend_summary_stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Juxtastat Friend Summary Stats */
+        post: operations["juxtastat_friend_summary_stats_juxtastat_friend_summary_stats_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/shorten": {
         parameters: {
             query?: never;
@@ -395,6 +412,22 @@ export interface components {
             /** Maxscoreversion */
             maxScoreVersion: number | null;
         };
+        /** FriendSummaryStats */
+        FriendSummaryStats: {
+            /**
+             * Friends
+             * @constant
+             */
+            friends: true;
+            /** Meanscore */
+            meanScore: number;
+            /** Numplays */
+            numPlays: number;
+            /** Currentstreak */
+            currentStreak: number;
+            /** Maxstreak */
+            maxStreak: number;
+        };
         /** InfiniteScoreRequestBody */
         InfiniteScoreRequestBody: {
             /** Requesters */
@@ -408,6 +441,18 @@ export interface components {
         InfiniteScoreResponse: {
             /** Results */
             results: (components["schemas"]["NegativeResult"] | components["schemas"]["InfiniteResult"])[];
+        };
+        /** FriendSummaryStatsRequestBody */
+        FriendSummaryStatsRequestBody: {
+            /** Requesters */
+            requesters: (string)[];
+            /** Quiz Kind */
+            quiz_kind: "juxtastat" | "retrostat";
+        };
+        /** FriendSummaryStatsResponse */
+        FriendSummaryStatsResponse: {
+            /** Results */
+            results: (components["schemas"]["NegativeResult"] | components["schemas"]["FriendSummaryStats"])[];
         };
         /** LatestDayResponse */
         LatestDayResponse: {
@@ -1426,6 +1471,60 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PerQuestionStats"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPExceptionModel"];
+                };
+            };
+        };
+    };
+    juxtastat_friend_summary_stats_juxtastat_friend_summary_stats_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "x-user": string;
+                "x-secure-id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FriendSummaryStatsRequestBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FriendSummaryStatsResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPExceptionModel"];
                 };
             };
             /** @description Validation Error */

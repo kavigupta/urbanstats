@@ -1,5 +1,6 @@
 import { Selector } from 'testcafe'
 
+import { clickButtons, friendsText, quizScreencap } from './quiz_test_utils'
 import { safeClearLocalStorage, safeReload } from './test_utils'
 
 type Storage = Record<string, string>
@@ -70,4 +71,38 @@ export async function addFriend(t: TestController, friendName: string, friendID:
 
 export async function removeFriend(t: TestController, nth: number): Promise<void> {
     await t.click(Selector('button').withExactText('Remove').nth(nth))
+}
+
+export async function makeAliceBobFriends(t: TestController, screenshots: boolean, alicePattern: string, bobPattern: string, startState: JuxtastatUserState | undefined): Promise<JuxtastatUserState> {
+    const state = startState ?? startingState()
+    // Alice does the quiz
+    if (!state.allUserState.has('Alice')) {
+        await createUser(t, 'Alice', '000000a', state)
+    }
+    else {
+        await restoreUser(t, 'Alice', state)
+    }
+    await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
+    await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`])
+    if (!state.allUserState.has('Bob')) {
+        await createUser(t, 'Bob', '000000b', state)
+    }
+    else {
+        await restoreUser(t, 'Bob', state)
+    }
+    await clickButtons(t, ['b', 'b', 'b', 'b', 'b'])
+    await t.expect(friendsText()).eql([`You${bobPattern}Copy Link`])
+    await addFriend(t, 'Alice', '000000a')
+    if (screenshots) {
+        await quizScreencap(t) // screencap of pending friend request
+    }
+    await t.expect(friendsText()).eql([`You${bobPattern}Copy Link`, 'AliceAsk\u00a0Alice\u00a0to add youRemove'])
+    await restoreUser(t, 'Alice', state)
+    await addFriend(t, 'Bob', '000000b')
+    // Alice and Bob are now friends
+    if (screenshots) {
+        await quizScreencap(t) // screencap of friends' score
+    }
+    await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
+    return state
 }

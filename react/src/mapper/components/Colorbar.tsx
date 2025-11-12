@@ -1,20 +1,12 @@
 import React, { ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { Statistic } from '../../components/display-stats'
+import { useColors } from '../../page_template/colors'
 import { ScaleInstance } from '../../urban-stats-script/constants/scale'
 import { furthestColor, interpolateColor } from '../../utils/color'
 import { UnitType } from '../../utils/unit'
 import { Keypoints } from '../ramps'
 import { Basemap } from '../settings/utils'
-
-function colorbarStyleFromBasemap(basemap: Basemap): React.CSSProperties {
-    switch (basemap.type) {
-        case 'osm':
-            return { }
-        case 'none':
-            return { backgroundColor: basemap.backgroundColor, color: basemap.textColor }
-    }
-}
 
 interface EmpiricalRamp {
     ramp: Keypoints
@@ -27,6 +19,30 @@ interface EmpiricalRamp {
 export type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: string }
 
 export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Basemap }): ReactNode {
+    const colors = useColors()
+
+    return (
+        <div style={{
+            width: '100%',
+            ...(props.basemap.type === 'none'
+                ? { backgroundColor: props.basemap.backgroundColor, color: props.basemap.textColor }
+                : { backgroundColor: colors.background }),
+            padding: '10px',
+        }}
+        >
+            {props.ramp && props.ramp.type === 'label' && (
+                <div className="centered_text user_input">
+                    {props.ramp.value}
+                </div>
+            )}
+            {props.ramp && props.ramp.type === 'ramp' && (
+                <RampColorbar ramp={props.ramp.value} />
+            )}
+        </div>
+    )
+}
+
+function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
     // do this as a table with 10 columns, each 10% wide and
     // 2 rows. Top one is the colorbar, bottom one is the
     // labels.
@@ -53,51 +69,32 @@ export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Base
         return () => {
             resizeObserver.unobserve(values)
         }
-    }, [props.ramp])
+    }, [ramp])
 
-    const furthest = useMemo(() => props.ramp === undefined || props.ramp.type !== 'ramp' ? undefined : furthestColor(props.ramp.value.ramp.map(x => x[1])), [props.ramp])
-
-    if (props.ramp === undefined) {
-        return <div></div>
-    }
-
-    if (props.ramp.type === 'label') {
-        return (
-            <div className="centered_text" style={colorbarStyleFromBasemap(props.basemap)}>
-                {props.ramp.value}
-            </div>
-        )
-    }
-
-    const ramp = props.ramp.value.ramp
-    const scale = props.ramp.value.scale
-    const label = props.ramp.value.label
-    const values = props.ramp.value.interpolations
-    const unit = props.ramp.value.unit
-    const style = colorbarStyleFromBasemap(props.basemap)
+    const furthest = useMemo(() => furthestColor(ramp.ramp.map(x => x[1])), [ramp])
 
     const createValue = (stat: number): ReactNode => {
         return (
-            <div className="centered_text" style={style}>
+            <div className="centered_text">
                 <Statistic
-                    statname={label}
+                    statname={ramp.label}
                     value={stat}
                     isUnit={false}
-                    unit={unit}
+                    unit={ramp.unit}
                 />
                 <Statistic
-                    statname={label}
+                    statname={ramp.label}
                     value={stat}
                     isUnit={true}
-                    unit={unit}
+                    unit={ramp.unit}
                 />
             </div>
         )
     }
 
-    const width = `${100 / values.length}%`
+    const width = `${100 / ramp.interpolations.length}%`
 
-    const valuesDivs = (rotate: boolean): ReactNode[] => values.map((x, i) => (
+    const valuesDivs = (rotate: boolean): ReactNode[] => ramp.interpolations.map((x, i) => (
         <div
             key={i}
             style={{
@@ -126,15 +123,15 @@ export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Base
     ))
 
     return (
-        <div style={{ ...style, position: 'relative' }}>
+        <div style={{ position: 'relative' }}>
             <div style={{ display: 'flex', width: '100%' }}>
                 {
-                    values.map((x, i) => (
+                    ramp.interpolations.map((x, i) => (
                         <div
                             key={i}
                             style={{
                                 width, height: '1em',
-                                backgroundColor: interpolateColor(ramp, scale.forward(x), furthest),
+                                backgroundColor: interpolateColor(ramp.ramp, ramp.scale.forward(x), furthest),
                                 marginLeft: '1px',
                                 marginRight: '1px',
                             }}
@@ -145,8 +142,8 @@ export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Base
             </div>
             <div ref={valuesRef} style={{ position: 'absolute', top: 0, left: 0, display: 'flex', width: '100%', visibility: 'hidden' }}>{valuesDivs(false)}</div>
             <div style={{ display: 'flex', width: '100%' }}>{valuesDivs(shouldRotate)}</div>
-            <div className="centered_text">
-                {label}
+            <div className="centered_text user_input">
+                {ramp.label}
             </div>
         </div>
     )
