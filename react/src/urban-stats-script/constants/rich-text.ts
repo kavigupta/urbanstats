@@ -161,6 +161,7 @@ function attributesFromNamedArgs(namedArgs: Record<string, USSRawValue>): RichTe
         list: (namedArgs.list as { value: RichTextAttributes['list'] } | null)?.value,
         indent: (namedArgs.indent as number | null) ?? undefined,
         align: (namedArgs.align as { value: RichTextAttributes['align'] } | null)?.value,
+        strike: (namedArgs.strike as boolean | null) ?? undefined,
     }).filter(([, v]) => v !== undefined)
 
     if (entries.length === 0) {
