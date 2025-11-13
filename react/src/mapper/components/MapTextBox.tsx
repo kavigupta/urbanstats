@@ -190,7 +190,7 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
                     </div>
 
                     {/* Color Picker */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }} data-test="textColor">
                         <div style={{ color: colors.ordinalTextColor, fontSize: '14px' }}>Text</div>
                         <input
                             type="color"
@@ -234,7 +234,7 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
                     </div>
 
                     {/* Background Color Picker */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }} data-test="backgroundColor">
                         <div style={{ color: colors.ordinalTextColor, fontSize: '14px' }}>Background</div>
                         <input
                             type="color"
@@ -283,7 +283,7 @@ export function MapTextBoxComponent({ textBox: label, container, edit, i, count 
                     </div>
 
                     {/* Border */}
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }} data-test="borderColor">
                         <div style={{ color: colors.ordinalTextColor, fontSize: '14px' }}>Border</div>
                         <div style={{ width: '2px' }} />
                         <BetterDatalist
@@ -406,6 +406,7 @@ export function toQuillDelta(text: RichTextDocument): Delta {
         attributes: segment.attributes && {
             ...segment.attributes,
             size: segment.attributes.size && `${segment.attributes.size}px`,
+            color: segment.attributes.color && doRender(segment.attributes.color),
         },
     })))
     return result

@@ -73,3 +73,10 @@ export async function replaceInput(t: TestController, original: string | RegExp,
     await t.typeText(inputSelector, newv)
     await t.pressKey('enter')
 }
+
+export async function drag(t: TestController, selector: Selector | string, deltaX: number, deltaY: number): Promise<void> {
+    const elementRect = await Selector(selector).boundingClientRect
+    const downEvent = { pointerId: 1, clientX: (elementRect.left + elementRect.right) / 2, clientY: (elementRect.bottom + elementRect.top) / 2 }
+    const upEvent = { ...downEvent, clientX: downEvent.clientX + deltaX, clientY: downEvent.clientY + deltaY }
+    await t.dispatchEvent(selector, 'pointerdown', downEvent).dispatchEvent(selector, 'pointermove', upEvent).dispatchEvent(selector, 'pointerup', upEvent)
+}

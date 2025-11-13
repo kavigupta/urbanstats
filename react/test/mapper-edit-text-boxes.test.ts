@@ -1,6 +1,6 @@
-import { Selector } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
-import { getCodeFromMainField, getErrors, toggleCustomScript } from './mapper-utils'
+import { drag, getCodeFromMainField, getErrors, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { screencap, urbanstatsFixture } from './test_utils'
 
 urbanstatsFixture(`default map`, '/mapper.html')
@@ -13,22 +13,28 @@ test('basic add box', async (t) => {
     await t.click(Selector('button:not(:disabled)').withExactText('Accept'))
 
     await t.expect(Selector('p').withExactText('Hello,\u00a0World!').exists).ok()
+    await t.expect(Selector('button').withExactText('Edit Text Boxes').exists).ok()
     await screencap(t)
 })
 
-async function clickIframeInput(t: TestController, selector: string): Promise<void> {
-    await t.switchToIframe(`${selector} + iframe`)
+async function clickIframeInput(t: TestController, i: number, selector: string): Promise<void> {
+    await t.switchToIframe(Selector(`${selector} + iframe`).nth(i))
     await t.click(selector)
     await t.switchToMainWindow()
 }
 
+async function changeValue(t: TestController, i: number, from: string, to: string): Promise<void> {
+    await clickIframeInput(t, i, `input[value="${from}"]`)
+    await t.click(Selector('div').withExactText(to))
+}
+
+const expectedNewTextBoxCode = 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, textBoxes=[textBox(screenBounds={north: 0.75, east: 0.75, south: 0.25, west: 0.25}, text=rtfDocument([rtfString("Hello, World!", size=36, font="Courier New", bold=true, underline=true), rtfString("\\n", align=alignCenter), rtfString("This is text", size=36, font="Courier New", bold=true, underline=true), rtfString("\\n", align=alignCenter)]))])\n'
+
 test('create a new text box with formatting', async (t) => {
     await t.click(Selector('button').withExactText('Edit Text Boxes'))
     await t.click('[data-test="add"]')
-    await clickIframeInput(t, 'input[value="Jost"]')
-    await t.click(Selector('div').withExactText('Courier New'))
-    await clickIframeInput(t, 'input[value="16"]')
-    await t.click(Selector('div').withExactText('36'))
+    await changeValue(t, 0, 'Jost', 'Courier New')
+    await changeValue(t, 0, '16', '36')
     await t.click(Selector('button').withExactText('B'))
     await t.click(Selector('button').withExactText('U'))
     await t.click('button[icon="center"]')
@@ -36,8 +42,107 @@ test('create a new text box with formatting', async (t) => {
     await t.typeText('.ql-editor', 'Hello, World!\rThis is text')
     await screencap(t)
     await t.click(Selector('button').withExactText('Accept'))
+    await t.expect(Selector('button').withExactText('Edit Text Boxes').exists).ok()
     await toggleCustomScript(t)
     await t.expect(getErrors()).eql([])
     await t.expect((await getCodeFromMainField()).replaceAll('\u00a0', ' '))
-        .eql('cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, textBoxes=[textBox(screenBounds={north: 0.75, east: 0.75, south: 0.25, west: 0.25}, text=rtfDocument([rtfString("Hello, World!", size=36, font="Courier New", bold=true, underline=true), rtfString("\\n", align=alignCenter), rtfString("This is text", size=36, font="Courier New", bold=true, underline=true), rtfString("\\n", align=alignCenter)]))])\n')
+        .eql(expectedNewTextBoxCode)
+})
+
+// This weird workaround is necessary here instead of typeText when text is selected... thanks TestCafe
+async function inputColor(t: TestController, selector: string, value: string): Promise<void> {
+    await ClientFunction(() => {
+        const input: HTMLInputElement = document.querySelector(selector)!
+        // https://stackoverflow.com/a/46012210/724702
+        // eslint-disable-next-line @typescript-eslint/unbound-method -- Hack
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+            window.HTMLInputElement.prototype,
+            'value')!.set!
+        nativeInputValueSetter.call(input, value)
+        const event = new Event('input', { bubbles: true })
+        input.dispatchEvent(event)
+    }, { dependencies: { selector, value } })()
+}
+
+test('change background color, border color, border width, insert images, insert formulas, format formulas', async (t) => {
+    await t.click(Selector('button').withExactText('Edit Text Boxes'))
+    await t.click('[data-test="add"]')
+
+    // Change background color
+    // eslint-disable-next-line no-restricted-syntax -- Color constant for tests
+    await t.typeText(Selector('[data-test="backgroundColor"] input[type="color"]'), '#0000FF', { replace: true })
+
+    // Change border color
+    // eslint-disable-next-line no-restricted-syntax -- Color constant for tests
+    await t.typeText(Selector('[data-test="borderColor"] input[type="color"]'), '#FF0000', { replace: true })
+
+    // Insert a formula using prompt
+    await t.setNativeDialogHandler(() => 'E=mc^2 + AI')
+    await t.click('button[icon="function"]')
+
+    // Insert an image
+    await t.setNativeDialogHandler(() => 'https://http.cat/images/301.jpg')
+    await t.click('button[icon="image"]')
+
+    // Change border width
+    await changeValue(t, 0, '1', '5')
+
+    // Format the formula
+    await t.click('.ql-editor').pressKey('ctrl+a')
+    // eslint-disable-next-line no-restricted-syntax -- Color constant for tests
+    await inputColor(t, '[data-test="textColor"] input[type="color"]', '#00FF00')
+
+    // Insert text before the formula and make it black
+    // TODO It's technically a bug that you have to insert a space before you get different formatting
+    await t.pressKey('left').typeText('.ql-editor', ' ').pressKey('left')
+    // eslint-disable-next-line no-restricted-syntax -- Color constant for tests
+    await inputColor(t, '[data-test="textColor"] input[type="color"]', '#000000')
+
+    await t.typeText('.ql-editor', 'some stuff')
+
+    // Select everything and resize
+    await t.pressKey('ctrl+a')
+    await changeValue(t, 0, '16', '24')
+
+    await t.click(Selector('button').withExactText('Accept'))
+    await t.expect(Selector('button').withExactText('Edit Text Boxes').exists).ok()
+    await t.expect(getErrors()).eql([])
+    await screencap(t)
+    await toggleCustomScript(t)
+    await t.expect((await getCodeFromMainField()).replaceAll('\u00a0', 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, textBoxes=[textBox(screenBounds={north: 0.75, east: 0.75, south: 0.25, west: 0.25}, text=rtfDocument([rtfString("some stuff", size=24, color=rgb(0, 0, 0)), rtfString(" ", size=24, color=rgb(0, 1, 0)), rtfFormula("E=mc^2 + AI", size=24, color=rgb(0, 1, 0)), rtfImage("https://http.cat/images/301.jpg", size=24, color=rgb(0, 1, 0)), rtfString("\n")]))])')).eql('')
+})
+
+urbanstatsFixture('with previous text box', urlFromCode('Subnational Region', 'USA', expectedNewTextBoxCode), async (t) => {
+    await toggleCustomScript(t)
+})
+
+function getSelection(): Promise<Selection | null> {
+    return ClientFunction(() => window.getSelection())()
+}
+
+test('duplicate text box, edit, resize, resposition, move down', async (t) => {
+    await t.click(Selector('button').withExactText('Edit Text Boxes'))
+    await t.click('[data-test="duplicate"]')
+    await t.selectEditableContent(Selector('.ql-editor').nth(1).find('p').nth(1), Selector('.ql-editor').nth(1).find('p').nth(1))
+    const selection1 = await getSelection()
+    await changeValue(t, 0, 'Courier New', 'Times New Roman')
+    await t.typeText(Selector('.ql-editor').nth(1), 'A line\rAnother line')
+    await t.expect(Selector('.ql-editor').nth(1).textContent).eql('Hello, World!A\u00a0lineAnother\u00a0line')
+    const selection2 = await getSelection()
+    await t.pressKey('ctrl+z')
+    await t.expect(Selector('.ql-editor').nth(1).textContent).eql('Hello, World!This is text')
+    await t.expect(getSelection()).eql(selection1)
+    await t.pressKey('ctrl+y')
+    await t.expect(Selector('.ql-editor').nth(1).textContent).eql('Hello, World!A\u00a0lineAnother\u00a0line')
+    await t.expect(getSelection()).eql(selection2)
+    await drag(t, Selector('[data-test="move"]').nth(1), 100, 100)
+    await drag(t, Selector('[data-test="bottomRight"]').nth(1), 100, 100)
+    await t.click('[data-test="moveDown"]')
+    await drag(t, Selector('[data-test="move"]').nth(1), -100, -100)
+    await t.click(Selector('button').withExactText('Accept'))
+    await t.expect(Selector('button').withExactText('Edit Text Boxes').exists).ok()
+    await t.expect(getErrors()).eql([])
+    await screencap(t)
+    await toggleCustomScript(t)
+    await t.expect((await getCodeFromMainField()).replaceAll('\u00a0', ' ')).eql('')
 })
