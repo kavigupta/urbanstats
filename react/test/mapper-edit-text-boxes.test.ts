@@ -31,18 +31,27 @@ async function changeValue(t: TestController, i: number, from: string, to: strin
 const expectedNewTextBoxCode = 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, textBoxes=[textBox(screenBounds={north: 0.75, east: 0.75, south: 0.25, west: 0.25}, text=rtfDocument([rtfString("Hello, World!", size=36, font="Courier New", bold=true, underline=true), rtfString("\\n", align=alignCenter), rtfString("This is text", size=36, font="Courier New", bold=true, underline=true), rtfString("\\n", align=alignCenter)]))])\n'
 
 test('create a new text box with formatting', async (t) => {
+    // Open the "Edit Text Boxes" dialog and add a new text box
     await t.click(Selector('button').withExactText('Edit Text Boxes'))
     await t.click('[data-test="add"]')
+
+    // Set font, size, and formatting
     await changeValue(t, 0, 'Jost', 'Courier New')
     await changeValue(t, 0, '16', '36')
-    await t.click(Selector('button').withExactText('B'))
-    await t.click(Selector('button').withExactText('U'))
-    await t.click('button[icon="center"]')
+    await t.click(Selector('button').withExactText('B')) // Bold
+    await t.click(Selector('button').withExactText('U')) // Underline
+    await t.click('button[icon="center"]') // Center alignment
+
+    // Add text content
     await t.expect(Selector('.ql-editor').focused).ok()
     await t.typeText('.ql-editor', 'Hello, World!\rThis is text')
+
+    // Finalize changes and verify still editable
     await screencap(t)
     await t.click(Selector('button').withExactText('Accept'))
     await t.expect(Selector('button').withExactText('Edit Text Boxes').exists).ok()
+
+    // Verify no errors and expected code
     await toggleCustomScript(t)
     await t.expect(getErrors()).eql([])
     nastyDiff(await getCodeFromMainField(), expectedNewTextBoxCode)
@@ -103,18 +112,27 @@ test('change background color, border color, border width, insert images, insert
     await t.pressKey('ctrl+a')
     await changeValue(t, 0, '16', '24')
 
+    // Accept changes and verify the "Edit Text Boxes" button is visible
     await t.click(Selector('button').withExactText('Accept'))
     await t.expect(Selector('button').withExactText('Edit Text Boxes').exists).ok()
+
+    // Ensure no errors, take a screenshot, and toggle custom script
     await t.expect(getErrors()).eql([])
     await screencap(t)
     await toggleCustomScript(t)
+
+    // Verify the expected code
     const expected = 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, textBoxes=[textBox(screenBounds={north: 0.75, east: 0.75, south: 0.25, west: 0.25}, text=rtfDocument([rtfString("some stuff", size=24, color=rgb(0, 0, 0)), rtfString(" ", size=24, color=rgb(0, 1, 0)), rtfFormula("E=mc^2 + AI", size=24, color=rgb(0, 1, 0)), rtfImage("https://http.cat/images/301.jpg", size=24, color=rgb(0, 1, 0)), rtfString("\\n")]))])\n'
     nastyDiff(await getCodeFromMainField(), expected)
+
+    // Reopen dialog, duplicate, delete, and finalize changes
     await toggleCustomScript(t)
-    await t.click(Selector('button').withExactText('Edit Text Boxes')) // We want to ensure that reparsing works as expected
+    await t.click(Selector('button').withExactText('Edit Text Boxes'))
     await t.click('[data-test="duplicate"]')
     await t.click(Selector('[data-test="delete"]').nth(1))
     await t.click(Selector('button').withExactText('Accept'))
+
+    // Verify code is still the same
     await toggleCustomScript(t)
     nastyDiff(await getCodeFromMainField(), expected)
 })
@@ -128,24 +146,33 @@ function getSelection(): Promise<Selection | null> {
 }
 
 test('duplicate text box, edit, resize, resposition, move down', async (t) => {
+    // Open dialog and duplicate text box
     await t.click(Selector('button').withExactText('Edit Text Boxes'))
     await t.click('[data-test="duplicate"]')
+
+    // Edit duplicated text box
     await t.selectEditableContent(Selector('.ql-editor').nth(1).find('p').nth(1), Selector('.ql-editor').nth(1).find('p').nth(1))
     const selection1 = await getSelection()
     await changeValue(t, 0, 'Courier New', 'Times New Roman')
     await t.typeText(Selector('.ql-editor').nth(1), 'A line\rAnother line')
     await t.expect(Selector('.ql-editor').nth(1).textContent).eql('Hello, World!A\u00a0lineAnother\u00a0line')
     const selection2 = await getSelection()
+
+    // Undo/Redo changes
     await t.pressKey('ctrl+z')
     await t.expect(Selector('.ql-editor').nth(1).textContent).eql('Hello, World!This is text')
     await t.expect(getSelection()).eql(selection1)
     await t.pressKey('ctrl+y')
     await t.expect(Selector('.ql-editor').nth(1).textContent).eql('Hello, World!A\u00a0lineAnother\u00a0line')
     await t.expect(getSelection()).eql(selection2)
+
+    // Move, resize, and reorder text box
     await drag(t, Selector('[data-test="move"]').nth(1), 100, 100)
     await drag(t, Selector('[data-test="bottomRight"]').nth(1), 100, 100)
     await t.click('[data-test="moveDown"]')
     await drag(t, Selector('[data-test="move"]').nth(1), -100, -100)
+
+    // Finalize and verify
     await t.click(Selector('button').withExactText('Accept'))
     await t.expect(Selector('button').withExactText('Edit Text Boxes').exists).ok()
     await t.expect(getErrors()).eql([])
