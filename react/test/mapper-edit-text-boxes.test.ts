@@ -1,6 +1,6 @@
 import { ClientFunction, Selector } from 'testcafe'
 
-import { drag, getCodeFromMainField, getErrors, toggleCustomScript, urlFromCode } from './mapper-utils'
+import { drag, getCodeFromMainField, getErrors, nastyDiff, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { screencap, urbanstatsFixture } from './test_utils'
 
 urbanstatsFixture(`default map`, '/mapper.html')
@@ -45,8 +45,7 @@ test('create a new text box with formatting', async (t) => {
     await t.expect(Selector('button').withExactText('Edit Text Boxes').exists).ok()
     await toggleCustomScript(t)
     await t.expect(getErrors()).eql([])
-    await t.expect((await getCodeFromMainField()).replaceAll('\u00a0', ' '))
-        .eql(expectedNewTextBoxCode)
+    nastyDiff(await getCodeFromMainField(), expectedNewTextBoxCode)
 })
 
 // This weird workaround is necessary here instead of typeText when text is selected... thanks TestCafe
@@ -78,7 +77,7 @@ test('change background color, border color, border width, insert images, insert
 
     // Insert a formula using prompt
     await t.setNativeDialogHandler(() => 'E=mc^2 + AI')
-    await t.click('button[icon="function"]')
+    await t.click('button[icon="formula"]')
 
     // Insert an image
     await t.setNativeDialogHandler(() => 'https://http.cat/images/301.jpg')
@@ -109,7 +108,15 @@ test('change background color, border color, border width, insert images, insert
     await t.expect(getErrors()).eql([])
     await screencap(t)
     await toggleCustomScript(t)
-    await t.expect((await getCodeFromMainField()).replaceAll('\u00a0', 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, textBoxes=[textBox(screenBounds={north: 0.75, east: 0.75, south: 0.25, west: 0.25}, text=rtfDocument([rtfString("some stuff", size=24, color=rgb(0, 0, 0)), rtfString(" ", size=24, color=rgb(0, 1, 0)), rtfFormula("E=mc^2 + AI", size=24, color=rgb(0, 1, 0)), rtfImage("https://http.cat/images/301.jpg", size=24, color=rgb(0, 1, 0)), rtfString("\n")]))])')).eql('')
+    const expected = 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, textBoxes=[textBox(screenBounds={north: 0.75, east: 0.75, south: 0.25, west: 0.25}, text=rtfDocument([rtfString("some stuff", size=24, color=rgb(0, 0, 0)), rtfString(" ", size=24, color=rgb(0, 1, 0)), rtfFormula("E=mc^2 + AI", size=24, color=rgb(0, 1, 0)), rtfImage("https://http.cat/images/301.jpg", size=24, color=rgb(0, 1, 0)), rtfString("\\n")]))])\n'
+    nastyDiff(await getCodeFromMainField(), expected)
+    await toggleCustomScript(t)
+    await t.click(Selector('button').withExactText('Edit Text Boxes')) // We want to ensure that reparsing works as expected
+    await t.click('[data-test="duplicate"]')
+    await t.click(Selector('[data-test="delete"]').nth(1))
+    await t.click(Selector('button').withExactText('Accept'))
+    await toggleCustomScript(t)
+    nastyDiff(await getCodeFromMainField(), expected)
 })
 
 urbanstatsFixture('with previous text box', urlFromCode('Subnational Region', 'USA', expectedNewTextBoxCode), async (t) => {
@@ -144,5 +151,5 @@ test('duplicate text box, edit, resize, resposition, move down', async (t) => {
     await t.expect(getErrors()).eql([])
     await screencap(t)
     await toggleCustomScript(t)
-    await t.expect((await getCodeFromMainField()).replaceAll('\u00a0', ' ')).eql('')
+    nastyDiff(await getCodeFromMainField(), 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, textBoxes=[textBox(screenBounds={north: 0.6274942967512935, east: 0.9849339135544573, south: 0, west: 0.39246695677722854}, text=rtfDocument([rtfString("Hello, World!", size=36, font="Courier New", bold=true, underline=true), rtfString("\\n", align=alignCenter), rtfString("A line", size=36, font="Times New Roman", bold=true, underline=true), rtfString("\\n", align=alignCenter), rtfString("Another line", size=36, font="Times New Roman", bold=true, underline=true), rtfString("\\n", align=alignCenter)])), textBox(screenBounds={north: 0.9225057032487065, east: 0.6575330432227714, south: 0.4225057032487065, west: 0.15753304322277145}, text=rtfDocument([rtfString("Hello, World!", size=36, font="Courier New", bold=true, underline=true), rtfString("\\n", align=alignCenter), rtfString("This is text", size=36, font="Courier New", bold=true, underline=true), rtfString("\\n", align=alignCenter)]))])\n')
 })

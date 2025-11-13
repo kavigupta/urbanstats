@@ -22,12 +22,23 @@ const attributesArgs = {
     align: l.optional(l.transformExpr(l.union(Object.keys(alignIdentifierToValue).map(l.identifier)), align => alignIdentifierToValue[align])),
 }
 
-const richTextSegmentSchema = l.union([
+/*
+[
     l.transformExpr(l.call({ fn: l.identifier('rtfString'), unnamedArgs: [l.string()], namedArgs: attributesArgs }), call => ({
         insert: call.unnamedArgs[0],
         attributes: call.namedArgs,
     } satisfies RichTextSegment)),
-])
+]
+ */
+
+const segmentTypes: [string, (insert: string) => RichTextSegment['insert']][] = [['rtfString', i => i], ['rtfFormula', formula => ({ formula })], ['rtfImage', image => ({ image })]]
+
+const richTextSegmentSchema = l.union(segmentTypes.map(([fnId, insert]) =>
+    l.transformExpr(l.call({ fn: l.identifier(fnId), unnamedArgs: [l.string()], namedArgs: attributesArgs }), call => ({
+        insert: insert(call.unnamedArgs[0]),
+        attributes: call.namedArgs,
+    } satisfies RichTextSegment)),
+))
 
 const richTextDocumentSchema = l.transformExpr(l.call({ fn: l.identifier('rtfDocument'), unnamedArgs: [l.vector(richTextSegmentSchema)], namedArgs: {} }),
     ({ unnamedArgs }) => (unnamedArgs[0] satisfies RichTextDocument))
