@@ -40,7 +40,7 @@ void test('constant listing', (): void => {
                 'colorWhite',
                 'colorBlack',
             ],
-            '(string; size: number = null, font: string = null, color: color = null, bold: boolean = null, italic: boolean = null, underline: boolean = null, list: richTextList = null, indent: number = null, align: richTextAlign = null) -> richTextSegment': [
+            '(string; size: number = null, font: string = null, color: color = null, bold: boolean = null, italic: boolean = null, underline: boolean = null, strike: boolean = null, list: richTextList = null, indent: number = null, align: richTextAlign = null) -> richTextSegment': [
                 'rtfString',
                 'rtfFormula',
                 'rtfImage',
