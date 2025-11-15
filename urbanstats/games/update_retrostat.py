@@ -17,7 +17,7 @@ def compute_last_retrostat_week_generable():
     days_finished = int(compute_fractional_days("US/Samoa"))
     for retro_week in itertools.count(1):
         questions = day_for_week(questions_week_for_retrostat(retro_week))
-        if max(questions) > days_finished:
+        if max(questions) >= days_finished:
             return retro_week - 1, questions[-1] - 7
 
 
