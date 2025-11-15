@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Gen Alpha %",
+      "stat_path": "generation_genalpha",
+      "question": "higher % of people who are gen alpha!TOOLTIP born between 2012 and 2021",
+      "longname_a": "VT-AL (2023), USA",
+      "longname_b": "NE-02 (2023), USA",
+      "stat_a": 0.09621016244387347,
+      "stat_b": 0.1450304492928494
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km)",
+      "stat_path": "ad_4",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Analamanga, Madagascar",
+      "longname_b": "Campania, Italy",
+      "stat_a": 8426.896895790025,
+      "stat_b": 3065.7440886948198
+    },
+    "a_ease": 0.6477449455676516,
+    "b_ease": 0.24766899766899766
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Born in state of residence %",
+      "stat_path": "birthplace_us_state",
+      "question": "higher % of people who were born in their state of residence",
+      "longname_a": "IL-06 (2023), USA",
+      "longname_b": "VA-08 (2023), USA",
+      "stat_a": 0.7135039953930361,
+      "stat_b": 0.24706906869184225
+    },
+    "b": {
+      "stat_column": "2012-2016 Swing",
+      "stat_path": "2012-2016 Swing-margin",
+      "question": "!FULL Which swung less towards Republicans from 2012 to 2016?",
+      "longname_a": "Providence County, Rhode Island, USA",
+      "longname_b": "Camden County, New Jersey, USA",
+      "stat_a": -0.13855663984772396,
+      "stat_b": -0.03950702825073704
+    },
+    "a_ease": 0.797997644287397,
+    "b_ease": 0.3825018076644975
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High temperature Below 40\u00b0F %",
+      "stat_path": "days_below_40_4",
+      "question": "higher % of cold days (days with high temp under 40\u00b0F, population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Santo Domingo Urban Center, Dominican Republic",
+      "longname_b": "Faisalabad Urban Center, Pakistan",
+      "stat_a": -5.36750985880019e-08,
+      "stat_b": 1.42241500800111e-08
+    },
+    "b": {
+      "stat_column": "PW Density (r=4km)",
+      "stat_path": "ad_4",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "\u015eal\u0101\u1e29 ad D\u012bn, Iraq",
+      "longname_b": "Toshkent (Province), Uzbekistan",
+      "stat_a": 2644.221806848407,
+      "stat_b": 10643.788260687377
+    },
+    "a_ease": 0.8478260869565217,
+    "b_ease": 0.44556765163297046
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Farming, fishing, and forestry occupations %",
+      "stat_path": "occupation_farming,_fishing,_and_forestry_occupations",
+      "question": "higher % of workers employed in farming, fishing, and forestry occupations!TOOLTIP farmers, ranchers, fishers, loggers, forest workers, etc.",
+      "longname_a": "Maricopa County, Arizona, USA",
+      "longname_b": "Forsyth County, Georgia, USA",
+      "stat_a": 0.002576823885184395,
+      "stat_b": 0.0008275247461726979
+    },
+    "b": {
+      "stat_column": "Population Change (2010-2020)",
+      "stat_path": "population_change_2010",
+      "question": "higher % increase in population from 2010 to 2020",
+      "longname_a": "Kennewick-Richland-Pasco [Urban Area], WA, USA",
+      "longname_b": "Albany-Schenectady [Urban Area], NY, USA",
+      "stat_a": 0.20762112808582872,
+      "stat_b": 0.0389085839195135
+    },
+    "a_ease": 0.14381270903010032,
+    "b_ease": 0.5488069414316703
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Bike %",
+      "stat_path": "transportation_means_bike",
+      "question": "higher % of people who commute by bike",
+      "longname_a": "Lexington KY Media Market, USA",
+      "longname_b": "Boise ID Media Market, USA",
+      "stat_a": 0.0028011254204794497,
+      "stat_b": 0.013561500053951755
+    },
+    "b": {
+      "stat_column": "Life Expectancy (2019)",
+      "stat_path": "life_expectancy_2019",
+      "question": "higher life expectancy",
+      "longname_a": "Bergen County, New Jersey, USA",
+      "longname_b": "Lubbock County, Texas, USA",
+      "stat_a": 83.39999999999992,
+      "stat_b": 76.49999999999976
+    },
+    "a_ease": 0.4184149184149184,
+    "b_ease": 0.8513986013986014
+  }
+]

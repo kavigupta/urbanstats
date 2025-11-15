@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Vision disability %",
+      "stat_path": "VISION_cdc_2",
+      "question": "higher % of adults with a vision disability",
+      "longname_a": "Laredo city, Texas, USA",
+      "longname_b": "Portland city, Oregon, USA",
+      "stat_a": 0.11666353565363217,
+      "stat_b": 0.03865654441958269
+    },
+    "b": {
+      "stat_column": "Electricity heating %",
+      "stat_path": "heating_electricity",
+      "question": "!FULL Which has a larger % of homes heated using electricity?",
+      "longname_a": "Hartford & New Haven CT Media Market, USA",
+      "longname_b": "Bluefield-Beckley-Oak Hill WV Media Market, USA",
+      "stat_a": 0.16952815324111456,
+      "stat_b": 0.60499595713219
+    },
+    "a_ease": 0.7150684931506849,
+    "b_ease": 0.3045751633986928
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad STEM %",
+      "stat_path": "education_field_stem",
+      "question": "!FULL Which has more people with a STEM degree, as a percentage of the overall population?",
+      "longname_a": "Naugatuck Valley Planning Region, Connecticut, USA",
+      "longname_b": "Oakland County, Michigan, USA",
+      "stat_a": 0.13432101520798406,
+      "stat_b": 0.2347449987865356
+    },
+    "b": {
+      "stat_column": "Commute Time > 60 min %",
+      "stat_path": "transportation_commute_time_over_60",
+      "question": "higher % of people who have commute time over 60 min",
+      "longname_a": "Tulsa city, Oklahoma, USA",
+      "longname_b": "Aurora city, Colorado, USA",
+      "stat_a": 0.025800864154706997,
+      "stat_b": 0.09321236045940254
+    },
+    "a_ease": 0.2589041095890411,
+    "b_ease": 0.6924657534246575
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Born in us outside state %",
+      "stat_path": "birthplace_us_not_state",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "Harrisonburg VA Media Market, USA",
+      "longname_b": "Syracuse NY Media Market, USA",
+      "stat_a": 0.2964727207120752,
+      "stat_b": 0.16393738365792562
+    },
+    "b": {
+      "stat_column": "Commute Time > 60 min %",
+      "stat_path": "transportation_commute_time_over_60",
+      "question": "higher % of people who have commute time over 60 min",
+      "longname_a": "Cleveland [Urban Area], OH, USA",
+      "longname_b": "Concord-Walnut Creek [Urban Area], CA, USA",
+      "stat_a": 0.04036758147622666,
+      "stat_b": 0.21496009956065956
+    },
+    "a_ease": 0.3440134907251265,
+    "b_ease": 0.7684069611780455
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Walk %",
+      "stat_path": "transportation_means_walk",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "Macon GA Media Market, USA",
+      "longname_b": "Wichita Falls TX & Lawton OK Media Market, USA",
+      "stat_a": 0.011949895585218218,
+      "stat_b": 0.03670804449459974
+    },
+    "b": {
+      "stat_column": "Office and administrative support occupations %",
+      "stat_path": "occupation_office_and_administrative_support_occupations",
+      "question": "higher % of workers employed as office and administrative support workers!TOOLTIP secretaries, receptionists, data entry clerks, office clerks, mail carriers, shipping clerks, etc.",
+      "longname_a": "PA-06 (2023), USA",
+      "longname_b": "MD-07 (2023), USA",
+      "stat_a": 0.1040605628041944,
+      "stat_b": 0.12039745894736928
+    },
+    "a_ease": 0.3363013698630137,
+    "b_ease": 0.7924657534246575
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Hospital",
+      "stat_path": "mean_dist_Hospital_updated",
+      "question": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
+      "longname_a": "Providence [Urban Area], RI-MA, USA",
+      "longname_b": "Concord [Urban Area], NC, USA",
+      "stat_a": 3.9180504432137138,
+      "stat_b": 6.997115058146183
+    },
+    "b": {
+      "stat_column": "Disability %",
+      "stat_path": "DISABILITY_cdc_2",
+      "question": "higher % of adults with a disability",
+      "longname_a": "FL-17 (2023), USA",
+      "longname_b": "OK-02 (2023), USA",
+      "stat_a": 0.3082986938889663,
+      "stat_b": 0.41732629392780496
+    },
+    "a_ease": 0.830820770519263,
+    "b_ease": 0.42570281124497994
+  }
+]
