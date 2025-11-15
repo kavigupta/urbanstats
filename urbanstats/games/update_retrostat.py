@@ -1,5 +1,7 @@
 import itertools
 import os
+
+from urbanstats.games.fixed import retrostat as fixed_up_to
 from urbanstats.games.quiz import compute_fractional_days
 from urbanstats.games.retrostat import (
     day_for_week,
@@ -8,7 +10,6 @@ from urbanstats.games.retrostat import (
     questions_week_for_retrostat,
     week_for_day,
 )
-from urbanstats.games.fixed import retrostat as fixed_up_to
 from urbanstats.games.update_fixed import copy_up_to
 
 
