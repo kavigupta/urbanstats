@@ -8,7 +8,6 @@ from urbanstats.games.retrostat import (
     generate_retrostat,
     output_retrostat,
     questions_week_for_retrostat,
-    week_for_day,
 )
 from urbanstats.games.update_fixed import copy_up_to
 
@@ -19,6 +18,7 @@ def compute_last_retrostat_week_generable():
         questions = day_for_week(questions_week_for_retrostat(retro_week))
         if max(questions) >= days_finished:
             return retro_week - 1, questions[-1] - 7
+    raise RuntimeError("Unreachable")
 
 
 def create_retrostats(folder, retrostat_up_to):
