@@ -165,7 +165,7 @@ export const pageDescriptorSchema = z.union([
 
 export type PageDescriptor = z.infer<typeof pageDescriptorSchema>
 export type ExceptionalPageDescriptor = PageDescriptor
-    | { kind: 'initialLoad', url: URL, descriptor: PageDescriptor }
+    | { kind: 'initialLoad', url: URL }
     | { kind: 'error', url: URL }
 
 export type PageData =
@@ -196,7 +196,7 @@ export type PageData =
         url: URL
         descriptor?: PageDescriptor // If descriptor is not present, we could not parse it
     }
-    | { kind: 'initialLoad', descriptor: PageDescriptor }
+    | { kind: 'initialLoad' }
 
 export function pageDescriptorFromURL(url: URL): PageDescriptor {
     /**

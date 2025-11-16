@@ -39,7 +39,6 @@ export interface Colors {
     screenshotFooterUrl: string
     pencilIcon: string
     wikidataURL: string
-    mapperBannerURL: string
 }
 
 export interface JuxtastatColors {
@@ -82,7 +81,6 @@ export const colorThemes: Record<Theme, Colors> = {
         screenshotFooterUrl: 'screenshot_footer.svg',
         pencilIcon: '/pencil-light.png',
         wikidataURL: '/wikidata-light.svg',
-        mapperBannerURL: '/mapper-banner.png',
     },
     'Dark Mode': {
         background: '#00060f',
@@ -109,7 +107,6 @@ export const colorThemes: Record<Theme, Colors> = {
         screenshotFooterUrl: 'screenshot_footer_dark.svg',
         pencilIcon: '/pencil-dark.png',
         wikidataURL: '/wikidata-dark.svg',
-        mapperBannerURL: '/mapper-banner-dark.png',
     },
 }
 /* eslint-enable no-restricted-syntax -- Allowing hex colors for themes */

@@ -319,8 +319,8 @@ export function AutoUXEditor(props: {
     const leftSegment = props.label === undefined
         ? undefined
         : (
-                <div style={{ padding: `${labelPadding} 0px`, display: 'flex', justifyContent: 'flex-end' }}>
-                    <span style={{ minWidth: 'fit-content', marginRight: '5px' }}>{props.label}</span>
+                <div style={{ padding: `${labelPadding} 0px` }}>
+                    <span style={{ minWidth: 'fit-content' }}>{props.label}</span>
                 </div>
             )
     const rightSegment = possibilities(props.type, props.typeEnvironment).length < 2

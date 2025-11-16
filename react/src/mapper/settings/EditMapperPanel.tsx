@@ -1,12 +1,11 @@
 import { gzipSync } from 'zlib'
 
-import React, { ReactNode, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { CountsByUT } from '../../components/countsByArticleType'
 import { Navigator } from '../../navigation/Navigator'
 import { Colors } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
-import { useSetting } from '../../page_template/settings'
 import { PageTemplate } from '../../page_template/template'
 import { Inset } from '../../urban-stats-script/constants/insets'
 import { useUndoRedo } from '../../urban-stats-script/editor-utils'
@@ -15,9 +14,8 @@ import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { loadInsets } from '../../urban-stats-script/worker'
 import { Property } from '../../utils/Property'
 import { TestUtils } from '../../utils/TestUtils'
-import { mixWithBackground } from '../../utils/color'
 import { assert } from '../../utils/defensive'
-import { useMobileLayout } from '../../utils/responsive'
+import { useHeaderTextClass } from '../../utils/responsive'
 import { defaultTypeEnvironment } from '../context'
 import { MapGenerator, useMapGenerator } from '../map-generator'
 
@@ -89,6 +87,8 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
     // eslint-disable-next-line react-hooks/exhaustive-deps -- props.view won't be set except from the navigator
     }, [jsonedSettings, navContext])
 
+    const headerTextClass = useHeaderTextClass()
+
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(mapSettings.universe), [mapSettings.universe])
 
     // Update current selection when it changes
@@ -112,8 +112,9 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
     }
 
     return (
-        <PageTemplate csvExportData={mapGenerator.exportCSV} showFooter={false}>
+        <PageTemplate csvExportData={mapGenerator.exportCSV}>
             <SelectionContext.Provider value={selectionContext}>
+                <div className={headerTextClass}>Urban Stats Mapper (beta)</div>
                 {mapEditorMode === 'insets' ? <InsetsMapEditor {...commonProps} /> : <USSMapEditor {...commonProps} counts={props.counts} />}
                 {mapEditorMode !== 'insets' ? undoRedo.ui : undefined /* Insets editor has its own undo stack */}
             </SelectionContext.Provider>
@@ -133,160 +134,38 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
     const ui = mapGenerator.ui({ mode: 'uss' })
 
     return (
-        <MaybeSplitLayout
-            error={mapGenerator.errors.some(e => e.kind === 'error')}
-            left={(
-                <MapperSettings
+        <>
+            <MapperSettings
+                mapSettings={mapSettings}
+                setMapSettings={setMapSettings}
+                errors={mapGenerator.errors}
+                counts={counts}
+                typeEnvironment={typeEnvironment}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
+                <Export pngExport={ui.exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
+                {
+                    getInsets(mapSettings, typeEnvironment) && (
+                        <div style={{
+                            display: 'flex',
+                            gap: '0.5em',
+                            margin: '0.5em 0',
+                        }}
+                        >
+                            <button onClick={() => { setMapEditorMode('insets') }}>
+                                Edit Insets
+                            </button>
+                        </div>
+                    )
+                }
+                <ImportExportCode
                     mapSettings={mapSettings}
                     setMapSettings={setMapSettings}
-                    errors={mapGenerator.errors}
-                    counts={counts}
-                    typeEnvironment={typeEnvironment}
                 />
-            )}
-            right={(
-                <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
-                        <Export pngExport={ui.exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
-                        {
-                            getInsets(mapSettings, typeEnvironment) && (
-                                <div style={{
-                                    display: 'flex',
-                                    gap: '0.5em',
-                                    margin: '0.5em 0',
-                                }}
-                                >
-                                    <button onClick={() => { setMapEditorMode('insets') }}>
-                                        Edit Insets
-                                    </button>
-                                </div>
-                            )
-                        }
-                        <ImportExportCode
-                            mapSettings={mapSettings}
-                            setMapSettings={setMapSettings}
-                        />
-                    </div>
-                    {ui.node}
-                </>
-            )}
-        />
-    )
-}
-
-function MaybeSplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode, error: boolean }): ReactNode {
-    const mobileLayout = useMobileLayout()
-
-    return mobileLayout
-        ? (
-                <>
-                    {left}
-                    {right}
-                </>
-            )
-        : <SplitLayout error={error} left={left} right={right} />
-}
-
-function SplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode, error: boolean }): ReactNode {
-    const [height, setHeight] = useState(0)
-    const splitRef = useRef<HTMLDivElement>(null)
-    const colors = useColors()
-
-    const updateHeight = useCallback(() => {
-        if (splitRef.current) {
-            const bounds = splitRef.current.getBoundingClientRect()
-            setHeight(window.innerHeight - bounds.top - 8)
-        }
-    }, [])
-
-    // This is ultimately the simplest way to set the height
-    useLayoutEffect(() => {
-        updateHeight()
-        window.addEventListener('resize', updateHeight)
-        return () => {
-            window.removeEventListener('resize', updateHeight)
-        }
-    }, [updateHeight])
-
-    const [leftColProp, setLeftColProp] = useSetting('mapperSettingsColumnProp')
-
-    const [drag, setDrag] = useState<{ startOffsetX: number, pointerId: number, startProp: number } | undefined>(undefined)
-
-    const dividerRef = useRef<HTMLDivElement>(null)
-
-    const minLeftColProp = (): number =>
-        minLeftWidth / splitRef.current!.offsetWidth
-
-    useEffect(() => {
-        if (dividerRef.current !== null) {
-            dividerRef.current.style.cursor = leftColProp === minLeftColProp() ? 'e-resize' : (leftColProp === maxLeftColProp ? 'w-resize' : 'col-resize')
-        }
-    })
-
-    const minLeftWidth = left ? 540 : 0
-    const leftPct = left ? `${leftColProp * 100}%` : '0%'
-
-    const maxLeftColProp = 0.5
-
-    const dividerWidth = '1em'
-
-    return (
-        <div style={{ display: 'flex', height, position: 'relative' }} ref={splitRef}>
-            {left && (
-                <>
-                    <div style={{ width: leftPct, minWidth: minLeftWidth, overflowY: 'scroll', backgroundColor: mixWithBackground(colors.hueColors.red, error ? 0.8 : 1, colors.slightlyDifferentBackground), padding: '1em', borderRadius: '5px' }}>
-                        {left}
-                    </div>
-                    <div
-                        ref={dividerRef}
-                        style={{ width: dividerWidth, position: 'relative' }}
-                        onPointerDown={(e) => {
-                            if (drag === undefined) {
-                                const div = e.target as HTMLDivElement
-                                setDrag({
-                                    pointerId: e.pointerId,
-                                    startOffsetX: e.nativeEvent.offsetX + div.offsetLeft,
-                                    startProp: Math.max(minLeftColProp(), leftColProp),
-                                })
-                                div.setPointerCapture(e.pointerId)
-                            }
-                        }}
-                        onPointerMove={(e) => {
-                            if (e.pointerId === drag?.pointerId) {
-                                const div = e.target as HTMLDivElement
-                                const propChange = (div.offsetLeft + e.nativeEvent.offsetX - drag.startOffsetX) / splitRef.current!.offsetWidth
-                                setLeftColProp(Math.max(minLeftColProp(), Math.min(drag.startProp + propChange, maxLeftColProp)))
-                            }
-                        }}
-                        onPointerCancel={(e) => {
-                            if (drag?.pointerId === e.pointerId) {
-                                setDrag(undefined)
-                            }
-                        }}
-                        onPointerUp={(e) => {
-                            if (drag?.pointerId === e.pointerId) {
-                                setDrag(undefined)
-                            }
-                        }}
-                    >
-                        <div style={{
-                            backgroundColor: colors.borderNonShadow,
-                            borderRadius: '5px',
-                            position: 'absolute',
-                            width: '5px',
-                            left: 'calc(50% - 2px)',
-                            height: '50%',
-                            top: '25%',
-                            pointerEvents: 'none',
-                        }}
-                        />
-                    </div>
-                </>
-            )}
-            <div style={{ width: `calc(100% - max(${minLeftWidth}px, ${leftPct}) - ${dividerWidth})`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                {right}
             </div>
-        </div>
+            {ui.node}
+        </>
+
     )
 }
 
@@ -342,46 +221,38 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
 
     return (
         <>
-            <MaybeSplitLayout
-                left={undefined}
-                error={false}
-                right={(
-                    <>
-                        <div style={{
-                            backgroundColor: colors.slightlyDifferentBackgroundFocused,
-                            borderRadius: '5px',
-                            padding: '10px',
-                            margin: '10px 0',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            gap: '0.5em',
-                        }}
-                        >
-                            <div>
-                                <b>Editing Insets.</b>
-                                {' '}
-                                Pans and zooms to maps will be reflected permanently. Drag inset frames to reposition and resize.
-                            </div>
-                            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{
+                backgroundColor: colors.slightlyDifferentBackgroundFocused,
+                borderRadius: '5px',
+                padding: '10px',
+                margin: '10px 0',
+                display: 'flex',
+                justifyContent: 'space-between',
+                gap: '0.5em',
+            }}
+            >
+                <div>
+                    <b>Editing Insets.</b>
+                    {' '}
+                    Pans and zooms to maps will be reflected permanently. Drag inset frames to reposition and resize.
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
 
-                                <button onClick={() => { setMapEditorMode('uss') }}>
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, insetEdits, typeEnvironment) } })
-                                        setMapEditorMode('uss')
-                                    }}
-                                    disabled={!canUndo}
-                                >
-                                    Accept
-                                </button>
-                            </div>
-                        </div>
-                        {ui.node}
-                    </>
-                )}
-            />
+                    <button onClick={() => { setMapEditorMode('uss') }}>
+                        Cancel
+                    </button>
+                    <button
+                        onClick={() => {
+                            setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, insetEdits, typeEnvironment) } })
+                            setMapEditorMode('uss')
+                        }}
+                        disabled={!canUndo}
+                    >
+                        Accept
+                    </button>
+                </div>
+            </div>
+            {ui.node}
             {undoRedoUi}
         </>
     )

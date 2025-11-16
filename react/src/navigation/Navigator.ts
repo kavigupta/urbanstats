@@ -62,11 +62,10 @@ export class Navigator {
     constructor() {
         try {
             const url = new URL(discordFix(window.location.href))
-            const descriptor = pageDescriptorFromURL(url)
             this.pageState = {
                 kind: 'loading',
-                loading: { descriptor },
-                current: { descriptor: { kind: 'initialLoad', url, descriptor }, data: { kind: 'initialLoad', descriptor } },
+                loading: { descriptor: pageDescriptorFromURL(url) },
+                current: { descriptor: { kind: 'initialLoad', url }, data: { kind: 'initialLoad' } },
                 loadStartTime: Date.now(),
             }
             void this.navigate(this.pageState.loading.descriptor, { history: 'replace', scroll: { kind: 'none' } })

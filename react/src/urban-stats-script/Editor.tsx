@@ -3,7 +3,6 @@ import '@fontsource/inconsolata/500.css'
 import React, { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { LongFormDocumentation } from '../uss-documentation'
 import { TestUtils } from '../utils/TestUtils'
@@ -266,7 +265,7 @@ export function Editor(
             <pre
                 id="test-editor-body"
                 style={{
-                    ...codeStyle(colors),
+                    ...codeStyle,
                     caretColor: TestUtils.shared.isTesting ? 'transparent' : colors.textMain,
                     border: `1px solid ${borderColor}`,
                     borderRadius: TestUtils.shared.isTesting ? 0 : (results.length > 0 ? '5px 5px 0 0' : '5px'),
@@ -300,16 +299,13 @@ export function Editor(
     )
 }
 
-export function codeStyle(colors: Colors): CSSProperties {
-    return {
-        whiteSpace: 'pre-wrap',
-        fontFamily: 'Inconsolata, monospace',
-        fontWeight: 500,
-        lineHeight: '175%',
-        margin: 0,
-        padding: '1em',
-        backgroundColor: colors.background,
-    }
+export const codeStyle: CSSProperties = {
+    whiteSpace: 'pre-wrap',
+    fontFamily: 'Inconsolata, monospace',
+    fontWeight: 500,
+    lineHeight: '175%',
+    margin: 0,
+    padding: '1em',
 }
 
 function colorKey(results: EditorResult[]): 'r' | 'o' | 'g' | 's' {
@@ -348,7 +344,7 @@ export function DisplayResults(props: { results: EditorResult[], editor: boolean
     }
     const border = `2px solid ${color}`
     const style = {
-        ...codeStyle(colors),
+        ...codeStyle,
         borderRadius: TestUtils.shared.isTesting ? 0 : (props.editor ? '0 0 5px 5px' : '5px'),
         backgroundColor: colors.slightlyDifferentBackground,
         color: colors.textMain,

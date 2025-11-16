@@ -438,7 +438,7 @@ type NotIncludedInSettingsVector = (
     | StatCategorySavedIndeterminateKey
     | StatCategoryExpandedKey
     | 'theme' | 'colorblind_mode' | 'clean_background'
-    | 'juxtastatCompactEmoji' | 'syauRequireEnter' | 'mapperSettingsColumnProp'
+    | 'juxtastatCompactEmoji' | 'syauRequireEnter'
 )
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet

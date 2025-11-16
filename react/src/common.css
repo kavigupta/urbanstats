@@ -1,3 +1,20 @@
+.main_panel {
+    position: relative;
+    max-width: 80em;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.main_panel_mobile {
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+.left_panel {
+    width: 20%;
+    float: left;
+}
+
 .right_panel {
     width: 80%;
     padding-left: 2em;
@@ -24,6 +41,12 @@
     height: 3em;
     display: flex;
     align-items: center;
+}
+
+.body_panel {
+    position: relative;
+    width: 100%;
+    display: flex;
 }
 
 .gap {

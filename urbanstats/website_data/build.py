@@ -336,8 +336,6 @@ def build_urbanstats(
     shutil.copy("icons/main/wikipedia.svg", f"{site_folder}/")
     shutil.copy("icons/main/wikidata-light.svg", f"{site_folder}/")
     shutil.copy("icons/main/wikidata-dark.svg", f"{site_folder}/")
-    shutil.copy("icons/main/mapper-banner.png", f"{site_folder}/")
-    shutil.copy("icons/main/mapper-banner-dark.png", f"{site_folder}/")
     shutil.copy("icons/main/duplicate.png", f"{site_folder}/")
 
     with open(f"{site_folder}/CNAME", "w") as f:
