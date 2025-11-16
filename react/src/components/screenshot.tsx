@@ -79,8 +79,8 @@ function totalOffset(element: Element | null): { top: number, left: number } {
     return { top: element.offsetTop + parentOffset.top, left: element.offsetLeft + parentOffset.left }
 }
 
-function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number, image: CanvasImageSource, x: number, y: number, w: number, h: number, testing: boolean): void {
-    if (testing) {
+function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number, image: CanvasImageSource, x: number, y: number, w: number, h: number): void {
+    if (TestUtils.shared.isTesting) {
         context.fillStyle = `hsl(${(index % 10) * (360 / 10)} 50% 50%)`
         context.fillRect(x, y, w, h)
     }
@@ -108,13 +108,9 @@ function fixElementForScreenshot(element: HTMLElement): () => void {
 }
 
 export const mapBorderWidth = 1
-export const defaultMapBorderRadius = 5
+export const mapBorderRadius = 5
 
-export async function screencapElement(ref: HTMLElement, overallWidth: number, heightMultiplier: number, {
-    mapBorderRadius = defaultMapBorderRadius,
-    // eslint-disable-next-line no-restricted-syntax -- Default value
-    testing = TestUtils.shared.isTesting,
-}: { mapBorderRadius?: number, testing?: boolean } = {}): Promise<HTMLCanvasElement> {
+export async function screencapElement(ref: HTMLElement, overallWidth: number, heightMultiplier: number): Promise<HTMLCanvasElement> {
     const unfixElement = fixElementForScreenshot(ref)
 
     /*
@@ -143,13 +139,11 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, h
         const h = canvas.offsetHeight * scaleFactor
 
         resultContext.save()
-        if (mapBorderRadius !== 0) {
-            resultContext.beginPath()
-            resultContext.roundRect(x, y, w, h, (mapBorderRadius - mapBorderWidth * 2) * scaleFactor)
-            resultContext.clip()
-        }
+        resultContext.beginPath()
+        resultContext.roundRect(x, y, w, h, (mapBorderRadius - mapBorderWidth * 2) * scaleFactor)
+        resultContext.clip()
 
-        drawImageIfNotTesting(resultContext, index, canvas, x, y, w, h, testing)
+        drawImageIfNotTesting(resultContext, index, canvas, x, y, w, h)
 
         resultContext.restore()
     }
@@ -228,7 +222,7 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
         const flagHeight = bannerHeight / 2
         const offset = flagHeight / 2
         const flagWidth = flag.width * flagHeight / flag.height
-        drawImageIfNotTesting(ctx, canvases.length, flag, padAround + offset, start + offset, flagWidth, flagHeight, TestUtils.shared.isTesting)
+        drawImageIfNotTesting(ctx, canvases.length, flag, padAround + offset, start + offset, flagWidth, flagHeight)
     }
 
     canvas.toBlob(function (blob) {
