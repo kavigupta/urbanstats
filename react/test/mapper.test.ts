@@ -67,7 +67,7 @@ testCode(() => test, 'Urban Center', 'USA', translucentOutline, 'translucent-out
 const codeWithRegression = `
 regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population);
 condition (population > 200000)
-cMap(data=regr.residuals, scale=linearScale(center=0, max=0.1), ramp=rampUridis, label="Commute Transit % above or below prediction based on density", basemap=noBasemap())
+cMap(data=regr.residuals, scale=linearScale(center=0, max=0.1), ramp=rampUridis, label="Commute Transit %  above or below prediction based on density", basemap=noBasemap())
 `
 
 testCode(() => test, 'Urban Center', 'USA', codeWithRegression, 'code-with-regression', true)
@@ -111,5 +111,3 @@ test('mapper-csv-export', async (t) => {
 
     await downloadOrCheckString(t, csvContent, 'csv-export-mapper', 'csv', false)
 })
-
-testCode(() => test, 'Subnational Region', 'USA', 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, label="Multiline\\nLabel")', 'multiline-label')

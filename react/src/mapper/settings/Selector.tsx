@@ -85,7 +85,31 @@ export function Selector(props: {
                 onEdit={hasCustomConstructor ? onEdit : undefined}
             />
             {showConstantInput && (
-                isNumber ? <NumberInput currentValue={currentValue} {...props} /> : <TextInput currentValue={currentValue} {...props} />
+                <input
+                    type="text"
+                    value={currentValue}
+                    onChange={(e) => {
+                        const value = e.target.value
+                        let node: (UrbanStatsASTExpression & { type: 'constant' })['value']['node']
+                        let numberValue
+                        if (isNumber && (numberValue = parseNumber(value)) !== undefined) {
+                            node = { type: 'number', value: numberValue }
+                        }
+                        else {
+                            node = { type: 'string', value }
+                        }
+                        const newUss: UrbanStatsASTExpression = {
+                            type: 'constant',
+                            value: {
+                                node,
+                                location: emptyLocation(props.blockIdent),
+                            },
+                        }
+                        props.setUss(newUss)
+                    }}
+                    style={{ width: '200px', fontSize: '14px', padding: '4px 8px' }}
+                    placeholder={isNumber ? 'Enter number' : 'Enter string'}
+                />
             )}
             {colorValue !== undefined && (
                 <input
@@ -132,56 +156,6 @@ export function Selector(props: {
             {select}
             {errorComponent}
         </div>
-    )
-}
-
-function TextInput({ currentValue, blockIdent, setUss }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression) => void }): ReactNode {
-    return (
-        <textarea
-            value={currentValue}
-            onChange={(e) => {
-                const value = e.target.value
-                setUss({
-                    type: 'constant',
-                    value: {
-                        node: { type: 'string', value },
-                        location: emptyLocation(blockIdent),
-                    },
-                })
-            }}
-            style={{ width: '200px', fontSize: '14px', padding: '4px 8px', resize: 'vertical' }}
-            placeholder="Enter string"
-        />
-    )
-}
-
-function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression) => void }): ReactNode {
-    return (
-        <input
-            type="text"
-            value={currentValue}
-            onChange={(e) => {
-                const value = e.target.value
-                let node: (UrbanStatsASTExpression & { type: 'constant' })['value']['node']
-                let numberValue
-                if ((numberValue = parseNumber(value)) !== undefined) {
-                    node = { type: 'number', value: numberValue }
-                }
-                else {
-                    node = { type: 'string', value }
-                }
-                const newUss: UrbanStatsASTExpression = {
-                    type: 'constant',
-                    value: {
-                        node,
-                        location: emptyLocation(blockIdent),
-                    },
-                }
-                setUss(newUss)
-            }}
-            style={{ width: '200px', fontSize: '14px', padding: '4px 8px', resize: 'none' }}
-            placeholder="Enter number"
-        />
     )
 }
 

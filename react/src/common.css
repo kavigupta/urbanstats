@@ -64,10 +64,6 @@ button:disabled {
     text-align: center;
 }
 
-.user_input {
-    white-space: pre-wrap; /* So that multiline strings display */
-}
-
 .h1 {
     font-size: 1.5em;
 }
@@ -95,7 +91,7 @@ input[type=checkbox] {
     vertical-align: middle;
 }
 
-input[type=text], textarea {
+input[type=text] {
     background-color: var(--background);
     border-radius: 5px;
     color: var(--text-main);
