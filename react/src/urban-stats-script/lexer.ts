@@ -78,13 +78,13 @@ const identifierLexer: GenericLexer = {
     parse: (string: string): Token => { return { type: keywords.includes(string) ? 'keyword' : 'identifier', value: string } },
 }
 
-function allOperators(): Set<string> {
+export function allOperators(): string[] {
     const ops = new Set<string>(nonExpressionOperators)
     for (const op of expressionOperatorMap.keys()) {
         ops.add(op)
     }
     // sort operators in descending length order to ensure longest match first
-    return new Set(Array.from(ops).sort((a, b) => b.length - a.length))
+    return Array.from(ops).sort((a, b) => b.length - a.length)
 }
 
 function tokenizeOperators(input: string): string[] | undefined {

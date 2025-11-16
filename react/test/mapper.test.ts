@@ -115,7 +115,7 @@ test('mapper-csv-export', async (t) => {
 testCode(() => test, 'Subnational Region', 'USA', 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, label="Multiline\\nLabel")', 'multiline-label')
 
 const negativeDefaultValue = `
-condition ((white > 0.7) & (density_pw_1km < 1000))
+condition (white > 0.7 & density_pw_1km < 1000)
 cMap(data=pres_2020_margin, scale=linearScale(max=0, min=-0.75), ramp=rampUridis, basemap=noBasemap(backgroundColor=colorBlack), label="2020 Presidential Election Margin, among CCDs with 70%+ white and Density < 1000/km2", unit=unitDemocraticMargin)
 `
 
