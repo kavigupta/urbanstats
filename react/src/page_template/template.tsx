@@ -197,7 +197,7 @@ function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen }:
     const mobileLayout = useMobileLayout()
     const hideSidebarDesktop = useHideSidebarDesktop()
 
-    if (hamburgerOpen && !hideSidebarDesktop) {
+    if (hamburgerOpen && (!hideSidebarDesktop || mobileLayout)) {
         return <LeftPanel setHamburgerOpen={setHamburgerOpen} />
     }
     return (
