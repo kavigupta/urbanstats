@@ -78,18 +78,78 @@ const identifierLexer: GenericLexer = {
     parse: (string: string): Token => { return { type: keywords.includes(string) ? 'keyword' : 'identifier', value: string } },
 }
 
-function isOperator(string: string): boolean {
-    return nonExpressionOperators.includes(string) || expressionOperatorMap.has(string)
+function allOperators(): Set<string> {
+    const ops = new Set<string>(nonExpressionOperators)
+    for (const op of expressionOperatorMap.keys()) {
+        ops.add(op)
+    }
+    // sort operators in descending length order to ensure longest match first
+    return new Set(Array.from(ops).sort((a, b) => b.length - a.length))
+}
+
+function tokenizeOperators(input: string): string[] | undefined {
+    const allOps = allOperators()
+    // console.log(allOps)
+    const tokens: string[] = []
+    let idx = 0
+    while (idx < input.length) {
+        let didMatch = false
+        for (const op of allOps) {
+            if (input.startsWith(op, idx)) {
+                tokens.push(op)
+                idx += op.length
+                didMatch = true
+                break
+            }
+        }
+        if (!didMatch)
+            return undefined
+    }
+    if (idx !== input.length) {
+        return undefined
+    }
+    return tokens
+}
+
+function lexOperators(input: string, idx: number, block: Block, lineNo: number, charIdxOffset: number): [number, AnnotatedToken[]] {
+    const [finalIdx, supertok] = lexGeneric(input, idx, block, lineNo, operatorLexer, charIdxOffset)
+    if (finalIdx === idx) {
+        return [idx, []]
+    }
+    // console.log(supertok)
+    assert(supertok !== undefined, 'unreachable')
+    assert(supertok.token.type === 'operator', 'unreachable')
+    const tokenizedOperators = tokenizeOperators(supertok.token.value)
+    // console.log(tokenizedOperators)
+    if (tokenizedOperators === undefined) {
+        return [finalIdx, [
+            {
+                token: { type: 'error', value: `Invalid operator sequence: ${supertok.token.value}` },
+                location: supertok.location,
+            },
+        ]]
+    }
+    let start = idx
+    const separatedTokens = tokenizedOperators.map((op) => {
+        const location: LocInfo = {
+            start: { block, lineIdx: lineNo, colIdx: start, charIdx: charIdxOffset + start },
+            end: { block, lineIdx: lineNo, colIdx: start + op.length, charIdx: charIdxOffset + start + op.length },
+        }
+        start += op.length
+        return {
+            token: { type: 'operator', value: op },
+            location,
+        } satisfies AnnotatedToken
+    })
+    // console.log(separatedTokens)
+    return [finalIdx, separatedTokens]
 }
 
 const operatorLexer: GenericLexer = {
     firstToken: (ch: string): boolean => operatorCharacters.includes(ch),
     innerToken: (ch: string): boolean => operatorCharacters.includes(ch),
     parse: (string: string): Token => {
-        if (isOperator(string)) {
-            return { type: 'operator', value: string }
-        }
-        return { type: 'error', value: `Invalid operator: ${string}` }
+        return { type: 'operator', value: string }
     },
 }
 
@@ -124,12 +184,20 @@ function lexLine(input: string, block: Block, lineNo: number, charIdxOffset: num
                 continue
             }
         }
-        for (const lexer of [identifierLexer, operatorLexer]) {
+        for (const lexer of [identifierLexer]) {
             let token
             [idx, token] = lexGeneric(input, idx, block, lineNo, lexer, charIdxOffset)
             if (token !== undefined) {
                 tokens.push(token)
                 continue lex
+            }
+        }
+        {
+            let toks
+            [idx, toks] = lexOperators(input, idx, block, lineNo, charIdxOffset)
+            if (toks.length > 0) {
+                tokens.push(...toks)
+                continue
             }
         }
         let token
