@@ -27,10 +27,10 @@ export const defaults = {
 export function deconstruct(textBox: TextBox): UrbanStatsASTExpression {
     const uss = `textBox(
         screenBounds={
-            north: ${textBox.topRight[1]},
-            east: ${textBox.topRight[0]},
-            south: ${textBox.bottomLeft[1]},
-            west: ${textBox.bottomLeft[0]}
+            north: ${textBox.topRight[1].toFixed(3)},
+            east: ${textBox.topRight[0].toFixed(3)},
+            south: ${textBox.bottomLeft[1].toFixed(3)},
+            west: ${textBox.bottomLeft[0].toFixed(3)}
         },
         text=${deconstructRichTextDocument(textBox.text)},
         backgroundColor=${deconstructColor(textBox.backgroundColor)},
