@@ -5,7 +5,7 @@ import { Selector } from 'testcafe'
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor } from './editor_test_utils'
 import { checkBox, checkSelector, downloadPNG, getCodeFromMainField, getErrors, getInput, replaceInput, settingsFromURL, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { tempfileName } from './quiz_test_utils'
-import { flaky, getLocation, safeReload, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading } from './test_utils'
+import { getLocation, safeReload, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading } from './test_utils'
 
 const mapper = (testFn: () => TestFn) => (
     name: string,
@@ -332,9 +332,7 @@ mapper(() => test)('preamble checkbox syncs with undo/redo operations', { code: 
     await typeInEditor(t, 0, 'myVar = 42', true)
     await t.expect(preamble.checked).ok()
     await t.pressKey('ctrl+z')
-    await flaky(t, async () => {
-        await t.expect(preamble.checked).notOk()
-    })
+    await t.expect(preamble.checked).notOk()
     await t.pressKey('ctrl+y')
     await t.expect(preamble.checked).ok()
     await t.pressKey('ctrl+z')

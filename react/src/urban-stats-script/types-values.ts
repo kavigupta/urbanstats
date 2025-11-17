@@ -5,7 +5,9 @@ import { UrbanStatsASTExpression } from './ast'
 import { Color, deconstructColor, hexToColor } from './constants/color-utils'
 import { CMap, CMapRGB, Outline, PMap } from './constants/map'
 import { RampT } from './constants/ramp'
+import { RichTextAttributes, RichTextDocument, RichTextSegment } from './constants/rich-text'
 import { Scale } from './constants/scale'
+import { TextBox } from './constants/text-box'
 import { Context } from './context'
 import { noLocation } from './location'
 import { unparse } from './parser'
@@ -29,6 +31,11 @@ export type USSOpaqueValue =
     | { type: 'opaque', opaqueType: 'basemap', value: Basemap }
     | { type: 'opaque', opaqueType: 'geoFeatureHandle', value: string }
     | { type: 'opaque', opaqueType: 'geoCentroidHandle', value: string }
+    | { type: 'opaque', opaqueType: 'textBox', value: TextBox }
+    | { type: 'opaque', opaqueType: 'richTextDocument', value: RichTextDocument }
+    | { type: 'opaque', opaqueType: 'richTextSegment', value: RichTextSegment }
+    | { type: 'opaque', opaqueType: 'richTextList', value: RichTextAttributes['list'] }
+    | { type: 'opaque', opaqueType: 'richTextAlign', value: RichTextAttributes['align'] }
 
 interface USSNumberType {
     type: 'number'
@@ -121,7 +128,7 @@ export type USSRawValue = (
     USSOpaqueValue
 )
 
-export const constantCategories = ['basic', 'color', 'math', 'regression', 'mapper', 'logic', 'map', 'scale', 'ramp', 'unit', 'inset'] as const
+export const constantCategories = ['basic', 'color', 'math', 'regression', 'mapper', 'logic', 'map', 'scale', 'ramp', 'unit', 'inset', 'richText'] as const
 
 export type ConstantCategory = typeof constantCategories[number]
 
@@ -366,6 +373,11 @@ export function renderValue(input: USSValue): string {
                     case 'geoFeatureHandle':
                     case 'geoCentroidHandle':
                     case 'unit':
+                    case 'textBox':
+                    case 'richTextDocument':
+                    case 'richTextSegment':
+                    case 'richTextAlign':
+                    case 'richTextList':
                         return `[${opaqueValue.opaqueType} object]`
                     case 'color':
                         return deconstructColor(opaqueValue.value)
