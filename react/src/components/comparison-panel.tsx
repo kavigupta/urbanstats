@@ -450,7 +450,7 @@ function ComparisonMultiMap(props: { longnames: string[], colors: string[], mapP
 }
 
 function ComparisonMap({ longnames, colors, attribution }: { longnames: string[], colors: string[], attribution: boolean }): ReactNode {
-    const mapRef = useRef<MapRef>(null)
+    const [mapRef, setMapRef] = useState<MapRef | null>(null)
 
     const features = useMemo(() => polygonFeatureCollection(longnames.map((longname, i) => ({
         name: longname,
@@ -466,7 +466,7 @@ function ComparisonMap({ longnames, colors, attribution }: { longnames: string[]
         <div style={{ position: 'relative' }}>
             <CommonMaplibreMap
                 id={id}
-                ref={mapRef}
+                ref={setMapRef}
                 attributionControl={false}
             >
                 <PolygonFeatureCollection features={readyFeatures} clickable={true} />
@@ -478,7 +478,7 @@ function ComparisonMap({ longnames, colors, attribution }: { longnames: string[]
     )
 }
 
-export function ComparisonMapButtons({ longnames, colors, features, mapRef }: { longnames: string[], colors: string[], features: (GeoJSON.Feature | typeof waiting)[], mapRef: React.RefObject<MapRef> }): ReactNode {
+export function ComparisonMapButtons({ longnames, colors, features, mapRef }: { longnames: string[], colors: string[], features: (GeoJSON.Feature | typeof waiting)[], mapRef: MapRef | null }): ReactNode {
     const systemColors = useColors()
     const isScreenshot = useScreenshotMode()
 
@@ -488,12 +488,12 @@ export function ComparisonMapButtons({ longnames, colors, features, mapRef }: { 
 
     const click = (i: number): void => {
         if (features[i] !== waiting) {
-            mapRef.current!.fitBounds(boundingBox(features[i].geometry), { animate: true, padding: defaultMapPadding })
+            mapRef?.fitBounds(boundingBox(features[i].geometry), { animate: true, padding: defaultMapPadding })
         }
     }
 
     const zoomToAll = (): void => {
-        mapRef.current?.fitBounds(extendBoxes(features.filter(notWaiting).map(f => boundingBox(f.geometry))), { animate: true, padding: defaultMapPadding })
+        mapRef?.fitBounds(extendBoxes(features.filter(notWaiting).map(f => boundingBox(f.geometry))), { animate: true, padding: defaultMapPadding })
     }
 
     return (

@@ -922,6 +922,6 @@ export function parseNoErrorAsCustomNode(uss: string, blockId: string, expectedT
 
 export function parseNoErrorAsExpression(uss: string, blockId: string): UrbanStatsASTExpression {
     const result = parseNoError(uss, blockId)
-    assert(result.type === 'expression', 'Must be expression')
+    assert(result.type === 'expression', `Must be expression, got ${JSON.stringify(result)}`)
     return result.value
 }

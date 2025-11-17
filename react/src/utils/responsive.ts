@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react'
 import { useColors } from '../page_template/colors'
 
 export function isMobileLayout(): boolean {
-    return window.innerWidth <= 1100
+    return document.documentElement.clientWidth <= 1100
 }
 
 export function useMobileLayout(): boolean {
