@@ -1,3 +1,5 @@
+import { round } from 'mathjs'
+
 import insets from '../../data/insets'
 import { UrbanStatsASTExpression } from '../ast'
 import { Context } from '../context'
@@ -140,7 +142,7 @@ function computeInsetConstantName(name: string): string {
 }
 
 export function deconstruct(inset: typeof insets[keyof typeof insets][number] | Inset): UrbanStatsASTExpression {
-    const uss = `constructInset(screenBounds={ north: ${inset.topRight[1].toFixed(3)}, east: ${inset.topRight[0].toFixed(3)}, south: ${inset.bottomLeft[1].toFixed(3)}, west: ${inset.bottomLeft[0].toFixed(3)} }, mapBounds={ north: ${inset.coordBox[3].toFixed(3)}, east: ${inset.coordBox[2].toFixed(3)}, south: ${inset.coordBox[1].toFixed(3)}, west: ${inset.coordBox[0].toFixed(3)} }, mainMap=${inset.mainMap}, name="${inset.name}")`
+    const uss = `constructInset(screenBounds={ north: ${round(inset.topRight[1], 3)}, east: ${round(inset.topRight[0], 3)}, south: ${round(inset.bottomLeft[1], 3)}, west: ${round(inset.bottomLeft[0], 3)} }, mapBounds={ north: ${round(inset.coordBox[3], 3)}, east: ${round(inset.coordBox[2], 3)}, south: ${round(inset.coordBox[1], 3)}, west: ${round(inset.coordBox[0], 3)} }, mainMap=${inset.mainMap}, name="${inset.name}")`
     return parseNoErrorAsExpression(uss, '')
 }
 

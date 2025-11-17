@@ -1,6 +1,8 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
+import { round } from 'mathjs'
+
 import { Color, deconstructColor, doRender } from '../src/urban-stats-script/constants/color-utils'
 import { constantsByType, defaultConstants } from '../src/urban-stats-script/constants/constants'
 import { Context } from '../src/urban-stats-script/context'
@@ -597,7 +599,7 @@ function roundNumbers(obj: unknown): unknown {
         return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, roundNumbers(v)]))
     }
     if (typeof obj === 'number') {
-        return Number(obj.toFixed(3))
+        return round(obj, 3)
     }
     return obj
 }
