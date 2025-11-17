@@ -136,6 +136,7 @@ export default tseslint.config(
                 'Literal[value=/^rgba\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*[0-9.]+\\)$/]', // RGBA colors
                 'Literal[value=/^(red|green|blue|yellow|orange|purple|pink|brown|black|white|gray|grey|cyan|magenta|lime|navy|olive|teal|aqua|fuchsia|maroon|silver)$/i]', // Named colors
                 'CallExpression[callee.name=quizAuthFixture]', // All must be in one file
+                'CallExpression[callee.name=useRef][typeArguments.params.0.typeName.name=MapRef]', // Use state instead to avoid races
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',
