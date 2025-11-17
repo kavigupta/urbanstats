@@ -13,6 +13,7 @@ import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import type { DataCreditPanel } from '../data-credit'
 import { loadJSON, loadStatisticsPage } from '../load_json'
+import type { DebugMapTextBoxPanel } from '../mapper/components/DebugMapTextBox'
 import type { MapperPanel } from '../mapper/components/MapperPanel'
 import type { MapSettings } from '../mapper/settings/utils'
 import { Settings } from '../page_template/settings'
@@ -145,6 +146,7 @@ const mapperSchemaForParams = z.object({
 
 const editorSchema = z.object({
     undoChunking: z.optional(z.coerce.number().int()),
+    mode: z.optional(z.enum(['uss', 'mapper'])),
 })
 
 export const pageDescriptorSchema = z.union([
@@ -188,7 +190,7 @@ export type PageData =
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
     | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel, counts: CountsByUT }
-    | { kind: 'editor', editorPanel: typeof DebugEditorPanel, undoChunking?: number }
+    | { kind: 'editor', editorPanel: typeof DebugEditorPanel | typeof DebugMapTextBoxPanel, undoChunking?: number }
     | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true }, oauthCallbackPanel: typeof OauthCallbackPanel }
     | {
         kind: 'error'
@@ -341,7 +343,10 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             break
         case 'editor':
             pathname = '/editor.html'
-            searchParams = {}
+            searchParams = {
+                mode: pageDescriptor.mode,
+                undoChunking: pageDescriptor.undoChunking?.toString(),
+            }
             break
         case 'oauthCallback':
             pathname = '/oauth-callback.html'
@@ -553,7 +558,9 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             return {
                 pageData: {
                     ...newDescriptor,
-                    editorPanel: (await import('../urban-stats-script/DebugEditorPanel')).DebugEditorPanel,
+                    editorPanel: newDescriptor.mode === 'mapper'
+                        ? (await import('../mapper/components/DebugMapTextBox')).DebugMapTextBoxPanel
+                        : (await import('../urban-stats-script/DebugEditorPanel')).DebugEditorPanel,
                 },
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,

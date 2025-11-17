@@ -10,17 +10,20 @@ import { loadProtobuf } from '../load_json'
 import { boundingBox, geometry } from '../map-partition'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
 import { LongLoad } from '../navigation/loading'
+import { OverrideTheme } from '../page_template/colors'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color-utils'
 import { Inset } from '../urban-stats-script/constants/insets'
 import { instantiate } from '../urban-stats-script/constants/scale'
+import { TextBox } from '../urban-stats-script/constants/text-box'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { USSOpaqueValue } from '../urban-stats-script/types-values'
 import { loadInsets } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
+import { editIndex, EditSeq } from '../utils/array-edits'
 import { furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { ConsolidatedShapes, Feature, ICoordinate } from '../utils/protos'
@@ -29,18 +32,8 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { Colorbar, RampToDisplay } from './components/Colorbar'
 import { InsetMap } from './components/InsetMap'
+import { AddTextBox, MapTextBoxComponent } from './components/MapTextBox'
 import { computeUSS, MapSettings } from './settings/utils'
-
-type EditMultipleInsets = (index: number, newInset: Partial<Inset>) => void
-interface EditInsets {
-    modify: EditMultipleInsets
-    editedInsets: Inset[]
-    add: () => void
-    delete: (i: number) => void
-    duplicate: (i: number) => void
-    moveUp: (i: number) => void
-    moveDown: (i: number) => void
-}
 
 const mapUpdateInterval = 500
 
@@ -81,7 +74,7 @@ export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
             }
 }
 
-type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditInsets })
+type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditSeq<Inset> } | { mode: 'textBoxes', editTextBoxes: EditSeq<TextBox> })
 
 export interface MapGenerator<T = unknown> {
     ui: (props: MapUIProps<T>) => { node: ReactNode, exportPng?: () => Promise<string> }
@@ -136,7 +129,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         const mapsContainerRef = useRef<HTMLDivElement>(null)
         const wholeRenderRef = useRef<HTMLDivElement>(null)
 
-        const insetsFeatures = (props.mode === 'insets' ? props.editInsets.editedInsets : mapResultMain.value.insets).flatMap((inset) => {
+        const insetsFeatures = (props.mode === 'insets' ? props.editInsets.edited : mapResultMain.value.insets).flatMap((inset) => {
             const insetFeatures = filterOverlaps(inset, features)
             if (insetFeatures.length === 0 && props.mode !== 'insets') {
                 return []
@@ -157,15 +150,9 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                     container={mapsContainerRef}
                     numInsets={insets.length}
                     editInset={props.mode === 'insets'
-                        ? {
-                                modify: (newInset: Partial<Inset>) => { props.editInsets.modify(i, newInset) },
-                                delete: () => { props.editInsets.delete(i) },
-                                duplicate: () => { props.editInsets.duplicate(i) },
-                                add: props.editInsets.add,
-                                moveUp: () => { props.editInsets.moveUp(i) },
-                                moveDown: () => { props.editInsets.moveDown(i) },
-                            }
+                        ? editIndex(props.editInsets, i)
                         : undefined}
+                    interactive={props.mode !== 'textBoxes'}
                 >
                     {mapChildren(insetFeatures, ['uss', 'view'].includes(props.mode))}
                 </InsetMap>
@@ -213,6 +200,23 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             })
         })
 
+        const textBoxes = props.mode === 'insets'
+            ? undefined
+            : (
+                    <OverrideTheme theme="Light Mode">
+                        {(props.mode === 'textBoxes' ? props.editTextBoxes.edited : mapResultMain.value.textBoxes).map((textBox, i, boxes) => (
+                            <MapTextBoxComponent
+                                container={mapsContainerRef}
+                                key={i}
+                                textBox={textBox}
+                                i={i}
+                                count={boxes.length}
+                                edit={props.mode === 'textBoxes' ? editIndex(props.editTextBoxes, i) : undefined}
+                            />
+                        )).concat(props.mode === 'textBoxes' ? [<AddTextBox key="add" container={mapsContainerRef} add={props.editTextBoxes.add} />] : [])}
+                    </OverrideTheme>
+                )
+
         return (
             <ScreenshotContext.Provider value={screenshotMode}>
                 <MapLayout
@@ -222,6 +226,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                     aspectRatio={computeAspectRatioForInsets(visibleInsets)}
                     mapsContainerRef={mapsContainerRef}
                     wholeRenderRef={wholeRenderRef}
+                    textBoxes={textBoxes}
                 />
             </ScreenshotContext.Provider>
         )
@@ -247,8 +252,9 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
     }
 }
 
-function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, wholeRenderRef }: {
+function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, wholeRenderRef, textBoxes }: {
     maps: ReactNode
+    textBoxes: ReactNode
     colorbar: ReactNode
     loading: boolean
     mapsContainerRef?: React.Ref<HTMLDivElement>
@@ -280,6 +286,7 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, who
                         }}
                     >
                         {maps}
+                        {textBoxes}
                     </div>
                 </div>
                 {colorbar}
@@ -312,10 +319,12 @@ function EmptyMapLayout({ universe, loading }: { universe?: Universe, loading: b
                     inset={inset}
                     container={React.createRef()}
                     numInsets={insets.length}
+                    interactive={false}
                 >
                     {null}
                 </InsetMap>
             ))}
+            textBoxes={null}
             loading={loading}
             colorbar={null}
             aspectRatio={computeAspectRatioForInsets(insets)}

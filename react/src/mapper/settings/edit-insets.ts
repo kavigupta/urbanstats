@@ -1,15 +1,15 @@
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
-import { deconstruct, Inset } from '../../urban-stats-script/constants/insets'
+import { deconstruct as deconstructInset, Inset } from '../../urban-stats-script/constants/insets'
+import * as l from '../../urban-stats-script/literal-parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { loadInsets, loadInsetExpression } from '../../urban-stats-script/worker'
 import { ArrayEdits, replace, swap } from '../../utils/array-edits'
 import { assert } from '../../utils/defensive'
 
-import * as l from './../../urban-stats-script/literal-parser'
 import { idOutput, MapUSS, validMapperOutputs } from './TopLevelEditor'
 import { MapSettings } from './utils'
 
-const neswSchema = l.object({
+export const neswSchema = l.object({
     north: l.number(),
     east: l.number(),
     south: l.number(),
@@ -73,7 +73,7 @@ export interface InsetEdits {
 export function replaceInsets(edits: InsetEdits, [from, to]: [number, number], withArray: Inset[]): InsetEdits {
     return {
         insets: replace(edits.insets, [from, to], withArray),
-        ast: replace(edits.ast, [from, to], withArray.map(deconstruct)),
+        ast: replace(edits.ast, [from, to], withArray.map(deconstructInset)),
     }
 }
 

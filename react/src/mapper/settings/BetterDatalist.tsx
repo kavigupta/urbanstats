@@ -3,55 +3,21 @@ import React, { ReactNode, useState, useEffect, useRef, useMemo, CSSProperties }
 
 import { useColors } from '../../page_template/colors'
 import { IFrameInput } from '../../utils/IFrameInput'
-import { toNeedle } from '../../utils/bitap'
-import { bitap } from '../../utils/bitap-selector'
 
 import '../../common.css'
 
 export const labelPadding = '4px'
 
-const maxErrors = 31
+export interface RenderResult { text: string, node?: (highlighted: boolean) => ReactNode }
 
-export interface SelectorRenderResult { text: string, node?: (highlighted: boolean) => ReactNode }
+export const cannotParse = Symbol('cannotParse')
 
-function PencilButton({ onEdit }: { onEdit: () => void }): ReactNode {
-    const size = { width: '20px', height: '20px' }
-    const colors = useColors()
-    return (
-        <button
-            style={{
-                border: 'none',
-                cursor: 'pointer',
-                padding: '0 0',
-                marginLeft: '4px',
-                opacity: 0.7,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                ...size,
-            }}
-            onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                onEdit()
-            }}
-            title="Edit"
-        >
-            <img
-                src={colors.pencilIcon}
-                alt="Edit"
-                style={{ ...size }}
-            />
-        </button>
-    )
-}
-
-export function BetterSelector<T>({ value, onChange, possibleValues, renderValue, onEdit, iframe = false, inputStyle, disabled = false, onBlur }: {
+export function BetterDatalist<T>({ value, onChange, parse, possibleValues, renderValue, iframe = false, inputStyle, disabled = false, onBlur }: {
     value: T
     onChange: (newValue: T) => void
+    parse: (string: string) => T | typeof cannotParse
     possibleValues: readonly T[] // Memo this for performance
-    renderValue: (v: T) => SelectorRenderResult // Memo this for performance
-    onEdit?: () => void
+    renderValue: (v: T) => RenderResult // Memo this for performance
     iframe?: boolean
     inputStyle?: CSSProperties
     disabled?: boolean
@@ -74,30 +40,7 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
         setSearchValue(selectedRendered.text)
     }, [selectedRendered.text])
 
-    const { bitapBuffers, options } = useMemo(() => {
-        const optionsResult = possibleValues.map((choice, index) => ({ renderedChoice: renderValue(choice), index }))
-
-        const longestSelectionPossibility = optionsResult.reduce((acc, poss) => Math.max(acc, poss.renderedChoice.text.toLowerCase().length), 0)
-        const bitapBuffersResult = Array.from({ length: maxErrors + 1 }, () => new Uint32Array(31 + longestSelectionPossibility + 1))
-
-        return {
-            options: optionsResult,
-            bitapBuffers: bitapBuffersResult,
-        }
-    }, [possibleValues, renderValue])
-
-    const sortedOptions = useMemo(() => {
-        const needle = toNeedle(searchValue.toLowerCase().slice(0, 31))
-
-        return options.sort((a, b) => {
-            const aScore = bitap(a.renderedChoice.text.toLowerCase(), needle, maxErrors, bitapBuffers)
-            const bScore = bitap(b.renderedChoice.text.toLowerCase(), needle, maxErrors, bitapBuffers)
-            if (aScore === bScore) {
-                return a.renderedChoice.text.length - b.renderedChoice.text.length
-            }
-            return aScore - bScore
-        })
-    }, [bitapBuffers, searchValue, options])
+    const sortedOptions = useMemo(() => possibleValues.map((choice, index) => ({ renderedChoice: renderValue(choice), index })), [possibleValues, renderValue])
 
     const handleOptionSelect = (option: typeof sortedOptions[number]): void => {
         const newValue = possibleValues[option.index]
@@ -127,14 +70,21 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                 break
             case 'Enter':
                 e.preventDefault()
-                if (highlightedIndex >= 0 && highlightedIndex < sortedOptions.length) {
-                    handleOptionSelect(sortedOptions[highlightedIndex])
+                const parsed = parse(searchValue)
+                if (parsed !== cannotParse) {
+                    if (stableStringify(parsed) !== stableStringify(value)) {
+                        onChange(parsed)
+                    }
+                    setIsOpen(false)
+                    setHighlightedIndex(0)
+                    inputRef.current!.blur()
                 }
                 break
             case 'Escape':
                 e.preventDefault()
                 setIsOpen(false)
                 setHighlightedIndex(0)
+                setSearchValue(renderValue(value).text)
                 break
         }
     }
@@ -143,7 +93,7 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
     const InputElem = iframe ? IFrameInput : 'input'
 
     return (
-        <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '50px' }}>
             <InputElem
                 ref={inputRef}
                 type="text"
@@ -174,16 +124,15 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                 }}
                 placeholder="Search options..."
                 style={{
-                    flex: 1,
+                    width: '100%',
                     padding: `${labelPadding} 8px`,
-                    border: `1px solid ${colors.ordinalTextColor}`,
+                    border: `1px solid ${parse(searchValue) === cannotParse ? colors.hueColors.red : colors.ordinalTextColor}`,
                     borderRadius: '4px',
                     fontSize: '14px',
                     ...inputStyle,
                 }}
                 disabled={disabled}
             />
-            {onEdit && <PencilButton onEdit={onEdit} />}
             {isOpen && sortedOptions.length > 0 && (
                 <div
                     style={{
@@ -214,7 +163,6 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                             style={{
                                 cursor: 'pointer',
                                 borderBottom: index < sortedOptions.length - 1 ? '1px solid #eee' : 'none',
-                                overflow: 'hidden',
                             }}
                             onMouseEnter={() => { setHighlightedIndex(index) }}
                         >

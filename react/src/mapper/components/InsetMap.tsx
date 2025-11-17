@@ -6,22 +6,17 @@ import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from '../..
 import { useColors } from '../../page_template/colors'
 import { Inset } from '../../urban-stats-script/constants/insets'
 import { TestUtils } from '../../utils/TestUtils'
+import { Edit } from '../../utils/array-edits'
 
 // eslint-disable-next-line no-restricted-syntax -- Forward Ref
-function _InsetMap({ inset, children, editInset, container, i, numInsets }: {
+function _InsetMap({ inset, children, editInset, container, i, numInsets, interactive }: {
     inset: Inset
     children: ReactNode
     container: RefObject<HTMLDivElement>
-    editInset?: {
-        modify: (newInset: Partial<Inset>) => void
-        duplicate: () => void
-        delete: () => void
-        add: () => void
-        moveUp: () => void
-        moveDown: () => void
-    }
+    editInset?: Edit<Inset>
     i: number
     numInsets: number
+    interactive: boolean
 }, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
 
@@ -49,6 +44,7 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets }: {
                     height: undefined,
                 }}
                 attributionControl={false}
+                interactive={interactive}
             >
                 {children}
                 <HandleInsets
@@ -144,9 +140,9 @@ function isFullScreenInset(inset: Inset): boolean {
         && Math.abs(inset.topRight[1] - 1) < tolerance
 }
 
-function EditInsetsHandles(props: {
+export function EditInsetsHandles(props: {
     frame: Frame
-    setFrame: (newFrame: Frame) => void
+    setFrame?: (newFrame: Frame) => void
     container: RefObject<HTMLDivElement>
     delete?: () => void
     duplicate?: () => void
@@ -213,7 +209,7 @@ function EditInsetsHandles(props: {
                     newFrame = [resizedFrame[0], drag.startFrame[1], drag.startFrame[2], resizedFrame[3]]
                     break
             }
-            props.setFrame(newFrame)
+            props.setFrame!(newFrame)
         },
         'onPointerUp': (e: React.PointerEvent) => {
             if (activeDrag.current?.pointerId !== e.pointerId) {
@@ -231,11 +227,11 @@ function EditInsetsHandles(props: {
 
     return (
         <>
-            <Handle handleSize={15} style={{ right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />
-            <Handle handleSize={15} style={{ right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />
-            <Handle handleSize={15} style={{ left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />
-            <Handle handleSize={15} style={{ left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />
-            {props.shouldHaveCenterHandle && (
+            {props.setFrame && <Handle handleSize={15} style={{ right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />}
+            {props.setFrame && <Handle handleSize={15} style={{ right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />}
+            {props.setFrame && <Handle handleSize={15} style={{ left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />}
+            {props.setFrame && <Handle handleSize={15} style={{ left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />}
+            {props.setFrame && props.shouldHaveCenterHandle && (
                 <Handle handleSize={20} style={{ margin: 'auto', left: `calc(50% - 10px)`, top: `calc(50% - 10px)`, cursor: 'move' }} {...pointerHandlers('move')} />
             )}
             {props.duplicate && (
