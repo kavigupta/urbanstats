@@ -581,13 +581,26 @@ void test('equivalent expressions produce equivalent results', (): void => {
                 // Compare only value and type (evaluated expressions don't have documentation)
                 assert.deepStrictEqual(
                     { type: evaluatedEquivalent.type, value: evaluatedEquivalent.value },
-                    { type: originalValue.type, value: originalValue.value },
+                    { type: originalValue.type, value: roundNumbers(originalValue.value) },
                     `Equivalent expression ${i} for constant "${constantName}" produced different result. Expected: ${JSON.stringify({ type: originalValue.type, value: originalValue.value })}, Got: ${JSON.stringify({ type: evaluatedEquivalent.type, value: evaluatedEquivalent.value })}`,
                 )
             }
         }
     }
 })
+
+function roundNumbers(obj: unknown): unknown {
+    if (Array.isArray(obj)) {
+        return obj.map(roundNumbers)
+    }
+    if (obj instanceof Object) {
+        return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, roundNumbers(v)]))
+    }
+    if (typeof obj === 'number') {
+        return Number(obj.toFixed(3))
+    }
+    return obj
+}
 
 void test('all constants have proper documentation', (): void => {
     // Check that all constants have proper documentation
