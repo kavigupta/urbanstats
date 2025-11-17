@@ -61,10 +61,10 @@ export function hsvColorExpression(color: Color, { forceAlpha, round }: { forceA
 
 export function deconstructColor(color: Color): string {
     if ('r' in color) {
-        return drawFunction('rgb', color.r, color.g, color.b, color.a)
+        return drawFunction('rgb', color.r, color.g, color.b, color.a, 3)
     }
     if ('h' in color) {
-        return drawFunction('hsv', color.h, color.s, color.v, color.a)
+        return drawFunction('hsv', color.h, color.s, color.v, color.a, 3)
     }
     throw new Error()
 }
