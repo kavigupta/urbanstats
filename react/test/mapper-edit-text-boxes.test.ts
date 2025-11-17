@@ -122,7 +122,7 @@ test('change background color, border color, border width, insert images, insert
     await toggleCustomScript(t)
 
     // Verify the expected code
-    const expected = 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, textBoxes=[textBox(screenBounds={north: 0.75, east: 0.75, south: 0.25, west: 0.25}, text=rtfDocument([rtfString("some stuff", size=24, color=rgb(0, 0, 0)), rtfString(" ", size=24, color=rgb(0, 1, 0)), rtfFormula("E=mc^2 + AI", size=24, color=rgb(0, 1, 0)), rtfImage("https://http.cat/images/301.jpg", size=24, color=rgb(0, 1, 0)), rtfString("\\n")]))])\n'
+    const expected = 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, textBoxes=[textBox(screenBounds={north: 0.75, east: 0.75, south: 0.25, west: 0.25}, text=rtfDocument([rtfString("some stuff", size=24, color=rgb(0, 0, 0)), rtfString(" ", size=24, color=rgb(0, 1, 0)), rtfFormula("E=mc^2 + AI", size=24, color=rgb(0, 1, 0)), rtfImage("https://http.cat/images/301.jpg", size=24, color=rgb(0, 1, 0)), rtfString("\\n")]), backgroundColor=rgb(0, 0, 1), borderColor=rgb(1, 0, 0), borderWidth=5)])\n'
     nastyDiff(await getCodeFromMainField(), expected)
 
     // Reopen dialog, duplicate, delete, and finalize changes
