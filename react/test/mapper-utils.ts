@@ -104,5 +104,5 @@ export function nastyDiff(actual: string, expected: string): void {
         process.stdout.write(chalkTemplate`{${color} ${part.value}}`)
     })
 
-    throw new Error('strings different')
+    throw new Error(`strings different\n${actual}`)
 }
