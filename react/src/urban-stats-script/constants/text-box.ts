@@ -1,3 +1,5 @@
+import { round } from 'mathjs'
+
 import { colorThemes } from '../../page_template/color-themes'
 import { UrbanStatsASTExpression } from '../ast'
 import { Context } from '../context'
@@ -27,10 +29,10 @@ export const defaults = {
 export function deconstruct(textBox: TextBox): UrbanStatsASTExpression {
     const uss = `textBox(
         screenBounds={
-            north: ${textBox.topRight[1].toFixed(3)},
-            east: ${textBox.topRight[0].toFixed(3)},
-            south: ${textBox.bottomLeft[1].toFixed(3)},
-            west: ${textBox.bottomLeft[0].toFixed(3)}
+            north: ${round(textBox.topRight[1], 3)},
+            east: ${round(textBox.topRight[0], 3)},
+            south: ${round(textBox.bottomLeft[1], 3)},
+            west: ${round(textBox.bottomLeft[0], 3)}
         },
         text=${deconstructRichTextDocument(textBox.text)},
         backgroundColor=${deconstructColor(textBox.backgroundColor)},
