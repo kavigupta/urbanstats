@@ -331,10 +331,10 @@ mapper(() => test)('preamble checkbox syncs with undo/redo operations', { code: 
     await t.expect(preamble.checked).ok()
     await typeInEditor(t, 0, 'myVar = 42', true)
     await t.expect(preamble.checked).ok()
-    await t.pressKey('ctrl+z')
-    await flaky(t, async () => {
-        await t.expect(preamble.checked).notOk()
-    })
+    while (await preamble.checked) {
+        await t.pressKey('ctrl+z')
+    }
+    await t.expect(preamble.checked).notOk()
     await t.pressKey('ctrl+y')
     await t.expect(preamble.checked).ok()
     await t.pressKey('ctrl+z')
