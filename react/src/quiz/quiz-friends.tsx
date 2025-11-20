@@ -354,6 +354,38 @@ function PlayerScore(props: { result: ResultToDisplayForFriends, otherResults: R
     )
 }
 
+function FriendNameEditor(props: {
+    friendName: string
+    index: number
+    quizFriends: QuizFriends
+    setQuizFriends: (quizFriends: QuizFriends) => void
+    onError?: (error: string | undefined) => void
+}): ReactNode {
+    const renameFriend = (name: string): void => {
+        if (name === '') {
+            props.onError?.('Friend name cannot be empty')
+            return
+        }
+        if (props.quizFriends.map(x => x[0]).includes(name)) {
+            props.onError?.('Friend name already exists')
+            return
+        }
+        const newQuizFriends = [...props.quizFriends]
+        newQuizFriends[props.index] = [name, props.quizFriends[props.index][1], Date.now()]
+        props.setQuizFriends(newQuizFriends)
+        props.onError?.(undefined)
+    }
+
+    return (
+        <EditableString
+            content={props.friendName}
+            onNewContent={renameFriend}
+            style={{ width: '100%', height: '100%' }}
+            inputMode="text"
+        />
+    )
+}
+
 function MeanStatisticsRow(props: {
     index: number
     friendScore: FriendScore
@@ -382,15 +414,11 @@ function MeanStatisticsRow(props: {
                             'You'
                         )
                     : (
-                            <EditableString
-                                content={friendName}
-                                onNewContent={(name) => {
-                                    const newQuizFriends = [...props.quizFriends]
-                                    newQuizFriends[props.index] = [name, props.quizFriends[props.index][1], Date.now()]
-                                    props.setQuizFriends(newQuizFriends)
-                                }}
-                                style={{ width: '100%', height: '100%' }}
-                                inputMode="text"
+                            <FriendNameEditor
+                                friendName={friendName}
+                                index={props.index}
+                                quizFriends={props.quizFriends}
+                                setQuizFriends={props.setQuizFriends}
                             />
                         )}
             </div>
@@ -440,21 +468,6 @@ function FriendScoreRow(props: {
     const [error, setError] = useState<string | undefined>(undefined)
     const [loading, setLoading] = useState(false)
 
-    const renameFriend = (name: string): void => {
-        if (name === '') {
-            setError('Friend name cannot be empty')
-            return
-        }
-        if (props.quizFriends.map(x => x[0]).includes(name)) {
-            setError('Friend name already exists')
-            return
-        }
-        const newQuizFriends = [...props.quizFriends]
-        newQuizFriends[props.index] = [name, props.quizFriends[props.index][1], Date.now()]
-        props.setQuizFriends(newQuizFriends)
-        setError(undefined)
-    }
-
     const removeFriend = async (): Promise<void> => {
         setLoading(true)
         try {
@@ -474,11 +487,12 @@ function FriendScoreRow(props: {
             className="testing-friends-section"
         >
             <div style={{ width: '25%' }}>
-                <EditableString
-                    content={props.friendScore.name ?? 'Unknown'}
-                    onNewContent={renameFriend}
-                    style={{ width: '100%', height: '100%' }}
-                    inputMode="text"
+                <FriendNameEditor
+                    friendName={props.friendScore.name ?? 'Unknown'}
+                    index={props.index}
+                    quizFriends={props.quizFriends}
+                    setQuizFriends={props.setQuizFriends}
+                    onError={setError}
                 />
             </div>
             <div style={{ width: '50%' }}>
