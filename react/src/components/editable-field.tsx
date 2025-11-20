@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, useRef, useState, useEffect, useCallback } from 'react'
+import React, { CSSProperties, ReactNode, useRef, useState, useEffect } from 'react'
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
 export function EditableString(props: { content: string, onNewContent: (content: string) => void, style: CSSProperties, inputMode: 'text' | 'decimal' }): ReactNode {
@@ -8,31 +8,24 @@ export function EditableString(props: { content: string, onNewContent: (content:
      */
     const contentEditable: React.Ref<HTMLElement> = useRef(null)
     const html = useRef(props.content.toString())
-    // these refs were added for entirely unrelated reasons, to do with fixing a bug where
-    // props.content was not updating properly inside the handleSubmit function.
-    const currentContentRef = useRef(props.content)
-    const onNewContentRef = useRef(props.onNewContent)
     const [, setCounter] = useState(0)
 
-    // Keep refs in sync with props
+    // Otherwise, this component can display the wrong number when props change
     useEffect(() => {
         html.current = props.content.toString()
-        currentContentRef.current = props.content
-        onNewContentRef.current = props.onNewContent
         setCounter(count => count + 1)
-    }, [props.content, props.onNewContent])
+    }, [props.content])
 
     const handleChange = (evt: ContentEditableEvent): void => {
         html.current = evt.target.value
     }
 
-    const handleSubmit = useCallback((): void => {
+    const handleSubmit = (): void => {
         const content = contentEditable.current!.innerText
-        const oldContent = currentContentRef.current
-        if (content !== oldContent) {
-            onNewContentRef.current(content)
+        if (content !== props.content) {
+            props.onNewContent(content)
         }
-    }, [])
+    }
 
     const selectAll = (): void => {
         setTimeout(() => {
@@ -58,7 +51,7 @@ export function EditableString(props: { content: string, onNewContent: (content:
                     e.preventDefault()
                 }
             }}
-            onBlur={() => { handleSubmit () }}
+            onBlur={handleSubmit}
             tagName="span" // Use a custom HTML tag (uses a div by default)
             inputMode={props.inputMode}
             onFocus={selectAll}
@@ -67,12 +60,12 @@ export function EditableString(props: { content: string, onNewContent: (content:
 }
 
 export function EditableNumber(props: { number: number, onNewNumber: (number: number) => void }): ReactNode {
-    const onNewContent = useCallback((content: string): void => {
+    const onNewContent = (content: string): void => {
         const number = parseInt(content)
         if (!Number.isNaN(number) && number !== props.number) {
             props.onNewNumber(number)
         }
-    }, [props])
+    }
     return (
         <EditableString
             content={props.number.toString()}
