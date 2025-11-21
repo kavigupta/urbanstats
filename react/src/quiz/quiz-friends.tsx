@@ -359,21 +359,21 @@ function FriendNameEditor(props: {
     index: number
     quizFriends: QuizFriends
     setQuizFriends: (quizFriends: QuizFriends) => void
-    onError?: (error: string | undefined) => void
+    onError: (error: string | undefined) => void
 }): ReactNode {
     const renameFriend = (name: string): void => {
         if (name === '') {
-            props.onError?.('Friend name cannot be empty')
+            props.onError('Friend name cannot be empty')
             return
         }
         if (props.quizFriends.map(x => x[0]).includes(name)) {
-            props.onError?.('Friend name already exists')
+            props.onError('Friend name already exists')
             return
         }
         const newQuizFriends = [...props.quizFriends]
         newQuizFriends[props.index] = [name, props.quizFriends[props.index][1], Date.now()]
         props.setQuizFriends(newQuizFriends)
-        props.onError?.(undefined)
+        props.onError(undefined)
     }
 
     return (
@@ -396,8 +396,9 @@ function MeanStatisticsRow(props: {
 }): ReactNode {
     const friendName = props.friendScore.name ?? 'Unknown'
     const colors = useColors()
+    const [error, setError] = useState<string | undefined>(undefined)
 
-    return (
+    const content = (
         <div
             style={{
                 display: 'flex',
@@ -419,6 +420,7 @@ function MeanStatisticsRow(props: {
                                 index={props.index}
                                 quizFriends={props.quizFriends}
                                 setQuizFriends={props.setQuizFriends}
+                                onError={setError}
                             />
                         )}
             </div>
@@ -453,6 +455,7 @@ function MeanStatisticsRow(props: {
             </div>
         </div>
     )
+    return <WithError error={error} content={content} />
 }
 
 function FriendScoreRow(props: {
