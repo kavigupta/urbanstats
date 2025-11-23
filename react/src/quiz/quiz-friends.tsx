@@ -6,6 +6,7 @@ import { Navigator } from '../navigation/Navigator'
 import { urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { mixWithBackground } from '../utils/color'
+import { assert } from '../utils/defensive'
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { AuthenticationStateMachine } from './AuthenticationStateMachine'
@@ -17,7 +18,7 @@ import { parseTimeIdentifier } from './statistics'
 export type ResultToDisplayForFriends = { corrects: CorrectPattern | null } | { forThisSeed: number | null, maxScore: number | null, maxScoreSeed: string | null, maxScoreVersion: number | null }
 
 type FriendResponse = { result: ResultToDisplayForFriends, friends: true } | { friends: false }
-type FriendScore = { name?: string } & FriendResponse
+type FriendScore = { name?: string, friendId?: string } & FriendResponse
 type FriendSummaryStats = { friends: true, meanScore: number, numPlays: number, currentStreak: number, maxStreak: number } | { friends: false }
 
 async function juxtaRetroResponse(
@@ -101,7 +102,7 @@ export function QuizFriendsPanel(props: {
                     return
                 }
                 setFriendScores(friendScoresResponse.map(
-                    (x, idx) => ({ name: quizIDtoName[requesters[idx]], ...x }),
+                    (x, idx) => ({ name: quizIDtoName[requesters[idx]], friendId: requesters[idx], ...x }),
                 ))
 
                 // Fetch summary stats for non-infinite quiz kinds
@@ -184,45 +185,49 @@ export function QuizFriendsPanel(props: {
                         )
                     : null}
                 {
-                    friendScores.map((friendScore, idx) => {
-                        const removeFriend = async (): Promise<void> => {
-                            await persistentClient.POST('/juxtastat/unfriend', {
-                                params: {
-                                    header: QuizModel.shared.userHeaders(),
-                                },
-                                body: {
-                                    requestee: props.quizFriends[idx][1],
-                                },
-                            })
-                            const newQuizFriends = props.quizFriends.map<[string | null, string, number] | [string, string]>(tuple => tuple[0] === friendScore.name ? [null, tuple[1], Date.now()] : tuple)
-                            props.setQuizFriends(newQuizFriends)
-                        }
+                    friendScores
+                        .map((friendScore, idx) => {
+                            // Find the actual index in quizFriends by matching the friend ID
+                            const actualIndex = props.quizFriends.findIndex(([, id]) => id === friendScore.friendId)
+                            assert(actualIndex !== -1, 'Friend ID not found in quizFriends')
 
-                        return viewMode === 'today'
-                            ? (
-                                    <FriendScoreRow
-                                        key={idx}
-                                        index={idx}
-                                        friendScore={friendScore}
-                                        quizFriends={props.quizFriends}
-                                        setQuizFriends={props.setQuizFriends}
-                                        otherResults={allResults}
-                                        removeFriend={removeFriend}
-                                    />
-                                )
-                            : (
-                                    <MeanStatisticsRow
-                                        key={idx}
-                                        index={idx}
-                                        friendScore={friendScore}
-                                        summaryStats={friendSummaryStats[idx]}
-                                        quizFriends={props.quizFriends}
-                                        setQuizFriends={props.setQuizFriends}
-                                        removeFriend={removeFriend}
-                                    />
-                                )
-                    },
-                    )
+                            const removeFriend = async (): Promise<void> => {
+                                await persistentClient.POST('/juxtastat/unfriend', {
+                                    params: {
+                                        header: QuizModel.shared.userHeaders(),
+                                    },
+                                    body: {
+                                        requestee: props.quizFriends[actualIndex][1],
+                                    },
+                                })
+                                const newQuizFriends = props.quizFriends.map<[string | null, string, number] | [string, string]>(tuple => tuple[1] === friendScore.friendId ? [null, tuple[1], Date.now()] : tuple)
+                                props.setQuizFriends(newQuizFriends)
+                            }
+
+                            return viewMode === 'today'
+                                ? (
+                                        <FriendScoreRow
+                                            key={friendScore.friendId}
+                                            index={actualIndex}
+                                            friendScore={friendScore}
+                                            quizFriends={props.quizFriends}
+                                            setQuizFriends={props.setQuizFriends}
+                                            otherResults={allResults}
+                                            removeFriend={removeFriend}
+                                        />
+                                    )
+                                : (
+                                        <MeanStatisticsRow
+                                            key={friendScore.friendId}
+                                            index={actualIndex}
+                                            friendScore={friendScore}
+                                            summaryStats={friendSummaryStats[idx]}
+                                            quizFriends={props.quizFriends}
+                                            setQuizFriends={props.setQuizFriends}
+                                            removeFriend={removeFriend}
+                                        />
+                                    )
+                        })
                 }
             </>
             <div style={{ height: '1em' }} />
