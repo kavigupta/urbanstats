@@ -8,9 +8,10 @@ import { sanitize } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
-import { statParents } from '../page_template/statistic-tree'
+import { statParents, Year } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { useUniverse } from '../universe'
+import { assert } from '../utils/defensive'
 import { Article, IRelatedButtons } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
@@ -21,6 +22,7 @@ import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
+import { PlotProps } from './plots'
 import { Related } from './related-button'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
@@ -181,10 +183,19 @@ function ArticleTable(props: {
         onlyColumns,
     })])
 
+    const years = getYearsForRows(props.filteredRows)
+
     const plotSpecs: (PlotSpec | undefined)[] = expandedEach.map((expanded, index) => expanded
         ? {
                 statDescription: props.filteredRows[index].renderedStatname,
-                plotProps: [{ ...props.filteredRows[index], color: colors.hueColors.blue, shortname: props.article.shortname, longname: props.article.longname, sharedTypeOfAllArticles: props.article.articleType }], // TODO add other articles when comparison is implemented
+                plotProps: [{
+                    ...props.filteredRows[index],
+                    color: colors.hueColors.blue,
+                    shortname: props.article.shortname,
+                    longname: props.article.longname,
+                    sharedTypeOfAllArticles: props.article.articleType,
+                    subseriesId: years[index],
+                }],
             }
         : undefined,
     )
@@ -207,6 +218,17 @@ function ArticleTable(props: {
             <ArticleWarnings />
         </div>
     )
+}
+
+export function getYearsForRows(rows: ArticleRow[]): (Year | undefined)[] {
+    const sPs = rows.map(row => statParents.get(row.statpath)!)
+    return sPs.map((sP): Year | undefined => {
+        const isUnique = sPs.filter(other => other.group.id === sP.group.id).length === 1
+        if (isUnique) {
+            return undefined
+        }
+        return sP.year ?? undefined
+    })
 }
 
 export function StatisticHeader(props: {

@@ -12,10 +12,12 @@ import { sanitize } from '../navigation/links'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { rowExpandedKey, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
+import { statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
 import { useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
+import { assert } from '../utils/defensive'
 import { notWaiting, waiting } from '../utils/promiseStream'
 import { Article } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
@@ -23,7 +25,7 @@ import { TransposeContext } from '../utils/transpose'
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
-import { computeNameSpecsWithGroups } from './article-panel'
+import { computeNameSpecsWithGroups, getYearsForRows } from './article-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
@@ -205,7 +207,9 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         return dataByStatArticle[statIndex].find(row => row.extraStat !== undefined) ?? dataByStatArticle[statIndex][0]
     }
 
-    const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].map((row, articleIdx) => ({ ...row, color: colorFromCycle(colors.hueColors, articleIdx), shortname: localArticlesToUse[articleIdx].shortname, longname: localArticlesToUse[articleIdx].longname, sharedTypeOfAllArticles }))
+    const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].flatMap((row, articleIdx) =>
+        pullRelevantPlotProps(dataByArticleStat[articleIdx], statIndex, colorFromCycle(colors.hueColors, articleIdx), localArticlesToUse[articleIdx].shortname, localArticlesToUse[articleIdx].longname, sharedTypeOfAllArticles),
+    )
 
     const longnameHeaderSpecs: CellSpec[] = Array.from({ length: localArticlesToUse.length }).map((_, articleIndex) => (
         {
@@ -379,6 +383,22 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             </PageTemplate>
         </TransposeContext.Provider>
     )
+}
+
+export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
+    const sPs = rows.map(row => statParents.get(row.statpath)!)
+    const sameStatMaybeDiffYearIdxs: number[] = sPs.map((sP, i) => ({ sP, i })).filter(({ sP }) => sP.group.id === sPs[statIndex].group.id).map(({ i }) => i)
+    const overOne = sameStatMaybeDiffYearIdxs.length > 1
+    return sameStatMaybeDiffYearIdxs.map((idx, which) => {
+        return {
+            ...rows[idx],
+            color,
+            shortname,
+            longname,
+            sharedTypeOfAllArticles,
+            subseriesId: overOne ? which : undefined,
+        }
+    })
 }
 
 function getHighlightIndex(rows: ArticleRow[]): number | undefined {
