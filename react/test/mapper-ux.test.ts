@@ -32,7 +32,7 @@ mapper(() => test)('manipulate insets', { code: 'cMap(data=density_pw_1km, scale
     await t.expect(getErrors()).eql([])
     await toggleCustomScript(t)
     await t.expect(getCodeFromMainField()).eql(
-        'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, insets=constructInsets([constructInset(screenBounds={north: 1, east: 1, south: 0, west: 0}, mapBounds={north: 66.54638908819885, east: -13, south: 63.38379679465158, west: -24.54201452954334}, mainMap=true, name="Iceland")]))\n',
+        'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, insets=constructInsets([constructInset(screenBounds={north: 1, east: 1, south: 0, west: 0}, mapBounds={north: 66.546, east: -13, south: 63.384, west: -24.542}, mainMap=true, name="Iceland")]))\n',
     )
 })
 
