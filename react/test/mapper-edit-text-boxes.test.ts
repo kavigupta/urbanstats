@@ -28,7 +28,25 @@ async function changeValue(t: TestController, i: number, from: string, to: strin
     await t.click(Selector('div').withExactText(to))
 }
 
-const expectedNewTextBoxCode = 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, textBoxes=[textBox(screenBounds={north: 0.75, east: 0.75, south: 0.25, west: 0.25}, text=rtfDocument([rtfString("Hello, World!", size=36, font="Courier New", bold=true, underline=true), rtfString("\\n", align=alignCenter), rtfString("This is text", size=36, font="Courier New", bold=true, underline=true), rtfString("\\n", align=alignCenter)]))])\n'
+const expectedNewTextBoxCode = 'cMap('
+    + 'data=density_pw_1km, '
+    + 'scale=linearScale(), '
+    + 'ramp=rampUridis, '
+    + 'textBoxes=['
+    + 'textBox('
+    + 'screenBounds={north: 0.75, east: 0.75, south: 0.25, west: 0.25}, '
+    + 'text=rtfDocument(['
+    + 'rtfString("Hello, World!", size=36, font="Courier New", bold=true, underline=true), '
+    + 'rtfString("\\n", align=alignCenter), '
+    + 'rtfString("This is text", size=36, font="Courier New", bold=true, underline=true), '
+    + 'rtfString("\\n", align=alignCenter)'
+    + ']), '
+    + 'backgroundColor=rgb(1, 0.973, 0.941), '
+    + 'borderColor=rgb(0.2, 0.2, 0.2), '
+    + 'borderWidth=1'
+    + ')'
+    + ']'
+    + ')\n'
 
 test('create a new text box with formatting', async (t) => {
     // Open the "Edit Text Boxes" dialog and add a new text box
@@ -122,7 +140,26 @@ test('change background color, border color, border width, insert images, insert
     await toggleCustomScript(t)
 
     // Verify the expected code
-    const expected = 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, textBoxes=[textBox(screenBounds={north: 0.75, east: 0.75, south: 0.25, west: 0.25}, text=rtfDocument([rtfString("some stuff", size=24, color=rgb(0, 0, 0)), rtfString(" ", size=24, color=rgb(0, 1, 0)), rtfFormula("E=mc^2 + AI", size=24, color=rgb(0, 1, 0)), rtfImage("https://http.cat/images/301.jpg", size=24, color=rgb(0, 1, 0)), rtfString("\\n")]), backgroundColor=rgb(0, 0, 1), borderColor=rgb(1, 0, 0), borderWidth=5)])\n'
+    const expected = 'cMap('
+        + 'data=density_pw_1km, '
+        + 'scale=linearScale(), '
+        + 'ramp=rampUridis, '
+        + 'textBoxes=['
+        + 'textBox('
+        + 'screenBounds={north: 0.75, east: 0.75, south: 0.25, west: 0.25}, '
+        + 'text=rtfDocument(['
+        + 'rtfString("some stuff", size=24, color=rgb(0, 0, 0)), '
+        + 'rtfString(" ", size=24, color=rgb(0, 1, 0)), '
+        + 'rtfFormula("E=mc^2 + AI", size=24, color=rgb(0, 1, 0)), '
+        + 'rtfImage("https://http.cat/images/301.jpg", size=24, color=rgb(0, 1, 0)), '
+        + 'rtfString("\\n")'
+        + ']), '
+        + 'backgroundColor=rgb(0, 0, 1), '
+        + 'borderColor=rgb(1, 0, 0), '
+        + 'borderWidth=5'
+        + ')'
+        + ']'
+        + ')\n'
     nastyDiff(await getCodeFromMainField(), expected)
 
     // Reopen dialog, duplicate, delete, and finalize changes
@@ -178,5 +215,42 @@ test('duplicate text box, edit, resize, resposition, move down', async (t) => {
     await t.expect(getErrors()).eql([])
     await screencap(t)
     await toggleCustomScript(t)
-    nastyDiff(await getCodeFromMainField(), 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, textBoxes=[textBox(screenBounds={north: 0.6274942967512935, east: 0.9849339135544573, south: 0, west: 0.39246695677722854}, text=rtfDocument([rtfString("Hello, World!", size=36, font="Courier New", bold=true, underline=true), rtfString("\\n", align=alignCenter), rtfString("A line", size=36, font="Times New Roman", bold=true, underline=true), rtfString("\\n", align=alignCenter), rtfString("Another line", size=36, font="Times New Roman", bold=true, underline=true), rtfString("\\n", align=alignCenter)])), textBox(screenBounds={north: 0.9225057032487065, east: 0.6575330432227714, south: 0.4225057032487065, west: 0.15753304322277145}, text=rtfDocument([rtfString("Hello, World!", size=36, font="Courier New", bold=true, underline=true), rtfString("\\n", align=alignCenter), rtfString("This is text", size=36, font="Courier New", bold=true, underline=true), rtfString("\\n", align=alignCenter)]))])\n')
+    nastyDiff(
+        await getCodeFromMainField(),
+        'cMap('
+        + 'data=density_pw_1km, '
+        + 'scale=linearScale(), '
+        + 'ramp=rampUridis, '
+        + 'textBoxes=['
+        + 'textBox('
+        + 'screenBounds={north: 0.627, east: 0.985, south: 0, west: 0.392}, '
+        + 'text=rtfDocument(['
+        + 'rtfString("Hello, World!", size=36, font="Courier New", bold=true, underline=true), '
+        + 'rtfString("\\n", align=alignCenter), '
+        + 'rtfString("A line", size=36, font="Times New Roman", bold=true, underline=true), '
+        + 'rtfString("\\n", align=alignCenter), '
+        + 'rtfString("Another line", size=36, font="Times New Roman", bold=true, underline=true), '
+        + 'rtfString("\\n", align=alignCenter)'
+        + ']'
+        + '), '
+        + 'backgroundColor=rgb(1, 0.973, 0.941), '
+        + 'borderColor=rgb(0.2, 0.2, 0.2), '
+        + 'borderWidth=1'
+        + '), '
+        + 'textBox('
+        + 'screenBounds={north: 0.923, east: 0.658, south: 0.423, west: 0.158}, '
+        + 'text=rtfDocument(['
+        + 'rtfString("Hello, World!", size=36, font="Courier New", bold=true, underline=true), '
+        + 'rtfString("\\n", align=alignCenter), '
+        + 'rtfString("This is text", size=36, font="Courier New", bold=true, underline=true), '
+        + 'rtfString("\\n", align=alignCenter)'
+        + ']'
+        + '), '
+        + 'backgroundColor=rgb(1, 0.973, 0.941), '
+        + 'borderColor=rgb(0.2, 0.2, 0.2), '
+        + 'borderWidth=1'
+        + ')'
+        + ']'
+        + ')\n',
+    )
 })
