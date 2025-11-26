@@ -1,13 +1,3 @@
-import '@fontsource/jost/100.css'
-import '@fontsource/jost/200.css'
-import '@fontsource/jost/300.css'
-import '@fontsource/jost/400.css'
-import '@fontsource/jost/500.css'
-import '@fontsource/jost/600.css'
-import '@fontsource/jost/700.css'
-import '@fontsource/jost/800.css'
-import '@fontsource/jost/900.css'
-
 import React, { ReactNode, useEffect, useState } from 'react'
 
 import { exportToCSV, CSVExportData } from '../components/csv-export'
@@ -158,7 +148,7 @@ function TemplateFooter(): ReactNode {
 function Version(): ReactNode {
     return (
         <span id="current-version">
-            {TestUtils.shared.isTesting ? '<VERSION>' : '30.3.8'}
+            {TestUtils.shared.isTesting ? '<VERSION>' : '30.3.9'}
         </span>
     )
 }
@@ -166,7 +156,7 @@ function Version(): ReactNode {
 function LastUpdated(): ReactNode {
     return (
         <span id="last-updated">
-            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2025-11-16'}
+            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2025-11-21'}
         </span>
     )
 }
