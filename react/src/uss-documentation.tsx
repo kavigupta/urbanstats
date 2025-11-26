@@ -579,6 +579,8 @@ function getCategoryTitle(category: ConstantCategory): string {
             return 'Basic Functions'
         case 'mapper':
             return 'Mapper Data Variables'
+        case 'richText':
+            return 'Rich Text Formatting'
     }
 }
 
@@ -606,6 +608,8 @@ function getCategoryDescription(category: ConstantCategory): string {
             return 'Basic utility functions for type conversion and common operations.'
         case 'mapper':
             return 'The mapper provides several variables relevant to the current universe and set of geographic features.'
+        case 'richText':
+            return 'Functions for rich text formatting.'
     }
 }
 

@@ -2050,6 +2050,56 @@ void test('test basic map with constructed insets', () => {
     }])
 })
 
+void test('test basic map with constructed text boxes', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+
+    const program = `
+        textBox1 = textBox(
+            screenBounds={west: 0.1, south: 0.1, east: 0.2, north: 0.2},
+            text=rtfDocument([rtfString("Hello World", size=12, color=rgb(0, 0, 0)), rtfFormula("x^2", align=alignCenter)]),
+            backgroundColor=colorYellow
+        );
+        textBox2 = textBox(
+            screenBounds={west: 0.4, south: 0.4, east: 0.6, north: 0.6},
+            text=rtfDocument([rtfString("Urban Stats", size=16, color=rgb(1, 0, 0)), rtfImage("https://http.cat/images/100.jpg")]),
+            borderWidth=0.5,
+            borderColor=colorRed
+        );
+        cMap(geo=geo, data=[1, 2, 3], scale=linearScale(), ramp=rampBone, textBoxes=[textBox1, textBox2], label="My Label")
+        `
+
+    const resultMap = execute(parseProgram(program), ctx)
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+
+    // Check that text boxes are properly set
+    assert.deepStrictEqual(resultMapRaw.textBoxes, [
+        {
+            bottomLeft: [0.1, 0.1],
+            topRight: [0.2, 0.2],
+            text: [
+                { insert: 'Hello World', attributes: { size: 12, color: { r: 0, g: 0, b: 0, a: 1 } } },
+                { insert: { formula: 'x^2' }, attributes: { align: 'center' } },
+            ],
+            backgroundColor: { r: 0.722, g: 0.639, b: 0.184, a: 1 },
+            borderColor: { a: 1, b: 0.2, g: 0.2, r: 0.2 },
+            borderWidth: 1,
+        },
+        {
+            bottomLeft: [0.4, 0.4],
+            topRight: [0.6, 0.6],
+            text: [
+                { insert: 'Urban Stats', attributes: { size: 16, color: { r: 1, g: 0, b: 0, a: 1 } } },
+                { insert: { image: 'https://http.cat/images/100.jpg' } },
+            ],
+            borderWidth: 0.5,
+            borderColor: { r: 0.976, g: 0.427, b: 0.427, a: 1 },
+            backgroundColor: { a: 1, b: 0.9411764705882353, g: 0.9725490196078431, r: 1 },
+        },
+    ])
+    assert.deepStrictEqual(effects, [])
+})
+
 function contextForTestIfStatement(): readonly [Context, Effect[]] {
     const effects: Effect[] = []
     const ctx = emptyContextWithInsets(effects)
