@@ -20,9 +20,7 @@ export async function quizScreencap(t: TestController): Promise<void> {
 export async function clickButtons(t: TestController, whichs: string[]): Promise<void> {
     for (const which of whichs) {
         await clickButton(t, which)
-        await t.wait(500)
     }
-    await t.wait(2000)
 }
 // click the kth button with id quiz-answer-button-$which
 
