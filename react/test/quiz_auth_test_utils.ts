@@ -80,7 +80,7 @@ async function googleSignIn(t: TestController): Promise<void> {
                 await fillTOTP(t)
             }
             else {
-                await t.expect(Selector('h1').withExactText('Welcome, Urban Stats').exists).ok()
+                await t.expect(Selector('h1').withExactText('Urban Stats').exists).ok()
                 break
             }
         }
