@@ -8,6 +8,9 @@ export function EditableString(props: { content: string, onNewContent: (content:
      */
     const contentEditable: React.Ref<HTMLElement> = useRef(null)
     const html = useRef(props.content.toString())
+    // https://github.com/lovasoa/react-contenteditable/issues/161
+    const propsRef = useRef(props)
+    propsRef.current = props
     const [, setCounter] = useState(0)
 
     // Otherwise, this component can display the wrong number when props change
@@ -22,8 +25,8 @@ export function EditableString(props: { content: string, onNewContent: (content:
 
     const handleSubmit = (): void => {
         const content = contentEditable.current!.innerText
-        if (content !== props.content) {
-            props.onNewContent(content)
+        if (content !== propsRef.current.content) {
+            propsRef.current.onNewContent(content)
         }
     }
 
