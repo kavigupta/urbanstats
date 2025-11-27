@@ -22,30 +22,13 @@ jobs:
         name: Checkout repository
         shell: bash
         run: |
-          git --version
-
-          echo $(pwd)
-          ls -a
-
           git config --global --add safe.directory $GITHUB_WORKSPACE
 
           # Clone the repo
           git clone --no-checkout --filter=blob:none ${{ github.server_url }}/${{ github.repository }}.git $GITHUB_WORKSPACE
 
-          echo $(pwd)
-          ls -a
-
-          cd $GITHUB_WORKSPACE
-
-          echo $(pwd)
-          ls -a
-
-          echo "Going to enable sparse checkout..."
-
           # Enable sparse checkout
           git config core.sparseCheckout true
-
-          echo "Enabled sparse checkout"
 
           # Configure sparse checkout
           cat > .git/info/sparse-checkout <<'EOF'
@@ -54,8 +37,6 @@ jobs:
           !outputs/*
           /*
           EOF
-
-          echo "Wrote config"
 
           # Check out the ref
           git checkout --progress --force ${{ github.sha }}
@@ -122,6 +103,7 @@ jobs:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
       - *checkout
+      - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
       - run: python3 create_website.py react/test/density-db --no-data --no-geo --no-juxta --mode=ci
       - uses: actions/upload-artifact@v4
