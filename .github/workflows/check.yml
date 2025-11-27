@@ -38,6 +38,8 @@ jobs:
           echo $(pwd)
           ls -a
 
+          echo "Going to enable sparse checkout..."
+
           # Enable sparse checkout
           git config core.sparseCheckout true
 
