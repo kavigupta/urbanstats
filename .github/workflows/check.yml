@@ -27,6 +27,8 @@ jobs:
           echo $(pwd)
           ls -a
 
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+
           # Clone the repo
           git clone --no-checkout --filter=blob:none ${{ github.server_url }}/${{ github.repository }}.git $GITHUB_WORKSPACE
 
