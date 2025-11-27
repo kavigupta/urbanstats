@@ -25,6 +25,8 @@ jobs:
           # Clone the repo
           git clone --no-checkout --filter=blob:none ${{ github.server_url }}/${{ github.repository }}.git $GITHUB_WORKSPACE
 
+          cd $GITHUB_WORKSPACE
+
           # Enable sparse checkout
           git config core.sparseCheckout true
 
