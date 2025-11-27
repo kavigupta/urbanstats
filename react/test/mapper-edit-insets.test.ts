@@ -21,10 +21,13 @@ function handle(mapNumber: number, pos: 'move' | 'topRight' | 'bottomRight' | 'b
 
 interface Bounds { n: number, e: number, s: number, w: number }
 
-function bounds(mapNumber: number): Promise<Bounds> {
+function bounds(mapNumber: number): Promise<Bounds | undefined> {
     const mapSelector = map(mapNumber)
     return ClientFunction(() => {
-        const mapId = document.querySelector(mapSelector)!.id
+        const mapId = document.querySelector(mapSelector)?.id
+        if (mapId === undefined) {
+            return undefined
+        }
         const mapObj = (window as unknown as TestWindow).testUtils.maps.get(mapId)!.deref()!
         const latLon = mapObj.getBounds()
         return {
@@ -63,7 +66,7 @@ async function wheel(t: TestController, selector: string, deltaY: number, offset
     }, { dependencies: { selector, deltaY, offset } })()
 }
 
-type MapPositions = { frame: Rect | undefined, bounds: Bounds }[]
+type MapPositions = { frame: Rect | undefined, bounds: Bounds | undefined }[]
 
 function mapPositionsEqual(a: MapPositions, b: MapPositions): boolean {
     const frameThreshold = 0.015
@@ -76,7 +79,7 @@ function mapPositionsEqual(a: MapPositions, b: MapPositions): boolean {
     return a.every((aMap, i) => {
         const bMap = b[i]
         return (['x', 'y', 'width', 'height'] as const).every(key => aMap.frame !== undefined && bMap.frame !== undefined && Math.abs(aMap.frame[key] - bMap.frame[key]) < frameThreshold)
-            && (['n', 'e', 's', 'w'] as const).every(key => Math.abs(aMap.bounds[key] - bMap.bounds[key]) < boundsThreshold)
+            && (['n', 'e', 's', 'w'] as const).every(key => aMap.bounds !== undefined && bMap.bounds !== undefined && Math.abs(aMap.bounds[key] - bMap.bounds[key]) < boundsThreshold)
     })
 }
 
