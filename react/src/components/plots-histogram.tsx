@@ -7,7 +7,6 @@ import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { HistogramType, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
-import { assert } from '../utils/defensive'
 import { IHistogram } from '../utils/protos'
 import { useTranspose } from '../utils/transpose'
 
@@ -83,15 +82,13 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
 function computeColorItems(shortnames: string[], colors: string[]): { label: string, color: string }[] {
     const colorItems: { label: string, color: string }[] = []
     for (let i = 0; i < shortnames.length; i++) {
-        const index = colorItems.findIndex(item => item.label === shortnames[i])
+        // handles duplicate names by just putting them all in if they're different colors
+        const index = colorItems.findIndex(item => item.label === shortnames[i] && item.color === colors[i])
         if (index === -1) {
             colorItems.push({
                 label: shortnames[i],
                 color: colors[i],
             })
-        }
-        else {
-            assert(colorItems[index].color === colors[i], `color mismatch for ${shortnames[i]}`)
         }
     }
     return colorItems
