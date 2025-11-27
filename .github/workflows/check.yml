@@ -12,7 +12,6 @@ env:
   FORCE_COLOR: 1
   SPARSE_CHECKOUT: |
     !named_region_shapefiles/*
-    !stored_quizzes/*
     !outputs/*
     /*
 jobs:
@@ -101,11 +100,6 @@ jobs:
     needs: build-and-push-common-image
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
-    env:
-      SPARSE_CHECKOUT: |
-        !named_region_shapefiles/*
-        !outputs/*
-        /*
     steps:
       - *checkout
       - uses: ./.github/actions/python_environment
