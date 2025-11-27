@@ -29,20 +29,40 @@ regressionTest(
     'somewhatComplicatedRegression',
     `regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population);
 condition (population > 10000)
-cMap(data=do { x = regr.residuals; x }, scale=linearScale(max=0.1, center=0), ramp=rampUridis, label="Commute Transit above expectation based on ln(density) [%]", basemap=noBasemap(), outline=constructOutline(color=rgb(0, 0.21568627450980393, 1), weight=0.2))
+cMap(
+    data=do { x = regr.residuals; x },
+    scale=linearScale(max=0.1, center=0),
+    ramp=rampUridis,
+    label="Commute Transit above expectation based on ln(density) [%]",
+    basemap=noBasemap(),
+    outline=constructOutline(color=rgb(0, 0.21568627450980393, 1), weight=0.2)
+)
 `,
 )
 
 regressionTest(
     () => test,
     'densityPointMap',
-    `pMap(data=density_pw_1km, scale=logScale(min=100, max=5000), ramp=rampUridis, relativeArea=population, maxRadius=20, basemap=noBasemap())\n`,
+    `pMap(
+    data=density_pw_1km,
+    scale=logScale(min=100, max=5000),
+    ramp=rampUridis,
+    relativeArea=population,
+    maxRadius=20,
+    basemap=noBasemap()
+)\n`,
 )
 
 regressionTest(
     () => test,
     'rgbMap',
-    `cMapRGB(dataR=minimum(10 * commute_transit, 1), dataG=minimum(10 * commute_bike, 1), dataB=minimum(10 * commute_walk, 1), label="R=Commute Transit, G=Commute Bike, B=Commute Walk; maximum=10%", basemap=noBasemap())\n`,
+    `cMapRGB(
+    dataR=minimum(10 * commute_transit, 1),
+    dataG=minimum(10 * commute_bike, 1),
+    dataB=minimum(10 * commute_walk, 1),
+    label="R=Commute Transit, G=Commute Bike, B=Commute Walk; maximum=10%",
+    basemap=noBasemap()
+)\n`,
 )
 
 regressionTest(
@@ -50,15 +70,44 @@ regressionTest(
     'textBoxesMap',
     `nonFilteredPopulation = sum(population);
 condition (population > 10000000)
-${`cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, textBoxes=[textBox(screenBounds={north: 1, east: 0.28955642611994215, south: 0.8888666610512129, west: 0}, text=rtfDocument([
-    rtfString("There are ", font="Arial", italic=true), 
-    rtfString(toString((round(10000 * (sum(population)) / nonFilteredPopulation)) / 100), bold=true, font="Courier"), 
-    rtfString("% of people represented in this map", strike=true)
-])), textBox(screenBounds={north: 0.5, east: 0.95, south: 0.1, west: 0.7}, borderColor=hsv(50, 1, 1), backgroundColor=rgb(0.9, 0.9, 0.7), text=rtfDocument([
-    rtfFormula("f(\\\\relax{x}) = \\\\int_{-\\\\infty}^\\\\infty \\\\hat f(\\\\xi)\\\\,e^{2 \\\\pi i \\\\xi x}\\\\,d\\\\xi"), 
-    rtfString("\\n\\n", align=alignCenter), 
-    rtfImage("https://upload.wikimedia.org/wikipedia/commons/f/f6/Regulierwehr_Port01_08.jpg")
-]))])`.split('\n').map(line => line.trimStart()).join('')}
+cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    textBoxes=[
+        textBox(
+            screenBounds={
+                north: 1,
+                east: 0.28955642611994215,
+                south: 0.8888666610512129,
+                west: 0
+            },
+            text=rtfDocument([
+                rtfString("There are ", font="Arial", italic=true),
+                rtfString(
+                    toString((round(10000 * (sum(population)) / nonFilteredPopulation)) / 100),
+                    bold=true,
+                    font="Courier"
+                ),
+                rtfString("% of people represented in this map", strike=true)
+            ])
+        ),
+        textBox(
+            screenBounds={north: 0.5, east: 0.95, south: 0.1, west: 0.7},
+            borderColor=hsv(50, 1, 1),
+            backgroundColor=rgb(0.9, 0.9, 0.7),
+            text=rtfDocument([
+                rtfFormula(
+                    "f(\\\\relax{x}) = \\\\int_{-\\\\infty}^\\\\infty \\\\hat f(\\\\xi)\\\\,e^{2 \\\\pi i \\\\xi x}\\\\,d\\\\xi"
+                ),
+                rtfString("\\n\\n", align=alignCenter),
+                rtfImage(
+                    "https://upload.wikimedia.org/wikipedia/commons/f/f6/Regulierwehr_Port01_08.jpg"
+                )
+            ])
+        )
+    ]
+)
 `)
 
 regressionTest(
@@ -66,13 +115,40 @@ regressionTest(
     'textBoxesMap-corsError',
     `nonFilteredPopulation = sum(population);
 condition (population > 10000000)
-${`cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, textBoxes=[textBox(screenBounds={north: 1, east: 0.28955642611994215, south: 0.8888666610512129, west: 0}, text=rtfDocument([
-    rtfString("There are ", font="Arial", italic=true), 
-    rtfString(toString((round(10000 * (sum(population)) / nonFilteredPopulation)) / 100), bold=true, font="Courier"), 
-    rtfString("% of people represented in this map", strike=true)
-])), textBox(screenBounds={north: 0.5, east: 0.95, south: 0.1, west: 0.7}, borderColor=hsv(50, 1, 1), backgroundColor=rgb(0.9, 0.9, 0.7), text=rtfDocument([
-    rtfFormula("f(\\\\relax{x}) = \\\\int_{-\\\\infty}^\\\\infty \\\\hat f(\\\\xi)\\\\,e^{2 \\\\pi i \\\\xi x}\\\\,d\\\\xi"), 
-    rtfString("\\n\\n", align=alignCenter), 
-    rtfImage("https://http.cat/images/409.jpg")
-]))])`.split('\n').map(line => line.trimStart()).join('')}
+cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    textBoxes=[
+        textBox(
+            screenBounds={
+                north: 1,
+                east: 0.28955642611994215,
+                south: 0.8888666610512129,
+                west: 0
+            },
+            text=rtfDocument([
+                rtfString("There are ", font="Arial", italic=true),
+                rtfString(
+                    toString((round(10000 * (sum(population)) / nonFilteredPopulation)) / 100),
+                    bold=true,
+                    font="Courier"
+                ),
+                rtfString("% of people represented in this map", strike=true)
+            ])
+        ),
+        textBox(
+            screenBounds={north: 0.5, east: 0.95, south: 0.1, west: 0.7},
+            borderColor=hsv(50, 1, 1),
+            backgroundColor=rgb(0.9, 0.9, 0.7),
+            text=rtfDocument([
+                rtfFormula(
+                    "f(\\\\relax{x}) = \\\\int_{-\\\\infty}^\\\\infty \\\\hat f(\\\\xi)\\\\,e^{2 \\\\pi i \\\\xi x}\\\\,d\\\\xi"
+                ),
+                rtfString("\\n\\n", align=alignCenter),
+                rtfImage("https://http.cat/images/409.jpg")
+            ])
+        )
+    ]
+)
 `)
