@@ -11,6 +11,7 @@ export interface PlotProps {
     color: string
     sharedTypeOfAllArticles?: string
     subseriesId?: number
+    subseriesName?: string
 }
 
 export function RenderedPlot({ statDescription, plotProps }: { statDescription: string, plotProps: PlotProps[] }): ReactNode {
@@ -41,6 +42,7 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
                                     color: props.color,
                                     universeTotal: props.extraStat.universeTotal,
                                     subseriesId: props.subseriesId,
+                                    subseriesName: props.subseriesName,
                                 },
                             ]
                         },

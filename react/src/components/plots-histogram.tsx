@@ -27,6 +27,7 @@ interface HistogramProps {
     color: string
     universeTotal: number
     subseriesId?: number
+    subseriesName?: string
 }
 
 export function Histogram(props: { histograms: HistogramProps[], statDescription: string, sharedTypeOfAllArticles?: string }): ReactNode {
@@ -100,17 +101,20 @@ function manualLegend(histograms: HistogramProps[], transpose: boolean, colors: 
     const colorItems = computeColorItems(shortnames, colors)
 
     const dashPatternItems: { label: string, dashPattern: string }[] = []
-    const dashPatterns = new Map<number, string>()
+    const dashPatterns = new Map<number, { pattern: string, name: string }>()
     histograms.forEach((histogram) => {
         const subId = histogram.subseriesId ?? 0
         if (!dashPatterns.has(subId)) {
-            dashPatterns.set(subId, strokeDasharrays[subId % strokeDasharrays.length])
+            dashPatterns.set(subId, {
+                pattern: strokeDasharrays[subId % strokeDasharrays.length],
+                name: histogram.subseriesName ?? `Subseries ${subId}`,
+            })
         }
     })
     if (dashPatterns.size > 1) {
-        dashPatterns.forEach((pattern, subseriesId) => {
+        dashPatterns.forEach(({ pattern, name }) => {
             dashPatternItems.push({
-                label: `Subseries ${subseriesId}`,
+                label: name,
                 dashPattern: pattern,
             })
         })
@@ -377,6 +381,7 @@ interface Series {
     values: { name: string, xidx: number, y: number }[]
     color: string
     subseriesId: number
+    subseriesName?: string
 }
 
 function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: number[], relative: boolean, isCumulative: boolean): Series[] {
@@ -403,6 +408,7 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
             })),
             color: histogram.color,
             subseriesId: histogram.subseriesId ?? 0,
+            subseriesName: histogram.subseriesName ?? undefined,
         }
     })
     return series

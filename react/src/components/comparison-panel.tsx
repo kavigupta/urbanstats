@@ -387,9 +387,18 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
 export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
     const sPs = rows.map(row => statParents.get(row.statpath)!)
-    const sameStatMaybeDiffYearIdxs: number[] = sPs.map((sP, i) => ({ sP, i })).filter(({ sP }) => sP.group.id === sPs[statIndex].group.id).map(({ i }) => i)
-    const overOne = sameStatMaybeDiffYearIdxs.length > 1
-    return sameStatMaybeDiffYearIdxs.map((idx, which) => {
+    const statpaths = sPs.map((sP, i) => ({ sP, i })).filter((
+        { sP, i }) => sP.group.id === sPs[statIndex].group.id && rows[i].extraStat !== undefined,
+    )
+    const overOne = statpaths.length > 1
+    if (overOne) {
+        statpaths.sort(({ sP: { year: a } }, { sP: { year: b } }) => {
+            assert(a !== null && b !== null, 'Year should not be null for plot data')
+            return a - b
+        })
+        assert(statpaths.length === new Set(statpaths.map(({ sP: { year } }) => year)).size, 'All statpaths for plot data should have unique years')
+    }
+    return statpaths.map(({ i: idx, sP: { year } }, which) => {
         return {
             ...rows[idx],
             color,
@@ -397,6 +406,7 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
             longname,
             sharedTypeOfAllArticles,
             subseriesId: overOne ? which : undefined,
+            subseriesName: overOne ? String(year) : undefined,
         }
     })
 }
