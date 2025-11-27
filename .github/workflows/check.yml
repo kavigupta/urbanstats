@@ -40,7 +40,8 @@ jobs:
           # Check out the ref
           git checkout --progress --force ${{ github.sha }}
 
-          find / -type d -name "python_environment" -exec ls -ld {} \;
+          find . -type d -name "python_environment" -exec ls -ld {} \;
+          find /home -type d -name "python_environment" -exec ls -ld {} \;
 
       - uses: ./.github/actions/docker_image
         with:
