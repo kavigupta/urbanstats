@@ -38,11 +38,16 @@ function bounds(mapNumber: number): Promise<Bounds> {
 
 interface Rect { x: number, y: number, width: number, height: number }
 
-function frame(selector: string): Promise<Rect> {
+function frame(selector: string): Promise<Rect | undefined> {
     const map0 = map(0)
     return ClientFunction(() => {
-        const map0Rect = document.querySelector(map0)!.getBoundingClientRect()
-        const domRect = document.querySelector(selector)!.getBoundingClientRect()
+        const map0Elem = document.querySelector(map0)
+        const domElem = document.querySelector(selector)
+        if (map0Elem === null || domElem === null) {
+            return undefined
+        }
+        const map0Rect = map0Elem.getBoundingClientRect()
+        const domRect = domElem.getBoundingClientRect()
         // Fudge Y since it's unstable
         return { x: Math.round(100 * (domRect.x - map0Rect.x) / map0Rect.width) / 100, y: Math.round(100 * (domRect.y - map0Rect.y) / map0Rect.height) / 100, width: Math.round(100 * domRect.width / map0Rect.width) / 100, height: Math.round(100 * domRect.height / map0Rect.height) / 100 }
     }, { dependencies: { selector, map0 } })()
@@ -58,7 +63,7 @@ async function wheel(t: TestController, selector: string, deltaY: number, offset
     }, { dependencies: { selector, deltaY, offset } })()
 }
 
-type MapPositions = { frame: Rect, bounds: Bounds }[]
+type MapPositions = { frame: Rect | undefined, bounds: Bounds }[]
 
 function mapPositionsEqual(a: MapPositions, b: MapPositions): boolean {
     const frameThreshold = 0.015
@@ -70,7 +75,7 @@ function mapPositionsEqual(a: MapPositions, b: MapPositions): boolean {
 
     return a.every((aMap, i) => {
         const bMap = b[i]
-        return (['x', 'y', 'width', 'height'] as const).every(key => Math.abs(aMap.frame[key] - bMap.frame[key]) < frameThreshold)
+        return (['x', 'y', 'width', 'height'] as const).every(key => aMap.frame !== undefined && bMap.frame !== undefined && Math.abs(aMap.frame[key] - bMap.frame[key]) < frameThreshold)
             && (['n', 'e', 's', 'w'] as const).every(key => Math.abs(aMap.bounds[key] - bMap.bounds[key]) < boundsThreshold)
     })
 }
