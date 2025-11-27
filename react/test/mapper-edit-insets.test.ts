@@ -2,7 +2,7 @@ import { ClientFunction, Selector } from 'testcafe'
 
 import { TestWindow } from '../src/utils/TestUtils'
 
-import { toggleCustomScript, urlFromCode } from './mapper-utils'
+import { drag, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { screencap, urbanstatsFixture } from './test_utils'
 
 urbanstatsFixture(`default map`, '/mapper.html')
@@ -46,13 +46,6 @@ function frame(selector: string): Promise<Rect> {
         // Fudge Y since it's unstable
         return { x: Math.round(100 * (domRect.x - map0Rect.x) / map0Rect.width) / 100, y: Math.round(100 * (domRect.y - map0Rect.y) / map0Rect.height) / 100, width: Math.round(100 * domRect.width / map0Rect.width) / 100, height: Math.round(100 * domRect.height / map0Rect.height) / 100 }
     }, { dependencies: { selector, map0 } })()
-}
-
-async function drag(t: TestController, selector: string, deltaX: number, deltaY: number): Promise<void> {
-    const elementRect = await Selector(selector).boundingClientRect
-    const downEvent = { pointerId: 1, clientX: (elementRect.left + elementRect.right) / 2, clientY: (elementRect.bottom + elementRect.top) / 2 }
-    const upEvent = { ...downEvent, clientX: downEvent.clientX + deltaX, clientY: downEvent.clientY + deltaY }
-    await t.dispatchEvent(selector, 'pointerdown', downEvent).dispatchEvent(selector, 'pointermove', upEvent).dispatchEvent(selector, 'pointerup', upEvent)
 }
 
 async function wheel(t: TestController, selector: string, deltaY: number, offset: { x: number, y: number }): Promise<void> {
