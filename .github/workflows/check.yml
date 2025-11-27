@@ -22,10 +22,19 @@ jobs:
         name: Checkout repository
         shell: bash
         run: |
+          echo $(pwd)
+          ls -a
+
           # Clone the repo
           git clone --no-checkout --filter=blob:none ${{ github.server_url }}/${{ github.repository }}.git $GITHUB_WORKSPACE
 
+          echo $(pwd)
+          ls -a
+
           cd $GITHUB_WORKSPACE
+
+          echo $(pwd)
+          ls -a
 
           # Enable sparse checkout
           git config core.sparseCheckout true
