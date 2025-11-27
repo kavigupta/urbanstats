@@ -1,0 +1,20 @@
+name: "checkout"
+description: "Checks out the repository. Has optimizations to do this faster than the default checkout action"
+runs:
+  using: "composite"
+  steps:
+    - name: Clone the repo
+      run: git clone --no-checkout --filter=blob:none https://${{ github.server_url }}/${{ github.repository }}.git ${{ github.workspace }}
+    - name: Enable sparse checkout
+      run: git config core.sparseCheckout true
+    - name: Configure sparse checkout
+      run: |
+        cat > .git/info/sparse-checkout <<'EOF'
+        !named_region_shapefiles/*
+        !stored_quizzes/*
+        !outputs/*
+        /*
+        EOF
+      shell: bash
+    - name: Check out the ref
+      run: git checkout --progress --force ${{ github.sha }}
