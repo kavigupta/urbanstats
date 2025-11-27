@@ -825,6 +825,10 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
             const fnWithParens = fnNeedsParens ? `(${fnStr})` : fnStr
             const notWrapped = `${fnWithParens}(${argsStr.join(', ')})`
             if (notWrapped.length > characterLimit && opts.wrap) {
+                // Special case for one unnamed argument that's a vector literal
+                if (node.args.length === 1 && node.args[0].type === 'unnamed' && node.args[0].value.type === 'vectorLiteral') {
+                    return `${fnWithParens}(${unparse(node.args[0].value, { ...opts, inline: true, expressionalContext: true, wrap: true })})`
+                }
                 const wrappedArgs = node.args.map((arg) => {
                     switch (arg.type) {
                         case 'unnamed':

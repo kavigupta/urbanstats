@@ -257,40 +257,31 @@ cMap(
                 south: 0.8888666610512129,
                 west: 0
             },
-            text=rtfDocument(
-                [
-                    rtfString("There are ", font="Arial", italic=true),
-                    rtfString(
-                        toString(
-                            (round(
-                                10000 * (sum(population)) / nonFilteredPopulation
-                            )) / 100
-                        ),
-                        bold=true,
-                        font="Courier"
+            text=rtfDocument([
+                rtfString("There are ", font="Arial", italic=true),
+                rtfString(
+                    toString(
+                        (round(10000 * (sum(population)) / nonFilteredPopulation)) / 100
                     ),
-                    rtfString(
-                        "% of people represented in this map",
-                        strike=true
-                    )
-                ]
-            )
+                    bold=true,
+                    font="Courier"
+                ),
+                rtfString("% of people represented in this map", strike=true)
+            ])
         ),
         textBox(
             screenBounds={north: 0.5, east: 0.95, south: 0.1, west: 0.7},
             borderColor=hsv(50, 1, 1),
             backgroundColor=rgb(0.9, 0.9, 0.7),
-            text=rtfDocument(
-                [
-                    rtfFormula(
-                        "f(\\\\relax{x}) = \\\\int_{-\\\\infty}^\\\\infty \\\\hat f(\\\\xi)\\\\,e^{2 \\\\pi i \\\\xi x}\\\\,d\\\\xi"
-                    ),
-                    rtfString("\\n\\n", align=alignCenter),
-                    rtfImage(
-                        "https://upload.wikimedia.org/wikipedia/commons/f/f6/Regulierwehr_Port01_08.jpg"
-                    )
-                ]
-            )
+            text=rtfDocument([
+                rtfFormula(
+                    "f(\\\\relax{x}) = \\\\int_{-\\\\infty}^\\\\infty \\\\hat f(\\\\xi)\\\\,e^{2 \\\\pi i \\\\xi x}\\\\,d\\\\xi"
+                ),
+                rtfString("\\n\\n", align=alignCenter),
+                rtfImage(
+                    "https://upload.wikimedia.org/wikipedia/commons/f/f6/Regulierwehr_Port01_08.jpg"
+                )
+            ])
         )
     ]
 )`
