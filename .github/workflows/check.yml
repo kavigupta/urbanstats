@@ -68,8 +68,8 @@ jobs:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
       - *checkout
-      - uses: $GITHUB_WORKSPACE/.github/actions/python_environment
-      - uses: $GITHUB_WORKSPACE/.github/actions/node_modules
+      - uses: /__w/urbanstats/urbanstats/.github/actions/python_environment
+      - uses: ./.github/actions/node_modules
       - name: allow all directories
         # This is needed because git complains about git repositories outside the user directory
         run: git config --global --add safe.directory '*'
