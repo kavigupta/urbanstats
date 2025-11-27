@@ -75,9 +75,6 @@ jobs:
       - uses: lukebrody/nothing-action@master # Without this, the below actions don't work. This is a bug in Github
       - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
-      - name: allow all directories
-        # This is needed because git complains about git repositories outside the user directory
-        run: git config --global --add safe.directory '*'
       - name: Lint with pylint
         run: python -m pylint --prefer-stubs=true $(git ls-files '*.py' ':!:legacy')
         if: "!cancelled()" # Runs even if other steps fail
@@ -140,9 +137,6 @@ jobs:
         test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
     steps:
       - *checkout
-      - name: allow all directories
-        # This is needed because git complains about git repositories outside the user directory
-        run: git config --global --add safe.directory '*'
       - run: git fetch origin ${{ github.base_ref }} --depth=1 # needed so test runner can diff tests against base ref
         if: ${{ github.base_ref != '' }}
       - uses: ./.github/actions/python_environment
