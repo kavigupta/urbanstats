@@ -22,6 +22,8 @@ jobs:
         name: Checkout repository
         shell: bash
         run: |
+          git --version
+
           echo $(pwd)
           ls -a
 
@@ -39,6 +41,8 @@ jobs:
           # Enable sparse checkout
           git config core.sparseCheckout true
 
+          echo "Enabled sparse checkout"
+
           # Configure sparse checkout
           cat > .git/info/sparse-checkout <<'EOF'
           !named_region_shapefiles/*
@@ -46,6 +50,8 @@ jobs:
           !outputs/*
           /*
           EOF
+
+          echo "Wrote config"
 
           # Check out the ref
           git checkout --progress --force ${{ github.sha }}
