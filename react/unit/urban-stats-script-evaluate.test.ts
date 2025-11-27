@@ -2094,7 +2094,7 @@ void test('test basic map with constructed text boxes', () => {
             ],
             borderWidth: 0.5,
             borderColor: { r: 0.976, g: 0.427, b: 0.427, a: 1 },
-            backgroundColor: { a: 1, b: 0.9411764705882353, g: 0.9725490196078431, r: 1 },
+            backgroundColor: { a: 1, b: 0.941, g: 0.973, r: 1 },
         },
     ])
     assert.deepStrictEqual(effects, [])

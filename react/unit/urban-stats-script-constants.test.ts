@@ -108,7 +108,7 @@ void test('constant listing', (): void => {
             '(any; ) -> string': [
                 'toString',
             ],
-            '(; screenBounds: {east: number, north: number, south: number, west: number}, text: richTextDocument, backgroundColor: color = rgb(1, 0.9725490196078431, 0.9411764705882353), borderColor: color = rgb(0.2, 0.2, 0.2), borderWidth: number = 1) -> textBox': [
+            '(; screenBounds: {east: number, north: number, south: number, west: number}, text: richTextDocument, backgroundColor: color = rgb(1, 0.973, 0.941), borderColor: color = rgb(0.2, 0.2, 0.2), borderWidth: number = 1) -> textBox': [
                 'textBox',
             ],
             '(; y: [number], x1: [number], x2: [number] = null, x3: [number] = null, x4: [number] = null, x5: [number] = null, x6: [number] = null, x7: [number] = null, x8: [number] = null, x9: [number] = null, x10: [number] = null, weight: [number] = null, noIntercept: boolean = false) -> {b: number, m1: number, m10: number, m2: number, m3: number, m4: number, m5: number, m6: number, m7: number, m8: number, m9: number, r2: number, residuals: [number]}': [

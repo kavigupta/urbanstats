@@ -9,6 +9,20 @@ import { Color, hexToColor } from './color-utils'
 
 export type RichTextDocument = RichTextSegment[]
 
+export function documentLength(document: RichTextDocument): number {
+    return document.reduce((sum, segment) => sum + (typeof segment.insert === 'string' ? segment.insert.length : 1), 0)
+}
+
+const colorSchema = z.string().transform((c) => {
+    try {
+        return hexToColor(c)
+    }
+    catch {
+        console.warn(`${c} is not a valid color`)
+        return undefined
+    }
+})
+
 export const richTextAttributesSchema = z.object({
     size: z.optional(z.string().transform((s) => {
         if (!s.endsWith('px')) {
@@ -24,15 +38,8 @@ export const richTextAttributesSchema = z.object({
         return result
     })),
     font: z.optional(z.string()),
-    color: z.optional(z.string().transform((c) => {
-        try {
-            return hexToColor(c)
-        }
-        catch {
-            console.warn(`${c} is not a valid color`)
-            return undefined
-        }
-    })),
+    // Sometimes when selecting a different colored formula along with text, color is an array. In that case, just take the first one
+    color: z.optional(z.union([colorSchema, z.array(colorSchema).transform(array => array.length === 0 ? undefined : array[0])])),
     bold: z.optional(z.boolean()),
     italic: z.optional(z.boolean()),
     underline: z.optional(z.boolean()),
