@@ -18,8 +18,26 @@ jobs:
     permissions:
       packages: write
     steps:
-      - name: Checkout repository
-        uses: ./.github/actions/checkout
+      - &checkout
+        name: Checkout repository
+        shell: bash
+        run: |
+          # Clone the repo
+          git clone --no-checkout --filter=blob:none https://${{ github.server_url }}/${{ github.repository }}.git ${{ github.workspace }}
+
+          # Enable sparse checkout
+          git config core.sparseCheckout true
+
+          # Configure sparse checkout
+          cat > .git/info/sparse-checkout <<'EOF'
+          !named_region_shapefiles/*
+          !stored_quizzes/*
+          !outputs/*
+          /*
+          EOF
+
+          # Check out the ref
+          git checkout --progress --force ${{ github.sha }}
 
       - uses: ./.github/actions/docker_image
         with:
@@ -34,8 +52,7 @@ jobs:
     permissions:
       packages: write
     steps:
-      - name: Checkout repository
-        uses: ./.github/actions/checkout
+      - *checkout
 
       - uses: ./.github/actions/docker_image
         with:
@@ -49,7 +66,7 @@ jobs:
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
-      - uses: ./.github/actions/checkout
+      - *checkout
       - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
       - name: allow all directories
@@ -83,8 +100,7 @@ jobs:
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
-      - uses: ./.github/actions/checkout
-      - uses: ./.github/actions/python_environment
+      - *checkout
       - uses: ./.github/actions/node_modules
       - run: python3 create_website.py react/test/density-db --no-data --no-geo --no-juxta --mode=ci
       - uses: actions/upload-artifact@v4
@@ -97,7 +113,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: ./.github/actions/checkout
+      - *checkout
       - uses: ./.github/actions/node_modules
       - id: set-matrix
         run: echo "matrix=$(npx tsx test/scripts/list-e2e-tests.ts --test-durations='${{ vars.E2E_TEST_DURATIONS }}')" >> $GITHUB_OUTPUT
@@ -116,7 +132,7 @@ jobs:
       matrix:
         test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
     steps:
-      - uses: ./.github/actions/checkout
+      - *checkout
       - name: allow all directories
         # This is needed because git complains about git repositories outside the user directory
         run: git config --global --add safe.directory '*'
@@ -184,7 +200,7 @@ jobs:
     needs: [e2e]
     if: github.ref_name == github.event.repository.default_branch # We only want results where all tests run
     steps:
-      - uses: ./.github/actions/checkout
+      - *checkout
       - uses: ./.github/actions/node_modules
       - uses: actions/download-artifact@v4
         with:
@@ -203,7 +219,7 @@ jobs:
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
-      - uses: ./.github/actions/checkout
+      - *checkout
       - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
       - name: Run js tests
