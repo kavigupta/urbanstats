@@ -240,3 +240,60 @@ void describe('unparse function calls', () => {
         assert.equal(unparse(parseNoError(expected, '')), expected)
     })
 })
+
+void describe('unparse wrapping', () => {
+    void test('mapper example script', () => {
+        const expected = `nonFilteredPopulation = sum(population);
+condition (population > 10000000)
+cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    textBoxes=[
+        textBox(
+            screenBounds={
+                north: 1,
+                east: 0.28955642611994215,
+                south: 0.8888666610512129,
+                west: 0
+            },
+            text=rtfDocument(
+                [
+                    rtfString("There are ", font="Arial", italic=true),
+                    rtfString(
+                        toString(
+                            (round(
+                                10000 * (sum(population)) / nonFilteredPopulation
+                            )) / 100
+                        ),
+                        bold=true,
+                        font="Courier"
+                    ),
+                    rtfString(
+                        "% of people represented in this map",
+                        strike=true
+                    )
+                ]
+            )
+        ),
+        textBox(
+            screenBounds={north: 0.5, east: 0.95, south: 0.1, west: 0.7},
+            borderColor=hsv(50, 1, 1),
+            backgroundColor=rgb(0.9, 0.9, 0.7),
+            text=rtfDocument(
+                [
+                    rtfFormula(
+                        "f(\\\\relax{x}) = \\\\int_{-\\\\infty}^\\\\infty \\\\hat f(\\\\xi)\\\\,e^{2 \\\\pi i \\\\xi x}\\\\,d\\\\xi"
+                    ),
+                    rtfString("\\n\\n", align=alignCenter),
+                    rtfImage(
+                        "https://upload.wikimedia.org/wikipedia/commons/f/f6/Regulierwehr_Port01_08.jpg"
+                    )
+                ]
+            )
+        )
+    ]
+)`
+        assert.equal(unparse(parseNoError(expected, '')), expected)
+    })
+})
