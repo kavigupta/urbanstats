@@ -1,4 +1,5 @@
 import ColorLib from 'color'
+import { round as doRound } from 'mathjs'
 
 import { assert } from '../../utils/defensive'
 
@@ -44,7 +45,7 @@ export function toHsv(color: Color): { h: number, s: number, v: number, a: numbe
 }
 
 function drawFunction(functionName: string, param1: number, param2: number, param3: number, alpha: number, round?: number): string {
-    const format: (num: number) => string = round !== undefined ? num => num.toFixed(round) : num => num.toString()
+    const format: (num: number) => string = round !== undefined ? num => doRound(num, round).toString() : num => num.toString()
     const alphaPart = alpha !== 1 ? `, a=${format(alpha)}` : ''
     return `${functionName}(${format(param1)}, ${format(param2)}, ${format(param3)}${alphaPart})`
 }
@@ -61,10 +62,10 @@ export function hsvColorExpression(color: Color, { forceAlpha, round }: { forceA
 
 export function deconstructColor(color: Color): string {
     if ('r' in color) {
-        return drawFunction('rgb', color.r, color.g, color.b, color.a)
+        return drawFunction('rgb', color.r, color.g, color.b, color.a, 3)
     }
     if ('h' in color) {
-        return drawFunction('hsv', color.h, color.s, color.v, color.a)
+        return drawFunction('hsv', color.h, color.s, color.v, color.a, 3)
     }
     throw new Error()
 }

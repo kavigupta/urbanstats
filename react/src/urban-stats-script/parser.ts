@@ -771,17 +771,21 @@ export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpre
     return identifiers
 }
 
-export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, opts: { indent?: number, inline?: boolean, simplify?: boolean, expressionalContext?: boolean } = {}): string {
+export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, opts: { indent?: number, inline?: boolean, simplify?: boolean, expressionalContext?: boolean, wrap?: boolean } = {}): string {
     if (opts.inline) {
-        assert(opts.expressionalContext ?? false, 'inline must be true if expressionalContext is true')
+        assert(opts.expressionalContext ?? false, 'expressionalContext must be true if inline is true')
     }
     opts.indent = opts.indent ?? 0
+    opts.wrap = opts.wrap ?? true
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
         return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant' || expr.type === 'customNode'
     }
     function indentSpaces(level: number): string {
         return '    '.repeat(level)
     }
+
+    const characterLimit = 80 - indentSpaces(opts.indent).length
+
     switch (node.type) {
         case 'customNode':
             if (!opts.simplify) {
@@ -807,19 +811,36 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
         case 'attribute':
             const exprStr = unparse(node.expr, { ...opts, inline: true, expressionalContext: true })
             return `${exprStr}.${node.name.node}`
-        case 'call':
+        case 'call': {
             const fnStr = unparse(node.fn, { ...opts, inline: true, expressionalContext: true })
             const argsStr = node.args.map((arg) => {
                 switch (arg.type) {
                     case 'unnamed':
-                        return unparse(arg.value, { ...opts, inline: true, expressionalContext: true })
+                        return unparse(arg.value, { ...opts, inline: true, expressionalContext: true, wrap: false })
                     case 'named':
-                        return `${arg.name.node}=${unparse(arg.value, { ...opts, inline: true, expressionalContext: true })}`
+                        return `${arg.name.node}=${unparse(arg.value, { ...opts, inline: true, expressionalContext: true, wrap: false })}`
                 }
             })
             const fnNeedsParens = !isSimpleExpression(node.fn)
             const fnWithParens = fnNeedsParens ? `(${fnStr})` : fnStr
-            return `${fnWithParens}(${argsStr.join(', ')})`
+            const notWrapped = `${fnWithParens}(${argsStr.join(', ')})`
+            if (notWrapped.length > characterLimit && opts.wrap) {
+                // Special case for one unnamed argument that's a vector literal
+                if (node.args.length === 1 && node.args[0].type === 'unnamed' && node.args[0].value.type === 'vectorLiteral') {
+                    return `${fnWithParens}(${unparse(node.args[0].value, { ...opts, inline: true, expressionalContext: true, wrap: true })})`
+                }
+                const wrappedArgs = node.args.map((arg) => {
+                    switch (arg.type) {
+                        case 'unnamed':
+                            return `${indentSpaces(opts.indent! + 1)}${unparse(arg.value, { ...opts, inline: true, expressionalContext: true, wrap: true, indent: opts.indent! + 1 })}`
+                        case 'named':
+                            return `${indentSpaces(opts.indent! + 1)}${arg.name.node}=${unparse(arg.value, { ...opts, inline: true, expressionalContext: true, wrap: true, indent: opts.indent! + 1 })}`
+                    }
+                })
+                return `${fnWithParens}(\n${wrappedArgs.join(',\n')}\n${indentSpaces(opts.indent)})`
+            }
+            return notWrapped
+        }
         case 'unaryOperator':
             const unaryExprStr = unparse(node.expr, { ...opts, inline: true, expressionalContext: true })
             const needsParens = !isSimpleExpression(node.expr)
@@ -850,15 +871,30 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
                 rightWithParens = `(${rightStr})`
             }
             return `${leftWithParens} ${node.operator.node} ${rightWithParens}`
-        case 'vectorLiteral':
-            const elementsStr = node.elements.map(elem => unparse(elem, { ...opts, inline: true, expressionalContext: true }))
-            return `[${elementsStr.join(', ')}]`
-        case 'objectLiteral':
+        case 'vectorLiteral': {
+            const elementsStr = node.elements.map(elem => unparse(elem, { ...opts, inline: true, expressionalContext: true, wrap: false }))
+            const notWrapped = `[${elementsStr.join(', ')}]`
+            if (notWrapped.length > characterLimit && opts.wrap) {
+                const wrappedElements = node.elements.map(elem => `${indentSpaces(opts.indent! + 1)}${unparse(elem, { ...opts, inline: true, expressionalContext: true, wrap: true, indent: opts.indent! + 1 })}`)
+                return `[\n${wrappedElements.join(',\n')}\n${indentSpaces(opts.indent)}]`
+            }
+            return notWrapped
+        }
+        case 'objectLiteral': {
             const propertiesStr = node.properties.map(([key, value]) => {
-                const valueStr = unparse(value, { ...opts, inline: true, expressionalContext: true })
+                const valueStr = unparse(value, { ...opts, inline: true, expressionalContext: true, wrap: false })
                 return `${key}: ${valueStr}`
             })
-            return `{${propertiesStr.join(', ')}}`
+            const notWrapped = `{${propertiesStr.join(', ')}}`
+            if (notWrapped.length > characterLimit && opts.wrap) {
+                const wrappedProperties = node.properties.map(([key, value]) => {
+                    const valueStr = unparse(value, { ...opts, inline: true, expressionalContext: true, wrap: true })
+                    return `${indentSpaces(opts.indent! + 1)}${key}: ${valueStr}`
+                })
+                return `{\n${wrappedProperties.join(',\n')}\n${indentSpaces(opts.indent)}}`
+            }
+            return notWrapped
+        }
         case 'assignment':
             const lhsStr = unparse(node.lhs, { ...opts, expressionalContext: true })
             const valueStr = unparse(node.value, { ...opts, expressionalContext: true })

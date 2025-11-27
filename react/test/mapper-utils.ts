@@ -1,6 +1,8 @@
 import fs from 'fs'
 import { gunzipSync, gzipSync } from 'zlib'
 
+import chalkTemplate from 'chalk-template'
+import * as diff from 'diff'
 import { ClientFunction, Selector } from 'testcafe'
 
 import { target, downloadOrCheckString, waitForDownload, grabDownload, waitForLoading } from './test_utils'
@@ -72,4 +74,35 @@ export async function replaceInput(t: TestController, original: string | RegExp,
     await t.selectText(inputSelector)
     await t.typeText(inputSelector, newv)
     await t.pressKey('enter')
+}
+
+export async function drag(t: TestController, selector: Selector | string, deltaX: number, deltaY: number): Promise<void> {
+    const elementRect = await Selector(selector).boundingClientRect
+    const downEvent = { pointerId: 1, clientX: (elementRect.left + elementRect.right) / 2, clientY: (elementRect.bottom + elementRect.top) / 2 }
+    const upEvent = { ...downEvent, clientX: downEvent.clientX + deltaX, clientY: downEvent.clientY + deltaY }
+    await t.dispatchEvent(selector, 'pointerdown', downEvent).dispatchEvent(selector, 'pointermove', upEvent).dispatchEvent(selector, 'pointerup', upEvent)
+}
+
+export function nastyDiff(actual: string, expected: string): void {
+    actual = actual.replaceAll('\u00a0', ' ')
+
+    if (actual === expected) {
+        return
+    }
+
+    const changes = diff.diffChars(actual, expected)
+
+    console.error(changes.map(change => ({
+        ...change,
+        chars: Array.from(change.value).map(c => c.charCodeAt(0)),
+    })))
+
+    changes.forEach((part) => {
+        // green for additions, red for deletions, grey for common parts
+        // eslint-disable-next-line no-restricted-syntax -- Colors for test output
+        const color = part.added ? 'green' : part.removed ? 'red' : 'grey'
+        process.stdout.write(chalkTemplate`{${color} ${part.value}}`)
+    })
+
+    throw new Error(`strings different\n${actual}`)
 }

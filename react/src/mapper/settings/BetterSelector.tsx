@@ -1,7 +1,8 @@
 import stableStringify from 'json-stable-stringify'
-import React, { ReactNode, useState, useEffect, useRef, useMemo } from 'react'
+import React, { ReactNode, useState, useEffect, useRef, useMemo, CSSProperties } from 'react'
 
 import { useColors } from '../../page_template/colors'
+import { IFrameInput } from '../../utils/IFrameInput'
 import { toNeedle } from '../../utils/bitap'
 import { bitap } from '../../utils/bitap-selector'
 
@@ -45,12 +46,16 @@ function PencilButton({ onEdit }: { onEdit: () => void }): ReactNode {
     )
 }
 
-export function BetterSelector<T>({ value, onChange, possibleValues, renderValue, onEdit }: {
+export function BetterSelector<T>({ value, onChange, possibleValues, renderValue, onEdit, iframe = false, inputStyle, disabled = false, onBlur }: {
     value: T
     onChange: (newValue: T) => void
     possibleValues: readonly T[] // Memo this for performance
     renderValue: (v: T) => SelectorRenderResult // Memo this for performance
     onEdit?: () => void
+    iframe?: boolean
+    inputStyle?: CSSProperties
+    disabled?: boolean
+    onBlur?: () => void
 }): ReactNode {
     const colors = useColors()
 
@@ -134,9 +139,12 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
         }
     }
 
+    // eslint-disable-next-line no-restricted-syntax -- Dynamic tag name
+    const InputElem = iframe ? IFrameInput : 'input'
+
     return (
         <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
-            <input
+            <InputElem
                 ref={inputRef}
                 type="text"
                 value={searchValue}
@@ -161,6 +169,7 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                     setTimeout(() => {
                         setIsOpen(false)
                         setHighlightedIndex(0)
+                        onBlur?.()
                     }, 150)
                 }}
                 placeholder="Search options..."
@@ -170,7 +179,9 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                     border: `1px solid ${colors.ordinalTextColor}`,
                     borderRadius: '4px',
                     fontSize: '14px',
+                    ...inputStyle,
                 }}
+                disabled={disabled}
             />
             {onEdit && <PencilButton onEdit={onEdit} />}
             {isOpen && sortedOptions.length > 0 && (
@@ -203,6 +214,7 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                             style={{
                                 cursor: 'pointer',
                                 borderBottom: index < sortedOptions.length - 1 ? '1px solid #eee' : 'none',
+                                overflow: 'hidden',
                             }}
                             onMouseEnter={() => { setHighlightedIndex(index) }}
                         >

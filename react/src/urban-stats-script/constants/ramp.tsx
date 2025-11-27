@@ -1,3 +1,5 @@
+import { round } from 'mathjs'
+
 import { getRamps } from '../../mapper/ramps'
 import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
@@ -149,7 +151,7 @@ export const rampConsts: [string, USSValue][] = Object.entries(getRamps()).map((
             equivalentExpressions: [parseNoErrorAsExpression(
                 `constructRamp([${ramp.map(([value, rampHex]) => {
                     const color = hexToColor(rampHex)
-                    return `{value:${value}, color:${rgbColorExpression(color, { round: 3 })}}`
+                    return `{value:${round(value, 3)}, color:${rgbColorExpression(color, { round: 3 })}}`
                 }).join(',')}])`,
                 '',
             )],

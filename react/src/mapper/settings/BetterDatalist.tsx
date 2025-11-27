@@ -1,0 +1,190 @@
+import stableStringify from 'json-stable-stringify'
+import React, { ReactNode, useState, useEffect, useRef, useMemo, CSSProperties } from 'react'
+
+import { useColors } from '../../page_template/colors'
+import { IFrameInput } from '../../utils/IFrameInput'
+
+import '../../common.css'
+
+export const labelPadding = '4px'
+
+export interface RenderResult { text: string, node?: (highlighted: boolean) => ReactNode }
+
+export const cannotParse = Symbol('cannotParse')
+
+export function BetterDatalist<T>({ value, onChange, parse, possibleValues, renderValue, iframe = false, inputStyle, disabled = false, onBlur }: {
+    value: T
+    onChange: (newValue: T) => void
+    parse: (string: string) => T | typeof cannotParse
+    possibleValues: readonly T[] // Memo this for performance
+    renderValue: (v: T) => RenderResult // Memo this for performance
+    iframe?: boolean
+    inputStyle?: CSSProperties
+    disabled?: boolean
+    onBlur?: () => void
+}): ReactNode {
+    const colors = useColors()
+
+    const selectedRendered = renderValue(value)
+
+    const [searchValue, setSearchValue] = useState(selectedRendered.text)
+    const [isOpen, setIsOpen] = useState(false)
+    const [highlightedIndex, setHighlightedIndex] = useState(0)
+
+    const inputRef = useRef<HTMLInputElement>(null)
+
+    const menuRef = useRef<HTMLDivElement>(null)
+
+    // Needed if this component is reused in a different context
+    useEffect(() => {
+        setSearchValue(selectedRendered.text)
+    }, [selectedRendered.text])
+
+    const sortedOptions = useMemo(() => possibleValues.map((choice, index) => ({ renderedChoice: renderValue(choice), index })), [possibleValues, renderValue])
+
+    const handleOptionSelect = (option: typeof sortedOptions[number]): void => {
+        const newValue = possibleValues[option.index]
+        if (stableStringify(newValue) !== stableStringify(value)) {
+            onChange(newValue)
+        }
+        setSearchValue(option.renderedChoice.text)
+        setIsOpen(false)
+        setHighlightedIndex(0)
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent): void => {
+        if (!isOpen || sortedOptions.length === 0) return
+
+        switch (e.key) {
+            case 'ArrowDown':
+                e.preventDefault()
+                setHighlightedIndex(prev =>
+                    prev < sortedOptions.length - 1 ? prev + 1 : 0,
+                )
+                break
+            case 'ArrowUp':
+                e.preventDefault()
+                setHighlightedIndex(prev =>
+                    prev > 0 ? prev - 1 : sortedOptions.length - 1,
+                )
+                break
+            case 'Enter':
+                e.preventDefault()
+                const parsed = parse(searchValue)
+                if (parsed !== cannotParse) {
+                    if (stableStringify(parsed) !== stableStringify(value)) {
+                        onChange(parsed)
+                    }
+                    setIsOpen(false)
+                    setHighlightedIndex(0)
+                    inputRef.current!.blur()
+                }
+                break
+            case 'Escape':
+                e.preventDefault()
+                setIsOpen(false)
+                setHighlightedIndex(0)
+                setSearchValue(renderValue(value).text)
+                break
+        }
+    }
+
+    // eslint-disable-next-line no-restricted-syntax -- Dynamic tag name
+    const InputElem = iframe ? IFrameInput : 'input'
+
+    return (
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '50px' }}>
+            <InputElem
+                ref={inputRef}
+                type="text"
+                value={searchValue}
+                onChange={(e) => {
+                    setSearchValue(e.target.value)
+                    setIsOpen(true)
+                    setHighlightedIndex(0)
+                    if (menuRef.current) {
+                        menuRef.current.scrollTop = 0
+                    }
+                }}
+                onKeyDown={handleKeyDown}
+                onClick={(e) => {
+                    (e.target as HTMLInputElement).select()
+                }}
+                onFocus={() => {
+                    setIsOpen(true)
+                    setHighlightedIndex(0)
+                }}
+                onBlur={() => {
+                    // Delay closing to allow clicking on options
+                    setTimeout(() => {
+                        setIsOpen(false)
+                        setHighlightedIndex(0)
+                        onBlur?.()
+                    }, 150)
+                }}
+                placeholder="Search options..."
+                style={{
+                    width: '100%',
+                    padding: `${labelPadding} 8px`,
+                    border: `1px solid ${parse(searchValue) === cannotParse ? colors.hueColors.red : colors.ordinalTextColor}`,
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    ...inputStyle,
+                }}
+                disabled={disabled}
+            />
+            {isOpen && sortedOptions.length > 0 && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        right: 0,
+                        backgroundColor: colors.background,
+                        border: '1px solid #ccc',
+                        borderRadius: '4px',
+                        maxHeight: '200px',
+                        overflowY: 'auto',
+                        zIndex: 1000,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    }}
+                    ref={menuRef}
+                >
+                    {sortedOptions.map((option, index) => (
+                        <div
+                            key={index}
+                            onMouseDown={() => {
+                                handleOptionSelect(option)
+                            }}
+                            onMouseUp={() => {
+                                handleOptionSelect(option)
+                                inputRef.current?.blur()
+                            }}
+                            style={{
+                                cursor: 'pointer',
+                                borderBottom: index < sortedOptions.length - 1 ? '1px solid #eee' : 'none',
+                            }}
+                            onMouseEnter={() => { setHighlightedIndex(index) }}
+                        >
+                            {option.renderedChoice.node?.(index === highlightedIndex) ?? <DefaultSelectorOption text={option.renderedChoice.text} highlighted={index === highlightedIndex} />}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    )
+}
+
+function DefaultSelectorOption(props: { text: string, highlighted: boolean }): ReactNode {
+    const colors = useColors()
+    return (
+        <div style={{
+            padding: '8px 12px',
+            background: (props.highlighted ? colors.slightlyDifferentBackgroundFocused : colors.slightlyDifferentBackground),
+            color: props.text === '' ? colors.ordinalTextColor : colors.textMain,
+        }}
+        >
+            {props.text === '' ? 'No Selection' : props.text}
+        </div>
+    )
+}

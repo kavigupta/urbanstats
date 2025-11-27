@@ -123,7 +123,7 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
         history.choices.push(selected)
         history.correct_pattern.push((selected === 'A') === aCorrect(question))
         setTodaysQuizHistory(history)
-        setTimeout(() => { setWaitingForTime(false) }, 500)
+        setTimeout(() => { setWaitingForTime(false) }, TestUtils.shared.isTesting ? 0 : 500)
     }
 
     return (

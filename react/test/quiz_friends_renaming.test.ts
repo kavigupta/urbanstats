@@ -1,92 +1,10 @@
 import { Selector } from 'testcafe'
 
-import { addFriend, createUser, JuxtastatUserState, restoreUser, startingState } from './quiz_friends_test_utils'
-import { clickButtons, friendsText, quizFixture } from './quiz_test_utils'
+import { restoreUser, setupMultipleFriends } from './quiz_friends_test_utils'
+import { friendsText, quizFixture } from './quiz_test_utils'
 import { safeReload, target } from './test_utils'
 
 const today = 'quiz.html#date=99'
-
-interface FriendPatterns {
-    alice: string
-    bob: string
-    charlie: string
-    david: string
-    eve: string
-}
-
-async function setupMultipleFriends(t: TestController): Promise<{ state: JuxtastatUserState, patterns: FriendPatterns }> {
-    const state = startingState()
-    const patterns: FriendPatterns = {
-        alice: '',
-        bob: '',
-        charlie: '',
-        david: '',
-        eve: '',
-    }
-
-    // Create Alice and do quiz
-    await createUser(t, 'Alice', '000000a', state)
-    await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
-    const aliceText = await friendsText()
-    patterns.alice = aliceText[0].replace(/You/g, '').replace(/Copy Link/g, '')
-    await t.expect(aliceText.length).eql(1)
-
-    // Create Bob and do quiz
-    await createUser(t, 'Bob', '000000b', state)
-    await clickButtons(t, ['b', 'b', 'b', 'b', 'b'])
-    const bobText = await friendsText()
-    patterns.bob = bobText[0].replace(/You/g, '').replace(/Copy Link/g, '')
-    await t.expect(bobText.length).eql(1)
-    await addFriend(t, 'Alice', '000000a')
-    await restoreUser(t, 'Alice', state)
-    await addFriend(t, 'Bob', '000000b')
-    const aliceBobText = await friendsText()
-    await t.expect(aliceBobText.length).eql(2)
-    await t.expect(aliceBobText[0]).contains('You')
-    await t.expect(aliceBobText[1]).contains('Bob')
-
-    // Create Charlie and do quiz
-    await createUser(t, 'Charlie', '000000c', state)
-    await clickButtons(t, ['a', 'b', 'a', 'b', 'a'])
-    const charlieText = await friendsText()
-    patterns.charlie = charlieText[0].replace(/You/g, '').replace(/Copy Link/g, '')
-    await t.expect(charlieText.length).eql(1)
-    await addFriend(t, 'Alice', '000000a')
-    await restoreUser(t, 'Alice', state)
-    await addFriend(t, 'Charlie', '000000c')
-    const aliceCharlieText = await friendsText()
-    await t.expect(aliceCharlieText.length).eql(3)
-    await t.expect(aliceCharlieText[1]).contains('Bob')
-    await t.expect(aliceCharlieText[2]).contains('Charlie')
-
-    // Create David and do quiz
-    await createUser(t, 'David', '000000d', state)
-    await clickButtons(t, ['b', 'a', 'b', 'a', 'b'])
-    const davidText = await friendsText()
-    patterns.david = davidText[0].replace(/You/g, '').replace(/Copy Link/g, '')
-    await t.expect(davidText.length).eql(1)
-    await addFriend(t, 'Alice', '000000a')
-    await restoreUser(t, 'Alice', state)
-    await addFriend(t, 'David', '000000d')
-    const aliceDavidText = await friendsText()
-    await t.expect(aliceDavidText.length).eql(4)
-    await t.expect(aliceDavidText[3]).contains('David')
-
-    // Create Eve and do quiz
-    await createUser(t, 'Eve', '000000e', state)
-    await clickButtons(t, ['a', 'a', 'b', 'b', 'a'])
-    const eveText = await friendsText()
-    patterns.eve = eveText[0].replace(/You/g, '').replace(/Copy Link/g, '')
-    await t.expect(eveText.length).eql(1)
-    await addFriend(t, 'Alice', '000000a')
-    await restoreUser(t, 'Alice', state)
-    await addFriend(t, 'Eve', '000000e')
-    const allFriendsText = await friendsText()
-    await t.expect(allFriendsText.length).eql(5)
-    await t.expect(allFriendsText[4]).contains('Eve')
-
-    return { state, patterns }
-}
 
 quizFixture(
     'friends renaming test',
