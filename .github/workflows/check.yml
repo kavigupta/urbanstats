@@ -10,6 +10,11 @@ env:
   URBANSTATS_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   FORCE_COLOR: 1
+  SPARSE_CHECKOUT: |
+    !named_region_shapefiles/*
+    !stored_quizzes/*
+    !outputs/*
+    /*
 jobs:
   build-and-push-common-image:
     runs-on: ubuntu-22.04
@@ -31,12 +36,7 @@ jobs:
           git config core.sparseCheckout true
 
           # Configure sparse checkout
-          cat > .git/info/sparse-checkout <<'EOF'
-          !named_region_shapefiles/*
-          !stored_quizzes/*
-          !outputs/*
-          /*
-          EOF
+          echo "$SPARSE_CHECKOUT" > .git/info/sparse-checkout
 
           # Check out the ref
           git checkout --progress --force ${{ github.sha }}
@@ -101,6 +101,11 @@ jobs:
     needs: build-and-push-common-image
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
+    env:
+      SPARSE_CHECKOUT: |
+        !named_region_shapefiles/*
+        !outputs/*
+        /*
     steps:
       - *checkout
       - uses: ./.github/actions/python_environment
