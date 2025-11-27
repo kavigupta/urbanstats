@@ -68,7 +68,7 @@ jobs:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
       - *checkout
-      - uses: lukebrody/nothing-action # Without this, the below actions don't work. This is a bug in Github
+      - uses: lukebrody/nothing-action@master # Without this, the below actions don't work. This is a bug in Github
       - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
       - name: allow all directories
@@ -223,7 +223,7 @@ jobs:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
       - *checkout
-      - uses: lukebrody/nothing-action # Without this, the below actions don't work. This is a bug in Github
+      - uses: lukebrody/nothing-action@master # Without this, the below actions don't work. This is a bug in Github
       - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
       - name: Run js tests
