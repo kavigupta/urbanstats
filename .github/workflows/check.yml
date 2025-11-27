@@ -66,6 +66,10 @@ jobs:
     needs: build-and-push-common-image
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
+    env:
+      SPARSE_CHECKOUT: |
+        !outputs/*
+        /*
     steps:
       - *checkout
       - uses: lukebrody/nothing-action@master # Without this, the below actions don't work. This is a bug in Github
@@ -221,6 +225,10 @@ jobs:
     needs: [build-and-push-common-image]
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
+    env:
+      SPARSE_CHECKOUT: |
+        !outputs/*
+        /*
     steps:
       - *checkout
       - uses: lukebrody/nothing-action@master # Without this, the below actions don't work. This is a bug in Github
