@@ -69,7 +69,6 @@ jobs:
     steps:
       - *checkout
       - uses: ./.github/actions/python_environment
-        working-directory: /__w/urbanstats/urbanstats
       - uses: ./.github/actions/node_modules
       - name: allow all directories
         # This is needed because git complains about git repositories outside the user directory
