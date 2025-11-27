@@ -771,17 +771,21 @@ export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpre
     return identifiers
 }
 
-export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, opts: { indent?: number, inline?: boolean, simplify?: boolean, expressionalContext?: boolean } = {}): string {
+export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, opts: { indent?: number, inline?: boolean, simplify?: boolean, expressionalContext?: boolean, wrap?: boolean } = {}): string {
     if (opts.inline) {
-        assert(opts.expressionalContext ?? false, 'inline must be true if expressionalContext is true')
+        assert(opts.expressionalContext ?? false, 'expressionalContext must be true if inline is true')
     }
     opts.indent = opts.indent ?? 0
+    opts.wrap = opts.wrap ?? true
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
         return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant' || expr.type === 'customNode'
     }
     function indentSpaces(level: number): string {
         return '    '.repeat(level)
     }
+
+    const characterLimit = 80 - indentSpaces(opts.indent).length
+
     switch (node.type) {
         case 'customNode':
             if (!opts.simplify) {
@@ -851,8 +855,13 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
             }
             return `${leftWithParens} ${node.operator.node} ${rightWithParens}`
         case 'vectorLiteral':
-            const elementsStr = node.elements.map(elem => unparse(elem, { ...opts, inline: true, expressionalContext: true }))
-            return `[${elementsStr.join(', ')}]`
+            const elementsStr = node.elements.map(elem => unparse(elem, { ...opts, inline: true, expressionalContext: true, wrap: false }))
+            const notWrapped = `[${elementsStr.join(', ')}]`
+            if (notWrapped.length > characterLimit && opts.wrap) {
+                const wrappedElements = node.elements.map(elem => `${indentSpaces(opts.indent! + 1)}${unparse(elem, { ...opts, inline: true, expressionalContext: true, wrap: true, indent: opts.indent! + 1 })}`)
+                return `[\n${wrappedElements.join(',\n')}\n${indentSpaces(opts.indent)}]`
+            }
+            return notWrapped
         case 'objectLiteral':
             const propertiesStr = node.properties.map(([key, value]) => {
                 const valueStr = unparse(value, { ...opts, inline: true, expressionalContext: true })
