@@ -101,12 +101,12 @@ function computeDashPatterns(histograms: HistogramProps[]): Map<string, { patter
         subseriesNames.add(histogram.subseriesName)
     })
     const subseriesNamesOrdered = Array.from(subseriesNames).sort()
+    assert(subseriesNamesOrdered.length <= strokeDasharrays.length, 'Too many subseries for dash patterns')
     histograms.forEach((histogram) => {
         const subId = subseriesNamesOrdered.indexOf(histogram.subseriesName)
         if (!dashPatterns.has(histogram.subseriesName)) {
-            assert(subId >= 0 && subId < strokeDasharrays.length, 'Too many subseries for dash patterns')
             dashPatterns.set(histogram.subseriesName, {
-                pattern: strokeDasharrays[strokeDasharrays.length - 1 - subId],
+                pattern: strokeDasharrays[subseriesNamesOrdered.length - 1 - subId],
                 name: histogram.subseriesName,
             })
         }
