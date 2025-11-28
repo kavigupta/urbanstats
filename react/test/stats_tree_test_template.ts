@@ -263,6 +263,15 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
         })
     })
 
+    test('search-filter', async (t) => {
+        // Groups that don't exist for an article don't show up in search
+        await t.navigateTo(`${target}/article.html?longname=Venice+Neighborhood%2C+Los+Angeles+City%2C+California%2C+USA`)
+        await withHamburgerMenu(t, async () => {
+            await t.click(statsSearchInput).pressKey('m e d i a n')
+            await t.expect(Selector('[data-test-id=category_income]').exists).notOk()
+        })
+    })
+
     /** Universe Tests */
 
     urbanstatsFixture('stats tree universe test', `${target}/article.html?longname=USA`)
