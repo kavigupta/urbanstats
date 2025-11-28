@@ -102,8 +102,8 @@ function manualLegend(histograms: HistogramProps[], transpose: boolean, colors: 
         const svgNS = 'http://www.w3.org/2000/svg'
         const group = document.createElementNS(svgNS, 'g')
         // Position on the left side, but offset enough to avoid the y-axis
-        const translateX = transpose ? 16 : 100
-        const translateY = 24
+        const translateX = transpose ? 200 : 100
+        const translateY = 70
         group.setAttribute('transform', `translate(${translateX} ${translateY})`)
 
         const paddingX = 12
