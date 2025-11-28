@@ -403,3 +403,13 @@ test('mobile appearance', async (t) => {
     await t.resizeWindow(400, 800)
     await screencap(t)
 })
+
+test('showing a popover does not clip in split view', async (t) => {
+    await toggleCustomScript(t)
+    await t.hover(Selector('span').withText(/^linearScale/))
+    await t.wait(1000)
+    const doc = Selector('div').withText(/^Creates a linear scale/)
+    const editor = Selector('#test-editor-body')
+    await t.expect((await doc.boundingClientRect).right).lt((await editor.boundingClientRect).right)
+    await screencap(t, { fullPage: false, selector: Selector('[data-test=split-left]') }) // Fullpage false so we don't hover and close the popover
+})
