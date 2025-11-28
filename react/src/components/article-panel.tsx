@@ -11,7 +11,6 @@ import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-set
 import { statParents, Year } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { useUniverse } from '../universe'
-import { assert } from '../utils/defensive'
 import { Article, IRelatedButtons } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
@@ -20,9 +19,9 @@ import { ArticleMap } from './ArticleMap'
 import { ArticleWarnings } from './ArticleWarnings'
 import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
+import { pullRelevantPlotProps } from './comparison-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
-import { PlotProps } from './plots'
 import { Related } from './related-button'
 import { ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
@@ -183,18 +182,17 @@ function ArticleTable(props: {
         onlyColumns,
     })])
 
-    const years = getYearsForRows(props.filteredRows)
-
     const plotSpecs: (PlotSpec | undefined)[] = expandedEach.map((expanded, index) => expanded
         ? {
                 statDescription: props.filteredRows[index].renderedStatname,
-                plotProps: [{
-                    ...props.filteredRows[index],
-                    color: colors.hueColors.blue,
-                    shortname: props.article.shortname,
-                    longname: props.article.longname,
-                    sharedTypeOfAllArticles: props.article.articleType,
-                }],
+                plotProps: pullRelevantPlotProps(
+                    props.filteredRows,
+                    index,
+                    colors.hueColors.blue,
+                    props.article.shortname,
+                    props.article.longname,
+                    props.article.articleType,
+                ),
             }
         : undefined,
     )
