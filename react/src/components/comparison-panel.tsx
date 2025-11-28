@@ -392,10 +392,6 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
     )
     const overOne = statpaths.length > 1
     if (overOne) {
-        // statpaths.sort(({ sP: { year: a } }, { sP: { year: b } }) => {
-        //     assert(a !== null && b !== null, 'Year should not be null for plot data')
-        //     return a - b
-        // })
         statpaths.forEach(({ sP: { year } }) => {
             assert(year !== null, 'Year should not be null for plot data')
         })
