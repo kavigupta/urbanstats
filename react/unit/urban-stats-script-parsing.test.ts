@@ -763,6 +763,10 @@ void test('parse error nodes', (): void => {
     assert.deepStrictEqual(toSExp(errorNode), '(customNode (parseError "This is a test error" [{"type":"error","value":"Expected end of line or ; after","location":{"start":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":0,"charIdx":0},"end":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":4,"charIdx":4}}}]) "This is a test error")')
 
     assert.deepStrictEqual(toSExp(parseNoErrorAsCustomNode('++', 'test')), '(customNode (parseError "++" [{"type":"error","value":"Unexpected end of input","location":{"start":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":1,"charIdx":1},"end":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":2,"charIdx":2}}}]) "++")')
+
+    assert.equal(toSExp(parseNoErrorAsCustomNode(`x  =
+condition (population > 1000000)
+cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)`, 'test')), '(customNode (parseError "x  =\\ncondition (population > 1000000)\\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)" [{"type":"error","value":"Unexpected keyword condition","location":{"start":{"block":{"type":"single","ident":"test"},"lineIdx":1,"colIdx":0,"charIdx":5},"end":{"block":{"type":"single","ident":"test"},"lineIdx":1,"colIdx":9,"charIdx":14}}}]) "x  =\\ncondition (population > 1000000)\\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)")')
 })
 
 void test('unparse custom nodes with multiple lines', (): void => {
