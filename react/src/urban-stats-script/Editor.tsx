@@ -65,12 +65,14 @@ export function Editor(
             newScript, colors, results.filter(r => r.kind !== 'success'),
             (token, content) => {
                 if (popoverState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
-                    // put the text node in a span that has a background so we hightlight the token we're popovering
-                    const text = content[0]
-                    const span = document.createElement('span')
-                    span.appendChild(text)
-                    span.style.backgroundColor = colors.slightlyDifferentBackgroundFocused
-                    content[0] = span
+                    if (popoverState.kind === 'documentation') {
+                        // put the text node in a span that has a background so we hightlight the token we're popovering
+                        const text = content[0]
+                        const span = document.createElement('span')
+                        span.appendChild(text)
+                        span.style.backgroundColor = colors.slightlyDifferentBackgroundFocused
+                        content[0] = span
+                    }
 
                     content.push(popoverState.element)
                 }
