@@ -87,6 +87,9 @@ function computeColorItems(shortnames: string[], colors: string[]): { label: str
             })
         }
     }
+    if (colorItems.length <= 1) {
+        return []
+    }
     return colorItems
 }
 
