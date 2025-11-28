@@ -401,5 +401,6 @@ urbanstatsFixture('mapper default', `${target}/mapper.html`)
 
 test('mobile appearance', async (t) => {
     await t.resizeWindow(400, 800)
-    await screencap(t)
+    await t.scroll(0, 10000)
+    await screencap(t, { fullPage: false })
 })
