@@ -3,6 +3,7 @@ import '@fontsource/inconsolata/500.css'
 import React, { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import { totalOffset } from '../components/screenshot'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { LongFormDocumentation } from '../uss-documentation'
@@ -64,6 +65,13 @@ export function Editor(
             newScript, colors, results.filter(r => r.kind !== 'success'),
             (token, content) => {
                 if (popoverState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
+                    // put the text node in a span that has a background so we hightlight the token we're popovering
+                    const text = content[0]
+                    const span = document.createElement('span')
+                    span.appendChild(text)
+                    span.style.backgroundColor = colors.slightlyDifferentBackgroundFocused
+                    content[0] = span
+
                     content.push(popoverState.element)
                 }
                 if (placeholder !== undefined && newScript.tokens.every(t => t.token.type === 'operator' && t.token.value === 'EOL') && token.location.end.charIdx === 0) {
@@ -234,12 +242,13 @@ export function Editor(
                         name,
                         value,
                     }
+                    const elemOffset = totalOffset(elem).left
                     setTimeout(() => {
                         if (hoveredToken === token) {
                             setPopoverState({
                                 kind: 'documentation',
                                 ...opts,
-                                element: createDocumentationPopover(colors),
+                                element: createDocumentationPopover(colors, editorRef.current!, elemOffset),
                             })
                         }
                     }, 500)

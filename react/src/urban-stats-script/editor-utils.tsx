@@ -1,5 +1,6 @@
 import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
+import { totalOffset } from '../components/screenshot'
 import { Colors } from '../page_template/color-themes'
 import { DefaultMap } from '../utils/DefaultMap'
 import { TestUtils } from '../utils/TestUtils'
@@ -313,7 +314,11 @@ export function createAutocompleteMenu(colors: Colors): HTMLElement {
     return result
 }
 
-export function createDocumentationPopover(colors: Colors): HTMLElement {
+export function createDocumentationPopover(colors: Colors, editor: HTMLPreElement, elemOffset: number): HTMLElement {
+    const width = Math.min(400, editor.offsetWidth)
+
+    const tokenOffset = elemOffset - totalOffset(editor).left
+
     const style = {
         'position': 'absolute',
         'top': '100%',
@@ -326,8 +331,9 @@ export function createDocumentationPopover(colors: Colors): HTMLElement {
         'border': `1px solid ${colors.borderNonShadow}`,
         'color': colors.textMain,
         'background-color': colors.slightlyDifferentBackground,
-        'width': '33vw',
+        'width': `${width}px`,
         'padding': '0 1.33em',
+        'transform': `translateX(${Math.min(0, editor.offsetWidth - (tokenOffset + width))}px)`,
     }
 
     const result = document.createElement('div')
