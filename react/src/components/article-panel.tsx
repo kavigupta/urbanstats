@@ -194,7 +194,6 @@ function ArticleTable(props: {
                     shortname: props.article.shortname,
                     longname: props.article.longname,
                     sharedTypeOfAllArticles: props.article.articleType,
-                    subseriesId: years[index],
                 }],
             }
         : undefined,

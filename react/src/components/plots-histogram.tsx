@@ -7,6 +7,7 @@ import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { HistogramType, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
+import { assert } from '../utils/defensive'
 import { IHistogram } from '../utils/protos'
 import { useTranspose } from '../utils/transpose'
 
@@ -25,8 +26,7 @@ interface HistogramProps {
     histogram: IHistogram
     color: string
     universeTotal: number
-    subseriesId?: number
-    subseriesName?: string
+    subseriesName: string
 }
 
 export function Histogram(props: { histograms: HistogramProps[], statDescription: string, sharedTypeOfAllArticles?: string }): ReactNode {
@@ -94,22 +94,35 @@ function computeColorItems(shortnames: string[], colors: string[]): { label: str
     return colorItems
 }
 
-function manualLegend(histograms: HistogramProps[], transpose: boolean, colors: string[], shortnames: string[], themeColors: Colors): Plot.Markish[] {
-    const colorItems = computeColorItems(shortnames, colors)
-
-    const dashPatternItems: { label: string, dashPattern: string }[] = []
-    const dashPatterns = new Map<number, { pattern: string, name: string }>()
+function computeDashPatterns(histograms: HistogramProps[]): Map<string, { pattern: string, name: string }> {
+    const dashPatterns = new Map<string, { pattern: string, name: string }>()
+    const subseriesNames = new Set<string>()
     histograms.forEach((histogram) => {
-        const subId = histogram.subseriesId ?? 0
-        if (!dashPatterns.has(subId)) {
-            dashPatterns.set(subId, {
-                pattern: strokeDasharrays[subId % strokeDasharrays.length],
-                name: histogram.subseriesName ?? `Subseries ${subId}`,
+        subseriesNames.add(histogram.subseriesName)
+    })
+    const subseriesNamesOrdered = Array.from(subseriesNames).sort()
+    histograms.forEach((histogram) => {
+        const subId = subseriesNamesOrdered.indexOf(histogram.subseriesName)
+        if (!dashPatterns.has(histogram.subseriesName)) {
+            assert(subId >= 0 && subId < strokeDasharrays.length, 'Too many subseries for dash patterns')
+            dashPatterns.set(histogram.subseriesName, {
+                pattern: strokeDasharrays[strokeDasharrays.length - 1 - subId],
+                name: histogram.subseriesName,
             })
         }
     })
+    return dashPatterns
+}
+
+function manualLegend(histograms: HistogramProps[], transpose: boolean, colors: string[], shortnames: string[], themeColors: Colors): Plot.Markish[] {
+    const colorItems = computeColorItems(shortnames, colors)
+
+    const dashPatterns = computeDashPatterns(histograms)
+
+    const dashPatternItems: { label: string, dashPattern: string }[] = []
     if (dashPatterns.size > 1) {
-        dashPatterns.forEach(({ pattern, name }) => {
+        const dashPatternsEnumerated = Array.from(dashPatterns.values()).sort((a, b) => a.name.localeCompare(b.name))
+        dashPatternsEnumerated.forEach(({ pattern, name }) => {
             dashPatternItems.push({
                 label: name,
                 dashPattern: pattern,
@@ -321,7 +334,7 @@ function HistogramSettings(props: {
                                 return navContext.link({
                                     kind: 'comparison',
                                     universe: navContext.universe!,
-                                    longnames: [...props.longnames, regionName],
+                                    longnames: [...deduplicate(props.longnames), regionName],
                                 }, { scroll: { kind: 'none' } })
                             }}
                         />
@@ -342,6 +355,18 @@ function HistogramSettings(props: {
             <CheckboxSetting name={transpose ? 'Relative' : 'Relative Histograms'} settingKey="histogram_relative" testId="histogram_relative" />
         </div>
     )
+}
+
+function deduplicate(arr: string[]): string[] {
+    const seen = new Set<string>()
+    const result: string[] = []
+    for (const item of arr) {
+        if (!seen.has(item)) {
+            seen.add(item)
+            result.push(item)
+        }
+    }
+    return result
 }
 
 function histogramBounds(histograms: HistogramProps[]): [number, number] {
@@ -377,8 +402,7 @@ function histogramBounds(histograms: HistogramProps[]): [number, number] {
 interface Series {
     values: { name: string, xidx: number, y: number }[]
     color: string
-    subseriesId: number
-    subseriesName?: string
+    subseriesName: string
 }
 
 function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: number[], relative: boolean, isCumulative: boolean): Series[] {
@@ -404,8 +428,7 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
                 ) * (relative ? 100 : histogram.universeTotal),
             })),
             color: histogram.color,
-            subseriesId: histogram.subseriesId ?? 0,
-            subseriesName: histogram.subseriesName ?? undefined,
+            subseriesName: histogram.subseriesName,
         }
     })
     return series
@@ -573,11 +596,16 @@ function createHistogramMarks(
     )
     const marks: Plot.Markish[] = []
     if (histogramType === 'Line' || histogramType === 'Line (cumulative)') {
+        const dashPatterns = computeDashPatterns(histograms)
         marks.push(
-            ...series.map((s, idx) => Plot.line(s.values, {
-                x: transpose ? 'y' : 'xidx', y: transpose ? 'xidx' : 'y', stroke: s.color, strokeWidth: 4,
-                strokeDasharray: strokeDasharrays[(histograms[idx].subseriesId ?? 0) % strokeDasharrays.length],
-            })),
+            ...series.map((s) => {
+                const strokeDasharray = dashPatterns.size > 1 ? dashPatterns.get(s.subseriesName)?.pattern : undefined
+                return Plot.line(s.values, {
+                    x: transpose ? 'y' : 'xidx', y: transpose ? 'xidx' : 'y', stroke: s.color,
+                    strokeWidth: strokeDasharray !== undefined ? 2 : 4,
+                    strokeDasharray,
+                })
+            }),
         )
     }
     else {

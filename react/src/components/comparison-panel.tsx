@@ -25,7 +25,7 @@ import { TransposeContext } from '../utils/transpose'
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
-import { computeNameSpecsWithGroups, getYearsForRows } from './article-panel'
+import { computeNameSpecsWithGroups } from './article-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
@@ -392,22 +392,25 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
     )
     const overOne = statpaths.length > 1
     if (overOne) {
-        statpaths.sort(({ sP: { year: a } }, { sP: { year: b } }) => {
-            assert(a !== null && b !== null, 'Year should not be null for plot data')
-            return a - b
+        // statpaths.sort(({ sP: { year: a } }, { sP: { year: b } }) => {
+        //     assert(a !== null && b !== null, 'Year should not be null for plot data')
+        //     return a - b
+        // })
+        statpaths.forEach(({ sP: { year } }) => {
+            assert(year !== null, 'Year should not be null for plot data')
         })
         assert(statpaths.length === new Set(statpaths.map(({ sP: { year } }) => year)).size, 'All statpaths for plot data should have unique years')
     }
-    return statpaths.map(({ i: idx, sP: { year } }, which) => {
+    return statpaths.map(({ i: idx, sP: { year } }) => {
+        assert(year !== null, 'unreachable, we checked this already')
         return {
             ...rows[idx],
             color,
             shortname,
             longname,
             sharedTypeOfAllArticles,
-            subseriesId: overOne ? which : undefined,
-            subseriesName: overOne ? String(year) : undefined,
-        }
+            subseriesName: year.toString(),
+        } satisfies PlotProps
     })
 }
 
