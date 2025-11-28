@@ -176,3 +176,24 @@ test('histogram-add-region-search-works-from-article', async (t) => {
     await t.expect(getLocationWithoutSettings())
         .eql(comparisonPage([pasadena, swSGV]))
 })
+
+urbanstatsFixture('histogram add region test with multiple years', `${target}/article.html?longname=Pasadena+CCD+%5BCCD%5D%2C+Los+Angeles+County%2C+California%2C+USA`)
+
+test('histogram-add-region-multiple-years', async (t) => {
+    // Enable multiple years to create subseries
+    await checkTextboxes(t, ['2020', '2010'])
+
+    await t.click(Selector('.expand-toggle'))
+
+    const addButton = Selector('img[src="/add.png"]')
+    await t.click(addButton)
+
+    const searchBox = Selector('input[placeholder="Add region..."]')
+    await t.typeText(searchBox, 'Upper San Gabriel Valley CCD')
+
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+
+    await t.expect(getLocationWithoutSettings())
+        .eql(comparisonPage([pasadena, upperSGV]))
+})
