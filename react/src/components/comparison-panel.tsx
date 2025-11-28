@@ -388,7 +388,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
     const sPs = rows.map(row => statParents.get(row.statpath)!)
     const statpaths = sPs.map((sP, i) => ({ sP, i })).filter((
-        { sP, i }) => sP.group.id === sPs[statIndex].group.id && rows[i].extraStat !== undefined,
+        { sP, i }) => sP.group.id === sPs[statIndex].group.id && sP.source === sPs[statIndex].source && rows[i].extraStat !== undefined,
     )
     const overOne = statpaths.length > 1
     if (overOne) {
