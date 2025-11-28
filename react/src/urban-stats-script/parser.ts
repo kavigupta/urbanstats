@@ -141,7 +141,7 @@ class ParseState {
                 this.index++
                 return { type: 'identifier', name: { node: token.token.value, location: token.location } }
             case 'keyword':
-                throw new Error(`Unexpected keyword ${token.token.value}`)
+                return { type: 'error', value: `Unexpected keyword ${token.token.value}`, location: token.location }
             case 'bracket':
                 switch (token.token.value) {
                     case '(':
