@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import { MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
@@ -33,6 +33,7 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 import { Colorbar, RampToDisplay } from './components/Colorbar'
 import { InsetMap } from './components/InsetMap'
 import { AddTextBox, MapTextBoxComponent } from './components/MapTextBox'
+import { splitLayoutContext } from './settings/EditMapperPanel'
 import { computeUSS, MapSettings } from './settings/utils'
 
 const mapUpdateInterval = 500
@@ -425,7 +426,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 const canonicalWidth = 1200
 
 function TransformConstantWidth({ children }: { children: ReactNode }): ReactNode {
-    const [layout, setLayout] = useState({ scale: 1, top: 0, left: 0 })
+    const [layout, setLayout] = useState({ scale: 1, top: 0, left: 0, selfDeterminedHeight: 0 })
     const ref = useRef<HTMLDivElement>(null)
     const childRef = useRef<HTMLDivElement>(null)
 
@@ -442,6 +443,7 @@ function TransformConstantWidth({ children }: { children: ReactNode }): ReactNod
                 scale,
                 top: Math.max(0, (ref.current.offsetHeight - childRef.current.offsetHeight * scale) / 2),
                 left: Math.max(0, (ref.current.offsetWidth - childRef.current.offsetWidth * scale) / 2),
+                selfDeterminedHeight: childRef.current.offsetHeight * scale,
             })
         }
         updateScale()
@@ -455,7 +457,7 @@ function TransformConstantWidth({ children }: { children: ReactNode }): ReactNod
     }, [])
 
     return (
-        <div ref={ref} style={{ position: 'absolute', inset: 0 }}>
+        <div ref={ref} style={{ ...(useContext(splitLayoutContext) ? { position: 'absolute' } : { height: layout.selfDeterminedHeight }), inset: 0 }}>
             <div
                 ref={childRef}
                 style={{

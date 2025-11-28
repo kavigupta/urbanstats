@@ -18,7 +18,7 @@ export function StatsTree(): ReactNode {
         }
     }, [staging])
 
-    const categories = filterSearch(searchTerm, useAvailableCategories()).map(category => (
+    const categories = filterSearch(searchTerm, useAvailableCategories(), useAvailableGroups()).map(category => (
         <CategoryComponent
             key={category.id}
             category={category}
@@ -59,12 +59,12 @@ function searchMatch(searchTerm: string, targetString: string): boolean {
     return targetString.toLowerCase().includes(searchTerm.toLowerCase())
 }
 
-function filterSearch(searchTerm: string, categories: Category[]): Category[] {
+function filterSearch(searchTerm: string, categories: Category[], groups: Group[]): Category[] {
     return categories.flatMap((category) => {
         if (searchMatch(searchTerm, category.name)) {
             return [category]
         }
-        const contents = category.contents.filter(group => searchMatch(searchTerm, group.name))
+        const contents = category.contents.filter(group => groups.includes(group) && searchMatch(searchTerm, group.name))
         return contents.length > 0 ? [{ ...category, contents }] : []
     })
 }
