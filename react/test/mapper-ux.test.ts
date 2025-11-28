@@ -5,7 +5,7 @@ import { Selector } from 'testcafe'
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor } from './editor_test_utils'
 import { checkBox, checkSelector, downloadPNG, getCodeFromMainField, getErrors, getInput, replaceInput, settingsFromURL, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { tempfileName } from './quiz_test_utils'
-import { getLocation, safeReload, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading } from './test_utils'
+import { getLocation, safeReload, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading, withHamburgerMenu } from './test_utils'
 
 const mapper = (testFn: () => TestFn) => (
     name: string,
@@ -413,3 +413,16 @@ test('showing a popover does not clip in split view', async (t) => {
     await t.expect((await doc.boundingClientRect).right).lt((await editor.boundingClientRect).right)
     await screencap(t, { fullPage: false, selector: Selector('[data-test=split-left]') }) // Fullpage false so we don't hover and close the popover
 })
+
+for (const platform of ['desktop', 'mobile']) {
+    test(`open sidebar ${platform}`, async (t) => {
+        if (platform === 'mobile') {
+            await t.resizeWindow(400, 800)
+        }
+        await withHamburgerMenu(t, async () => {
+            await screencap(t)
+            await t.click(Selector('a').withExactText('Home'))
+            await t.expect(getLocation()).eql(`${target}/`)
+        })
+    })
+}
