@@ -262,7 +262,7 @@ function SplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode
             <div style={{ display: 'flex', height, position: 'relative' }} ref={splitRef}>
                 {left && (
                     <>
-                        <div style={{ width: leftPct, minWidth: minLeftWidth, overflowY: 'scroll', backgroundColor: mixWithBackground(colors.hueColors.red, error ? 0.8 : 1, colors.slightlyDifferentBackground), padding: '1em', borderRadius: '5px' }}>
+                        <div data-test="split-left" style={{ width: leftPct, minWidth: minLeftWidth, overflowY: 'scroll', backgroundColor: mixWithBackground(colors.hueColors.red, error ? 0.8 : 1, colors.slightlyDifferentBackground), padding: '1em', borderRadius: '5px' }}>
                             {left}
                         </div>
                         <div

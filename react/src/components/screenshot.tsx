@@ -71,7 +71,7 @@ export interface ScreencapElements {
     heightMultiplier?: number
 }
 
-function totalOffset(element: Element | null): { top: number, left: number } {
+export function totalOffset(element: Element | null): { top: number, left: number } {
     if (!(element instanceof HTMLElement)) {
         return { top: 0, left: 0 }
     }
