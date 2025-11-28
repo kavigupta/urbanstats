@@ -8,7 +8,7 @@ import { sanitize } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
-import { statParents, Year } from '../page_template/statistic-tree'
+import { statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { useUniverse } from '../universe'
 import { Article, IRelatedButtons } from '../utils/protos'
@@ -215,17 +215,6 @@ function ArticleTable(props: {
             <ArticleWarnings />
         </div>
     )
-}
-
-export function getYearsForRows(rows: ArticleRow[]): (Year | undefined)[] {
-    const sPs = rows.map(row => statParents.get(row.statpath)!)
-    return sPs.map((sP): Year | undefined => {
-        const isUnique = sPs.filter(other => other.group.id === sP.group.id).length === 1
-        if (isUnique) {
-            return undefined
-        }
-        return sP.year ?? undefined
-    })
 }
 
 export function StatisticHeader(props: {
