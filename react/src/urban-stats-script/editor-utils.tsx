@@ -511,11 +511,13 @@ function UndoRedoControls({ doUndo, doRedo, canUndo, canRedo }: { doUndo: () => 
 
         const outerBounds = outer.current.getBoundingClientRect()
 
-        inner.current.style.top = `${(window.visualViewport?.height ?? window.innerHeight) - outerBounds.top - height}px`
-        inner.current.style.left = `${(window.visualViewport?.width ?? window.innerWidth) - outerBounds.left - width}px`
+        const offsetParent = outer.current.offsetParent as HTMLElement
+
+        inner.current.style.top = `${Math.min((window.visualViewport?.height ?? window.innerHeight) - outerBounds.top, (offsetParent.offsetHeight - outer.current.offsetTop)) - height}px`
+        inner.current.style.left = `${Math.min((window.visualViewport?.width ?? window.innerWidth) - outerBounds.left, (offsetParent.offsetWidth - outer.current.offsetLeft)) - width}px`
     }, [])
 
-    useEffect(positionInner)
+    useEffect(positionInner, [positionInner])
 
     useEffect(() => {
         window.addEventListener('scroll', positionInner)
@@ -534,7 +536,7 @@ function UndoRedoControls({ doUndo, doRedo, canUndo, canRedo }: { doUndo: () => 
         return null
     }
 
-    const buttonStyle: CSSProperties = { flex: 1, touchAction: 'manipulation', zIndex: 100 }
+    const buttonStyle: CSSProperties = { flex: 1, touchAction: 'manipulation', zIndex: 10000 }
 
     return (
         <div ref={outer} style={{ position: 'absolute' }}>
