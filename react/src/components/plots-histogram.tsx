@@ -286,9 +286,10 @@ function HistogramSettings(props: {
                 onClick={async () => {
                     const plot = props.makePlot()
                     document.body.appendChild(plot)
+                    const uniqueShortnames = deduplicate(props.shortnames)
                     await createScreenshot(
                         {
-                            path: `${props.shortnames.join('_')}_histogram`,
+                            path: `${uniqueShortnames.join('_')}_histogram`,
                             overallWidth: plot.offsetWidth * 2,
                             elementsToRender: [plot],
                             heightMultiplier: 1.2,
