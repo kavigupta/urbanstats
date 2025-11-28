@@ -1,6 +1,7 @@
 import React, { ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { Statistic } from '../../components/display-stats'
+import { Colors } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
 import { ScaleInstance } from '../../urban-stats-script/constants/scale'
 import { furthestColor, interpolateColor } from '../../utils/color'
@@ -18,15 +19,19 @@ interface EmpiricalRamp {
 
 export type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: string }
 
+export function styleFromBasemap(basemap: Basemap, colors: Colors): { backgroundColor: string, color?: string } {
+    return basemap.type === 'none'
+        ? { backgroundColor: basemap.backgroundColor, color: basemap.textColor }
+        : { backgroundColor: colors.background }
+}
+
 export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Basemap }): ReactNode {
     const colors = useColors()
 
     return (
         <div style={{
             width: '100%',
-            ...(props.basemap.type === 'none'
-                ? { backgroundColor: props.basemap.backgroundColor, color: props.basemap.textColor }
-                : { backgroundColor: colors.background }),
+            ...styleFromBasemap(props.basemap, colors),
             padding: '10px',
         }}
         >

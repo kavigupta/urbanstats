@@ -1,3 +1,4 @@
+import Color from 'color'
 import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
 import { MapRef } from 'react-map-gl/maplibre'
 
@@ -10,7 +11,8 @@ import { loadProtobuf } from '../load_json'
 import { boundingBox, geometry } from '../map-partition'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
 import { LongLoad } from '../navigation/loading'
-import { OverrideTheme } from '../page_template/colors'
+import { colorThemes } from '../page_template/color-themes'
+import { OverrideTheme, useColors } from '../page_template/colors'
 import { loadCentroids } from '../syau/load'
 import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
@@ -23,6 +25,7 @@ import { noLocation } from '../urban-stats-script/location'
 import { USSOpaqueValue } from '../urban-stats-script/types-values'
 import { loadInsets } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
+import { loadImage } from '../utils/Image'
 import { editIndex, EditSeq } from '../utils/array-edits'
 import { furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
@@ -30,7 +33,7 @@ import { ConsolidatedShapes, Feature, ICoordinate } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
-import { Colorbar, RampToDisplay } from './components/Colorbar'
+import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar'
 import { InsetMap } from './components/InsetMap'
 import { AddTextBox, MapTextBoxComponent } from './components/MapTextBox'
 import { splitLayoutContext } from './settings/EditMapperPanel'
@@ -171,6 +174,8 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
         const [screenshotMode, setScreenshotMode] = useState(false)
 
+        const colors = useColors()
+
         exportPngRef(async () => {
             const exportPixelRatio = 4
             setScreenshotMode(true)
@@ -194,7 +199,33 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             return new Promise((resolve) => {
                 setTimeout(async () => {
                     const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
-                    resolve(elementCanvas.toDataURL('image/png'))
+
+                    const { backgroundColor, color } = styleFromBasemap(mapResultMain.value.basemap, colors)
+                    const bannerUrl = color === undefined ? colors.screenshotFooterUrl : colorThemes[Color(color).l() < 50 ? 'Light Mode' : 'Dark Mode'].screenshotFooterUrl
+                    const bannerImage = await loadImage(bannerUrl)
+                    const bannerHeight = 50 * exportPixelRatio
+                    const bannerWidth = bannerImage.width * (bannerHeight / bannerImage.height)
+                    const bannerSquish = 10 * exportPixelRatio
+
+                    const resultCanvas = document.createElement('canvas')
+                    const ctx = resultCanvas.getContext('2d')!
+                    resultCanvas.width = elementCanvas.width
+                    resultCanvas.height = elementCanvas.height + bannerHeight - bannerSquish
+
+                    ctx.drawImage(elementCanvas, 0, 0)
+
+                    ctx.fillStyle = backgroundColor
+                    ctx.fillRect(0, elementCanvas.height, elementCanvas.width, bannerHeight)
+
+                    ctx.drawImage(
+                        bannerImage,
+                        resultCanvas.width - bannerWidth,
+                        resultCanvas.height - bannerHeight,
+                        bannerWidth,
+                        bannerHeight,
+                    )
+
+                    resolve(resultCanvas.toDataURL('image/png'))
                     setScreenshotMode(false)
                     restoreMaps.forEach((restore) => { restore() })
                 })

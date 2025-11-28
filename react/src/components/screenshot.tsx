@@ -5,6 +5,7 @@ import React, { createContext, ReactNode, useContext } from 'react'
 import { universePath } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
+import { loadImage } from '../utils/Image'
 import { TestUtils } from '../utils/TestUtils'
 
 export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
@@ -191,11 +192,7 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
     const padAround = 100
     const padBetween = 50
 
-    const banner = new Image()
-    await new Promise<void>((resolve) => {
-        banner.onload = () => { resolve() }
-        banner.src = colors.screenshotFooterUrl
-    })
+    const banner = await loadImage(colors.screenshotFooterUrl)
 
     const bannerScale = overallWidth / banner.width
     const bannerHeight = banner.height * bannerScale
