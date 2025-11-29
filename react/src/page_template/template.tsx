@@ -247,7 +247,7 @@ function LeftPanel({ setHamburgerOpen }: { setHamburgerOpen: (open: boolean) => 
             <div
                 style={{
                     position: 'absolute',
-                    zIndex: 100,
+                    zIndex: 100000,
                     left: 0,
                     right: 0,
                     height: '100%',
