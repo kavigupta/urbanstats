@@ -197,3 +197,36 @@ test('histogram-add-region-multiple-years', async (t) => {
     await t.expect(getLocationWithoutSettings())
         .eql(comparisonPage([pasadena, upperSGV]))
 })
+
+urbanstatsFixture('histogram duplicate', comparisonPage([pasadena, pasadena]))
+
+test('histogram-duplicate-articles', async (t) => {
+    await checkTextboxes(t, ['2020', '2010'])
+    await t.click(Selector('.expand-toggle'))
+    await screencap(t)
+})
+
+urbanstatsFixture('histogram article multiple years', `${target}/article.html?longname=Pasadena+CCD+%5BCCD%5D%2C+Los+Angeles+County%2C+California%2C+USA`)
+
+test('histogram-article-multiple-years', async (t) => {
+    // Enable multiple years: 2020, 2010, 2000
+    await checkTextboxes(t, ['2020', '2010', '2000'])
+    await t.click(Selector('.expand-toggle'))
+    await screencap(t)
+    await downloadOrCheckHistogram(t, 'histogram-article-multiple-years')
+})
+
+urbanstatsFixture('histogram comparison multiple years', comparisonPage([pasadena, upperSGV]))
+
+test('histogram-comparison-multiple-years', async (t) => {
+    // Enable multiple years: 2020, 2010
+    await t.click(Selector('.expand-toggle'))
+    await screencap(t)
+    // Test with different histogram type
+    const histogramTypeSelect = Selector('[data-test-id=histogram_type]')
+    await t.click(histogramTypeSelect).click(histogramTypeSelect.find('option').withExactText('Bar'))
+    await screencap(t)
+    await checkTextboxes(t, ['2010', '2000'])
+    await screencap(t)
+    await downloadOrCheckHistogram(t, 'histogram-comparison-multiple-years')
+})
