@@ -20,6 +20,7 @@ import { notWaiting, waiting } from '../utils/promiseStream'
 import { Article } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { TransposeContext } from '../utils/transpose'
+import { zIndex } from '../utils/zIndex'
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
@@ -498,7 +499,7 @@ export function ComparisonMapButtons({ longnames, colors, features, mapRef }: { 
 
     return (
         <div style={
-            { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '12px' }
+            { zIndex: zIndex.comparisonMapButton, position: 'absolute', right: 0, top: 0, padding: '12px' }
         }
         >
             <div style={{

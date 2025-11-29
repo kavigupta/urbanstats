@@ -9,6 +9,7 @@ import { HistogramType, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { IHistogram } from '../utils/protos'
 import { useTranspose } from '../utils/transpose'
+import { zIndex } from '../utils/zIndex'
 
 import { PlotComponent } from './plots-general'
 import { createScreenshot } from './screenshot'
@@ -253,7 +254,7 @@ function HistogramSettings(props: {
                             border: `1px solid ${colors.textMain}`,
                             borderRadius: '4px',
                             padding: '0.5em',
-                            zIndex: 1000,
+                            zIndex: zIndex.plotSettings,
                             minWidth: '200px',
                         }}
                     >

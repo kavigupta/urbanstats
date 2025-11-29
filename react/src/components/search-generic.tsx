@@ -2,6 +2,7 @@ import React, { CSSProperties, ReactElement, useState, useRef, useEffect } from 
 
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
+import { zIndex } from '../utils/zIndex'
 
 export function GenericSearchBox<T>(
     props: {
@@ -124,7 +125,7 @@ export function GenericSearchBox<T>(
                     overflowY: 'auto',
                     backgroundColor: colors.slightlyDifferentBackground,
                     borderRadius: '0.25em',
-                    zIndex: '3',
+                    zIndex: zIndex.searchResults,
                 }}
             >
                 {matches.map((_, idx) => (

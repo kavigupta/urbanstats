@@ -6,6 +6,7 @@ import { DefaultMap } from '../utils/DefaultMap'
 import { TestUtils } from '../utils/TestUtils'
 import { isAMatch } from '../utils/isAMatch'
 import { useMobileLayout } from '../utils/responsive'
+import { zIndex } from '../utils/zIndex'
 
 import { renderLocInfo } from './interpreter'
 import { AnnotatedToken, lex } from './lexer'
@@ -542,7 +543,7 @@ function UndoRedoControls({ doUndo, doRedo, canUndo, canRedo }: { doUndo: () => 
         return null
     }
 
-    const buttonStyle: CSSProperties = { flex: 1, touchAction: 'manipulation', zIndex: 10000 }
+    const buttonStyle: CSSProperties = { flex: 1, touchAction: 'manipulation', zIndex: zIndex.mobileUndoRedoControls }
 
     return (
         <div ref={outer} style={{ position: 'absolute' }}>

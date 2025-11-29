@@ -3,6 +3,7 @@ import React, { ReactNode, useState, useEffect, useRef, useMemo, CSSProperties }
 
 import { useColors } from '../../page_template/colors'
 import { IFrameInput } from '../../utils/IFrameInput'
+import { zIndex } from '../../utils/zIndex'
 
 import '../../common.css'
 
@@ -145,7 +146,7 @@ export function BetterDatalist<T>({ value, onChange, parse, possibleValues, rend
                         borderRadius: '4px',
                         maxHeight: '200px',
                         overflowY: 'auto',
-                        zIndex: 1000,
+                        zIndex: zIndex.betterSelectorMenu,
                         boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     }}
                     ref={menuRef}
