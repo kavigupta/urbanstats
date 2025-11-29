@@ -10,6 +10,7 @@ export interface PlotProps {
     extraStat?: ExtraStat
     color: string
     sharedTypeOfAllArticles?: string
+    subseriesName: string
 }
 
 export function RenderedPlot({ statDescription, plotProps }: { statDescription: string, plotProps: PlotProps[] }): ReactNode {
@@ -39,6 +40,7 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
                                     histogram: props.extraStat,
                                     color: props.color,
                                     universeTotal: props.extraStat.universeTotal,
+                                    subseriesName: props.subseriesName,
                                 },
                             ]
                         },

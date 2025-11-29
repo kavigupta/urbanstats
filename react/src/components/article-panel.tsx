@@ -19,6 +19,7 @@ import { ArticleMap } from './ArticleMap'
 import { ArticleWarnings } from './ArticleWarnings'
 import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
+import { pullRelevantPlotProps } from './comparison-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
 import { Related } from './related-button'
@@ -184,7 +185,14 @@ function ArticleTable(props: {
     const plotSpecs: (PlotSpec | undefined)[] = expandedEach.map((expanded, index) => expanded
         ? {
                 statDescription: props.filteredRows[index].renderedStatname,
-                plotProps: [{ ...props.filteredRows[index], color: colors.hueColors.blue, shortname: props.article.shortname, longname: props.article.longname, sharedTypeOfAllArticles: props.article.articleType }], // TODO add other articles when comparison is implemented
+                plotProps: pullRelevantPlotProps(
+                    props.filteredRows,
+                    index,
+                    colors.hueColors.blue,
+                    props.article.shortname,
+                    props.article.longname,
+                    props.article.articleType,
+                ),
             }
         : undefined,
     )
