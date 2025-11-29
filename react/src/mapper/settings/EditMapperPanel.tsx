@@ -457,15 +457,18 @@ function saveAsFile(filename: string, data: string | Blob, type: string): void {
     document.body.removeChild(link)
 }
 
+async function downloadPng(pngDataUrl: string): Promise<void> {
+    const data = await fetch(pngDataUrl)
+    const pngData = await data.blob()
+    saveAsFile('map.png', pngData, 'image/png')
+}
+
 function Export(props: { pngExport?: () => Promise<string>, geoJSONExport?: () => string }): ReactNode {
     const doPngExport = async (): Promise<void> => {
         if (props.pngExport === undefined) {
             return
         }
-        const pngDataUrl = await props.pngExport()
-        const data = await fetch(pngDataUrl)
-        const pngData = await data.blob()
-        saveAsFile('map.png', pngData, 'image/png')
+        await downloadPng(await props.pngExport())
     }
 
     const doGeoJSONExport = (): void => {
