@@ -2,11 +2,11 @@ import * as Plot from '@observablehq/plot'
 import React, { ReactElement, useCallback, useEffect, useRef } from 'react'
 
 import { useTranspose } from '../utils/transpose'
+import { zIndex } from '../utils/zIndex'
 
 import { useScreenshotMode } from './screenshot'
 
 import './plots.css'
-import { zIndex } from '../utils/zIndex'
 
 interface DetailedPlotSpec {
     marks: Plot.Markish[]

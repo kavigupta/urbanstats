@@ -2,6 +2,7 @@ import React, { CSSProperties, ReactNode, useContext } from 'react'
 import { BarLoader, MoonLoader } from 'react-spinners'
 
 import { useColors } from '../page_template/colors'
+import { zIndex } from '../utils/zIndex'
 
 import { Navigator } from './Navigator'
 
@@ -35,8 +36,6 @@ export function SubsequentLoad(): ReactNode {
     }
 }
 
-const zIndex = 10000 // Must be greater than leaflet
-
 function QuickLoad(): ReactNode {
     const colors = useColors()
     const style: CSSProperties = {
@@ -45,7 +44,7 @@ function QuickLoad(): ReactNode {
         left: '0px',
         right: '0px',
         width: undefined,
-        zIndex,
+        zIndex: zIndex.pageLoading,
     }
 
     return <BarLoader color={colors.textMain} cssOverride={style} data-test-id="quickLoad" />
@@ -59,7 +58,7 @@ export function LongLoad({ containerStyleOverride, testId }: { containerStyleOve
         right: 0,
         top: 0,
         bottom: 0,
-        zIndex,
+        zIndex: zIndex.pageLoading,
         backgroundColor: `${colors.background}80`,
         ...containerStyleOverride,
     }
