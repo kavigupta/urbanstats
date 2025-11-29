@@ -5,7 +5,7 @@ import { Selector } from 'testcafe'
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor } from './editor_test_utils'
 import { checkBox, checkSelector, downloadPNG, getCodeFromMainField, getErrors, getInput, replaceInput, settingsFromURL, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { tempfileName } from './quiz_test_utils'
-import { getLocation, safeReload, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading, withHamburgerMenu } from './test_utils'
+import { downloadImage, getLocation, safeReload, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading, withHamburgerMenu } from './test_utils'
 
 const mapper = (testFn: () => TestFn) => (
     name: string,
@@ -426,3 +426,7 @@ for (const platform of ['desktop', 'mobile']) {
         })
     })
 }
+
+test('download file via site screencap button', async (t) => {
+    await downloadImage(t)
+})
