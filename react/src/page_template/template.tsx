@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react'
+import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
 import { exportToCSV, CSVExportData } from '../components/csv-export'
 import { Header } from '../components/header'
@@ -241,9 +241,12 @@ function LeftPanel({ setHamburgerOpen }: { setHamburgerOpen: (open: boolean) => 
             <Sidebar onNavigate={() => { setHamburgerOpen(false) }} />
         </div>
     )
+
+    const hideRef = useRef<HTMLDivElement>(null)
     if (!mobileLayout && hideSidebarDesktop) {
         return (
             <div
+                ref={hideRef}
                 style={{
                     position: 'absolute',
                     zIndex: 100,
@@ -252,7 +255,11 @@ function LeftPanel({ setHamburgerOpen }: { setHamburgerOpen: (open: boolean) => 
                     height: '100%',
                     backgroundColor: `${colors.background}99`,
                 }}
-                onClick={() => { setHamburgerOpen(false) }}
+                onClick={(e) => {
+                    if (e.target === hideRef.current) {
+                        setHamburgerOpen(false)
+                    }
+                }}
             >
                 {sidebar}
             </div>
