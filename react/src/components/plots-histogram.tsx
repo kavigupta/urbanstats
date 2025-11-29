@@ -29,8 +29,20 @@ interface HistogramProps {
     subseriesName: string
 }
 
+function processHistogramType(histogramType: HistogramType, histograms: HistogramProps[]): HistogramType {
+    if (histogramType !== 'Bar') {
+        return histogramType
+    }
+    const subseriesNames = new Set<string>(histograms.map(h => h.subseriesName))
+    if (subseriesNames.size > 1) {
+        return 'Line'
+    }
+    return histogramType
+}
+
 export function Histogram(props: { histograms: HistogramProps[], statDescription: string, sharedTypeOfAllArticles?: string }): ReactNode {
-    const [histogramType] = useSetting('histogram_type')
+    const [histogramTypeRaw] = useSetting('histogram_type')
+    const histogramType = processHistogramType(histogramTypeRaw, props.histograms)
     const [useImperial] = useSetting('use_imperial')
     const [relative] = useSetting('histogram_relative')
     const binMin = props.histograms[0].histogram.binMin!
@@ -48,7 +60,7 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
 
     const plotSpec = useCallback(
         (transpose: boolean) => {
-            const title = props.histograms.length === 1 ? props.histograms[0].shortname : ''
+            const title = new Set(props.histograms.map(h => h.shortname)).size === 1 ? props.histograms[0].shortname : ''
             const colors = props.histograms.map(h => h.color)
             const shortnames = props.histograms.map(h => h.shortname)
             const renderY = relative ? (y: number) => `${y.toFixed(2)}%` : (y: number) => renderNumberHighlyRounded(y, 2)
