@@ -404,11 +404,11 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
         const sources = indices.map(i => sPs[i].sP.source)
         const exactMatch = sources.findIndex(source => JSON.stringify(source) === JSON.stringify(sPs[statIndex].sP.source))
         if (exactMatch !== -1) {
-            return exactMatch
+            return indices[exactMatch]
         }
         const nullMatch = sources.findIndex(source => source === null)
         if (nullMatch !== -1) {
-            return nullMatch
+            return indices[nullMatch]
         }
         return indices[0]
     })
