@@ -6,6 +6,7 @@ import { useTranspose } from '../utils/transpose'
 import { useScreenshotMode } from './screenshot'
 
 import './plots.css'
+import { zIndex } from '../utils/zIndex'
 
 interface DetailedPlotSpec {
     marks: Plot.Markish[]
@@ -92,7 +93,7 @@ export function PlotComponent(props: {
             {screenshotMode
                 ? undefined
                 : (
-                        <div style={{ zIndex: 1000, position: 'absolute', top: 0, right: 0, left: transpose ? 0 : undefined }}>
+                        <div style={{ zIndex: zIndex.plotSettings, position: 'absolute', top: 0, right: 0, left: transpose ? 0 : undefined }}>
                             {props.settingsElement(() => {
                                 const plot = Plot.plot(plotConfig(false))
                                 const div = document.createElement('div')

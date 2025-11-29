@@ -9,6 +9,7 @@ import { useColors } from '../page_template/colors'
 import { useHeaderLogoKey, useHideSidebarDesktop } from '../page_template/utils'
 import { useUniverse } from '../universe'
 import { useMobileLayout } from '../utils/responsive'
+import { zIndex } from '../utils/zIndex'
 
 import { CSVButton } from './csv-export'
 import { Nav } from './hamburger'
@@ -84,7 +85,7 @@ export function Header(props: {
                                     left: 0,
                                     right: 0,
                                     top: 0,
-                                    zIndex: 10,
+                                    zIndex: zIndex.mobileSearch,
                                     backgroundColor: 'var(--background)',
                                     padding: '0 1em',
                                 }
@@ -206,7 +207,7 @@ function UniverseSelector(
     dropdown = (
         <div style={{
             position: 'absolute',
-            zIndex: '1',
+            zIndex: zIndex.universeDropdown,
             borderRadius: '0.25em',
             display: dropdownOpen ? 'block' : 'none',
             width: '500%',

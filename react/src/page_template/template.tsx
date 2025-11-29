@@ -8,6 +8,7 @@ import '../common.css'
 import '../components/article.css'
 import { TestUtils } from '../utils/TestUtils'
 import { useMobileLayout } from '../utils/responsive'
+import { zIndex } from '../utils/zIndex'
 
 import { useColors, useStyleElement } from './colors'
 import { useHideSidebarDesktop } from './utils'
@@ -246,7 +247,7 @@ function LeftPanel({ setHamburgerOpen }: { setHamburgerOpen: (open: boolean) => 
             <div
                 style={{
                     position: 'absolute',
-                    zIndex: 100,
+                    zIndex: zIndex.sidebarOverlay,
                     left: 0,
                     right: 0,
                     height: '100%',
