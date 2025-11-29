@@ -12,7 +12,7 @@ import { sanitize } from '../navigation/links'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { rowExpandedKey, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
-import { statParents } from '../page_template/statistic-tree'
+import { DataSource, statParents, Year } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
 import { useUniverse } from '../universe'
@@ -386,10 +386,33 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 }
 
 export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
-    const sPs = rows.map(row => statParents.get(row.statpath)!)
-    const statpaths = sPs.map((sP, i) => ({ sP, i })).filter((
-        { sP, i }) => sP.group.id === sPs[statIndex].group.id && sP.source === sPs[statIndex].source && rows[i].extraStat !== undefined,
-    )
+    if (rows[statIndex].extraStat === undefined) {
+        return []
+    }
+    const sPs = rows.map(row => statParents.get(row.statpath)!).map((sP, i) => ({ sP, i }))
+    const byYear = new Map<Year, number[]>()
+    sPs.filter((
+        { sP, i }) => sP.group.id === sPs[statIndex].sP.group.id && rows[i].extraStat !== undefined,
+    ).forEach(({ sP: { year }, i }) => {
+        assert(year !== null, 'Year should not be null for plot data')
+        byYear.set(year, [...(byYear.get(year) ?? []), i])
+    })
+    const bestSourceEach = Array.from(byYear.entries()).map(([, indices]) => {
+        if (indices.length === 1) {
+            return indices[0]
+        }
+        const sources = indices.map(i => sPs[i].sP.source)
+        const exactMatch = sources.findIndex(source => JSON.stringify(source) === JSON.stringify(sPs[statIndex].sP.source))
+        if (exactMatch !== -1) {
+            return exactMatch
+        }
+        const nullMatch = sources.findIndex(source => source === null)
+        if (nullMatch !== -1) {
+            return nullMatch
+        }
+        return indices[0]
+    })
+    const statpaths = bestSourceEach.map(i => sPs[i])
     const overOne = statpaths.length > 1
     if (overOne) {
         statpaths.forEach(({ sP: { year } }) => {
