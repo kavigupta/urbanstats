@@ -426,3 +426,11 @@ for (const platform of ['desktop', 'mobile']) {
         })
     })
 }
+
+test('change theme setting in sidebar menu', async (t) => {
+    await withHamburgerMenu(t, async () => {
+        const themeSelect = Selector('.theme-setting').find('select')
+        await t.click(themeSelect).click(Selector('option').withExactText('Dark Mode'))
+        await t.expect(themeSelect.value).eql('Dark Mode')
+    })
+})
