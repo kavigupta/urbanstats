@@ -19,6 +19,7 @@ import { TestUtils } from '../../utils/TestUtils'
 import { mixWithBackground } from '../../utils/color'
 import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
+import { saveAsFile } from '../../utils/saveAsFile'
 import { Selection as TextBoxesSelection, SelectionContext as TextBoxesSelectionContext } from '../components/MapTextBox'
 import { defaultTypeEnvironment } from '../context'
 import { MapGenerator, useMapGenerator } from '../map-generator'
@@ -115,18 +116,16 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
     }
 
     return (
-        <PageTemplate csvExportData={mapGenerator.exportCSV} showFooter={false}>
-            <SelectionContext.Provider value={selectionContext}>
-                {mapEditorMode === 'textBoxes' && <TextBoxesMapEditor {...commonProps} /> }
-                {mapEditorMode === 'insets' && <InsetsMapEditor {...commonProps} />}
-                {mapEditorMode === 'uss' && (
-                    <>
-                        <USSMapEditor {...commonProps} counts={props.counts} />
-                        {undoRedo.ui}
-                    </>
-                )}
-            </SelectionContext.Provider>
-        </PageTemplate>
+        <SelectionContext.Provider value={selectionContext}>
+            {mapEditorMode === 'textBoxes' && <TextBoxesMapEditor {...commonProps} /> }
+            {mapEditorMode === 'insets' && <InsetsMapEditor {...commonProps} />}
+            {mapEditorMode === 'uss' && (
+                <>
+                    <USSMapEditor {...commonProps} counts={props.counts} />
+                    {undoRedo.ui}
+                </>
+            )}
+        </SelectionContext.Provider>
     )
 }
 
@@ -142,60 +141,62 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
     const ui = mapGenerator.ui({ mode: 'uss' })
 
     return (
-        <MaybeSplitLayout
-            error={mapGenerator.errors.some(e => e.kind === 'error')}
-            left={(
-                <MapperSettings
-                    mapSettings={mapSettings}
-                    setMapSettings={setMapSettings}
-                    errors={mapGenerator.errors}
-                    counts={counts}
-                    typeEnvironment={typeEnvironment}
-                />
-            )}
-            right={(
-                <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
-                        <Export pngExport={ui.exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
-                        {
-                            getInsets(mapSettings, typeEnvironment) && (
-                                <div style={{
-                                    display: 'flex',
-                                    gap: '0.5em',
-                                    margin: '0.5em 0',
-                                }}
-                                >
-                                    <button onClick={() => { setMapEditorMode('insets') }}>
-                                        Edit Insets
-                                    </button>
-                                </div>
-                            )
-                        }
-                        {
-                            getTextBoxes(mapSettings, typeEnvironment) && (
-                                <div style={{
-                                    display: 'flex',
-                                    gap: '0.5em',
-                                    margin: '0.5em 0',
-                                }}
-                                >
-                                    <button onClick={() => { setMapEditorMode('textBoxes') }}>
-                                        Edit Text Boxes
-                                    </button>
-                                </div>
-                            )
-                        }
-                        <ImportExportCode
-                            mapSettings={mapSettings}
-                            setMapSettings={setMapSettings}
-                        />
-                    </div>
-                    <div style={{ position: 'relative', flex: 1 }}>
-                        {ui.node}
-                    </div>
-                </>
-            )}
-        />
+        <PageTemplate csvExportData={mapGenerator.exportCSV} screencap={ui.exportPng} showFooter={false}>
+            <MaybeSplitLayout
+                error={mapGenerator.errors.some(e => e.kind === 'error')}
+                left={(
+                    <MapperSettings
+                        mapSettings={mapSettings}
+                        setMapSettings={setMapSettings}
+                        errors={mapGenerator.errors}
+                        counts={counts}
+                        typeEnvironment={typeEnvironment}
+                    />
+                )}
+                right={(
+                    <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
+                            <Export pngExport={ui.exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
+                            {
+                                getInsets(mapSettings, typeEnvironment) && (
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: '0.5em',
+                                        margin: '0.5em 0',
+                                    }}
+                                    >
+                                        <button onClick={() => { setMapEditorMode('insets') }}>
+                                            Edit Insets
+                                        </button>
+                                    </div>
+                                )
+                            }
+                            {
+                                getTextBoxes(mapSettings, typeEnvironment) && (
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: '0.5em',
+                                        margin: '0.5em 0',
+                                    }}
+                                    >
+                                        <button onClick={() => { setMapEditorMode('textBoxes') }}>
+                                            Edit Text Boxes
+                                        </button>
+                                    </div>
+                                )
+                            }
+                            <ImportExportCode
+                                mapSettings={mapSettings}
+                                setMapSettings={setMapSettings}
+                            />
+                        </div>
+                        <div style={{ position: 'relative', flex: 1 }}>
+                            {ui.node}
+                        </div>
+                    </>
+                )}
+            />
+        </PageTemplate>
     )
 }
 
@@ -370,7 +371,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
     })
 
     return (
-        <>
+        <PageTemplate csvExportData={mapGenerator.exportCSV} showFooter={false}>
             <MaybeSplitLayout
                 left={undefined}
                 error={false}
@@ -414,7 +415,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                 )}
             />
             {undoRedoUi}
-        </>
+        </PageTemplate>
     )
 }
 
@@ -446,29 +447,12 @@ function offsetInsetInBounds<T extends Inset | TextBox>(inset: T, exclude: T[]):
     return inset
 }
 
-function saveAsFile(filename: string, data: string | Blob, type: string): void {
-    const blob = typeof data === 'string' ? new Blob([data], { type }) : data
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-}
-
-async function downloadPng(pngDataUrl: string): Promise<void> {
-    const data = await fetch(pngDataUrl)
-    const pngData = await data.blob()
-    saveAsFile('map.png', pngData, 'image/png')
-}
-
-function Export(props: { pngExport?: () => Promise<string>, geoJSONExport?: () => string }): ReactNode {
-    const doPngExport = async (): Promise<void> => {
+function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => string }): ReactNode {
+    const doPngExport = (): void => {
         if (props.pngExport === undefined) {
             return
         }
-        await downloadPng(await props.pngExport())
+        void props.pngExport()
     }
 
     const doGeoJSONExport = (): void => {
@@ -488,7 +472,7 @@ function Export(props: { pngExport?: () => Promise<string>, geoJSONExport?: () =
             <button
                 disabled={props.pngExport === undefined}
                 onClick={() => {
-                    void doPngExport()
+                    doPngExport()
                 }}
             >
                 Export as PNG
@@ -604,48 +588,51 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
     })
 
     return (
-        <TextBoxesSelectionContext.Provider value={selectionProperty}>
-            <MaybeSplitLayout
-                left={undefined}
-                error={false}
-                right={(
-                    <>
-                        <div style={{
-                            backgroundColor: colors.slightlyDifferentBackgroundFocused,
-                            borderRadius: '5px',
-                            padding: '10px',
-                            margin: '10px 0',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            gap: '0.5em',
-                        }}
-                        >
-                            <div>
-                                <b>Editing Text Boxes.</b>
-                            </div>
-                            <div style={{ display: 'flex', gap: '10px' }}>
+        <PageTemplate csvExportData={mapGenerator.exportCSV} showFooter={false}>
 
-                                <button onClick={() => { setMapEditorMode('uss') }}>
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setMapSettings({ ...mapSettings, script: { uss: scriptWithNewTextBoxes(mapSettings, textBoxes, typeEnvironment) } })
-                                        setMapEditorMode('uss')
-                                    }}
-                                    disabled={!canUndo}
-                                >
-                                    Accept
-                                </button>
+            <TextBoxesSelectionContext.Provider value={selectionProperty}>
+                <MaybeSplitLayout
+                    left={undefined}
+                    error={false}
+                    right={(
+                        <>
+                            <div style={{
+                                backgroundColor: colors.slightlyDifferentBackgroundFocused,
+                                borderRadius: '5px',
+                                padding: '10px',
+                                margin: '10px 0',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                gap: '0.5em',
+                            }}
+                            >
+                                <div>
+                                    <b>Editing Text Boxes.</b>
+                                </div>
+                                <div style={{ display: 'flex', gap: '10px' }}>
+
+                                    <button onClick={() => { setMapEditorMode('uss') }}>
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setMapSettings({ ...mapSettings, script: { uss: scriptWithNewTextBoxes(mapSettings, textBoxes, typeEnvironment) } })
+                                            setMapEditorMode('uss')
+                                        }}
+                                        disabled={!canUndo}
+                                    >
+                                        Accept
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                        <div style={{ flex: 1, position: 'relative' }}>
-                            {ui.node}
-                        </div>
-                    </>
-                )}
-            />
-            {undoRedoUi}
-        </TextBoxesSelectionContext.Provider>
+                            <div style={{ flex: 1, position: 'relative' }}>
+                                {ui.node}
+                            </div>
+                        </>
+                    )}
+                />
+                {undoRedoUi}
+            </TextBoxesSelectionContext.Provider>
+        </PageTemplate>
     )
 }
