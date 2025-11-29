@@ -209,7 +209,6 @@ test('histogram-duplicate-articles', async (t) => {
 urbanstatsFixture('histogram article multiple years', `${target}/article.html?longname=Pasadena+CCD+%5BCCD%5D%2C+Los+Angeles+County%2C+California%2C+USA`)
 
 test('histogram-article-multiple-years', async (t) => {
-    // Enable multiple years: 2020, 2010, 2000
     await checkTextboxes(t, ['2020', '2010', '2000'])
     await t.click(Selector('.expand-toggle'))
     await screencap(t)
@@ -219,7 +218,6 @@ test('histogram-article-multiple-years', async (t) => {
 urbanstatsFixture('histogram comparison multiple years', comparisonPage([pasadena, upperSGV]))
 
 test('histogram-comparison-multiple-years', async (t) => {
-    // Enable multiple years: 2020, 2010
     await t.click(Selector('.expand-toggle'))
     await screencap(t)
     // Test with different histogram type
@@ -229,4 +227,13 @@ test('histogram-comparison-multiple-years', async (t) => {
     await checkTextboxes(t, ['2010', '2000'])
     await screencap(t)
     await downloadOrCheckHistogram(t, 'histogram-comparison-multiple-years')
+})
+
+urbanstatsFixture('histogram comparison with country with only one year', comparisonPage([pasadena, upperSGV, 'Canada', 'Germany']))
+
+test('histogram-comparison-multiple-years-and-nan', async (t) => {
+    await checkTextboxes(t, ['2000', '2010'])
+    await t.click(Selector('.expand-toggle'))
+    await screencap(t)
+    await downloadOrCheckHistogram(t, 'histogram-comparison-multiple-years-and-nan')
 })
