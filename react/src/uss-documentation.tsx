@@ -1,10 +1,11 @@
 import { MathJaxContext } from 'better-react-mathjax'
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useContext, useState } from 'react'
 import { Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 
 import './style.css'
 import './common.css'
 import { defaultTypeEnvironment } from './mapper/context'
+import { urlFromPageDescriptor } from './navigation/PageDescriptor'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
 import { StandaloneEditor } from './urban-stats-script/StandaloneEditor'
@@ -652,12 +653,22 @@ function getTableDescription(tableName: DocumentationTable): string {
 }
 
 function Header(props: { title: string, header: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6', ident: string, children: ReactNode }): ReactNode {
+    const linkKind = useContext(linkContext)
+
     return (
         <>
             <props.header id={props.ident}>
-                {props.title}
+                {linkKind === 'link'
+                    ? (
+                            <a href={urlFromPageDescriptor({ kind: 'ussDocumentation', hash: props.ident }).toString()} target="_blank" rel="noreferrer">
+                                {props.title}
+                            </a>
+                        )
+                    : props.title}
             </props.header>
             {props.children}
         </>
     )
 }
+
+export const linkContext = React.createContext<'reference' | 'link'>('reference')
