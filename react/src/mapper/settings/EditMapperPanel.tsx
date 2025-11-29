@@ -140,8 +140,20 @@ interface CommonEditorProps {
 function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
     const ui = mapGenerator.ui({ mode: 'uss' })
 
+    const exportImage = ui.exportImage
+
+    const exportPng = exportImage
+        ? async () => {
+            const canvas = await exportImage()
+            const pngDataUrl = canvas.toDataURL('image/png')
+            const data = await fetch(pngDataUrl)
+            const pngData = await data.blob()
+            saveAsFile('map.png', pngData, 'image/png')
+        }
+        : undefined
+
     return (
-        <PageTemplate csvExportData={mapGenerator.exportCSV} screencap={ui.exportPng} showFooter={false}>
+        <PageTemplate csvExportData={mapGenerator.exportCSV} screencap={exportPng} showFooter={false}>
             <MaybeSplitLayout
                 error={mapGenerator.errors.some(e => e.kind === 'error')}
                 left={(
@@ -156,7 +168,7 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
                 right={(
                     <>
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
-                            <Export pngExport={ui.exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
+                            <Export pngExport={exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
                             {
                                 getInsets(mapSettings, typeEnvironment) && (
                                     <div style={{
