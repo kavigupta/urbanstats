@@ -81,7 +81,7 @@ export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
 type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditSeq<Inset> } | { mode: 'textBoxes', editTextBoxes: EditSeq<TextBox> })
 
 export interface MapGenerator<T = unknown> {
-    ui: (props: MapUIProps<T>) => { node: ReactNode, exportPng?: () => Promise<string> }
+    ui: (props: MapUIProps<T>) => { node: ReactNode, exportImage?: () => Promise<HTMLCanvasElement> }
     exportGeoJSON?: () => string
     exportCSV?: CSVExportData
     errors: EditorError[]
@@ -127,7 +127,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
     const { features, mapChildren, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache })
 
-    function MapComponent({ props, exportPngRef }: { props: MapUIProps<{ loading: boolean }>, exportPngRef: (fn: () => Promise<string>) => void }): ReactNode {
+    function MapComponent({ props, exportImageRef }: { props: MapUIProps<{ loading: boolean }>, exportImageRef: (fn: () => Promise<HTMLCanvasElement>) => void }): ReactNode {
         const mapsRef: (MapRef | null)[] = []
 
         const mapsContainerRef = useRef<HTMLDivElement>(null)
@@ -176,16 +176,16 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
         const colors = useColors()
 
-        exportPngRef(async () => {
+        exportImageRef(async () => {
             setScreenshotMode(true)
-            const restoreMaps = mapsRef.map(r => r!.getMap()).map(prepareMapForPngExport)
+            const restoreMaps = mapsRef.map(r => r!.getMap()).map(prepareMapForImageExport)
             return new Promise((resolve) => {
                 setTimeout(async () => {
                     const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
 
-                    const resultPng = await renderPngExport(elementCanvas, mapResultMain.value.basemap, colors)
+                    const image = await mapImageExport(elementCanvas, mapResultMain.value.basemap, colors)
 
-                    resolve(resultPng)
+                    resolve(image)
                     setScreenshotMode(false)
                     restoreMaps.forEach((restore) => { restore() })
                 })
@@ -232,13 +232,13 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         },
         exportGeoJSON: () => exportAsGeoJSON(features),
         ui: (props) => {
-            let exportPng: () => Promise<string>
+            let exportImage: () => Promise<HTMLCanvasElement>
 
             return {
                 node: (
-                    <MapComponent props={props} exportPngRef={fn => exportPng = fn} />
+                    <MapComponent props={props} exportImageRef={fn => exportImage = fn} />
                 ),
-                exportPng: () => exportPng(),
+                exportImage: () => exportImage(),
             }
         },
     }
@@ -246,7 +246,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
 const exportPixelRatio = 4
 
-function prepareMapForPngExport(map: MapInstance): () => void {
+function prepareMapForImageExport(map: MapInstance): () => void {
     const originalPixelRatio = map.getPixelRatio()
     map.setPixelRatio(exportPixelRatio)
 
@@ -264,7 +264,7 @@ function prepareMapForPngExport(map: MapInstance): () => void {
     }
 }
 
-async function renderPngExport(elementCanvas: HTMLCanvasElement, basemap: Basemap, colors: Colors): Promise<string> {
+async function mapImageExport(elementCanvas: HTMLCanvasElement, basemap: Basemap, colors: Colors): Promise<HTMLCanvasElement> {
     const { backgroundColor, color } = styleFromBasemap(basemap, colors)
     const bannerUrl = color === undefined ? colors.screenshotFooterUrl : colorThemes[Color(color).l() < 50 ? 'Light Mode' : 'Dark Mode'].screenshotFooterUrl
     const bannerImage = await loadImage(bannerUrl)
@@ -290,7 +290,7 @@ async function renderPngExport(elementCanvas: HTMLCanvasElement, basemap: Basema
         bannerHeight,
     )
 
-    return resultCanvas.toDataURL('image/png')
+    return resultCanvas
 }
 
 function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, wholeRenderRef, textBoxes }: {

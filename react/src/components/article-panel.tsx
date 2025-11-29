@@ -22,7 +22,7 @@ import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
 import { Related } from './related-button'
-import { ScreencapElements, useScreenshotMode } from './screenshot'
+import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { CellSpec, PlotSpec, TableContents } from './supertable'
 import { ColumnIdentifier } from './table'
@@ -53,7 +53,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
         <>
             <QuerySettingsConnection />
             <PageTemplate
-                screencapElements={screencapElements}
+                screencap={(universe, colors) => createScreenshot(screencapElements(), universe, colors)}
                 csvExportData={csvExportData}
                 hasUniverseSelector={true}
                 universes={article.universes}

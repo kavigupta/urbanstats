@@ -28,7 +28,7 @@ import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
-import { ScreencapElements, useScreenshotMode } from './screenshot'
+import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { TableContents, CellSpec } from './supertable'
 import { ColumnIdentifier } from './table'
@@ -281,7 +281,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         <TransposeContext.Provider value={transpose}>
             <QuerySettingsConnection />
             <PageTemplate
-                screencapElements={screencapElements}
+                screencap={universe => createScreenshot(screencapElements(), universe, colors)}
                 csvExportData={csvExportData}
                 hasUniverseSelector={true}
                 universes={props.universes}
