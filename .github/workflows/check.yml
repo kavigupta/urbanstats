@@ -135,6 +135,7 @@ jobs:
       fail-fast: false
       matrix:
         test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
+    timeout-minutes: 30
     steps:
       - *checkout
       - run: git fetch origin ${{ github.base_ref }} --depth=1 # needed so test runner can diff tests against base ref
