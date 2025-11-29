@@ -363,15 +363,7 @@ function HistogramSettings(props: {
 }
 
 function deduplicate(arr: string[]): string[] {
-    const seen = new Set<string>()
-    const result: string[] = []
-    for (const item of arr) {
-        if (!seen.has(item)) {
-            seen.add(item)
-            result.push(item)
-        }
-    }
-    return result
+    return Array.from(new Set(arr))
 }
 
 function histogramBounds(histograms: HistogramProps[]): [number, number] {
