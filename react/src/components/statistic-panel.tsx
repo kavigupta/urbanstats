@@ -515,10 +515,6 @@ function StatisticPanelSubhead(props: { articleType: string, renderedOther: stri
     return (
         <div className={useSubHeaderTextClass()}>
             {displayType(currentUniverse, props.articleType)}
-            {' '}
-            (
-            {props.renderedOther}
-            )
         </div>
     )
 }
