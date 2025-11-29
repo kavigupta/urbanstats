@@ -2,7 +2,7 @@ import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
 import { exportToCSV, CSVExportData } from '../components/csv-export'
 import { Header } from '../components/header'
-import { ScreencapElements, ScreenshotContext, createScreenshot } from '../components/screenshot'
+import { ScreenshotContext } from '../components/screenshot'
 import { Sidebar } from '../components/sidebar'
 import '../common.css'
 import '../components/article.css'
@@ -10,18 +10,19 @@ import { TestUtils } from '../utils/TestUtils'
 import { useMobileLayout } from '../utils/responsive'
 import { zIndex } from '../utils/zIndex'
 
+import { Colors } from './color-themes'
 import { useColors, useStyleElement } from './colors'
 import { useHideSidebarDesktop } from './utils'
 
 export function PageTemplate({
-    screencapElements = undefined,
+    screencap = undefined,
     csvExportData = undefined,
     hasUniverseSelector = false,
     universes = [],
     children,
     showFooter = true,
 }: {
-    screencapElements?: () => ScreencapElements
+    screencap?: (currentUniverse: string | undefined, colors: Colors) => Promise<void>
     csvExportData?: CSVExportData
     hasUniverseSelector?: boolean
     universes?: readonly string[]
@@ -47,7 +48,7 @@ export function PageTemplate({
         }
     }, [hamburgerOpen, mobileLayout, hideSidebarDesktop])
 
-    const hasScreenshotButton = screencapElements !== undefined
+    const hasScreenshotButton = screencap !== undefined
     const hasCSVButton = csvExportData !== undefined
 
     const exportCSV = (): void => {
@@ -62,12 +63,12 @@ export function PageTemplate({
         }
     }
 
-    const screencap = async (currentUniverse: string | undefined): Promise<void> => {
-        if (screencapElements === undefined) {
+    const doScreencap = async (currentUniverse: string | undefined): Promise<void> => {
+        if (screencap === undefined) {
             return
         }
         try {
-            await createScreenshot(screencapElements(), currentUniverse, colors)
+            await screencap(currentUniverse, colors)
         }
         catch (e) {
             console.error(e)
@@ -77,7 +78,7 @@ export function PageTemplate({
     const initiateScreenshot = (currentUniverse: string | undefined): void => {
         setScreenshotMode(true)
         setTimeout(async () => {
-            await screencap(currentUniverse)
+            await doScreencap(currentUniverse)
             setScreenshotMode(false)
         })
     }

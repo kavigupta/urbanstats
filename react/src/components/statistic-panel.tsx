@@ -18,7 +18,7 @@ import { CSVExportData } from './csv-export'
 import { Statistic, Percentile } from './display-stats'
 import { forType, StatCol } from './load-article'
 import { PointerArrow } from './pointer-cell'
-import { useScreenshotMode } from './screenshot'
+import { createScreenshot, useScreenshotMode } from './screenshot'
 
 const tableStyle = { display: 'flex', flexDirection: 'column', padding: '1px' } as const
 const columnNames = ['Ordinal', 'Name', 'Value', '', 'Percentile']
@@ -153,11 +153,11 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     return (
         <PageTemplate
-            screencapElements={() => ({
+            screencap={universe => createScreenshot({
                 path: `${sanitize(props.joinedString)}.png`,
                 overallWidth: tableRef.current!.offsetWidth * 2,
                 elementsToRender: [headersRef.current!, tableRef.current!],
-            })}
+            }, universe, colors)}
             csvExportData={csvExportData}
             hasUniverseSelector={true}
             universes={universesFiltered}
