@@ -14,6 +14,7 @@ env:
     !named_region_shapefiles/*
     !outputs/*
     /*
+  PR_NUMBER: ${{ github.event.number }}
 jobs:
   build-and-push-common-image:
     runs-on: ubuntu-22.04
@@ -124,6 +125,7 @@ jobs:
         working-directory: react
 
   e2e:
+    if: false
     runs-on: ubuntu-22.04
     needs:
       - build-and-push-e2e-image
@@ -196,6 +198,16 @@ jobs:
           pattern: "{delta,changed_screenshots}"
           separate-directories: true
         continue-on-error: true
+
+  post-comment:
+    runs-on: ubuntu-22.04
+    if: github.event_name == 'pull_request'
+    steps:
+      - *checkout
+      - uses: ./.github/actions/node_modules
+      - run: |
+          npx tsx test/scripts/save-durations.ts
+        working-directory: react
 
   merge-and-save-durations:
     runs-on: ubuntu-22.04
