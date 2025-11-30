@@ -204,10 +204,17 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - *checkout
+      - id: upload-banner
+        uses: actions/upload-artifact@v4
+        with:
+          name: banner-dark
+          path: icons/banner-dark.png
       - uses: ./.github/actions/node_modules
       - run: |
           npx tsx test/scripts/add-pr-comment.ts
         working-directory: react
+        env:
+          ARTIFACT_URL: ${{ steps.upload-banner.outputs.artifact-url }}
 
   merge-and-save-durations:
     runs-on: ubuntu-22.04

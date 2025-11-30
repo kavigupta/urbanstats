@@ -8,5 +8,5 @@ const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
 await octokit.rest.issues.createComment({
     ...repoInfo,
     issue_number: z.coerce.number().parse(process.env.PR_NUMBER),
-    body: 'Your comment text here',
+    body: `Your comment text here\n\n![Image description](${z.string().parse(process.env.ARTIFACT_URL)})`,
 })
