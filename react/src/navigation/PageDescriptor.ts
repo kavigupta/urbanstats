@@ -153,6 +153,7 @@ const editorSchema = z.object({
 const screenshotDiffViewerSchema = z.object({
     artifactId: z.string(),
     hash: z.string(),
+    index: z.optional(z.coerce.number()),
 })
 
 export const pageDescriptorSchema = z.union([
@@ -206,7 +207,7 @@ export type PageData =
         descriptor?: PageDescriptor // If descriptor is not present, we could not parse it
     }
     | { kind: 'initialLoad', descriptor: PageDescriptor }
-    | { kind: 'screenshotDiffViewer', artifactId: string, hash: string, panel: typeof ScreenshotDiffViewerPanel }
+    | { kind: 'screenshotDiffViewer', artifactId: string, hash: string, index: number, panel: typeof ScreenshotDiffViewerPanel }
 
 export function pageDescriptorFromURL(url: URL): PageDescriptor {
     /**
@@ -370,6 +371,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             searchParams = {
                 artifactId: pageDescriptor.artifactId,
                 hash: pageDescriptor.hash,
+                index: pageDescriptor.index?.toString(),
             }
     }
     // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
@@ -737,6 +739,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             return {
                 pageData: {
                     ...newDescriptor,
+                    index: newDescriptor.index ?? 0,
                     panel: (await import('../dev/ScreenshotDiffViewerPanel')).ScreenshotDiffViewerPanel,
                 },
                 newPageDescriptor: newDescriptor,

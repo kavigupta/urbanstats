@@ -1,15 +1,16 @@
 import { Data64URIWriter, FileEntry, HttpRangeReader, ZipReader } from '@zip.js/zip.js'
-import React, { ReactNode, useEffect, useMemo, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useMemo } from 'react'
 
+import { Navigator } from '../navigation/Navigator'
 import { LongLoad } from '../navigation/loading'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
-export function ScreenshotDiffViewerPanel({ hash, artifactId }: { hash: string, artifactId: string }): ReactNode {
+export function ScreenshotDiffViewerPanel({ hash, artifactId, index }: { hash: string, artifactId: string, index: number }): ReactNode {
     const entriesPromise = useMemo(async () => {
         const allEntries = await (await zipReader(artifactId)).getEntries()
         const fileEntries = allEntries.filter(e => !e.directory)
-        return <Entires hash={hash} entries={fileEntries} />
-    }, [artifactId, hash])
+        return fileEntries
+    }, [artifactId])
 
     return (
         <>
@@ -18,12 +19,12 @@ export function ScreenshotDiffViewerPanel({ hash, artifactId }: { hash: string, 
       max-width: 100%;
     }`}
             </style>
-            <LazyNode node={entriesPromise} />
+            <LazyNode node={entriesPromise.then(entries => <Entires hash={hash} entries={entries} index={index} artifactId={artifactId} />)} />
         </>
     )
 }
 
-function Entires({ hash, entries }: { hash: string, entries: FileEntry[] }): ReactNode {
+function Entires({ hash, entries, index, artifactId }: { hash: string, entries: FileEntry[], index: number, artifactId: string }): ReactNode {
     const changed = useMemo(() => entries
         .map(entry => ({ entry, match: /changed_screenshots\/([^\/]+)\/[^\/]+\/(.+)\.png$/.exec(entry.filename) }))
         .filter((item): item is { entry: FileEntry, match: RegExpExecArray } => item.match !== null)
@@ -38,27 +39,25 @@ function Entires({ hash, entries }: { hash: string, entries: FileEntry[] }): Rea
             }
         }), [entries])
 
-    const [index, setIndex] = useState(0)
+    const navigator = useContext(Navigator.Context)
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent): void => {
             if (event.key === 'ArrowLeft') {
-                setIndex(prev => Math.max(0, prev - 1))
+                if (index > 0) {
+                    void navigator.navigate({ kind: 'screenshotDiffViewer', hash, artifactId, index: index - 1 }, { history: 'push', scroll: { kind: 'position', top: 0 } })
+                }
             }
             else if (event.key === 'ArrowRight') {
-                setIndex(prev => Math.min(changed.length - 1, prev + 1))
+                if (index < changed.length - 1) {
+                    void navigator.navigate({ kind: 'screenshotDiffViewer', hash, artifactId, index: index + 1 }, { history: 'push', scroll: { kind: 'position', top: 0 } })
+                }
             }
         }
 
         window.addEventListener('keydown', handleKeyDown)
         return () => { window.removeEventListener('keydown', handleKeyDown) }
-    }, [changed.length])
-
-    useEffect(() => {
-        if (index >= changed.length) {
-            setIndex(changed.length - 1)
-        }
-    }, [index, changed])
+    }, [changed.length, navigator, artifactId, hash, index])
 
     useEffect(() => {
         const range = 1
@@ -73,6 +72,16 @@ function Entires({ hash, entries }: { hash: string, entries: FileEntry[] }): Rea
             <div>
                 <h1>
                     No Entries
+                </h1>
+            </div>
+        )
+    }
+
+    if (index >= changed.length || index < 0) {
+        return (
+            <div>
+                <h1>
+                    Out of Range
                 </h1>
             </div>
         )
