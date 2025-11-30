@@ -208,7 +208,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: banner-dark
-          path: icons/banner-dark.png
+          path: icons/main/banner-dark.png
       - uses: ./.github/actions/node_modules
       - run: |
           npx tsx test/scripts/add-pr-comment.ts
