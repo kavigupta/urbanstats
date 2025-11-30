@@ -206,7 +206,7 @@ jobs:
       - *checkout
       - uses: ./.github/actions/node_modules
       - run: |
-          npx tsx test/scripts/save-durations.ts
+          npx tsx test/scripts/add-pr-comment.ts
         working-directory: react
 
   merge-and-save-durations:
