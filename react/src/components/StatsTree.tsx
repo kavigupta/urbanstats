@@ -75,7 +75,6 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
     const [isExpanded, setIsExpanded] = useSetting(`stat_category_expanded_${category.id}`)
     const isMobileLayout = useMobileLayout()
     const changeCategorySetting = useChangeCategorySetting(category)
-    const colors = useColors()
 
     const groups = useAvailableGroups(category)
     const settingsInfo = useSettingsInfo(groupKeys(groups))
@@ -91,10 +90,16 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
                                 data-category-id={category.id}
                                 onClick={() => { setIsExpanded(!isExpanded) }}
                                 className="expandButton"
-                                style={{ transform: isExpanded ? `rotate(${isMobileLayout ? -90 : 90}deg)` : 'rotate(0deg)', color: colors.ordinalTextColor }}
-                            >
-                                {isMobileLayout ? '◀\ufe0e' : '▶\ufe0e' /* Arrows are on the right on mobile to be used with both thumbs */}
-                            </button>
+                                /* Arrows are on the right on mobile to be used with both thumbs */
+                                style={{
+                                    transform: isExpanded ? `rotate(${isMobileLayout ? 90 : 90}deg)` : `rotate(${isMobileLayout ? 180 : 0}deg)`,
+                                    backgroundImage: 'url("./arrow-right.png")',
+                                    backgroundPosition: 'center',
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundSize: isMobileLayout ? '24px' : '16px',
+                                }}
+                                aria-label={isExpanded ? `Collapse ${category.name} category` : `Expand ${category.name} category`}
+                            />
                         )}
                 <CheckboxSettingCustom
                     name={category.name}
