@@ -5,6 +5,7 @@ import { Settings, useSetting, useSettingInfo, useSettingsInfo, useStagedSetting
 import { changeStatGroupSetting, groupKeys, useAvailableCategories, useAvailableGroups, useCategoryStatus, useChangeCategorySetting } from '../page_template/statistic-settings'
 import { Category, Group } from '../page_template/statistic-tree'
 import { useMobileLayout } from '../utils/responsive'
+import { zIndex } from '../utils/zIndex'
 
 import { CheckboxSettingCustom, useSidebarSectionContentClassName } from './sidebar'
 
@@ -102,7 +103,7 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
                     onChange={changeCategorySetting}
                     testId={`category_${category.id}`}
                     highlight={highlight}
-                    style={{ zIndex: 1 }}
+                    style={{ zIndex: zIndex.categoryCheckbox }}
                 />
             </div>
             <CategoryContents

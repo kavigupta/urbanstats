@@ -7,6 +7,7 @@ import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { loadImage } from '../utils/Image'
 import { TestUtils } from '../utils/TestUtils'
+import { zIndex } from '../utils/zIndex'
 
 export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
     const colors = useColors()
@@ -35,7 +36,7 @@ export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
                 border: '5px solid #fff',
                 borderTop: '5px solid #000',
                 animation: 'spin 2s linear infinite',
-                zIndex: 2,
+                zIndex: zIndex.screenshotSpin,
                 animationPlayState: 'running',
             }}
             >
@@ -49,7 +50,7 @@ export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
                 top: 0,
                 left: 0,
                 backgroundColor: `${colors.textMain}80`,
-                zIndex: 1,
+                zIndex: zIndex.screenshotDim,
             }}
             >
             </div>

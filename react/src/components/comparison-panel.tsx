@@ -12,14 +12,17 @@ import { sanitize } from '../navigation/links'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { rowExpandedKey, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
+import { statParents, Year } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
 import { useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
+import { assert } from '../utils/defensive'
 import { notWaiting, waiting } from '../utils/promiseStream'
 import { Article } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { TransposeContext } from '../utils/transpose'
+import { zIndex } from '../utils/zIndex'
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
@@ -28,7 +31,7 @@ import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
-import { ScreencapElements, useScreenshotMode } from './screenshot'
+import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { TableContents, CellSpec } from './supertable'
 import { ColumnIdentifier } from './table'
@@ -205,7 +208,9 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         return dataByStatArticle[statIndex].find(row => row.extraStat !== undefined) ?? dataByStatArticle[statIndex][0]
     }
 
-    const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].map((row, articleIdx) => ({ ...row, color: colorFromCycle(colors.hueColors, articleIdx), shortname: localArticlesToUse[articleIdx].shortname, longname: localArticlesToUse[articleIdx].longname, sharedTypeOfAllArticles }))
+    const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].flatMap((row, articleIdx) =>
+        pullRelevantPlotProps(dataByArticleStat[articleIdx], statIndex, colorFromCycle(colors.hueColors, articleIdx), localArticlesToUse[articleIdx].shortname, localArticlesToUse[articleIdx].longname, sharedTypeOfAllArticles),
+    )
 
     const longnameHeaderSpecs: CellSpec[] = Array.from({ length: localArticlesToUse.length }).map((_, articleIndex) => (
         {
@@ -281,7 +286,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         <TransposeContext.Provider value={transpose}>
             <QuerySettingsConnection />
             <PageTemplate
-                screencapElements={screencapElements}
+                screencap={universe => createScreenshot(screencapElements(), universe, colors)}
                 csvExportData={csvExportData}
                 hasUniverseSelector={true}
                 universes={props.universes}
@@ -379,6 +384,54 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             </PageTemplate>
         </TransposeContext.Provider>
     )
+}
+
+export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
+    if (rows[statIndex].extraStat === undefined) {
+        return []
+    }
+    const sPs = rows.map(row => statParents.get(row.statpath)!).map((sP, i) => ({ sP, i }))
+    const byYear = new Map<Year, number[]>()
+    sPs.filter((
+        { sP, i }) => sP.group.id === sPs[statIndex].sP.group.id && rows[i].extraStat !== undefined,
+    ).forEach(({ sP: { year }, i }) => {
+        assert(year !== null, 'Year should not be null for plot data')
+        byYear.set(year, [...(byYear.get(year) ?? []), i])
+    })
+    const bestSourceEach = Array.from(byYear.entries()).map(([, indices]) => {
+        if (indices.length === 1) {
+            return indices[0]
+        }
+        const sources = indices.map(i => sPs[i].sP.source)
+        const exactMatch = sources.findIndex(source => JSON.stringify(source) === JSON.stringify(sPs[statIndex].sP.source))
+        if (exactMatch !== -1) {
+            return indices[exactMatch]
+        }
+        const nullMatch = sources.findIndex(source => source === null)
+        if (nullMatch !== -1) {
+            return indices[nullMatch]
+        }
+        return indices[0]
+    })
+    const statpaths = bestSourceEach.map(i => sPs[i])
+    const overOne = statpaths.length > 1
+    if (overOne) {
+        statpaths.forEach(({ sP: { year } }) => {
+            assert(year !== null, 'Year should not be null for plot data')
+        })
+        assert(statpaths.length === new Set(statpaths.map(({ sP: { year } }) => year)).size, 'All statpaths for plot data should have unique years')
+    }
+    return statpaths.map(({ i: idx, sP: { year } }) => {
+        assert(year !== null, 'unreachable, we checked this already')
+        return {
+            ...rows[idx],
+            color,
+            shortname,
+            longname,
+            sharedTypeOfAllArticles,
+            subseriesName: year.toString(),
+        } satisfies PlotProps
+    })
 }
 
 function getHighlightIndex(rows: ArticleRow[]): number | undefined {
@@ -498,7 +551,7 @@ export function ComparisonMapButtons({ longnames, colors, features, mapRef }: { 
 
     return (
         <div style={
-            { zIndex: 1000, position: 'absolute', right: 0, top: 0, padding: '12px' }
+            { zIndex: zIndex.comparisonMapButton, position: 'absolute', right: 0, top: 0, padding: '12px' }
         }
         >
             <div style={{

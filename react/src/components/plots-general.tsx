@@ -2,6 +2,7 @@ import * as Plot from '@observablehq/plot'
 import React, { ReactElement, useCallback, useEffect, useRef } from 'react'
 
 import { useTranspose } from '../utils/transpose'
+import { zIndex } from '../utils/zIndex'
 
 import { useScreenshotMode } from './screenshot'
 
@@ -92,7 +93,7 @@ export function PlotComponent(props: {
             {screenshotMode
                 ? undefined
                 : (
-                        <div style={{ zIndex: 1000, position: 'absolute', top: 0, right: 0, left: transpose ? 0 : undefined }}>
+                        <div style={{ zIndex: zIndex.plotSettings, position: 'absolute', top: 0, right: 0, left: transpose ? 0 : undefined }}>
                             {props.settingsElement(() => {
                                 const plot = Plot.plot(plotConfig(false))
                                 const div = document.createElement('div')
