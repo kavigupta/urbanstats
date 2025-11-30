@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom'
 import { totalOffset } from '../components/screenshot'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
-import { LongFormDocumentation } from '../uss-documentation'
+import { LongFormDocumentation, linkContext } from '../uss-documentation'
 import { TestUtils } from '../utils/TestUtils'
 
 import { renderCode, getRange, nodeContent, Range, setRange, EditorResult, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenu, createPlaceholder, createDocumentationPopover } from './editor-utils'
@@ -304,7 +304,11 @@ export function Editor(
                                     apply={(i) => { popoverState.apply(i) }}
                                 />
                             )
-                        : <LongFormDocumentation name={popoverState.name} value={popoverState.value} />,
+                        : (
+                                <linkContext.Provider value="link">
+                                    <LongFormDocumentation name={popoverState.name} value={popoverState.value} />
+                                </linkContext.Provider>
+                            ),
                     popoverState.element,
                 )}
         </div>
