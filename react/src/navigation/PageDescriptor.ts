@@ -186,7 +186,7 @@ export type PageData =
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit', dataCreditPanel: typeof DataCreditPanel }
-    | { kind: 'ussDocumentation', ussDocumentationPanel: typeof USSDocumentationPanel }
+    | { kind: 'ussDocumentation', ussDocumentationPanel: typeof USSDocumentationPanel, hash: string }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
     | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel, counts: CountsByUT }

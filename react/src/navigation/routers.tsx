@@ -43,7 +43,7 @@ function HighlightHash(): ReactNode {
         ? (
                 <style>
                     {`${hash} {
-background-color: var(--highlight);
+background-color: var(--highlight) !important;
 }`}
                 </style>
             )
@@ -156,7 +156,7 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
         case 'dataCredit':
             return <pageData.dataCreditPanel />
         case 'ussDocumentation':
-            return <pageData.ussDocumentationPanel />
+            return <pageData.ussDocumentationPanel hash={pageData.hash} />
         case 'quiz':
             return (
                 <pageData.quizPanel
