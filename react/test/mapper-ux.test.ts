@@ -438,3 +438,14 @@ test('change theme setting in sidebar menu', async (t) => {
 test('download file via site screencap button', async (t) => {
     await downloadImage(t)
 })
+
+for (const constant of ['linearScale', 'rampUridis']) {
+    test(`hover editor click link to documentation of constant ${constant}`, async (t) => {
+        await toggleCustomScript(t)
+        await t.hover(Selector('span').withExactText(constant))
+        await screencap(t, { fullPage: false })
+        await t.click(Selector('a').withExactText(constant))
+        await t.expect(getLocation()).eql(`${target}/uss-documentation.html#constant-${constant}`)
+        await screencap(t, { fullPage: false })
+    })
+}
