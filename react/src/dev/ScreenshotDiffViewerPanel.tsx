@@ -6,18 +6,28 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 export function ScreenshotDiffViewerPanel({ hash, artifactId }: { hash: string, artifactId: string }): ReactNode {
     const entriesPromise = useMemo(async () => {
-        const allEntries = await zipReader(artifactId).getEntries()
+        const allEntries = await (await zipReader(artifactId)).getEntries()
         const fileEntries = allEntries.filter(e => !e.directory)
         return <Entires hash={hash} entries={fileEntries} />
     }, [artifactId, hash])
 
-    return <LazyNode node={entriesPromise} />
+    return (
+        <>
+            <style>
+                {`img {
+      max-width: 100%;
+    }`}
+            </style>
+            <LazyNode node={entriesPromise} />
+        </>
+    )
 }
 
 function Entires({ hash, entries }: { hash: string, entries: FileEntry[] }): ReactNode {
     const changed = useMemo(() => entries
         .map(entry => ({ entry, match: /changed_screenshots\/([^\/]+)\/[^\/]+\/(.+)\.png$/.exec(entry.filename) }))
         .filter((item): item is { entry: FileEntry, match: RegExpExecArray } => item.match !== null)
+        .sort((a, b) => a.entry.filename.localeCompare(b.entry.filename))
         .map(({ entry, match: [, test, file] }) => {
             const delta = entries.find(e => e.filename === deltaPath(test, file))
             return {
@@ -50,6 +60,14 @@ function Entires({ hash, entries }: { hash: string, entries: FileEntry[] }): Rea
         }
     }, [index, changed])
 
+    useEffect(() => {
+        const range = 1
+        changed.slice(Math.max(0, index - range), Math.min(changed.length, index + range + 1)).forEach((item) => {
+            item.changed.load()
+            item.delta?.load()
+        })
+    }, [changed, index])
+
     if (changed.length === 0) {
         return (
             <div>
@@ -63,7 +81,7 @@ function Entires({ hash, entries }: { hash: string, entries: FileEntry[] }): Rea
     return <Diff {...changed[index]} hash={hash} />
 }
 
-function Diff({ test, file, hash, delta, changed }: { test: string, file: string, hash: string, changed: Promise<ReactNode>, delta?: Promise<ReactNode> }): ReactNode {
+function Diff({ test, file, hash, delta, changed }: { test: string, file: string, hash: string, changed: Delayed, delta?: Delayed }): ReactNode {
     return (
         <>
             <div>
@@ -83,7 +101,7 @@ function Diff({ test, file, hash, delta, changed }: { test: string, file: string
                                 <img src={githubImageUrl(hash, test, file)} />
                             </div>
                             <div>
-                                <LazyNode node={delta} />
+                                <LazyNode node={delta.get} />
                             </div>
                         </>
                     )
@@ -95,16 +113,16 @@ function Diff({ test, file, hash, delta, changed }: { test: string, file: string
                         </div>
                     )}
             <div>
-                <LazyNode node={changed} />
+                <LazyNode node={changed.get} />
             </div>
         </>
     )
 }
 
 function LazyNode({ node }: { node: Promise<ReactNode> }): ReactNode {
-    const { result } = useOrderedResolve(node)
+    const { result, loading } = useOrderedResolve(node)
 
-    if (result === undefined) {
+    if (result === undefined || loading) {
         return <LongLoad />
     }
     else {
@@ -121,12 +139,13 @@ function getPAT(): string {
     return result
 }
 
-function zipReader(artifactId: string): ZipReader<unknown> {
-    const rangeReader = new HttpRangeReader(`https://api.github.com/repos/kavigupta/urbanstats/actions/artifacts/${artifactId}/zip`, {
-        headers: [
-            ['Authorization', `Bearer ${getPAT()}`],
-        ],
+async function zipReader(artifactId: string): Promise< ZipReader<unknown>> {
+    const head = await fetch(`https://api.github.com/repos/kavigupta/urbanstats/actions/artifacts/${artifactId}/zip`, { method: 'HEAD',
+        headers: {
+            Authorization: `Bearer ${getPAT()}`,
+        },
     })
+    const rangeReader = new HttpRangeReader(head.url)
     return new ZipReader(rangeReader)
 }
 
@@ -138,9 +157,22 @@ function githubImageUrl(hash: string, test: string, file: string): string {
     return encodeURI(`https://raw.githubusercontent.com/kavigupta/urbanstats/${hash}/reference_test_screenshots/${test}/Chrome/${file}.png`)
 }
 
-async function imageFromEntry(entry: FileEntry): Promise<ReactNode> {
-    const writer = new Data64URIWriter('image/png')
-    await entry.getData(writer)
-    const imageStr = await writer.getData()
-    return <img src={imageStr} />
+interface Delayed { load: () => void, get: Promise<ReactNode> }
+
+function imageFromEntry(entry: FileEntry): Delayed {
+    let resolve: () => void
+    return {
+        load: () => {
+            resolve()
+        },
+        get: (async () => {
+            await new Promise<void>((r) => {
+                resolve = r
+            })
+            const writer = new Data64URIWriter('image/png')
+            await entry.getData(writer)
+            const imageStr = await writer.getData()
+            return <img src={imageStr} />
+        })(),
+    }
 }
