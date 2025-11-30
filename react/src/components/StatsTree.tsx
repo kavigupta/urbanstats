@@ -1,6 +1,5 @@
 import React, { ReactNode, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-import { useColors } from '../page_template/colors'
 import { Settings, useSetting, useSettingInfo, useSettingsInfo, useStagedSettingKeys } from '../page_template/settings'
 import { changeStatGroupSetting, groupKeys, useAvailableCategories, useAvailableGroups, useCategoryStatus, useChangeCategorySetting } from '../page_template/statistic-settings'
 import { Category, Group } from '../page_template/statistic-tree'
