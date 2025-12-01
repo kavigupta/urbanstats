@@ -1,13 +1,15 @@
-import { Data64URIWriter, FileEntry, HttpRangeReader, ZipReader } from '@zip.js/zip.js'
+import { Data64URIWriter, FileEntry, Reader, ZipReader } from '@zip.js/zip.js'
 import React, { ReactNode, useContext, useEffect, useMemo } from 'react'
+import { z } from 'zod'
 
 import { Navigator } from '../navigation/Navigator'
 import { LongLoad } from '../navigation/loading'
+import { DefaultMap } from '../utils/DefaultMap'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 export function ScreenshotDiffViewerPanel({ hash, artifactId, index }: { hash: string, artifactId: string, index: number }): ReactNode {
     const entriesPromise = useMemo(async () => {
-        const allEntries = await (await zipReader(artifactId)).getEntries()
+        const allEntries = await (zipReader(artifactId)).getEntries()
         const fileEntries = allEntries.filter(e => !e.directory)
         return fileEntries
     }, [artifactId])
@@ -60,7 +62,7 @@ function Entires({ hash, entries, index, artifactId }: { hash: string, entries: 
     }, [changed.length, navigator, artifactId, hash, index])
 
     useEffect(() => {
-        const range = 1
+        const range = 2
         changed.slice(Math.max(0, index - range), Math.min(changed.length, index + range + 1)).forEach((item) => {
             item.changed.load()
             item.delta?.load()
@@ -148,14 +150,64 @@ function getPAT(): string {
     return result
 }
 
-async function zipReader(artifactId: string): Promise< ZipReader<unknown>> {
-    const head = await fetch(`https://api.github.com/repos/kavigupta/urbanstats/actions/artifacts/${artifactId}/zip`, { method: 'HEAD',
-        headers: {
-            Authorization: `Bearer ${getPAT()}`,
-        },
+function zipReader(artifactId: string): ZipReader<unknown> {
+    return new ZipReader(new CustomReader(artifactId))
+}
+
+class CustomReader extends Reader<void> {
+    constructor(readonly artifactId: string) {
+        super()
+    }
+
+    override size = 0
+    url = ''
+
+    blockSize = 1_000_000
+
+    override async init(): Promise<void> {
+        await super.init?.()
+        const head = await fetch(`https://api.github.com/repos/kavigupta/urbanstats/actions/artifacts/${this.artifactId}/zip`, {
+            method: 'HEAD',
+            headers: {
+                Authorization: `Bearer ${getPAT()}`,
+            },
+        })
+        this.size = z.coerce.number().parse(head.headers.get('Content-Length'))
+        this.url = head.url
+    }
+
+    blocks = new DefaultMap<number, Promise<Uint8Array>>(async (blockIndex) => {
+        const start = blockIndex * this.blockSize
+        const end = Math.min(start + this.blockSize - 1, this.size - 1)
+        const response = await fetch(this.url, {
+            headers: {
+                Range: `bytes=${start}-${end}`,
+            },
+        })
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        return new Uint8Array(await response.arrayBuffer())
     })
-    const rangeReader = new HttpRangeReader(head.url)
-    return new ZipReader(rangeReader)
+
+    override async readUint8Array(index: number, length: number): Promise<Uint8Array> {
+        const result = new Uint8Array(length)
+        let resultOffset = 0
+
+        while (resultOffset < length) {
+            const currentIndex = index + resultOffset
+            const blockIndex = Math.floor(currentIndex / this.blockSize)
+            const blockOffset = currentIndex % this.blockSize
+
+            const block = await this.blocks.get(blockIndex)
+            const bytesToCopy = Math.min(length - resultOffset, this.blockSize - blockOffset, block.length - blockOffset)
+
+            result.set(block.slice(blockOffset, blockOffset + bytesToCopy), resultOffset)
+            resultOffset += bytesToCopy
+        }
+
+        return result
+    }
 }
 
 function deltaPath(test: string, file: string): string {
