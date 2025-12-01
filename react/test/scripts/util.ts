@@ -24,3 +24,9 @@ export async function setTOTPWait(testName: string, newValue: number): Promise<v
     await fs.mkdir('totp_wait_time', { recursive: true })
     await fs.writeFile(`totp_wait_time/${testName}.json`, JSON.stringify(newValue))
 }
+
+export const repoInfo = {
+    owner: 'kavigupta',
+    // eslint-disable-next-line no-restricted-syntax -- Repo identifier not branding
+    repo: 'urbanstats',
+}
