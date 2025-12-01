@@ -121,20 +121,28 @@ function Entires({ hash, entries, index, artifactId }: { hash: string, entries: 
         )
     }
 
-    return <Diff {...changed[index]} hash={hash} />
+    return <Diff {...changed[index]} hash={hash} index={index} total={changed.length} />
 }
 
-function Diff({ test, file, hash, delta, changed }: { test: string, file: string, hash: string, changed: Delayed, delta?: Delayed }): ReactNode {
+function Diff({ test, file, hash, delta, changed, index, total }: { test: string, file: string, hash: string, changed: Delayed, delta?: Delayed, index: number, total: number }): ReactNode {
     return (
         <div className="wrapper">
             <div>
-                <h1>
+                <h2>
+                    (
+                    {index + 1}
+                    {' '}
+                    /
+                    {' '}
+                    {total}
+                    )
+                    {' '}
                     {test}
                     {' '}
                     /
                     {' '}
                     {file}
-                </h1>
+                </h2>
             </div>
             <div className="container">
                 {delta
