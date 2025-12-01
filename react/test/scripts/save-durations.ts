@@ -4,8 +4,6 @@ import { globSync } from 'glob'
 import { Octokit } from 'octokit'
 import { z } from 'zod'
 
-import { repoInfo } from './util'
-
 const durationsFiles = globSync('durations/*.json')
 const durations: Record<string, number> = {}
 
@@ -18,7 +16,9 @@ for (const durationFile of durationsFiles) {
 const octokit = new Octokit({ auth: z.string().parse(process.env.FINE_GRAINED_TOKEN_FOR_VARIABLES) })
 
 const response = await octokit.rest.actions.updateRepoVariable({
-    ...repoInfo,
+    owner: 'kavigupta',
+    // eslint-disable-next-line no-restricted-syntax -- Repo identifier not branding
+    repo: 'urbanstats',
     name: 'E2E_TEST_DURATIONS',
     value: JSON.stringify(durations),
 })
