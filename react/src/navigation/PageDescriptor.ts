@@ -12,6 +12,7 @@ import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import type { DataCreditPanel } from '../data-credit'
+import type { ScreenshotDiffViewerPanel } from '../dev/ScreenshotDiffViewerPanel'
 import { loadJSON, loadStatisticsPage } from '../load_json'
 import type { DebugMapTextBoxPanel } from '../mapper/components/DebugMapTextBox'
 import type { MapperPanel } from '../mapper/components/MapperPanel'
@@ -149,6 +150,12 @@ const editorSchema = z.object({
     mode: z.optional(z.enum(['uss', 'mapper'])),
 })
 
+const screenshotDiffViewerSchema = z.object({
+    artifactId: z.string(),
+    hash: z.string(),
+    index: z.optional(z.coerce.number()),
+})
+
 export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('article') }).and(articleSchema),
     z.object({ kind: z.literal('comparison') }).and(comparisonSchema),
@@ -163,6 +170,7 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('mapper') }).and(mapperSchema),
     z.object({ kind: z.literal('editor') }).and(editorSchema),
     z.object({ kind: z.literal('oauthCallback'), params: z.record(z.string()) }),
+    z.object({ kind: z.literal('screenshotDiffViewer') }).and(screenshotDiffViewerSchema),
 ])
 
 export type PageDescriptor = z.infer<typeof pageDescriptorSchema>
@@ -199,6 +207,7 @@ export type PageData =
         descriptor?: PageDescriptor // If descriptor is not present, we could not parse it
     }
     | { kind: 'initialLoad', descriptor: PageDescriptor }
+    | { kind: 'screenshotDiffViewer', artifactId: string, hash: string, index: number, panel: typeof ScreenshotDiffViewerPanel }
 
 export function pageDescriptorFromURL(url: URL): PageDescriptor {
     /**
@@ -235,6 +244,8 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'editor', ...editorSchema.parse(params) }
         case '/oauth-callback.html':
             return { kind: 'oauthCallback', params }
+        case '/screenshot-diff-viewer.html':
+            return { kind: 'screenshotDiffViewer', ...screenshotDiffViewerSchema.parse(params) }
         default:
             throw new Error('404 not found')
     }
@@ -355,6 +366,13 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
         case 'initialLoad':
         case 'error':
             return pageDescriptor.url
+        case 'screenshotDiffViewer':
+            pathname = '/screenshot-diff-viewer.html'
+            searchParams = {
+                artifactId: pageDescriptor.artifactId,
+                hash: pageDescriptor.hash,
+                index: pageDescriptor.index?.toString(),
+            }
     }
     // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
     const result = new URL(window.location.origin)
@@ -717,6 +735,16 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 effects: () => undefined,
             }
         }
+        case 'screenshotDiffViewer':
+            return {
+                pageData: {
+                    ...newDescriptor,
+                    index: newDescriptor.index ?? 0,
+                    panel: (await import('../dev/ScreenshotDiffViewerPanel')).ScreenshotDiffViewerPanel,
+                },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
     }
 }
 
@@ -758,5 +786,7 @@ export function pageTitle(pageData: PageData): string {
             return pageData.result.success ? 'Signed In' : 'Sign In Failed'
         case 'error':
             return 'Error'
+        case 'screenshotDiffViewer':
+            return 'Screenshot Diff Viewer'
     }
 }
