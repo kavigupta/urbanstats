@@ -24,7 +24,7 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.issue.number
             });
-            
+
             core.setOutput('sha', pr.data.head.sha);
             core.setOutput('ref', pr.data.head.ref);
             core.setOutput('repo', pr.data.head.repo.full_name);
@@ -48,12 +48,12 @@ jobs:
               head_sha: '${{ steps.pr.outputs.sha }}',
               status: 'completed'
             });
-            
+
             if (runs.data.workflow_runs.length === 0) {
               core.setFailed('No completed workflow runs found for this PR head commit');
               return;
             }
-            
+
             const latestRun = runs.data.workflow_runs[0];
             core.setOutput('run-id', latestRun.id);
 
@@ -62,43 +62,43 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            
+
             const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner: context.repo.owner,
               repo: context.repo.repo,
               run_id: '${{ steps.workflow-run.outputs.run-id }}'
             });
-            
+
             const artifact = artifacts.data.artifacts.find(a => a.name === 'changed_screenshots');
-            
+
             if (!artifact) {
               core.setFailed('No changed_screenshots artifact found');
               return;
             }
-            
+
             const download = await github.rest.actions.downloadArtifact({
               owner: context.repo.owner,
               repo: context.repo.repo,
               artifact_id: artifact.id,
               archive_format: 'zip'
             });
-            
+
             fs.writeFileSync('changed_screenshots.zip', Buffer.from(download.data));
 
       - name: Extract and copy screenshots
         run: |
           # Extract the artifact
           unzip changed_screenshots.zip -d changed_screenshots_temp/
-          
+
           # Check if there are any screenshots to copy
           if [ ! -d "changed_screenshots_temp" ] || [ -z "$(find changed_screenshots_temp -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' 2>/dev/null)" ]; then
             echo "No screenshot files found in artifact"
             exit 0
           fi
-          
+
           # Create reference directory if it doesn't exist
           mkdir -p reference_test_screenshots
-          
+
           # Copy all screenshot files recursively, preserving directory structure
           find changed_screenshots_temp -type f \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" \) -exec sh -c '
             for file do
@@ -127,24 +127,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          
+
           git add reference_test_screenshots/
           git commit -m "Update reference screenshots from !updateScreenshots command"
           git push
-
-      - name: Comment on PR
-        uses: actions/github-script@v7
-        if: always()
-        with:
-          script: |
-            const hasChanges = '${{ steps.changes.outputs.has-changes }}' === 'true';
-            const message = hasChanges 
-              ? '✅ Reference screenshots have been updated successfully!'
-              : '📝 No screenshot changes found to update.';
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: message
-            });
