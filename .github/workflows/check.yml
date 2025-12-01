@@ -14,7 +14,6 @@ env:
     !named_region_shapefiles/*
     !outputs/*
     /*
-  PR_NUMBER: ${{ github.event.number }}
 jobs:
   build-and-push-common-image:
     runs-on: ubuntu-22.04
@@ -125,7 +124,6 @@ jobs:
         working-directory: react
 
   e2e:
-    if: false
     runs-on: ubuntu-22.04
     needs:
       - build-and-push-e2e-image
@@ -192,29 +190,24 @@ jobs:
           name: changed_screenshots
           pattern: "changed_screenshots-*"
         continue-on-error: true
-      - uses: actions/upload-artifact/merge@v4
+      - id: upload-combined
+        uses: actions/upload-artifact/merge@v4
         with:
           name: combined
           pattern: "{delta,changed_screenshots}"
           separate-directories: true
         continue-on-error: true
-
-  post-comment:
-    runs-on: ubuntu-22.04
-    if: github.event_name == 'pull_request'
-    steps:
-      - *checkout
-      - id: upload-banner
-        uses: actions/upload-artifact@v4
+      - if: ${{ steps.upload-combined.outputs.artifact-id !== '' }}
+        uses: actions/github-script@v7
         with:
-          name: banner-dark
-          path: icons/main/banner-dark.png
-      - uses: ./.github/actions/node_modules
-      - run: |
-          npx tsx test/scripts/add-pr-comment.ts
-        working-directory: react
-        env:
-          ARTIFACT_URL: ${{ steps.upload-banner.outputs.artifact-url }}
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '[Screenshots merge ${{ github.event.pull_request.head.sha }} "${{ github.event.pull_request.head.message }}"](http://localhost:8000/screenshot-diff-viewer.html?artifactId=${{ steps.upload-combined.outputs.artifact-id }}&hash=${{ github.sha }})'
+            })
 
   merge-and-save-durations:
     runs-on: ubuntu-22.04
