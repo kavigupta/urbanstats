@@ -4,7 +4,7 @@ on:
     types: [created]
 
 env:
-  GITHUB_TOKEN: ${{ secrets.FINE_GRAINED_TOKEN_FOR_VARIABLES }}
+  GITHUB_TOKEN: ${{ secrets.FINE_GRAINED_TOKEN_FOR_UPDATE_SCREENSHOTS }}
 
 jobs:
   update-screenshots:
@@ -34,7 +34,7 @@ jobs:
         with:
           repository: ${{ steps.pr.outputs.repo }}
           ref: ${{ steps.pr.outputs.ref }}
-          token: ${{ secrets.FINE_GRAINED_TOKEN_FOR_VARIABLES }}
+          token: ${{ secrets.FINE_GRAINED_TOKEN_FOR_UPDATE_SCREENSHOTS }}
 
       - name: Get workflow run for PR head commit
         id: workflow-run
