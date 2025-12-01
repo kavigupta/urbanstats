@@ -34,7 +34,7 @@ jobs:
         with:
           repository: ${{ steps.pr.outputs.repo }}
           ref: ${{ steps.pr.outputs.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.FINE_GRAINED_TOKEN_FOR_VARIABLES }}
 
       - name: Get workflow run for PR head commit
         id: workflow-run
