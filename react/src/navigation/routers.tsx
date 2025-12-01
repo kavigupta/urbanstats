@@ -181,5 +181,7 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
                     <InitialLoad />
                 </PageTemplate>
             )
+        case 'screenshotDiffViewer':
+            return <pageData.panel {...pageData} />
     }
 }
