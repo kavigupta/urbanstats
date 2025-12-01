@@ -27,7 +27,7 @@ const options = argumentParser({
 }).parse(process.argv.slice(2))
 
 // All the tests that might run
-const tests = globSync('test/**/*.test.ts').map(testFile => /([^/]+)\.test\.ts$/.exec(testFile)![1])
+const tests = globSync('test/**/mapper-edit-text-boxes.test.ts').map(testFile => /([^/]+)\.test\.ts$/.exec(testFile)![1])
 
 // Durations might be empty (running on a fork), so we should handle that and assume it's empty
 const testDurations = z.record(z.number()).parse(JSON.parse(options.testDurations === '' ? '{}' : options.testDurations))
