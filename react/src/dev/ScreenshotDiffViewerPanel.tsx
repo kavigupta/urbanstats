@@ -17,9 +17,41 @@ export function ScreenshotDiffViewerPanel({ hash, artifactId, index }: { hash: s
     return (
         <>
             <style>
-                {`img {
-      max-width: 100%;
-    }`}
+                {`
+
+.wrapper {
+    container-type: size;
+    inset: 0;
+    position: absolute;
+}
+
+.container {
+    display: flex;
+    gap: 10px;
+}
+
+@container (aspect-ratio < 1) {
+    .container {
+        flex-direction: column;
+    }
+    
+    img {
+        max-height: 30vh;
+        max-width: 90vw;
+    }
+}
+
+@container (aspect-ratio >= 1) {
+    .container {
+        flex-direction: row;
+    }
+
+    img {
+        max-width: 30vw;
+        max-height: 90vh;
+    }
+}
+`}
             </style>
             <LazyNode node={entriesPromise.then(entries => <Entires hash={hash} entries={entries} index={index} artifactId={artifactId} />)} />
         </>
@@ -94,39 +126,40 @@ function Entires({ hash, entries, index, artifactId }: { hash: string, entries: 
 
 function Diff({ test, file, hash, delta, changed }: { test: string, file: string, hash: string, changed: Delayed, delta?: Delayed }): ReactNode {
     return (
-        <>
+        <div className="wrapper">
             <div>
-                <h2>
+                <h1>
                     {test}
-                </h2>
-            </div>
-            <div>
-                <h3>
+                    {' '}
+                    /
+                    {' '}
                     {file}
-                </h3>
+                </h1>
             </div>
-            {delta
-                ? (
-                        <>
+            <div className="container">
+                {delta
+                    ? (
+                            <>
+                                <div>
+                                    <img src={githubImageUrl(hash, test, file)} />
+                                </div>
+                                <div>
+                                    <LazyNode node={delta.get} />
+                                </div>
+                            </>
+                        )
+                    : (
                             <div>
-                                <img src={githubImageUrl(hash, test, file)} />
+                                <h1>
+                                    New File
+                                </h1>
                             </div>
-                            <div>
-                                <LazyNode node={delta.get} />
-                            </div>
-                        </>
-                    )
-                : (
-                        <div>
-                            <h1>
-                                New File
-                            </h1>
-                        </div>
-                    )}
-            <div>
-                <LazyNode node={changed.get} />
+                        )}
+                <div>
+                    <LazyNode node={changed.get} />
+                </div>
             </div>
-        </>
+        </div>
     )
 }
 
