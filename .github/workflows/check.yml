@@ -124,7 +124,6 @@ jobs:
         working-directory: react
 
   e2e:
-    if: false
     runs-on: ubuntu-22.04
     needs:
       - build-and-push-e2e-image
