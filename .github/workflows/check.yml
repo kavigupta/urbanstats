@@ -265,11 +265,11 @@ jobs:
       - run-unit-tests
       - e2e
     steps:
-      - name: Tests Passed
-        run: echo "Tests passed!"
-        if: ${{ !failure() }}
       - name: Tests Failed
+        if: ${{ !success() }}
         run: |
           echo "Tests failed!"
           exit 1
-        if: ${{ failure() }}
+      - name: Test Suceeeded
+        run: |
+          echo "Tests succeeded!"
