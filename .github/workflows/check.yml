@@ -266,10 +266,10 @@ jobs:
       - e2e
     steps:
       - name: Tests Failed
-        if: ${{ !success() }}
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
         run: |
           echo "Tests failed!"
           exit 1
-      - name: Test Suceeeded
+      - name: Tests Succeeded
         run: |
           echo "Tests succeeded!"
