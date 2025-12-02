@@ -255,3 +255,11 @@ jobs:
         working-directory: urbanstats-persistent-data
         run: python -m pytest --cov=. --cov-report=xml --cov-report=term-missing tests
         if: "!cancelled()"
+
+  # Empty job so that github can gate PR merge
+  tests-passed:
+    runs-on: ubuntu-22.04
+    needs:
+      - lint
+      - run-unit-tests
+      - e2e
