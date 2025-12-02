@@ -263,3 +263,5 @@ jobs:
       - lint
       - run-unit-tests
       - e2e
+    steps:
+      - run: echo "Tests passed!"
