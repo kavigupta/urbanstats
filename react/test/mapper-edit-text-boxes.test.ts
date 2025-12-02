@@ -120,7 +120,7 @@ test('change background color, border color, border width, insert images, insert
     await t.click('button[icon="formula"]')
 
     // Insert an image
-    await t.setNativeDialogHandler(() => 'https://http.cat/images/302.jpg')
+    await t.setNativeDialogHandler(() => 'https://http.cat/images/301.jpg')
     await t.click('button[icon="image"]')
 
     // Change border width
