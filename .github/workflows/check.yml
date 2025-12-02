@@ -256,12 +256,20 @@ jobs:
         run: python -m pytest --cov=. --cov-report=xml --cov-report=term-missing tests
         if: "!cancelled()"
 
-  # Empty job so that github can gate PR merge
+  # Sink job so that github can gate PR merge
   tests-passed:
     runs-on: ubuntu-22.04
+    if: ${{ always() }}
     needs:
       - lint
       - run-unit-tests
       - e2e
     steps:
-      - run: echo "Tests passed!"
+      - name: Tests Passed
+        run: echo "Tests passed!"
+        if: ${{ !failure() }}
+      - name: Tests Failed
+        run: |
+          echo "Tests failed!"
+          exit 1
+        if: ${{ failure() }}
