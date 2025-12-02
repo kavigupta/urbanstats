@@ -6,8 +6,8 @@ import { colorThemes } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
 import { DisplayResults } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
-import { doRender, hsvColorExpression, hsvToColor, rgbColorExpression, rgbToColor } from '../../urban-stats-script/constants/color'
-import { Color, hexToColor } from '../../urban-stats-script/constants/color-utils'
+import { hsvToColor, rgbToColor } from '../../urban-stats-script/constants/color'
+import { Color, doRender, hexToColor, hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
 import { RampT } from '../../urban-stats-script/constants/ramp'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation, parseNumber } from '../../urban-stats-script/lexer'
@@ -85,31 +85,7 @@ export function Selector(props: {
                 onEdit={hasCustomConstructor ? onEdit : undefined}
             />
             {showConstantInput && (
-                <input
-                    type="text"
-                    value={currentValue}
-                    onChange={(e) => {
-                        const value = e.target.value
-                        let node: (UrbanStatsASTExpression & { type: 'constant' })['value']['node']
-                        let numberValue
-                        if (isNumber && (numberValue = parseNumber(value)) !== undefined) {
-                            node = { type: 'number', value: numberValue }
-                        }
-                        else {
-                            node = { type: 'string', value }
-                        }
-                        const newUss: UrbanStatsASTExpression = {
-                            type: 'constant',
-                            value: {
-                                node,
-                                location: emptyLocation(props.blockIdent),
-                            },
-                        }
-                        props.setUss(newUss)
-                    }}
-                    style={{ width: '200px', fontSize: '14px', padding: '4px 8px' }}
-                    placeholder={isNumber ? 'Enter number' : 'Enter string'}
-                />
+                isNumber ? <NumberInput currentValue={currentValue} {...props} /> : <TextInput currentValue={currentValue} {...props} />
             )}
             {colorValue !== undefined && (
                 <input
@@ -156,6 +132,56 @@ export function Selector(props: {
             {select}
             {errorComponent}
         </div>
+    )
+}
+
+function TextInput({ currentValue, blockIdent, setUss }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression) => void }): ReactNode {
+    return (
+        <textarea
+            value={currentValue}
+            onChange={(e) => {
+                const value = e.target.value
+                setUss({
+                    type: 'constant',
+                    value: {
+                        node: { type: 'string', value },
+                        location: emptyLocation(blockIdent),
+                    },
+                })
+            }}
+            style={{ width: '200px', fontSize: '14px', padding: '4px 8px', resize: 'vertical' }}
+            placeholder="Enter string"
+        />
+    )
+}
+
+function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression) => void }): ReactNode {
+    return (
+        <input
+            type="text"
+            value={currentValue}
+            onChange={(e) => {
+                const value = e.target.value
+                let node: (UrbanStatsASTExpression & { type: 'constant' })['value']['node']
+                let numberValue
+                if ((numberValue = parseNumber(value)) !== undefined) {
+                    node = { type: 'number', value: numberValue }
+                }
+                else {
+                    node = { type: 'string', value }
+                }
+                const newUss: UrbanStatsASTExpression = {
+                    type: 'constant',
+                    value: {
+                        node,
+                        location: emptyLocation(blockIdent),
+                    },
+                }
+                setUss(newUss)
+            }}
+            style={{ width: '200px', fontSize: '14px', padding: '4px 8px', resize: 'none' }}
+            placeholder="Enter number"
+        />
     )
 }
 
@@ -215,7 +241,7 @@ export function renderSelection(typeEnvironment: TypeEnvironment, selection: Sel
     }
 }
 
-const colorSchema = l.transformExpr(l.customNodeExpr(l.deconstruct(l.call({
+export const colorSchema = l.transformExpr(l.customNodeExpr(l.deconstruct(l.call({
     fn: l.union([l.identifier('rgb'), l.identifier('hsv')]),
     unnamedArgs: [l.number(), l.number(), l.number()],
     namedArgs: { a: l.optional(l.number()) },
@@ -236,7 +262,12 @@ const colorSchema = l.transformExpr(l.customNodeExpr(l.deconstruct(l.call({
 })
 
 export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): { color: Color, kind: 'rgb' | 'hsv' } | undefined {
-    return colorSchema.parse(expr, typeEnvironment)
+    try {
+        return colorSchema.parse(expr, typeEnvironment)
+    }
+    catch {
+        return
+    }
 }
 
 function LongDescriptionSubtitle(props: { doc: Documentation, highlighted: boolean }): ReactNode {

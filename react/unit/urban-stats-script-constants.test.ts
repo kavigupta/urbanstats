@@ -1,10 +1,14 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
+import { round } from 'mathjs'
+
+import { Color, deconstructColor, doRender } from '../src/urban-stats-script/constants/color-utils'
 import { constantsByType, defaultConstants } from '../src/urban-stats-script/constants/constants'
 import { Context } from '../src/urban-stats-script/context'
 import { evaluate, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { LocInfo } from '../src/urban-stats-script/location'
+import { USSRawValue } from '../src/urban-stats-script/types-values'
 
 void test('constant listing', (): void => {
     assert.deepStrictEqual(
@@ -37,6 +41,11 @@ void test('constant listing', (): void => {
                 'colorCyan',
                 'colorWhite',
                 'colorBlack',
+            ],
+            '(string; size: number = null, font: string = null, color: color = null, bold: boolean = null, italic: boolean = null, underline: boolean = null, strike: boolean = null, list: richTextList = null, indent: number = null, align: richTextAlign = null) -> richTextSegment': [
+                'rtfString',
+                'rtfFormula',
+                'rtfImage',
             ],
             'Unit': [
                 'unitPercentage',
@@ -99,6 +108,9 @@ void test('constant listing', (): void => {
             '(any; ) -> string': [
                 'toString',
             ],
+            '(; screenBounds: {east: number, north: number, south: number, west: number}, text: richTextDocument, backgroundColor: color = rgb(1, 0.973, 0.941), borderColor: color = rgb(0.2, 0.2, 0.2), borderWidth: number = 1) -> textBox': [
+                'textBox',
+            ],
             '(; y: [number], x1: [number], x2: [number] = null, x3: [number] = null, x4: [number] = null, x5: [number] = null, x6: [number] = null, x7: [number] = null, x8: [number] = null, x9: [number] = null, x10: [number] = null, weight: [number] = null, noIntercept: boolean = false) -> {b: number, m1: number, m10: number, m2: number, m3: number, m4: number, m5: number, m6: number, m7: number, m8: number, m9: number, r2: number, residuals: [number]}': [
                 'regression',
             ],
@@ -108,6 +120,9 @@ void test('constant listing', (): void => {
             ],
             '(color; ) -> string': [
                 'renderColor',
+            ],
+            '([richTextSegment]; ) -> richTextDocument': [
+                'rtfDocument',
             ],
             '([{color: color, value: number}]; ) -> ramp': [
                 'constructRamp',
@@ -516,13 +531,13 @@ void test('constant listing', (): void => {
                 'linearScale',
                 'logScale',
             ],
-            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets) -> cMap': [
+            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMap': [
                 'cMap',
             ],
-            '(; dataR: [number], dataG: [number], dataB: [number], label: string, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets) -> cMapRGB': [
+            '(; dataR: [number], dataG: [number], dataB: [number], label: string, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMapRGB': [
                 'cMapRGB',
             ],
-            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = null, basemap: basemap = osmBasemap(), insets: insets = defaultInsets) -> pMap': [
+            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = null, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> pMap': [
                 'pMap',
             ],
             '(; color: color = rgb(0, 0, 0), weight: number = 0.5) -> outline': [
@@ -533,6 +548,17 @@ void test('constant listing', (): void => {
             ],
             '(; backgroundColor: color = rgb(1, 1, 1, a=1), textColor: color = null) -> basemap': [
                 'noBasemap',
+            ],
+            'richTextAlign': [
+                'alignLeft',
+                'alignCenter',
+                'alignRight',
+                'alignJustify',
+            ],
+            'richTextList': [
+                'listOrdered',
+                'listBullet',
+                'listNone',
             ],
         },
     )
@@ -569,15 +595,36 @@ void test('equivalent expressions produce equivalent results', (): void => {
             const equivalentExpr = equivalentExpressions[i]
             const evaluatedEquivalent = evaluate(equivalentExpr, context)
 
-            // Compare only value and type (evaluated expressions don't have documentation)
-            assert.deepStrictEqual(
-                { type: evaluatedEquivalent.type, value: evaluatedEquivalent.value },
-                { type: originalValue.type, value: originalValue.value },
-                `Equivalent expression ${i} for constant "${constantName}" produced different result. Expected: ${JSON.stringify({ type: originalValue.type, value: originalValue.value })}, Got: ${JSON.stringify({ type: evaluatedEquivalent.type, value: evaluatedEquivalent.value })}`,
-            )
+            // Colors may be rgb or hsv, so just compare the hex expressions
+            const isColor = (v: USSRawValue): v is USSRawValue & { value: Color } => typeof v === 'object' && v !== null && 'type' in v && v.opaqueType === 'color'
+            if (isColor(originalValue.value) && isColor(evaluatedEquivalent.value)) {
+                assert.deepStrictEqual(evaluatedEquivalent.type, originalValue.type)
+                assert.equal(doRender(evaluatedEquivalent.value.value), doRender(originalValue.value.value), `Colors ${deconstructColor(evaluatedEquivalent.value.value)} != ${deconstructColor(originalValue.value.value)}`)
+            }
+            else {
+                // Compare only value and type (evaluated expressions don't have documentation)
+                assert.deepStrictEqual(
+                    { type: evaluatedEquivalent.type, value: evaluatedEquivalent.value },
+                    { type: originalValue.type, value: roundNumbers(originalValue.value) },
+                    `Equivalent expression ${i} for constant "${constantName}" produced different result. Expected: ${JSON.stringify({ type: originalValue.type, value: originalValue.value })}, Got: ${JSON.stringify({ type: evaluatedEquivalent.type, value: evaluatedEquivalent.value })}`,
+                )
+            }
         }
     }
 })
+
+function roundNumbers(obj: unknown): unknown {
+    if (Array.isArray(obj)) {
+        return obj.map(roundNumbers)
+    }
+    if (obj instanceof Object) {
+        return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, roundNumbers(v)]))
+    }
+    if (typeof obj === 'number') {
+        return round(obj, 3)
+    }
+    return obj
+}
 
 void test('all constants have proper documentation', (): void => {
     // Check that all constants have proper documentation

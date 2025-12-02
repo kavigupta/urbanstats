@@ -1,36 +1,28 @@
-import '@fontsource/jost/100.css'
-import '@fontsource/jost/200.css'
-import '@fontsource/jost/300.css'
-import '@fontsource/jost/400.css'
-import '@fontsource/jost/500.css'
-import '@fontsource/jost/600.css'
-import '@fontsource/jost/700.css'
-import '@fontsource/jost/800.css'
-import '@fontsource/jost/900.css'
-
-import React, { ReactNode, useEffect, useState } from 'react'
+import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
 import { exportToCSV, CSVExportData } from '../components/csv-export'
 import { Header } from '../components/header'
-import { ScreencapElements, ScreenshotContext, createScreenshot } from '../components/screenshot'
+import { ScreenshotContext } from '../components/screenshot'
 import { Sidebar } from '../components/sidebar'
 import '../common.css'
 import '../components/article.css'
 import { TestUtils } from '../utils/TestUtils'
 import { useMobileLayout } from '../utils/responsive'
+import { zIndex } from '../utils/zIndex'
 
-import { useColors, useJuxtastatColors } from './colors'
+import { Colors } from './color-themes'
+import { useColors, useStyleElement } from './colors'
 import { useHideSidebarDesktop } from './utils'
 
 export function PageTemplate({
-    screencapElements = undefined,
+    screencap = undefined,
     csvExportData = undefined,
     hasUniverseSelector = false,
     universes = [],
     children,
     showFooter = true,
 }: {
-    screencapElements?: () => ScreencapElements
+    screencap?: (currentUniverse: string | undefined, colors: Colors) => Promise<void>
     csvExportData?: CSVExportData
     hasUniverseSelector?: boolean
     universes?: readonly string[]
@@ -40,27 +32,15 @@ export function PageTemplate({
     const [hamburgerOpen, setHamburgerOpen] = useState(false)
     const [screenshotMode, setScreenshotMode] = useState(false)
     const colors = useColors()
-    const juxtaColors = useJuxtastatColors()
     const mobileLayout = useMobileLayout()
     const hideSidebarDesktop = useHideSidebarDesktop()
 
+    const styleElement = useStyleElement()
     useEffect(() => {
+        styleElement(document.documentElement)
         document.body.style.backgroundColor = colors.background
         document.body.style.color = colors.textMain
-        document.documentElement.style.setProperty('--quiz-plain-bg', colors.unselectedButton)
-        document.documentElement.style.setProperty('--quiz-selected-bg', colors.selectedButton)
-        document.documentElement.style.setProperty('--quiz-correct', juxtaColors.correct)
-        document.documentElement.style.setProperty('--quiz-incorrect', juxtaColors.incorrect)
-        document.documentElement.style.setProperty('--slightly-different-background', colors.slightlyDifferentBackground)
-        document.documentElement.style.setProperty('--slightly-different-background-focused', colors.slightlyDifferentBackgroundFocused)
-        document.documentElement.style.setProperty('--blue-link', colors.blueLink)
-        document.documentElement.style.setProperty('--text-main-opposite', colors.textMainOpposite)
-        document.documentElement.style.setProperty('--text-main', colors.textMain)
-        document.documentElement.style.setProperty('--ordinal-text-color', colors.ordinalTextColor)
-        document.documentElement.style.setProperty('--background', colors.background)
-        document.documentElement.style.setProperty('--highlight', colors.highlight)
-        document.documentElement.style.setProperty('--border-non-shadow', colors.borderNonShadow)
-    }, [colors, juxtaColors])
+    }, [styleElement, colors.background, colors.textMain])
 
     useEffect(() => {
         if (!(mobileLayout || hideSidebarDesktop) && hamburgerOpen) {
@@ -68,7 +48,7 @@ export function PageTemplate({
         }
     }, [hamburgerOpen, mobileLayout, hideSidebarDesktop])
 
-    const hasScreenshotButton = screencapElements !== undefined
+    const hasScreenshotButton = screencap !== undefined
     const hasCSVButton = csvExportData !== undefined
 
     const exportCSV = (): void => {
@@ -83,12 +63,12 @@ export function PageTemplate({
         }
     }
 
-    const screencap = async (currentUniverse: string | undefined): Promise<void> => {
-        if (screencapElements === undefined) {
+    const doScreencap = async (currentUniverse: string | undefined): Promise<void> => {
+        if (screencap === undefined) {
             return
         }
         try {
-            await createScreenshot(screencapElements(), currentUniverse, colors)
+            await screencap(currentUniverse, colors)
         }
         catch (e) {
             console.error(e)
@@ -98,7 +78,7 @@ export function PageTemplate({
     const initiateScreenshot = (currentUniverse: string | undefined): void => {
         setScreenshotMode(true)
         setTimeout(async () => {
-            await screencap(currentUniverse)
+            await doScreencap(currentUniverse)
             setScreenshotMode(false)
         })
     }
@@ -170,7 +150,7 @@ function TemplateFooter(): ReactNode {
 function Version(): ReactNode {
     return (
         <span id="current-version">
-            {TestUtils.shared.isTesting ? '<VERSION>' : '30.3.6'}
+            {TestUtils.shared.isTesting ? '<VERSION>' : '30.3.9'}
         </span>
     )
 }
@@ -178,7 +158,7 @@ function Version(): ReactNode {
 function LastUpdated(): ReactNode {
     return (
         <span id="last-updated">
-            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2025-10-25'}
+            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2025-11-21'}
         </span>
     )
 }
@@ -209,7 +189,7 @@ function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen }:
     const mobileLayout = useMobileLayout()
     const hideSidebarDesktop = useHideSidebarDesktop()
 
-    if (hamburgerOpen && !hideSidebarDesktop) {
+    if (hamburgerOpen && (!hideSidebarDesktop || mobileLayout)) {
         return <LeftPanel setHamburgerOpen={setHamburgerOpen} />
     }
     return (
@@ -263,18 +243,25 @@ function LeftPanel({ setHamburgerOpen }: { setHamburgerOpen: (open: boolean) => 
             <Sidebar onNavigate={() => { setHamburgerOpen(false) }} />
         </div>
     )
+
+    const hideRef = useRef<HTMLDivElement>(null)
     if (!mobileLayout && hideSidebarDesktop) {
         return (
             <div
+                ref={hideRef}
                 style={{
                     position: 'absolute',
-                    zIndex: 100,
+                    zIndex: zIndex.sidebarOverlay,
                     left: 0,
                     right: 0,
                     height: '100%',
                     backgroundColor: `${colors.background}99`,
                 }}
-                onClick={() => { setHamburgerOpen(false) }}
+                onClick={(e) => {
+                    if (e.target === hideRef.current) {
+                        setHamburgerOpen(false)
+                    }
+                }}
             >
                 {sidebar}
             </div>

@@ -1236,7 +1236,7 @@ void test('evaluate conditions', (): void => {
 void test('colors', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('rgb(1, 0, 0)'), emptyContext()),
-        undocValue({ type: 'opaque', opaqueType: 'color', value: { r: 255, g: 0, b: 0, a: 255 } }, colorType),
+        undocValue({ type: 'opaque', opaqueType: 'color', value: { r: 1, g: 0, b: 0, a: 1 } }, colorType),
     )
     assert.deepStrictEqual(
         renderValue(evaluate(parseExpr('rgb(1, 0, 0)'), emptyContext())),
@@ -1245,9 +1245,9 @@ void test('colors', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('rgb([1, 0.5, 0.75], 0, 0)'), emptyContext()),
         undocValue([
-            { type: 'opaque', opaqueType: 'color', value: { r: 255, g: 0, b: 0, a: 255 } },
-            { type: 'opaque', opaqueType: 'color', value: { r: 128, g: 0, b: 0, a: 255 } },
-            { type: 'opaque', opaqueType: 'color', value: { r: 191, g: 0, b: 0, a: 255 } },
+            { type: 'opaque', opaqueType: 'color', value: { r: 1, g: 0, b: 0, a: 1 } },
+            { type: 'opaque', opaqueType: 'color', value: { r: 0.5, g: 0, b: 0, a: 1 } },
+            { type: 'opaque', opaqueType: 'color', value: { r: 0.75, g: 0, b: 0, a: 1 } },
         ], { type: 'vector', elementType: colorType }),
     )
     assert.deepStrictEqual(
@@ -1263,9 +1263,9 @@ void test('colors', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('hsv([0, 60, 120], 1, 0.5)'), emptyContext()),
         undocValue([
-            { type: 'opaque', opaqueType: 'color', value: { r: 128, g: 0, b: 0, a: 255 } }, // Red
-            { type: 'opaque', opaqueType: 'color', value: { r: 128, g: 128, b: 0, a: 255 } }, // Yellow
-            { type: 'opaque', opaqueType: 'color', value: { r: 0, g: 128, b: 0, a: 255 } }, // Green
+            { type: 'opaque', opaqueType: 'color', value: { h: 0, s: 1, v: 0.5, a: 1 } }, // Red
+            { type: 'opaque', opaqueType: 'color', value: { h: 60, s: 1, v: 0.5, a: 1 } }, // Yellow
+            { type: 'opaque', opaqueType: 'color', value: { h: 120, s: 1, v: 0.5, a: 1 } }, // Green
         ], { type: 'vector', elementType: colorType }),
     )
     assert.throws(
@@ -1348,8 +1348,8 @@ void test('ramps', (): void => {
 
     // Test ramp with variables
     const ctx: Context = emptyContext()
-    ctx.assignVariable('red', undocValue({ type: 'opaque', opaqueType: 'color', value: { r: 255, g: 0, b: 0, a: 255 } }, { type: 'opaque', name: 'color' }))
-    ctx.assignVariable('blue', undocValue({ type: 'opaque', opaqueType: 'color', value: { r: 0, g: 0, b: 255, a: 255 } }, { type: 'opaque', name: 'color' }))
+    ctx.assignVariable('red', undocValue({ type: 'opaque', opaqueType: 'color', value: { r: 1, g: 0, b: 0, a: 1 } }, { type: 'opaque', name: 'color' }))
+    ctx.assignVariable('blue', undocValue({ type: 'opaque', opaqueType: 'color', value: { r: 0, g: 0, b: 1, a: 1 } }, { type: 'opaque', name: 'color' }))
 
     assert.deepStrictEqual(
         evaluate(parseExpr('constructRamp([{value: 0, color: red}, {value: 1, color: blue}])'), ctx),
@@ -1846,7 +1846,7 @@ void test('test basic map with outline', () => {
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
-    assert.deepStrictEqual(resultMapRaw.outline, { color: { r: 255, g: 0, b: 0, a: 255 }, weight: 2 })
+    assert.deepStrictEqual(resultMapRaw.outline, { color: { r: 1, g: 0, b: 0, a: 1 }, weight: 2 })
 })
 
 void test('test basic map with default outline', () => {
@@ -1857,7 +1857,7 @@ void test('test basic map with default outline', () => {
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
-    assert.deepStrictEqual(resultMapRaw.outline, { color: { r: 0, g: 0, b: 0, a: 255 }, weight: 0 })
+    assert.deepStrictEqual(resultMapRaw.outline, { color: { r: 0, g: 0, b: 0, a: 1 }, weight: 0 })
 })
 
 void test('test constructOutline function', () => {
@@ -1866,7 +1866,7 @@ void test('test constructOutline function', () => {
     const result = evaluate(parseExpr('constructOutline(color=rgb(0, 1, 0), weight=3)'), ctx)
     assert.deepStrictEqual(result.type, { type: 'opaque', name: 'outline' })
     const outline = (result.value as { type: 'opaque', value: Outline }).value
-    assert.deepStrictEqual(outline, { color: { r: 0, g: 255, b: 0, a: 255 }, weight: 3 })
+    assert.deepStrictEqual(outline, { color: { r: 0, g: 1, b: 0, a: 1 }, weight: 3 })
 })
 
 void test('test basic map with outline', () => {
@@ -1877,7 +1877,7 @@ void test('test basic map with outline', () => {
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
-    assert.deepStrictEqual(resultMapRaw.outline, { color: { r: 255, g: 0, b: 0, a: 255 }, weight: 2 })
+    assert.deepStrictEqual(resultMapRaw.outline, { color: { r: 1, g: 0, b: 0, a: 1 }, weight: 2 })
 })
 
 void test('test canUnifyTo', () => {
@@ -2048,6 +2048,56 @@ void test('test basic map with constructed insets', () => {
             end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
         },
     }])
+})
+
+void test('test basic map with constructed text boxes', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+
+    const program = `
+        textBox1 = textBox(
+            screenBounds={west: 0.1, south: 0.1, east: 0.2, north: 0.2},
+            text=rtfDocument([rtfString("Hello World", size=12, color=rgb(0, 0, 0)), rtfFormula("x^2", align=alignCenter)]),
+            backgroundColor=colorYellow
+        );
+        textBox2 = textBox(
+            screenBounds={west: 0.4, south: 0.4, east: 0.6, north: 0.6},
+            text=rtfDocument([rtfString("Urban Stats", size=16, color=rgb(1, 0, 0)), rtfImage("https://http.cat/images/100.jpg")]),
+            borderWidth=0.5,
+            borderColor=colorRed
+        );
+        cMap(geo=geo, data=[1, 2, 3], scale=linearScale(), ramp=rampBone, textBoxes=[textBox1, textBox2], label="My Label")
+        `
+
+    const resultMap = execute(parseProgram(program), ctx)
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+
+    // Check that text boxes are properly set
+    assert.deepStrictEqual(resultMapRaw.textBoxes, [
+        {
+            bottomLeft: [0.1, 0.1],
+            topRight: [0.2, 0.2],
+            text: [
+                { insert: 'Hello World', attributes: { size: 12, color: { r: 0, g: 0, b: 0, a: 1 } } },
+                { insert: { formula: 'x^2' }, attributes: { align: 'center' } },
+            ],
+            backgroundColor: { r: 0.722, g: 0.639, b: 0.184, a: 1 },
+            borderColor: { a: 1, b: 0.2, g: 0.2, r: 0.2 },
+            borderWidth: 1,
+        },
+        {
+            bottomLeft: [0.4, 0.4],
+            topRight: [0.6, 0.6],
+            text: [
+                { insert: 'Urban Stats', attributes: { size: 16, color: { r: 1, g: 0, b: 0, a: 1 } } },
+                { insert: { image: 'https://http.cat/images/100.jpg' } },
+            ],
+            borderWidth: 0.5,
+            borderColor: { r: 0.976, g: 0.427, b: 0.427, a: 1 },
+            backgroundColor: { a: 1, b: 0.941, g: 0.973, r: 1 },
+        },
+    ])
+    assert.deepStrictEqual(effects, [])
 })
 
 function contextForTestIfStatement(): readonly [Context, Effect[]] {

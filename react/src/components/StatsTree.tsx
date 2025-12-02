@@ -1,10 +1,10 @@
 import React, { ReactNode, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-import { useColors } from '../page_template/colors'
 import { Settings, useSetting, useSettingInfo, useSettingsInfo, useStagedSettingKeys } from '../page_template/settings'
 import { changeStatGroupSetting, groupKeys, useAvailableCategories, useAvailableGroups, useCategoryStatus, useChangeCategorySetting } from '../page_template/statistic-settings'
 import { Category, Group } from '../page_template/statistic-tree'
 import { useMobileLayout } from '../utils/responsive'
+import { zIndex } from '../utils/zIndex'
 
 import { CheckboxSettingCustom, useSidebarSectionContentClassName } from './sidebar'
 
@@ -18,7 +18,7 @@ export function StatsTree(): ReactNode {
         }
     }, [staging])
 
-    const categories = filterSearch(searchTerm, useAvailableCategories()).map(category => (
+    const categories = filterSearch(searchTerm, useAvailableCategories(), useAvailableGroups()).map(category => (
         <CategoryComponent
             key={category.id}
             category={category}
@@ -59,12 +59,12 @@ function searchMatch(searchTerm: string, targetString: string): boolean {
     return targetString.toLowerCase().includes(searchTerm.toLowerCase())
 }
 
-function filterSearch(searchTerm: string, categories: Category[]): Category[] {
+function filterSearch(searchTerm: string, categories: Category[], groups: Group[]): Category[] {
     return categories.flatMap((category) => {
         if (searchMatch(searchTerm, category.name)) {
             return [category]
         }
-        const contents = category.contents.filter(group => searchMatch(searchTerm, group.name))
+        const contents = category.contents.filter(group => groups.includes(group) && searchMatch(searchTerm, group.name))
         return contents.length > 0 ? [{ ...category, contents }] : []
     })
 }
@@ -74,7 +74,6 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
     const [isExpanded, setIsExpanded] = useSetting(`stat_category_expanded_${category.id}`)
     const isMobileLayout = useMobileLayout()
     const changeCategorySetting = useChangeCategorySetting(category)
-    const colors = useColors()
 
     const groups = useAvailableGroups(category)
     const settingsInfo = useSettingsInfo(groupKeys(groups))
@@ -90,10 +89,16 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
                                 data-category-id={category.id}
                                 onClick={() => { setIsExpanded(!isExpanded) }}
                                 className="expandButton"
-                                style={{ transform: isExpanded ? `rotate(${isMobileLayout ? -90 : 90}deg)` : 'rotate(0deg)', color: colors.ordinalTextColor }}
-                            >
-                                {isMobileLayout ? '◀\ufe0e' : '▶\ufe0e' /* Arrows are on the right on mobile to be used with both thumbs */}
-                            </button>
+                                /* Arrows are on the right on mobile to be used with both thumbs */
+                                style={{
+                                    transform: isExpanded ? `rotate(${isMobileLayout ? 90 : 90}deg)` : `rotate(${isMobileLayout ? 180 : 0}deg)`,
+                                    backgroundImage: 'url("./arrow-right.png")',
+                                    backgroundPosition: 'center',
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundSize: isMobileLayout ? '24px' : '16px',
+                                }}
+                                aria-label={isExpanded ? `Collapse ${category.name} category` : `Expand ${category.name} category`}
+                            />
                         )}
                 <CheckboxSettingCustom
                     name={category.name}
@@ -102,7 +107,7 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
                     onChange={changeCategorySetting}
                     testId={`category_${category.id}`}
                     highlight={highlight}
-                    style={{ zIndex: 1 }}
+                    style={{ zIndex: zIndex.categoryCheckbox }}
                 />
             </div>
             <CategoryContents

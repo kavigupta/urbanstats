@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { addFriend, createUser, JuxtastatUserState, removeFriend, restoreUser, startingState } from './quiz_friends_test_utils'
+import { addFriend, createUser, JuxtastatUserState, makeAliceBobFriends, removeFriend, restoreUser } from './quiz_friends_test_utils'
 import { quizFixture, clickButtons, quizScreencap, friendsText } from './quiz_test_utils'
 import { safeReload, target } from './test_utils'
 
@@ -46,28 +46,8 @@ export function quizFriendsTest(
         props.platform,
     )
 
-    async function aliceBobFriends(t: TestController, screenshots: boolean): Promise<JuxtastatUserState> {
-        const state = startingState()
-        // Alice does the quiz
-        await createUser(t, 'Alice', '000000a', state)
-        await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
-        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`])
-        await createUser(t, 'Bob', '000000b', state)
-        await clickButtons(t, ['b', 'b', 'b', 'b', 'b'])
-        await t.expect(friendsText()).eql([`You${bobPattern}Copy Link`])
-        await addFriend(t, 'Alice', '000000a')
-        if (screenshots) {
-            await quizScreencap(t) // screencap of pending friend request
-        }
-        await t.expect(friendsText()).eql([`You${bobPattern}Copy Link`, 'AliceAsk\u00a0Alice\u00a0to add youRemove'])
-        await restoreUser(t, 'Alice', state)
-        await addFriend(t, 'Bob', '000000b')
-        // Alice and Bob are now friends
-        if (screenshots) {
-            await quizScreencap(t) // screencap of friends' score
-        }
-        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
-        return state
+    async function aliceBobFriends(t: TestController, screenshots: boolean, startState: JuxtastatUserState | undefined = undefined): Promise<JuxtastatUserState> {
+        return makeAliceBobFriends(t, screenshots, alicePattern, bobPattern, startState)
     }
 
     test(`${props.name}-basic-friends-test`, async (t) => {

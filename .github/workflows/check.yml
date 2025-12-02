@@ -10,6 +10,10 @@ env:
   URBANSTATS_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   FORCE_COLOR: 1
+  SPARSE_CHECKOUT: |
+    !named_region_shapefiles/*
+    !outputs/*
+    /*
 jobs:
   build-and-push-common-image:
     runs-on: ubuntu-22.04
@@ -18,8 +22,23 @@ jobs:
     permissions:
       packages: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - &checkout
+        name: Checkout repository
+        shell: bash
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+
+          # Clone the repo
+          git clone --no-checkout --filter=blob:none ${{ github.server_url }}/${{ github.repository }}.git $GITHUB_WORKSPACE
+
+          # Enable sparse checkout
+          git config core.sparseCheckout true
+
+          # Configure sparse checkout
+          echo "$SPARSE_CHECKOUT" > .git/info/sparse-checkout
+
+          # Check out the ref
+          git checkout --progress --force ${{ github.sha }}
 
       - uses: ./.github/actions/docker_image
         with:
@@ -34,8 +53,7 @@ jobs:
     permissions:
       packages: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - *checkout
 
       - uses: ./.github/actions/docker_image
         with:
@@ -48,13 +66,15 @@ jobs:
     needs: build-and-push-common-image
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
+    env:
+      SPARSE_CHECKOUT: |
+        !outputs/*
+        /*
     steps:
-      - uses: actions/checkout@v4
+      - *checkout
+      - uses: lukebrody/nothing-action@master # Without this, the below actions don't work. This is a bug in Github
       - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
-      - name: allow all directories
-        # This is needed because git complains about git repositories outside the user directory
-        run: git config --global --add safe.directory '*'
       - name: Lint with pylint
         run: python -m pylint --prefer-stubs=true $(git ls-files '*.py' ':!:legacy')
         if: "!cancelled()" # Runs even if other steps fail
@@ -83,7 +103,7 @@ jobs:
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
-      - uses: actions/checkout@v4
+      - *checkout
       - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
       - run: python3 create_website.py react/test/density-db --no-data --no-geo --no-juxta --mode=ci
@@ -97,7 +117,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - *checkout
       - uses: ./.github/actions/node_modules
       - id: set-matrix
         run: echo "matrix=$(npx tsx test/scripts/list-e2e-tests.ts --test-durations='${{ vars.E2E_TEST_DURATIONS }}')" >> $GITHUB_OUTPUT
@@ -115,11 +135,9 @@ jobs:
       fail-fast: false
       matrix:
         test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - name: allow all directories
-        # This is needed because git complains about git repositories outside the user directory
-        run: git config --global --add safe.directory '*'
+      - *checkout
       - run: git fetch origin ${{ github.base_ref }} --depth=1 # needed so test runner can diff tests against base ref
         if: ${{ github.base_ref != '' }}
       - uses: ./.github/actions/python_environment
@@ -172,19 +190,31 @@ jobs:
           name: changed_screenshots
           pattern: "changed_screenshots-*"
         continue-on-error: true
-      - uses: actions/upload-artifact/merge@v4
+      - id: upload-combined
+        uses: actions/upload-artifact/merge@v4
         with:
           name: combined
           pattern: "{delta,changed_screenshots}"
           separate-directories: true
         continue-on-error: true
+      - if: ${{ steps.upload-combined.outputs.artifact-id != '' }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '[Screenshots merge ${{ github.event.pull_request.head.sha }}](http://localhost:8000/screenshot-diff-viewer.html?artifactId=${{ steps.upload-combined.outputs.artifact-id }}&hash=${{ github.sha }})\n\n`!updateScreenshots` to update'
+            })
 
   merge-and-save-durations:
     runs-on: ubuntu-22.04
     needs: [e2e]
     if: github.ref_name == github.event.repository.default_branch # We only want results where all tests run
     steps:
-      - uses: actions/checkout@v4
+      - *checkout
       - uses: ./.github/actions/node_modules
       - uses: actions/download-artifact@v4
         with:
@@ -202,8 +232,13 @@ jobs:
     needs: [build-and-push-common-image]
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
+    env:
+      SPARSE_CHECKOUT: |
+        !outputs/*
+        /*
     steps:
-      - uses: actions/checkout@v4
+      - *checkout
+      - uses: lukebrody/nothing-action@master # Without this, the below actions don't work. This is a bug in Github
       - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
       - name: Run js tests

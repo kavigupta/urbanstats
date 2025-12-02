@@ -1,0 +1,133 @@
+name: Update Reference Screenshots
+on:
+  issue_comment:
+    types: [created]
+
+env:
+  GITHUB_TOKEN: ${{ secrets.FINE_GRAINED_TOKEN_FOR_VARIABLES }}
+
+jobs:
+  update-screenshots:
+    if: github.event.issue.pull_request && contains(github.event.comment.body, '!updateScreenshots')
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Get PR details
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+
+            core.setOutput('sha', pr.data.head.sha);
+            core.setOutput('ref', pr.data.head.ref);
+            core.setOutput('repo', pr.data.head.repo.full_name);
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.pr.outputs.repo }}
+          ref: ${{ steps.pr.outputs.ref }}
+          token: ${{ secrets.FINE_GRAINED_TOKEN_FOR_VARIABLES }}
+
+      - name: Get workflow run for PR head commit
+        id: workflow-run
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'check.yml',
+              head_sha: '${{ steps.pr.outputs.sha }}',
+              status: 'completed'
+            });
+
+            if (runs.data.workflow_runs.length === 0) {
+              core.setFailed('No completed workflow runs found for this PR head commit');
+              return;
+            }
+
+            const latestRun = runs.data.workflow_runs[0];
+            core.setOutput('run-id', latestRun.id);
+
+      - name: Download changed_screenshots artifact
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: '${{ steps.workflow-run.outputs.run-id }}'
+            });
+
+            const artifact = artifacts.data.artifacts.find(a => a.name === 'changed_screenshots');
+
+            if (!artifact) {
+              core.setFailed('No changed_screenshots artifact found');
+              return;
+            }
+
+            const download = await github.rest.actions.downloadArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: artifact.id,
+              archive_format: 'zip'
+            });
+
+            fs.writeFileSync('changed_screenshots.zip', Buffer.from(download.data));
+
+      - name: Extract and copy screenshots
+        run: |
+          # Extract the artifact
+          unzip changed_screenshots.zip -d changed_screenshots_temp/
+
+          # Check if there are any screenshots to copy
+          if [ ! -d "changed_screenshots_temp" ] || [ -z "$(find changed_screenshots_temp -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' 2>/dev/null)" ]; then
+            echo "No screenshot files found in artifact"
+            exit 0
+          fi
+
+          # Create reference directory if it doesn't exist
+          mkdir -p reference_test_screenshots
+
+          # Copy all screenshot files recursively, preserving directory structure
+          find changed_screenshots_temp -type f \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" \) -exec sh -c '
+            for file do
+              # Get relative path from changed_screenshots_temp
+              rel_path="${file#changed_screenshots_temp/}"
+              # Create directory structure in reference_test_screenshots
+              mkdir -p "reference_test_screenshots/$(dirname "$rel_path")"
+              # Copy the file
+              cp "$file" "reference_test_screenshots/$rel_path"
+              echo "Copied: $rel_path"
+            done
+          ' _ {} +
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if [ -n "$(git status --porcelain reference_test_screenshots/)" ]; then
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+            echo "No changes detected in reference screenshots"
+          fi
+
+      - name: Commit and push changes
+        if: steps.changes.outputs.has-changes == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          git add reference_test_screenshots/
+          git commit -m "Update reference screenshots from !updateScreenshots command"
+          git push

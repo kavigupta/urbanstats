@@ -65,7 +65,7 @@ void test('various lexes', (): void => {
     assert.deepStrictEqual(shortFormLex('"abc\\""'), [['abc"', '"abc\\""'], ['EOL', '']])
     assert.deepStrictEqual(shortFormLex('f(2, "abc \\" 3.5")'), ['f', '(', 2, ',', ['abc " 3.5', '"abc \\" 3.5"'], ')', ['EOL', '']])
     assert.deepStrictEqual(shortFormLex('f(x) + g(2.34)'), ['f', '(', 'x', ')', '+', 'g', '(', 2.34, ')', ['EOL', '']])
-    assert.deepStrictEqual(shortFormLex('f(x) ++2'), ['f', '(', 'x', ')', ['Invalid operator: ++', '++'], 2, ['EOL', '']])
+    assert.deepStrictEqual(shortFormLex('f(x) ++2'), ['f', '(', 'x', ')', '+', '+', 2, ['EOL', '']])
     assert.deepStrictEqual(shortFormLex('pw_frac = (pw_density_2km / pw_density_500m) ** 2\ny = x ** 0.5'), [
         'pw_frac',
         '=',
@@ -121,7 +121,7 @@ void test('various lexes', (): void => {
     assert.deepStrictEqual(shortFormLex('x.y'), ['x', '.', 'y', ['EOL', '']])
     assert.deepStrictEqual(shortFormLex('2+3'), [2, '+', 3, ['EOL', '']])
     assert.deepStrictEqual(shortFormLex('$'), [
-        ['Invalid operator: $', '$'],
+        ['Invalid operator sequence: $', '$'],
         ['EOL', ''],
     ])
     assert.deepStrictEqual(shortFormLex('€'), [
@@ -268,7 +268,7 @@ void test('basic parsing', (): void => {
     )
     assert.deepStrictEqual(
         parseAndRender('--y'),
-        '(errors (error "Unrecognized token: Invalid operator: --" at 0:0))',
+        '(expr (- (- (id y))))',
     )
     assert.deepStrictEqual(
         parseAndRender('- -y'),
@@ -382,6 +382,13 @@ void test('parse custom nodes', (): void => {
         unparse(parseProgram(`x = [1, 2, 3]
             customNode("x * x")`), { simplify: true }),
         'x = [1, 2, 3];\nx * x',
+    )
+})
+
+void test('basic unparsing', (): void => {
+    assert.deepStrictEqual(
+        unparse(parseProgram('f(x= -2)')),
+        'f(x=-2)',
     )
 })
 
@@ -710,6 +717,7 @@ void test('unparse', (): void => {
         parseThenUnparse('condition(x); x = 2; y = 3'),
         'condition (x)\nx = 2;\ny = 3',
     )
+    assert.deepStrictEqual(parseThenUnparse('"\\n"'), '"\\n"')
 })
 
 void test('well-formatted-uss', (): void => {
@@ -754,7 +762,11 @@ void test('parse error nodes', (): void => {
     assert.deepStrictEqual(unparse(errorNode.expr), 'This is a test error')
     assert.deepStrictEqual(toSExp(errorNode), '(customNode (parseError "This is a test error" [{"type":"error","value":"Expected end of line or ; after","location":{"start":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":0,"charIdx":0},"end":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":4,"charIdx":4}}}]) "This is a test error")')
 
-    assert.deepStrictEqual(toSExp(parseNoErrorAsCustomNode('++', 'test')), '(customNode (parseError "++" [{"type":"error","value":"Unrecognized token: Invalid operator: ++","location":{"start":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":0,"charIdx":0},"end":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":2,"charIdx":2}}}]) "++")')
+    assert.deepStrictEqual(toSExp(parseNoErrorAsCustomNode('++', 'test')), '(customNode (parseError "++" [{"type":"error","value":"Unexpected end of input","location":{"start":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":1,"charIdx":1},"end":{"block":{"type":"single","ident":"test"},"lineIdx":0,"colIdx":2,"charIdx":2}}}]) "++")')
+
+    assert.equal(toSExp(parseNoErrorAsCustomNode(`x  =
+condition (population > 1000000)
+cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)`, 'test')), '(customNode (parseError "x  =\\ncondition (population > 1000000)\\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)" [{"type":"error","value":"Unexpected keyword condition","location":{"start":{"block":{"type":"single","ident":"test"},"lineIdx":1,"colIdx":0,"charIdx":5},"end":{"block":{"type":"single","ident":"test"},"lineIdx":1,"colIdx":9,"charIdx":14}}}]) "x  =\\ncondition (population > 1000000)\\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)")')
 })
 
 void test('unparse custom nodes with multiple lines', (): void => {

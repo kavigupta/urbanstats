@@ -5,7 +5,7 @@ import { Selector } from 'testcafe'
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor } from './editor_test_utils'
 import { checkBox, checkSelector, downloadPNG, getCodeFromMainField, getErrors, getInput, replaceInput, settingsFromURL, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { tempfileName } from './quiz_test_utils'
-import { getLocation, safeReload, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading } from './test_utils'
+import { downloadImage, getLocation, safeReload, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading, withHamburgerMenu } from './test_utils'
 
 const mapper = (testFn: () => TestFn) => (
     name: string,
@@ -32,7 +32,19 @@ mapper(() => test)('manipulate insets', { code: 'cMap(data=density_pw_1km, scale
     await t.expect(getErrors()).eql([])
     await toggleCustomScript(t)
     await t.expect(getCodeFromMainField()).eql(
-        'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, insets=constructInsets([constructInset(screenBounds={north: 1, east: 1, south: 0, west: 0}, mapBounds={north: 66.54638908819885, east: -13, south: 63.38379679465158, west: -24.54201452954334}, mainMap=true, name="Iceland")]))\n',
+        `cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    insets=constructInsets([
+        constructInset(
+            screenBounds={north: 1, east: 1, south: 0, west: 0},
+            mapBounds={north: 66.546, east: -13, south: 63.384, west: -24.542},
+            mainMap=true,
+            name="Iceland"
+        )
+    ])
+)\n`,
     )
 })
 
@@ -203,7 +215,13 @@ mapper(() => test)('custom ramp', { code: 'customNode("");\ncondition (true)\ncM
     await replaceInput(t, '0.353', '1')
     await screencap(t, { selector: Selector('#auto-ux-editor-ro_ramp') })
     await replaceInput(t, 'Custom Ramp', 'Custom Expression')
-    await t.expect(nthEditor(0).textContent).eql('constructRamp([{value: 0, color: rgb(1, 0, 0)}, {value: 0.25, color: rgb(1, 0.49, 0.765)}, {value: 0.5, color: rgb(0.027, 0.647, 0.686)}, {value: 0.75, color: rgb(0.541, 0.765, 0.353)}, {value: 1, color: rgb(0.722, 0.639, 0.184)}])\n')
+    await t.expect(nthEditor(0).textContent).eql(`constructRamp([
+    {value: 0, color: rgb(1, 0, 0)},
+    {value: 0.25, color: rgb(1, 0.49, 0.765)},
+    {value: 0.5, color: rgb(0.027, 0.647, 0.686)},
+    {value: 0.75, color: rgb(0.541, 0.765, 0.353)},
+    {value: 1, color: rgb(0.722, 0.639, 0.184)}
+])\n`)
 })
 
 mapper(() => test)('able to reload in invalid state', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
@@ -237,7 +255,17 @@ mapper(() => test)('selection preserved on reload', { code: 'customNode("");\nco
     await checkErrors()
     await toggleCustomScript(t)
     const checkCode = async (): Promise<void> => {
-        const code = 'cMap(data=density_pw_1km, scale=linearScale(), ramp=constructRamp([{value: 0, color: rgb("abc", 0.353, 0.765)}, {value: 0.25, color: rgb(0.353, 0.49, 0.765)}, {value: 0.5, color: rgb(0.027, 0.647, 0.686)}, {value: 0.75, color: rgb(0.541, 0.765, 0.353)}, {value: 1, color: rgb(0.722, 0.639, 0.184)}]))'
+        const code = `cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=constructRamp([
+        {value: 0, color: rgb("abc", 0.353, 0.765)},
+        {value: 0.25, color: rgb(0.353, 0.49, 0.765)},
+        {value: 0.5, color: rgb(0.027, 0.647, 0.686)},
+        {value: 0.75, color: rgb(0.541, 0.765, 0.353)},
+        {value: 1, color: rgb(0.722, 0.639, 0.184)}
+    ])
+)`
         await t.expect((await getCodeFromMainField()).trim()).eql(code)
     }
     await checkCode()
@@ -251,9 +279,21 @@ mapper(() => test)('selection preserved on reload', { code: 'customNode("");\nco
 mapper(() => test)('custom expression preference saved across reload even if expression is compatible with autoux', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     await replaceInput(t, 'Uridis', 'Custom Ramp')
     await replaceInput(t, 'Custom Ramp', 'Custom Expression')
-    await t.expect(nthEditor(0).textContent).eql('constructRamp([{value: 0, color: rgb(0.592, 0.353, 0.765)}, {value: 0.25, color: rgb(0.353, 0.49, 0.765)}, {value: 0.5, color: rgb(0.027, 0.647, 0.686)}, {value: 0.75, color: rgb(0.541, 0.765, 0.353)}, {value: 1, color: rgb(0.722, 0.639, 0.184)}])\n')
+    await t.expect(nthEditor(0).textContent).eql(`constructRamp([
+    {value: 0, color: rgb(0.592, 0.353, 0.765)},
+    {value: 0.25, color: rgb(0.353, 0.49, 0.765)},
+    {value: 0.5, color: rgb(0.027, 0.647, 0.686)},
+    {value: 0.75, color: rgb(0.541, 0.765, 0.353)},
+    {value: 1, color: rgb(0.722, 0.639, 0.184)}
+])\n`)
     await safeReload(t)
-    await t.expect(nthEditor(0).textContent).eql('constructRamp([{value: 0, color: rgb(0.592, 0.353, 0.765)}, {value: 0.25, color: rgb(0.353, 0.49, 0.765)}, {value: 0.5, color: rgb(0.027, 0.647, 0.686)}, {value: 0.75, color: rgb(0.541, 0.765, 0.353)}, {value: 1, color: rgb(0.722, 0.639, 0.184)}])\n')
+    await t.expect(nthEditor(0).textContent).eql(`constructRamp([
+    {value: 0, color: rgb(0.592, 0.353, 0.765)},
+    {value: 0.25, color: rgb(0.353, 0.49, 0.765)},
+    {value: 0.5, color: rgb(0.027, 0.647, 0.686)},
+    {value: 0.75, color: rgb(0.541, 0.765, 0.353)},
+    {value: 1, color: rgb(0.722, 0.639, 0.184)}
+])\n`)
 })
 
 mapper(() => test)('common non-optional named arguments saved when switching functions', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
@@ -292,11 +332,27 @@ mapper(() => test)('custom rendering for selector options', { code: 'customNode(
 const expectedExportOutput = `meta(kind="mapper", universe="USA", geographyKind="Urban Area")
 customNode("regr = regression(y=traffic_fatalities_per_capita, x1=ln(density_pw_1km), x2=commute_car, weight=population);\\ny = (regr.residuals) * 100000");
 condition (customNode("population > 10000"))
-pMap(data=customNode("y"), scale=linearScale(center=0, min=customNode("percentile(y, 1)")), ramp=divergingRamp(first=colorBlue, last=colorYellow), label="Pedestrian fatalities per 100k (controlled for car commute % and density)", unit=unitNumber, maxRadius=20, relativeArea=population)`
+pMap(
+    data=customNode("y"),
+    scale=linearScale(center=0, min=customNode("percentile(y, 1)")),
+    ramp=divergingRamp(first=colorBlue, last=colorYellow),
+    label="Pedestrian fatalities per 100k (controlled for car commute % and density)",
+    unit=unitNumber,
+    maxRadius=20,
+    relativeArea=population
+)`
 
 const userCode = `customNode("regr = regression(y=traffic_fatalities_per_capita, x1=ln(density_pw_1km), x2=commute_car, weight=population);\\ny = (regr.residuals) * 100000");
 condition (customNode("population > 10000"))
-pMap(data=customNode("y"), scale=linearScale(center=0, min=customNode("percentile(y, 1)")), ramp=divergingRamp(first=colorBlue, last=colorYellow), label="Pedestrian fatalities per 100k (controlled for car commute % and density)", unit=unitNumber, maxRadius=20, relativeArea=population)`
+pMap(
+    data=customNode("y"),
+    scale=linearScale(center=0, min=customNode("percentile(y, 1)")),
+    ramp=divergingRamp(first=colorBlue, last=colorYellow),
+    label="Pedestrian fatalities per 100k (controlled for car commute % and density)",
+    unit=unitNumber,
+    maxRadius=20,
+    relativeArea=population
+)`
 
 mapper(() => test)('export', { code: userCode, universe: 'USA', geo: 'Urban Area' }, async (t) => {
     const laterThan = new Date().getTime()
@@ -331,7 +387,9 @@ mapper(() => test)('preamble checkbox syncs with undo/redo operations', { code: 
     await t.expect(preamble.checked).ok()
     await typeInEditor(t, 0, 'myVar = 42', true)
     await t.expect(preamble.checked).ok()
-    await t.pressKey('ctrl+z')
+    while (await preamble.checked) {
+        await t.pressKey('ctrl+z')
+    }
     await t.expect(preamble.checked).notOk()
     await t.pressKey('ctrl+y')
     await t.expect(preamble.checked).ok()
@@ -343,5 +401,51 @@ urbanstatsFixture('mapper default', `${target}/mapper.html`)
 
 test('mobile appearance', async (t) => {
     await t.resizeWindow(400, 800)
-    await screencap(t)
+    await screencap(t, { selector: Selector('.content_panel_mobile') })
 })
+
+test('showing a popover does not clip in split view', async (t) => {
+    await toggleCustomScript(t)
+    await t.hover(Selector('span').withText(/^linearScale/))
+    await t.wait(1000)
+    const doc = Selector('div').withText(/^Creates a linear scale/)
+    const editor = Selector('#test-editor-body')
+    await t.expect((await doc.boundingClientRect).right).lt((await editor.boundingClientRect).right)
+    await screencap(t, { fullPage: false, selector: Selector('[data-test=split-left]') }) // Fullpage false so we don't hover and close the popover
+})
+
+for (const platform of ['desktop', 'mobile']) {
+    test(`open sidebar ${platform}`, async (t) => {
+        if (platform === 'mobile') {
+            await t.resizeWindow(400, 800)
+        }
+        await withHamburgerMenu(t, async () => {
+            await screencap(t)
+            await t.click(Selector('a').withExactText('Home'))
+            await t.expect(getLocation()).eql(`${target}/`)
+        })
+    })
+}
+
+test('change theme setting in sidebar menu', async (t) => {
+    await withHamburgerMenu(t, async () => {
+        const themeSelect = Selector('.theme-setting').find('select')
+        await t.click(themeSelect).click(Selector('option').withExactText('Dark Mode'))
+        await t.expect(themeSelect.value).eql('Dark Mode')
+    })
+})
+
+test('download file via site screencap button', async (t) => {
+    await downloadImage(t)
+})
+
+for (const constant of ['linearScale', 'rampUridis']) {
+    test(`hover editor click link to documentation of constant ${constant}`, async (t) => {
+        await toggleCustomScript(t)
+        await t.hover(Selector('span').withExactText(constant))
+        await screencap(t, { fullPage: false })
+        await t.click(Selector('a').withExactText(constant))
+        await t.expect(getLocation()).eql(`${target}/uss-documentation.html#constant-${constant}`)
+        await screencap(t, { fullPage: false })
+    })
+}

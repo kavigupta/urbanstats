@@ -3,8 +3,7 @@ import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
 import { USSType, USSValue, createConstantExpression, USSRawValue, OriginalFunctionArgs } from '../types-values'
 
-import { doRender } from './color'
-import { Color } from './color-utils'
+import { Color, toRgb, doRender } from './color-utils'
 import { Outline } from './map'
 
 export const outlineType = {
@@ -93,10 +92,12 @@ export const noBasemap: USSValue = {
 } satisfies USSValue
 
 function invert(color: Color): Color {
+    const { r, g, b } = toRgb(color)
+
     return {
-        r: 255 - color.r,
-        g: 255 - color.g,
-        b: 255 - color.b,
-        a: 255,
+        r: 1 - r,
+        g: 1 - g,
+        b: 1 - b,
+        a: 1,
     }
 }

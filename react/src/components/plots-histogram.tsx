@@ -7,8 +7,10 @@ import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { HistogramType, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
+import { assert } from '../utils/defensive'
 import { IHistogram } from '../utils/protos'
 import { useTranspose } from '../utils/transpose'
+import { zIndex } from '../utils/zIndex'
 
 import { PlotComponent } from './plots-general'
 import { createScreenshot } from './screenshot'
@@ -17,16 +19,31 @@ import { CheckboxSetting } from './sidebar'
 
 const yPad = 0.025
 
+const strokeDasharrays = ['1,0', '10,10', '2,5']
+
 interface HistogramProps {
     shortname: string
     longname: string
     histogram: IHistogram
     color: string
     universeTotal: number
+    subseriesName: string
+}
+
+function processHistogramType(histogramType: HistogramType, histograms: HistogramProps[]): HistogramType {
+    if (histogramType !== 'Bar') {
+        return histogramType
+    }
+    const subseriesNames = new Set<string>(histograms.map(h => h.subseriesName))
+    if (subseriesNames.size > 1) {
+        return 'Line'
+    }
+    return histogramType
 }
 
 export function Histogram(props: { histograms: HistogramProps[], statDescription: string, sharedTypeOfAllArticles?: string }): ReactNode {
-    const [histogramType] = useSetting('histogram_type')
+    const [histogramTypeRaw] = useSetting('histogram_type')
+    const histogramType = processHistogramType(histogramTypeRaw, props.histograms)
     const [useImperial] = useSetting('use_imperial')
     const [relative] = useSetting('histogram_relative')
     const binMin = props.histograms[0].histogram.binMin!
@@ -44,7 +61,7 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
 
     const plotSpec = useCallback(
         (transpose: boolean) => {
-            const title = props.histograms.length === 1 ? props.histograms[0].shortname : ''
+            const title = new Set(props.histograms.map(h => h.shortname)).size === 1 ? props.histograms[0].shortname : ''
             const colors = props.histograms.map(h => h.color)
             const shortnames = props.histograms.map(h => h.shortname)
             const renderY = relative ? (y: number) => `${y.toFixed(2)}%` : (y: number) => renderNumberHighlyRounded(y, 2)
@@ -61,10 +78,8 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
             const xlabel = `${props.statDescription} (/${useImperial ? 'mi' : 'km'}²)`
             const ylabel = relative ? '% of total' : 'Population'
             const ydomain: [number, number] = [maxValue * (-yPad), maxValue * (1 + yPad)]
-            const legend = props.histograms.length === 1
-                ? undefined
-                : { legend: !transpose, range: colors, domain: shortnames }
-            return { marks, xlabel, ylabel, ydomain, legend }
+            marks.push(...manualLegend(props.histograms, transpose, colors, shortnames, systemColors))
+            return { marks, xlabel, ylabel, ydomain }
         },
         [props.histograms, binMin, binSize, relative, histogramType, useImperial, systemColors, props.statDescription],
     )
@@ -75,6 +90,180 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
             settingsElement={settingsElement}
         />
     )
+}
+
+function computeColorItems(shortnames: string[], colors: string[]): { label: string, color: string }[] {
+    const colorItems: { label: string, color: string }[] = []
+    for (let i = 0; i < shortnames.length; i++) {
+        // handles duplicate names by just putting them all in if they're different colors
+        const index = colorItems.findIndex(item => item.label === shortnames[i] && item.color === colors[i])
+        if (index === -1) {
+            colorItems.push({
+                label: shortnames[i],
+                color: colors[i],
+            })
+        }
+    }
+    if (colorItems.length <= 1) {
+        return []
+    }
+    return colorItems
+}
+
+function computeDashPatterns(histograms: HistogramProps[]): Map<string, { pattern: string, name: string }> {
+    const dashPatterns = new Map<string, { pattern: string, name: string }>()
+    const subseriesNames = new Set<string>()
+    histograms.forEach((histogram) => {
+        subseriesNames.add(histogram.subseriesName)
+    })
+    const subseriesNamesOrdered = Array.from(subseriesNames).sort()
+    assert(subseriesNamesOrdered.length <= strokeDasharrays.length, 'Too many subseries for dash patterns')
+    histograms.forEach((histogram) => {
+        const subId = subseriesNamesOrdered.indexOf(histogram.subseriesName)
+        if (!dashPatterns.has(histogram.subseriesName)) {
+            dashPatterns.set(histogram.subseriesName, {
+                pattern: strokeDasharrays[subseriesNamesOrdered.length - 1 - subId],
+                name: histogram.subseriesName,
+            })
+        }
+    })
+    return dashPatterns
+}
+
+function manualLegend(histograms: HistogramProps[], transpose: boolean, colors: string[], shortnames: string[], themeColors: Colors): Plot.Markish[] {
+    const colorItems = computeColorItems(shortnames, colors)
+
+    const dashPatterns = computeDashPatterns(histograms)
+
+    const dashPatternItems: { label: string, dashPattern: string }[] = []
+    if (dashPatterns.size > 1) {
+        const dashPatternsEnumerated = Array.from(dashPatterns.values()).sort((a, b) => a.name.localeCompare(b.name))
+        dashPatternsEnumerated.forEach(({ pattern, name }) => {
+            dashPatternItems.push({
+                label: name,
+                dashPattern: pattern,
+            })
+        })
+    }
+
+    const totalItems = colorItems.length + dashPatternItems.length
+    if (totalItems === 0) {
+        return []
+    }
+
+    const createLegend = (): SVGElement => {
+        const svgNS = 'http://www.w3.org/2000/svg'
+        const group = document.createElementNS(svgNS, 'g')
+        // Position on the left side, but offset enough to avoid the y-axis
+        const translateX = transpose ? 200 : 100
+        const translateY = 70
+        group.setAttribute('transform', `translate(${translateX} ${translateY})`)
+
+        const paddingX = 12
+        const paddingY = 10
+        const rowHeight = 22
+        const squareSize = 14
+        const lineLength = 36
+        const fontSize = 13
+        const textSpacing = 10
+
+        // Calculate width based on longest label
+        const allLabels = [...colorItems.map(item => item.label), ...dashPatternItems.map(item => item.label)]
+        let maxTextWidth = 0
+        if (allLabels.length > 0) {
+            // Use canvas to measure text width accurately
+            const canvas = document.createElement('canvas')
+            const context = canvas.getContext('2d')
+            if (context) {
+                context.font = `${fontSize}px serif`
+                allLabels.forEach((label) => {
+                    const textWidth = context.measureText(label).width
+                    if (textWidth > maxTextWidth) {
+                        maxTextWidth = textWidth
+                    }
+                })
+            }
+        }
+
+        // Width = paddingX (left) + max(squareSize/lineLength) + textSpacing + textWidth + paddingX (right)
+        const maxSymbolWidth = Math.max(squareSize, lineLength)
+        const width = paddingX + maxSymbolWidth + textSpacing + maxTextWidth + paddingX
+        const height = paddingY * 2 + rowHeight * totalItems
+
+        const background = document.createElementNS(svgNS, 'rect')
+        background.setAttribute('width', String(width))
+        background.setAttribute('height', String(height))
+        background.setAttribute('rx', '6')
+        background.setAttribute('fill', themeColors.slightlyDifferentBackground)
+        background.setAttribute('stroke', themeColors.borderNonShadow)
+        group.appendChild(background)
+
+        let rowIndex = 0
+
+        // Render color squares
+        colorItems.forEach((item) => {
+            const row = document.createElementNS(svgNS, 'g')
+            row.setAttribute('transform', `translate(${paddingX} ${paddingY + rowHeight * rowIndex})`)
+
+            const centerY = rowHeight / 2
+            const square = document.createElementNS(svgNS, 'rect')
+            square.setAttribute('x', '0')
+            square.setAttribute('y', String(centerY - squareSize / 2))
+            square.setAttribute('width', String(squareSize))
+            square.setAttribute('height', String(squareSize))
+            square.setAttribute('fill', item.color)
+            row.appendChild(square)
+
+            const text = document.createElementNS(svgNS, 'text')
+            text.setAttribute('x', String(squareSize + 10))
+            text.setAttribute('y', String(centerY))
+            text.setAttribute('font-size', `${fontSize}px`)
+            text.setAttribute('fill', themeColors.textMain)
+            text.setAttribute('dominant-baseline', 'middle')
+            text.setAttribute('text-anchor', 'start')
+            text.textContent = item.label
+            row.appendChild(text)
+
+            group.appendChild(row)
+            rowIndex++
+        })
+
+        // Render dash pattern lines
+        dashPatternItems.forEach((item) => {
+            const row = document.createElementNS(svgNS, 'g')
+            row.setAttribute('transform', `translate(${paddingX} ${paddingY + rowHeight * rowIndex})`)
+
+            const centerY = rowHeight / 2
+            const line = document.createElementNS(svgNS, 'line')
+            line.setAttribute('x1', '0')
+            line.setAttribute('x2', String(lineLength))
+            line.setAttribute('y1', String(centerY))
+            line.setAttribute('y2', String(centerY))
+            line.setAttribute('stroke', themeColors.textMain)
+            line.setAttribute('stroke-width', '3')
+            if (item.dashPattern !== '1,0') {
+                line.setAttribute('stroke-dasharray', item.dashPattern)
+            }
+            row.appendChild(line)
+
+            const text = document.createElementNS(svgNS, 'text')
+            text.setAttribute('x', String(lineLength + 10))
+            text.setAttribute('y', String(centerY))
+            text.setAttribute('font-size', `${fontSize}px`)
+            text.setAttribute('fill', themeColors.textMain)
+            text.setAttribute('dominant-baseline', 'middle')
+            text.setAttribute('text-anchor', 'start')
+            text.textContent = item.label
+            row.appendChild(text)
+
+            group.appendChild(row)
+            rowIndex++
+        })
+
+        return group
+    }
+
+    return [createLegend]
 }
 
 export const transposeSettingsHeight = 30.5
@@ -113,9 +302,10 @@ function HistogramSettings(props: {
                 onClick={async () => {
                     const plot = props.makePlot()
                     document.body.appendChild(plot)
+                    const uniqueShortnames = deduplicate(props.shortnames)
                     await createScreenshot(
                         {
-                            path: `${props.shortnames.join('_')}_histogram`,
+                            path: `${uniqueShortnames.join('_')}_histogram`,
                             overallWidth: plot.offsetWidth * 2,
                             elementsToRender: [plot],
                             heightMultiplier: 1.2,
@@ -146,7 +336,7 @@ function HistogramSettings(props: {
                             border: `1px solid ${colors.textMain}`,
                             borderRadius: '4px',
                             padding: '0.5em',
-                            zIndex: 1000,
+                            zIndex: zIndex.plotSettings,
                             minWidth: '200px',
                         }}
                     >
@@ -162,7 +352,7 @@ function HistogramSettings(props: {
                                 return navContext.link({
                                     kind: 'comparison',
                                     universe: navContext.universe!,
-                                    longnames: [...props.longnames, regionName],
+                                    longnames: [...deduplicate(props.longnames), regionName],
                                 }, { scroll: { kind: 'none' } })
                             }}
                         />
@@ -183,6 +373,10 @@ function HistogramSettings(props: {
             <CheckboxSetting name={transpose ? 'Relative' : 'Relative Histograms'} settingKey="histogram_relative" testId="histogram_relative" />
         </div>
     )
+}
+
+function deduplicate(arr: string[]): string[] {
+    return Array.from(new Set(arr))
 }
 
 function histogramBounds(histograms: HistogramProps[]): [number, number] {
@@ -218,6 +412,7 @@ function histogramBounds(histograms: HistogramProps[]): [number, number] {
 interface Series {
     values: { name: string, xidx: number, y: number }[]
     color: string
+    subseriesName: string
 }
 
 function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: number[], relative: boolean, isCumulative: boolean): Series[] {
@@ -243,6 +438,7 @@ function mulitipleSeriesConsistentLength(histograms: HistogramProps[], xidxs: nu
                 ) * (relative ? 100 : histogram.universeTotal),
             })),
             color: histogram.color,
+            subseriesName: histogram.subseriesName,
         }
     })
     return series
@@ -408,13 +604,18 @@ function createHistogramMarks(
             textColor: colors.textMain,
         }),
     )
-    const color = histograms.length === 1 ? histograms[0].color : 'name'
     const marks: Plot.Markish[] = []
     if (histogramType === 'Line' || histogramType === 'Line (cumulative)') {
+        const dashPatterns = computeDashPatterns(histograms)
         marks.push(
-            ...series.map(s => Plot.line(s.values, {
-                x: transpose ? 'y' : 'xidx', y: transpose ? 'xidx' : 'y', stroke: color, strokeWidth: 4,
-            })),
+            ...series.map((s) => {
+                const strokeDasharray = dashPatterns.size > 1 ? dashPatterns.get(s.subseriesName)?.pattern : undefined
+                return Plot.line(s.values, {
+                    x: transpose ? 'y' : 'xidx', y: transpose ? 'xidx' : 'y', stroke: s.color,
+                    strokeWidth: strokeDasharray !== undefined ? 2 : 4,
+                    strokeDasharray,
+                })
+            }),
         )
     }
     else {
@@ -424,13 +625,13 @@ function createHistogramMarks(
                     y1: 'xidxLeft',
                     y2: 'xidxRight',
                     x: 'y',
-                    fill: color,
+                    fill: 'color',
                 })
                 : Plot.rectY(seriesSingle, {
                     x1: 'xidxLeft',
                     x2: 'xidxRight',
                     y: 'y',
-                    fill: color,
+                    fill: 'color',
                 })),
         )
     }

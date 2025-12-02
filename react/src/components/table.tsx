@@ -14,6 +14,7 @@ import { useComparisonHeadStyle, useMobileLayout } from '../utils/responsive'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 import { displayType } from '../utils/text'
 import { useTranspose } from '../utils/transpose'
+import { zIndex } from '../utils/zIndex'
 
 import { Icon } from './Icon'
 import { Percentile, Statistic } from './display-stats'
@@ -831,7 +832,7 @@ function StatisticNameDisclaimer(props: { disclaimer: Disclaimer }): ReactNode {
         padding: '0.5em',
         borderRadius: '0.5em',
         border: `1px solid ${colors.textMain}`,
-        zIndex: 100000,
+        zIndex: zIndex.statisticNameDisclaimer,
         display: show ? 'block' : 'none',
     }
     return (

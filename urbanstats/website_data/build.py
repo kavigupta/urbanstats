@@ -286,6 +286,7 @@ def build_urbanstats(
         "mapper",
         "editor",
         "oauth-callback",
+        "screenshot-diff-viewer",
     ]:
         with open(f"{site_folder}/{entrypoint}.html", "w") as f:
             f.write(html_index())
@@ -339,6 +340,7 @@ def build_urbanstats(
     shutil.copy("icons/main/mapper-banner.png", f"{site_folder}/")
     shutil.copy("icons/main/mapper-banner-dark.png", f"{site_folder}/")
     shutil.copy("icons/main/duplicate.png", f"{site_folder}/")
+    shutil.copy("icons/main/arrow-right.png", f"{site_folder}/")
 
     with open(f"{site_folder}/CNAME", "w") as f:
         f.write("urbanstats.org")

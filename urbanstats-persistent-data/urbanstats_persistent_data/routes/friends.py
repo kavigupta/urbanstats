@@ -4,9 +4,11 @@ from pydantic import BaseModel, EmailStr
 
 from ..db.friends import (
     Corrects,
+    FriendSummaryStats,
     InfiniteResult,
     NegativeResult,
     friend_request,
+    friend_summary_stats,
     infinite_results,
     todays_score_for,
     unfriend,
@@ -77,5 +79,27 @@ def juxtastat_infinite_results(
             body.requesters,
             body.seed,
             body.version,
+        )
+    )
+
+
+class FriendSummaryStatsRequestBody(BaseModel):
+    requesters: t.List[t.Annotated[int, Hexadecimal] | EmailStr]
+    quiz_kind: QuizKind
+
+
+class FriendSummaryStatsResponse(BaseModel):
+    results: t.List[NegativeResult | FriendSummaryStats]
+
+
+@app.post("/juxtastat/friend_summary_stats", responses=authenticate_responses)
+def juxtastat_friend_summary_stats(
+    req: AuthenticateRequest, body: FriendSummaryStatsRequestBody
+) -> FriendSummaryStatsResponse:
+    return FriendSummaryStatsResponse(
+        results=friend_summary_stats(
+            req,
+            body.requesters,
+            body.quiz_kind,
         )
     )

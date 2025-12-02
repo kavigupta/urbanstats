@@ -1,3 +1,19 @@
+@font-face {
+    font-family: 'Jost';
+    src: url('./fonts/Jost-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Jost';
+    src: url('./fonts/Jost-Italic-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: italic;
+    font-display: swap;
+}
+
 .right_panel {
     width: 80%;
     padding-left: 2em;
@@ -64,6 +80,10 @@ button:disabled {
     text-align: center;
 }
 
+.user_input {
+    white-space: pre-wrap; /* So that multiline strings display */
+}
+
 .h1 {
     font-size: 1.5em;
 }
@@ -91,12 +111,16 @@ input[type=checkbox] {
     vertical-align: middle;
 }
 
-input[type=text] {
+input[type=text], textarea {
     background-color: var(--background);
     border-radius: 5px;
     color: var(--text-main);
     border: 1px solid var(--ordinal-text-color);
     font-family: 'Jost', 'Arial', sans-serif;
+}
+
+input[type=text]:disabled, textarea:disabled {
+    opacity: 0.5;
 }
 
 .syau-searchbox::placeholder {

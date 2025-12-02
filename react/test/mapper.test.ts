@@ -35,19 +35,36 @@ export function testCode(testFn: () => TestFn, geographyKind: string, universe: 
 const codeFiltered = `
 regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population);
 condition (population > 10000)
-cMap(data=do { x = regr.residuals; x }, scale=linearScale(max=0.1, center=0), ramp=rampUridis, label="Commute Transit above expectation based on ln(density) [%]", basemap=noBasemap())
+cMap(
+    data=do { x = regr.residuals; x },
+    scale=linearScale(max=0.1, center=0),
+    ramp=rampUridis,
+    label="Commute Transit above expectation based on ln(density) [%]",
+    basemap=noBasemap()
+)
 `
 
 testCode(() => test, 'County', 'USA', codeFiltered, 'code-filtered')
 
 const withOutline = `
-cMap(data=density_pw_1km, scale=logScale(), ramp=rampUridis, outline=constructOutline(), basemap=noBasemap())
+cMap(
+    data=density_pw_1km,
+    scale=logScale(),
+    ramp=rampUridis,
+    outline=constructOutline(),
+    basemap=noBasemap()
+)
 `
 
 testCode(() => test, 'County', 'USA', withOutline, 'with-outline')
 
 const indiaEg = `
-cMap(data=density_pw_1km, scale=logScale(), ramp=rampUridis, basemap=noBasemap())
+cMap(
+    data=density_pw_1km,
+    scale=logScale(),
+    ramp=rampUridis,
+    basemap=noBasemap()
+)
 `
 
 testCode(() => test, 'Urban Center', 'India', indiaEg, 'india-eg')
@@ -59,7 +76,16 @@ pMap(data=hilliness, scale=linearScale(), ramp=rampUridis, basemap=noBasemap())
 testCode(() => test, 'Urban Center', 'USA', pointMap, 'point-map')
 
 const translucentOutline = `
-cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, outline=constructOutline(color=rgb(0.8980392156862745, 0.12156862745098039, 0.12156862745098039, a=0.6), weight=10), basemap=noBasemap())
+cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    outline=constructOutline(
+        color=rgb(0.8980392156862745, 0.12156862745098039, 0.12156862745098039, a=0.6),
+        weight=10
+    ),
+    basemap=noBasemap()
+)
 `
 
 testCode(() => test, 'Urban Center', 'USA', translucentOutline, 'translucent-outline')
@@ -67,31 +93,67 @@ testCode(() => test, 'Urban Center', 'USA', translucentOutline, 'translucent-out
 const codeWithRegression = `
 regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population);
 condition (population > 200000)
-cMap(data=regr.residuals, scale=linearScale(center=0, max=0.1), ramp=rampUridis, label="Commute Transit %  above or below prediction based on density", basemap=noBasemap())
+cMap(
+    data=regr.residuals,
+    scale=linearScale(center=0, max=0.1),
+    ramp=rampUridis,
+    label="Commute Transit % above or below prediction based on density",
+    basemap=noBasemap()
+)
 `
 
 testCode(() => test, 'Urban Center', 'USA', codeWithRegression, 'code-with-regression', true)
 
 const codeSetCenterWithExpression = `
-cMap(data=arthritis, scale=linearScale(center=mean(arthritis)), ramp=rampUridis, unit=unitPercentage, basemap=noBasemap())
+cMap(
+    data=arthritis,
+    scale=linearScale(center=mean(arthritis)),
+    ramp=rampUridis,
+    unit=unitPercentage,
+    basemap=noBasemap()
+)
 `
 
 testCode(() => test, 'County', 'USA', codeSetCenterWithExpression, 'code-set-center-with-expression', true)
 
 const translucentOutlineCustomBackground = `
-cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, outline=constructOutline(color=rgb(0.8980392156862745, 0.12156862745098039, 0.12156862745098039, a=0.6), weight=10), basemap=noBasemap(backgroundColor=rgb(0.7, 0.3, 0.2, a=0.5)))
+cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    outline=constructOutline(
+        color=rgb(0.8980392156862745, 0.12156862745098039, 0.12156862745098039, a=0.6),
+        weight=10
+    ),
+    basemap=noBasemap(backgroundColor=rgb(0.7, 0.3, 0.2, a=0.5))
+)
 `
 
 testCode(() => test, 'County', 'USA', translucentOutlineCustomBackground, 'translucent-outline-custom-background')
 
 const translucentOutlineCustomBackgroundAndTextColor = `
-cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, outline=constructOutline(color=rgb(0.8980392156862745, 0.12156862745098039, 0.12156862745098039, a=0.6), weight=10), basemap=noBasemap(backgroundColor=rgb(0.7, 0.3, 0.2, a=0.5), textColor=rgb(1, 1, 1)))
+cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    outline=constructOutline(
+        color=rgb(0.8980392156862745, 0.12156862745098039, 0.12156862745098039, a=0.6),
+        weight=10
+    ),
+    basemap=noBasemap(backgroundColor=rgb(0.7, 0.3, 0.2, a=0.5), textColor=rgb(1, 1, 1))
+)
 `
 
 testCode(() => test, 'County', 'USA', translucentOutlineCustomBackgroundAndTextColor, 'translucent-outline-custom-background-and-text-color')
 
 const rgbMap = `
-cMapRGB(dataR=commute_car, dataG=commute_transit, dataB=commute_walk, label="RGB Map: Density (R), Transit (G), Walk (B)", basemap=noBasemap())
+cMapRGB(
+    dataR=commute_car,
+    dataG=commute_transit,
+    dataB=commute_walk,
+    label="RGB Map: Density (R), Transit (G), Walk (B)",
+    basemap=noBasemap()
+)
 `
 
 testCode(() => test, 'County', 'USA', rgbMap, 'rgb-map')
@@ -111,3 +173,23 @@ test('mapper-csv-export', async (t) => {
 
     await downloadOrCheckString(t, csvContent, 'csv-export-mapper', 'csv', false)
 })
+
+testCode(() => test, 'Subnational Region', 'USA', `cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    label="Multiline\\nLabel"
+)`, 'multiline-label')
+
+const negativeDefaultValue = `
+condition (white > 0.7 & density_pw_1km < 1000)
+cMap(
+    data=pres_2020_margin,
+    scale=linearScale(max=0, min=-0.75),
+    ramp=rampUridis,
+    basemap=noBasemap(backgroundColor=colorBlack),
+    label="2020 Presidential Election Margin, among CCDs with 70%+ white and Density < 1000/km2",
+    unit=unitDemocraticMargin
+)`
+
+testCode(() => test, 'County', 'USA', negativeDefaultValue, 'negative-default-value', true)

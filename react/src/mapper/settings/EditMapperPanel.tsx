@@ -4,11 +4,12 @@ import React, { ReactNode, useCallback, useContext, useEffect, useLayoutEffect, 
 
 import { CountsByUT } from '../../components/countsByArticleType'
 import { Navigator } from '../../navigation/Navigator'
-import { Colors } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
 import { useSetting } from '../../page_template/settings'
 import { PageTemplate } from '../../page_template/template'
 import { Inset } from '../../urban-stats-script/constants/insets'
+import { documentLength } from '../../urban-stats-script/constants/rich-text'
+import { defaults, TextBox } from '../../urban-stats-script/constants/text-box'
 import { useUndoRedo } from '../../urban-stats-script/editor-utils'
 import { unparse } from '../../urban-stats-script/parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
@@ -18,16 +19,19 @@ import { TestUtils } from '../../utils/TestUtils'
 import { mixWithBackground } from '../../utils/color'
 import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
+import { saveAsFile } from '../../utils/saveAsFile'
+import { Selection as TextBoxesSelection, SelectionContext as TextBoxesSelectionContext } from '../components/MapTextBox'
 import { defaultTypeEnvironment } from '../context'
 import { MapGenerator, useMapGenerator } from '../map-generator'
 
 import { ImportExportCode } from './ImportExportCode'
 import { MapperSettings } from './MapperSettings'
 import { Selection, SelectionContext } from './SelectionContext'
-import { doEditInsets, getInsets, InsetEdits, replaceInsets, swapInsets } from './insets'
+import { doEditInsets, getInsets, InsetEdits, replaceInsets, swapInsets } from './edit-insets'
+import { getTextBoxes, scriptWithNewTextBoxes } from './edit-text-boxes'
 import { MapSettings } from './utils'
 
-type MapEditorMode = 'uss' | 'insets'
+type MapEditorMode = 'uss' | 'insets' | 'textBoxes'
 
 export function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
@@ -46,7 +50,7 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
         {
             undoChunking: TestUtils.shared.isTesting ? 2000 : 1000,
             // Prevent keyboard shortcusts when in insets editing mode, since insets has its own undo stack
-            onlyElement: mapEditorMode === 'insets' ? { current: null } : undefined,
+            onlyElement: mapEditorMode !== 'uss' ? { current: null } : undefined,
         },
     )
 
@@ -112,12 +116,16 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
     }
 
     return (
-        <PageTemplate csvExportData={mapGenerator.exportCSV} showFooter={false}>
-            <SelectionContext.Provider value={selectionContext}>
-                {mapEditorMode === 'insets' ? <InsetsMapEditor {...commonProps} /> : <USSMapEditor {...commonProps} counts={props.counts} />}
-                {mapEditorMode !== 'insets' ? undoRedo.ui : undefined /* Insets editor has its own undo stack */}
-            </SelectionContext.Provider>
-        </PageTemplate>
+        <SelectionContext.Provider value={selectionContext}>
+            {mapEditorMode === 'textBoxes' && <TextBoxesMapEditor {...commonProps} /> }
+            {mapEditorMode === 'insets' && <InsetsMapEditor {...commonProps} />}
+            {mapEditorMode === 'uss' && (
+                <>
+                    <USSMapEditor {...commonProps} counts={props.counts} />
+                    {undoRedo.ui}
+                </>
+            )}
+        </SelectionContext.Provider>
     )
 }
 
@@ -132,47 +140,79 @@ interface CommonEditorProps {
 function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
     const ui = mapGenerator.ui({ mode: 'uss' })
 
+    const exportImage = ui.exportImage
+
+    const exportPng = exportImage
+        ? async () => {
+            const canvas = await exportImage()
+            const pngDataUrl = canvas.toDataURL('image/png')
+            const data = await fetch(pngDataUrl)
+            const pngData = await data.blob()
+            saveAsFile('map.png', pngData, 'image/png')
+        }
+        : undefined
+
     return (
-        <MaybeSplitLayout
-            error={mapGenerator.errors.some(e => e.kind === 'error')}
-            left={(
-                <MapperSettings
-                    mapSettings={mapSettings}
-                    setMapSettings={setMapSettings}
-                    errors={mapGenerator.errors}
-                    counts={counts}
-                    typeEnvironment={typeEnvironment}
-                />
-            )}
-            right={(
-                <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
-                        <Export pngExport={ui.exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
-                        {
-                            getInsets(mapSettings, typeEnvironment) && (
-                                <div style={{
-                                    display: 'flex',
-                                    gap: '0.5em',
-                                    margin: '0.5em 0',
-                                }}
-                                >
-                                    <button onClick={() => { setMapEditorMode('insets') }}>
-                                        Edit Insets
-                                    </button>
-                                </div>
-                            )
-                        }
-                        <ImportExportCode
-                            mapSettings={mapSettings}
-                            setMapSettings={setMapSettings}
-                        />
-                    </div>
-                    {ui.node}
-                </>
-            )}
-        />
+        <PageTemplate csvExportData={mapGenerator.exportCSV} screencap={exportPng} showFooter={false}>
+            <MaybeSplitLayout
+                error={mapGenerator.errors.some(e => e.kind === 'error')}
+                left={(
+                    <MapperSettings
+                        mapSettings={mapSettings}
+                        setMapSettings={setMapSettings}
+                        errors={mapGenerator.errors}
+                        counts={counts}
+                        typeEnvironment={typeEnvironment}
+                    />
+                )}
+                right={(
+                    <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
+                            <Export pngExport={exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
+                            {
+                                getInsets(mapSettings, typeEnvironment) && (
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: '0.5em',
+                                        margin: '0.5em 0',
+                                    }}
+                                    >
+                                        <button onClick={() => { setMapEditorMode('insets') }}>
+                                            Edit Insets
+                                        </button>
+                                    </div>
+                                )
+                            }
+                            {
+                                getTextBoxes(mapSettings, typeEnvironment) && (
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: '0.5em',
+                                        margin: '0.5em 0',
+                                    }}
+                                    >
+                                        <button onClick={() => { setMapEditorMode('textBoxes') }}>
+                                            Edit Text Boxes
+                                        </button>
+                                    </div>
+                                )
+                            }
+                            <ImportExportCode
+                                mapSettings={mapSettings}
+                                setMapSettings={setMapSettings}
+                            />
+                        </div>
+                        <div style={{ position: 'relative', flex: 1 }}>
+                            {ui.node}
+                        </div>
+                    </>
+                )}
+            />
+        </PageTemplate>
     )
 }
+
+export const splitLayoutContext = React.createContext(false)
 
 function MaybeSplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode, error: boolean }): ReactNode {
     const mobileLayout = useMobileLayout()
@@ -231,62 +271,64 @@ function SplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode
     const dividerWidth = '1em'
 
     return (
-        <div style={{ display: 'flex', height, position: 'relative' }} ref={splitRef}>
-            {left && (
-                <>
-                    <div style={{ width: leftPct, minWidth: minLeftWidth, overflowY: 'scroll', backgroundColor: mixWithBackground(colors.hueColors.red, error ? 0.8 : 1, colors.slightlyDifferentBackground), padding: '1em', borderRadius: '5px' }}>
-                        {left}
-                    </div>
-                    <div
-                        ref={dividerRef}
-                        style={{ width: dividerWidth, position: 'relative' }}
-                        onPointerDown={(e) => {
-                            if (drag === undefined) {
-                                const div = e.target as HTMLDivElement
-                                setDrag({
-                                    pointerId: e.pointerId,
-                                    startOffsetX: e.nativeEvent.offsetX + div.offsetLeft,
-                                    startProp: Math.max(minLeftColProp(), leftColProp),
-                                })
-                                div.setPointerCapture(e.pointerId)
-                            }
-                        }}
-                        onPointerMove={(e) => {
-                            if (e.pointerId === drag?.pointerId) {
-                                const div = e.target as HTMLDivElement
-                                const propChange = (div.offsetLeft + e.nativeEvent.offsetX - drag.startOffsetX) / splitRef.current!.offsetWidth
-                                setLeftColProp(Math.max(minLeftColProp(), Math.min(drag.startProp + propChange, maxLeftColProp)))
-                            }
-                        }}
-                        onPointerCancel={(e) => {
-                            if (drag?.pointerId === e.pointerId) {
-                                setDrag(undefined)
-                            }
-                        }}
-                        onPointerUp={(e) => {
-                            if (drag?.pointerId === e.pointerId) {
-                                setDrag(undefined)
-                            }
-                        }}
-                    >
-                        <div style={{
-                            backgroundColor: colors.borderNonShadow,
-                            borderRadius: '5px',
-                            position: 'absolute',
-                            width: '5px',
-                            left: 'calc(50% - 2px)',
-                            height: '50%',
-                            top: '25%',
-                            pointerEvents: 'none',
-                        }}
-                        />
-                    </div>
-                </>
-            )}
-            <div style={{ width: `calc(100% - max(${minLeftWidth}px, ${leftPct}) - ${dividerWidth})`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                {right}
+        <splitLayoutContext.Provider value={true}>
+            <div style={{ display: 'flex', height, position: 'relative' }} ref={splitRef}>
+                {left && (
+                    <>
+                        <div data-test="split-left" style={{ width: leftPct, minWidth: minLeftWidth, overflowY: 'scroll', backgroundColor: mixWithBackground(colors.hueColors.red, error ? 0.8 : 1, colors.slightlyDifferentBackground), padding: '1em', borderRadius: '5px' }}>
+                            {left}
+                        </div>
+                        <div
+                            ref={dividerRef}
+                            style={{ width: dividerWidth, position: 'relative' }}
+                            onPointerDown={(e) => {
+                                if (drag === undefined) {
+                                    const div = e.target as HTMLDivElement
+                                    setDrag({
+                                        pointerId: e.pointerId,
+                                        startOffsetX: e.nativeEvent.offsetX + div.offsetLeft,
+                                        startProp: Math.max(minLeftColProp(), leftColProp),
+                                    })
+                                    div.setPointerCapture(e.pointerId)
+                                }
+                            }}
+                            onPointerMove={(e) => {
+                                if (e.pointerId === drag?.pointerId) {
+                                    const div = e.target as HTMLDivElement
+                                    const propChange = (div.offsetLeft + e.nativeEvent.offsetX - drag.startOffsetX) / splitRef.current!.offsetWidth
+                                    setLeftColProp(Math.max(minLeftColProp(), Math.min(drag.startProp + propChange, maxLeftColProp)))
+                                }
+                            }}
+                            onPointerCancel={(e) => {
+                                if (drag?.pointerId === e.pointerId) {
+                                    setDrag(undefined)
+                                }
+                            }}
+                            onPointerUp={(e) => {
+                                if (drag?.pointerId === e.pointerId) {
+                                    setDrag(undefined)
+                                }
+                            }}
+                        >
+                            <div style={{
+                                backgroundColor: colors.borderNonShadow,
+                                borderRadius: '5px',
+                                position: 'absolute',
+                                width: '5px',
+                                left: 'calc(50% - 2px)',
+                                height: '50%',
+                                top: '25%',
+                                pointerEvents: 'none',
+                            }}
+                            />
+                        </div>
+                    </>
+                )}
+                <div style={{ width: `calc(100% - max(${minLeftWidth}px, ${leftPct}) - ${dividerWidth})`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    {right}
+                </div>
             </div>
-        </div>
+        </splitLayoutContext.Provider>
     )
 }
 
@@ -336,12 +378,12 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                 assert(i > 0, `Cannot move inset ${i} down, already bottom`)
                 addInsetEdit(swapInsets(insetEdits, i, i - 1))
             },
-            editedInsets,
+            edited: editedInsets,
         },
     })
 
     return (
-        <>
+        <PageTemplate csvExportData={mapGenerator.exportCSV} showFooter={false}>
             <MaybeSplitLayout
                 left={undefined}
                 error={false}
@@ -378,16 +420,18 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                                 </button>
                             </div>
                         </div>
-                        {ui.node}
+                        <div style={{ flex: 1, position: 'relative' }}>
+                            {ui.node}
+                        </div>
                     </>
                 )}
             />
             {undoRedoUi}
-        </>
+        </PageTemplate>
     )
 }
 
-function moveInset(inset: Inset, x: number, y: number): Inset {
+function moveInset<T extends Inset | TextBox>(inset: T, x: number, y: number): T {
     return {
         ...inset,
         bottomLeft: [inset.bottomLeft[0] + x, inset.bottomLeft[1] + y],
@@ -395,15 +439,15 @@ function moveInset(inset: Inset, x: number, y: number): Inset {
     }
 }
 
-function inBounds(inset: Inset): boolean {
+function inBounds(inset: Inset | TextBox): boolean {
     return inset.bottomLeft.concat(inset.topRight).every(c => c >= 0 && c <= 1)
 }
 
-function samePosition(a: Inset, b: Inset): boolean {
+function samePosition(a: Inset | TextBox, b: Inset | TextBox): boolean {
     return a.bottomLeft[0] === b.bottomLeft[0] && a.bottomLeft[1] === b.bottomLeft[1] && a.topRight[0] === b.topRight[0] && a.topRight[1] === b.topRight[1]
 }
 
-function offsetInsetInBounds(inset: Inset, exclude: Inset[]): Inset {
+function offsetInsetInBounds<T extends Inset | TextBox>(inset: T, exclude: T[]): T {
     for (let delta = 0; delta < 1; delta += 0.05) {
         for (const [x, y] of [[delta, delta], [-delta, -delta], [-delta, delta], [delta, -delta]]) {
             const newInset = moveInset(inset, x, y)
@@ -415,28 +459,12 @@ function offsetInsetInBounds(inset: Inset, exclude: Inset[]): Inset {
     return inset
 }
 
-function saveAsFile(filename: string, data: string | Blob, type: string): void {
-    const blob = typeof data === 'string' ? new Blob([data], { type }) : data
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-}
-
-function Export(props: { pngExport?: (colors: Colors) => Promise<string>, geoJSONExport?: () => string }): ReactNode {
-    const colors = useColors()
-
-    const doPngExport = async (): Promise<void> => {
+function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => string }): ReactNode {
+    const doPngExport = (): void => {
         if (props.pngExport === undefined) {
             return
         }
-        const pngDataUrl = await props.pngExport(colors)
-        const data = await fetch(pngDataUrl)
-        const pngData = await data.blob()
-        saveAsFile('map.png', pngData, 'image/png')
+        void props.pngExport()
     }
 
     const doGeoJSONExport = (): void => {
@@ -456,7 +484,7 @@ function Export(props: { pngExport?: (colors: Colors) => Promise<string>, geoJSO
             <button
                 disabled={props.pngExport === undefined}
                 onClick={() => {
-                    void doPngExport()
+                    doPngExport()
                 }}
             >
                 Export as PNG
@@ -480,5 +508,143 @@ function Export(props: { pngExport?: (colors: Colors) => Promise<string>, geoJSO
                 View as Zoomable Page
             </button>
         </div>
+    )
+}
+
+function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps): ReactNode {
+    const colors = useColors()
+
+    const [textBoxes, setTextBoxes] = useState<TextBox[]>(() => getTextBoxes(mapSettings, typeEnvironment)!)
+
+    const selectionProperty = useMemo(() => new Property<TextBoxesSelection | undefined>(undefined), [])
+
+    const { addState, ui: undoRedoUi, canUndo, updateCurrentSelection } = useUndoRedo<TextBox[], TextBoxesSelection | undefined>(textBoxes, undefined, setTextBoxes, (newSelection) => {
+        selectionProperty.value = newSelection
+    })
+
+    // Update current selection when it changes
+    useEffect(() => {
+        const observer = (): void => {
+            updateCurrentSelection(selectionProperty.value)
+        }
+
+        selectionProperty.observers.add(observer)
+        return () => { selectionProperty.observers.delete(observer) }
+    }, [selectionProperty, updateCurrentSelection])
+
+    const setTextBoxesWithUndo = (boxes: TextBox[]): void => {
+        setTextBoxes(boxes)
+        addState(boxes, selectionProperty.value)
+    }
+
+    const ui = mapGenerator.ui({
+        mode: 'textBoxes',
+        editTextBoxes: {
+            add: () => {
+                const newTextBox: TextBox = {
+                    bottomLeft: [0.25, 0.25],
+                    topRight: [0.75, 0.75],
+                    text: [{ insert: '\n' }], // bugs on applying attributes to empty text without this
+                    ...defaults,
+                }
+                setTextBoxesWithUndo([...textBoxes, offsetInsetInBounds(newTextBox, textBoxes)])
+                selectionProperty.value = { index: textBoxes.length, range: { index: 0, length: 0 } }
+            },
+            modify: (i, e) => {
+                setTextBoxesWithUndo(textBoxes.map((textBox, j) => i === j ? { ...textBox, ...e } : textBox))
+            },
+            delete: (i) => {
+                setTextBoxesWithUndo(textBoxes.filter((_, j) => j !== i))
+                if (selectionProperty.value?.index === i) {
+                    selectionProperty.value = undefined
+                }
+            },
+            duplicate: (i) => {
+                setTextBoxesWithUndo([...textBoxes, offsetInsetInBounds(textBoxes[i], textBoxes)])
+                selectionProperty.value = { index: textBoxes.length, range: { index: 0, length: documentLength(textBoxes[i].text) } }
+            },
+            moveUp: (i) => {
+                assert(i + 1 < textBoxes.length, `Cannot move text box ${i} up, already top`)
+                setTextBoxesWithUndo(textBoxes.map((textBox, j) => {
+                    switch (j) {
+                        case i:
+                            return textBoxes[i + 1]
+                        case i + 1:
+                            return textBoxes[i]
+                        default:
+                            return textBox
+                    }
+                }))
+                if (selectionProperty.value?.index === i) {
+                    selectionProperty.value = { ...selectionProperty.value, index: i + 1 }
+                }
+            },
+            moveDown: (i) => {
+                assert(i > 0, `Cannot move inset ${i} down, already bottom`)
+                setTextBoxesWithUndo(textBoxes.map((textBox, j) => {
+                    switch (j) {
+                        case i:
+                            return textBoxes[i - 1]
+                        case i - 1:
+                            return textBoxes[i]
+                        default:
+                            return textBox
+                    }
+                }))
+                if (selectionProperty.value?.index === i) {
+                    selectionProperty.value = { ...selectionProperty.value, index: i - 1 }
+                }
+            },
+            edited: textBoxes,
+        },
+    })
+
+    return (
+        <PageTemplate csvExportData={mapGenerator.exportCSV} showFooter={false}>
+
+            <TextBoxesSelectionContext.Provider value={selectionProperty}>
+                <MaybeSplitLayout
+                    left={undefined}
+                    error={false}
+                    right={(
+                        <>
+                            <div style={{
+                                backgroundColor: colors.slightlyDifferentBackgroundFocused,
+                                borderRadius: '5px',
+                                padding: '10px',
+                                margin: '10px 0',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                gap: '0.5em',
+                            }}
+                            >
+                                <div>
+                                    <b>Editing Text Boxes.</b>
+                                </div>
+                                <div style={{ display: 'flex', gap: '10px' }}>
+
+                                    <button onClick={() => { setMapEditorMode('uss') }}>
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setMapSettings({ ...mapSettings, script: { uss: scriptWithNewTextBoxes(mapSettings, textBoxes, typeEnvironment) } })
+                                            setMapEditorMode('uss')
+                                        }}
+                                        disabled={!canUndo}
+                                    >
+                                        Accept
+                                    </button>
+                                </div>
+                            </div>
+                            <div style={{ flex: 1, position: 'relative' }}>
+                                {ui.node}
+                            </div>
+                        </>
+                    )}
+                />
+                {undoRedoUi}
+            </TextBoxesSelectionContext.Provider>
+        </PageTemplate>
     )
 }

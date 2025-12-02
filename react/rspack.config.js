@@ -47,6 +47,10 @@ export default env => ({
                 test: /\.css$/i,
                 use: ['style-loader', 'css-loader'],
             },
+            {
+                test: /\.(ttf|woff|woff2|eot|otf)$/i,
+                type: 'asset/resource',
+            },
 
         ],
     },

@@ -2,7 +2,7 @@ import { ClientFunction, Selector } from 'testcafe'
 
 import { TestWindow } from '../src/utils/TestUtils'
 
-import { toggleCustomScript, urlFromCode } from './mapper-utils'
+import { drag, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { screencap, urbanstatsFixture } from './test_utils'
 
 urbanstatsFixture(`default map`, '/mapper.html')
@@ -21,10 +21,13 @@ function handle(mapNumber: number, pos: 'move' | 'topRight' | 'bottomRight' | 'b
 
 interface Bounds { n: number, e: number, s: number, w: number }
 
-function bounds(mapNumber: number): Promise<Bounds> {
+function bounds(mapNumber: number): Promise<Bounds | undefined> {
     const mapSelector = map(mapNumber)
     return ClientFunction(() => {
-        const mapId = document.querySelector(mapSelector)!.id
+        const mapId = document.querySelector(mapSelector)?.id
+        if (mapId === undefined) {
+            return undefined
+        }
         const mapObj = (window as unknown as TestWindow).testUtils.maps.get(mapId)!.deref()!
         const latLon = mapObj.getBounds()
         return {
@@ -38,21 +41,19 @@ function bounds(mapNumber: number): Promise<Bounds> {
 
 interface Rect { x: number, y: number, width: number, height: number }
 
-function frame(selector: string): Promise<Rect> {
+function frame(selector: string): Promise<Rect | undefined> {
     const map0 = map(0)
     return ClientFunction(() => {
-        const map0Rect = document.querySelector(map0)!.getBoundingClientRect()
-        const domRect = document.querySelector(selector)!.getBoundingClientRect()
+        const map0Elem = document.querySelector(map0)
+        const domElem = document.querySelector(selector)
+        if (map0Elem === null || domElem === null) {
+            return undefined
+        }
+        const map0Rect = map0Elem.getBoundingClientRect()
+        const domRect = domElem.getBoundingClientRect()
         // Fudge Y since it's unstable
         return { x: Math.round(100 * (domRect.x - map0Rect.x) / map0Rect.width) / 100, y: Math.round(100 * (domRect.y - map0Rect.y) / map0Rect.height) / 100, width: Math.round(100 * domRect.width / map0Rect.width) / 100, height: Math.round(100 * domRect.height / map0Rect.height) / 100 }
     }, { dependencies: { selector, map0 } })()
-}
-
-async function drag(t: TestController, selector: string, deltaX: number, deltaY: number): Promise<void> {
-    const elementRect = await Selector(selector).boundingClientRect
-    const downEvent = { pointerId: 1, clientX: (elementRect.left + elementRect.right) / 2, clientY: (elementRect.bottom + elementRect.top) / 2 }
-    const upEvent = { ...downEvent, clientX: downEvent.clientX + deltaX, clientY: downEvent.clientY + deltaY }
-    await t.dispatchEvent(selector, 'pointerdown', downEvent).dispatchEvent(selector, 'pointermove', upEvent).dispatchEvent(selector, 'pointerup', upEvent)
 }
 
 async function wheel(t: TestController, selector: string, deltaY: number, offset: { x: number, y: number }): Promise<void> {
@@ -65,7 +66,7 @@ async function wheel(t: TestController, selector: string, deltaY: number, offset
     }, { dependencies: { selector, deltaY, offset } })()
 }
 
-type MapPositions = { frame: Rect, bounds: Bounds }[]
+type MapPositions = { frame: Rect | undefined, bounds: Bounds | undefined }[]
 
 function mapPositionsEqual(a: MapPositions, b: MapPositions): boolean {
     const frameThreshold = 0.015
@@ -77,8 +78,8 @@ function mapPositionsEqual(a: MapPositions, b: MapPositions): boolean {
 
     return a.every((aMap, i) => {
         const bMap = b[i]
-        return (['x', 'y', 'width', 'height'] as const).every(key => Math.abs(aMap.frame[key] - bMap.frame[key]) < frameThreshold)
-            && (['n', 'e', 's', 'w'] as const).every(key => Math.abs(aMap.bounds[key] - bMap.bounds[key]) < boundsThreshold)
+        return (['x', 'y', 'width', 'height'] as const).every(key => aMap.frame !== undefined && bMap.frame !== undefined && Math.abs(aMap.frame[key] - bMap.frame[key]) < frameThreshold)
+            && (['n', 'e', 's', 'w'] as const).every(key => aMap.bounds !== undefined && bMap.bounds !== undefined && Math.abs(aMap.bounds[key] - bMap.bounds[key]) < boundsThreshold)
     })
 }
 

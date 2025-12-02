@@ -1,20 +1,22 @@
 import { MathJaxContext } from 'better-react-mathjax'
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useState } from 'react'
 import { Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 
 import './style.css'
 import './common.css'
 import { defaultTypeEnvironment } from './mapper/context'
+import { urlFromPageDescriptor } from './navigation/PageDescriptor'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
 import { StandaloneEditor } from './urban-stats-script/StandaloneEditor'
 import { defaultConstants } from './urban-stats-script/constants/constants'
 import { expressionOperatorMap } from './urban-stats-script/operators'
 import { constantCategories, ConstantCategory, DocumentationTable, renderType, USSDocumentedType, USSValue } from './urban-stats-script/types-values'
+import { DefaultMap } from './utils/DefaultMap'
 import { assert } from './utils/defensive'
 import { useHeaderTextClass } from './utils/responsive'
 
-export function USSDocumentationPanel(): ReactNode {
+export function USSDocumentationPanel({ hash }: { hash: string }): ReactNode {
     const textHeaderClass = useHeaderTextClass()
 
     return (
@@ -204,7 +206,7 @@ export function USSDocumentationPanel(): ReactNode {
                                     USS provides several built-in constants and functions for mathematical operations,
                                     data visualization, and data analysis. These are organized by category below.
                                 </p>
-                                <ConstantsDocumentation />
+                                <ConstantsDocumentation hash={hash} />
                             </Header>
                         </Header>
                     </div>
@@ -215,7 +217,7 @@ export function USSDocumentationPanel(): ReactNode {
     )
 }
 
-function createTable(colors: ReturnType<typeof useColors>, headers: string[], cells: ReactNode[][]): ReactNode {
+function createTable(colors: ReturnType<typeof useColors>, headers: string[], cells: { id?: string, row: ReactNode[] }[]): ReactNode {
     const tableStyles = {
         table: {
             width: '100%',
@@ -263,8 +265,9 @@ function createTable(colors: ReturnType<typeof useColors>, headers: string[], ce
                 </tr>
             </thead>
             <tbody>
-                {cells.map((row, rowIndex) => (
+                {cells.map(({ row, id }, rowIndex) => (
                     <tr
+                        id={id}
                         key={rowIndex}
                         style={{
                             backgroundColor: rowIndex % 2 === 0 ? tableStyles.rowColors.even : tableStyles.rowColors.odd,
@@ -286,50 +289,49 @@ function OperatorTable(): ReactNode {
     const colors = useColors()
 
     const headers = ['Operator', 'Type', 'Precedence', 'Description', 'Example']
-    const cells = Array.from(expressionOperatorMap.entries()).map(([operator, info]) => [
-        <code key="operator" style={{ backgroundColor: colors.slightlyDifferentBackground, padding: '2px 4px', borderRadius: '3px', fontFamily: '\'Courier New\', monospace', fontSize: '13px' }}>
-            {operator}
-        </code>,
-        info.unary && info.binary
-            ? 'Unary/Binary'
-            : info.unary
-                ? 'Unary'
-                : info.binary
-                    ? 'Binary'
-                    : 'Unknown',
-        info.precedence,
-        info.description,
-        info.examples.map((example, exampleIndex) => (
-            <span key={exampleIndex}>
-                <code style={{ backgroundColor: colors.slightlyDifferentBackground, padding: '2px 4px', borderRadius: '3px', fontFamily: '\'Courier New\', monospace', fontSize: '13px' }}>
-                    {example}
-                </code>
-                {exampleIndex < info.examples.length - 1 && ', '}
-            </span>
-        )),
-    ])
+    const cells = Array.from(expressionOperatorMap.entries()).map(([operator, info]) => ({
+        row: [
+            <code key="operator" style={{ backgroundColor: colors.slightlyDifferentBackground, padding: '2px 4px', borderRadius: '3px', fontFamily: '\'Courier New\', monospace', fontSize: '13px' }}>
+                {operator}
+            </code>,
+            info.unary && info.binary
+                ? 'Unary/Binary'
+                : info.unary
+                    ? 'Unary'
+                    : info.binary
+                        ? 'Binary'
+                        : 'Unknown',
+            info.precedence,
+            info.description,
+            info.examples.map((example, exampleIndex) => (
+                <span key={exampleIndex}>
+                    <code style={{ backgroundColor: colors.slightlyDifferentBackground, padding: '2px 4px', borderRadius: '3px', fontFamily: '\'Courier New\', monospace', fontSize: '13px' }}>
+                        {example}
+                    </code>
+                    {exampleIndex < info.examples.length - 1 && ', '}
+                </span>
+            )),
+        ],
+    }))
 
     return createTable(colors, headers, cells)
 }
 
-function ConstantsDocumentation(): ReactNode {
+function ConstantsDocumentation({ hash }: { hash: string }): ReactNode {
     const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set(constantCategories))
 
     const mapperContext = defaultTypeEnvironment('world')
 
     // Group constants by category
-    const constantsByCategory = new Map<ConstantCategory, [string, USSDocumentedType][]>()
+    const constantsByCategory = new DefaultMap<ConstantCategory, [string, USSDocumentedType][]>(() => [])
+    const constantToCategory = new Map<string, ConstantCategory>()
 
     // Add default constants
     for (const [name, value] of defaultConstants) {
         const category = value.documentation?.category
         assert(category !== undefined, `Constant ${name} does not have a category defined.`)
-        let cat = constantsByCategory.get(category)
-        if (cat === undefined) {
-            cat = []
-            constantsByCategory.set(category, cat)
-        }
-        cat.push([name, value])
+        constantsByCategory.get(category).push([name, value])
+        constantToCategory.set(name, category)
     }
 
     // Add mapper context elements
@@ -340,26 +342,17 @@ function ConstantsDocumentation(): ReactNode {
         const category = value.documentation?.category
         assert(category !== undefined, `Constant ${name} does not have a category defined.`)
         if (constantCategories.includes(category)) {
-            let cat = constantsByCategory.get(category)
-            if (cat === undefined) {
-                cat = []
-                constantsByCategory.set(category, cat)
-            }
-            cat.push([name, value])
+            constantsByCategory.get(category).push([name, value])
+            constantToCategory.set(name, category)
         }
     }
 
     // Group constants by documentationTable for table display
-    const constantsByTable = new Map<DocumentationTable, [string, USSValue][]>()
+    const constantsByTable = new DefaultMap<DocumentationTable, [string, USSValue][]>(() => [])
     for (const [name, value] of defaultConstants) {
         const tableName = value.documentation?.documentationTable
         if (tableName !== undefined) {
-            let cat = constantsByTable.get(tableName)
-            if (cat === undefined) {
-                cat = []
-                constantsByTable.set(tableName, cat)
-            }
-            cat.push([name, value])
+            constantsByTable.get(tableName).push([name, value])
         }
     }
 
@@ -383,6 +376,23 @@ function ConstantsDocumentation(): ReactNode {
             return newSet
         })
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- This doesn't inf loop since a new value is only returned in the set conditionally
+    useEffect(() => {
+        if (hash.startsWith(`#${constantPrefix}`)) {
+            const constantIdentifier = hash.slice(`#${constantPrefix}`.length)
+            const category = constantToCategory.get(constantIdentifier)
+            assert(category !== undefined, 'Constant does not have a category')
+            setCollapsedCategories((prev) => {
+                if (prev.has(category)) {
+                    const newSet = new Set(prev)
+                    newSet.delete(category)
+                    return newSet
+                }
+                return prev
+            })
+        }
+    })
 
     return (
         <div>
@@ -456,10 +466,12 @@ function DocumentationForCategory(props: { category: ConstantCategory, constants
     )
 }
 
+const constantPrefix = 'constant-'
+
 export function LongFormDocumentation(props: { name: string, value: USSDocumentedType }): ReactNode {
     const colors = useColors()
     return (
-        <Header key={props.name} title={props.name} header="h4" ident={`constant-${props.name}`}>
+        <Header key={props.name} title={props.name} header="h4" ident={`${constantPrefix}${props.name}`}>
             <div style={{ marginBottom: '20px', marginLeft: '20px' }}>
                 <div style={{ marginBottom: '10px' }}>
                     Type:
@@ -521,30 +533,33 @@ export function LongFormDocumentation(props: { name: string, value: USSDocumente
 function ShortFormTableDocumentation(props: { tableName: DocumentationTable, tableConstants: [string, USSDocumentedType][] }): ReactNode {
     const colors = useColors()
     const headers = ['Name', 'Type', 'Description']
-    const cells = props.tableConstants.map(([name, value]) => [
-        <span key="name" style={{ fontFamily: '\'Courier New\', monospace' }}>{name}</span>,
-        <code
-            key="type"
-            style={{
-                backgroundColor: colors.slightlyDifferentBackground,
-                padding: '2px 4px',
-                borderRadius: '3px',
-                fontFamily: '\'Courier New\', monospace',
-                fontSize: '12px',
-            }}
-        >
-            {renderType(value.type)}
-        </code>,
-        <span key="description">
-            {value.documentation?.longDescription ?? 'No description available.'}
-            {value.documentation?.isDefault && (
-                <span key="default-indicator" style={{ fontStyle: 'italic', color: colors.textMain }}>
-                    {' '}
-                    (default)
-                </span>
-            )}
-        </span>,
-    ])
+    const cells = props.tableConstants.map(([name, value]) => ({
+        id: `${constantPrefix}${name}`,
+        row: [
+            <span key="name" style={{ fontFamily: '\'Courier New\', monospace' }}>{name}</span>,
+            <code
+                key="type"
+                style={{
+                    backgroundColor: colors.slightlyDifferentBackground,
+                    padding: '2px 4px',
+                    borderRadius: '3px',
+                    fontFamily: '\'Courier New\', monospace',
+                    fontSize: '12px',
+                }}
+            >
+                {renderType(value.type)}
+            </code>,
+            <span key="description">
+                {value.documentation?.longDescription ?? 'No description available.'}
+                {value.documentation?.isDefault && (
+                    <span key="default-indicator" style={{ fontStyle: 'italic', color: colors.textMain }}>
+                        {' '}
+                        (default)
+                    </span>
+                )}
+            </span>,
+        ],
+    }))
 
     return (
         <div key={props.tableName} style={{ marginTop: '20px', marginLeft: '20px' }}>
@@ -579,6 +594,8 @@ function getCategoryTitle(category: ConstantCategory): string {
             return 'Basic Functions'
         case 'mapper':
             return 'Mapper Data Variables'
+        case 'richText':
+            return 'Rich Text Formatting'
     }
 }
 
@@ -606,6 +623,8 @@ function getCategoryDescription(category: ConstantCategory): string {
             return 'Basic utility functions for type conversion and common operations.'
         case 'mapper':
             return 'The mapper provides several variables relevant to the current universe and set of geographic features.'
+        case 'richText':
+            return 'Functions for rich text formatting.'
     }
 }
 
@@ -648,12 +667,22 @@ function getTableDescription(tableName: DocumentationTable): string {
 }
 
 function Header(props: { title: string, header: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6', ident: string, children: ReactNode }): ReactNode {
+    const linkKind = useContext(linkContext)
+
     return (
         <>
             <props.header id={props.ident}>
-                {props.title}
+                {linkKind === 'link'
+                    ? (
+                            <a href={urlFromPageDescriptor({ kind: 'ussDocumentation', hash: props.ident }).toString()} target="_blank" rel="noreferrer">
+                                {props.title}
+                            </a>
+                        )
+                    : props.title}
             </props.header>
             {props.children}
         </>
     )
 }
+
+export const linkContext = React.createContext<'reference' | 'link'>('reference')

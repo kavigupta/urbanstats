@@ -5,7 +5,9 @@ import React, { createContext, ReactNode, useContext } from 'react'
 import { universePath } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
+import { loadImage } from '../utils/Image'
 import { TestUtils } from '../utils/TestUtils'
+import { zIndex } from '../utils/zIndex'
 
 export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
     const colors = useColors()
@@ -34,7 +36,7 @@ export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
                 border: '5px solid #fff',
                 borderTop: '5px solid #000',
                 animation: 'spin 2s linear infinite',
-                zIndex: 2,
+                zIndex: zIndex.screenshotSpin,
                 animationPlayState: 'running',
             }}
             >
@@ -48,7 +50,7 @@ export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
                 top: 0,
                 left: 0,
                 backgroundColor: `${colors.textMain}80`,
-                zIndex: 1,
+                zIndex: zIndex.screenshotDim,
             }}
             >
             </div>
@@ -71,7 +73,7 @@ export interface ScreencapElements {
     heightMultiplier?: number
 }
 
-function totalOffset(element: Element | null): { top: number, left: number } {
+export function totalOffset(element: Element | null): { top: number, left: number } {
     if (!(element instanceof HTMLElement)) {
         return { top: 0, left: 0 }
     }
@@ -79,8 +81,8 @@ function totalOffset(element: Element | null): { top: number, left: number } {
     return { top: element.offsetTop + parentOffset.top, left: element.offsetLeft + parentOffset.left }
 }
 
-function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number, image: CanvasImageSource, x: number, y: number, w: number, h: number): void {
-    if (TestUtils.shared.isTesting) {
+function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number, image: CanvasImageSource, x: number, y: number, w: number, h: number, testing: boolean): void {
+    if (testing) {
         context.fillStyle = `hsl(${(index % 10) * (360 / 10)} 50% 50%)`
         context.fillRect(x, y, w, h)
     }
@@ -108,9 +110,13 @@ function fixElementForScreenshot(element: HTMLElement): () => void {
 }
 
 export const mapBorderWidth = 1
-export const mapBorderRadius = 5
+export const defaultMapBorderRadius = 5
 
-export async function screencapElement(ref: HTMLElement, overallWidth: number, heightMultiplier: number): Promise<HTMLCanvasElement> {
+export async function screencapElement(ref: HTMLElement, overallWidth: number, heightMultiplier: number, {
+    mapBorderRadius = defaultMapBorderRadius,
+    // eslint-disable-next-line no-restricted-syntax -- Default value
+    testing = TestUtils.shared.isTesting,
+}: { mapBorderRadius?: number, testing?: boolean } = {}): Promise<HTMLCanvasElement> {
     const unfixElement = fixElementForScreenshot(ref)
 
     /*
@@ -139,11 +145,13 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, h
         const h = canvas.offsetHeight * scaleFactor
 
         resultContext.save()
-        resultContext.beginPath()
-        resultContext.roundRect(x, y, w, h, (mapBorderRadius - mapBorderWidth * 2) * scaleFactor)
-        resultContext.clip()
+        if (mapBorderRadius !== 0) {
+            resultContext.beginPath()
+            resultContext.roundRect(x, y, w, h, (mapBorderRadius - mapBorderWidth * 2) * scaleFactor)
+            resultContext.clip()
+        }
 
-        drawImageIfNotTesting(resultContext, index, canvas, x, y, w, h)
+        drawImageIfNotTesting(resultContext, index, canvas, x, y, w, h, testing)
 
         resultContext.restore()
     }
@@ -185,11 +193,7 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
     const padAround = 100
     const padBetween = 50
 
-    const banner = new Image()
-    await new Promise<void>((resolve) => {
-        banner.onload = () => { resolve() }
-        banner.src = colors.screenshotFooterUrl
-    })
+    const banner = await loadImage(colors.screenshotFooterUrl)
 
     const bannerScale = overallWidth / banner.width
     const bannerHeight = banner.height * bannerScale
@@ -222,7 +226,7 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
         const flagHeight = bannerHeight / 2
         const offset = flagHeight / 2
         const flagWidth = flag.width * flagHeight / flag.height
-        drawImageIfNotTesting(ctx, canvases.length, flag, padAround + offset, start + offset, flagWidth, flagHeight)
+        drawImageIfNotTesting(ctx, canvases.length, flag, padAround + offset, start + offset, flagWidth, flagHeight, TestUtils.shared.isTesting)
     }
 
     canvas.toBlob(function (blob) {
