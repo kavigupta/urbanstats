@@ -375,3 +375,18 @@ test('download-article-csv-settings-ignored', async (t) => {
 
     await downloadOrCheckString(t, csvContent, 'csv-export-california-article', 'csv', false)
 })
+
+test('loading indicator', async (t) => {
+    // Loading indicator appears when shape load fails or is delayed
+    const cdp = await t.getCurrentCDPSession()
+
+    await cdp.Network.enable({})
+    await cdp.Network.setBlockedURLs({
+        urls: ['*shape*Roscoe'],
+    })
+
+    await t.click(Selector('button[data-test-id="1"]'))
+    await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
+
+    await screencap(t, { wait: false })
+})
