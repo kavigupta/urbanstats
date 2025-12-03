@@ -71,7 +71,7 @@ export function LongLoad({ containerStyleOverride, testId }: { containerStyleOve
         left: `calc(50% - ${width} / 2)`,
     }
     return (
-        <div style={containerStyle} data-test-id={testId}>
+        <div style={containerStyle} data-test-id={testId ?? 'longLoad'}>
             <MoonLoader color={colors.textMain} cssOverride={loaderStyle} />
         </div>
     )
