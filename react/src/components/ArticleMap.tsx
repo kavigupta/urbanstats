@@ -2,6 +2,7 @@ import React, { ReactNode, useMemo, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
+import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { relatedSettingsKeys, relationshipKey, useSettings } from '../page_template/settings'
 import { randomColor } from '../utils/color'
@@ -27,13 +28,18 @@ export function ArticleMap(props: ArticleMapProps): ReactNode {
 
     useZoomFirstFeature(mapRef, features)
 
+    const firstFeatureWaiting = features.length > 0 && features[0] === waiting
+
     return (
-        <CommonMaplibreMap
-            ref={setMapRef}
-        >
-            <PolygonFeatureCollection features={readyFeatures} clickable={true} />
-            <FullscreenControl position="top-left" />
-        </CommonMaplibreMap>
+        <div style={{ position: 'relative' }}>
+            <RelativeLoader loading={firstFeatureWaiting} />
+            <CommonMaplibreMap
+                ref={setMapRef}
+            >
+                <PolygonFeatureCollection features={readyFeatures} clickable={true} />
+                <FullscreenControl position="top-left" />
+            </CommonMaplibreMap>
+        </div>
     )
 }
 
