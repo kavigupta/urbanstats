@@ -32,7 +32,7 @@ export function SubsequentLoad(): ReactNode {
         case 'quickLoad':
             return <QuickLoad />
         case 'longLoad':
-            return <LongLoad testId="longLoad" />
+            return <LongLoad testId="subsequentLongLoad" />
     }
 }
 
