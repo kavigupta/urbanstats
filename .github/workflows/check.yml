@@ -27,8 +27,9 @@ jobs:
         uses: nick-fields/retry@v3
         with:
           max_attempts: 2
+          timeout_minutes: 2
           shell: bash
-          run: |
+          command: |
             git config --global --add safe.directory $GITHUB_WORKSPACE
 
             # Clone the repo
