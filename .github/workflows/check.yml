@@ -270,10 +270,12 @@ jobs:
       - e2e
     steps:
       - name: Tests Failed
-        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}
         run: |
+          echo "${{ toJSON(needs) }}"
           echo "Tests failed!"
           exit 1
       - name: Tests Succeeded
         run: |
+          echo "${{ toJSON(needs) }}"
           echo "Tests succeeded!"
