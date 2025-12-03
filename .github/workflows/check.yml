@@ -24,21 +24,25 @@ jobs:
     steps:
       - &checkout
         name: Checkout repository
-        shell: bash
-        run: |
-          git config --global --add safe.directory $GITHUB_WORKSPACE
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 2
+          timeout_minutes: 2
+          shell: bash
+          command: |
+            git config --global --add safe.directory $GITHUB_WORKSPACE
 
-          # Clone the repo
-          git clone --no-checkout --filter=blob:none ${{ github.server_url }}/${{ github.repository }}.git $GITHUB_WORKSPACE
+            # Clone the repo
+            git clone --no-checkout --filter=blob:none ${{ github.server_url }}/${{ github.repository }}.git $GITHUB_WORKSPACE
 
-          # Enable sparse checkout
-          git config core.sparseCheckout true
+            # Enable sparse checkout
+            git config core.sparseCheckout true
 
-          # Configure sparse checkout
-          echo "$SPARSE_CHECKOUT" > .git/info/sparse-checkout
+            # Configure sparse checkout
+            echo "$SPARSE_CHECKOUT" > .git/info/sparse-checkout
 
-          # Check out the ref
-          git checkout --progress --force ${{ github.sha }}
+            # Check out the ref
+            git checkout --progress --force ${{ github.sha }}
 
       - uses: ./.github/actions/docker_image
         with:
