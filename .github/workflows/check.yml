@@ -25,8 +25,8 @@ jobs:
       - &checkout
         name: Checkout repository
         uses: nick-fields/retry@v3
-        max_attempts: 2
         with:
+          max_attempts: 2
           shell: bash
           run: |
             git config --global --add safe.directory $GITHUB_WORKSPACE
