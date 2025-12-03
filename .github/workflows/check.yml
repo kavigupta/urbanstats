@@ -28,7 +28,7 @@ jobs:
         with:
           max_attempts: 2
           shell: bash
-          run: |
+          command: |
             git config --global --add safe.directory $GITHUB_WORKSPACE
 
             # Clone the repo
