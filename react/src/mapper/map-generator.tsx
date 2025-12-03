@@ -10,7 +10,7 @@ import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
 import { boundingBox, geometry } from '../map-partition'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
-import { LongLoad } from '../navigation/loading'
+import { RelativeLoader } from '../navigation/loading'
 import { Colors, colorThemes } from '../page_template/color-themes'
 import { OverrideTheme, useColors } from '../page_template/colors'
 import { loadCentroids } from '../syau/load'
@@ -333,18 +333,6 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, who
                 {colorbar}
             </div>
         </TransformConstantWidth>
-    )
-}
-
-function RelativeLoader({ loading }: { loading: boolean }): ReactNode {
-    return (
-        <LongLoad containerStyleOverride={{
-            position: 'absolute',
-            transition: 'opacity 0.25s',
-            opacity: loading ? 1 : 0,
-            pointerEvents: 'none',
-        }}
-        />
     )
 }
 

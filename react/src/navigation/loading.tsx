@@ -76,3 +76,15 @@ export function LongLoad({ containerStyleOverride, testId }: { containerStyleOve
         </div>
     )
 }
+
+export function RelativeLoader({ loading }: { loading: boolean }): ReactNode {
+    return (
+        <LongLoad containerStyleOverride={{
+            position: 'absolute',
+            transition: 'opacity 0.25s',
+            opacity: loading ? 1 : 0,
+            pointerEvents: 'none',
+        }}
+        />
+    )
+}
