@@ -271,10 +271,10 @@ jobs:
       - name: Tests Failed
         if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
         run: |
-          echo "${{ needs.*.result }}"
+          echo "${{ toJSON(needs) }}"
           echo "Tests failed!"
           exit 1
       - name: Tests Succeeded
         run: |
-          echo "${{ needs.*.result }}"
+          echo "${{ toJSON(needs) }}"
           echo "Tests succeeded!"
