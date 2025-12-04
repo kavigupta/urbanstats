@@ -218,14 +218,18 @@ export function MainHeaderRow(props: {
     )
 }
 
-export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidth: number, onlyColumns?: ColumnIdentifier[], statNameOverride?: string, extraSpaceRight?: number }): ReactNode {
-    const colors = useColors()
-    const ordinalStyle: React.CSSProperties = {
+function makeOrdinalStyle(colors: Colors): React.CSSProperties {
+    return {
         fontSize: '14px',
         fontWeight: 400,
         color: colors.ordinalTextColor,
         margin: 0,
     }
+}
+
+export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidth: number, onlyColumns?: ColumnIdentifier[], statNameOverride?: string, extraSpaceRight?: number }): ReactNode {
+    const colors = useColors()
+    const ordinalStyle = makeOrdinalStyle(colors)
 
     const cells = [
         {
@@ -373,12 +377,7 @@ export function StatisticRowCells(props: {
     extraSpaceRight?: number
 }): ReactNode {
     const colors = useColors()
-    const ordinalStyle: React.CSSProperties = {
-        fontSize: '14px',
-        fontWeight: 400,
-        color: colors.ordinalTextColor,
-        margin: 0,
-    }
+    const ordinalStyle = makeOrdinalStyle(colors)
 
     const cells = [
         {
@@ -526,7 +525,6 @@ function articleStatnameButtonStyle(colors: Colors): React.CSSProperties {
 }
 
 const manipulationButtonHeight = '24px'
-
 function ManipulationButton({ color: buttonColor, onClick, text, image }: { color: string, onClick: () => void, text: string, image: string }): ReactNode {
     const isMobile = useMobileLayout()
     const isTranspose = useTranspose()
