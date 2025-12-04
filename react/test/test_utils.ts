@@ -342,7 +342,9 @@ export function pageDescriptorKind(): Promise<string | undefined> {
 export async function safeReload(t: TestController): Promise<void> {
     // eslint-disable-next-line no-restricted-syntax -- This is the utility that replaces location.reload()
     await t.eval(() => setTimeout(() => { location.reload() }, 0))
-    await waitForLoading()
+    await flaky(t, async () => {
+        await waitForLoading() // This is flaky since the page can unload while it's running
+    })
 }
 
 export const openInNewTabModifiers = process.platform === 'darwin' ? { meta: true } : { ctrl: true }

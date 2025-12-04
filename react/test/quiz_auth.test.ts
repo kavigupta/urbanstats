@@ -172,6 +172,7 @@ test('sync quiz progress two devices', async (t) => {
     await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
     await t.navigateTo(`${target}/quiz.html`)
     await t.expect(Selector('div').withExactText('2\nPlayed').exists).ok()
+    await waitForSync(t)
     await restoreUser(t, 'Alice', state)
     await waitForSync(t)
     await t.expect(Selector('div').withExactText('2\nPlayed').exists).ok()

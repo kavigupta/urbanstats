@@ -32,7 +32,7 @@ export function SubsequentLoad(): ReactNode {
         case 'quickLoad':
             return <QuickLoad />
         case 'longLoad':
-            return <LongLoad testId="longLoad" />
+            return <LongLoad testId="subsequentLongLoad" />
     }
 }
 
@@ -71,8 +71,20 @@ export function LongLoad({ containerStyleOverride, testId }: { containerStyleOve
         left: `calc(50% - ${width} / 2)`,
     }
     return (
-        <div style={containerStyle} data-test-id={testId}>
+        <div style={containerStyle} data-test-id={testId ?? 'longLoad'}>
             <MoonLoader color={colors.textMain} cssOverride={loaderStyle} />
         </div>
+    )
+}
+
+export function RelativeLoader({ loading }: { loading: boolean }): ReactNode {
+    return (
+        <LongLoad containerStyleOverride={{
+            position: 'absolute',
+            transition: 'opacity 0.25s',
+            opacity: loading ? 1 : 0,
+            pointerEvents: 'none',
+        }}
+        />
     )
 }
