@@ -79,12 +79,12 @@ function Entires({ hash, entries, index, artifactId }: { hash: string, entries: 
         const handleKeyDown = (event: KeyboardEvent): void => {
             if (event.key === 'ArrowLeft') {
                 if (index > 0) {
-                    void navigator.navigate({ kind: 'screenshotDiffViewer', hash, artifactId, index: index - 1 }, { history: 'push', scroll: { kind: 'position', top: 0 } })
+                    void navigator.navigate({ kind: 'screenshotDiffViewer', hash, artifactId, index: index - 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
                 }
             }
             else if (event.key === 'ArrowRight') {
                 if (index < changed.length - 1) {
-                    void navigator.navigate({ kind: 'screenshotDiffViewer', hash, artifactId, index: index + 1 }, { history: 'push', scroll: { kind: 'position', top: 0 } })
+                    void navigator.navigate({ kind: 'screenshotDiffViewer', hash, artifactId, index: index + 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
                 }
             }
         }

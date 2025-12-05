@@ -317,6 +317,7 @@ export function urbanstatsFixture(name: string, url: string, beforeEach?: (t: Te
 }
 
 export async function flaky<T>(t: TestController, doThing: () => Promise<T>): Promise<T> {
+    const start = Date.now()
     while (true) {
         try {
             return await doThing()
@@ -327,6 +328,10 @@ export async function flaky<T>(t: TestController, doThing: () => Promise<T>): Pr
                 path: `${t.browser.name}/${t.test.name}.flaky.error.png`,
                 fullPage: true,
             })
+            if (Date.now() > start + 30 * 1000) {
+                console.error(chalkTemplate`{red flaky timed out}`)
+                throw error
+            }
         }
     }
 }
