@@ -233,15 +233,18 @@ function makeOrdinalStyle(colors: Colors, isHeader: boolean, columnWidthsInfo?: 
         color: colors.ordinalTextColor,
         margin: 'auto',
     }
-    const paddingLeft = isHeader ? columnWidthsInfo?.ordinalColumnPadding ?? 0 : 0
+    if (columnWidthsInfo === undefined) {
+        return [common, common]
+    }
+    const paddingLeft = isHeader ? columnWidthsInfo.ordinalColumnPadding : 0
     return [
         {
             ...common,
-            maxWidth: `${(columnWidthsInfo?.ordinalColumnWidthEm ?? 8) - paddingLeft}em`,
+            maxWidth: `${columnWidthsInfo.ordinalColumnWidthEm - paddingLeft}em`,
             paddingLeft: `${paddingLeft}em`,
         },
         { ...common,
-            maxWidth: `${columnWidthsInfo?.percentileColumnWidthEm ?? 8}em`,
+            maxWidth: `${columnWidthsInfo.percentileColumnWidthEm}em`,
         },
     ]
 }
@@ -951,7 +954,7 @@ export function computeSizesForRow(row: ArticleRow, universe: string, simpleOrdi
     const [ordinalColumnWidthEm, ordinalColumnPadding] = ordinalWidthInEm(row.totalCountInClass, row.totalCountInClass, row.articleType, universe, simpleOrdinals)
     const percentileTextSample = percentileText(row.percentileByPopulation, simpleOrdinals)
     const percentileColumnWidthEm = measureTextWidthEm(percentileTextSample)
-    const smallPad = 0.20
+    const smallPad = 0.22
     return {
         ordinalColumnWidthEm: ordinalColumnWidthEm + smallPad,
         ordinalColumnPadding,
