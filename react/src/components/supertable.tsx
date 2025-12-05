@@ -51,7 +51,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
     const extraSpaceRight = Array.from({ length: ncols }).map((_, i) => (props.verticalPlotSpecs[i] === undefined ? 0 : props.columnWidth))
     const columnFullWidths = extraSpaceRight.map(extra => props.columnWidth + extra)
 
-    const columnWidthsInfo = props.rowSpecs[0].map((_, colIndex) => {
+    const columnWidthsInfo = Array.from({ length: ncols }).map((_, colIndex) => {
         const widthsEach = props.rowSpecs.map(row => row[colIndex].type === 'statistic-row' ? computeSizesForRow(row[colIndex].row, universe, props.simpleOrdinals) : undefined)
         const maxima = widthsEach.reduce((acc, curr) => {
             if (curr === undefined) {
