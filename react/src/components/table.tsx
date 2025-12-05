@@ -951,10 +951,11 @@ export function computeSizesForRow(row: ArticleRow, universe: string, simpleOrdi
     const [ordinalColumnWidthEm, ordinalColumnPadding] = ordinalWidthInEm(row.totalCountInClass, row.totalCountInClass, row.articleType, universe, simpleOrdinals)
     const percentileTextSample = percentileText(row.percentileByPopulation, simpleOrdinals)
     const percentileColumnWidthEm = measureTextWidthEm(percentileTextSample)
+    const smallPad = 0.20
     return {
-        ordinalColumnWidthEm,
+        ordinalColumnWidthEm: ordinalColumnWidthEm + smallPad,
         ordinalColumnPadding,
-        percentileColumnWidthEm,
+        percentileColumnWidthEm: percentileColumnWidthEm + smallPad,
     }
 }
 
