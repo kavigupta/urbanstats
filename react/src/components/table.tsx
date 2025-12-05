@@ -897,13 +897,40 @@ export function TableRowContainer({ children, index, minHeight }: { children: Re
     )
 }
 
-export const approxEmPerCharacter = 0.43 // Approximate width of a character in em
+let measureCanvas: HTMLCanvasElement | null = null
+
+function getMeasureCanvas(): HTMLCanvasElement {
+    if (!measureCanvas) {
+        measureCanvas = document.createElement('canvas')
+    }
+    return measureCanvas
+}
+
+/**
+ * Assumes 1em = 16px (default browser font size)
+ */
+function measureTextWidthEm(text: string, fontSizeEm: number = 1): number {
+    const canvas = getMeasureCanvas()
+    const context = canvas.getContext('2d')
+    if (!context) {
+        // Fallback if canvas is not available
+        return text.length * 0.453
+    }
+
+    const fontSizePx = fontSizeEm * 16
+    context.font = `${fontSizePx}px 'Jost', 'Arial', sans-serif`
+
+    const metrics = context.measureText(text)
+    const widthPx = metrics.width
+    return widthPx / 16
+}
 
 function ordinalWidthInEm(ordinal: number, total: number, type: string, universe: string, simpleOrdinals: boolean): [number, number] {
     if (ordinal > total) {
         return [0, 0]
     }
-    let ordinalWidth = ordinal.toString().length * approxEmPerCharacter
+    const ordinalText = ordinal.toString()
+    let ordinalWidth = measureTextWidthEm(ordinalText)
     let padding = 0
     if (ordinalWidth < 2) {
         padding = 2 - ordinalWidth
@@ -913,7 +940,9 @@ function ordinalWidthInEm(ordinal: number, total: number, type: string, universe
         return [ordinalWidth + padding, padding]
     }
     else {
-        return [ordinalWidth + ` of ${total} ${displayType(universe, type)}`.length * approxEmPerCharacter + padding, padding]
+        const suffixText = ` of ${total} ${displayType(universe, type)}`
+        const suffixWidth = measureTextWidthEm(suffixText)
+        return [ordinalWidth + suffixWidth + padding, padding]
     }
 }
 
@@ -921,7 +950,7 @@ export function computeSizesForRow(row: ArticleRow, universe: string, simpleOrdi
     // Compute the size of the ordinal and percentile text
     const [ordinalColumnWidthEm, ordinalColumnPadding] = ordinalWidthInEm(row.totalCountInClass, row.totalCountInClass, row.articleType, universe, simpleOrdinals)
     const percentileTextSample = percentileText(row.percentileByPopulation, simpleOrdinals)
-    const percentileColumnWidthEm = percentileTextSample.length * approxEmPerCharacter
+    const percentileColumnWidthEm = measureTextWidthEm(percentileTextSample)
     return {
         ordinalColumnWidthEm,
         ordinalColumnPadding,
