@@ -25,7 +25,7 @@ import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { useSidebarSectionContentClassName } from './sidebar'
+import { SidebarForStatisticChoice, useSidebarSectionContentClassName } from './sidebar'
 import { ArrowUpOrDown } from './statistic-panel'
 import { Cell, CellSpec, ComparisonLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
@@ -222,7 +222,7 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
             </div>
             <Modal isOpen={statsModalOpen} onClose={() => { setStatsModalOpen(false) }}>
                 <ul className={sidebarSectionContent}>
-                    <StatsTree />
+                    <SidebarForStatisticChoice fontSize="16px" />
                 </ul>
             </Modal>
         </>
