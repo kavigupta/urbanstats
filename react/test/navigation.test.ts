@@ -197,10 +197,10 @@ test('long load', async (t) => {
     delayRequests.setFilter(dataFilter)
     await t.pressKey('enter')
     await t.wait(3000)
-    await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
+    await t.expect(Selector('[data-test-id=subsequentLongLoad]').exists).ok()
     await screencap(t, { fullPage: false, wait: false })
     delayRequests.removeFilter()
-    await t.expect(Selector('[data-test-id=longLoad]').exists).notOk()
+    await t.expect(Selector('[data-test-id=subsequentLongLoad]').exists).notOk()
 })
 
 test('invalid url', async (t) => {

@@ -100,8 +100,7 @@ jobs:
           mkdir -p reference_test_screenshots
 
           # Copy all screenshot files recursively, preserving directory structure
-          find changed_screenshots_temp -type f \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" \) -exec sh -c '
-            for file do
+          find changed_screenshots_temp -type f -name "*.png" ! -name "*.error.png" -exec sh -c '         for file do
               # Get relative path from changed_screenshots_temp
               rel_path="${file#changed_screenshots_temp/}"
               # Create directory structure in reference_test_screenshots

@@ -47,6 +47,24 @@ export function ElectionResult(props: { value: number }): ReactNode {
     )
 }
 
+export function percentileText(percentile: number, simpleOrdinals: boolean): string {
+    // something like Xth percentile
+    let text = `${percentile}th percentile`
+    if (simpleOrdinals) {
+        text = `${percentile.toString()}%`
+    }
+    else if (percentile % 10 === 1 && percentile % 100 !== 11) {
+        text = `${percentile}st percentile`
+    }
+    else if (percentile % 10 === 2 && percentile % 100 !== 12) {
+        text = `${percentile}nd percentile`
+    }
+    else if (percentile % 10 === 3 && percentile % 100 !== 13) {
+        text = `${percentile}rd percentile`
+    }
+    return text
+}
+
 export function Percentile(props: {
     ordinal: number
     total: number
@@ -61,19 +79,7 @@ export function Percentile(props: {
     // percentile as an integer
     // used to be keyed by a setting, but now we always use percentile_by_population
     const percentile = props.percentileByPopulation
-    // something like Xth percentile
-    let text = `${percentile}th percentile`
-    if (props.simpleOrdinals) {
-        text = `${percentile.toString()}%`
-    }
-    else if (percentile % 10 === 1 && percentile % 100 !== 11) {
-        text = `${percentile}st percentile`
-    }
-    else if (percentile % 10 === 2 && percentile % 100 !== 12) {
-        text = `${percentile}nd percentile`
-    }
-    else if (percentile % 10 === 3 && percentile % 100 !== 13) {
-        text = `${percentile}rd percentile`
-    }
+    const text = percentileText(percentile, props.simpleOrdinals)
+
     return <div className="serif" style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : undefined }}>{text}</div>
 }

@@ -19,7 +19,7 @@ import { zIndex } from '../utils/zIndex'
 import { Icon } from './Icon'
 import { Modal } from './Modal'
 import { StatsTree } from './StatsTree'
-import { Percentile, Statistic } from './display-stats'
+import { Percentile, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
 import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
@@ -55,6 +55,12 @@ export function TableHeaderContainer({ children }: { children: ReactNode }): Rea
             {children}
         </div>
     )
+}
+
+export interface CommonLayoutInformation {
+    percentileColumnWidthEm: number
+    ordinalColumnWidthEm: number
+    ordinalColumnPadding: number
 }
 
 interface ColumnLayoutProps {
@@ -231,6 +237,7 @@ export function MainHeaderRow(props: {
     statNameOverride?: string
     extraSpaceRight: number[]
     simpleOrdinals: boolean
+    columnWidthsInfo: (CommonLayoutInformation | undefined)[]
 }): ReactNode {
     return (
         <>
@@ -242,20 +249,46 @@ export function MainHeaderRow(props: {
                     simpleOrdinals={props.simpleOrdinals}
                     totalWidth={props.columnWidth}
                     extraSpaceRight={props.extraSpaceRight[columnIndex] ?? 0}
+                    columnWidthsInfo={props.columnWidthsInfo[columnIndex]}
                 />
             ))}
         </>
     )
 }
 
-export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidth: number, onlyColumns?: ColumnIdentifier[], statNameOverride?: string, extraSpaceRight?: number }): ReactNode {
-    const colors = useColors()
-    const ordinalStyle: React.CSSProperties = {
+function makeOrdinalStyle(colors: Colors, isHeader: boolean, columnWidthsInfo?: CommonLayoutInformation): [React.CSSProperties, React.CSSProperties] {
+    const common = {
         fontSize: '14px',
         fontWeight: 400,
         color: colors.ordinalTextColor,
-        margin: 0,
+        margin: 'auto',
     }
+    if (columnWidthsInfo === undefined) {
+        return [common, common]
+    }
+    const paddingLeft = isHeader ? columnWidthsInfo.ordinalColumnPadding : 0
+    return [
+        {
+            ...common,
+            maxWidth: `${columnWidthsInfo.ordinalColumnWidthEm - paddingLeft}em`,
+            paddingLeft: `${paddingLeft}em`,
+        },
+        { ...common,
+            maxWidth: `${columnWidthsInfo.percentileColumnWidthEm}em`,
+        },
+    ]
+}
+
+export function StatisticHeaderCells(props: {
+    simpleOrdinals: boolean
+    totalWidth: number
+    onlyColumns?: ColumnIdentifier[]
+    statNameOverride?: string
+    extraSpaceRight?: number
+    columnWidthsInfo?: CommonLayoutInformation
+}): ReactNode {
+    const colors = useColors()
+    const [ordinalStyle, percentileStyle] = makeOrdinalStyle(colors, true, props.columnWidthsInfo)
 
     const cells = [
         {
@@ -272,12 +305,12 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
             widthPercentage: props.simpleOrdinals ? 7 : 17,
             columnIdentifier: 'statistic_percentile',
             content: (
-                <span className="serif" key="ordinal" style={ordinalStyle}>
+                <div className="serif" key="ordinal" style={percentileStyle}>
                     {
                         (props.simpleOrdinals ? '%ile' : 'Percentile')
 
                     }
-                </span>
+                </div>
             ),
             style: { textAlign: 'center', display: 'flex', justifyContent: props.simpleOrdinals ? 'flex-end' : 'center', marginRight: props.simpleOrdinals ? '5px' : undefined },
         },
@@ -285,11 +318,11 @@ export function StatisticHeaderCells(props: { simpleOrdinals: boolean, totalWidt
             widthPercentage: props.simpleOrdinals ? 8 : 25,
             columnIdentifier: 'statistic_ordinal',
             content: (
-                <span className="serif" key="statistic_ordinal" style={ordinalStyle}>
+                <div className="serif" key="statistic_ordinal" style={ordinalStyle}>
                     {
                         (props.simpleOrdinals ? 'Ord' : 'Ordinal')
                     }
-                </span>
+                </div>
             ),
             style: { textAlign: 'center', display: 'flex', justifyContent: props.simpleOrdinals ? 'flex-end' : 'center', marginRight: props.simpleOrdinals ? '5px' : undefined },
         },
@@ -401,14 +434,10 @@ export function StatisticRowCells(props: {
     onNavigate?: (newArticle: string) => void
     simpleOrdinals: boolean
     extraSpaceRight?: number
+    columnWidthsInfo?: CommonLayoutInformation
 }): ReactNode {
     const colors = useColors()
-    const ordinalStyle: React.CSSProperties = {
-        fontSize: '14px',
-        fontWeight: 400,
-        color: colors.ordinalTextColor,
-        margin: 0,
-    }
+    const [ordinalStyle, percentileStyle] = makeOrdinalStyle(colors, false, props.columnWidthsInfo)
 
     const cells = [
         {
@@ -446,14 +475,14 @@ export function StatisticRowCells(props: {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
             columnIdentifier: 'statistic_percentile',
             content: (
-                <span className="serif" style={ordinalStyle}>
+                <div className="serif" style={percentileStyle}>
                     <Percentile
                         ordinal={props.row.ordinal}
                         total={props.row.totalCountInClass}
                         percentileByPopulation={props.row.percentileByPopulation}
                         simpleOrdinals={props.simpleOrdinals}
                     />
-                </span>
+                </div>
             ),
             style: { textAlign: 'right' },
         },
@@ -461,7 +490,7 @@ export function StatisticRowCells(props: {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
             columnIdentifier: 'statistic_ordinal',
             content: (
-                <span className="serif" style={ordinalStyle}>
+                <div className="serif" style={ordinalStyle}>
                     <Ordinal
                         ordinal={props.row.ordinal}
                         total={props.row.totalCountInClass}
@@ -470,7 +499,7 @@ export function StatisticRowCells(props: {
                         simpleOrdinals={props.simpleOrdinals}
                         onNavigate={props.onNavigate}
                     />
-                </span>
+                </div>
             ),
             style: { textAlign: 'right' },
         },
@@ -556,7 +585,6 @@ function articleStatnameButtonStyle(colors: Colors): React.CSSProperties {
 }
 
 const manipulationButtonHeight = '24px'
-
 function ManipulationButton({ color: buttonColor, onClick, text, image }: { color: string, onClick: () => void, text: string, image: string }): ReactNode {
     const isMobile = useMobileLayout()
     const isTranspose = useTranspose()
@@ -900,6 +928,68 @@ export function TableRowContainer({ children, index, minHeight }: { children: Re
             {children}
         </div>
     )
+}
+
+let measureCanvas: HTMLCanvasElement | null = null
+
+function getMeasureCanvas(): HTMLCanvasElement {
+    if (!measureCanvas) {
+        measureCanvas = document.createElement('canvas')
+    }
+    return measureCanvas
+}
+
+/**
+ * Assumes 1em = 16px (default browser font size)
+ */
+function measureTextWidthEm(text: string, fontSizeEm: number = 1): number {
+    const canvas = getMeasureCanvas()
+    const context = canvas.getContext('2d')
+    if (!context) {
+        // Fallback if canvas is not available
+        return text.length * 0.453
+    }
+
+    const fontSizePx = fontSizeEm * 16
+    context.font = `${fontSizePx}px 'Jost', 'Arial', sans-serif`
+
+    const metrics = context.measureText(text)
+    const widthPx = metrics.width
+    return widthPx / 16
+}
+
+function ordinalWidthInEm(ordinal: number, total: number, type: string, universe: string, simpleOrdinals: boolean): [number, number] {
+    if (ordinal > total) {
+        return [0, 0]
+    }
+    const ordinalText = ordinal.toString()
+    let ordinalWidth = measureTextWidthEm(ordinalText)
+    let padding = 0
+    if (ordinalWidth < 2) {
+        padding = 2 - ordinalWidth
+        ordinalWidth = 2
+    }
+    if (simpleOrdinals) {
+        return [ordinalWidth + padding, padding]
+    }
+    else {
+        const suffixText = ` of ${total} ${displayType(universe, type)}`
+        const suffixWidth = measureTextWidthEm(suffixText)
+        return [ordinalWidth + suffixWidth + padding, padding]
+    }
+}
+
+export function computeSizesForRow(row: ArticleRow, universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
+    // Compute the size of the ordinal and percentile text
+    const [ordinalColumnWidthEm, ordinalColumnPadding] = ordinalWidthInEm(row.totalCountInClass, row.totalCountInClass, row.articleType, universe, simpleOrdinals)
+    const percentileTextSample = percentileText(row.percentileByPopulation, simpleOrdinals)
+    const percentileColumnWidthEm = measureTextWidthEm(percentileTextSample)
+    const smallPad = 0.22
+    return {
+        ordinalColumnWidthEm: ordinalColumnWidthEm + smallPad,
+        ordinalColumnPadding,
+        percentileColumnWidthEm: percentileColumnWidthEm + smallPad,
+    }
 }
 
 function Ordinal(props: {

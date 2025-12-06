@@ -1,10 +1,11 @@
 import React, { CSSProperties, Fragment, ReactNode } from 'react'
 
+import { useUniverse } from '../universe'
 import { Article } from '../utils/protos'
 
 import { ArticleRow } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
-import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader } from './table'
+import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeSizesForRow, CommonLayoutInformation } from './table'
 
 export interface PlotSpec {
     statDescription: string
@@ -36,6 +37,7 @@ export interface TableContentsProps {
 }
 
 export function TableContents(props: TableContentsProps): ReactNode {
+    const universe = useUniverse()
     const headerHeight = props.verticalPlotSpecs.flatMap(p => p === undefined ? [] : p.plotProps).map(p => extraHeaderSpaceForVertical(p)).reduce((a, b) => Math.max(a, b), 0)
     const contentHeight = '379.5px'
 
@@ -48,6 +50,24 @@ export function TableContents(props: TableContentsProps): ReactNode {
 
     const extraSpaceRight = Array.from({ length: ncols }).map((_, i) => (props.verticalPlotSpecs[i] === undefined ? 0 : props.columnWidth))
     const columnFullWidths = extraSpaceRight.map(extra => props.columnWidth + extra)
+
+    const columnWidthsInfo = Array.from({ length: ncols }).map((_, colIndex) => {
+        const widthsEach = props.rowSpecs.map(row => row[colIndex].type === 'statistic-row' ? computeSizesForRow(row[colIndex].row, universe, props.simpleOrdinals) : undefined)
+        const maxima = widthsEach.reduce((acc, curr) => {
+            if (curr === undefined) {
+                return acc
+            }
+            else if (acc === undefined) {
+                return curr
+            }
+            return {
+                ordinalColumnWidthEm: Math.max(acc.ordinalColumnWidthEm, curr.ordinalColumnWidthEm),
+                percentileColumnWidthEm: Math.max(acc.percentileColumnWidthEm, curr.percentileColumnWidthEm),
+                ordinalColumnPadding: Math.max(acc.ordinalColumnPadding, curr.ordinalColumnPadding),
+            }
+        }, { ordinalColumnWidthEm: 0, percentileColumnWidthEm: 0, ordinalColumnPadding: 0 })
+        return maxima
+    })
 
     return (
         <>
@@ -68,6 +88,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
                         onlyColumns={props.onlyColumns}
                         extraSpaceRight={extraSpaceRight}
                         simpleOrdinals={props.simpleOrdinals}
+                        columnWidthsInfo={columnWidthsInfo}
                     />
                 </TableHeaderContainer>
                 {props.rowSpecs.map((rowSpecsForItem, rowIndex) => {
@@ -77,7 +98,15 @@ export function TableContents(props: TableContentsProps): ReactNode {
                             key={`TableRowContainer_${rowIndex}`}
                             rowIndex={rowIndex}
                             rowMinHeight={rowMinHeight}
-                            cellSpecs={rowSpecsForItem}
+                            cellSpecs={rowSpecsForItem.map((cellSpec, colIndex) => {
+                                if (cellSpec.type === 'statistic-row') {
+                                    return {
+                                        ...cellSpec,
+                                        columnWidthsInfo: columnWidthsInfo[colIndex],
+                                    }
+                                }
+                                return cellSpec
+                            })}
                             extraSpaceRight={extraSpaceRight}
                             plotSpec={plotSpec}
                             leftHeaderSpec={props.leftHeaderSpec.leftHeaderSpecs[rowIndex]}
@@ -198,6 +227,7 @@ export interface StatisticRowCellProps {
     onNavigate?: (newArticle: string) => void
     simpleOrdinals: boolean
     extraSpaceRight?: number
+    columnWidthsInfo?: CommonLayoutInformation
 }
 
 export interface TopLeftHeaderProps {

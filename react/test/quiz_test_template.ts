@@ -122,6 +122,21 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         await t.expect(await secureIdTable(t)).eql('7|3\n')
     })
 
+    test('loading indicator', async (t) => {
+        // Loading indicator appears when shape load fails or is delayed
+        const cdp = await t.getCurrentCDPSession()
+
+        await cdp.Network.enable({})
+        await cdp.Network.setBlockedURLs({
+            urls: ['*Arizona*'],
+        })
+
+        await clickButtons(t, ['a'])
+        await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
+
+        await screencap(t, { wait: false })
+    })
+
     quizFixture(
         'trust on first use',
         `${target}/quiz.html#date=99`,
