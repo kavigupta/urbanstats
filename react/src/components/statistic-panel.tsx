@@ -210,20 +210,13 @@ function StatisticPanelTable(props: {
         } satisfies ArticleRow
     })
 
-    // Left header: statistic-name cells showing article names
+    // Left header: statistic-panel-longname cells showing article names
     const leftHeaderSpecs: CellSpec[] = articleRows.map((row, rowIdx) => {
         const articleName = props.props.articleNames[props.indexRange[rowIdx]]
-        // Calculate rank: rank = index + 1 (articleNames is sorted descending, so index 0 = rank 1)
-        // const rank = props.indexRange[rowIdx] + 1
         return {
-            type: 'statistic-name',
-            row: {
-                ...row,
-                renderedStatname: articleName,
-            },
+            type: 'statistic-panel-longname',
             longname: articleName,
             currentUniverse,
-            displayName: articleName,
         } satisfies CellSpec
     })
 

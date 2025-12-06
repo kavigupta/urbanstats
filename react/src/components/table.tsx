@@ -24,7 +24,7 @@ import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { ArrowUpOrDown } from './statistic-panel'
-import { Cell, CellSpec, ComparisonLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
+import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -665,6 +665,27 @@ export function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, m
                         />
                     )
                 : null}
+        </div>
+    )
+}
+
+export function StatisticPanelLongnameCell(props: StatisticPanelLongnameCellProps & { width: number }): ReactNode {
+    const navContext = useContext(Navigator.Context)
+    const colors = useColors()
+
+    return (
+        <div style={{ width: `${props.width}%`, padding: '1px' }}>
+            <a
+                style={{ textDecoration: 'none', color: colors.textMain }}
+                {...navContext.link({
+                    kind: 'article',
+                    longname: props.longname,
+                    universe: props.currentUniverse,
+                }, { scroll: { kind: 'position', top: 0 } })}
+                className="serif value"
+            >
+                {props.longname}
+            </a>
         </div>
     )
 }
