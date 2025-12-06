@@ -5,7 +5,7 @@ import { Article } from '../utils/protos'
 
 import { ArticleRow } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
-import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeSizesForRow, CommonLayoutInformation } from './table'
+import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeSizesForRow, CommonLayoutInformation } from './table'
 
 export interface PlotSpec {
     statDescription: string
@@ -16,6 +16,7 @@ export interface SuperHeaderSpec {
     headerSpecs: CellSpec[]
     showBottomBar: boolean
     groupNames?: (string | undefined)[]
+    leftHeaderCell?: CellSpec
 }
 
 export interface LeftHeaderSpec {
@@ -174,6 +175,7 @@ export function SuperTableRow(props: {
 export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCellProps) |
     ({ type: 'statistic-name' } & StatisticNameCellProps) |
     ({ type: 'statistic-row' } & StatisticRowCellProps) |
+    ({ type: 'statistic-panel-longname' } & StatisticPanelLongnameCellProps) |
     ({ type: 'comparison-top-left-header' } & TopLeftHeaderProps) |
     ({ type: 'top-left-header' } & TopLeftHeaderProps)
 
@@ -185,6 +187,8 @@ export function Cell(props: CellSpec & { width: number }): ReactNode {
             return <StatisticNameCell {...props} width={props.width} />
         case 'statistic-row':
             return <StatisticRowCells {...props} width={props.width} />
+        case 'statistic-panel-longname':
+            return <StatisticPanelLongnameCell {...props} width={props.width} />
         case 'comparison-top-left-header':
             return <ComparisonTopLeftHeader {...props} width={props.width} />
         case 'top-left-header':
@@ -203,6 +207,11 @@ export interface ComparisonLongnameCellProps {
     articleId?: string
 }
 
+export interface StatisticPanelLongnameCellProps {
+    longname: string
+    currentUniverse: string
+}
+
 export interface StatisticNameCellProps {
     row: ArticleRow
     longname: string
@@ -212,6 +221,8 @@ export interface StatisticNameCellProps {
     transpose?: boolean
     isIndented?: boolean
     displayName?: string
+    rank?: number
+    // onNavigate?: (newArticle: string) => void
     sortInfo?: {
         sortDirection: 'up' | 'down' | 'both'
         onSort: () => void
@@ -232,4 +243,8 @@ export interface StatisticRowCellProps {
 
 export interface TopLeftHeaderProps {
     statNameOverride?: string
+    sortInfo?: {
+        sortDirection: 'up' | 'down' | 'both'
+        onSort: () => void
+    }
 }
