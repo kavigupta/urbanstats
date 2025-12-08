@@ -35,6 +35,7 @@ export interface TableContentsProps {
     columnWidth: number
     onlyColumns: ColumnIdentifier[]
     simpleOrdinals: boolean
+    highlightRowIndex?: number
 }
 
 export function TableContents(props: TableContentsProps): ReactNode {
@@ -115,6 +116,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
                             columnWidth={props.columnWidth}
                             groupName={props.leftHeaderSpec.groupNames?.[rowIndex]}
                             prevGroupName={rowIndex > 0 ? props.leftHeaderSpec.groupNames?.[rowIndex - 1] : undefined}
+                            isHighlighted={props.highlightRowIndex === rowIndex}
                         />
                     )
                 })}
@@ -142,11 +144,12 @@ export function SuperTableRow(props: {
     groupName?: string
     prevGroupName?: string
     extraSpaceRight: number[]
+    isHighlighted: boolean
 }): ReactNode {
     return (
         <div>
             {props.groupName !== undefined && (props.groupName !== props.prevGroupName) && (
-                <TableRowContainer index={props.rowIndex}>
+                <TableRowContainer index={props.rowIndex} isHighlighted={props.isHighlighted}>
                     <div style={{ width: '100%', padding: '1px' }}>
                         <span className="serif value">
                             <span>{props.groupName}</span>
@@ -154,7 +157,7 @@ export function SuperTableRow(props: {
                     </div>
                 </TableRowContainer>
             )}
-            <TableRowContainer index={props.rowIndex} minHeight={props.rowMinHeight}>
+            <TableRowContainer index={props.rowIndex} minHeight={props.rowMinHeight} isHighlighted={props.isHighlighted}>
                 <Cell {...props.leftHeaderSpec} width={props.widthLeftHeader} />
                 {props.cellSpecs.map((spec, colIndex) => (
                     <Fragment key={`cells_${colIndex}_${props.rowIndex}`}>

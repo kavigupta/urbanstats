@@ -181,7 +181,6 @@ function StatisticPanelTable(props: {
     columnWidth: number
 }): ReactNode {
     const currentUniverse = useUniverse()
-    const colors = useColors()
     const navContext = useContext(Navigator.Context)
     const [simpleOrdinals] = useSetting('simple_ordinals')
 
@@ -223,15 +222,12 @@ function StatisticPanelTable(props: {
     // Data rows: one statistic-row cell per row
     const rowSpecs: CellSpec[][] = articleRows.map((row, rowIdx) => {
         const articleName = props.props.articleNames[props.indexRange[rowIdx]]
-        const isHighlighted = articleName === props.props.highlight
-        const bgColor = props.getRowBackgroundColor(rowIdx)
         return [{
             type: 'statistic-row',
             longname: articleName,
             row,
             onlyColumns: ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'],
             simpleOrdinals,
-            statisticStyle: isHighlighted ? { backgroundColor: colors.highlight } : { backgroundColor: bgColor },
             onNavigate: (newArticle: string) => {
                 void navContext.navigate({
                     kind: 'article',
@@ -271,6 +267,8 @@ function StatisticPanelTable(props: {
         showBottomBar: false,
     }
 
+    const highlightRowIndex = props.indexRange.indexOf(props.props.articleNames.indexOf(props.props.highlight ?? ''))
+
     return (
         <TableContents
             leftHeaderSpec={{ leftHeaderSpecs }}
@@ -283,6 +281,7 @@ function StatisticPanelTable(props: {
             columnWidth={props.columnWidth}
             onlyColumns={['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']}
             simpleOrdinals={simpleOrdinals}
+            highlightRowIndex={highlightRowIndex}
         />
     )
 }
