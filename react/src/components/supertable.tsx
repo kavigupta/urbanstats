@@ -16,7 +16,6 @@ export interface SuperHeaderSpec {
     headerSpecs: CellSpec[]
     showBottomBar: boolean
     groupNames?: (string | undefined)[]
-    leftHeaderCell?: CellSpec
 }
 
 export interface LeftHeaderSpec {
@@ -224,8 +223,6 @@ export interface StatisticNameCellProps {
     transpose?: boolean
     isIndented?: boolean
     displayName?: string
-    rank?: number
-    // onNavigate?: (newArticle: string) => void
     sortInfo?: {
         sortDirection: 'up' | 'down' | 'both'
         onSort: () => void
@@ -246,8 +243,4 @@ export interface StatisticRowCellProps {
 
 export interface TopLeftHeaderProps {
     statNameOverride?: string
-    sortInfo?: {
-        sortDirection: 'up' | 'down' | 'both'
-        onSort: () => void
-    }
 }
