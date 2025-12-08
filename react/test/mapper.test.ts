@@ -178,7 +178,8 @@ testCode(() => test, 'Subnational Region', 'USA', `cMap(
     data=density_pw_1km,
     scale=linearScale(),
     ramp=rampUridis,
-    label="Multiline\\nLabel"
+    label="Multiline\\nLabel",
+    basemap=noBasemap()
 )`, 'multiline-label')
 
 const negativeDefaultValue = `
