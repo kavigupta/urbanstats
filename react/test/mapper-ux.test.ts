@@ -436,6 +436,7 @@ test('change theme setting in sidebar menu', async (t) => {
 })
 
 test('download file via site screencap button', async (t) => {
+    await replaceInput(t, 'OSM Basemap', 'No Basemap') // we do not want to have basemap in the screenshot
     await downloadImage(t)
 })
 
