@@ -30,6 +30,8 @@ jobs:
           timeout_minutes: 2
           shell: bash
           command: |
+            rm -rf $GITHUB_WORKSPACE/*
+
             git config --global --add safe.directory $GITHUB_WORKSPACE
 
             # Clone the repo
