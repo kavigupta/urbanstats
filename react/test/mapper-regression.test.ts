@@ -98,9 +98,9 @@ cMap(
             backgroundColor=rgb(0.9, 0.9, 0.7),
             text=rtfDocument([
                 rtfFormula(
-                    "f(\\relax{x}) = \\int_{-\\infty}^\\infty \\hat f(\\xi)\\,e^{2 \\pi i \\xi x}\\,d\\xi"
+                    "f(\\\\relax{x}) = \\\\int_{-\\\\infty}^\\\\infty \\\\hat f(\\\\xi)\\\\,e^{2 \\\\pi i \\\\xi x}\\\\,d\\\\xi"
                 ),
-                rtfString("\n\n", align=alignCenter),
+                rtfString("\\n\\n", align=alignCenter),
                 rtfImage(
                     "https://upload.wikimedia.org/wikipedia/commons/f/f6/Regulierwehr_Port01_08.jpg"
                 )
@@ -117,8 +117,7 @@ regressionTest(
     `nonFilteredPopulation = sum(population);
 condition (population > 10000000)
 cMap(
-    data=density_pw_1km
-,
+    data=density_pw_1km,
     scale=linearScale(),
     ramp=rampUridis,
     textBoxes=[
@@ -145,9 +144,9 @@ cMap(
             backgroundColor=rgb(0.9, 0.9, 0.7),
             text=rtfDocument([
                 rtfFormula(
-                    "f(\\relax{x}) = \\int_{-\\infty}^\\infty \\hat f(\\xi)\\,e^{2 \\pi i \\xi x}\\,d\\xi"
+                    "f(\\\\relax{x}) = \\\\int_{-\\\\infty}^\\\\infty \\\\hat f(\\\\xi)\\\\,e^{2 \\\\pi i \\\\xi x}\\\\,d\\\\xi"
                 ),
-                rtfString("\n\n", align=alignCenter),
+                rtfString("\\n\\n", align=alignCenter),
                 rtfImage("https://http.cat/images/409.jpg")
             ])
         )
