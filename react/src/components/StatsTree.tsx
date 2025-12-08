@@ -8,7 +8,7 @@ import { zIndex } from '../utils/zIndex'
 
 import { CheckboxSettingCustom, useSidebarSectionContentClassName } from './sidebar'
 
-export function StatsTree(): ReactNode {
+export function StatsTree({ fontSize }: { fontSize: string }): ReactNode {
     const [searchTerm, setSearchTerm] = useState('')
     const staging = useStagedSettingKeys() !== undefined
 
@@ -23,6 +23,7 @@ export function StatsTree(): ReactNode {
             key={category.id}
             category={category}
             hasSearchMatch={searchTerm !== ''}
+            fontSize={fontSize}
         />
     ))
 
@@ -69,7 +70,7 @@ function filterSearch(searchTerm: string, categories: Category[], groups: Group[
     })
 }
 
-function CategoryComponent({ category, hasSearchMatch }: { category: Category, hasSearchMatch: boolean }): ReactNode {
+function CategoryComponent({ category, hasSearchMatch, fontSize }: { category: Category, hasSearchMatch: boolean, fontSize: string }): ReactNode {
     const categoryStatus = useCategoryStatus(category)
     const [isExpanded, setIsExpanded] = useSetting(`stat_category_expanded_${category.id}`)
     const isMobileLayout = useMobileLayout()
@@ -108,18 +109,20 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
                     testId={`category_${category.id}`}
                     highlight={highlight}
                     style={{ zIndex: zIndex.categoryCheckbox }}
+                    fontSize={fontSize}
                 />
             </div>
             <CategoryContents
                 key={category.id}
                 category={category}
                 isExpanded={isExpanded || hasSearchMatch}
+                fontSize={fontSize}
             />
         </li>
     )
 }
 
-function GroupComponent({ group }: { group: Group }): ReactNode {
+function GroupComponent({ group, fontSize }: { group: Group, fontSize: string }): ReactNode {
     const settings = useContext(Settings.Context)
     const [checked] = useSetting(`show_stat_group_${group.id}`)
     const info = useSettingInfo(`show_stat_group_${group.id}`)
@@ -131,12 +134,13 @@ function GroupComponent({ group }: { group: Group }): ReactNode {
                 onChange={(newValue) => { changeStatGroupSetting(settings, group, newValue) }}
                 testId={`group_${group.id}`}
                 highlight={'stagedValue' in info && info.stagedValue !== info.persistedValue}
+                fontSize={fontSize}
             />
         </li>
     )
 }
 
-function CategoryContents({ category, isExpanded }: { category: Category, isExpanded: boolean }): ReactNode {
+function CategoryContents({ category, isExpanded, fontSize }: { category: Category, isExpanded: boolean, fontSize: string }): ReactNode {
     const sidebarSectionContent = useSidebarSectionContentClassName()
     /*
      * start high so we don't animate initially
@@ -152,21 +156,21 @@ function CategoryContents({ category, isExpanded }: { category: Category, isExpa
     }
     return (
         <>
-            <OffscreenCategoryContents category={category} heightCallback={setHeight} />
+            <OffscreenCategoryContents category={category} heightCallback={setHeight} fontSize={fontSize} />
             <ul
                 // @ts-expect-error -- inert is not in the type definitions yet
                 inert={isExpanded ? undefined : ''}
                 className={sidebarSectionContent}
                 style={{ maxHeight, marginTop, opacity: 1, padding: 0 }}
             >
-                <CategoryCoreContents category={category} />
+                <CategoryCoreContents category={category} fontSize={fontSize} />
             </ul>
         </>
     )
 }
 
 // Used for calculating size during animations
-function OffscreenCategoryContents({ category, heightCallback }: { category: Category, heightCallback: (height: number) => void }): ReactNode {
+function OffscreenCategoryContents({ category, heightCallback, fontSize }: { category: Category, heightCallback: (height: number) => void, fontSize: string }): ReactNode {
     const sidebarSectionContent = useSidebarSectionContentClassName()
     const listRef = useRef<HTMLUListElement>(null)
     useLayoutEffect(() => {
@@ -190,11 +194,11 @@ function OffscreenCategoryContents({ category, heightCallback }: { category: Cat
             style={{ opacity: 0, position: 'absolute' }}
             ref={listRef}
         >
-            <CategoryCoreContents category={category} />
+            <CategoryCoreContents category={category} fontSize={fontSize} />
         </ul>
     )
 }
 
-function CategoryCoreContents({ category }: { category: Category }): ReactNode {
-    return useAvailableGroups(category).map(group => <GroupComponent key={group.id} group={group} />)
+function CategoryCoreContents({ category, fontSize }: { category: Category, fontSize: string }): ReactNode {
+    return useAvailableGroups(category).map(group => <GroupComponent fontSize={fontSize} key={group.id} group={group} />)
 }

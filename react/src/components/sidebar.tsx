@@ -212,13 +212,13 @@ export function SidebarForStatisticChoice({ fontSize }: { fontSize: string }): R
             <div className="sidebar-section">
                 <div style={sidebarSectionTitle}>Years</div>
                 <ul className={sidebarSectionContent}>
-                    <Years />
+                    <Years fontSize={fontSize} />
                 </ul>
             </div>
             <div className="sidebar-section">
                 <div style={sidebarSectionTitle}>Statistic Categories</div>
                 <ul className={sidebarSectionContent}>
-                    <StatsTree />
+                    <StatsTree fontSize={fontSize} />
                 </ul>
             </div>
         </>
