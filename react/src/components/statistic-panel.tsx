@@ -6,7 +6,6 @@ import universes_ordered from '../data/universes_ordered'
 import { Navigator } from '../navigation/Navigator'
 import { sanitize, statisticDescriptor } from '../navigation/links'
 import { useColors } from '../page_template/colors'
-import { useSetting } from '../page_template/settings'
 import { StatName, StatPath } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
@@ -181,7 +180,6 @@ function StatisticPanelTable(props: {
     columnWidth: number
 }): ReactNode {
     const currentUniverse = useUniverse()
-    const navContext = useContext(Navigator.Context)
 
     const statIndex = stats.indexOf(props.props.statcol)
     const statpath: StatPath = paths[statIndex]
