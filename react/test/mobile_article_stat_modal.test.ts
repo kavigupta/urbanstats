@@ -16,7 +16,7 @@ urbanstatsFixture(
 
 test('open and close modal', async (t) => {
     await t.click(Selector('button').withExactText('Statistic'))
-    await screencap(t)
+    await screencap(t, { fullPage: false })
     await t.click(Selector('button').withExactText('Done'))
     await t.expect(Selector('[data-test-id=modal-background]').exists).notOk()
 })
@@ -33,9 +33,9 @@ test('change stats', async (t) => {
     // search for and remove "Population"
     await t.typeText(Selector('[data-test-id="stats-search"]'), 'Population')
     await t.click(Selector('label').withExactText('Population'))
-    await screencap(t)
+    await screencap(t, { fullPage: false })
     await t.click(Selector('button').withExactText('Done'))
     await t.expect(Selector('a').withExactText('Population').exists).notOk()
     await t.expect(Selector('a').withExactText('White %').exists).ok()
-    await screencap(t)
+    await screencap(t, { fullPage: false })
 })
