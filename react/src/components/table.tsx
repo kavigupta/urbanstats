@@ -194,7 +194,7 @@ export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: num
 export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
     const isMobileLayout = useMobileLayout()
 
-    const [statsModalOpen, setStatsModalOpen] = useState(true)
+    const [statsModalOpen, setStatsModalOpen] = useState(false)
 
     useEffect(() => {
         if (!isMobileLayout && statsModalOpen) {

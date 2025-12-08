@@ -16,7 +16,11 @@ export function Modal({ children, onClose, isOpen }: { children: ReactNode, onCl
     }
 
     return (
-        <div className={isMobileLayout ? 'sidebar_mobile' : ''}style={{ position: 'fixed', backgroundColor: `${colors.background}aa`, zIndex: zIndex.modal, inset: 0 }}>
+        <div
+            className={isMobileLayout ? 'sidebar_mobile' : ''}
+            style={{ position: 'fixed', backgroundColor: `${colors.background}aa`, zIndex: zIndex.modal, inset: 0 }}
+            data-test-id="modal-background"
+        >
             <button style={{ position: 'absolute', top: 20, right: 35, fontSize }} onClick={onClose}>Done</button>
             <style>{'body { overflow: hidden; }'}</style>
             <div style={{
