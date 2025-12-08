@@ -580,6 +580,7 @@ function UndoRedoControls({ doUndo, doRedo, canUndo, canRedo }: { doUndo: () => 
             >
                 <button
                     onPointerDown={(e) => {
+                        debugUndo(`Got mobile undo touch`)
                         e.preventDefault()
                         doUndo()
                     }}
@@ -590,6 +591,7 @@ function UndoRedoControls({ doUndo, doRedo, canUndo, canRedo }: { doUndo: () => 
                 </button>
                 <button
                     onPointerDown={(e) => {
+                        debugUndo(`Got mobile redo touch`)
                         e.preventDefault()
                         doRedo()
                     }}
