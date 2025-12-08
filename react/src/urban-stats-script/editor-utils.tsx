@@ -377,6 +377,15 @@ export interface UndoRedoOptions {
     onlyElement?: { current: HTMLElement | null }
 }
 
+const logMessages: boolean = true
+
+function debugUndo(arg: string): void {
+    if (logMessages) {
+        // eslint-disable-next-line no-console -- Conditionally logger
+        console.log(arg)
+    }
+}
+
 export function useUndoRedo<T, S>(
     initialState: T,
     initialSelection: S,
@@ -405,6 +414,8 @@ export function useUndoRedo<T, S>(
             // Amend current item rather than making a new one
             currentUndoState.state = state
             currentUndoState.selection = selection
+
+            debugUndo(`Updated undo stack tail`)
         }
         else {
             undoStack.current.push({ time: Date.now(), state, selection })
@@ -412,6 +423,7 @@ export function useUndoRedo<T, S>(
                 undoStack.current.shift()
             }
             setCanUndo(true)
+            debugUndo(`Pushed to undo stack. Length: ${undoStack.current.length}`)
         }
         redoStack.current = []
         setCanRedo(false)
@@ -430,6 +442,10 @@ export function useUndoRedo<T, S>(
             onSelectionChange(prevState.selection)
             setCanRedo(true)
             setCanUndo(undoStack.current.length >= 2)
+            debugUndo(`Undo completed, Undo Stack: ${undoStack.current.length}, Redo Stack: ${redoStack.current.length}`)
+        }
+        else {
+            debugUndo(`Undo requested but stack is too short (${undoStack.current.length})`)
         }
     }, [onStateChange, onSelectionChange])
 
@@ -441,6 +457,10 @@ export function useUndoRedo<T, S>(
             onSelectionChange(futureState.selection)
             setCanUndo(true)
             setCanRedo(redoStack.current.length >= 1)
+            debugUndo(`Redo completed, Undo Stack: ${undoStack.current.length}, Redo Stack: ${redoStack.current.length}`)
+        }
+        else {
+            debugUndo(`Redo requested but stack is too short (${redoStack.current.length})`)
         }
     }, [onStateChange, onSelectionChange])
 
