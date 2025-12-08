@@ -171,10 +171,10 @@ test('statistic-ascending-descending-check-descending', async (t) => {
 test('statistic-ascending-descending-check-click', async (t) => {
     // click the button
     // check that button "testing-order-swap" has downwards arrow image
-    await t.expect(Selector('#testing-order-swap img').getAttribute('src')).eql('/sort-down.png')
-    await t.click(Selector('#testing-order-swap'))
+    await t.expect(Selector('.testing-order-swap img').getAttribute('src')).eql('/sort-down.png')
+    await t.click(Selector('.testing-order-swap'))
     // ensure the button is now up arrow
-    await t.expect(Selector('#testing-order-swap img').getAttribute('src')).eql('/sort-up.png')
+    await t.expect(Selector('.testing-order-swap img').getAttribute('src')).eql('/sort-up.png')
     await waitForLoading()
     // check the url
     await t.expect(getLocation())
@@ -193,11 +193,11 @@ test('statistic-ascending-descending-check-click', async (t) => {
         'Maine, USA',
     ])
     // click the button again
-    await t.click(Selector('#testing-order-swap'))
+    await t.click(Selector('.testing-order-swap'))
     // check the url again
     await t.expect(getLocation())
         .eql(`${target}/statistic.html?statname=Population&article_type=Subnational+Region&start=1&amount=10`)
-    await t.expect(Selector('#testing-order-swap').exists).ok()
+    await t.expect(Selector('.testing-order-swap').exists).ok()
 })
 
 urbanstatsFixture('statistic ascending', `${target}/statistic.html?statname=Households+With+no+Vehicle+%25&article_type=Subnational+Region&start=21&amount=20&order=ascending&universe=USA`)
