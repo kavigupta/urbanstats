@@ -66,10 +66,11 @@ jobs:
             const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              run_id: '${{ steps.workflow-run.outputs.run-id }}'
+              run_id: '${{ steps.workflow-run.outputs.run-id }}',
+              name: 'changed_screenshots'
             });
 
-            const artifact = artifacts.data.artifacts.find(a => a.name === 'changed_screenshots');
+            const artifact = artifacts.data.artifacts[0];
 
             if (!artifact) {
               core.setFailed('No changed_screenshots artifact found');

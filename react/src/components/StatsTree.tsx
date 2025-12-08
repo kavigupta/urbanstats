@@ -6,7 +6,7 @@ import { Category, Group } from '../page_template/statistic-tree'
 import { useMobileLayout } from '../utils/responsive'
 import { zIndex } from '../utils/zIndex'
 
-import { CheckboxSettingCustom, useSidebarSectionContentClassName } from './sidebar'
+import { CheckboxSettingCustom, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
 
 export function StatsTree(): ReactNode {
     const [searchTerm, setSearchTerm] = useState('')
@@ -108,6 +108,7 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
                     testId={`category_${category.id}`}
                     highlight={highlight}
                     style={{ zIndex: zIndex.categoryCheckbox }}
+                    fontSize={useSidebarFontSize()}
                 />
             </div>
             <CategoryContents
@@ -131,6 +132,7 @@ function GroupComponent({ group }: { group: Group }): ReactNode {
                 onChange={(newValue) => { changeStatGroupSetting(settings, group, newValue) }}
                 testId={`group_${group.id}`}
                 highlight={'stagedValue' in info && info.stagedValue !== info.persistedValue}
+                fontSize={useSidebarFontSize()}
             />
         </li>
     )
