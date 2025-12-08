@@ -193,21 +193,25 @@ export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: num
 
 export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
     const isMobileLayout = useMobileLayout()
+    const isScreenshot = useScreenshotMode()
+    const isTranspose = useTranspose()
 
     const [statsModalOpen, setStatsModalOpen] = useState(false)
 
+    const canHaveStatsModal = isMobileLayout && !isScreenshot && !isTranspose
+
     useEffect(() => {
-        if (!isMobileLayout && statsModalOpen) {
+        if (!canHaveStatsModal && statsModalOpen) {
             setStatsModalOpen(false)
         }
-    }, [isMobileLayout, statsModalOpen])
+    }, [canHaveStatsModal, statsModalOpen])
 
     const sidebarSectionContent = useSidebarSectionContentClassName()
 
     return (
         <>
             <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', padding: '1px', width: `${props.width}%` }}>
-                {useMobileLayout()
+                {canHaveStatsModal
                     ? (
                             <button className="serif value" style={{ padding: '2px 10px' }} onClick={() => { setStatsModalOpen(true) }}>
                                 {props.statNameOverride ?? 'Statistic'}
