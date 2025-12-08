@@ -1013,12 +1013,16 @@ function Ordinal(props: {
     if (ordinal > total) {
         return <span></span>
     }
-    const en = (
-        <EditableNumber
-            number={ordinal}
-            onNewNumber={onNewNumber}
-        />
-    )
+    const en = props.onNavigate
+        ? (
+                <EditableNumber
+                    number={ordinal}
+                    onNewNumber={onNewNumber}
+                />
+            )
+        : (
+                <span>{ordinal}</span>
+            )
     return (
         <div className="serif" style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : 0 }}>
             {en}

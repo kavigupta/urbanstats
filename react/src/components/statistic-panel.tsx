@@ -182,13 +182,10 @@ function StatisticPanelTable(props: {
 }): ReactNode {
     const currentUniverse = useUniverse()
     const navContext = useContext(Navigator.Context)
-    const [simpleOrdinals] = useSetting('simple_ordinals')
 
-    // Find the statpath for this statistic
     const statIndex = stats.indexOf(props.props.statcol)
     const statpath: StatPath = paths[statIndex]
 
-    // Create ArticleRow objects for each article
     const articleRows: ArticleRow[] = props.indexRange.map((i) => {
         const totalCountInClass = forType(props.props.counts, currentUniverse, props.props.statcol, props.props.articleType)
         const totalCountOverall = forType(props.props.counts, currentUniverse, props.props.statcol, 'overall')
@@ -209,7 +206,6 @@ function StatisticPanelTable(props: {
         } satisfies ArticleRow
     })
 
-    // Left header: statistic-panel-longname cells showing article names
     const leftHeaderSpecs: CellSpec[] = articleRows.map((row, rowIdx) => {
         const articleName = props.props.articleNames[props.indexRange[rowIdx]]
         return {
@@ -219,7 +215,6 @@ function StatisticPanelTable(props: {
         } satisfies CellSpec
     })
 
-    // Data rows: one statistic-row cell per row
     const rowSpecs: CellSpec[][] = articleRows.map((row, rowIdx) => {
         const articleName = props.props.articleNames[props.indexRange[rowIdx]]
         return [{
@@ -227,14 +222,8 @@ function StatisticPanelTable(props: {
             longname: articleName,
             row,
             onlyColumns: ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'],
-            simpleOrdinals,
-            onNavigate: (newArticle: string) => {
-                void navContext.navigate({
-                    kind: 'article',
-                    longname: newArticle,
-                    universe: currentUniverse,
-                }, { history: 'push', scroll: { kind: 'none' } })
-            },
+            simpleOrdinals: true,
+            onNavigate: undefined,
         } satisfies CellSpec]
     })
 
@@ -243,15 +232,12 @@ function StatisticPanelTable(props: {
         statNameOverride: 'Name',
     }
 
-    // Create a statistic-name cell for the superheader with sortInfo, like comparison panel
     const headerSpecs: CellSpec[] = articleRows.length > 0
         ? [{
                 type: 'statistic-name',
                 row: articleRows[0],
-                // longname: 'Rank',
                 longname: props.props.renderedStatname,
                 currentUniverse,
-                // displayName: 'Rank',
                 sortInfo: {
                     onSort: () => {
                         props.swapAscendingDescending(currentUniverse)
@@ -280,7 +266,7 @@ function StatisticPanelTable(props: {
             widthLeftHeader={props.widthLeftHeader}
             columnWidth={props.columnWidth}
             onlyColumns={['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']}
-            simpleOrdinals={simpleOrdinals}
+            simpleOrdinals={true}
             highlightRowIndex={highlightRowIndex}
         />
     )
