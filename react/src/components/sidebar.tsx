@@ -31,6 +31,10 @@ export function useSidebarSectionTitleStyle(): CSSProperties {
     }
 }
 
+export function useSidebarFontSize(): string {
+    return useMobileLayout() ? '27px' : '16px'
+}
+
 export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
     const colors = useColors()
     const currentTheme = useCurrentTheme()
@@ -41,7 +45,7 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
 
     const navContext = useContext(Navigator.Context)
 
-    const fontSize = useMobileLayout() ? '27px' : '16px'
+    const fontSize = useSidebarFontSize()
 
     return (
         <div
@@ -154,7 +158,7 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                 </ul>
             </div>
             { navContext.useStatPathsAll() !== undefined
-                ? <SidebarForStatisticChoice fontSize={fontSize} />
+                ? <SidebarForStatisticChoice />
                 : null}
             <div className="sidebar-section">
                 <div style={sidebarSectionTitle}>Appearance</div>
@@ -183,10 +187,11 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
     )
 }
 
-export function SidebarForStatisticChoice({ fontSize }: { fontSize: string }): ReactNode {
+export function SidebarForStatisticChoice(): ReactNode {
     const sidebarSectionContent = useSidebarSectionContentClassName()
     const sidebarSectionTitle = useSidebarSectionTitleStyle()
     const checkboxes = useDataSourceCheckboxes()
+    const fontSize = useSidebarFontSize()
     return (
         <>
             {checkboxes.map(({ category, checkboxSpecs }) => (
@@ -284,7 +289,7 @@ export function TemperatureSetting(): ReactNode {
 
     return (
         <div style={divStyle}>
-            <label style={{ verticalAlign: 'middle' }}>{'Temperatures '}</label>
+            <label style={{ verticalAlign: 'middle', fontSize: useSidebarFontSize() }}>{'Temperatures '}</label>
             <select
                 className="serif"
                 style={{ backgroundColor: colors.background, color: colors.textMain, verticalAlign: 'middle', minWidth: '50px' }}
