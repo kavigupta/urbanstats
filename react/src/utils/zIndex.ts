@@ -10,6 +10,7 @@ const layers = [
     'betterSelectorMenu',
     'statisticNameDisclaimer',
     'mobileUndoRedoControls',
+    'modal',
     'sidebarOverlay',
     'pageLoading',
 ] as const

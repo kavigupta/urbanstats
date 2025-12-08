@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import React, { CSSProperties, ReactNode, useContext, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
 import { ArticleOrderingListInternal, loadOrdering } from '../load_json'
 import './table.css'
@@ -17,12 +17,14 @@ import { useTranspose } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
 import { Icon } from './Icon'
+import { Modal } from './Modal'
 import { Percentile, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
 import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
+import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
 import { ArrowUpOrDown } from './statistic-panel'
 import { Cell, CellSpec, ComparisonLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
@@ -190,12 +192,45 @@ export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: num
 }
 
 export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
+    const isMobileLayout = useMobileLayout()
+    const isScreenshot = useScreenshotMode()
+    const isTranspose = useTranspose()
+
+    const [statsModalOpen, setStatsModalOpen] = useState(false)
+
+    const canHaveStatsModal = isMobileLayout && !isScreenshot && !isTranspose
+
+    useEffect(() => {
+        if (!canHaveStatsModal && statsModalOpen) {
+            setStatsModalOpen(false)
+        }
+    }, [canHaveStatsModal, statsModalOpen])
+
+    const sidebarSectionContent = useSidebarSectionContentClassName()
+
     return (
-        <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', padding: '1px', width: `${props.width}%` }}>
-            <span className="serif value" key="statistic">
-                {props.statNameOverride ?? 'Statistic'}
-            </span>
-        </div>
+        <>
+            <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', padding: '1px', width: `${props.width}%` }}>
+                {canHaveStatsModal
+                    ? (
+                            <button className="serif value" style={{ padding: '2px 10px' }} onClick={() => { setStatsModalOpen(true) }}>
+                                {props.statNameOverride ?? 'Statistic'}
+                            </button>
+                        )
+                    : (
+                            <span className="serif value">
+                                {props.statNameOverride ?? 'Statistic'}
+                            </span>
+                        )}
+            </div>
+            <Modal isOpen={statsModalOpen} onClose={() => { setStatsModalOpen(false) }}>
+                <ul className={sidebarSectionContent} style={{ fontSize: useSidebarFontSize() }}>
+                    <MaybeStagingControlsSidebarSection />
+                    <SidebarForStatisticChoice />
+                    <SettingsSidebarSection />
+                </ul>
+            </Modal>
+        </>
     )
 }
 
