@@ -114,7 +114,6 @@ export interface SuperHeaderHorizontalProps {
     showBottomBar: boolean
     leftSpacerWidth: number
     groupNames?: (string | undefined)[]
-    leftHeaderCell?: CellSpec
 }
 
 export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactNode {
@@ -140,14 +139,6 @@ export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactN
         )
     }
 
-    const leftHeaderCellContent = props.leftHeaderCell
-        ? (
-                <Cell {...props.leftHeaderCell} width={props.leftSpacerWidth} />
-            )
-        : (
-                <div style={{ width: `${props.leftSpacerWidth}%` }} />
-            )
-
     const getBarColor = (idx: number): string | undefined => {
         const spec = props.headerSpecs[idx]
         return spec.highlightIndex !== undefined ? colorFromCycle(colors.hueColors, spec.highlightIndex) : undefined
@@ -157,7 +148,7 @@ export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactN
             {props.groupNames && <SuperHeaderGroupNames leftSpacerWidth={props.leftSpacerWidth} groupNames={props.groupNames} widthsEach={props.widthsEach} />}
             {bars(getBarColor)}
             <div style={{ display: 'flex' }}>
-                {leftHeaderCellContent}
+                <div style={{ width: `${props.leftSpacerWidth}%` }} />
                 {props.headerSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} width={props.widthsEach[idx]} />)}
             </div>
             {props.showBottomBar && bars(getBarColor)}
@@ -200,22 +191,10 @@ export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: num
 
 export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
     return (
-        <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1px', width: `${props.width}%`, gap: '0.25em' }}>
+        <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', padding: '1px', width: `${props.width}%` }}>
             <span className="serif value" key="statistic">
                 {props.statNameOverride ?? 'Statistic'}
             </span>
-            {props.sortInfo && (
-                <span
-                    id="statistic-panel-order-swap"
-                    style={{
-                        cursor: 'pointer',
-                        height: '16px',
-                    }}
-                    onClick={props.sortInfo.onSort}
-                >
-                    <ArrowUpOrDown direction={props.sortInfo.sortDirection} shouldAppearInScreenshot={true} />
-                </span>
-            )}
         </div>
     )
 }
@@ -774,7 +753,6 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                         currentUniverse={props.currentUniverse}
                         center={props.center}
                         displayName={props.displayName ?? props.row.renderedStatname}
-                        rank={props.rank}
                     />
                     {props.sortInfo && (
                         <span
@@ -800,7 +778,6 @@ export function StatisticName(props: {
     currentUniverse: string
     center?: boolean
     displayName: string
-    rank?: number
 }): ReactNode {
     const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
@@ -841,15 +818,13 @@ export function StatisticName(props: {
     if (props.row.disclaimer !== undefined) {
         elements.push(<StatisticNameDisclaimer disclaimer={props.row.disclaimer} />)
     }
-
-    let content: ReactNode
     if (elements.length > 1) {
         const paddedElements = [elements[0]]
         for (let i = 1; i < elements.length; i++) {
             paddedElements.push(<div key={i} style={{ marginLeft: '0.3em' }} />)
             paddedElements.push(elements[i])
         }
-        content = (
+        return (
             <span style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -861,23 +836,7 @@ export function StatisticName(props: {
             </span>
         )
     }
-    else {
-        content = link
-    }
-
-    if (props.rank !== undefined) {
-        return (
-            <span style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                <span style={{ width: '20%', textAlign: 'right', paddingRight: '0.5em' }}>
-                    {props.rank}
-                </span>
-                <span style={{ width: '80%' }}>
-                    {content}
-                </span>
-            </span>
-        )
-    }
-    return content
+    return link
 }
 
 export function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undefined }): ReactNode {
