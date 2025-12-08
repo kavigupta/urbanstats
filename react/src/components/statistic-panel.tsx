@@ -1,11 +1,12 @@
-import React, { ChangeEvent, CSSProperties, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
+import stats from '../data/statistic_list'
+import paths from '../data/statistic_path_list'
 import universes_ordered from '../data/universes_ordered'
 import { Navigator } from '../navigation/Navigator'
 import { sanitize, statisticDescriptor } from '../navigation/links'
 import { useColors } from '../page_template/colors'
-import { useSetting } from '../page_template/settings'
-import { StatName } from '../page_template/statistic-tree'
+import { StatName, StatPath } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './article.css'
@@ -15,21 +16,10 @@ import { displayType } from '../utils/text'
 
 import { CountsByUT } from './countsByArticleType'
 import { CSVExportData } from './csv-export'
-import { Statistic, Percentile } from './display-stats'
-import { forType, StatCol } from './load-article'
+import { ArticleRow, forType, StatCol } from './load-article'
 import { PointerArrow } from './pointer-cell'
-import { createScreenshot, useScreenshotMode } from './screenshot'
-
-const tableStyle = { display: 'flex', flexDirection: 'column', padding: '1px' } as const
-const columnNames = ['Ordinal', 'Name', 'Value', '', 'Percentile']
-const columnWidths = ['15%', '60%', '20%', '10%', '20%']
-const columnStyles = [
-    { textAlign: 'right', paddingRight: '1em' },
-    { textAlign: 'left' },
-    { textAlign: 'right' },
-    { textAlign: 'left' },
-    { textAlign: 'right' },
-] as const
+import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
+import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
 
 export interface StatisticPanelProps {
     start: number
@@ -55,6 +45,12 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const colors = useColors()
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
+
+    const screencapElements = (): ScreencapElements => ({
+        path: `${sanitize(props.joinedString)}.png`,
+        overallWidth: tableRef.current!.offsetWidth * 2,
+        elementsToRender: [headersRef.current!, tableRef.current!],
+    })
 
     const isAscending = props.order === 'ascending'
 
@@ -91,33 +87,16 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         })
     }
 
-    const backgroundColor = (rowIdx: number): string => {
-        if (rowIdx > 0) {
-            const nameAtIdx = props.articleNames[indexRange[rowIdx - 1]]
-            if (nameAtIdx === props.highlight) {
-                return colors.highlight
-            }
+    const getRowBackgroundColor = (rowIdx: number): string => {
+        const nameAtIdx = props.articleNames[indexRange[rowIdx]]
+        if (nameAtIdx === props.highlight) {
+            return colors.highlight
         }
-        if (rowIdx % 2 === 1) {
+        if (rowIdx % 2 === 0) {
             return colors.slightlyDifferentBackground
         }
         return colors.background
     }
-
-    const style = (colIdx: number, rowIdx: number): CSSProperties => {
-        let result: CSSProperties = { ...tableStyle }
-        if (rowIdx === 0) {
-            // header, add a line at the bottom
-            result.borderBottom = `1px solid ${colors.textMain}`
-            result.fontWeight = 500
-        }
-        result.backgroundColor = backgroundColor(rowIdx)
-        result.width = columnWidths[colIdx]
-        result = { ...result, ...columnStyles[colIdx] }
-        return result
-    }
-
-    const textHeaderClass = useHeaderTextClass()
 
     const universesFiltered = universes_ordered.filter(
         universe => forType(props.counts, universe, props.statcol, props.articleType) > 0,
@@ -151,21 +130,20 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const csvFilename = `${sanitize(props.joinedString)}.csv`
     const csvExportData: CSVExportData = { csvData, csvFilename }
 
+    const widthLeftHeader = 50
+
+    const headerTextClass = useHeaderTextClass()
+
     return (
         <PageTemplate
-            screencap={universe => createScreenshot({
-                path: `${sanitize(props.joinedString)}.png`,
-                overallWidth: tableRef.current!.offsetWidth * 2,
-                elementsToRender: [headersRef.current!, tableRef.current!],
-            }, universe, colors)}
+            screencap={(universe, templateColors) => createScreenshot(screencapElements(), universe, templateColors)}
             csvExportData={csvExportData}
             hasUniverseSelector={true}
             universes={universesFiltered}
         >
             <div>
                 <div ref={headersRef}>
-                    <div className={textHeaderClass}>{props.renderedStatname}</div>
-                    {/* // TODO plural */}
+                    <div className={headerTextClass}>{props.renderedStatname}</div>
                     <StatisticPanelSubhead
                         articleType={props.articleType}
                         renderedOther={props.order}
@@ -173,56 +151,15 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 </div>
                 <div style={{ marginBlockEnd: '16px' }}></div>
                 <div className="serif" ref={tableRef}>
-                    <div style={{ display: 'flex' }}>
-                        {columnNames.map((name, i) => {
-                            if (i === 0) {
-                                return (
-                                    <div key={name} style={{ ...style(i, 0), display: 'flex', justifyContent: 'space-between', flexDirection: 'row' }}>
-                                        <div>{name}</div>
-                                        <AscendingVsDescending onClick={(currentUniverse) => { swapAscendingDescending(currentUniverse) }} isAscending={isAscending} />
-                                    </div>
-                                )
-                            }
-                            return <div key={name} style={style(i, 0)}>{name}</div>
-                        })}
-                    </div>
-                    {
-                        indexRange.map((i, rowIdx) => (
-                            <div
-                                key={i}
-                                style={{
-                                    display: 'flex', alignItems: 'baseline', backgroundColor: backgroundColor(rowIdx + 1),
-                                }}
-                            >
-                                <div style={style(0, rowIdx + 1)}>{i + 1}</div>
-                                <div style={style(1, rowIdx + 1)}>
-                                    <ArticleLink longname={props.articleNames[i]} />
-                                </div>
-                                <div style={style(2, rowIdx + 1)} className="value">
-                                    <Statistic
-                                        statname={props.statname}
-                                        value={props.data.value[i]}
-                                        isUnit={false}
-                                    />
-                                </div>
-                                <div style={style(3, rowIdx + 1)} className="value_unit value">
-                                    <Statistic
-                                        statname={props.statname}
-                                        value={props.data.value[i]}
-                                        isUnit={true}
-                                    />
-                                </div>
-                                <div style={style(4, rowIdx + 1)}>
-                                    <AutoPercentile
-                                        ordinal={0}
-                                        totalCountInClass={0}
-                                        data={props.data}
-                                        i={i}
-                                    />
-                                </div>
-                            </div>
-                        ))
-                    }
+                    <StatisticPanelTable
+                        indexRange={indexRange}
+                        props={props}
+                        isAscending={isAscending}
+                        swapAscendingDescending={swapAscendingDescending}
+                        getRowBackgroundColor={getRowBackgroundColor}
+                        widthLeftHeader={widthLeftHeader}
+                        columnWidth={(100 - widthLeftHeader) / 1}
+                    />
                 </div>
                 <div style={{ marginBlockEnd: '1em' }}></div>
                 <Pagination
@@ -230,6 +167,106 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 />
             </div>
         </PageTemplate>
+    )
+}
+
+function StatisticPanelTable(props: {
+    indexRange: number[]
+    props: StatisticPanelProps
+    isAscending: boolean
+    swapAscendingDescending: (currentUniverse: string | undefined) => void
+    getRowBackgroundColor: (rowIdx: number) => string
+    widthLeftHeader: number
+    columnWidth: number
+}): ReactNode {
+    const currentUniverse = useUniverse()
+
+    const statIndex = stats.indexOf(props.props.statcol)
+    const statpath: StatPath = paths[statIndex]
+
+    const articleRows: ArticleRow[] = props.indexRange.map((i) => {
+        const totalCountInClass = forType(props.props.counts, currentUniverse, props.props.statcol, props.props.articleType)
+        const totalCountOverall = forType(props.props.counts, currentUniverse, props.props.statcol, 'overall')
+        return {
+            statval: props.props.data.value[i],
+            ordinal: i + 1,
+            percentileByPopulation: props.props.data.populationPercentile[i],
+            statcol: props.props.statcol,
+            statname: props.props.statname,
+            statpath,
+            explanationPage: props.props.explanationPage,
+            articleType: props.props.articleType,
+            totalCountInClass,
+            totalCountOverall,
+            index: statIndex,
+            renderedStatname: props.props.renderedStatname,
+            overallFirstLast: { isFirst: false, isLast: false },
+        } satisfies ArticleRow
+    })
+
+    const leftHeaderSpecs: CellSpec[] = articleRows.map((row, rowIdx) => {
+        const articleName = props.props.articleNames[props.indexRange[rowIdx]]
+        return {
+            type: 'statistic-panel-longname',
+            longname: articleName,
+            currentUniverse,
+        } satisfies CellSpec
+    })
+
+    const rowSpecs: CellSpec[][] = articleRows.map((row, rowIdx) => {
+        const articleName = props.props.articleNames[props.indexRange[rowIdx]]
+        return [{
+            type: 'statistic-row',
+            longname: articleName,
+            row,
+            onlyColumns: ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'],
+            simpleOrdinals: true,
+            onNavigate: undefined,
+        } satisfies CellSpec]
+    })
+
+    const topLeftSpec: CellSpec = {
+        type: 'top-left-header',
+        statNameOverride: 'Name',
+    }
+
+    const headerSpecs: CellSpec[] = articleRows.length > 0
+        ? [{
+                type: 'statistic-name',
+                row: articleRows[0],
+                longname: props.props.renderedStatname,
+                currentUniverse,
+                sortInfo: {
+                    onSort: () => {
+                        props.swapAscendingDescending(currentUniverse)
+                    },
+                    sortDirection: props.isAscending ? 'up' : 'down',
+                },
+                center: true,
+                transpose: true, // This is a header not on the left, so it's in "transpose" mode
+            }]
+        : []
+    const superHeaderSpec: SuperHeaderSpec = {
+        headerSpecs,
+        showBottomBar: false,
+    }
+
+    const highlightRowIndex = props.indexRange.indexOf(props.props.articleNames.indexOf(props.props.highlight ?? ''))
+
+    return (
+        <TableContents
+            leftHeaderSpec={{ leftHeaderSpecs }}
+            rowSpecs={rowSpecs}
+            horizontalPlotSpecs={[]}
+            verticalPlotSpecs={[]}
+            topLeftSpec={topLeftSpec}
+            superHeaderSpec={superHeaderSpec}
+            widthLeftHeader={props.widthLeftHeader}
+            columnWidth={props.columnWidth}
+            onlyColumns={['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']}
+            simpleOrdinals={true}
+            highlightRowIndex={highlightRowIndex}
+        />
     )
 }
 
@@ -492,58 +529,12 @@ function SelectPage(props: {
     )
 }
 
-function ArticleLink(props: { longname: string }): ReactNode {
-    const currentUniverse = useUniverse()
-    const colors = useColors()
-    const navContext = useContext(Navigator.Context)
-    return (
-        <a
-            {...navContext.link({
-                kind: 'article',
-                longname: props.longname,
-                universe: currentUniverse,
-            }, { scroll: { kind: 'position', top: 0 } })}
-            style={{ fontWeight: 500, color: colors.textMain, textDecoration: 'none' }}
-        >
-            {props.longname}
-        </a>
-    )
-}
-
 function StatisticPanelSubhead(props: { articleType: string, renderedOther: string }): ReactNode {
     const currentUniverse = useUniverse()
+    const subHeaderTextClass = useSubHeaderTextClass()
     return (
-        <div className={useSubHeaderTextClass()}>
+        <div className={subHeaderTextClass}>
             {displayType(currentUniverse, props.articleType)}
-        </div>
-    )
-}
-
-function AutoPercentile(props: {
-    ordinal: number
-    totalCountInClass: number
-    data: { populationPercentile: number[] }
-    i: number
-}): ReactNode {
-    const [simpleOrdinals] = useSetting('simple_ordinals')
-    return (
-        <Percentile
-            ordinal={props.ordinal}
-            total={props.totalCountInClass}
-            percentileByPopulation={props.data.populationPercentile[props.i]}
-            simpleOrdinals={simpleOrdinals}
-        />
-    )
-}
-
-function AscendingVsDescending({ onClick, isAscending }: { onClick: (currentUniverse: string | undefined) => void, isAscending: boolean }): ReactNode {
-    const currentUniverse = useUniverse()
-    // either an up or down arrow, depending on the current ordering
-    return (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ cursor: 'pointer' }} onClick={() => { onClick(currentUniverse) }} id="statistic-panel-order-swap">
-                <ArrowUpOrDown direction={isAscending ? 'up' : 'down'} shouldAppearInScreenshot={true} />
-            </div>
         </div>
     )
 }
@@ -567,5 +558,5 @@ export function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', should
             image = '/sort-both.png'
             break
     }
-    return <img src={image} alt={props.direction} style={{ width: '16px', height: '16px' }} />
+    return <img src={image} className="testing-order-swap" alt={props.direction} style={{ width: '16px', height: '16px' }} />
 }

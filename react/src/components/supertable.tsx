@@ -5,7 +5,7 @@ import { Article } from '../utils/protos'
 
 import { ArticleRow } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
-import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeSizesForRow, CommonLayoutInformation } from './table'
+import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeSizesForRow, CommonLayoutInformation } from './table'
 
 export interface PlotSpec {
     statDescription: string
@@ -34,6 +34,7 @@ export interface TableContentsProps {
     columnWidth: number
     onlyColumns: ColumnIdentifier[]
     simpleOrdinals: boolean
+    highlightRowIndex?: number
 }
 
 export function TableContents(props: TableContentsProps): ReactNode {
@@ -114,6 +115,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
                             columnWidth={props.columnWidth}
                             groupName={props.leftHeaderSpec.groupNames?.[rowIndex]}
                             prevGroupName={rowIndex > 0 ? props.leftHeaderSpec.groupNames?.[rowIndex - 1] : undefined}
+                            isHighlighted={props.highlightRowIndex === rowIndex}
                         />
                     )
                 })}
@@ -141,11 +143,12 @@ export function SuperTableRow(props: {
     groupName?: string
     prevGroupName?: string
     extraSpaceRight: number[]
+    isHighlighted: boolean
 }): ReactNode {
     return (
         <div>
             {props.groupName !== undefined && (props.groupName !== props.prevGroupName) && (
-                <TableRowContainer index={props.rowIndex}>
+                <TableRowContainer index={props.rowIndex} isHighlighted={props.isHighlighted}>
                     <div style={{ width: '100%', padding: '1px' }}>
                         <span className="serif value">
                             <span>{props.groupName}</span>
@@ -153,7 +156,7 @@ export function SuperTableRow(props: {
                     </div>
                 </TableRowContainer>
             )}
-            <TableRowContainer index={props.rowIndex} minHeight={props.rowMinHeight}>
+            <TableRowContainer index={props.rowIndex} minHeight={props.rowMinHeight} isHighlighted={props.isHighlighted}>
                 <Cell {...props.leftHeaderSpec} width={props.widthLeftHeader} />
                 {props.cellSpecs.map((spec, colIndex) => (
                     <Fragment key={`cells_${colIndex}_${props.rowIndex}`}>
@@ -174,6 +177,7 @@ export function SuperTableRow(props: {
 export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCellProps) |
     ({ type: 'statistic-name' } & StatisticNameCellProps) |
     ({ type: 'statistic-row' } & StatisticRowCellProps) |
+    ({ type: 'statistic-panel-longname' } & StatisticPanelLongnameCellProps) |
     ({ type: 'comparison-top-left-header' } & TopLeftHeaderProps) |
     ({ type: 'top-left-header' } & TopLeftHeaderProps)
 
@@ -185,6 +189,8 @@ export function Cell(props: CellSpec & { width: number }): ReactNode {
             return <StatisticNameCell {...props} width={props.width} />
         case 'statistic-row':
             return <StatisticRowCells {...props} width={props.width} />
+        case 'statistic-panel-longname':
+            return <StatisticPanelLongnameCell {...props} width={props.width} />
         case 'comparison-top-left-header':
             return <ComparisonTopLeftHeader {...props} width={props.width} />
         case 'top-left-header':
@@ -201,6 +207,11 @@ export interface ComparisonLongnameCellProps {
     highlightIndex?: number
     draggable?: boolean
     articleId?: string
+}
+
+export interface StatisticPanelLongnameCellProps {
+    longname: string
+    currentUniverse: string
 }
 
 export interface StatisticNameCellProps {
