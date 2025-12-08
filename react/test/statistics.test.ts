@@ -171,10 +171,10 @@ test('statistic-ascending-descending-check-descending', async (t) => {
 test('statistic-ascending-descending-check-click', async (t) => {
     // click the button
     // check that button "testing-order-swap" has downwards arrow image
-    await t.expect(Selector('.testing-order-swap img').getAttribute('src')).eql('/sort-down.png')
+    await t.expect(Selector('.testing-order-swap').getAttribute('src')).eql('/sort-down.png')
     await t.click(Selector('.testing-order-swap'))
     // ensure the button is now up arrow
-    await t.expect(Selector('.testing-order-swap img').getAttribute('src')).eql('/sort-up.png')
+    await t.expect(Selector('.testing-order-swap').getAttribute('src')).eql('/sort-up.png')
     await waitForLoading()
     // check the url
     await t.expect(getLocation())
