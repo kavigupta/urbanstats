@@ -446,7 +446,7 @@ for (const constant of ['linearScale', 'rampUridis']) {
     })
 }
 
-urbanstatsFixture('mapper default', `${target}/mapper.html/mapper.html?settings=H4sIAAAAAAAAAy2NwQrCMAxAf2Xk1MEuXpUd9Cp6cOw2GHENM7ilpWkVGf67HS6H8HgPkgVGcmNA%2F%2FicWSzsoUl3wchOcCpuNGaACpLwi4JS7m1zzEKHwD7CfoGkmu2QNLr56iyZDjooD50MTiyvhwoTQ6Iymwt600mRx2LE2pIox0%2Fv3%2F3uOVf%2FogNOVE8shKFZ2ZRbCTj7el1tYMu62Tsqzehrcac%2FmfyphO%2F3B5Qv%2BrjbAAAA`)
+urbanstatsFixture('mapper default', `${target}/mapper.html?settings=H4sIAAAAAAAAAy2NwQrCMAxAf2Xk1MEuXpUd9Cp6cOw2GHENM7ilpWkVGf67HS6H8HgPkgVGcmNA%2F%2FicWSzsoUl3wchOcCpuNGaACpLwi4JS7m1zzEKHwD7CfoGkmu2QNLr56iyZDjooD50MTiyvhwoTQ6Iymwt600mRx2LE2pIox0%2Fv3%2F3uOVf%2FogNOVE8shKFZ2ZRbCTj7el1tYMu62Tsqzehrcac%2FmfyphO%2F3B5Qv%2BrjbAAAA`)
 
 test('download file via site screencap button', async (t) => {
     await downloadImage(t)
