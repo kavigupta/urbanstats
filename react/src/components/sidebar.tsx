@@ -108,55 +108,8 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                     </li>
                 </ul>
             </div>
-            {
-                useStagedSettingKeys() === undefined
-                    ? null
-                    : (
-                            <div className="sidebar-section">
-                                <div style={sidebarSectionTitle}>Link Settings</div>
-                                <ul className={sidebarSectionContent}>
-                                    <StagingControls />
-                                </ul>
-                            </div>
-                        )
-            }
-            <div className="sidebar-section">
-                <div style={sidebarSectionTitle}>Settings</div>
-                <ul className={sidebarSectionContent}>
-                    <li>
-                        <CheckboxSetting
-                            name="Use Imperial Units"
-                            settingKey="use_imperial"
-                            testId="use_imperial"
-                            fontSize={fontSize}
-                        />
-                    </li>
-                    <li>
-                        <CheckboxSetting
-                            name="Include Historical Districts"
-                            settingKey="show_historical_cds"
-                            fontSize={fontSize}
-                        />
-                    </li>
-                    <li>
-                        <CheckboxSetting
-                            name="Include Person Circles"
-                            settingKey="show_person_circles"
-                            fontSize={fontSize}
-                        />
-                    </li>
-                    <li>
-                        <CheckboxSetting
-                            name="Simple Ordinals"
-                            settingKey="simple_ordinals"
-                            fontSize={fontSize}
-                        />
-                    </li>
-                    <li>
-                        <TemperatureSetting />
-                    </li>
-                </ul>
-            </div>
+            <MaybeStagingControlsSidebarSection />
+            <SettingsSidebarSection />
             { navContext.useStatPathsAll() !== undefined
                 ? <SidebarForStatisticChoice />
                 : null}
@@ -183,6 +136,70 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                     </li>
                 </ul>
             </div>
+        </div>
+    )
+}
+
+export function MaybeStagingControlsSidebarSection(): ReactNode {
+    const sidebarSectionTitle = useSidebarSectionTitleStyle()
+    const sidebarSectionContent = useSidebarSectionContentClassName()
+
+    return (
+        useStagedSettingKeys() === undefined
+            ? null
+            : (
+                    <div className="sidebar-section">
+                        <div style={sidebarSectionTitle}>Link Settings</div>
+                        <ul className={sidebarSectionContent}>
+                            <StagingControls />
+                        </ul>
+                    </div>
+                )
+    )
+}
+
+export function SettingsSidebarSection(): ReactNode {
+    const sidebarSectionTitle = useSidebarSectionTitleStyle()
+    const sidebarSectionContent = useSidebarSectionContentClassName()
+    const fontSize = useSidebarFontSize()
+
+    return (
+        <div className="sidebar-section">
+            <div style={sidebarSectionTitle}>Settings</div>
+            <ul className={sidebarSectionContent}>
+                <li>
+                    <CheckboxSetting
+                        name="Use Imperial Units"
+                        settingKey="use_imperial"
+                        testId="use_imperial"
+                        fontSize={fontSize}
+                    />
+                </li>
+                <li>
+                    <CheckboxSetting
+                        name="Include Historical Districts"
+                        settingKey="show_historical_cds"
+                        fontSize={fontSize}
+                    />
+                </li>
+                <li>
+                    <CheckboxSetting
+                        name="Include Person Circles"
+                        settingKey="show_person_circles"
+                        fontSize={fontSize}
+                    />
+                </li>
+                <li>
+                    <CheckboxSetting
+                        name="Simple Ordinals"
+                        settingKey="simple_ordinals"
+                        fontSize={fontSize}
+                    />
+                </li>
+                <li>
+                    <TemperatureSetting />
+                </li>
+            </ul>
         </div>
     )
 }

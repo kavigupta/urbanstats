@@ -18,14 +18,13 @@ import { zIndex } from '../utils/zIndex'
 
 import { Icon } from './Icon'
 import { Modal } from './Modal'
-import { StatsTree } from './StatsTree'
 import { Percentile, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
 import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { SidebarForStatisticChoice, useSidebarSectionContentClassName } from './sidebar'
+import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
 import { ArrowUpOrDown } from './statistic-panel'
 import { Cell, CellSpec, ComparisonLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
@@ -221,8 +220,10 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
                         )}
             </div>
             <Modal isOpen={statsModalOpen} onClose={() => { setStatsModalOpen(false) }}>
-                <ul className={sidebarSectionContent}>
-                    <SidebarForStatisticChoice fontSize="16px" />
+                <ul className={sidebarSectionContent} style={{ fontSize: useSidebarFontSize() }}>
+                    <MaybeStagingControlsSidebarSection />
+                    <SidebarForStatisticChoice />
+                    <SettingsSidebarSection />
                 </ul>
             </Modal>
         </>
