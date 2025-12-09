@@ -1,6 +1,7 @@
 import stableStringify from 'json-stable-stringify'
 import React, { ReactNode } from 'react'
 
+import { ExpandButton } from '../../components/ExpandButton'
 import { CheckboxSettingCustom } from '../../components/sidebar'
 import { UrbanStatsASTExpression, UrbanStatsASTArg, locationOf } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
@@ -66,9 +67,31 @@ function ArgumentEditor(props: {
     // Get the function's documentation to find human-readable argument names
     const tdoc = props.typeEnvironment.get(functionUss.fn.name.node)
     const humanReadableName = tdoc?.documentation?.namedArgs?.[props.name] ?? props.name
+    assert(tdoc?.type === undefined || tdoc.type.type === 'function', `AutoUX looked up function identifier ${functionUss.fn.name.node}m, but it was not a function`)
+    const collapsable = hasDefault && isEnabled && (tdoc?.type.namedArgs[props.name]?.documentation?.collapsable ?? false)
+    const collapsed = collapsable && argValue.type === 'named' && (argValue.collapsed ?? false)
+    if (props.name === 'insets') {
+        console.log({ collapsable, collapsed })
+    }
 
     return (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.25em', width: '100%', margin: '0.25em 0' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', gap: '0.25em', width: '100%', margin: '0.25em 0' }}>
+            {collapsable && (
+                <ExpandButton
+                    pointing="right"
+                    isExpanded={!collapsed}
+                    style={{
+                        position: 'absolute',
+                        width: 16,
+                        height: 16,
+                        left: -12,
+                        top: 4,
+                    }}
+                    onClick={() => {
+                        props.setUss({ ...functionUss, args: functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, collapsed: !collapsed } : a) })
+                    }}
+                />
+            )}
             <div style={{ flex: 1 }}>
                 <div>
                     {hasDefault
@@ -105,20 +128,21 @@ function ArgumentEditor(props: {
                         : <span>{humanReadableName}</span>}
 
                 </div>
-                {isEnabled
-                && (
-                    <AutoUXEditor
-                        uss={argValue.value}
-                        setUss={(newUss) => {
-                            const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
-                            props.setUss({ ...functionUss, args: newArgs })
-                        }}
-                        typeEnvironment={props.typeEnvironment}
-                        errors={props.errors}
-                        blockIdent={subident}
-                        type={[arg.value]}
-                    />
-                )}
+                {
+                    isEnabled && !collapsed && (
+                        <AutoUXEditor
+                            uss={argValue.value}
+                            setUss={(newUss) => {
+                                const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
+                                props.setUss({ ...functionUss, args: newArgs })
+                            }}
+                            typeEnvironment={props.typeEnvironment}
+                            errors={props.errors}
+                            blockIdent={subident}
+                            type={[arg.value]}
+                        />
+                    )
+                }
             </div>
         </div>
     )
