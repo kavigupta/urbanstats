@@ -16,6 +16,7 @@ import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
 
 import { CustomEditor } from './CustomEditor'
+import { ActionOptions } from './EditMapperPanel'
 import { Selector, classifyExpr, getColor, labelPadding } from './Selector'
 import { maybeParseExpr, parseExpr, Selection, possibilities } from './parseExpr'
 
@@ -51,7 +52,7 @@ function ArgumentEditor(props: {
     name: string
     argWDefault: { type: USSFunctionArgType, defaultValue?: UrbanStatsASTExpression }
     uss: UrbanStatsASTExpression & { type: 'call', fn: UrbanStatsASTExpression & { type: 'identifier' } }
-    setUss: (u: UrbanStatsASTExpression) => void
+    setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
@@ -86,7 +87,13 @@ function ArgumentEditor(props: {
                         top: 4,
                     }}
                     onClick={() => {
-                        props.setUss({ ...functionUss, args: functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, collapsed: !collapsed } : a) })
+                        props.setUss(
+                            { ...functionUss, args: functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, collapsed: !collapsed } : a) },
+                            {
+                                undoable: false,
+                                updateMap: false,
+                            },
+                        )
                     }}
                 />
             )}
@@ -113,12 +120,12 @@ function ArgumentEditor(props: {
                                                 value: exprToUse,
                                             }
                                             const newArgs = [...functionUss.args, newArg]
-                                            props.setUss({ ...functionUss, args: newArgs })
+                                            props.setUss({ ...functionUss, args: newArgs }, {})
                                         }
                                         else {
                                             // Remove the argument
                                             const newArgs = functionUss.args.filter(a => !(a.type === 'named' && a.name.node === props.name))
-                                            props.setUss({ ...functionUss, args: newArgs })
+                                            props.setUss({ ...functionUss, args: newArgs }, {})
                                         }
                                     }}
                                 />
@@ -150,9 +157,9 @@ function ArgumentEditor(props: {
                                     >
                                         <AutoUXEditor
                                             uss={argValue.value}
-                                            setUss={(newUss) => {
+                                            setUss={(newUss, actionKind) => {
                                                 const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
-                                                props.setUss({ ...functionUss, args: newArgs })
+                                                props.setUss({ ...functionUss, args: newArgs }, actionKind)
                                             }}
                                             typeEnvironment={props.typeEnvironment}
                                             errors={props.errors}
@@ -173,7 +180,7 @@ function ArgumentEditor(props: {
 
 export function AutoUXEditor(props: {
     uss: UrbanStatsASTExpression
-    setUss: (u: UrbanStatsASTExpression) => void
+    setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
@@ -223,10 +230,10 @@ export function AutoUXEditor(props: {
                     <AutoUXEditor
                         key={`pos-${i}`}
                         uss={uss.args[i].value}
-                        setUss={(newUss) => {
+                        setUss={(newUss, options) => {
                             const newArgs = [...uss.args]
                             newArgs[i] = { ...newArgs[i], value: newUss }
-                            props.setUss({ ...uss, args: newArgs })
+                            props.setUss({ ...uss, args: newArgs }, options)
                         }}
                         typeEnvironment={props.typeEnvironment}
                         errors={props.errors}
@@ -268,10 +275,10 @@ export function AutoUXEditor(props: {
                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5em', width: '100%' }}>
                             <AutoUXEditor
                                 uss={el}
-                                setUss={(newEl) => {
+                                setUss={(newEl, options) => {
                                     const newElements = [...uss.elements]
                                     newElements[i] = newEl
-                                    props.setUss({ ...uss, elements: newElements })
+                                    props.setUss({ ...uss, elements: newElements }, options)
                                 }}
                                 typeEnvironment={props.typeEnvironment}
                                 errors={props.errors}
@@ -283,7 +290,7 @@ export function AutoUXEditor(props: {
                                 style={{ flexShrink: 0 }}
                                 onClick={() => {
                                     const newElements = uss.elements.filter((_, j) => j !== i)
-                                    props.setUss({ ...uss, elements: newElements })
+                                    props.setUss({ ...uss, elements: newElements }, {})
                                 }}
                                 title="Remove element"
                             >
@@ -301,7 +308,7 @@ export function AutoUXEditor(props: {
                                     ? uss.elements[uss.elements.length - 1]
                                     : createDefaultExpression(elementType, extendBlockIdVectorElement(props.blockIdent, uss.elements.length), props.typeEnvironment),
                             ]
-                            props.setUss({ ...uss, elements: newElements })
+                            props.setUss({ ...uss, elements: newElements }, {})
                         }}
                     >
                         + Add element
@@ -325,8 +332,8 @@ export function AutoUXEditor(props: {
                             <AutoUXEditor
                                 key={key}
                                 uss={uss.properties.find(([k]) => k === key)?.[1] ?? createDefaultExpression(propertyType, extendBlockIdObjectProperty(props.blockIdent, key), props.typeEnvironment)}
-                                setUss={(newVal) => {
-                                    props.setUss({ ...uss, properties: uss.properties.map(([k, v]) => [k, k === key ? newVal : v]) })
+                                setUss={(newVal, options) => {
+                                    props.setUss({ ...uss, properties: uss.properties.map(([k, v]) => [k, k === key ? newVal : v]) }, options)
                                 }}
                                 typeEnvironment={props.typeEnvironment}
                                 errors={props.errors}
@@ -377,7 +384,7 @@ export function AutoUXEditor(props: {
                     <Selector
                         uss={props.uss}
                         setSelection={(selection: Selection) => {
-                            props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent, props.type[0]))
+                            props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent, props.type[0]), {})
                         }}
                         setUss={props.setUss}
                         typeEnvironment={props.typeEnvironment}
