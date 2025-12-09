@@ -2,6 +2,7 @@ import stableStringify from 'json-stable-stringify'
 import React, { ReactNode } from 'react'
 
 import { ExpandButton } from '../../components/ExpandButton'
+import { RenderTwiceHidden } from '../../components/RenderTwiceHidden'
 import { CheckboxSettingCustom } from '../../components/sidebar'
 import { UrbanStatsASTExpression, UrbanStatsASTArg, locationOf } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
@@ -70,9 +71,6 @@ function ArgumentEditor(props: {
     assert(tdoc?.type === undefined || tdoc.type.type === 'function', `AutoUX looked up function identifier ${functionUss.fn.name.node}m, but it was not a function`)
     const collapsable = hasDefault && isEnabled && (tdoc?.type.namedArgs[props.name]?.documentation?.collapsable ?? false)
     const collapsed = collapsable && argValue.type === 'named' && (argValue.collapsed ?? false)
-    if (props.name === 'insets') {
-        console.log({ collapsable, collapsed })
-    }
 
     return (
         <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', gap: '0.25em', width: '100%', margin: '0.25em 0' }}>
@@ -129,18 +127,43 @@ function ArgumentEditor(props: {
 
                 </div>
                 {
-                    isEnabled && !collapsed && (
-                        <AutoUXEditor
-                            uss={argValue.value}
-                            setUss={(newUss) => {
-                                const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
-                                props.setUss({ ...functionUss, args: newArgs })
+                    isEnabled && (
+                        <RenderTwiceHidden<HTMLDivElement>>
+                            {(renderArg) => {
+                                return (
+                                    <div
+                                        // @ts-expect-error -- inert is not in the type definitions yet
+                                        inert={renderArg.kind === 'hidden' ? '' : undefined}
+                                        style={{
+                                            ...(renderArg.kind === 'hidden'
+                                                ? {
+                                                        opacity: 0,
+                                                        position: 'absolute',
+                                                    }
+                                                : {
+                                                        maxHeight: collapsed ? 0 : renderArg.height,
+                                                        transition: 'max-height 0.25s',
+                                                        overflowY: 'clip',
+                                                    }),
+                                        }}
+                                        ref={renderArg.kind === 'hidden' ? renderArg.ref : undefined}
+                                    >
+                                        <AutoUXEditor
+                                            uss={argValue.value}
+                                            setUss={(newUss) => {
+                                                const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
+                                                props.setUss({ ...functionUss, args: newArgs })
+                                            }}
+                                            typeEnvironment={props.typeEnvironment}
+                                            errors={props.errors}
+                                            blockIdent={subident}
+                                            type={[arg.value]}
+                                        />
+                                    </div>
+                                )
                             }}
-                            typeEnvironment={props.typeEnvironment}
-                            errors={props.errors}
-                            blockIdent={subident}
-                            type={[arg.value]}
-                        />
+
+                        </RenderTwiceHidden>
                     )
                 }
             </div>
