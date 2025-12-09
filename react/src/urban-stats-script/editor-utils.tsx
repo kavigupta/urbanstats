@@ -559,6 +559,12 @@ function UndoRedoControls({ doUndo, doRedo, canUndo, canRedo }: { doUndo: () => 
 
     const isMobile = useMobileLayout()
 
+    useEffect(() => {
+        if (isMobile) {
+            debugUndo(`canUndo=${canUndo}, canRedo=${canRedo}`)
+        }
+    }, [canUndo, canRedo, isMobile])
+
     if (!isMobile) {
         return null
     }

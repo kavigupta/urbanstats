@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import React, { CSSProperties, ReactNode, useContext, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
 import { ArticleOrderingListInternal, loadOrdering } from '../load_json'
 import './table.css'
@@ -17,14 +17,16 @@ import { useTranspose } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
 import { Icon } from './Icon'
+import { Modal } from './Modal'
 import { Percentile, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
 import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
+import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
 import { ArrowUpOrDown } from './statistic-panel'
-import { Cell, CellSpec, ComparisonLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
+import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -190,12 +192,45 @@ export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: num
 }
 
 export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
+    const isMobileLayout = useMobileLayout()
+    const isScreenshot = useScreenshotMode()
+    const isTranspose = useTranspose()
+
+    const [statsModalOpen, setStatsModalOpen] = useState(false)
+
+    const canHaveStatsModal = isMobileLayout && !isScreenshot && !isTranspose
+
+    useEffect(() => {
+        if (!canHaveStatsModal && statsModalOpen) {
+            setStatsModalOpen(false)
+        }
+    }, [canHaveStatsModal, statsModalOpen])
+
+    const sidebarSectionContent = useSidebarSectionContentClassName()
+
     return (
-        <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', padding: '1px', width: `${props.width}%` }}>
-            <span className="serif value" key="statistic">
-                {props.statNameOverride ?? 'Statistic'}
-            </span>
-        </div>
+        <>
+            <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', padding: '1px', width: `${props.width}%` }}>
+                {canHaveStatsModal
+                    ? (
+                            <button className="serif value" style={{ padding: '2px 10px' }} onClick={() => { setStatsModalOpen(true) }}>
+                                {props.statNameOverride ?? 'Statistic'}
+                            </button>
+                        )
+                    : (
+                            <span className="serif value">
+                                {props.statNameOverride ?? 'Statistic'}
+                            </span>
+                        )}
+            </div>
+            <Modal isOpen={statsModalOpen} onClose={() => { setStatsModalOpen(false) }}>
+                <ul className={sidebarSectionContent} style={{ fontSize: useSidebarFontSize() }}>
+                    <MaybeStagingControlsSidebarSection />
+                    <SidebarForStatisticChoice />
+                    <SettingsSidebarSection />
+                </ul>
+            </Modal>
+        </>
     )
 }
 
@@ -648,6 +683,27 @@ export function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, m
     )
 }
 
+export function StatisticPanelLongnameCell(props: StatisticPanelLongnameCellProps & { width: number }): ReactNode {
+    const navContext = useContext(Navigator.Context)
+    const colors = useColors()
+
+    return (
+        <div style={{ width: `${props.width}%`, padding: '1px' }}>
+            <a
+                style={{ textDecoration: 'none', color: colors.textMain }}
+                {...navContext.link({
+                    kind: 'article',
+                    longname: props.longname,
+                    universe: props.currentUniverse,
+                }, { scroll: { kind: 'position', top: 0 } })}
+                className="serif value"
+            >
+                {props.longname}
+            </a>
+        </div>
+    )
+}
+
 export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { width: number }): ReactNode {
     const currentUniverse = useUniverse()
     const navContext = useContext(Navigator.Context)
@@ -882,11 +938,11 @@ function StatisticNameDisclaimer(props: { disclaimer: Disclaimer }): ReactNode {
     )
 }
 
-export function TableRowContainer({ children, index, minHeight }: { children: React.ReactNode, index: number, minHeight?: string }): React.ReactNode {
+export function TableRowContainer({ children, index, minHeight, isHighlighted }: { children: React.ReactNode, index: number, minHeight?: string, isHighlighted: boolean }): React.ReactNode {
     const colors = useColors()
     const style: React.CSSProperties = {
         ...tableRowStyle,
-        backgroundColor: index % 2 === 1 ? colors.slightlyDifferentBackground : undefined,
+        backgroundColor: isHighlighted ? colors.highlight : (index % 2 === 1 ? colors.slightlyDifferentBackground : undefined),
         alignItems: 'last baseline',
         minHeight,
     }
@@ -992,12 +1048,16 @@ function Ordinal(props: {
     if (ordinal > total) {
         return <span></span>
     }
-    const en = (
-        <EditableNumber
-            number={ordinal}
-            onNewNumber={onNewNumber}
-        />
-    )
+    const en = props.onNavigate
+        ? (
+                <EditableNumber
+                    number={ordinal}
+                    onNewNumber={onNewNumber}
+                />
+            )
+        : (
+                <span>{ordinal}</span>
+            )
     return (
         <div className="serif" style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : 0 }}>
             {en}
