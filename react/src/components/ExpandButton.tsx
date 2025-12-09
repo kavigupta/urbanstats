@@ -13,6 +13,7 @@ export function ExpandButton({ pointing, isExpanded, ...buttonProps }: Component
                 backgroundRepeat: 'no-repeat',
                 backgroundSize: '16px',
                 border: 'none',
+                transition: 'transform 0.25s',
                 ...buttonProps.style,
             }}
         />
