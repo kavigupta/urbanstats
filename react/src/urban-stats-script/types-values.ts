@@ -86,6 +86,7 @@ export interface USSFunctionType {
 
 interface NamedFunctionArgumentDocumentation {
     hide?: boolean
+    collapsable?: boolean
 }
 
 export type USSType = (
