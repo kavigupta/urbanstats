@@ -7,13 +7,9 @@ import { CountsByUT, getCountsByArticleType } from '../components/countsByArticl
 import { ArticleRow, loadArticles } from '../components/load-article'
 import type { QuizPanel } from '../components/quiz-panel'
 import type { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
-import explanation_pages from '../data/explanation_page'
-import stats from '../data/statistic_list'
-import names from '../data/statistic_name_list'
-import paths from '../data/statistic_path_list'
 import type { DataCreditPanel } from '../data-credit'
 import type { ScreenshotDiffViewerPanel } from '../dev/ScreenshotDiffViewerPanel'
-import { loadJSON, loadStatisticsPage } from '../load_json'
+import { loadJSON } from '../load_json'
 import type { DebugMapTextBoxPanel } from '../mapper/components/DebugMapTextBox'
 import type { MapperPanel } from '../mapper/components/MapperPanel'
 import type { MapSettings } from '../mapper/settings/utils'
@@ -484,13 +480,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             const statUniverse = newDescriptor.universe ?? 'world'
             const displayStatUniverse = statUniverse !== 'world' ? statUniverse : undefined
 
-            const statIndex = names.indexOf(newDescriptor.statname)
-            const statpath = paths[statIndex]
-            const statcol = stats[statIndex]
-            const explanationPage = explanation_pages[statIndex]
-
-            const [[data, articleNames], countsByArticleType, panel] = await Promise.all([
-                loadStatisticsPage(statUniverse, statpath, newDescriptor.article_type),
+            const [countsByArticleType, panel] = await Promise.all([
                 getCountsByArticleType(),
                 import('../components/statistic-panel'),
             ])
@@ -498,18 +488,15 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             return {
                 pageData: {
                     kind: 'statistic',
-                    statcol,
-                    statname: newDescriptor.statname,
-                    explanationPage,
+                    descriptor: {
+                        type: 'simple-statistic',
+                        statname: newDescriptor.statname,
+                    },
                     order: newDescriptor.order,
                     highlight: newDescriptor.highlight ?? undefined,
                     articleType: newDescriptor.article_type,
-                    joinedString: statpath,
                     start: newDescriptor.start,
                     amount: newDescriptor.amount,
-                    articleNames,
-                    data,
-                    renderedStatname: newDescriptor.statname,
                     universe: statUniverse,
                     // StatisticPanel needs this to compute the set of universes to display
                     counts: countsByArticleType,
@@ -768,7 +755,7 @@ export function pageTitle(pageData: PageData): string {
         case 'article':
             return pageData.article.shortname
         case 'statistic':
-            return pageData.statname
+            return pageData.descriptor.statname
         case 'comparison':
             return pageData.articles.map(x => x.shortname).join(' vs ')
         case 'editor':

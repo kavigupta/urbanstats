@@ -1,10 +1,14 @@
 import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
+import explanation_pages from '../data/explanation_page'
 import stats from '../data/statistic_list'
+import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import universes_ordered from '../data/universes_ordered'
+import { loadStatisticsPage } from '../load_json'
 import { Navigator } from '../navigation/Navigator'
 import { sanitize, statisticDescriptor } from '../navigation/links'
+import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { StatName, StatPath } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
@@ -13,6 +17,7 @@ import './article.css'
 import { useUniverse } from '../universe'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType } from '../utils/text'
+import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { CountsByUT } from './countsByArticleType'
 import { CSVExportData } from './csv-export'
@@ -21,45 +26,97 @@ import { PointerArrow } from './pointer-cell'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
 
-export interface StatisticPanelProps {
+interface StatisticDescriptor {
+    type: 'simple-statistic'
+    statname: StatName
+}
+
+interface StatisticCommonProps {
     start: number
     amount: number | 'All'
     order: 'ascending' | 'descending'
-    joinedString: string
-    statcol: StatCol
-    statname: StatName
     articleType: string
-    articleNames: string[]
     highlight: string | undefined
-    renderedStatname: string
-    data: {
-        value: number[]
-        populationPercentile: number[]
-    }
-    explanationPage: string
     counts: CountsByUT
+    universe: string
+}
+
+export interface StatisticPanelProps extends StatisticCommonProps {
+    descriptor: StatisticDescriptor
+}
+
+function useStatisticPanelData(universe: string, statpath: string, articleType: string): { data: { value: number[], populationPercentile: number[] } | undefined, articleNames: string[] | undefined, loading: boolean } {
+    const dataPromise = useMemo(() => loadStatisticsPage(universe, statpath, articleType), [universe, statpath, articleType])
+    const { result, loading } = useOrderedResolve(dataPromise)
+
+    return {
+        data: result?.[0],
+        articleNames: result?.[1],
+        loading,
+    }
 }
 
 export function StatisticPanel(props: StatisticPanelProps): ReactNode {
+    const statIndex = names.indexOf(props.descriptor.statname)
+    const statpath = paths[statIndex]
+    const statcol = stats[statIndex]
+    const explanationPage = explanation_pages[statIndex]
+
+    const { data, articleNames, loading } = useStatisticPanelData(props.universe, statpath, props.articleType)
+
+    if (loading || data === undefined || articleNames === undefined) {
+        return (
+            <PageTemplate
+                hasUniverseSelector={true}
+                universes={universes_ordered.filter(
+                    universe => forType(props.counts, universe, statcol, props.articleType) > 0,
+                )}
+            >
+                <RelativeLoader loading={loading} />
+            </PageTemplate>
+        )
+    }
+    return (
+        <StatisticPanelOnceLoaded
+            {...props}
+            data={data}
+            articleNames={articleNames}
+            statname={props.descriptor.statname}
+            statcol={statcol}
+            explanationPage={explanationPage}
+            renderedStatname={props.descriptor.statname}
+            joinedString={statpath}
+        />
+    )
+}
+
+interface StatisticPanelLoadedProps extends StatisticCommonProps {
+    data: { value: number[], populationPercentile: number[] }
+    articleNames: string[]
+    statname: StatName
+    renderedStatname: string
+    statcol: StatCol
+    explanationPage: string
+    joinedString: string
+}
+
+function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
     const colors = useColors()
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
-
-    const screencapElements = (): ScreencapElements => ({
-        path: `${sanitize(props.joinedString)}.png`,
-        overallWidth: tableRef.current!.offsetWidth * 2,
-        elementsToRender: [headersRef.current!, tableRef.current!],
-    })
+    const navContext = useContext(Navigator.Context)
+    const headerTextClass = useHeaderTextClass()
 
     const isAscending = props.order === 'ascending'
-
-    const navContext = useContext(Navigator.Context)
 
     const count = props.data.value.filter(x => !isNaN(x)).length
 
     const amount = props.amount === 'All' ? count : props.amount
 
     const indexRange = useMemo(() => {
+        if (count === 0) {
+            return []
+        }
         const start = props.start - 1
         let end = start + amount
         if (end + amount > count) {
@@ -74,6 +131,12 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         })
         return result
     }, [props.start, amount, count, isAscending])
+
+    const screencapElements = (): ScreencapElements => ({
+        path: `${sanitize(props.joinedString)}.png`,
+        overallWidth: tableRef.current!.offsetWidth * 2,
+        elementsToRender: [headersRef.current!, tableRef.current!],
+    })
 
     const swapAscendingDescending = (currentUniverse: string | undefined): void => {
         const newOrder = isAscending ? 'descending' : 'ascending'
@@ -135,8 +198,6 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     const widthLeftHeader = 50
 
-    const headerTextClass = useHeaderTextClass()
-
     return (
         <PageTemplate
             screencap={(universe, templateColors) => createScreenshot(screencapElements(), universe, templateColors)}
@@ -162,6 +223,8 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                         getRowBackgroundColor={getRowBackgroundColor}
                         widthLeftHeader={widthLeftHeader}
                         columnWidth={(100 - widthLeftHeader) / 1}
+                        data={props.data}
+                        articleNames={props.articleNames}
                     />
                 </div>
                 <div style={{ marginBlockEnd: '1em' }}></div>
@@ -177,12 +240,14 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
 function StatisticPanelTable(props: {
     indexRange: number[]
-    props: StatisticPanelProps
+    props: StatisticPanelLoadedProps
     isAscending: boolean
     swapAscendingDescending: (currentUniverse: string | undefined) => void
     getRowBackgroundColor: (rowIdx: number) => string
     widthLeftHeader: number
     columnWidth: number
+    data: { value: number[], populationPercentile: number[] }
+    articleNames: string[]
 }): ReactNode {
     const currentUniverse = useUniverse()
 
@@ -193,9 +258,9 @@ function StatisticPanelTable(props: {
         const totalCountInClass = forType(props.props.counts, currentUniverse, props.props.statcol, props.props.articleType)
         const totalCountOverall = forType(props.props.counts, currentUniverse, props.props.statcol, 'overall')
         return {
-            statval: props.props.data.value[i],
+            statval: props.data.value[i],
             ordinal: i + 1,
-            percentileByPopulation: props.props.data.populationPercentile[i],
+            percentileByPopulation: props.data.populationPercentile[i],
             statcol: props.props.statcol,
             statname: props.props.statname,
             statpath,
@@ -210,7 +275,7 @@ function StatisticPanelTable(props: {
     })
 
     const leftHeaderSpecs: CellSpec[] = articleRows.map((row, rowIdx) => {
-        const articleName = props.props.articleNames[props.indexRange[rowIdx]]
+        const articleName = props.articleNames[props.indexRange[rowIdx]]
         return {
             type: 'statistic-panel-longname',
             longname: articleName,
@@ -219,7 +284,7 @@ function StatisticPanelTable(props: {
     })
 
     const rowSpecs: CellSpec[][] = articleRows.map((row, rowIdx) => {
-        const articleName = props.props.articleNames[props.indexRange[rowIdx]]
+        const articleName = props.articleNames[props.indexRange[rowIdx]]
         return [{
             type: 'statistic-row',
             longname: articleName,
@@ -256,7 +321,7 @@ function StatisticPanelTable(props: {
         showBottomBar: false,
     }
 
-    const highlightRowIndex = props.indexRange.indexOf(props.props.articleNames.indexOf(props.props.highlight ?? ''))
+    const highlightRowIndex = props.indexRange.indexOf(props.articleNames.indexOf(props.props.highlight ?? ''))
 
     return (
         <TableContents
