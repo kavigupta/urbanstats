@@ -167,6 +167,8 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 <div style={{ marginBlockEnd: '1em' }}></div>
                 <Pagination
                     {...props}
+                    count={count}
+                    amount={amount}
                 />
             </div>
         </PageTemplate>
