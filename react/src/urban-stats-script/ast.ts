@@ -6,7 +6,7 @@ import { USSType } from './types-values'
 
 export type UrbanStatsASTArg = (
     { type: 'unnamed', value: UrbanStatsASTExpression } |
-    { type: 'named', name: Decorated<string>, value: UrbanStatsASTExpression, collapsed?: boolean })
+    { type: 'named', name: Decorated<string>, value: UrbanStatsASTExpression })
 
 export type UrbanStatsASTLHS = (
     { type: 'identifier', name: Decorated<string> } |

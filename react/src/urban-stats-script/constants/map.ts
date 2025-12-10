@@ -145,9 +145,6 @@ function mapConstructorArguments(
                 type: 'identifier',
                 name: { node: 'defaultInsets', location: noLocation },
             },
-            documentation: {
-                collapsable: true,
-            },
         },
         textBoxes: {
             type: { type: 'concrete', value: { type: 'vector', elementType: textBoxType } },
