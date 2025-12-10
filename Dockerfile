@@ -3,7 +3,7 @@
 FROM python:3.10
 
 # 😭
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
 RUN apt-get install -y nodejs
 
 RUN pip3 install --upgrade pip virtualenv
