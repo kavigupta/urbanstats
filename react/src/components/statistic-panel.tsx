@@ -52,19 +52,42 @@ function useStatisticPanelData(universe: string, statpath: string, articleType: 
 }
 
 export function StatisticPanel(props: StatisticPanelProps): ReactNode {
+    const { data, articleNames, loading } = useStatisticPanelData(props.universe, props.statpath, props.articleType)
+
+    if (loading || data === undefined || articleNames === undefined) {
+        return (
+            <PageTemplate
+                hasUniverseSelector={true}
+                universes={universes_ordered.filter(
+                    universe => forType(props.counts, universe, props.statcol, props.articleType) > 0,
+                )}
+            >
+                <RelativeLoader loading={loading} />
+            </PageTemplate>
+        )
+    }
+    return (
+        <StatisticPanelOnceLoaded
+            {...props}
+            data={data}
+            articleNames={articleNames}
+        />
+    )
+}
+
+interface StatisticPanelLoadedProps extends StatisticPanelProps {
+    data: { value: number[], populationPercentile: number[] }
+    articleNames: string[]
+}
+
+function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
     const colors = useColors()
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
     const navContext = useContext(Navigator.Context)
     const headerTextClass = useHeaderTextClass()
 
-    const { data, articleNames, loading } = useStatisticPanelData(props.universe, props.statpath, props.articleType)
-
     const isAscending = props.order === 'ascending'
-
-    const count = data === undefined ? 0 : data.value.filter(x => !isNaN(x)).length
-
-    const amount = props.amount === 'All' ? count : props.amount
 
     const count = props.data.value.filter(x => !isNaN(x)).length
 
@@ -89,19 +112,6 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         return result
     }, [props.start, amount, count, isAscending])
 
-    if (loading || data === undefined || articleNames === undefined) {
-        return (
-            <PageTemplate
-                hasUniverseSelector={true}
-                universes={universes_ordered.filter(
-                    universe => forType(props.counts, universe, props.statcol, props.articleType) > 0,
-                )}
-            >
-                <RelativeLoader loading={loading} />
-            </PageTemplate>
-        )
-    }
-
     const screencapElements = (): ScreencapElements => ({
         path: `${sanitize(props.joinedString)}.png`,
         overallWidth: tableRef.current!.offsetWidth * 2,
@@ -124,7 +134,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     }
 
     const getRowBackgroundColor = (rowIdx: number): string => {
-        const nameAtIdx = articleNames[indexRange[rowIdx]]
+        const nameAtIdx = props.articleNames[indexRange[rowIdx]]
         if (nameAtIdx === props.highlight) {
             return colors.highlight
         }
@@ -143,11 +153,11 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         const dataRows: string[][] = []
 
         // Include all data, not just the current page
-        for (let i = 0; i < articleNames.length; i++) {
+        for (let i = 0; i < props.articleNames.length; i++) {
             const rank = i + 1
-            const name = articleNames[i]
-            const value = data.value[i]
-            const percentile = data.populationPercentile[i]
+            const name = props.articleNames[i]
+            const value = props.data.value[i]
+            const percentile = props.data.populationPercentile[i]
 
             const formattedValue = value.toLocaleString()
 
@@ -193,8 +203,8 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                         getRowBackgroundColor={getRowBackgroundColor}
                         widthLeftHeader={widthLeftHeader}
                         columnWidth={(100 - widthLeftHeader) / 1}
-                        data={data}
-                        articleNames={articleNames}
+                        data={props.data}
+                        articleNames={props.articleNames}
                     />
                 </div>
                 <div style={{ marginBlockEnd: '1em' }}></div>
