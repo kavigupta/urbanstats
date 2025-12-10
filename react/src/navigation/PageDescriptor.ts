@@ -4,7 +4,7 @@ import { applySettingsParamSettings, settingsConnectionConfig } from '../compone
 import type { ArticlePanel } from '../components/article-panel'
 import type { ComparisonPanel } from '../components/comparison-panel'
 import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
-import { ArticleRow, forType, loadArticles } from '../components/load-article'
+import { ArticleRow, loadArticles } from '../components/load-article'
 import type { QuizPanel } from '../components/quiz-panel'
 import type { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'

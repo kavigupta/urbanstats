@@ -195,13 +195,9 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 </div>
                 <div style={{ marginBlockEnd: '1em' }}></div>
                 <Pagination
-                    start={props.start}
-                    amount={props.amount}
-                    count={articleNames.length}
-                    explanationPage={props.explanationPage}
-                    statname={props.statname}
-                    articleType={props.articleType}
-                    order={props.order}
+                    {...props}
+                    count={count}
+                    amount={amount}
                 />
             </div>
         </PageTemplate>
