@@ -12,11 +12,13 @@ import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositiona
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
 import { USSType, USSFunctionArgType, renderType, USSFunctionType, TypeEnvironment } from '../../urban-stats-script/types-values'
 import { DefaultMap } from '../../utils/DefaultMap'
+import { Property } from '../../utils/Property'
 import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
 
 import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
+import { SelectionContext, Selection as ContextSelection } from './SelectionContext'
 import { Selector, classifyExpr, getColor, labelPadding } from './Selector'
 import { maybeParseExpr, parseExpr, Selection, possibilities } from './parseExpr'
 
@@ -137,7 +139,7 @@ function ArgumentEditor(props: {
                     isEnabled && (
                         <RenderTwiceHidden<HTMLDivElement>>
                             {(renderArg) => {
-                                return (
+                                const result = (
                                     <div
                                         // @ts-expect-error -- inert is not in the type definitions yet
                                         inert={renderArg.kind === 'hidden' ? '' : undefined}
@@ -150,7 +152,7 @@ function ArgumentEditor(props: {
                                                 : {
                                                         maxHeight: collapsed ? 0 : renderArg.height,
                                                         transition: 'max-height 0.25s',
-                                                        overflowY: 'clip',
+                                                        overflowY: collapsed ? 'clip' : undefined,
                                                     }),
                                         }}
                                         ref={renderArg.kind === 'hidden' ? renderArg.ref : undefined}
@@ -168,6 +170,14 @@ function ArgumentEditor(props: {
                                         />
                                     </div>
                                 )
+                                if (renderArg.kind === 'hidden') {
+                                    return (
+                                        <SelectionContext.Provider value={nullSelectionContext}>
+                                            {result}
+                                        </SelectionContext.Provider>
+                                    )
+                                }
+                                return result
                             }}
 
                         </RenderTwiceHidden>
@@ -177,6 +187,8 @@ function ArgumentEditor(props: {
         </div>
     )
 }
+
+const nullSelectionContext = new Property<ContextSelection | undefined>(undefined)
 
 export function AutoUXEditor(props: {
     uss: UrbanStatsASTExpression
