@@ -13,7 +13,7 @@ import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import type { DataCreditPanel } from '../data-credit'
 import type { ScreenshotDiffViewerPanel } from '../dev/ScreenshotDiffViewerPanel'
-import { loadJSON, loadStatisticsPage } from '../load_json'
+import { loadJSON } from '../load_json'
 import type { DebugMapTextBoxPanel } from '../mapper/components/DebugMapTextBox'
 import type { MapperPanel } from '../mapper/components/MapperPanel'
 import type { MapSettings } from '../mapper/settings/utils'
@@ -489,8 +489,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             const statcol = stats[statIndex]
             const explanationPage = explanation_pages[statIndex]
 
-            const [[data, articleNames], countsByArticleType, panel] = await Promise.all([
-                loadStatisticsPage(statUniverse, statpath, newDescriptor.article_type),
+            const [countsByArticleType, panel] = await Promise.all([
                 getCountsByArticleType(),
                 import('../components/statistic-panel'),
             ])
@@ -499,6 +498,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 pageData: {
                     kind: 'statistic',
                     statcol,
+                    statpath,
                     statname: newDescriptor.statname,
                     explanationPage,
                     order: newDescriptor.order,
@@ -507,8 +507,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     joinedString: statpath,
                     start: newDescriptor.start,
                     amount: newDescriptor.amount,
-                    articleNames,
-                    data,
                     renderedStatname: newDescriptor.statname,
                     universe: statUniverse,
                     // StatisticPanel needs this to compute the set of universes to display

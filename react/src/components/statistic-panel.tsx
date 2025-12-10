@@ -3,8 +3,10 @@ import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, 
 import stats from '../data/statistic_list'
 import paths from '../data/statistic_path_list'
 import universes_ordered from '../data/universes_ordered'
+import { loadStatisticsPage } from '../load_json'
 import { Navigator } from '../navigation/Navigator'
 import { sanitize, statisticDescriptor } from '../navigation/links'
+import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { StatName, StatPath } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
@@ -13,6 +15,7 @@ import './article.css'
 import { useUniverse } from '../universe'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType } from '../utils/text'
+import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { CountsByUT } from './countsByArticleType'
 import { CSVExportData } from './csv-export'
@@ -27,39 +30,46 @@ export interface StatisticPanelProps {
     order: 'ascending' | 'descending'
     joinedString: string
     statcol: StatCol
+    statpath: StatPath
     statname: StatName
     articleType: string
-    articleNames: string[]
     highlight: string | undefined
     renderedStatname: string
-    data: {
-        value: number[]
-        populationPercentile: number[]
-    }
     explanationPage: string
     counts: CountsByUT
+    universe: string
+}
+
+function useStatisticPanelData(universe: string, statpath: string, articleType: string): { data: { value: number[], populationPercentile: number[] } | undefined, articleNames: string[] | undefined, loading: boolean } {
+    const dataPromise = useMemo(() => loadStatisticsPage(universe, statpath, articleType), [universe, statpath, articleType])
+    const { result, loading } = useOrderedResolve(dataPromise)
+
+    return {
+        data: result?.[0],
+        articleNames: result?.[1],
+        loading,
+    }
 }
 
 export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const colors = useColors()
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
+    const navContext = useContext(Navigator.Context)
+    const headerTextClass = useHeaderTextClass()
 
-    const screencapElements = (): ScreencapElements => ({
-        path: `${sanitize(props.joinedString)}.png`,
-        overallWidth: tableRef.current!.offsetWidth * 2,
-        elementsToRender: [headersRef.current!, tableRef.current!],
-    })
+    const { data, articleNames, loading } = useStatisticPanelData(props.universe, props.statpath, props.articleType)
 
     const isAscending = props.order === 'ascending'
 
-    const navContext = useContext(Navigator.Context)
-
-    const count = props.data.value.filter(x => !isNaN(x)).length
+    const count = data === undefined ? 0 : data.value.filter(x => !isNaN(x)).length
 
     const amount = props.amount === 'All' ? count : props.amount
 
     const indexRange = useMemo(() => {
+        if (count === 0) {
+            return []
+        }
         const start = props.start - 1
         let end = start + amount
         if (end + amount > count) {
@@ -74,6 +84,25 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         })
         return result
     }, [props.start, amount, count, isAscending])
+
+    if (loading || data === undefined || articleNames === undefined) {
+        return (
+            <PageTemplate
+                hasUniverseSelector={true}
+                universes={universes_ordered.filter(
+                    universe => forType(props.counts, universe, props.statcol, props.articleType) > 0,
+                )}
+            >
+                <RelativeLoader loading={loading} />
+            </PageTemplate>
+        )
+    }
+
+    const screencapElements = (): ScreencapElements => ({
+        path: `${sanitize(props.joinedString)}.png`,
+        overallWidth: tableRef.current!.offsetWidth * 2,
+        elementsToRender: [headersRef.current!, tableRef.current!],
+    })
 
     const swapAscendingDescending = (currentUniverse: string | undefined): void => {
         const newOrder = isAscending ? 'descending' : 'ascending'
@@ -91,7 +120,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     }
 
     const getRowBackgroundColor = (rowIdx: number): string => {
-        const nameAtIdx = props.articleNames[indexRange[rowIdx]]
+        const nameAtIdx = articleNames[indexRange[rowIdx]]
         if (nameAtIdx === props.highlight) {
             return colors.highlight
         }
@@ -110,11 +139,11 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         const dataRows: string[][] = []
 
         // Include all data, not just the current page
-        for (let i = 0; i < props.articleNames.length; i++) {
+        for (let i = 0; i < articleNames.length; i++) {
             const rank = i + 1
-            const name = props.articleNames[i]
-            const value = props.data.value[i]
-            const percentile = props.data.populationPercentile[i]
+            const name = articleNames[i]
+            const value = data.value[i]
+            const percentile = data.populationPercentile[i]
 
             const formattedValue = value.toLocaleString()
 
@@ -134,8 +163,6 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const csvExportData: CSVExportData = { csvData, csvFilename }
 
     const widthLeftHeader = 50
-
-    const headerTextClass = useHeaderTextClass()
 
     return (
         <PageTemplate
@@ -162,11 +189,19 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                         getRowBackgroundColor={getRowBackgroundColor}
                         widthLeftHeader={widthLeftHeader}
                         columnWidth={(100 - widthLeftHeader) / 1}
+                        data={data}
+                        articleNames={articleNames}
                     />
                 </div>
                 <div style={{ marginBlockEnd: '1em' }}></div>
                 <Pagination
-                    {...props}
+                    start={props.start}
+                    amount={props.amount}
+                    count={articleNames.length}
+                    explanationPage={props.explanationPage}
+                    statname={props.statname}
+                    articleType={props.articleType}
+                    order={props.order}
                 />
             </div>
         </PageTemplate>
@@ -181,6 +216,8 @@ function StatisticPanelTable(props: {
     getRowBackgroundColor: (rowIdx: number) => string
     widthLeftHeader: number
     columnWidth: number
+    data: { value: number[], populationPercentile: number[] }
+    articleNames: string[]
 }): ReactNode {
     const currentUniverse = useUniverse()
 
@@ -191,9 +228,9 @@ function StatisticPanelTable(props: {
         const totalCountInClass = forType(props.props.counts, currentUniverse, props.props.statcol, props.props.articleType)
         const totalCountOverall = forType(props.props.counts, currentUniverse, props.props.statcol, 'overall')
         return {
-            statval: props.props.data.value[i],
+            statval: props.data.value[i],
             ordinal: i + 1,
-            percentileByPopulation: props.props.data.populationPercentile[i],
+            percentileByPopulation: props.data.populationPercentile[i],
             statcol: props.props.statcol,
             statname: props.props.statname,
             statpath,
@@ -208,7 +245,7 @@ function StatisticPanelTable(props: {
     })
 
     const leftHeaderSpecs: CellSpec[] = articleRows.map((row, rowIdx) => {
-        const articleName = props.props.articleNames[props.indexRange[rowIdx]]
+        const articleName = props.articleNames[props.indexRange[rowIdx]]
         return {
             type: 'statistic-panel-longname',
             longname: articleName,
@@ -217,7 +254,7 @@ function StatisticPanelTable(props: {
     })
 
     const rowSpecs: CellSpec[][] = articleRows.map((row, rowIdx) => {
-        const articleName = props.props.articleNames[props.indexRange[rowIdx]]
+        const articleName = props.articleNames[props.indexRange[rowIdx]]
         return [{
             type: 'statistic-row',
             longname: articleName,
@@ -254,7 +291,7 @@ function StatisticPanelTable(props: {
         showBottomBar: false,
     }
 
-    const highlightRowIndex = props.indexRange.indexOf(props.props.articleNames.indexOf(props.props.highlight ?? ''))
+    const highlightRowIndex = props.indexRange.indexOf(props.articleNames.indexOf(props.props.highlight ?? ''))
 
     return (
         <TableContents
