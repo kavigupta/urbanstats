@@ -152,6 +152,9 @@ function mapConstructorArguments(
         textBoxes: {
             type: { type: 'concrete', value: { type: 'vector', elementType: textBoxType } },
             defaultValue: createConstantExpression(null),
+            documentation: {
+                collapsable: true,
+            },
         },
     } satisfies Record<string, NamedFunctionArgumentWithDocumentation>
 }

@@ -83,8 +83,8 @@ function ArgumentEditor(props: {
                         position: 'absolute',
                         width: 16,
                         height: 16,
-                        left: -12,
-                        top: 4,
+                        left: -14,
+                        top: 3,
                     }}
                     onClick={() => {
                         props.setUss(
