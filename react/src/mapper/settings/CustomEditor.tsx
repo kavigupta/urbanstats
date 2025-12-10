@@ -6,6 +6,7 @@ import { EditorError } from '../../urban-stats-script/editor-utils'
 import { ParseError, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
 
+import { ActionOptions } from './EditMapperPanel'
 import { SelectionContext } from './SelectionContext'
 
 export function CustomEditor({
@@ -17,7 +18,7 @@ export function CustomEditor({
     placeholder,
 }: {
     uss: UrbanStatsASTExpression & { type: 'customNode' }
-    setUss: (u: UrbanStatsASTExpression & { type: 'customNode' }) => void
+    setUss: (u: UrbanStatsASTExpression & { type: 'customNode' }, o: ActionOptions) => void
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
@@ -33,7 +34,7 @@ export function CustomEditor({
             uss={uss.originalCode}
             setUss={(u: string) => {
                 const parsed = parseNoErrorAsCustomNode(u, blockIdent, uss.expectedType)
-                setUss(parsed)
+                setUss(parsed, {})
             }}
             typeEnvironment={typeEnvironment}
             results={ourErrors}

@@ -395,6 +395,7 @@ export function useUndoRedo<T, S>(
 ): {
         addState: (state: T, selection: S) => void
         updateCurrentSelection: (selection: S) => void
+        updateCurrentState: (state: T) => void
         ui: ReactNode
         canUndo: boolean
         canRedo: boolean
@@ -431,6 +432,10 @@ export function useUndoRedo<T, S>(
 
     const updateCurrentSelection = useCallback((selection: S): void => {
         undoStack.current[undoStack.current.length - 1].selection = selection
+    }, [])
+
+    const updateCurrentState = useCallback((state: T): void => {
+        undoStack.current[undoStack.current.length - 1].state = state
     }, [])
 
     const doUndo = useCallback((): void => {
@@ -510,6 +515,7 @@ export function useUndoRedo<T, S>(
     return {
         addState,
         updateCurrentSelection,
+        updateCurrentState,
         ui,
         canUndo,
         canRedo,
