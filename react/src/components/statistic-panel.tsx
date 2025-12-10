@@ -1,6 +1,8 @@
 import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
+import explanation_pages from '../data/explanation_page'
 import stats from '../data/statistic_list'
+import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import universes_ordered from '../data/universes_ordered'
 import { loadStatisticsPage } from '../load_json'
@@ -24,20 +26,23 @@ import { PointerArrow } from './pointer-cell'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
 
-export interface StatisticPanelProps {
+interface StatisticDescriptor {
+    type: 'simple-statistic'
+    statname: StatName
+}
+
+interface StatisticCommonProps {
     start: number
     amount: number | 'All'
     order: 'ascending' | 'descending'
-    joinedString: string
-    statcol: StatCol
-    statpath: StatPath
-    statname: StatName
     articleType: string
     highlight: string | undefined
-    renderedStatname: string
-    explanationPage: string
     counts: CountsByUT
     universe: string
+}
+
+export interface StatisticPanelProps extends StatisticCommonProps {
+    descriptor: StatisticDescriptor
 }
 
 function useStatisticPanelData(universe: string, statpath: string, articleType: string): { data: { value: number[], populationPercentile: number[] } | undefined, articleNames: string[] | undefined, loading: boolean } {
@@ -52,14 +57,19 @@ function useStatisticPanelData(universe: string, statpath: string, articleType: 
 }
 
 export function StatisticPanel(props: StatisticPanelProps): ReactNode {
-    const { data, articleNames, loading } = useStatisticPanelData(props.universe, props.statpath, props.articleType)
+    const statIndex = names.indexOf(props.descriptor.statname)
+    const statpath = paths[statIndex]
+    const statcol = stats[statIndex]
+    const explanationPage = explanation_pages[statIndex]
+
+    const { data, articleNames, loading } = useStatisticPanelData(props.universe, statpath, props.articleType)
 
     if (loading || data === undefined || articleNames === undefined) {
         return (
             <PageTemplate
                 hasUniverseSelector={true}
                 universes={universes_ordered.filter(
-                    universe => forType(props.counts, universe, props.statcol, props.articleType) > 0,
+                    universe => forType(props.counts, universe, statcol, props.articleType) > 0,
                 )}
             >
                 <RelativeLoader loading={loading} />
@@ -71,13 +81,23 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             {...props}
             data={data}
             articleNames={articleNames}
+            statname={props.descriptor.statname}
+            statcol={statcol}
+            explanationPage={explanationPage}
+            renderedStatname={props.descriptor.statname}
+            joinedString={statpath}
         />
     )
 }
 
-interface StatisticPanelLoadedProps extends StatisticPanelProps {
+interface StatisticPanelLoadedProps extends StatisticCommonProps {
     data: { value: number[], populationPercentile: number[] }
     articleNames: string[]
+    statname: StatName
+    renderedStatname: string
+    statcol: StatCol
+    explanationPage: string
+    joinedString: string
 }
 
 function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
@@ -220,7 +240,7 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
 
 function StatisticPanelTable(props: {
     indexRange: number[]
-    props: StatisticPanelProps
+    props: StatisticPanelLoadedProps
     isAscending: boolean
     swapAscendingDescending: (currentUniverse: string | undefined) => void
     getRowBackgroundColor: (rowIdx: number) => string
