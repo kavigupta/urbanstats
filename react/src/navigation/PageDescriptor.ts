@@ -495,14 +495,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 import('../components/statistic-panel'),
             ])
 
-            let parsedAmount: number
-            if (newDescriptor.amount === 'All') {
-                parsedAmount = articleNames.length
-            }
-            else {
-                parsedAmount = newDescriptor.amount
-            }
-
             return {
                 pageData: {
                     kind: 'statistic',
@@ -514,7 +506,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     articleType: newDescriptor.article_type,
                     joinedString: statpath,
                     start: newDescriptor.start,
-                    amount: parsedAmount,
+                    amount: newDescriptor.amount,
                     articleNames,
                     data,
                     renderedStatname: newDescriptor.statname,

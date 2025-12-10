@@ -23,7 +23,7 @@ import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
 
 export interface StatisticPanelProps {
     start: number
-    amount: number
+    amount: number | 'All'
     order: 'ascending' | 'descending'
     joinedString: string
     statcol: StatCol
@@ -57,10 +57,12 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     const count = props.data.value.filter(x => !isNaN(x)).length
 
+    const amount = props.amount === 'All' ? count : props.amount
+
     const indexRange = useMemo(() => {
         const start = props.start - 1
-        let end = start + props.amount
-        if (end + props.amount > count) {
+        let end = start + amount
+        if (end + amount > count) {
             end = count
         }
         const total = count
@@ -71,7 +73,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             return start + i
         })
         return result
-    }, [props.start, props.amount, count, isAscending])
+    }, [props.start, amount, count, isAscending])
 
     const swapAscendingDescending = (currentUniverse: string | undefined): void => {
         const newOrder = isAscending ? 'descending' : 'ascending'
@@ -80,7 +82,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             statname: props.statname,
             articleType: props.articleType,
             start: 1,
-            amount: props.amount,
+            amount,
             order: newOrder,
         }), {
             history: 'push',
