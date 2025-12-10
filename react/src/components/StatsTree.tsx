@@ -6,6 +6,7 @@ import { Category, Group } from '../page_template/statistic-tree'
 import { useMobileLayout } from '../utils/responsive'
 import { zIndex } from '../utils/zIndex'
 
+import { ExpandButton } from './ExpandButton'
 import { RenderTwiceHidden } from './RenderTwiceHidden'
 import { CheckboxSettingCustom, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
 
@@ -86,16 +87,14 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
                 {hasSearchMatch
                     ? null
                     : (
-                            <button
+                            <ExpandButton
+                                /* Arrows are on the right on mobile to be used with both thumbs */
+                                pointing={isMobileLayout ? 'left' : 'right'}
+                                isExpanded={isExpanded}
                                 data-category-id={category.id}
                                 onClick={() => { setIsExpanded(!isExpanded) }}
                                 className="expandButton"
-                                /* Arrows are on the right on mobile to be used with both thumbs */
                                 style={{
-                                    transform: isExpanded ? `rotate(${isMobileLayout ? 90 : 90}deg)` : `rotate(${isMobileLayout ? 180 : 0}deg)`,
-                                    backgroundImage: 'url("./arrow-right.png")',
-                                    backgroundPosition: 'center',
-                                    backgroundRepeat: 'no-repeat',
                                     backgroundSize: isMobileLayout ? '24px' : '16px',
                                 }}
                                 aria-label={isExpanded ? `Collapse ${category.name} category` : `Expand ${category.name} category`}
