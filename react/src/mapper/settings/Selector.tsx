@@ -17,6 +17,7 @@ import { assert } from '../../utils/defensive'
 
 import * as l from './../../urban-stats-script/literal-parser'
 import { BetterSelector, SelectorRenderResult } from './BetterSelector'
+import { ActionOptions } from './EditMapperPanel'
 import { parseExpr, possibilities, Selection } from './parseExpr'
 
 export const labelPadding = '4px'
@@ -28,7 +29,7 @@ function isCustomConstructor(possibility: Selection, typeEnvironment: TypeEnviro
 export function Selector(props: {
     uss: UrbanStatsASTExpression
     setSelection: (selection: Selection) => void
-    setUss: (u: UrbanStatsASTExpression) => void
+    setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void
     typeEnvironment: TypeEnvironment
     type: USSType[]
     blockIdent: string
@@ -120,7 +121,7 @@ export function Selector(props: {
                                 () => { throw new Error('Should not happen') },
                                 true,
                             )
-                            props.setUss(newUss)
+                            props.setUss(newUss, {})
                         }
                     }}
                 />
@@ -135,7 +136,7 @@ export function Selector(props: {
     )
 }
 
-function TextInput({ currentValue, blockIdent, setUss }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression) => void }): ReactNode {
+function TextInput({ currentValue, blockIdent, setUss }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void }): ReactNode {
     return (
         <textarea
             value={currentValue}
@@ -147,7 +148,7 @@ function TextInput({ currentValue, blockIdent, setUss }: { currentValue: string,
                         node: { type: 'string', value },
                         location: emptyLocation(blockIdent),
                     },
-                })
+                }, {})
             }}
             style={{ width: '200px', fontSize: '14px', padding: '4px 8px', resize: 'vertical' }}
             placeholder="Enter string"
@@ -155,7 +156,7 @@ function TextInput({ currentValue, blockIdent, setUss }: { currentValue: string,
     )
 }
 
-function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression) => void }): ReactNode {
+function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void }): ReactNode {
     return (
         <input
             type="text"
@@ -177,7 +178,7 @@ function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: strin
                         location: emptyLocation(blockIdent),
                     },
                 }
-                setUss(newUss)
+                setUss(newUss, {})
             }}
             style={{ width: '200px', fontSize: '14px', padding: '4px 8px', resize: 'none' }}
             placeholder="Enter number"

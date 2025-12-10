@@ -66,6 +66,10 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     const amount = props.amount === 'All' ? count : props.amount
 
+    const count = props.data.value.filter(x => !isNaN(x)).length
+
+    const amount = props.amount === 'All' ? count : props.amount
+
     const indexRange = useMemo(() => {
         if (count === 0) {
             return []

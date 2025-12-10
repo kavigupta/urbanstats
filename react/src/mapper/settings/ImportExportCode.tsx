@@ -6,9 +6,10 @@ import { renderLocInfo } from '../../urban-stats-script/interpreter'
 import { parse, unparse } from '../../urban-stats-script/parser'
 import { cancelled, uploadFile } from '../../utils/upload'
 
+import { ActionOptions } from './EditMapperPanel'
 import { convertToMapUss, defaultSettings, mapperMetaFields, MapSettings } from './utils'
 
-export function ImportExportCode({ mapSettings, setMapSettings }: { mapSettings: MapSettings, setMapSettings: (v: MapSettings) => void }): ReactNode {
+export function ImportExportCode({ mapSettings, setMapSettings }: { mapSettings: MapSettings, setMapSettings: (v: MapSettings, o: ActionOptions) => void }): ReactNode {
     return (
         <div style={{
             display: 'flex',
@@ -30,7 +31,7 @@ export function ImportExportCode({ mapSettings, setMapSettings }: { mapSettings:
                     return
                 }
 
-                setMapSettings(importResult.mapSettings)
+                setMapSettings(importResult.mapSettings, {})
             }}
             >
                 Import Script
