@@ -23,8 +23,7 @@ import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
 
 export interface StatisticPanelProps {
     start: number
-    amount: number
-    count: number
+    amount: number | 'All'
     order: 'ascending' | 'descending'
     joinedString: string
     statcol: StatCol
@@ -56,13 +55,17 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     const navContext = useContext(Navigator.Context)
 
+    const count = props.data.value.filter(x => !isNaN(x)).length
+
+    const amount = props.amount === 'All' ? count : props.amount
+
     const indexRange = useMemo(() => {
         const start = props.start - 1
-        let end = start + props.amount
-        if (end + props.amount > props.count) {
-            end = props.count
+        let end = start + amount
+        if (end + amount > count) {
+            end = count
         }
-        const total = props.count
+        const total = count
         const result = Array.from({ length: end - start }, (_, i) => {
             if (isAscending) {
                 return total - start - i - 1
@@ -70,7 +73,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             return start + i
         })
         return result
-    }, [props.start, props.amount, props.count, isAscending])
+    }, [props.start, amount, count, isAscending])
 
     const swapAscendingDescending = (currentUniverse: string | undefined): void => {
         const newOrder = isAscending ? 'descending' : 'ascending'
@@ -79,7 +82,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             statname: props.statname,
             articleType: props.articleType,
             start: 1,
-            amount: props.amount,
+            amount,
             order: newOrder,
         }), {
             history: 'push',
@@ -164,6 +167,8 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 <div style={{ marginBlockEnd: '1em' }}></div>
                 <Pagination
                     {...props}
+                    count={count}
+                    amount={amount}
                 />
             </div>
         </PageTemplate>

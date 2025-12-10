@@ -4,7 +4,7 @@ import { applySettingsParamSettings, settingsConnectionConfig } from '../compone
 import type { ArticlePanel } from '../components/article-panel'
 import type { ComparisonPanel } from '../components/comparison-panel'
 import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
-import { ArticleRow, forType, loadArticles } from '../components/load-article'
+import { ArticleRow, loadArticles } from '../components/load-article'
 import type { QuizPanel } from '../components/quiz-panel'
 import type { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
 import explanation_pages from '../data/explanation_page'
@@ -495,27 +495,18 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 import('../components/statistic-panel'),
             ])
 
-            let parsedAmount: number
-            if (newDescriptor.amount === 'All') {
-                parsedAmount = articleNames.length
-            }
-            else {
-                parsedAmount = newDescriptor.amount
-            }
-
             return {
                 pageData: {
                     kind: 'statistic',
                     statcol,
                     statname: newDescriptor.statname,
-                    count: forType(countsByArticleType, statUniverse, statcol, newDescriptor.article_type),
                     explanationPage,
                     order: newDescriptor.order,
                     highlight: newDescriptor.highlight ?? undefined,
                     articleType: newDescriptor.article_type,
                     joinedString: statpath,
                     start: newDescriptor.start,
-                    amount: parsedAmount,
+                    amount: newDescriptor.amount,
                     articleNames,
                     data,
                     renderedStatname: newDescriptor.statname,
