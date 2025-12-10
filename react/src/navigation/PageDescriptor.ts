@@ -508,7 +508,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     kind: 'statistic',
                     statcol,
                     statname: newDescriptor.statname,
-                    count: forType(countsByArticleType, statUniverse, statcol, newDescriptor.article_type),
                     explanationPage,
                     order: newDescriptor.order,
                     highlight: newDescriptor.highlight ?? undefined,
