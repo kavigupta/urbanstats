@@ -109,36 +109,45 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
 
 type NameSpec = Extract<CellSpec, { type: 'statistic-name' }>
 
+function getGroupAndDisplayNames(nameSpec: NameSpec, nameSpecs: NameSpec[]): [string | undefined, string] {
+    if (nameSpec.row === undefined) {
+        return [undefined, nameSpec.renderedStatname]
+    }
+    const statParent = statParents.get(nameSpec.row.statpath)
+
+    const groupRows = nameSpecs.filter(s => s.row !== undefined && statParents.get(s.row.statpath)?.group.id === statParent?.group.id)
+    const groupSize = groupRows.length
+
+    const groupSourcesSet = new Set(
+        groupRows
+            .map(s => statParents.get(s.row!.statpath)?.source)
+            .filter(source => source !== null)
+            .map(source => source!.name),
+    )
+    const groupHasMultipleSources = groupSourcesSet.size > 1
+
+    const sourceName = statParent?.source?.name
+    let displayName = groupSize > 1 ? (statParent?.indentedName ?? nameSpec.renderedStatname) : nameSpec.renderedStatname
+    if (groupHasMultipleSources && sourceName) {
+        displayName = `${displayName} [${sourceName}]`
+    }
+    const groupName = groupSize > 1 ? statParent?.group.name : undefined
+    return [groupName, displayName]
+}
+
 export function computeNameSpecsWithGroups(nameSpecs: NameSpec[]): { updatedNameSpecs: NameSpec[], groupNames: (string | undefined)[] } {
     const updatedNameSpecs: NameSpec[] = []
     const groupNames: (string | undefined)[] = []
 
     for (const spec of nameSpecs) {
-        const statParent = statParents.get(spec.row.statpath)
-
-        const groupRows = nameSpecs.filter(s => statParents.get(s.row.statpath)?.group.id === statParent?.group.id)
-        const groupSize = groupRows.length
-
-        const groupSourcesSet = new Set(
-            groupRows
-                .map(s => statParents.get(s.row.statpath)?.source)
-                .filter(source => source !== null)
-                .map(source => source!.name),
-        )
-        const groupHasMultipleSources = groupSourcesSet.size > 1
-
-        const sourceName = statParent?.source?.name
-        let displayName = groupSize > 1 ? (statParent?.indentedName ?? spec.row.renderedStatname) : spec.row.renderedStatname
-        if (groupHasMultipleSources && sourceName) {
-            displayName = `${displayName} [${sourceName}]`
-        }
+        const [groupName, displayName] = getGroupAndDisplayNames(spec, nameSpecs)
 
         updatedNameSpecs.push({
             ...spec,
-            isIndented: groupSize > 1,
+            isIndented: groupName !== undefined,
             displayName,
         })
-        groupNames.push(groupSize > 1 ? statParent?.group.name : undefined)
+        groupNames.push(groupName)
     }
 
     return { updatedNameSpecs, groupNames }
@@ -161,6 +170,7 @@ function ArticleTable(props: {
         type: 'statistic-name',
         longname: props.article.longname,
         row,
+        renderedStatname: row.renderedStatname,
         currentUniverse,
     }))
 
