@@ -80,6 +80,7 @@ async function contextForRequest(request: USSExecutionRequest): Promise<[Context
         case 'generic':
             return [emptyContext(effects), getWarnings]
         case 'mapper':
+        case 'statistics':
             return [await mapperContextForRequest(request as USSExecutionRequest & { descriptor: { kind: 'mapper' } }, effects), getWarnings]
     }
 }

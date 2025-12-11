@@ -1,6 +1,7 @@
 import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import explanation_pages from '../data/explanation_page'
+import validGeographies from '../data/mapper/used_geographies'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
@@ -14,7 +15,9 @@ import { StatName, StatPath } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './article.css'
-import { useUniverse } from '../universe'
+import { Universe, useUniverse } from '../universe'
+import { parse } from '../urban-stats-script/parser'
+import { executeAsync } from '../urban-stats-script/workerManager'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType } from '../utils/text'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
@@ -26,10 +29,15 @@ import { PointerArrow } from './pointer-cell'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
 
-interface StatisticDescriptor {
-    type: 'simple-statistic'
-    statname: StatName
-}
+export type StatisticDescriptor =
+    | {
+        type: 'simple-statistic'
+        statname: StatName
+    }
+    | {
+        type: 'uss-statistic'
+        uss: string
+    }
 
 interface StatisticCommonProps {
     start: number
@@ -56,13 +64,135 @@ function useStatisticPanelData(universe: string, statpath: string, articleType: 
     }
 }
 
-export function StatisticPanel(props: StatisticPanelProps): ReactNode {
-    const statIndex = names.indexOf(props.descriptor.statname)
-    const statpath = paths[statIndex]
-    const statcol = stats[statIndex]
-    const explanationPage = explanation_pages[statIndex]
+function useUSSStatisticPanelData(uss: string, geographyKind: (typeof validGeographies)[number], universe: Universe): { data: { value: number[], populationPercentile: number[] } | undefined, articleNames: string[] | undefined, loading: boolean, error: string | undefined, name: string | undefined } {
+    const [data, setData] = useState<{ value: number[], populationPercentile: number[] } | undefined>(undefined)
+    const [articleNames, setArticleNames] = useState<string[] | undefined>(undefined)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | undefined>(undefined)
+    const [name, setName] = useState<string | undefined>(undefined)
 
-    const { data, articleNames, loading } = useStatisticPanelData(props.universe, statpath, props.articleType)
+    useEffect(() => {
+        setLoading(true)
+        setError(undefined)
+        const executeUSS = async (): Promise<void> => {
+            try {
+                const stmts = parse(uss, { type: 'single', ident: 'statistic-uss' })
+                if (stmts.type === 'error') {
+                    setError(stmts.errors.map(e => e.value).join('; '))
+                    setLoading(false)
+                    return
+                }
+
+                const exec = await executeAsync({ descriptor: { kind: 'statistics', geographyKind, universe }, stmts })
+                console.log(exec)
+                if (exec.error.length > 0) {
+                    setError(exec.error.map(e => e.value).join('; '))
+                    setLoading(false)
+                    return
+                }
+
+                if (exec.resultingValue === undefined) {
+                    setError('USS expression did not return a value')
+                    setLoading(false)
+                    return
+                }
+                const res = exec.resultingValue
+
+                if (res.type.name !== 'table') {
+                    setError(`USS expression must return a table, got ${exec.resultingValue.type.name}`)
+                }
+
+                const tableValue = exec.resultingValue.value
+                const table = tableValue.value
+
+                if (table.columns.length === 0) {
+                    setError('Table has no columns')
+                    setLoading(false)
+                    return
+                }
+
+                // Use first column for now
+                const firstColumn = table.columns[0]
+                const values = firstColumn.values
+                setName(firstColumn.name)
+                const geonames = table.geo
+
+                setData({
+                    value: values,
+                    populationPercentile: Array.from({ length: values.length }, () => 0), // TODO: calculate percentiles
+                })
+                setArticleNames(geonames)
+                setLoading(false)
+            }
+            catch (e) {
+                setError(e instanceof Error ? e.message : 'Unknown error')
+                setLoading(false)
+            }
+        }
+        void executeUSS()
+    }, [uss, geographyKind, universe])
+
+    const [dataSorted, articleNamesSorted] = useMemo(() => {
+        if (data === undefined || articleNames === undefined) {
+            return [undefined, undefined]
+        }
+        const sortedIndices = data.value
+            .map((_, i) => i)
+            .sort((a, b) => data.value[b] - data.value[a])
+        const sortedData = {
+            value: sortedIndices.map(i => data.value[i]),
+            populationPercentile: sortedIndices.map(i => data.populationPercentile[i]),
+        }
+        const sortedArticleNames = sortedIndices.map(i => articleNames[i])
+        return [sortedData, sortedArticleNames]
+    }, [data, articleNames])
+
+    return { data: dataSorted, articleNames: articleNamesSorted, loading, error, name }
+}
+
+export function StatisticPanel(props: StatisticPanelProps): ReactNode {
+    const isUSS = props.descriptor.type === 'uss-statistic'
+    const ussString = isUSS ? (props.descriptor as { type: 'uss-statistic', uss: string }).uss : ''
+    console.log(ussString)
+    const ussData = useUSSStatisticPanelData(ussString, props.articleType as (typeof validGeographies)[number], props.universe as Universe)
+    const statIndex = isUSS ? -1 : names.indexOf(props.descriptor.type === 'simple-statistic' ? props.descriptor.statname : '' as StatName)
+    const statpath = isUSS ? '' : paths[statIndex]
+    const statcol = isUSS ? stats[0] : stats[statIndex]
+    const explanationPage = isUSS ? '' : explanation_pages[statIndex]
+    const regularData = useStatisticPanelData(props.universe, statpath, props.articleType)
+
+    if (isUSS) {
+        const { data, articleNames, loading, error, name } = ussData
+
+        if (loading || data === undefined || articleNames === undefined) {
+            return (
+                <PageTemplate hasUniverseSelector={true} universes={universes_ordered}>
+                    <RelativeLoader loading={loading} />
+                    {error && (
+                        <div style={{ padding: '1rem' }}>
+                            Error:
+                            {error}
+                        </div>
+                    )}
+                </PageTemplate>
+            )
+        }
+
+        return (
+            <StatisticPanelOnceLoaded
+                {...props}
+                data={data}
+                articleNames={articleNames}
+                statDesc={props.descriptor}
+                statcol={statcol}
+                explanationPage={explanationPage}
+                renderedStatname={name ?? ''}
+                joinedString=""
+            />
+        )
+    }
+
+    const { data, articleNames, loading } = regularData
 
     if (loading || data === undefined || articleNames === undefined) {
         return (
@@ -81,10 +211,10 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             {...props}
             data={data}
             articleNames={articleNames}
-            statname={props.descriptor.statname}
+            statDesc={props.descriptor}
             statcol={statcol}
             explanationPage={explanationPage}
-            renderedStatname={props.descriptor.statname}
+            renderedStatname={props.descriptor.type === 'simple-statistic' ? props.descriptor.statname : ''}
             joinedString={statpath}
         />
     )
@@ -93,7 +223,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 interface StatisticPanelLoadedProps extends StatisticCommonProps {
     data: { value: number[], populationPercentile: number[] }
     articleNames: string[]
-    statname: StatName
+    statDesc: StatisticDescriptor
     renderedStatname: string
     statcol: StatCol
     explanationPage: string
@@ -142,7 +272,7 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
         const newOrder = isAscending ? 'descending' : 'ascending'
         void navContext.navigate(statisticDescriptor({
             universe: currentUniverse,
-            statname: props.statname,
+            statDesc: props.statDesc,
             articleType: props.articleType,
             start: 1,
             amount,
@@ -262,7 +392,7 @@ function StatisticPanelTable(props: {
             ordinal: i + 1,
             percentileByPopulation: props.data.populationPercentile[i],
             statcol: props.props.statcol,
-            statname: props.props.statname,
+            statname: props.props.statDesc.type === 'simple-statistic' ? props.props.statDesc.statname : 'Population',
             statpath,
             explanationPage: props.props.explanationPage,
             articleType: props.props.articleType,
@@ -345,7 +475,7 @@ function Pagination(props: {
     count: number
     amount: number
     explanationPage: string
-    statname: StatName
+    statDesc: StatisticDescriptor
     articleType: string
     order: 'ascending' | 'descending'
 }): ReactNode {
@@ -385,7 +515,7 @@ function Pagination(props: {
         }
         void navContext.navigate(statisticDescriptor({
             universe: currentUniverse,
-            statname: props.statname,
+            statDesc: props.statDesc,
             articleType: props.articleType,
             start,
             amount: newAmount === 'All' ? 'All' : newAmountNum,
@@ -409,7 +539,8 @@ function Pagination(props: {
         const goToPage = (newPage: number): void => {
             void navContext.navigate(statisticDescriptor({
                 universe: currentUniverse,
-                statname: props.statname,
+                // statname: props.statname,
+                statDesc: props.statDesc,
                 articleType: props.articleType,
                 amount: props.amount,
                 order: props.order,
@@ -426,7 +557,7 @@ function Pagination(props: {
         else if (currentPage < 1) {
             goToPage(1)
         }
-    }, [currentPage, maxPages, currentUniverse, perPage, props.statname, props.articleType, props.amount, props.order, navContext])
+    }, [currentPage, maxPages, currentUniverse, perPage, props.statDesc, props.articleType, props.amount, props.order, navContext])
 
     const selectPage = (
         <SelectPage
