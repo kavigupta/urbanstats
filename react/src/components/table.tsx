@@ -10,6 +10,7 @@ import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { useUniverse } from '../universe'
+import { assert } from '../utils/defensive'
 import { useComparisonHeadStyle, useMobileLayout } from '../utils/responsive'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 import { displayType } from '../utils/text'
@@ -20,7 +21,7 @@ import { Icon } from './Icon'
 import { Modal } from './Modal'
 import { Percentile, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
-import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
+import { ArticleRow, Disclaimer, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
@@ -433,7 +434,7 @@ export function StatisticRowCells(props: {
     width: number
     longname: string
     statisticStyle?: CSSProperties
-    row: ArticleRow
+    row: StatisticCellRenderingInfo
     onlyColumns?: string[]
     blankColumns?: string[]
     onNavigate?: (newArticle: string) => void
@@ -455,6 +456,7 @@ export function StatisticRowCells(props: {
                         value={props.row.statval}
                         isUnit={false}
                         style={props.statisticStyle ?? {}}
+                        unit={props.row.unit}
                     />
                 </span>
             ),
@@ -470,6 +472,7 @@ export function StatisticRowCells(props: {
                             statname={props.row.statname}
                             value={props.row.statval}
                             isUnit={true}
+                            unit={props.row.unit}
                         />
                     </span>
                 </div>
@@ -524,11 +527,14 @@ export function StatisticRowCells(props: {
     )
 }
 
-function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleRow, longname: string }): ColumnLayoutProps['cells'] {
+function PointerRowCells(props: { ordinalStyle: CSSProperties, row: StatisticCellRenderingInfo, longname: string }): ColumnLayoutProps['cells'] {
     const screenshotMode = useScreenshotMode()
 
     const singlePointerCell = useSinglePointerCell()
     const [preferredPointerCell] = useSetting('mobile_article_pointers')
+
+    const statpath = props.row.statpath
+    assert(statpath !== undefined, 'Pointers must have statpath')
 
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
@@ -537,7 +543,7 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleRow, 
             <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
                 <PointerButtonsIndex
                     ordinal={props.row.ordinal}
-                    statpath={props.row.statpath}
+                    statpath={statpath}
                     type={props.row.articleType}
                     total={props.row.totalCountInClass}
                     longname={props.longname}
@@ -553,7 +559,7 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleRow, 
         content: (
             <span className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
                 <PointerButtonsIndex
-                    statpath={props.row.statpath}
+                    statpath={statpath}
                     type="overall"
                     total={props.row.totalCountOverall}
                     longname={props.longname}
@@ -1005,7 +1011,7 @@ function ordinalWidthInEm(ordinal: number, total: number, type: string, universe
     }
 }
 
-export function computeSizesForRow(row: ArticleRow, universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
+export function computeSizesForRow(row: StatisticCellRenderingInfo, universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
     // Compute the size of the ordinal and percentile text
     const [ordinalColumnWidthEm, ordinalColumnPadding] = ordinalWidthInEm(row.totalCountInClass, row.totalCountInClass, row.articleType, universe, simpleOrdinals)
     const percentileTextSample = percentileText(row.percentileByPopulation, simpleOrdinals)
@@ -1022,12 +1028,16 @@ function Ordinal(props: {
     ordinal: number
     total: number
     type: string
-    statpath: string
+    statpath?: string
     simpleOrdinals: boolean
     onNavigate?: (newArticle: string) => void
 }): ReactNode {
     const currentUniverse = useUniverse()
     const onNewNumber = async (number: number): Promise<void> => {
+        if (props.onNavigate === undefined) {
+            return
+        }
+        assert(props.statpath !== undefined, 'statpath must be defined if onNavigate is provided')
         let num = number
         if (num < 0) {
             // -1 -> props.total, -2 -> props.total - 1, etc.
@@ -1040,7 +1050,7 @@ function Ordinal(props: {
             num = 1
         }
         const data = await loadOrdering(currentUniverse, props.statpath, props.type)
-        props.onNavigate?.(data.longnames[num - 1])
+        props.onNavigate(data.longnames[num - 1])
     }
     const ordinal = props.ordinal
     const total = props.total
