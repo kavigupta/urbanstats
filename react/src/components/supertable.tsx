@@ -215,7 +215,8 @@ export interface StatisticPanelLongnameCellProps {
 }
 
 export interface StatisticNameCellProps {
-    row: ArticleRow
+    row?: ArticleRow
+    renderedStatname: string
     longname: string
     currentUniverse: string
     center?: boolean

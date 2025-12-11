@@ -226,10 +226,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         } satisfies CellSpec
     ))
 
-    const statisticNameHeaderSpecsOriginal: (CellSpec & { type: 'statistic-name' })[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => (
-        {
+    const statisticNameHeaderSpecsOriginal: (CellSpec & { type: 'statistic-name' })[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => {
+        const row = rowToDisplayForStat(statIndex)
+        return {
             type: 'statistic-name',
-            row: rowToDisplayForStat(statIndex),
+            row,
+            renderedStatname: row.renderedStatname,
             longname: names[0],
             currentUniverse,
             center: transpose ? true : false,
@@ -241,8 +243,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                 },
                 sortDirection: sortByStatIndex === statIndex ? sortDirection : 'both',
             },
-        }
-    ))
+        } satisfies CellSpec
+    })
 
     const { updatedNameSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames } = computeNameSpecsWithGroups(statisticNameHeaderSpecsOriginal)
 
