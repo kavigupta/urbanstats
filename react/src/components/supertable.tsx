@@ -3,7 +3,7 @@ import React, { CSSProperties, Fragment, ReactNode } from 'react'
 import { useUniverse } from '../universe'
 import { Article } from '../utils/protos'
 
-import { ArticleRow } from './load-article'
+import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
 import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeSizesForRow, CommonLayoutInformation } from './table'
 
@@ -215,7 +215,8 @@ export interface StatisticPanelLongnameCellProps {
 }
 
 export interface StatisticNameCellProps {
-    row: ArticleRow
+    row?: ArticleRow
+    renderedStatname: string
     longname: string
     currentUniverse: string
     center?: boolean
@@ -232,7 +233,7 @@ export interface StatisticNameCellProps {
 export interface StatisticRowCellProps {
     longname: string
     statisticStyle?: CSSProperties
-    row: ArticleRow
+    row: StatisticCellRenderingInfo
     onlyColumns?: string[]
     blankColumns?: string[]
     onNavigate?: (newArticle: string) => void
