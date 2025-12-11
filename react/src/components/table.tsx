@@ -784,7 +784,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                 <ComparisonColorBar highlightIndex={props.highlightIndex} />
             )}
             <div
-                key={`statName_${props.row.statpath}`}
+                key={`statName_${props.renderedStatname}`}
                 style={{ width: `${width}%`, padding: '1px', paddingLeft: props.isIndented ? '1em' : '1px', textAlign: props.center ? 'center' : undefined }}
             >
                 <span className="serif value" style={{ display: 'flex', alignItems: 'center', justifyContent: props.center ? 'center' : 'flex-start', gap: '0.25em' }}>
@@ -793,7 +793,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                         longname={props.longname}
                         currentUniverse={props.currentUniverse}
                         center={props.center}
-                        displayName={props.displayName ?? props.row.renderedStatname}
+                        displayName={props.displayName ?? props.renderedStatname}
                     />
                     {props.sortInfo && (
                         <span
@@ -813,14 +813,27 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
     )
 }
 
+export function ExpansionButton(props: { row: ArticleRow }): ReactNode {
+    const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
+    const colors = useColors()
+    return (
+        <div
+            className="expand-toggle"
+            onClick={() => { setExpanded(!expanded) }}
+            style={articleStatnameButtonStyle(colors)}
+        >
+            {expanded ? '-' : '+'}
+        </div>
+    )
+}
+
 export function StatisticName(props: {
-    row: ArticleRow
+    row?: ArticleRow
     longname: string
     currentUniverse: string
     center?: boolean
     displayName: string
 }): ReactNode {
-    const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
 
@@ -828,15 +841,19 @@ export function StatisticName(props: {
         <a
             style={{ textDecoration: 'none', color: colors.textMain }}
             {
-                ...navContext.link(statisticDescriptor({
-                    universe: props.currentUniverse,
-                    statname: props.row.statname,
-                    articleType: props.row.articleType,
-                    start: props.row.ordinal,
-                    amount: 20,
-                    order: 'descending',
-                    highlight: props.longname,
-                }), { scroll: { kind: 'position', top: 0 } })
+                ...(
+                    props.row === undefined
+                        ? {}
+                        : navContext.link(statisticDescriptor({
+                            universe: props.currentUniverse,
+                            statname: props.row.statname,
+                            articleType: props.row.articleType,
+                            start: props.row.ordinal,
+                            amount: 20,
+                            order: 'descending',
+                            highlight: props.longname,
+                        }), { scroll: { kind: 'position', top: 0 } })
+                )
             }
             data-test-id="statistic-link"
         >
@@ -845,18 +862,12 @@ export function StatisticName(props: {
     )
     const screenshotMode = useScreenshotMode()
     const elements = [link]
-    if (props.row.extraStat !== undefined && !screenshotMode) {
+    if (props.row?.extraStat !== undefined && !screenshotMode) {
         elements.push(
-            <div
-                className="expand-toggle"
-                onClick={() => { setExpanded(!expanded) }}
-                style={articleStatnameButtonStyle(colors)}
-            >
-                {expanded ? '-' : '+'}
-            </div>,
+            <ExpansionButton key="expansion" row={props.row} />,
         )
     }
-    if (props.row.disclaimer !== undefined) {
+    if (props.row?.disclaimer !== undefined) {
         elements.push(<StatisticNameDisclaimer disclaimer={props.row.disclaimer} />)
     }
     if (elements.length > 1) {

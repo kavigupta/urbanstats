@@ -304,6 +304,7 @@ function StatisticPanelTable(props: {
         ? [{
                 type: 'statistic-name',
                 row: articleRows[0],
+                renderedStatname: props.props.renderedStatname,
                 longname: props.props.renderedStatname,
                 currentUniverse,
                 sortInfo: {
