@@ -1,5 +1,7 @@
+import { assert } from '../../utils/defensive'
 import { Context } from '../context'
-import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, createConstantExpression } from '../types-values'
+import { noLocation } from '../location'
+import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, createConstantExpression, NamedFunctionArgumentWithDocumentation } from '../types-values'
 
 export interface TableColumn {
     name: string
@@ -8,6 +10,7 @@ export interface TableColumn {
 
 export interface Table {
     columns: TableColumn[]
+    geo: string[]
 }
 
 export const columnType = {
@@ -61,6 +64,16 @@ export const table: USSValue = {
         type: 'function',
         posArgs: [],
         namedArgs: {
+            geo: {
+                type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'opaque', name: 'geoFeatureHandle' } } },
+                defaultValue: {
+                    type: 'identifier',
+                    name: { node: 'geo', location: noLocation },
+                },
+                documentation: {
+                    hide: true,
+                },
+            } satisfies NamedFunctionArgumentWithDocumentation,
             columns: {
                 type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'opaque', name: 'column' } } },
                 defaultValue: createConstantExpression(null),
@@ -70,13 +83,19 @@ export const table: USSValue = {
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- consistency with parents
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, originalArgs: OriginalFunctionArgs): USSRawValue => {
+        const geoRaw = namedArgs.geo as USSRawValue[]
+        const geo: string[] = geoRaw.map((g) => {
+            const geoHandle = g as { type: 'opaque', opaqueType: string, value: string }
+            assert(geoHandle.opaqueType === 'geoFeatureHandle', 'Expected geoFeatureHandle opaque value')
+            return geoHandle.value
+        })
         const columnsRaw = namedArgs.columns as { type: 'opaque', opaqueType: 'column', value: TableColumn }[] | null
 
         if (columnsRaw === null) {
             return {
                 type: 'opaque',
                 opaqueType: 'table',
-                value: { columns: [] } satisfies Table,
+                value: { columns: [], geo } satisfies Table,
             }
         }
 
@@ -94,10 +113,14 @@ export const table: USSValue = {
             }
         }
 
+        if (columns.length > 0 && geo.length !== columns[0].values.length) {
+            throw new Error(`geo must have the same length as columns. geo has length ${geo.length}, but columns have length ${columns[0].values.length}`)
+        }
+
         return {
             type: 'opaque',
             opaqueType: 'table',
-            value: { columns } satisfies Table,
+            value: { columns, geo } satisfies Table,
         }
     },
     documentation: {
