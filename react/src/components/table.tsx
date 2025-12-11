@@ -841,17 +841,19 @@ export function StatisticName(props: {
         <a
             style={{ textDecoration: 'none', color: colors.textMain }}
             {
-                ...(props.row === undefined
-                    ? {}
-                    : navContext.link(statisticDescriptor({
-                        universe: props.currentUniverse,
-                        statDesc: { type: 'simple-statistic', statname: props.row.statname },
-                        articleType: props.row.articleType,
-                        start: props.row.ordinal,
-                        amount: 20,
-                        order: 'descending',
-                        highlight: props.longname,
-                    }), { scroll: { kind: 'position', top: 0 } }))
+                ...(
+                    props.row === undefined
+                        ? {}
+                        : navContext.link(statisticDescriptor({
+                            universe: props.currentUniverse,
+                            statDesc: { type: 'simple-statistic', statname: props.row.statname },
+                            articleType: props.row.articleType,
+                            start: props.row.ordinal,
+                            amount: 20,
+                            order: 'descending',
+                            highlight: props.longname,
+                        }), { scroll: { kind: 'position', top: 0 } })
+                )
             }
             data-test-id="statistic-link"
         >
