@@ -404,7 +404,7 @@ function StatisticPanelTable(props: {
         } satisfies ArticleRow
     })
 
-    const leftHeaderSpecs: CellSpec[] = articleRows.map((row, rowIdx) => {
+    const leftHeaderSpecs: CellSpec[] = props.articleNames.map((row, rowIdx) => {
         const articleName = props.articleNames[props.indexRange[rowIdx]]
         return {
             type: 'statistic-panel-longname',

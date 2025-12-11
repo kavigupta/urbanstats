@@ -1,6 +1,5 @@
 import { StatisticDescriptor } from '../components/statistic-panel'
 import type_ordering_idx from '../data/type_ordering_idx'
-import { StatName } from '../page_template/statistic-tree'
 
 import { PageDescriptor } from './PageDescriptor'
 
