@@ -1,7 +1,7 @@
 import { assert } from '../../utils/defensive'
 import { Context } from '../context'
 import { noLocation } from '../location'
-import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, createConstantExpression, NamedFunctionArgumentWithDocumentation } from '../types-values'
+import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation } from '../types-values'
 
 export interface TableColumn {
     name: string
@@ -76,7 +76,6 @@ export const table: USSValue = {
             } satisfies NamedFunctionArgumentWithDocumentation,
             columns: {
                 type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'opaque', name: 'column' } } },
-                defaultValue: createConstantExpression(null),
             },
         },
         returnType: { type: 'concrete', value: tableType },
