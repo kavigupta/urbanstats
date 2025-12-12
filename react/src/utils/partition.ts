@@ -1,41 +1,52 @@
 /**
- * indexPartitions(2, () => true) -> [[0, 1]], [[0], [1]]
- * indexPartitions(3, () => true) -> [[0, 1, 2]], [[0, 1], [2]], [[0, 2], [1]], [[0], [1, 2]], [[0], [1], [2]]
- * indexPartitions(3, p => p.every(i => Math.abs(p[0] - i) < 2)) -> [[0, 1], [2]], [[0], [1, 2]], [[0], [1], [2]]
+ * Efficiently finds the best partition in some search space, given a hueristic
+ * The hueristic must not increase when an element is added to any partition in the partition set that is ordred greater than all the elements already in the partition
  *
- * `goodPartition` is a filter function that reduces the search space if a partition could not possibly become valid by adding more elements with a higher index
+ * Example: (match numbers to partition group index parity)
+ * bestPartition(3, 2, ps => ps.reduce((a, p, i) => a + p.reduce((b, n) => b + n % 2 !== i % 2 ? 1 : 0, 0), 0), (a, b) => b - a) -> [[0, 2], [1]]
  *
  * This function has a built-in time limit, and will stop generating if it starts taking too long
  */
-export function indexPartitions(upperBound: number, goodPartition: (partition: number[]) => boolean): Generator<number[][], void> {
+export function bestPartition<Score>(upperBound: number, maxPartitions: number, score: (partition: number[][]) => Score, compareScores: (a: Score, b: Score) => number): number[][] {
     const timeLimit = Date.now() + 500
+    let bestScore: Score | undefined
+    let best: number[][] | undefined
 
-    function* helper(index: number, current: number[][]): Generator<number[][], void> {
+    function helper(index: number, current: number[][], currentScore?: Score): void {
         if (Date.now() > timeLimit) {
             throw new Error('out of time')
         }
 
         if (index === upperBound) {
-            yield current
+            currentScore = currentScore ?? score(current)
+            if (bestScore === undefined || compareScores(currentScore, bestScore) > 0) {
+                bestScore = currentScore
+                best = current
+            }
             return
         }
 
         if (current.length === 0) {
-            yield* helper(index + 1, [[index]])
+            helper(index + 1, [[index]])
             return
         }
 
         for (let i = 0; i < current.length; i++) {
-            if (goodPartition([...current[i], index])) {
-                const newPartition = current.map((subset, j) =>
-                    i === j ? [...subset, index] : subset,
-                )
-                yield* helper(index + 1, newPartition)
+            const newPartition = current.map((subset, j) =>
+                i === j ? [...subset, index] : subset,
+            )
+            const newPartitionScore = score(newPartition)
+            if (bestScore === undefined || compareScores(newPartitionScore, bestScore) >= 0) {
+                helper(index + 1, newPartition, newPartitionScore)
             }
         }
 
-        yield* helper(index + 1, [...current, [index]])
+        if (current.length < maxPartitions) {
+            const newPartition = [...current, [index]]
+            helper(index + 1, newPartition)
+        }
     }
 
-    return helper(0, [])
+    helper(0, [])
+    return best!
 }

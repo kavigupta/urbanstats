@@ -7,7 +7,7 @@ import './util/fetch'
 void test('handles index partitions error', async () => {
     mock.module('../src/utils/partition', {
         namedExports: {
-            indexPartitions: () => {
+            bestPartition: () => {
                 throw new RangeError()
             },
         },
