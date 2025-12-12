@@ -82,6 +82,7 @@ function proportionFilled(boxes: maplibregl.LngLatBounds[]): number {
  */
 export async function partitionLongnames(longnames: string[]): Promise<number[][]> {
     const fillThreshold = 0.1
+    const maxMaps = 6
 
     const boundingBoxes = await Promise.all(longnames.map(async longname => boundingBox(geometry(await loadFeatureFromPossibleSymlink(longname) as NormalizeProto<Feature>))))
 
@@ -92,15 +93,46 @@ export async function partitionLongnames(longnames: string[]): Promise<number[][
         .sort(([, a], [, b]) => a.getCenter().lat - b.getCenter().lat)
         .sort(([, a], [, b]) => a.getCenter().lng - b.getCenter().lng)
 
+    const score = (partitions: number[][]): number[] => {
+        const result = partitions.map((partition) => {
+            const filled = proportionFilled(partition.map(index => sortedBoundingBoxes[index][1]))
+            if (filled >= fillThreshold) {
+                return partition.length
+            }
+            return filled
+        }).sort((a, b) => a - b)
+        return result
+    }
+
+    const scoreGt = (a: number[], b: number[]): boolean => {
+        for (let i = 0; i < Math.min(a.length, b.length); i++) {
+            if (a[i] !== b[i]) {
+                return a[i] > b[i]
+            }
+        }
+        return a.length > b.length
+    }
+
     try {
-        for (const partitions of indexPartitions(sortedBoundingBoxes.length, partition => proportionFilled(partition.map(index => sortedBoundingBoxes[index][1])) > fillThreshold)) {
+        let bestScore: number[] = []
+        let result
+
+        for (const partitions of indexPartitions(sortedBoundingBoxes.length, maxMaps, ps => scoreGt(score(ps), bestScore))) {
             // Only iterates over good partitions
 
-            // Un-sort the indices
-            // Also re-sort the partitions by the unsorted indices
-            const unsortedPartitions = partitions.map(partition => partition.map(index => sortedBoundingBoxes[index][0])
-                .sort((a, b) => a - b)).sort((a, b) => min(a) - min(b))
-            return unsortedPartitions
+            const currentScore = score(partitions)
+            if (scoreGt(currentScore, bestScore)) {
+                // Un-sort the indices
+                // Also re-sort the partitions by the unsorted indices
+                const unsortedPartitions = partitions.map(partition => partition.map(index => sortedBoundingBoxes[index][0])
+                    .sort((a, b) => a - b)).sort((a, b) => min(a) - min(b))
+                result = unsortedPartitions
+                bestScore = currentScore
+            }
+        }
+
+        if (result !== undefined) {
+            return result
         }
     }
     catch (e) {

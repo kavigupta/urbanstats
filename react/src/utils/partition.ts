@@ -7,7 +7,7 @@
  *
  * This function has a built-in time limit, and will stop generating if it starts taking too long
  */
-export function indexPartitions(upperBound: number, goodPartition: (partition: number[]) => boolean): Generator<number[][], void> {
+export function indexPartitions(upperBound: number, maxPartitions: number, goodPartitions: (partition: number[][]) => boolean): Generator<number[][], void> {
     const timeLimit = Date.now() + 500
 
     function* helper(index: number, current: number[][]): Generator<number[][], void> {
@@ -26,15 +26,17 @@ export function indexPartitions(upperBound: number, goodPartition: (partition: n
         }
 
         for (let i = 0; i < current.length; i++) {
-            if (goodPartition([...current[i], index])) {
-                const newPartition = current.map((subset, j) =>
-                    i === j ? [...subset, index] : subset,
-                )
+            const newPartition = current.map((subset, j) =>
+                i === j ? [...subset, index] : subset,
+            )
+            if (goodPartitions(newPartition)) {
                 yield* helper(index + 1, newPartition)
             }
         }
 
-        yield* helper(index + 1, [...current, [index]])
+        if (current.length < maxPartitions) {
+            yield* helper(index + 1, [...current, [index]])
+        }
     }
 
     return helper(0, [])

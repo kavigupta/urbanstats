@@ -60,6 +60,15 @@ void test('single place', async () => {
     )
 })
 
+void test('some related places', async () => {
+    assert.deepEqual(
+        await partitionLongnames(
+            ['Los Angeles city, California, USA', 'New York city, New York, USA', 'Boston city, Massachusetts, USA', 'Chicago city, Illinois, USA', 'San Francisco city, California, USA', 'San Jose city, California, USA', 'San Diego city, California, USA', 'Denver city, Colorado, USA', 'Anchorage municipality, Alaska, USA', 'Dallas city, Texas, USA', 'Austin city, Texas, USA', 'New Orleans city, Louisiana, USA', 'Santa Barbara city, California, USA'],
+        ),
+        [[0, 4, 5, 6, 12], [1, 2], [3], [7], [8], [9, 10, 11]],
+    )
+})
+
 const manyPlaces = [
     'Shannon Colony CDP, South Dakota, USA',
     'Ruso city, North Dakota, USA',
@@ -87,19 +96,21 @@ void test('handles many places', async () => {
     assert.deepEqual(
         await partitionLongnames(manyPlaces),
         [
-            [0], [1], [2, 16],
-            [3], [4], [5],
-            [6], [7], [8],
-            [9], [10], [11],
-            [12], [13], [14],
-            [15], [17], [18],
-            [19],
+            [0, 12, 14, 17, 18, 19],
+            [1],
+            [2, 16],
+            [3],
+            [
+                4, 5, 6, 8, 9,
+                10, 11, 13, 15,
+            ],
+            [7],
         ],
     )
 })
 
 void test('index partitions fails safe due to time limit', () => {
     assert.throws(() => {
-        for (const [] of indexPartitions(100, () => true)) { }
+        for (const [] of indexPartitions(100, 100, () => true)) { }
     }, { message: 'out of time' })
 })
