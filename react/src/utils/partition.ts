@@ -3,7 +3,7 @@
  * The hueristic must not increase when an element is added to any partition in the partition set that is ordred greater than all the elements already in the partition
  *
  * Example: (match numbers to partition group index parity)
- * indexPartitions(3, 2, ps => ps.reduce((a, p, i) => a + p.reduce((b, n) => b + n % 2 !== i % 2 ? 1 : 0, 0), 0), (a, b) => b - a) -> [[0, 2], [1]]
+ * bestPartition(3, 2, ps => ps.reduce((a, p, i) => a + p.reduce((b, n) => b + n % 2 !== i % 2 ? 1 : 0, 0), 0), (a, b) => b - a) -> [[0, 2], [1]]
  *
  * This function has a built-in time limit, and will stop generating if it starts taking too long
  */
