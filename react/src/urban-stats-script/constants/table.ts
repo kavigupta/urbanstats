@@ -153,8 +153,6 @@ export const table: USSValue = {
 } satisfies USSValue
 
 function attachPopulationPercentilesToColumn(col: TableColumn, population: number[]): TableColumnWithPopulationPercentiles {
-    console.log(col)
-    console.log(population)
     const sortedIdxs = col.values
         .map((v, idx) => ({ v, idx }))
         .sort((a, b) => a.v - b.v)
@@ -172,8 +170,6 @@ function attachPopulationPercentilesToColumn(col: TableColumn, population: numbe
         const cumPop = cumulativePopulations[idx]
         return totalPopulation === 0 ? 0 : Math.floor((cumPop / totalPopulation) * 100)
     })
-    console.log(populationPercentiles)
-    console.log('abc')
     return {
         ...col,
         populationPercentiles,
