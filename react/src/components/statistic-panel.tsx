@@ -18,13 +18,14 @@ import './article.css'
 import { Universe, useUniverse } from '../universe'
 import { parse } from '../urban-stats-script/parser'
 import { executeAsync } from '../urban-stats-script/workerManager'
+import { assert } from '../utils/defensive'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType } from '../utils/text'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { CountsByUT } from './countsByArticleType'
 import { CSVExportData } from './csv-export'
-import { ArticleRow, forType, StatCol } from './load-article'
+import { ArticleRow, forType, StatCol, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow } from './pointer-cell'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
@@ -53,23 +54,31 @@ export interface StatisticPanelProps extends StatisticCommonProps {
     descriptor: StatisticDescriptor
 }
 
-function useStatisticPanelData(universe: string, statpath: string, articleType: string): { data: { value: number[], populationPercentile: number[] } | undefined, articleNames: string[] | undefined, loading: boolean } {
-    const dataPromise = useMemo(() => loadStatisticsPage(universe, statpath, articleType), [universe, statpath, articleType])
-    const { result, loading } = useOrderedResolve(dataPromise)
-
-    return {
-        data: result?.[0],
-        articleNames: result?.[1],
-        loading,
-    }
+interface StatisticData {
+    // value: number[]
+    // populationPercentile: number[]
+    data: { value: number[], populationPercentile: number[] }
+    articleNames: string[]
+    renderedStatname: string
+    statcol?: StatCol
+    explanationPage?: string
+    totalCountInClass: number
+    totalCountOverall: number
 }
 
-function useUSSStatisticPanelData(uss: string, geographyKind: (typeof validGeographies)[number], universe: Universe): { data: { value: number[], populationPercentile: number[] } | undefined, articleNames: string[] | undefined, loading: boolean, error: string | undefined, name: string | undefined } {
-    const [data, setData] = useState<{ value: number[], populationPercentile: number[] } | undefined>(undefined)
-    const [articleNames, setArticleNames] = useState<string[] | undefined>(undefined)
+type StatisticDataOutcome = (
+    { type: 'success' } & StatisticData
+    | { type: 'error', error: string }
+    | { type: 'loading' }
+)
+
+function useUSSStatisticPanelData(uss: string, geographyKind: (typeof validGeographies)[number], universe: Universe): StatisticDataOutcome {
+    // const [data, setData] = useState<{ value: number[], populationPercentile: number[] } | undefined>(undefined)
+    // const [articleNames, setArticleNames] = useState<string[] | undefined>(undefined)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | undefined>(undefined)
-    const [name, setName] = useState<string | undefined>(undefined)
+    // const [name, setName] = useState<string | undefined>(undefined)
+    const [successData, setSuccessData] = useState<StatisticData | undefined>(undefined)
 
     useEffect(() => {
         setLoading(true)
@@ -114,14 +123,15 @@ function useUSSStatisticPanelData(uss: string, geographyKind: (typeof validGeogr
                 // Use first column for now
                 const firstColumn = table.columns[0]
                 const values = firstColumn.values
-                setName(firstColumn.name)
                 const geonames = table.geo
 
-                setData({
-                    value: values,
-                    populationPercentile: Array.from({ length: values.length }, () => 0), // TODO: calculate percentiles
+                setSuccessData({
+                    data: { value: values, populationPercentile: Array.from({ length: values.length }, () => 0) }, // TODO: calculate percentiles
+                    articleNames: geonames,
+                    renderedStatname: firstColumn.name,
+                    totalCountInClass: values.length,
+                    totalCountOverall: values.length,
                 })
-                setArticleNames(geonames)
                 setLoading(false)
             }
             catch (e) {
@@ -132,103 +142,155 @@ function useUSSStatisticPanelData(uss: string, geographyKind: (typeof validGeogr
         void executeUSS()
     }, [uss, geographyKind, universe])
 
-    const [dataSorted, articleNamesSorted] = useMemo(() => {
-        if (data === undefined || articleNames === undefined) {
-            return [undefined, undefined]
+    const successDataSorted = useMemo((): StatisticData | undefined => {
+        if (successData === undefined) {
+            return undefined
         }
-        const sortedIndices = data.value
+        const sortedIndices = successData.data.value
             .map((_, i) => i)
-            .sort((a, b) => data.value[b] - data.value[a])
+            .sort((a, b) => successData.data.value[b] - successData.data.value[a])
         const sortedData = {
-            value: sortedIndices.map(i => data.value[i]),
-            populationPercentile: sortedIndices.map(i => data.populationPercentile[i]),
+            value: sortedIndices.map(i => successData.data.value[i]),
+            populationPercentile: sortedIndices.map(i => successData.data.populationPercentile[i]),
         }
-        const sortedArticleNames = sortedIndices.map(i => articleNames[i])
-        return [sortedData, sortedArticleNames]
-    }, [data, articleNames])
+        const sortedArticleNames = sortedIndices.map(i => successData.articleNames[i])
+        return { data: sortedData, articleNames: sortedArticleNames, renderedStatname: successData.renderedStatname, totalCountInClass: successData.totalCountInClass, totalCountOverall: successData.totalCountOverall }
+    }, [successData])
 
-    return { data: dataSorted, articleNames: articleNamesSorted, loading, error, name }
+    if (loading) {
+        return { type: 'loading' }
+    }
+    assert(error !== undefined || successDataSorted !== undefined, 'error and successDataSorted cannot both be undefined')
+    if (successDataSorted !== undefined) {
+        return { type: 'success', ...successDataSorted }
+    }
+    return { type: 'error', error: error! }
+}
+
+async function loadStatisticsData(universe: string, statname: StatName, articleType: string, counts: CountsByUT): Promise<StatisticDataOutcome> {
+    const statIndex = names.indexOf(statname)
+    const [data, articleNames] = await loadStatisticsPage(universe, paths[statIndex], articleType)
+    const totalCountInClass = forType(counts, universe, stats[statIndex], articleType)
+    const totalCountOverall = forType(counts, universe, stats[statIndex], 'overall')
+    return {
+        type: 'success',
+        data,
+        articleNames,
+        renderedStatname: statname,
+        statcol: stats[statIndex],
+        explanationPage: explanation_pages[statIndex],
+        totalCountInClass,
+        totalCountOverall,
+    }
+}
+
+// so the object isn't re-created every time
+const undefinedPromise = Promise.resolve(undefined)
+
+function useStatisticPanelDataGeneric(props: StatisticPanelProps): StatisticDataOutcome {
+    const ussData = useUSSStatisticPanelData(
+        props.descriptor.type === 'uss-statistic' ? (props.descriptor as { type: 'uss-statistic', uss: string }).uss : '',
+        props.articleType as (typeof validGeographies)[number], props.universe as Universe,
+    )
+    const regularData = useOrderedResolve(
+        props.descriptor.type === 'uss-statistic' ? undefinedPromise : loadStatisticsData(props.universe, props.descriptor.statname, props.articleType, props.counts),
+    )
+    if (regularData.result !== undefined) {
+        return regularData.result
+    }
+    if (ussData.type === 'success') {
+        return ussData
+    }
+    if (ussData.type === 'error') {
+        return { type: 'error', error: ussData.error }
+    }
+    return { type: 'loading' }
 }
 
 export function StatisticPanel(props: StatisticPanelProps): ReactNode {
-    const isUSS = props.descriptor.type === 'uss-statistic'
-    const ussString = isUSS ? (props.descriptor as { type: 'uss-statistic', uss: string }).uss : ''
-    console.log(ussString)
-    const ussData = useUSSStatisticPanelData(ussString, props.articleType as (typeof validGeographies)[number], props.universe as Universe)
-    const statIndex = isUSS ? -1 : names.indexOf(props.descriptor.type === 'simple-statistic' ? props.descriptor.statname : '' as StatName)
-    const statpath = isUSS ? '' : paths[statIndex]
-    const statcol = isUSS ? stats[0] : stats[statIndex]
-    const explanationPage = isUSS ? '' : explanation_pages[statIndex]
-    const regularData = useStatisticPanelData(props.universe, statpath, props.articleType)
+    // const isUSS = props.descriptor.type === 'uss-statistic'
+    // const ussString = isUSS ? (props.descriptor as { type: 'uss-statistic', uss: string }).uss : ''
+    // console.log(ussString)
+    // const ussData = useUSSStatisticPanelData(ussString, props.articleType as (typeof validGeographies)[number], props.universe as Universe)
+    // const statIndex = isUSS ? -1 : names.indexOf(props.descriptor.type === 'simple-statistic' ? props.descriptor.statname : '' as StatName)
+    // const statpath = isUSS ? '' : paths[statIndex]
+    // const statcol = isUSS ? stats[0] : stats[statIndex]
+    // const explanationPage = isUSS ? '' : explanation_pages[statIndex]
+    // const regularData = useStatisticPanelData(props.universe, statpath, props.articleType)
 
-    if (isUSS) {
-        const { data, articleNames, loading, error, name } = ussData
+    // if (isUSS) {
+    //     const { data, articleNames, loading, error, name } = ussData
 
-        if (loading || data === undefined || articleNames === undefined) {
-            return (
-                <PageTemplate hasUniverseSelector={true} universes={universes_ordered}>
-                    <RelativeLoader loading={loading} />
-                    {error && (
-                        <div style={{ padding: '1rem' }}>
-                            Error:
-                            {error}
-                        </div>
-                    )}
-                </PageTemplate>
-            )
-        }
+    //     if (loading || data === undefined || articleNames === undefined) {
+    //         return (
+    //             <PageTemplate hasUniverseSelector={true} universes={universes_ordered}>
+    //                 <RelativeLoader loading={loading} />
+    //                 {error && (
+    //                     <div style={{ padding: '1rem' }}>
+    //                         Error:
+    //                         {error}
+    //                     </div>
+    //                 )}
+    //             </PageTemplate>
+    //         )
+    //     }
 
+    //     return (
+    //         <StatisticPanelOnceLoaded
+    //             {...props}
+    //             data={data}
+    //             articleNames={articleNames}
+    //             statDesc={props.descriptor}
+    //             statcol={statcol}
+    //             explanationPage={explanationPage}
+    //             renderedStatname={name ?? ''}
+    //             joinedString=""
+    //         />
+    //     )
+    // }
+
+    // const { data, articleNames, loading } = regularData
+
+    // if (loading || data === undefined || articleNames === undefined) {
+    //     return (
+    //         <PageTemplate
+    //             hasUniverseSelector={true}
+    //             universes={universes_ordered.filter(
+    //                 universe => forType(props.counts, universe, statcol, props.articleType) > 0,
+    //             )}
+    //         >
+    //             <RelativeLoader loading={loading} />
+    //         </PageTemplate>
+    //     )
+    // }
+    // return (
+    //     <StatisticPanelOnceLoaded
+    //         {...props}
+    //         data={data}
+    //         articleNames={articleNames}
+    //         statDesc={props.descriptor}
+    //         statcol={statcol}
+    //         explanationPage={explanationPage}
+    //         renderedStatname={props.descriptor.type === 'simple-statistic' ? props.descriptor.statname : ''}
+    //         joinedString={statpath}
+    //     />
+    // )
+    const data = useStatisticPanelDataGeneric(props)
+    if (data.type === 'error') {
         return (
-            <StatisticPanelOnceLoaded
-                {...props}
-                data={data}
-                articleNames={articleNames}
-                statDesc={props.descriptor}
-                statcol={statcol}
-                explanationPage={explanationPage}
-                renderedStatname={name ?? ''}
-                joinedString=""
-            />
+            <div>
+                Error:
+                {data.error}
+            </div>
         )
     }
-
-    const { data, articleNames, loading } = regularData
-
-    if (loading || data === undefined || articleNames === undefined) {
-        return (
-            <PageTemplate
-                hasUniverseSelector={true}
-                universes={universes_ordered.filter(
-                    universe => forType(props.counts, universe, statcol, props.articleType) > 0,
-                )}
-            >
-                <RelativeLoader loading={loading} />
-            </PageTemplate>
-        )
+    if (data.type === 'loading') {
+        return <RelativeLoader loading={true} />
     }
-    return (
-        <StatisticPanelOnceLoaded
-            {...props}
-            data={data}
-            articleNames={articleNames}
-            statDesc={props.descriptor}
-            statcol={statcol}
-            explanationPage={explanationPage}
-            renderedStatname={props.descriptor.type === 'simple-statistic' ? props.descriptor.statname : ''}
-            joinedString={statpath}
-        />
-    )
+    return <StatisticPanelOnceLoaded {...props} {...data} statDesc={props.descriptor} />
 }
 
-interface StatisticPanelLoadedProps extends StatisticCommonProps {
-    data: { value: number[], populationPercentile: number[] }
-    articleNames: string[]
-    statDesc: StatisticDescriptor
-    renderedStatname: string
-    statcol: StatCol
-    explanationPage: string
-    joinedString: string
-}
+type StatisticPanelLoadedProps = StatisticCommonProps & StatisticData & { statDesc: StatisticDescriptor }
 
 function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
     const colors = useColors()
@@ -263,7 +325,7 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
     }, [props.start, amount, count, isAscending])
 
     const screencapElements = (): ScreencapElements => ({
-        path: `${sanitize(props.joinedString)}.png`,
+        path: `${sanitize(props.renderedStatname)}.png`,
         overallWidth: tableRef.current!.offsetWidth * 2,
         elementsToRender: [headersRef.current!, tableRef.current!],
     })
@@ -295,7 +357,7 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
     }
 
     const universesFiltered = universes_ordered.filter(
-        universe => forType(props.counts, universe, props.statcol, props.articleType) > 0,
+        universe => props.statcol === undefined || forType(props.counts, universe, props.statcol, props.articleType) > 0,
     )
 
     const generateStatisticsCSVData = (): string[][] => {
@@ -323,7 +385,7 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
     }
 
     const csvData = generateStatisticsCSVData()
-    const csvFilename = `${sanitize(props.joinedString)}.csv`
+    const csvFilename = `${sanitize(props.renderedStatname)}.csv`
     const csvExportData: CSVExportData = { csvData, csvFilename }
 
     const widthLeftHeader = 50
@@ -381,27 +443,25 @@ function StatisticPanelTable(props: {
 }): ReactNode {
     const currentUniverse = useUniverse()
 
-    const statIndex = stats.indexOf(props.props.statcol)
-    const statpath: StatPath = paths[statIndex]
+    // const statIndex = stats.indexOf(props.props.statcol)
+    // const statpath: StatPath = paths[statIndex]
 
-    const articleRows: ArticleRow[] = props.indexRange.map((i) => {
-        const totalCountInClass = forType(props.props.counts, currentUniverse, props.props.statcol, props.props.articleType)
-        const totalCountOverall = forType(props.props.counts, currentUniverse, props.props.statcol, 'overall')
+    const articleRows: StatisticCellRenderingInfo[] = props.indexRange.map((i) => {
         return {
             statval: props.data.value[i],
             ordinal: i + 1,
             percentileByPopulation: props.data.populationPercentile[i],
-            statcol: props.props.statcol,
+            // statcol: props.props.statcol,
             statname: props.props.statDesc.type === 'simple-statistic' ? props.props.statDesc.statname : 'Population',
-            statpath,
-            explanationPage: props.props.explanationPage,
+            // statpath,
+            // explanationPage: props.props.explanationPage,
             articleType: props.props.articleType,
-            totalCountInClass,
-            totalCountOverall,
-            index: statIndex,
-            renderedStatname: props.props.renderedStatname,
+            totalCountInClass: props.props.totalCountInClass,
+            totalCountOverall: props.props.totalCountOverall,
+            // index: statIndex,
+            // renderedStatname: props.props.renderedStatname,
             overallFirstLast: { isFirst: false, isLast: false },
-        } satisfies ArticleRow
+        } satisfies StatisticCellRenderingInfo
     })
 
     const leftHeaderSpecs: CellSpec[] = props.articleNames.map((row, rowIdx) => {
@@ -433,7 +493,7 @@ function StatisticPanelTable(props: {
     const headerSpecs: CellSpec[] = articleRows.length > 0
         ? [{
                 type: 'statistic-name',
-                row: articleRows[0],
+                // row: articleRows[0],
                 renderedStatname: props.props.renderedStatname,
                 longname: props.props.renderedStatname,
                 currentUniverse,
@@ -475,7 +535,7 @@ function Pagination(props: {
     start: number
     count: number
     amount: number
-    explanationPage: string
+    explanationPage?: string
     statDesc: StatisticDescriptor
     articleType: string
     order: 'ascending' | 'descending'
@@ -571,6 +631,21 @@ function Pagination(props: {
         />
     )
 
+    const explanationCredit = props.explanationPage !== undefined
+        ? (
+                <div style={{ margin: 'auto', textAlign: 'center' }}>
+                    <a
+                        {...navContext.link(
+                            { kind: 'dataCredit', hash: `#explanation_${sanitize(props.explanationPage)}` },
+                            { scroll: { kind: 'none' } },
+                        )}
+                    >
+                        Data Explanation and Credit
+                    </a>
+                </div>
+            )
+        : <div></div>
+
     // align the entire div to the center. not flex.
     return (
         <div style={{
@@ -582,16 +657,7 @@ function Pagination(props: {
         }}
         >
             <div style={{ width: '25%' }}>
-                <div style={{ margin: 'auto', textAlign: 'center' }}>
-                    <a
-                        {...navContext.link(
-                            { kind: 'dataCredit', hash: `#explanation_${sanitize(props.explanationPage)}` },
-                            { scroll: { kind: 'none' } },
-                        )}
-                    >
-                        Data Explanation and Credit
-                    </a>
-                </div>
+                {explanationCredit}
             </div>
             <div style={{ width: '50%' }}>
                 <div style={{ margin: 'auto', textAlign: 'center' }}>
