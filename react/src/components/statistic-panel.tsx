@@ -345,7 +345,7 @@ function Pagination(props: {
     start: number
     count: number
     amount: number
-    explanationPage: string
+    explanationPage?: string
     statname: StatName
     articleType: string
     order: 'ascending' | 'descending'
@@ -440,6 +440,21 @@ function Pagination(props: {
         />
     )
 
+    const explanationCredit = props.explanationPage !== undefined
+        ? (
+                <div style={{ margin: 'auto', textAlign: 'center' }}>
+                    <a
+                        {...navContext.link(
+                            { kind: 'dataCredit', hash: `#explanation_${sanitize(props.explanationPage)}` },
+                            { scroll: { kind: 'none' } },
+                        )}
+                    >
+                        Data Explanation and Credit
+                    </a>
+                </div>
+            )
+        : <div></div>
+
     // align the entire div to the center. not flex.
     return (
         <div style={{
@@ -451,16 +466,7 @@ function Pagination(props: {
         }}
         >
             <div style={{ width: '25%' }}>
-                <div style={{ margin: 'auto', textAlign: 'center' }}>
-                    <a
-                        {...navContext.link(
-                            { kind: 'dataCredit', hash: `#explanation_${sanitize(props.explanationPage)}` },
-                            { scroll: { kind: 'none' } },
-                        )}
-                    >
-                        Data Explanation and Credit
-                    </a>
-                </div>
+                {explanationCredit}
             </div>
             <div style={{ width: '50%' }}>
                 <div style={{ margin: 'auto', textAlign: 'center' }}>
