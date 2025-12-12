@@ -21,14 +21,16 @@ import { executeAsync } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType } from '../utils/text'
+import { UnitType } from '../utils/unit'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { CountsByUT } from './countsByArticleType'
 import { CSVExportData } from './csv-export'
-import { ArticleRow, forType, StatCol, StatisticCellRenderingInfo } from './load-article'
+import { forType, StatCol, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow } from './pointer-cell'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
+import { classifyStatistic } from './unit-display'
 
 export type StatisticDescriptor =
     | {
@@ -64,6 +66,7 @@ interface StatisticData {
     explanationPage?: string
     totalCountInClass: number
     totalCountOverall: number
+    unit?: UnitType
 }
 
 type StatisticDataOutcome = (
@@ -131,6 +134,7 @@ function useUSSStatisticPanelData(uss: string, geographyKind: (typeof validGeogr
                     renderedStatname: firstColumn.name,
                     totalCountInClass: values.length,
                     totalCountOverall: values.length,
+                    unit: firstColumn.unit,
                 })
                 setLoading(false)
             }
@@ -154,7 +158,7 @@ function useUSSStatisticPanelData(uss: string, geographyKind: (typeof validGeogr
             populationPercentile: sortedIndices.map(i => successData.data.populationPercentile[i]),
         }
         const sortedArticleNames = sortedIndices.map(i => successData.articleNames[i])
-        return { data: sortedData, articleNames: sortedArticleNames, renderedStatname: successData.renderedStatname, totalCountInClass: successData.totalCountInClass, totalCountOverall: successData.totalCountOverall }
+        return { data: sortedData, articleNames: sortedArticleNames, renderedStatname: successData.renderedStatname, totalCountInClass: successData.totalCountInClass, totalCountOverall: successData.totalCountOverall, unit: successData.unit }
     }, [successData])
 
     if (loading) {
@@ -461,6 +465,7 @@ function StatisticPanelTable(props: {
             // index: statIndex,
             // renderedStatname: props.props.renderedStatname,
             overallFirstLast: { isFirst: false, isLast: false },
+            unit: props.props.unit,
         } satisfies StatisticCellRenderingInfo
     })
 

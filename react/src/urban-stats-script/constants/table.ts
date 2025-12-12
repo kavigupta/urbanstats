@@ -1,11 +1,13 @@
 import { assert } from '../../utils/defensive'
+import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../location'
-import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation } from '../types-values'
+import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation, createConstantExpression } from '../types-values'
 
 export interface TableColumn {
     name: string
     values: number[]
+    unit?: UnitType
 }
 
 export interface Table {
@@ -34,6 +36,10 @@ export const column: USSValue = {
             values: {
                 type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } },
             },
+            unit: {
+                type: { type: 'concrete', value: { type: 'opaque', name: 'Unit' } },
+                defaultValue: createConstantExpression(null),
+            },
         },
         returnType: { type: 'concrete', value: columnType },
     },
@@ -41,10 +47,12 @@ export const column: USSValue = {
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, _originalArgs: OriginalFunctionArgs): USSRawValue => {
         const name = namedArgs.name as string
         const values = namedArgs.values as number[]
+        const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'Unit', value: { unit: string } } | null
+        const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
         return {
             type: 'opaque',
             opaqueType: 'column',
-            value: { name, values } satisfies TableColumn,
+            value: { name, values, unit } satisfies TableColumn,
         }
     },
     documentation: {
@@ -54,8 +62,9 @@ export const column: USSValue = {
         namedArgs: {
             name: 'Name',
             values: 'Values',
+            unit: 'Unit',
         },
-        longDescription: 'Creates a column with a name and a list of cell values.',
+        longDescription: 'Creates a column with a name and a list of cell values. Optionally specify a unit type.',
     },
 } satisfies USSValue
 
