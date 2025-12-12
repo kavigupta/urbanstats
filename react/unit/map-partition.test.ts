@@ -3,7 +3,7 @@ import { test } from 'node:test'
 
 import { partitionLongnames } from '../src/map-partition'
 import './util/fetch'
-import { indexPartitions } from '../src/utils/partition'
+import { bestPartition } from '../src/utils/partition'
 
 void test('far away neighborhoods', async () => {
     assert.deepEqual(
@@ -111,6 +111,13 @@ void test('handles many places', async () => {
 
 void test('index partitions fails safe due to time limit', () => {
     assert.throws(() => {
-        for (const [] of indexPartitions(100, 100, () => true)) { }
+        for (const [] of bestPartition(100, 100, () => 0, (a, b) => a - b)) { }
     }, { message: 'out of time' })
+})
+
+void test('parity example', () => {
+    assert.deepEqual(
+        bestPartition(3, 2, ps => ps.reduce((a, p, i) => a + p.reduce((b, n) => b + n % 2 !== i % 2 ? 1 : 0, 0), 0), (a, b) => b - a),
+        [[0, 2], [1]],
+    )
 })

@@ -2,7 +2,7 @@ import geojsonExtent from '@mapbox/geojson-extent'
 import maplibregl from 'maplibre-gl'
 import { min } from 'mathjs'
 
-import { indexPartitions } from './utils/partition'
+import { bestPartition } from './utils/partition'
 import { Feature } from './utils/protos'
 import { loadFeatureFromPossibleSymlink } from './utils/symlinks'
 import { NormalizeProto } from './utils/types'
@@ -87,53 +87,37 @@ export async function partitionLongnames(longnames: string[]): Promise<number[][
     const boundingBoxes = await Promise.all(longnames.map(async longname => boundingBox(geometry(await loadFeatureFromPossibleSymlink(longname) as NormalizeProto<Feature>))))
 
     // We need to sort the bounding boxes otherwise there could be an edge case when partitioning where a region gets added in the middle of a partition two other regions
-    // The partition of those two far partitions would not have been explored in `indexPartitions`, since `goodPartition` would have eliminated that search space.
+    // The partition of those two far partitions would not have been explored in `bestPartition`, since the hueristic would have eliminated that search space.
     // Therefore, we need to sort the bounding boxes
     const sortedBoundingBoxes = Array.from(boundingBoxes.entries())
         .sort(([, a], [, b]) => a.getCenter().lat - b.getCenter().lat)
         .sort(([, a], [, b]) => a.getCenter().lng - b.getCenter().lng)
 
-    const score = (partitions: number[][]): number[] => {
-        const result = partitions.map((partition) => {
-            const filled = proportionFilled(partition.map(index => sortedBoundingBoxes[index][1]))
-            if (filled >= fillThreshold) {
-                return partition.length
-            }
-            return filled
-        }).sort((a, b) => a - b)
-        return result
-    }
-
-    const scoreGt = (a: number[], b: number[]): boolean => {
-        for (let i = 0; i < Math.min(a.length, b.length); i++) {
-            if (a[i] !== b[i]) {
-                return a[i] > b[i]
-            }
-        }
-        return a.length > b.length
-    }
-
     try {
-        let bestScore: number[] = []
-        let result
+        const partitions = bestPartition(sortedBoundingBoxes.length, maxMaps,
+            ps => ps.map((partition) => {
+                const filled = proportionFilled(partition.map(index => sortedBoundingBoxes[index][1]))
+                if (filled >= fillThreshold) {
+                    return partition.length
+                }
+                return filled
+            }).sort((a, b) => a - b),
+            (a, b) => {
+                for (let i = 0; i < Math.min(a.length, b.length); i++) {
+                    if (a[i] !== b[i]) {
+                        return a[i] - b[i]
+                    }
+                }
+                return a.length - b.length
+            },
+        )
 
-        for (const partitions of indexPartitions(sortedBoundingBoxes.length, maxMaps, ps => scoreGt(score(ps), bestScore))) {
-            // Only iterates over good partitions
+        // Un-sort the indices
+        // Also re-sort the partitions by the unsorted indices
+        const unsortedPartitions = partitions.map(partition => partition.map(index => sortedBoundingBoxes[index][0])
+            .sort((a, b) => a - b)).sort((a, b) => min(a) - min(b))
 
-            const currentScore = score(partitions)
-            if (scoreGt(currentScore, bestScore)) {
-                // Un-sort the indices
-                // Also re-sort the partitions by the unsorted indices
-                const unsortedPartitions = partitions.map(partition => partition.map(index => sortedBoundingBoxes[index][0])
-                    .sort((a, b) => a - b)).sort((a, b) => min(a) - min(b))
-                result = unsortedPartitions
-                bestScore = currentScore
-            }
-        }
-
-        if (result !== undefined) {
-            return result
-        }
+        return unsortedPartitions
     }
     catch (e) {
         console.warn('Error partitioning maps', e)
