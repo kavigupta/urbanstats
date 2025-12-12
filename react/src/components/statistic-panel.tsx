@@ -128,8 +128,10 @@ function useUSSStatisticPanelData(uss: string, geographyKind: (typeof validGeogr
                 const values = firstColumn.values
                 const geonames = table.geo
 
+                console.log(firstColumn.populationPercentiles)
+
                 setSuccessData({
-                    data: { value: values, populationPercentile: Array.from({ length: values.length }, () => 0) }, // TODO: calculate percentiles
+                    data: { value: values, populationPercentile: firstColumn.populationPercentiles },
                     articleNames: geonames,
                     renderedStatname: firstColumn.name,
                     totalCountInClass: values.length,

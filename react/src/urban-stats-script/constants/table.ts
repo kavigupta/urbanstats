@@ -10,8 +10,12 @@ export interface TableColumn {
     unit?: UnitType
 }
 
+export type TableColumnWithPopulationPercentiles = TableColumn & {
+    populationPercentiles: number[]
+}
+
 export interface Table {
-    columns: TableColumn[]
+    columns: TableColumnWithPopulationPercentiles[]
     geo: string[]
     population: number[]
 }
@@ -109,15 +113,7 @@ export const table: USSValue = {
             return geoHandle.value
         })
         const population = namedArgs.population as number[]
-        const columnsRaw = namedArgs.columns as { type: 'opaque', opaqueType: 'column', value: TableColumn }[] | null
-
-        if (columnsRaw === null) {
-            return {
-                type: 'opaque',
-                opaqueType: 'table',
-                value: { columns: [], geo, population } satisfies Table,
-            }
-        }
+        const columnsRaw = namedArgs.columns as { type: 'opaque', opaqueType: 'column', value: TableColumn }[]
 
         const columns: TableColumn[] = columnsRaw.map((col) => {
             return col.value
@@ -137,10 +133,12 @@ export const table: USSValue = {
             throw new Error(`geo must have the same length as columns. geo has length ${geo.length}, but columns have length ${columns[0].values.length}`)
         }
 
+        const annotatedColumns = columns.map(col => attachPopulationPercentilesToColumn(col, population))
+
         return {
             type: 'opaque',
             opaqueType: 'table',
-            value: { columns, geo, population } satisfies Table,
+            value: { columns: annotatedColumns, geo, population } satisfies Table,
         }
     },
     documentation: {
@@ -153,3 +151,31 @@ export const table: USSValue = {
         longDescription: 'Creates a table with named columns, where each column contains a list of numbers. All columns must have the same length.',
     },
 } satisfies USSValue
+
+function attachPopulationPercentilesToColumn(col: TableColumn, population: number[]): TableColumnWithPopulationPercentiles {
+    console.log(col)
+    console.log(population)
+    const sortedIdxs = col.values
+        .map((v, idx) => ({ v, idx }))
+        .sort((a, b) => a.v - b.v)
+        .map(({ idx }) => idx)
+
+    const cumulativePopulations: number[] = []
+    let cumulativeSum = 0
+    for (const idx of sortedIdxs) {
+        cumulativePopulations[idx] = cumulativeSum
+        cumulativeSum += population[idx]
+    }
+    const totalPopulation = cumulativeSum
+
+    const populationPercentiles: number[] = col.values.map((_, idx) => {
+        const cumPop = cumulativePopulations[idx]
+        return totalPopulation === 0 ? 0 : Math.floor((cumPop / totalPopulation) * 100)
+    })
+    console.log(populationPercentiles)
+    console.log('abc')
+    return {
+        ...col,
+        populationPercentiles,
+    }
+}
