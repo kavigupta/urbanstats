@@ -452,7 +452,7 @@ function StatisticPanelTable(props: {
             ordinal: i + 1,
             percentileByPopulation: props.data.populationPercentile[i],
             // statcol: props.props.statcol,
-            statname: props.props.statDesc.type === 'simple-statistic' ? props.props.statDesc.statname : 'Population',
+            statname: props.props.renderedStatname,
             // statpath,
             // explanationPage: props.props.explanationPage,
             articleType: props.props.articleType,
