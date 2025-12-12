@@ -1,6 +1,8 @@
 import stableStringify from 'json-stable-stringify'
 import React, { ReactNode } from 'react'
 
+import { ExpandButton } from '../../components/ExpandButton'
+import { RenderTwiceHidden } from '../../components/RenderTwiceHidden'
 import { CheckboxSettingCustom } from '../../components/sidebar'
 import { UrbanStatsASTExpression, UrbanStatsASTArg, locationOf } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
@@ -10,11 +12,13 @@ import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositiona
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
 import { USSType, USSFunctionArgType, renderType, USSFunctionType, TypeEnvironment } from '../../urban-stats-script/types-values'
 import { DefaultMap } from '../../utils/DefaultMap'
+import { Property } from '../../utils/Property'
 import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
 
 import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
+import { SelectionContext, Selection as ContextSelection } from './SelectionContext'
 import { Selector, classifyExpr, getColor, labelPadding } from './Selector'
 import { maybeParseExpr, parseExpr, Selection, possibilities } from './parseExpr'
 
@@ -67,9 +71,34 @@ function ArgumentEditor(props: {
     // Get the function's documentation to find human-readable argument names
     const tdoc = props.typeEnvironment.get(functionUss.fn.name.node)
     const humanReadableName = tdoc?.documentation?.namedArgs?.[props.name] ?? props.name
+    assert(tdoc?.type === undefined || tdoc.type.type === 'function', `AutoUX looked up function identifier ${functionUss.fn.name.node}m, but it was not a function`)
+    const collapsable = hasDefault && isEnabled && (tdoc?.type.namedArgs[props.name]?.documentation?.collapsable ?? false)
+    const collapsed = collapsable && argValue.type === 'named' && (argValue.collapsed ?? false)
 
     return (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.25em', width: '100%', margin: '0.25em 0' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', gap: '0.25em', width: '100%', margin: '0.25em 0' }}>
+            {collapsable && (
+                <ExpandButton
+                    pointing="right"
+                    isExpanded={!collapsed}
+                    style={{
+                        position: 'absolute',
+                        width: 16,
+                        height: 16,
+                        left: -14,
+                        top: 3,
+                    }}
+                    onClick={() => {
+                        props.setUss(
+                            { ...functionUss, args: functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, collapsed: !collapsed } : a) },
+                            {
+                                undoable: false,
+                                updateMap: false,
+                            },
+                        )
+                    }}
+                />
+            )}
             <div style={{ flex: 1 }}>
                 <div>
                     {hasDefault
@@ -106,24 +135,60 @@ function ArgumentEditor(props: {
                         : <span>{humanReadableName}</span>}
 
                 </div>
-                {isEnabled
-                && (
-                    <AutoUXEditor
-                        uss={argValue.value}
-                        setUss={(newUss, actionKind) => {
-                            const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
-                            props.setUss({ ...functionUss, args: newArgs }, actionKind)
-                        }}
-                        typeEnvironment={props.typeEnvironment}
-                        errors={props.errors}
-                        blockIdent={subident}
-                        type={[arg.value]}
-                    />
-                )}
+                {
+                    isEnabled && (
+                        <RenderTwiceHidden<HTMLDivElement>>
+                            {(renderArg) => {
+                                const result = (
+                                    <div
+                                        // @ts-expect-error -- inert is not in the type definitions yet
+                                        inert={renderArg.kind === 'hidden' ? '' : undefined}
+                                        style={{
+                                            ...(renderArg.kind === 'hidden'
+                                                ? {
+                                                        opacity: 0,
+                                                        position: 'absolute',
+                                                    }
+                                                : {
+                                                        maxHeight: collapsed ? 0 : renderArg.height,
+                                                        transition: 'max-height 0.25s',
+                                                        overflowY: collapsed ? 'clip' : undefined,
+                                                    }),
+                                        }}
+                                        ref={renderArg.kind === 'hidden' ? renderArg.ref : undefined}
+                                    >
+                                        <AutoUXEditor
+                                            uss={argValue.value}
+                                            setUss={(newUss, actionKind) => {
+                                                const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
+                                                props.setUss({ ...functionUss, args: newArgs }, actionKind)
+                                            }}
+                                            typeEnvironment={props.typeEnvironment}
+                                            errors={props.errors}
+                                            blockIdent={subident}
+                                            type={[arg.value]}
+                                        />
+                                    </div>
+                                )
+                                if (renderArg.kind === 'hidden') {
+                                    return (
+                                        <SelectionContext.Provider value={nullSelectionContext}>
+                                            {result}
+                                        </SelectionContext.Provider>
+                                    )
+                                }
+                                return result
+                            }}
+
+                        </RenderTwiceHidden>
+                    )
+                }
             </div>
         </div>
     )
 }
+
+const nullSelectionContext = new Property<ContextSelection | undefined>(undefined)
 
 export function AutoUXEditor(props: {
     uss: UrbanStatsASTExpression
@@ -388,21 +453,32 @@ function getDefaultVariable(selection: Selection & { type: 'variable' }, typeEnv
 // Returns a function that pulls named or unnamed arguments of the same type and position out of the passed `expr`
 // Returns undefined if incompatible
 // We're assuming the result will have the correct idnet, since we're using the same position, and it's hard to check
-function extractCompatiblePreviousArgs(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): (arg: number | string, type: USSType) => UrbanStatsASTExpression | undefined {
+function extractCompatiblePreviousArgs(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): {
+    unnamed: (arg: number, type: USSType) => UrbanStatsASTArg & { type: 'unnamed' } | undefined
+    named: (arg: string, type: USSType) => UrbanStatsASTArg & { type: 'named' } | undefined
+} {
     let type
     if (expr.type === 'call' && expr.fn.type === 'identifier' && (type = typeEnvironment.get(expr.fn.name.node)) && type.type.type === 'function') {
         const foundType: USSFunctionType = type.type
-        return (arg, targetType) => {
-            if (typeof arg === 'number' && arg < foundType.posArgs.length && foundType.posArgs[arg].type === 'concrete' && renderType(targetType) === renderType(foundType.posArgs[arg].value)) {
-                return expr.args.filter(a => a.type === 'unnamed')[arg]?.value
-            }
-            if (typeof arg === 'string' && arg in foundType.namedArgs && foundType.namedArgs[arg].type.type === 'concrete' && renderType(targetType) === renderType(foundType.namedArgs[arg].type.value)) {
-                return expr.args.find(a => a.type === 'named' && a.name.node === arg)?.value
-            }
-            return undefined
+        return {
+            unnamed: (arg, targetType) => {
+                if (arg < foundType.posArgs.length && foundType.posArgs[arg].type === 'concrete' && renderType(targetType) === renderType(foundType.posArgs[arg].value)) {
+                    return expr.args.filter(a => a.type === 'unnamed')[arg]
+                }
+                return undefined
+            },
+            named: (arg, targetType) => {
+                if (arg in foundType.namedArgs && foundType.namedArgs[arg].type.type === 'concrete' && renderType(targetType) === renderType(foundType.namedArgs[arg].type.value)) {
+                    return expr.args.find((a): a is UrbanStatsASTArg & { type: 'named' } => a.type === 'named' && a.name.node === arg)
+                }
+                return undefined
+            },
         }
     }
-    return () => undefined
+    return {
+        unnamed: () => undefined,
+        named: () => undefined,
+    }
 }
 
 function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnvironment: TypeEnvironment, blockIdent: string, previous?: UrbanStatsASTExpression): UrbanStatsASTExpression {
@@ -416,18 +492,19 @@ function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnv
         assert(arg.type === 'concrete', `Positional argument must be concrete`)
         args.push({
             type: 'unnamed',
-            value: compatiblePreviousArg?.(i, arg.value) ?? createDefaultExpression(arg.value, extendBlockIdPositionalArg(blockIdent, i), typeEnvironment),
+            value: compatiblePreviousArg?.unnamed(i, arg.value)?.value ?? createDefaultExpression(arg.value, extendBlockIdPositionalArg(blockIdent, i), typeEnvironment),
         })
     }
     for (const [name, argWDefault] of Object.entries(fn.type.namedArgs)) {
         const arg = argWDefault.type
         assert(arg.type === 'concrete', `Named argument ${name} must be concrete`)
-        const prev = compatiblePreviousArg?.(name, arg.value)
+        const prev = compatiblePreviousArg?.named(name, arg.value)
         if (prev || argWDefault.defaultValue === undefined) {
             args.push({
                 type: 'named',
                 name: { node: name, location: emptyLocation(blockIdent) },
-                value: prev ?? createDefaultExpression(arg.value, extendBlockIdKwarg(blockIdent, name), typeEnvironment),
+                value: prev?.value ?? createDefaultExpression(arg.value, extendBlockIdKwarg(blockIdent, name), typeEnvironment),
+                collapsed: prev?.collapsed,
             })
         }
     }

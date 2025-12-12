@@ -145,10 +145,16 @@ function mapConstructorArguments(
                 type: 'identifier',
                 name: { node: 'defaultInsets', location: noLocation },
             },
+            documentation: {
+                collapsable: true,
+            },
         },
         textBoxes: {
             type: { type: 'concrete', value: { type: 'vector', elementType: textBoxType } },
             defaultValue: createConstantExpression(null),
+            documentation: {
+                collapsable: true,
+            },
         },
     } satisfies Record<string, NamedFunctionArgumentWithDocumentation>
 }

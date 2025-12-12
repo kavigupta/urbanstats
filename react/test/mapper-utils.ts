@@ -23,7 +23,7 @@ export async function downloadPNG(t: TestController): Promise<void> {
 }
 
 export function checkSelector(label: RegExp): Selector {
-    const labelEl = Selector('label').withText(label)
+    const labelEl = Selector('label:not([inert] *)').withText(label)
     const parent = labelEl.parent()
     const checkbox = parent.find('input[type="checkbox"]')
     return checkbox
@@ -60,12 +60,12 @@ export function getCodeFromMainField(): Promise<string> {
 
 export function getErrors(): Promise<string[]> {
     return ClientFunction(() =>
-        Array.from(document.querySelectorAll('#test-editor-result')).map(element => element.textContent!),
+        Array.from(document.querySelectorAll('#test-editor-result:not([inert] *)')).map(element => element.textContent!),
     )()
 }
 
 export function getInput(original: string | RegExp, nth = 0): Selector {
-    return Selector('input').withAttribute('value', original).nth(nth)
+    return Selector('input:not([inert] *)').withAttribute('value', original).nth(nth)
 }
 
 export async function replaceInput(t: TestController, original: string | RegExp, newv: string, nth = 0): Promise<void> {
