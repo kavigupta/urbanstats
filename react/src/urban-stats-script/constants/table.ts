@@ -13,6 +13,7 @@ export interface TableColumn {
 export interface Table {
     columns: TableColumn[]
     geo: string[]
+    population: number[]
 }
 
 export const columnType = {
@@ -83,6 +84,16 @@ export const table: USSValue = {
                     hide: true,
                 },
             } satisfies NamedFunctionArgumentWithDocumentation,
+            population: {
+                type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } },
+                defaultValue: {
+                    type: 'identifier',
+                    name: { node: 'population', location: noLocation },
+                },
+                documentation: {
+                    hide: true,
+                },
+            } satisfies NamedFunctionArgumentWithDocumentation,
             columns: {
                 type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'opaque', name: 'column' } } },
             },
@@ -97,13 +108,14 @@ export const table: USSValue = {
             assert(geoHandle.opaqueType === 'geoFeatureHandle', 'Expected geoFeatureHandle opaque value')
             return geoHandle.value
         })
+        const population = namedArgs.population as number[]
         const columnsRaw = namedArgs.columns as { type: 'opaque', opaqueType: 'column', value: TableColumn }[] | null
 
         if (columnsRaw === null) {
             return {
                 type: 'opaque',
                 opaqueType: 'table',
-                value: { columns: [], geo } satisfies Table,
+                value: { columns: [], geo, population } satisfies Table,
             }
         }
 
@@ -128,7 +140,7 @@ export const table: USSValue = {
         return {
             type: 'opaque',
             opaqueType: 'table',
-            value: { columns, geo } satisfies Table,
+            value: { columns, geo, population } satisfies Table,
         }
     },
     documentation: {
