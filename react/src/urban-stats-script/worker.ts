@@ -36,9 +36,14 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
                 break
             }
             case 'mapper': {
-                // no idea why we need this, but it's obviously correct from the switch
                 if (renderType(result.type) !== 'cMap' && renderType(result.type) !== 'cMapRGB' && renderType(result.type) !== 'pMap') {
                     throw new InterpretationError(`USS expression did not return a cMap, cMapRGB, or pMap type, got: ${renderType(result.type)}`, locationOfLastExpression(request.stmts))
+                }
+                break
+            }
+            case 'statistics': {
+                if (renderType(result.type) !== 'table') {
+                    throw new InterpretationError(`USS expression did not return a table type, got: ${renderType(result.type)}`, locationOfLastExpression(request.stmts))
                 }
                 break
             }
