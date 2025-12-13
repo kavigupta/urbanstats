@@ -11,7 +11,7 @@ import { Navigator } from '../navigation/Navigator'
 import { sanitize, statisticDescriptor } from '../navigation/links'
 import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
-import { StatName, StatPath } from '../page_template/statistic-tree'
+import { StatName } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './article.css'
@@ -30,7 +30,6 @@ import { forType, StatCol, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow } from './pointer-cell'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
-import { classifyStatistic } from './unit-display'
 
 export type StatisticDescriptor =
     | {
@@ -190,31 +189,154 @@ async function loadStatisticsData(universe: string, statname: StatName, articleT
     }
 }
 
-// so the object isn't re-created every time
-const undefinedPromise = Promise.resolve(undefined)
+export function StatisticPanel(props: StatisticPanelProps): ReactNode {
+    const headersRef = useRef<HTMLDivElement>(null)
+    const tableRef = useRef<HTMLDivElement>(null)
+    const [loadedData, setLoadedData] = useState<StatisticData | undefined>(undefined)
 
-function useStatisticPanelDataGeneric(props: StatisticPanelProps): StatisticDataOutcome {
-    const ussData = useUSSStatisticPanelData(
-        props.descriptor.type === 'uss-statistic' ? (props.descriptor as { type: 'uss-statistic', uss: string }).uss : '',
-        props.articleType as (typeof validGeographies)[number], props.universe as Universe,
+    const universesFiltered = useMemo(() => {
+        if (loadedData?.statcol === undefined) {
+            return universes_ordered
+        }
+        return universes_ordered.filter(
+            universe => forType(props.counts, universe, loadedData.statcol!, props.articleType) > 0,
+        )
+    }, [loadedData?.statcol, props.counts, props.articleType])
+
+    const csvExportData = useMemo((): CSVExportData | undefined => {
+        if (loadedData === undefined) {
+            return undefined
+        }
+        const headerRow = ['Rank', 'Name', 'Value', 'Percentile']
+        const dataRows: string[][] = []
+
+        for (let i = 0; i < loadedData.articleNames.length; i++) {
+            const rank = i + 1
+            const name = loadedData.articleNames[i]
+            const value = loadedData.data.value[i]
+            const percentile = loadedData.data.populationPercentile[i]
+
+            const formattedValue = value.toLocaleString()
+
+            dataRows.push([
+                rank.toString(),
+                name,
+                formattedValue,
+                percentile.toFixed(1),
+            ])
+        }
+
+        return {
+            csvData: [headerRow, ...dataRows],
+            csvFilename: `${sanitize(loadedData.renderedStatname)}.csv`,
+        }
+    }, [loadedData])
+
+    const screencapElements = useMemo((): (() => ScreencapElements) | undefined => {
+        if (loadedData === undefined) {
+            return undefined
+        }
+        return () => ({
+            path: `${sanitize(loadedData.renderedStatname)}.png`,
+            overallWidth: tableRef.current!.offsetWidth * 2,
+            elementsToRender: [headersRef.current!, tableRef.current!],
+        })
+    }, [loadedData])
+
+    const headerTextClass = useHeaderTextClass()
+
+    let content: ReactNode
+    if (props.descriptor.type === 'uss-statistic') {
+        content = <USSStatisticPanel {...props} descriptor={props.descriptor} onDataLoaded={setLoadedData} tableRef={tableRef} />
+    }
+    else {
+        content = <SimpleStatisticPanel {...props} descriptor={props.descriptor} onDataLoaded={setLoadedData} tableRef={tableRef} />
+    }
+
+    return (
+        <PageTemplate
+            screencap={screencapElements ? (universe, templateColors) => createScreenshot(screencapElements(), universe, templateColors) : undefined}
+            csvExportData={csvExportData}
+            hasUniverseSelector={true}
+            universes={universesFiltered}
+        >
+            <div ref={headersRef}>
+                <div className={headerTextClass}>{loadedData?.renderedStatname ?? 'Table'}</div>
+                <StatisticPanelSubhead
+                    articleType={props.articleType}
+                    renderedOther={props.order}
+                />
+            </div>
+            <div style={{ marginBlockEnd: '16px' }}></div>
+            {content}
+        </PageTemplate>
     )
-    const regularData = useOrderedResolve(
-        props.descriptor.type === 'uss-statistic' ? undefinedPromise : loadStatisticsData(props.universe, props.descriptor.statname, props.articleType, props.counts),
-    )
-    if (regularData.result !== undefined) {
-        return regularData.result
-    }
-    if (ussData.type === 'success') {
-        return ussData
-    }
-    if (ussData.type === 'error') {
-        return { type: 'error', error: ussData.error }
-    }
-    return { type: 'loading' }
 }
 
-export function StatisticPanel(props: StatisticPanelProps): ReactNode {
-    const data = useStatisticPanelDataGeneric(props)
+interface SimpleStatisticPanelProps extends StatisticCommonProps {
+    descriptor: { type: 'simple-statistic', statname: StatName }
+    onDataLoaded: (data: StatisticData) => void
+    tableRef: React.RefObject<HTMLDivElement>
+}
+
+function SimpleStatisticPanel(props: SimpleStatisticPanelProps): ReactNode {
+    const { onDataLoaded, tableRef, ...restProps } = props
+    const promise = useMemo(
+        () => loadStatisticsData(restProps.universe, restProps.descriptor.statname, restProps.articleType, restProps.counts),
+        [restProps.universe, restProps.descriptor.statname, restProps.articleType, restProps.counts],
+    )
+    const data = useOrderedResolve(promise)
+
+    useEffect(() => {
+        if (data.result?.type === 'success') {
+            onDataLoaded(data.result)
+        }
+    }, [data.result, onDataLoaded])
+
+    if (data.result === undefined) {
+        return <RelativeLoader loading={true} />
+    }
+
+    if (data.result.type === 'error') {
+        return (
+            <div>
+                Error:
+                {data.result.error}
+            </div>
+        )
+    }
+
+    if (data.result.type === 'success') {
+        return <StatisticPanelOnceLoaded {...restProps} {...data.result} statDesc={restProps.descriptor} tableRef={tableRef} />
+    }
+
+    return <RelativeLoader loading={true} />
+}
+
+interface USSStatisticPanelProps extends StatisticCommonProps {
+    descriptor: { type: 'uss-statistic', uss: string }
+    onDataLoaded: (data: StatisticData) => void
+    tableRef: React.RefObject<HTMLDivElement>
+}
+
+function USSStatisticPanel(props: USSStatisticPanelProps): ReactNode {
+    const { onDataLoaded, tableRef, ...restProps } = props
+    const data = useUSSStatisticPanelData(
+        restProps.descriptor.uss,
+        restProps.articleType as (typeof validGeographies)[number],
+        restProps.universe as Universe,
+    )
+
+    useEffect(() => {
+        if (data.type === 'success') {
+            onDataLoaded(data)
+        }
+    }, [data, onDataLoaded])
+
+    if (data.type === 'loading') {
+        return <RelativeLoader loading={true} />
+    }
+
     if (data.type === 'error') {
         return (
             <div>
@@ -223,20 +345,15 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             </div>
         )
     }
-    if (data.type === 'loading') {
-        return <RelativeLoader loading={true} />
-    }
-    return <StatisticPanelOnceLoaded {...props} {...data} statDesc={props.descriptor} />
+
+    return <StatisticPanelOnceLoaded {...restProps} {...data} statDesc={restProps.descriptor} tableRef={tableRef} />
 }
 
-type StatisticPanelLoadedProps = StatisticCommonProps & StatisticData & { statDesc: StatisticDescriptor }
+type StatisticPanelLoadedProps = StatisticCommonProps & StatisticData & { statDesc: StatisticDescriptor, tableRef: React.RefObject<HTMLDivElement> }
 
 function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
     const colors = useColors()
-    const headersRef = useRef<HTMLDivElement>(null)
-    const tableRef = useRef<HTMLDivElement>(null)
     const navContext = useContext(Navigator.Context)
-    const headerTextClass = useHeaderTextClass()
 
     const isAscending = props.order === 'ascending'
 
@@ -262,12 +379,6 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
         })
         return result
     }, [props.start, amount, count, isAscending])
-
-    const screencapElements = (): ScreencapElements => ({
-        path: `${sanitize(props.renderedStatname)}.png`,
-        overallWidth: tableRef.current!.offsetWidth * 2,
-        elementsToRender: [headersRef.current!, tableRef.current!],
-    })
 
     const swapAscendingDescending = (currentUniverse: string | undefined): void => {
         const newOrder = isAscending ? 'descending' : 'ascending'
@@ -295,77 +406,30 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
         return colors.background
     }
 
-    const universesFiltered = universes_ordered.filter(
-        universe => props.statcol === undefined || forType(props.counts, universe, props.statcol, props.articleType) > 0,
-    )
-
-    const generateStatisticsCSVData = (): string[][] => {
-        const headerRow = ['Rank', 'Name', 'Value', 'Percentile']
-        const dataRows: string[][] = []
-
-        // Include all data, not just the current page
-        for (let i = 0; i < props.articleNames.length; i++) {
-            const rank = i + 1
-            const name = props.articleNames[i]
-            const value = props.data.value[i]
-            const percentile = props.data.populationPercentile[i]
-
-            const formattedValue = value.toLocaleString()
-
-            dataRows.push([
-                rank.toString(),
-                name,
-                formattedValue,
-                percentile.toFixed(1),
-            ])
-        }
-
-        return [headerRow, ...dataRows]
-    }
-
-    const csvData = generateStatisticsCSVData()
-    const csvFilename = `${sanitize(props.renderedStatname)}.csv`
-    const csvExportData: CSVExportData = { csvData, csvFilename }
-
     const widthLeftHeader = 50
 
     return (
-        <PageTemplate
-            screencap={(universe, templateColors) => createScreenshot(screencapElements(), universe, templateColors)}
-            csvExportData={csvExportData}
-            hasUniverseSelector={true}
-            universes={universesFiltered}
-        >
-            <div>
-                <div ref={headersRef}>
-                    <div className={headerTextClass}>{props.renderedStatname}</div>
-                    <StatisticPanelSubhead
-                        articleType={props.articleType}
-                        renderedOther={props.order}
-                    />
-                </div>
-                <div style={{ marginBlockEnd: '16px' }}></div>
-                <div className="serif" ref={tableRef}>
-                    <StatisticPanelTable
-                        indexRange={indexRange}
-                        props={props}
-                        isAscending={isAscending}
-                        swapAscendingDescending={swapAscendingDescending}
-                        getRowBackgroundColor={getRowBackgroundColor}
-                        widthLeftHeader={widthLeftHeader}
-                        columnWidth={(100 - widthLeftHeader) / 1}
-                        data={props.data}
-                        articleNames={props.articleNames}
-                    />
-                </div>
-                <div style={{ marginBlockEnd: '1em' }}></div>
-                <Pagination
-                    {...props}
-                    count={count}
-                    amount={amount}
+        <div>
+            <div className="serif" ref={props.tableRef}>
+                <StatisticPanelTable
+                    indexRange={indexRange}
+                    props={props}
+                    isAscending={isAscending}
+                    swapAscendingDescending={swapAscendingDescending}
+                    getRowBackgroundColor={getRowBackgroundColor}
+                    widthLeftHeader={widthLeftHeader}
+                    columnWidth={(100 - widthLeftHeader) / 1}
+                    data={props.data}
+                    articleNames={props.articleNames}
                 />
             </div>
-        </PageTemplate>
+            <div style={{ marginBlockEnd: '1em' }}></div>
+            <Pagination
+                {...props}
+                count={count}
+                amount={amount}
+            />
+        </div>
     )
 }
 
