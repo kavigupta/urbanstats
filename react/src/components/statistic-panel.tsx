@@ -85,7 +85,6 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             statcol={statcol}
             explanationPage={explanationPage}
             renderedStatname={props.descriptor.statname}
-            joinedString={statpath}
         />
     )
 }
@@ -97,7 +96,6 @@ interface StatisticPanelLoadedProps extends StatisticCommonProps {
     renderedStatname: string
     statcol: StatCol
     explanationPage: string
-    joinedString: string
 }
 
 function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
@@ -133,7 +131,7 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
     }, [props.start, amount, count, isAscending])
 
     const screencapElements = (): ScreencapElements => ({
-        path: `${sanitize(props.joinedString)}.png`,
+        path: `${sanitize(props.renderedStatname)}.png`,
         overallWidth: tableRef.current!.offsetWidth * 2,
         elementsToRender: [headersRef.current!, tableRef.current!],
     })
@@ -193,7 +191,7 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
     }
 
     const csvData = generateStatisticsCSVData()
-    const csvFilename = `${sanitize(props.joinedString)}.csv`
+    const csvFilename = `${sanitize(props.renderedStatname)}.csv`
     const csvExportData: CSVExportData = { csvData, csvFilename }
 
     const widthLeftHeader = 50
