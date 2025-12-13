@@ -44,12 +44,15 @@ export function TopLevelEditor({
     setUss,
     typeEnvironment,
     errors,
+    targetOutputTypes,
 }: {
     uss: MapUSS
     setUss: (u: MapUSS, o: ActionOptions) => void
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
+    targetOutputTypes: USSType[]
 }): ReactNode {
+    console.log('TopLevelEditor render', uss)
     const subcomponent = (): ReactNode => {
         if (uss.type === 'customNode') {
             return (
@@ -110,7 +113,7 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idOutput}
-                    type={validMapperOutputs}
+                    type={targetOutputTypes}
                     labelWidth="0px"
                 />
             </div>
