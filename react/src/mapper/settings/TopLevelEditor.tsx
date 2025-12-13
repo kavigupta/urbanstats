@@ -132,7 +132,7 @@ export function TopLevelEditor({
                     }
                     else {
                         assert(uss.type === 'customNode', 'USS should not be a custom node when disabled')
-                        setUss(attemptParseAsTopLevel(uss.expr, typeEnvironment, false), {})
+                        setUss(attemptParseAsTopLevel(uss.expr, typeEnvironment, false, targetOutputTypes), {})
                     }
                 }}
             />
@@ -145,7 +145,7 @@ export function TopLevelEditor({
     )
 }
 
-export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, preserveCustomNodes: boolean): MapUSS {
+export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, preserveCustomNodes: boolean, targetOutputTypes: USSType[]): MapUSS {
     /**
      * Splits up the statements into a preamble and a condition statement. Make the body of the condition a custom node.
      */
@@ -159,8 +159,11 @@ export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, ty
         entireLoc: locationOf(stmt),
     } satisfies UrbanStatsASTStatement
     const conditionStmt = stmts.length > 0 ? stmts[stmts.length - 1] : undefined
+    console.log('Condition stmt', conditionStmt)
     const { conditionRest, conditionExpr } = attemptParseCondition(conditionStmt)
-    const body = parseExpr(makeStatements(conditionRest, idOutput), idOutput, validMapperOutputs, typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes)
+    console.log('Parsed condition rest', conditionRest)
+    const body = parseExpr(makeStatements(conditionRest, idOutput), idOutput, targetOutputTypes, typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes)
+    console.log('Parsed body', body)
     const condition = {
         type: 'condition',
         entireLoc: locationOf(conditionExpr),

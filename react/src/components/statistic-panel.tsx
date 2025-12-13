@@ -210,16 +210,14 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         const initialUSS = props.descriptor.type === 'uss-statistic'
             ? props.descriptor.uss
             : 'table(columns=[column(name="Value", values=density_pw_1km)])'
-        try {
-            const parsed = parse(initialUSS, { type: 'single', ident: 'statistic-edit' })
-            if (parsed.type === 'error') {
-                return parseNoErrorAsCustomNode(initialUSS, 'statistic-edit', [tableType])
-            }
-            return attemptParseAsTopLevel(parsed, defaultTypeEnvironment(props.universe as Universe | undefined), true)
-        }
-        catch {
+        const parsed = parse(initialUSS, { type: 'single', ident: 'statistic-edit' })
+        console.log('parsed', parsed)
+        if (parsed.type === 'error') {
             return parseNoErrorAsCustomNode(initialUSS, 'statistic-edit', [tableType])
         }
+        const doubleParsed = attemptParseAsTopLevel(parsed, defaultTypeEnvironment(props.universe as Universe | undefined), true, [tableType])
+        console.log('doubleParsed', doubleParsed)
+        return doubleParsed
     })
 
     const handleEditSettingsClick = (): void => {
@@ -245,6 +243,26 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const handleUSSChange = useCallback((newUSS: MapUSS, _options: ActionOptions): void => {
         setEditUSS(newUSS)
     }, [])
+
+    // Update URL when USS changes in edit mode
+    useEffect(() => {
+        if (isEditMode && props.descriptor.type === 'uss-statistic') {
+            const ussString = unparse(editUSS)
+            void navContext.navigate(statisticDescriptor({
+                universe: currentUniverse,
+                statDesc: { type: 'uss-statistic', uss: ussString },
+                articleType: editGeographyKind ?? props.articleType,
+                start: props.start,
+                amount: props.amount,
+                order: props.order,
+                highlight: props.highlight,
+                edit: true,
+            }), {
+                history: 'replace',
+                scroll: { kind: 'none' },
+            })
+        }
+    }, [editUSS, isEditMode, props.descriptor.type, navContext, currentUniverse, editGeographyKind, props.articleType, props.start, props.amount, props.order, props.highlight])
 
     const handleApplyUSS = (): void => {
         const ussString = unparse(editUSS, { simplify: true })
@@ -380,7 +398,8 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     }
     let content: ReactNode
     if (props.descriptor.type === 'uss-statistic') {
-        content = <USSStatisticPanel {...props} descriptor={props.descriptor} onDataLoaded={setLoadedData} tableRef={tableRef} />
+        // In edit mode, use the updated USS from state; otherwise use the descriptor's USS
+        content = <USSStatisticPanel {...props} descriptor={{ type: 'uss-statistic', uss: unparse(editUSS, { simplify: true }) }} onDataLoaded={setLoadedData} tableRef={tableRef} />
     }
     else {
         content = <SimpleStatisticPanel {...props} descriptor={props.descriptor} onDataLoaded={setLoadedData} tableRef={tableRef} />
