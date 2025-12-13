@@ -295,7 +295,6 @@ function StatisticPanelTable(props: {
 }): ReactNode {
     const currentUniverse = useUniverse()
 
-
     const articleRows: StatisticCellRenderingInfo[] = props.indexRange.map((i) => {
         return {
             statval: props.data.value[i],

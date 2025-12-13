@@ -534,7 +534,10 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: StatisticCel
     const [preferredPointerCell] = useSetting('mobile_article_pointers')
 
     const statpath = props.row.statpath
-    assert(statpath !== undefined, 'Pointers must have statpath')
+
+    if (statpath === undefined) {
+        return []
+    }
 
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
