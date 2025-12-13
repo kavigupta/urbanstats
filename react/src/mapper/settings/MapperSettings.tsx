@@ -8,7 +8,7 @@ import { settingNameStyle } from '../style'
 
 import { BetterSelector } from './BetterSelector'
 import { ActionOptions } from './EditMapperPanel'
-import { TopLevelEditor } from './TopLevelEditor'
+import { TopLevelEditor, validMapperOutputs } from './TopLevelEditor'
 import { MapSettings } from './utils'
 
 export function MapperSettings({ mapSettings, setMapSettings, errors, counts, typeEnvironment }: {
@@ -81,6 +81,7 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts, ty
                 }}
                 typeEnvironment={typeEnvironment}
                 errors={errors}
+                targetOutputTypes={validMapperOutputs}
             />
         </>
     )

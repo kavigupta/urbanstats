@@ -84,6 +84,7 @@ export function statisticDescriptor(props: {
     amount: number | 'All'
     order: 'ascending' | 'descending'
     highlight?: string
+    edit?: boolean
 }): PageDescriptor & { kind: 'statistic' } {
     let start = props.start
     // make start % amount == 0
@@ -101,6 +102,7 @@ export function statisticDescriptor(props: {
         order: props.order,
         highlight: props.highlight,
         universe: props.universe,
+        edit: props.edit,
     }
 }
 
