@@ -534,7 +534,10 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: StatisticCel
     const [preferredPointerCell] = useSetting('mobile_article_pointers')
 
     const statpath = props.row.statpath
-    assert(statpath !== undefined, 'Pointers must have statpath')
+
+    if (statpath === undefined) {
+        return []
+    }
 
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
@@ -846,7 +849,7 @@ export function StatisticName(props: {
                         ? {}
                         : navContext.link(statisticDescriptor({
                             universe: props.currentUniverse,
-                            statname: props.row.statname,
+                            statDesc: { type: 'simple-statistic', statname: props.row.statname },
                             articleType: props.row.articleType,
                             start: props.row.ordinal,
                             amount: 20,
