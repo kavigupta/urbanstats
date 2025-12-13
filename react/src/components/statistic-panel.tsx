@@ -56,8 +56,6 @@ export interface StatisticPanelProps extends StatisticCommonProps {
 }
 
 interface StatisticData {
-    // value: number[]
-    // populationPercentile: number[]
     data: { value: number[], populationPercentile: number[] }
     articleNames: string[]
     renderedStatname: string
@@ -446,23 +444,15 @@ function StatisticPanelTable(props: {
 }): ReactNode {
     const currentUniverse = useUniverse()
 
-    // const statIndex = stats.indexOf(props.props.statcol)
-    // const statpath: StatPath = paths[statIndex]
-
     const articleRows: StatisticCellRenderingInfo[] = props.indexRange.map((i) => {
         return {
             statval: props.data.value[i],
             ordinal: i + 1,
             percentileByPopulation: props.data.populationPercentile[i],
-            // statcol: props.props.statcol,
             statname: props.props.renderedStatname,
-            // statpath,
-            // explanationPage: props.props.explanationPage,
             articleType: props.props.articleType,
             totalCountInClass: props.props.totalCountInClass,
             totalCountOverall: props.props.totalCountOverall,
-            // index: statIndex,
-            // renderedStatname: props.props.renderedStatname,
             overallFirstLast: { isFirst: false, isLast: false },
             unit: props.props.unit,
         } satisfies StatisticCellRenderingInfo
@@ -604,7 +594,6 @@ function Pagination(props: {
         const goToPage = (newPage: number): void => {
             void navContext.navigate(statisticDescriptor({
                 universe: currentUniverse,
-                // statname: props.statname,
                 statDesc: props.statDesc,
                 articleType: props.articleType,
                 amount: props.amount,
