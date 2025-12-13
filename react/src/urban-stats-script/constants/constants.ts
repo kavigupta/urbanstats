@@ -10,6 +10,7 @@ import { constructRampValue, reverseRampValue, rampConsts, divergingRampValue } 
 import { regression } from './regr'
 import { richTextConstants } from './rich-text'
 import { linearScaleValue, logScaleValue } from './scale'
+import { column, table } from './table'
 import { constructTextBoxValue } from './text-box'
 import { unitConstants } from './units'
 
@@ -245,6 +246,8 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['cMap', cMap],
     ['cMapRGB', cMapRGB],
     ['pMap', pMap],
+    ['column', column],
+    ['table', table],
     ['constructOutline', constructOutline],
     ['osmBasemap', osmBasemap],
     ['noBasemap', noBasemap],
