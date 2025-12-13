@@ -846,7 +846,7 @@ export function StatisticName(props: {
                         ? {}
                         : navContext.link(statisticDescriptor({
                             universe: props.currentUniverse,
-                            statname: props.row.statname,
+                            statDesc: { type: 'simple-statistic', statname: props.row.statname },
                             articleType: props.row.articleType,
                             start: props.row.ordinal,
                             amount: 20,
