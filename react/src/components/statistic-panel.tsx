@@ -263,8 +263,25 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         setEditUSS(newUSS)
     }, [])
 
-    // Don't update URL automatically - only update on explicit actions (Apply button)
-    // This prevents infinite loops in custom script mode where every keystroke creates a new customNode
+    // Update URL when USS changes in edit mode
+    useEffect(() => {
+        if (isEditMode && props.descriptor.type === 'uss-statistic') {
+            const ussString = unparse(editUSS)
+            void navContext.navigate(statisticDescriptor({
+                universe: currentUniverse,
+                statDesc: { type: 'uss-statistic', uss: ussString },
+                articleType: editGeographyKind ?? props.articleType,
+                start: props.start,
+                amount: props.amount,
+                order: props.order,
+                highlight: props.highlight,
+                edit: true,
+            }), {
+                history: 'replace',
+                scroll: { kind: 'none' },
+            })
+        }
+    }, [editUSS, isEditMode, props.descriptor.type, navContext, currentUniverse, editGeographyKind, props.articleType, props.start, props.amount, props.order, props.highlight])
 
     const handleApplyUSS = (): void => {
         const ussString = unparse(editUSS)
