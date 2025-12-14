@@ -60,6 +60,17 @@ void test('single place', async () => {
     )
 })
 
+void test('aspect ratio', async () => {
+    assert.deepEqual(
+        await partitionLongnames([
+            'New York, USA',
+            'California, USA',
+            'Washington, USA',
+        ]),
+        [[0], [1, 2]],
+    )
+})
+
 void test('some related places', async () => {
     assert.deepEqual(
         await partitionLongnames(

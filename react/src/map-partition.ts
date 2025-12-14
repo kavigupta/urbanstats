@@ -64,19 +64,22 @@ function normalize(latitude: number): number {
 }
 
 export function extendBoxes(boxes: maplibregl.LngLatBounds[]): maplibregl.LngLatBounds {
-    let result = boxes.reduce((acc, box) => acc.extend(box), new maplibregl.LngLatBounds())
-    // use a square aspect ratio
-    const width = result.getEast() - result.getWest()
-    const height = result.getNorth() - result.getSouth()
-    if (width > height) {
+    return boxes.reduce((result, box) => result.extend(box), new maplibregl.LngLatBounds())
+}
+
+function letterbox(bounds: maplibregl.LngLatBounds, targetAspectRatio: number): maplibregl.LngLatBounds {
+    const width = bounds.getEast() - bounds.getWest()
+    const height = bounds.getNorth() - bounds.getSouth()
+    const aspect = width / height
+    if (aspect > targetAspectRatio) {
         const difference = width - height
-        result = new maplibregl.LngLatBounds([result.getWest(), normalize(result.getSouth() - difference / 2), result.getEast(), normalize(result.getNorth() + difference / 2)])
+        return new maplibregl.LngLatBounds([bounds.getWest(), normalize(bounds.getSouth() - difference / 2), bounds.getEast(), normalize(bounds.getNorth() + difference / 2)])
     }
-    else if (height > width) {
+    else if (aspect < targetAspectRatio) {
         const difference = height - width
-        result = new maplibregl.LngLatBounds([result.getWest() - difference / 2, result.getSouth(), result.getEast() + difference / 2, result.getNorth()])
+        return new maplibregl.LngLatBounds([bounds.getWest() - difference / 2, bounds.getSouth(), bounds.getEast() + difference / 2, bounds.getNorth()])
     }
-    return result
+    return bounds
 }
 
 // Area of bounds in EPSG:3857 projection
@@ -92,7 +95,7 @@ function area(bounds: maplibregl.LngLatBounds): number {
 }
 
 function proportionFilled(boxes: maplibregl.LngLatBounds[]): number {
-    return boxes.reduce((a, box) => a + area(box), 0) / area(extendBoxes(boxes))
+    return boxes.reduce((a, box) => a + area(box), 0) / area(letterbox(extendBoxes(boxes), 1))
 }
 
 /**
