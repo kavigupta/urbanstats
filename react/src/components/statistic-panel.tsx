@@ -10,7 +10,8 @@ import { loadStatisticsPage } from '../load_json'
 import { defaultTypeEnvironment } from '../mapper/context'
 import { BetterSelector } from '../mapper/settings/BetterSelector'
 import { ActionOptions } from '../mapper/settings/EditMapperPanel'
-import { attemptParseAsTopLevel, MapUSS, TopLevelEditor } from '../mapper/settings/TopLevelEditor'
+import { attemptParseAsTopLevel, idOutput, MapUSS, TopLevelEditor } from '../mapper/settings/TopLevelEditor'
+import { parseExpr } from '../mapper/settings/parseExpr'
 import { Navigator } from '../navigation/Navigator'
 import { sanitize, statisticDescriptor } from '../navigation/links'
 import { RelativeLoader } from '../navigation/loading'
@@ -20,8 +21,13 @@ import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './article.css'
 import { Universe, useUniverse } from '../universe'
+import { DisplayResults } from '../urban-stats-script/Editor'
+import { getAllParseErrors, toStatement, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { tableType } from '../urban-stats-script/constants/table'
+import { EditorError } from '../urban-stats-script/editor-utils'
+import { noLocation } from '../urban-stats-script/location'
 import { parse, parseNoErrorAsCustomNode, unparse } from '../urban-stats-script/parser'
+import { renderType } from '../urban-stats-script/types-values'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
@@ -35,6 +41,8 @@ import { forType, StatCol, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow } from './pointer-cell'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
+
+import { convertToMapUss } from '../mapper/settings/utils'
 
 export type StatisticDescriptor =
     | {
@@ -73,55 +81,58 @@ interface StatisticData {
 }
 
 type StatisticDataOutcome = (
-    { type: 'success' } & StatisticData
-    | { type: 'error', error: string }
-    | { type: 'loading' }
+    { type: 'success' } & StatisticData & { errors: EditorError[] }
+    | { type: 'error', errors: EditorError[] }
+    | { type: 'loading', errors: EditorError[] }
 )
 
-function useUSSStatisticPanelData(uss: string, geographyKind: (typeof validGeographies)[number], universe: Universe): StatisticDataOutcome {
+function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (typeof validGeographies)[number], universe: Universe): StatisticDataOutcome {
     // const [data, setData] = useState<{ value: number[], populationPercentile: number[] } | undefined>(undefined)
     // const [articleNames, setArticleNames] = useState<string[] | undefined>(undefined)
     const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | undefined>(undefined)
+    const [errors, setErrors] = useState<EditorError[]>([])
     // const [name, setName] = useState<string | undefined>(undefined)
     const [successData, setSuccessData] = useState<StatisticData | undefined>(undefined)
 
+    // Use a ref to track the last USS string to prevent re-execution when the AST object reference changes but content is the same
+    const lastUSSStringRef = useRef<string | undefined>(undefined)
+
     useEffect(() => {
+        // Serialize the USS AST to a string for comparison
+        // This prevents re-execution when the object reference changes but the content is the same
+        const ussString = JSON.stringify(uss)
+        // Only execute if the USS string actually changed
+        if (ussString === lastUSSStringRef.current) {
+            return
+        }
+        lastUSSStringRef.current = ussString
+
         setLoading(true)
-        setError(undefined)
+        setErrors([])
         const executeUSS = async (): Promise<void> => {
             try {
-                const stmts = parse(uss, { type: 'single', ident: 'statistic-uss' })
-                if (stmts.type === 'error') {
-                    setError(stmts.errors.map(e => e.value).join('; '))
-                    setLoading(false)
-                    return
-                }
-
-                const exec = await executeAsync({ descriptor: { kind: 'statistics', geographyKind, universe }, stmts })
+                const exec = await executeAsync({ descriptor: { kind: 'statistics', geographyKind, universe }, stmts: uss })
                 console.log(exec)
-                if (exec.error.length > 0) {
-                    setError(exec.error.map(e => e.value).join('; '))
-                    setLoading(false)
-                    return
-                }
+
+                const execErrors = exec.error
 
                 if (exec.resultingValue === undefined) {
-                    setError('USS expression did not return a value')
+                    setErrors(execErrors)
                     setLoading(false)
                     return
                 }
                 const res = exec.resultingValue
 
-                if (res.type.name !== 'table') {
-                    setError(`USS expression must return a table, got ${exec.resultingValue.type.name}`)
-                }
+                assert(res.type.name === 'table', `Expected resulting value to be of type table, got ${renderType(res.type)}. This was checked earlier (hence assertion not error)`)
 
                 const tableValue = exec.resultingValue.value
                 const table = tableValue.value
+                assert(table.columns.length > 0, 'Table has no columns. This was checked earlier (hence assertion not error)')
 
                 if (table.columns.length === 0) {
-                    setError('Table has no columns')
+                    const error: EditorError = { type: 'error', value: 'Table has no columns', location: noLocation, kind: 'error' }
+                    const allErrors = [...execErrors, error]
+                    setErrors(allErrors)
                     setLoading(false)
                     return
                 }
@@ -141,10 +152,12 @@ function useUSSStatisticPanelData(uss: string, geographyKind: (typeof validGeogr
                     totalCountOverall: values.length,
                     unit: firstColumn.unit,
                 })
+                setErrors(execErrors)
                 setLoading(false)
             }
             catch (e) {
-                setError(e instanceof Error ? e.message : 'Unknown error')
+                const error: EditorError = { type: 'error', value: e instanceof Error ? e.message : 'Unknown error', location: noLocation, kind: 'error' }
+                setErrors([error])
                 setLoading(false)
             }
         }
@@ -167,13 +180,13 @@ function useUSSStatisticPanelData(uss: string, geographyKind: (typeof validGeogr
     }, [successData])
 
     if (loading) {
-        return { type: 'loading' }
+        return { type: 'loading', errors }
     }
-    assert(error !== undefined || successDataSorted !== undefined, 'error and successDataSorted cannot both be undefined')
+    assert(errors.length > 0 || successDataSorted !== undefined, 'errors and successDataSorted cannot both be empty/undefined')
     if (successDataSorted !== undefined) {
-        return { type: 'success', ...successDataSorted }
+        return { type: 'success', ...successDataSorted, errors }
     }
-    return { type: 'error', error: error! }
+    return { type: 'error', errors }
 }
 
 async function loadStatisticsData(universe: string, statname: StatName, articleType: string, counts: CountsByUT): Promise<StatisticDataOutcome> {
@@ -190,6 +203,7 @@ async function loadStatisticsData(universe: string, statname: StatName, articleT
         explanationPage: explanation_pages[statIndex],
         totalCountInClass,
         totalCountOverall,
+        errors: [],
     }
 }
 
@@ -205,19 +219,24 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const [editUniverse, setEditUniverse] = useState<string | undefined>(props.universe)
     const [editGeographyKind, setEditGeographyKind] = useState<string | undefined>(props.articleType)
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(editUniverse as Universe | undefined), [editUniverse])
+    const [editErrors, setEditErrors] = useState<EditorError[]>([])
+
+    // Initialize editUSS from props (same pattern as mapper)
+    const parseUSSFromString = useCallback((ussString: string): MapUSS => {
+        const parsed = parse(ussString, { type: 'single', ident: idOutput })
+        if (parsed.type === 'error') {
+            return parseNoErrorAsCustomNode(ussString, idOutput, [tableType])
+        }
+        return attemptParseAsTopLevel(parsed, typeEnvironment, true, [tableType])
+    }, [])
 
     const [editUSS, setEditUSS] = useState<MapUSS>(() => {
         const initialUSS = props.descriptor.type === 'uss-statistic'
             ? props.descriptor.uss
             : 'table(columns=[column(name="Value", values=density_pw_1km)])'
-        const parsed = parse(initialUSS, { type: 'single', ident: 'statistic-edit' })
-        console.log('parsed', parsed)
-        if (parsed.type === 'error') {
-            return parseNoErrorAsCustomNode(initialUSS, 'statistic-edit', [tableType])
-        }
-        const doubleParsed = attemptParseAsTopLevel(parsed, defaultTypeEnvironment(props.universe as Universe | undefined), true, [tableType])
-        console.log('doubleParsed', doubleParsed)
-        return doubleParsed
+        const res = parseUSSFromString(initialUSS) // attemptParseAsTopLevel(, typeEnvironment, true, [tableType])
+        console.log('new', res)
+        return res
     })
 
     const handleEditSettingsClick = (): void => {
@@ -244,28 +263,11 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         setEditUSS(newUSS)
     }, [])
 
-    // Update URL when USS changes in edit mode
-    useEffect(() => {
-        if (isEditMode && props.descriptor.type === 'uss-statistic') {
-            const ussString = unparse(editUSS)
-            void navContext.navigate(statisticDescriptor({
-                universe: currentUniverse,
-                statDesc: { type: 'uss-statistic', uss: ussString },
-                articleType: editGeographyKind ?? props.articleType,
-                start: props.start,
-                amount: props.amount,
-                order: props.order,
-                highlight: props.highlight,
-                edit: true,
-            }), {
-                history: 'replace',
-                scroll: { kind: 'none' },
-            })
-        }
-    }, [editUSS, isEditMode, props.descriptor.type, navContext, currentUniverse, editGeographyKind, props.articleType, props.start, props.amount, props.order, props.highlight])
+    // Don't update URL automatically - only update on explicit actions (Apply button)
+    // This prevents infinite loops in custom script mode where every keystroke creates a new customNode
 
     const handleApplyUSS = (): void => {
-        const ussString = unparse(editUSS, { simplify: true })
+        const ussString = unparse(editUSS)
         void navContext.navigate(statisticDescriptor({
             universe: currentUniverse,
             statDesc: { type: 'uss-statistic', uss: ussString },
@@ -375,7 +377,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                         uss={editUSS}
                         setUss={handleUSSChange}
                         typeEnvironment={typeEnvironment}
-                        errors={[]}
+                        errors={editErrors}
                         targetOutputTypes={[tableType]}
                     />
                 </div>
@@ -396,10 +398,29 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             </div>
         )
     }
+    // Memoize the USS string to prevent unnecessary re-renders in custom script mode
+    const ussString = useMemo(() => {
+        return unparse(editUSS)
+    }, [editUSS])
+
+    // Memoize the USS AST to prevent unnecessary re-executions
+    const ussAST = useMemo(() => {
+        return toStatement(editUSS)
+    }, [editUSS])
+
     let content: ReactNode
     if (props.descriptor.type === 'uss-statistic') {
-        // In edit mode, use the updated USS from state; otherwise use the descriptor's USS
-        content = <USSStatisticPanel {...props} descriptor={{ type: 'uss-statistic', uss: unparse(editUSS, { simplify: true }) }} onDataLoaded={setLoadedData} tableRef={tableRef} />
+        content = (
+            <USSStatisticPanel
+                {...props}
+                descriptor={{ type: 'uss-statistic', uss: ussString }}
+                ussAST={ussAST}
+                onDataLoaded={setLoadedData}
+                tableRef={tableRef}
+                setErrors={setEditErrors}
+                hideErrors={isEditMode}
+            />
+        )
     }
     else {
         content = <SimpleStatisticPanel {...props} descriptor={props.descriptor} onDataLoaded={setLoadedData} tableRef={tableRef} />
@@ -472,8 +493,7 @@ function SimpleStatisticPanel(props: SimpleStatisticPanelProps): ReactNode {
     if (data.result.type === 'error') {
         return (
             <div>
-                Error:
-                {data.result.error}
+                <DisplayResults results={data.result.errors} editor={false} />
             </div>
         )
     }
@@ -489,12 +509,15 @@ interface USSStatisticPanelProps extends StatisticCommonProps {
     descriptor: { type: 'uss-statistic', uss: string }
     onDataLoaded: (data: StatisticData) => void
     tableRef: React.RefObject<HTMLDivElement>
+    setErrors: (errors: EditorError[]) => void
+    hideErrors?: boolean // If true, don't show errors separately (they're shown in editor)
+    ussAST: UrbanStatsASTStatement
 }
 
 function USSStatisticPanel(props: USSStatisticPanelProps): ReactNode {
-    const { onDataLoaded, tableRef, ...restProps } = props
+    const { onDataLoaded, tableRef, setErrors, hideErrors, ...restProps } = props
     const data = useUSSStatisticPanelData(
-        restProps.descriptor.uss,
+        restProps.ussAST,
         restProps.articleType as (typeof validGeographies)[number],
         restProps.universe as Universe,
     )
@@ -512,15 +535,25 @@ function USSStatisticPanel(props: USSStatisticPanelProps): ReactNode {
         }
     }, [data, onDataLoaded])
 
+    // Update parent errors in useEffect to avoid setState during render
+    useEffect(() => {
+        setErrors(data.errors)
+    }, [data.errors, setErrors])
+
     if (data.type === 'loading') {
         return <RelativeLoader loading={true} />
     }
 
     if (data.type === 'error') {
+        // Errors should be shown in the editor (TopLevelEditor) when in edit mode
+        // When not in edit mode or hideErrors is false, show errors here
+        if (hideErrors) {
+            // Errors are shown in editor, don't show them here
+            return <div>Error: Please check the editor above for details.</div>
+        }
         return (
             <div>
-                Error:
-                {data.error}
+                <DisplayResults results={data.errors} editor={false} />
             </div>
         )
     }
