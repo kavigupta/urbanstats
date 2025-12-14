@@ -53,8 +53,30 @@ export function boundingBox(geo: GeoJSON.Geometry): maplibregl.LngLatBounds {
     return result
 }
 
+function normalize(latitude: number): number {
+    while (latitude > 90) {
+        latitude -= 180
+    }
+    while (latitude < -90) {
+        latitude += 180
+    }
+    return latitude
+}
+
 export function extendBoxes(boxes: maplibregl.LngLatBounds[]): maplibregl.LngLatBounds {
-    return boxes.reduce((result, box) => result.extend(box), new maplibregl.LngLatBounds())
+    let result = boxes.reduce((acc, box) => acc.extend(box), new maplibregl.LngLatBounds())
+    // use a square aspect ratio
+    const width = result.getEast() - result.getWest()
+    const height = result.getNorth() - result.getSouth()
+    if (width > height) {
+        const difference = width - height
+        result = new maplibregl.LngLatBounds([result.getWest(), normalize(result.getSouth() - difference / 2), result.getEast(), normalize(result.getNorth() + difference / 2)])
+    }
+    else if (height > width) {
+        const difference = height - width
+        result = new maplibregl.LngLatBounds([result.getWest() - difference / 2, result.getSouth(), result.getEast() + difference / 2, result.getNorth()])
+    }
+    return result
 }
 
 // Area of bounds in EPSG:3857 projection
