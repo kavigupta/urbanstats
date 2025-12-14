@@ -48,7 +48,6 @@ export function Editor(
     setSelectionRef.current = setSelection
 
     const script = useMemo(() => makeScript(uss), [uss])
-    console.log('Editor', uss, script)
 
     const colors = useColors()
 

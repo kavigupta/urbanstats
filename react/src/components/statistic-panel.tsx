@@ -10,10 +10,9 @@ import statistic_variables_info from '../data/statistic_variables_info'
 import universes_ordered from '../data/universes_ordered'
 import { loadStatisticsPage } from '../load_json'
 import { defaultTypeEnvironment } from '../mapper/context'
-import { ActionOptions } from '../mapper/settings/EditMapperPanel'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { attemptParseAsTopLevel, idOutput, MapUSS } from '../mapper/settings/TopLevelEditor'
-import { MapSettings } from '../mapper/settings/utils'
+import { MapSettings, convertToMapUss } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { sanitize, statisticDescriptor } from '../navigation/links'
 import { RelativeLoader } from '../navigation/loading'
@@ -116,7 +115,6 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
         const executeUSS = async (): Promise<void> => {
             try {
                 const exec = await executeAsync({ descriptor: { kind: 'statistics', geographyKind, universe }, stmts: uss })
-                console.log(exec)
 
                 const execErrors = exec.error
 
@@ -146,8 +144,6 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
                 const firstColumn = table.columns[0]
                 const values = firstColumn.values
                 const geonames = table.geo
-
-                console.log(firstColumn.populationPercentiles)
 
                 setSuccessData({
                     data: { value: values, populationPercentile: firstColumn.populationPercentiles },
@@ -232,7 +228,8 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         if (parsed.type === 'error') {
             return parseNoErrorAsCustomNode(ussString, idOutput, [tableType])
         }
-        return attemptParseAsTopLevel(parsed, typeEnvironment, true, [tableType])
+        const res = attemptParseAsTopLevel(convertToMapUss(parsed), typeEnvironment, true, [tableType])
+        return res
     }, [typeEnvironment])
 
     const [editUSS, setEditUSS] = useState<MapUSS>(() => {

@@ -52,7 +52,6 @@ export function TopLevelEditor({
     errors: EditorError[]
     targetOutputTypes: USSType[]
 }): ReactNode {
-    console.log('TopLevelEditor render', uss)
     const subcomponent = (): ReactNode => {
         if (uss.type === 'customNode') {
             return (
@@ -159,11 +158,8 @@ export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, ty
         entireLoc: locationOf(stmt),
     } satisfies UrbanStatsASTStatement
     const conditionStmt = stmts.length > 0 ? stmts[stmts.length - 1] : undefined
-    console.log('Condition stmt', conditionStmt)
     const { conditionRest, conditionExpr } = attemptParseCondition(conditionStmt)
-    console.log('Parsed condition rest', conditionRest)
     const body = parseExpr(makeStatements(conditionRest, idOutput), idOutput, targetOutputTypes, typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes)
-    console.log('Parsed body', body)
     const condition = {
         type: 'condition',
         entireLoc: locationOf(conditionExpr),
