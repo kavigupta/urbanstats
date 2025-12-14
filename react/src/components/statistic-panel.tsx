@@ -118,6 +118,7 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
 
                 if (exec.resultingValue === undefined) {
                     setErrors(execErrors)
+                    setSuccessData(undefined) // Clear output on execution error
                     setLoading(false)
                     return
                 }
