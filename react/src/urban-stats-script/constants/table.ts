@@ -35,11 +35,12 @@ export const column: USSValue = {
         type: 'function',
         posArgs: [],
         namedArgs: {
-            name: {
-                type: { type: 'concrete', value: { type: 'string' } },
-            },
             values: {
                 type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } },
+            },
+            name: {
+                type: { type: 'concrete', value: { type: 'string' } },
+                defaultValue: createConstantExpression(null),
             },
             unit: {
                 type: { type: 'concrete', value: { type: 'opaque', name: 'Unit' } },
@@ -49,15 +50,27 @@ export const column: USSValue = {
         returnType: { type: 'concrete', value: columnType },
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
-    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, _originalArgs: OriginalFunctionArgs): USSRawValue => {
-        const name = namedArgs.name as string
+    value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>, originalArgs: OriginalFunctionArgs): USSRawValue => {
+        const namePassedIn = namedArgs.name as string | null
         const values = namedArgs.values as number[]
         const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'Unit', value: { unit: string } } | null
         const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
+
+        // Derive name from values argument's documentation if not provided
+        const name = namePassedIn ?? originalArgs.namedArgs.values.documentation?.humanReadableName
+
+        if (name === undefined) {
+            ctx.effect({
+                type: 'warning',
+                message: 'Name could not be derived for column, please pass name="<your name here>" to column(...)',
+                location: noLocation,
+            })
+        }
+
         return {
             type: 'opaque',
             opaqueType: 'column',
-            value: { name, values, unit } satisfies TableColumn,
+            value: { name: name ?? '[Unnamed Column]', values, unit } satisfies TableColumn,
         }
     },
     documentation: {
@@ -69,7 +82,7 @@ export const column: USSValue = {
             values: 'Values',
             unit: 'Unit',
         },
-        longDescription: 'Creates a column with a name and a list of cell values. Optionally specify a unit type.',
+        longDescription: 'Creates a column with a name and a list of cell values. The name can be automatically derived from the values argument if not provided. Optionally specify a unit type.',
     },
 } satisfies USSValue
 
