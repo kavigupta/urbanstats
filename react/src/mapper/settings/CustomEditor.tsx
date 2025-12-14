@@ -24,6 +24,7 @@ export function CustomEditor({
     blockIdent: string
     placeholder?: string
 }): ReactNode {
+    console.log('Rendering CustomEditor', blockIdent, uss)
     const ourErrors = useMemo(() => errors.filter((e: ParseError) => e.location.start.block.type === 'single' && e.location.start.block.ident === blockIdent), [errors, blockIdent])
 
     const selectionContext = useContext(SelectionContext)

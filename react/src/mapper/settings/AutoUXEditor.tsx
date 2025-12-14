@@ -135,6 +135,7 @@ export function AutoUXEditor(props: {
     label?: string
     labelWidth?: string
 }): ReactNode {
+    console.log('Rendering AutoUXEditor', props.blockIdent, props.uss)
     const ussLoc = locationOf(props.uss).start
     if (ussLoc.block.type !== 'single' || ussLoc.block.ident !== props.blockIdent) {
         console.warn('USS: ', props.uss)
