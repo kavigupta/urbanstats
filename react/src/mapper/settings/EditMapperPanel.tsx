@@ -27,6 +27,7 @@ import { MapGenerator, useMapGenerator } from '../map-generator'
 import { ImportExportCode } from './ImportExportCode'
 import { MapperSettings } from './MapperSettings'
 import { Selection, SelectionContext } from './SelectionContext'
+import { validMapperOutputs } from './TopLevelEditor'
 import { doEditInsets, getInsets, InsetEdits, replaceInsets, swapInsets } from './edit-insets'
 import { getTextBoxes, scriptWithNewTextBoxes } from './edit-text-boxes'
 import { MapSettings } from './utils'
@@ -181,6 +182,7 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
                         errors={mapGenerator.errors}
                         counts={counts}
                         typeEnvironment={typeEnvironment}
+                        targetOutputTypes={validMapperOutputs}
                     />
                 )}
                 right={(

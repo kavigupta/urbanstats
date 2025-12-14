@@ -10,10 +10,10 @@ import statistic_variables_info from '../data/statistic_variables_info'
 import universes_ordered from '../data/universes_ordered'
 import { loadStatisticsPage } from '../load_json'
 import { defaultTypeEnvironment } from '../mapper/context'
-import { BetterSelector } from '../mapper/settings/BetterSelector'
 import { ActionOptions } from '../mapper/settings/EditMapperPanel'
-import { attemptParseAsTopLevel, idOutput, MapUSS, TopLevelEditor } from '../mapper/settings/TopLevelEditor'
-import { parseExpr } from '../mapper/settings/parseExpr'
+import { MapperSettings } from '../mapper/settings/MapperSettings'
+import { attemptParseAsTopLevel, idOutput, MapUSS } from '../mapper/settings/TopLevelEditor'
+import { MapSettings } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { sanitize, statisticDescriptor } from '../navigation/links'
 import { RelativeLoader } from '../navigation/loading'
@@ -24,7 +24,7 @@ import '../common.css'
 import './article.css'
 import { Universe, useUniverse } from '../universe'
 import { DisplayResults } from '../urban-stats-script/Editor'
-import { getAllParseErrors, toStatement, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
+import { toStatement, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { tableType } from '../urban-stats-script/constants/table'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
@@ -37,14 +37,12 @@ import { displayType } from '../utils/text'
 import { UnitType } from '../utils/unit'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
-import { articleTypes, CountsByUT } from './countsByArticleType'
+import { CountsByUT } from './countsByArticleType'
 import { CSVExportData } from './csv-export'
 import { forType, StatCol, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow } from './pointer-cell'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
-
-import { convertToMapUss } from '../mapper/settings/utils'
 
 export type StatisticDescriptor =
     | {
@@ -98,16 +96,20 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
 
     // Use a ref to track the last USS string to prevent re-execution when the AST object reference changes but content is the same
     const lastUSSStringRef = useRef<string | undefined>(undefined)
+    const lastGeographyKindRef = useRef<string | undefined>(undefined)
+    const lastUniverseRef = useRef<string | undefined>(undefined)
 
     useEffect(() => {
         // Serialize the USS AST to a string for comparison
         // This prevents re-execution when the object reference changes but the content is the same
         const ussString = JSON.stringify(uss)
         // Only execute if the USS string actually changed
-        if (ussString === lastUSSStringRef.current) {
+        if (ussString === lastUSSStringRef.current && geographyKind === lastGeographyKindRef.current && universe === lastUniverseRef.current) {
             return
         }
         lastUSSStringRef.current = ussString
+        lastGeographyKindRef.current = geographyKind
+        lastUniverseRef.current = universe
 
         setLoading(true)
         setErrors([])
@@ -219,8 +221,8 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const colors = useColors()
 
     const isEditMode = props.edit ?? false
-    const [editUniverse, setEditUniverse] = useState<string | undefined>(props.universe)
-    const [editGeographyKind, setEditGeographyKind] = useState<string | undefined>(props.articleType)
+    const [editUniverse, setEditUniverse] = useState<string>(props.universe)
+    const [editGeographyKind, setEditGeographyKind] = useState<typeof validGeographies[number]>(props.articleType as typeof validGeographies[number])
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(editUniverse as Universe | undefined), [editUniverse])
     const [editErrors, setEditErrors] = useState<EditorError[]>([])
 
@@ -231,16 +233,28 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             return parseNoErrorAsCustomNode(ussString, idOutput, [tableType])
         }
         return attemptParseAsTopLevel(parsed, typeEnvironment, true, [tableType])
-    }, [])
+    }, [typeEnvironment])
 
     const [editUSS, setEditUSS] = useState<MapUSS>(() => {
         const initialUSS = props.descriptor.type === 'uss-statistic'
             ? props.descriptor.uss
             : `table(columns=[column(values=${varName(props.descriptor.statname)})])`
-        const res = parseUSSFromString(initialUSS) // attemptParseAsTopLevel(, typeEnvironment, true, [tableType])
-        console.log('new', res)
-        return res
+        return parseUSSFromString(initialUSS)
     })
+
+    // Construct MapSettings from separate state for MapperSettings component
+    const editMapSettings = useMemo((): MapSettings => ({
+        universe: editUniverse as Universe | undefined,
+        geographyKind: editGeographyKind as (typeof validGeographies)[number] | undefined,
+        script: { uss: editUSS },
+    }), [editUniverse, editGeographyKind, editUSS])
+
+    // Handle MapSettings changes from MapperSettings component
+    const handleMapSettingsChange = useCallback((newMapSettings: MapSettings): void => {
+        setEditUniverse(newMapSettings.universe ?? props.universe)
+        setEditGeographyKind(newMapSettings.geographyKind ?? props.articleType as typeof validGeographies[number])
+        setEditUSS(newMapSettings.script.uss)
+    }, [props.universe, props.articleType])
 
     const handleEditSettingsClick = (): void => {
         const ussString = unparse(editUSS, { simplify: true })
@@ -248,9 +262,9 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             ? props.descriptor
             : { type: 'uss-statistic', uss: ussString }
         void navContext.navigate(statisticDescriptor({
-            universe: currentUniverse,
+            universe: editUniverse,
             statDesc: newDescriptor,
-            articleType: props.articleType,
+            articleType: editGeographyKind,
             start: props.start,
             amount: props.amount,
             order: props.order,
@@ -262,18 +276,14 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         })
     }
 
-    const handleUSSChange = useCallback((newUSS: MapUSS, _options: ActionOptions): void => {
-        setEditUSS(newUSS)
-    }, [])
-
     // Update URL when USS changes in edit mode
     useEffect(() => {
         if (isEditMode && props.descriptor.type === 'uss-statistic') {
             const ussString = unparse(editUSS)
             void navContext.navigate(statisticDescriptor({
-                universe: currentUniverse,
+                universe: editUniverse,
                 statDesc: { type: 'uss-statistic', uss: ussString },
-                articleType: editGeographyKind ?? props.articleType,
+                articleType: editGeographyKind,
                 start: props.start,
                 amount: props.amount,
                 order: props.order,
@@ -284,14 +294,14 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 scroll: { kind: 'none' },
             })
         }
-    }, [editUSS, isEditMode, props.descriptor.type, navContext, currentUniverse, editGeographyKind, props.articleType, props.start, props.amount, props.order, props.highlight])
+    }, [editUSS, editUniverse, editGeographyKind, isEditMode, props.descriptor.type, navContext, currentUniverse, props.articleType, props.start, props.amount, props.order, props.highlight])
 
     const handleApplyUSS = (): void => {
         const ussString = unparse(editUSS)
         void navContext.navigate(statisticDescriptor({
-            universe: currentUniverse,
+            universe: editUniverse,
             statDesc: { type: 'uss-statistic', uss: ussString },
-            articleType: editGeographyKind ?? props.articleType,
+            articleType: editGeographyKind,
             start: 1,
             amount: 20,
             order: 'descending',
@@ -354,53 +364,18 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     const headerTextClass = useHeaderTextClass()
 
-    const editUniverses = useMemo(() => [undefined, ...universes_ordered], [])
-    const editGeographyKinds = useMemo(() => {
-        if (editUniverse === undefined) {
-            return undefined
-        }
-        return [undefined, ...articleTypes(props.counts, editUniverse)] as (string | undefined)[]
-    }, [editUniverse, props.counts])
-
-    const renderUniverse = useCallback((universe: string | undefined) => ({ text: universe ?? '' }), [])
-    const renderGeographyKind = useCallback((geographyKind: string | undefined) => ({ text: geographyKind ?? '' }), [])
-
     let preamble: ReactNode | undefined = undefined
     if (isEditMode) {
         preamble = (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1em', padding: '1em' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1em' }}>
-                        <div style={{ minWidth: '120px' }}>Universe:</div>
-                        <BetterSelector
-                            possibleValues={editUniverses}
-                            value={editUniverse}
-                            renderValue={renderUniverse}
-                            onChange={setEditUniverse}
-                        />
-                    </div>
-                    {editGeographyKinds && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1em' }}>
-                            <div style={{ minWidth: '120px' }}>Geography Kind:</div>
-                            <BetterSelector
-                                possibleValues={editGeographyKinds}
-                                value={editGeographyKind}
-                                renderValue={renderGeographyKind}
-                                onChange={setEditGeographyKind}
-                            />
-                        </div>
-                    )}
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em' }}>
-                    <div>Table Expression:</div>
-                    <TopLevelEditor
-                        uss={editUSS}
-                        setUss={handleUSSChange}
-                        typeEnvironment={typeEnvironment}
-                        errors={editErrors}
-                        targetOutputTypes={[tableType]}
-                    />
-                </div>
+                <MapperSettings
+                    mapSettings={editMapSettings}
+                    setMapSettings={handleMapSettingsChange}
+                    errors={editErrors}
+                    counts={props.counts}
+                    typeEnvironment={typeEnvironment}
+                    targetOutputTypes={[tableType]}
+                />
                 <button
                     onClick={handleApplyUSS}
                     style={{
@@ -428,11 +403,21 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         return toStatement(editUSS)
     }, [editUSS])
 
+    const commonProps = {
+        start: props.start,
+        amount: props.amount,
+        order: props.order,
+        articleType: editGeographyKind,
+        highlight: props.highlight,
+        counts: props.counts,
+        universe: editUniverse,
+    }
+
     let content: ReactNode
     if (props.descriptor.type === 'uss-statistic') {
         content = (
             <USSStatisticPanel
-                {...props}
+                {...commonProps}
                 descriptor={{ type: 'uss-statistic', uss: ussString }}
                 ussAST={ussAST}
                 onDataLoaded={setLoadedData}
@@ -443,7 +428,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         )
     }
     else {
-        content = <SimpleStatisticPanel {...props} descriptor={props.descriptor} onDataLoaded={setLoadedData} tableRef={tableRef} />
+        content = <SimpleStatisticPanel {...commonProps} descriptor={props.descriptor} onDataLoaded={setLoadedData} tableRef={tableRef} />
     }
 
     return (
