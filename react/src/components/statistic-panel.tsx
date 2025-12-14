@@ -4,7 +4,9 @@ import explanation_pages from '../data/explanation_page'
 import validGeographies from '../data/mapper/used_geographies'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
+import statistic_name_list from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
+import statistic_variables_info from '../data/statistic_variables_info'
 import universes_ordered from '../data/universes_ordered'
 import { loadStatisticsPage } from '../load_json'
 import { defaultTypeEnvironment } from '../mapper/context'
@@ -234,7 +236,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const [editUSS, setEditUSS] = useState<MapUSS>(() => {
         const initialUSS = props.descriptor.type === 'uss-statistic'
             ? props.descriptor.uss
-            : 'table(columns=[column(name="Value", values=density_pw_1km)])'
+            : `table(columns=[column(values=${varName(props.descriptor.statname)})])`
         const res = parseUSSFromString(initialUSS) // attemptParseAsTopLevel(, typeEnvironment, true, [tableType])
         console.log('new', res)
         return res
@@ -482,6 +484,17 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             {content}
         </PageTemplate>
     )
+}
+
+function varName(statname: StatName): string {
+    const index = statistic_name_list.indexOf(statname)
+    const result = statistic_variables_info.variableNames.find(v => v.index === index)
+    assert(result !== undefined, `No variable name found for statistic ${statname}`)
+    const multi = statistic_variables_info.multiSourceVariables.find(([, ns]) => (ns.individualVariables as readonly string[]).includes(result.varName))
+    if (multi !== undefined) {
+        return multi[0]
+    }
+    return result.varName
 }
 
 interface SimpleStatisticPanelProps extends StatisticCommonProps {
