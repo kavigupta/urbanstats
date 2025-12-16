@@ -28,7 +28,7 @@ import { tableType } from '../urban-stats-script/constants/table'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { parse, parseNoErrorAsCustomNode, unparse } from '../urban-stats-script/parser'
-import { renderType } from '../urban-stats-script/types-values'
+import { renderType, TypeEnvironment } from '../urban-stats-script/types-values'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
@@ -208,6 +208,15 @@ async function loadStatisticsData(universe: string, statname: StatName, articleT
     }
 }
 
+function parseUSSFromString(ussString: string, typeEnvironment: TypeEnvironment): MapUSS {
+    const parsed = parse(ussString, { type: 'single', ident: idOutput })
+    if (parsed.type === 'error') {
+        return parseNoErrorAsCustomNode(ussString, idOutput, [tableType])
+    }
+    const res = attemptParseAsTopLevel(convertToMapUss(parsed), typeEnvironment, true, [tableType])
+    return res
+}
+
 export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
@@ -222,21 +231,11 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(editUniverse as Universe | undefined), [editUniverse])
     const [editErrors, setEditErrors] = useState<EditorError[]>([])
 
-    // Initialize editUSS from props (same pattern as mapper)
-    const parseUSSFromString = useCallback((ussString: string): MapUSS => {
-        const parsed = parse(ussString, { type: 'single', ident: idOutput })
-        if (parsed.type === 'error') {
-            return parseNoErrorAsCustomNode(ussString, idOutput, [tableType])
-        }
-        const res = attemptParseAsTopLevel(convertToMapUss(parsed), typeEnvironment, true, [tableType])
-        return res
-    }, [typeEnvironment])
-
     const [editUSS, setEditUSS] = useState<MapUSS>(() => {
         const initialUSS = props.descriptor.type === 'uss-statistic'
             ? props.descriptor.uss
             : `table(columns=[column(values=${varName(props.descriptor.statname)})])`
-        return parseUSSFromString(initialUSS)
+        return parseUSSFromString(initialUSS, typeEnvironment)
     })
 
     // Construct MapSettings from separate state for MapperSettings component
