@@ -1,3 +1,4 @@
+import objectHash from 'object-hash'
 import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import explanation_pages from '../data/explanation_page'
@@ -90,7 +91,7 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
     const lastState = useRef<string | undefined>(undefined)
 
     useEffect(() => {
-        const state = JSON.stringify([uss, geographyKind, universe])
+        const state = objectHash([uss, geographyKind, universe])
         if (state === lastState.current) {
             // state unchanged, no need to re-execute
             return
@@ -357,14 +358,13 @@ function USSStatisticPanel(props: USSStatisticPanelProps): ReactNode {
         restProps.universe as Universe,
     )
 
-    const lastDataRef = useRef<string | undefined>(undefined)
+    const lastDataHashRef = useRef<string | undefined>(undefined)
     useEffect(() => {
         if (data.type === 'success') {
             // Only call onDataLoaded if the data has actually changed
-            // JSON stringify to compare the actual data values
-            const dataString = JSON.stringify(data)
-            if (lastDataRef.current !== dataString) {
-                lastDataRef.current = dataString
+            const dataHash = objectHash(data)
+            if (lastDataHashRef.current !== dataHash) {
+                lastDataHashRef.current = dataHash
                 onDataLoaded(data)
             }
         }

@@ -220,3 +220,22 @@ test('shows correct number of rows when count is multiple of amount', async (t) 
     await t.expect(Selector('div').withExactText('20').exists).ok()
     await t.expect(Selector('div').withExactText('21').exists).notOk()
 })
+
+function createUSSStatisticsPage(uss: string): string {
+    return `${target}/statistic.html?uss=${encodeURIComponent(uss)}&article_type=County&start=1&amount=20&universe=California,+USA`
+}
+
+urbanstatsFixture('USS statistics page', createUSSStatisticsPage(`table(
+    columns=[
+        column(
+            values=(density_pw_1km / density_pw_2km),
+            name="Density Ratio",
+            unit=unitNumber
+        )
+    ]
+)`))
+
+test.only('USS statistics page displays correctly', async (t) => {
+    await t.expect(Selector('div').withExactText('Density Ratio').exists).ok()
+    await screencap(t)
+})
