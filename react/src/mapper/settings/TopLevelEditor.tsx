@@ -44,11 +44,13 @@ export function TopLevelEditor({
     setUss,
     typeEnvironment,
     errors,
+    targetOutputTypes,
 }: {
     uss: MapUSS
     setUss: (u: MapUSS, o: ActionOptions) => void
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
+    targetOutputTypes: USSType[]
 }): ReactNode {
     const subcomponent = (): ReactNode => {
         if (uss.type === 'customNode') {
@@ -110,7 +112,7 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idOutput}
-                    type={validMapperOutputs}
+                    type={targetOutputTypes}
                     labelWidth="0px"
                 />
             </div>
@@ -129,7 +131,7 @@ export function TopLevelEditor({
                     }
                     else {
                         assert(uss.type === 'customNode', 'USS should not be a custom node when disabled')
-                        setUss(attemptParseAsTopLevel(uss.expr, typeEnvironment, false), {})
+                        setUss(attemptParseAsTopLevel(uss.expr, typeEnvironment, false, targetOutputTypes), {})
                     }
                 }}
             />
@@ -142,7 +144,7 @@ export function TopLevelEditor({
     )
 }
 
-export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, preserveCustomNodes: boolean): MapUSS {
+export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, preserveCustomNodes: boolean, targetOutputTypes: USSType[]): MapUSS {
     /**
      * Splits up the statements into a preamble and a condition statement. Make the body of the condition a custom node.
      */
@@ -157,7 +159,7 @@ export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, ty
     } satisfies UrbanStatsASTStatement
     const conditionStmt = stmts.length > 0 ? stmts[stmts.length - 1] : undefined
     const { conditionRest, conditionExpr } = attemptParseCondition(conditionStmt)
-    const body = parseExpr(makeStatements(conditionRest, idOutput), idOutput, validMapperOutputs, typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes)
+    const body = parseExpr(makeStatements(conditionRest, idOutput), idOutput, targetOutputTypes, typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes)
     const condition = {
         type: 'condition',
         entireLoc: locationOf(conditionExpr),
