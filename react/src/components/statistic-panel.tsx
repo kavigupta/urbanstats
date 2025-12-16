@@ -309,8 +309,6 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         })
     }
 
-    const typeEnvironment = useMemo(() => defaultTypeEnvironment(props.universe as Universe | undefined), [props.universe])
-
     const universesFiltered = useMemo(() => {
         if (loadedData?.statcol === undefined) {
             return universes_ordered
