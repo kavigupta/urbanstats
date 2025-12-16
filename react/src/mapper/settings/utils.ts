@@ -11,7 +11,7 @@ import { emptyLocation } from '../../urban-stats-script/lexer'
 import { parse, parseNoErrorAsCustomNode, unparse } from '../../urban-stats-script/parser'
 import { defaultTypeEnvironment } from '../context'
 
-import { attemptParseAsTopLevel, defaultTopLevelEditor, MapUSS, rootBlockIdent } from './TopLevelEditor'
+import { attemptParseAsTopLevel, defaultTopLevelEditor, MapUSS, rootBlockIdent, validMapperOutputs } from './TopLevelEditor'
 
 export type StatisticsForGeography = { stats: number[] }[]
 
@@ -64,7 +64,7 @@ export function computeUSS(mapSettings: MapperScriptSettings): UrbanStatsASTStat
 }
 
 export function defaultSettings(addTo: Partial<MapSettings>): MapSettings {
-    const uss = attemptParseAsTopLevel(addTo.script?.uss ?? defaultTopLevelEditor(), defaultTypeEnvironment(addTo.universe ?? 'USA'), true)
+    const uss = attemptParseAsTopLevel(addTo.script?.uss ?? defaultTopLevelEditor(), defaultTypeEnvironment(addTo.universe ?? 'USA'), true, validMapperOutputs)
     return {
         geographyKind: addTo.geographyKind ?? 'Subnational Region',
         universe: addTo.universe ?? 'USA',
