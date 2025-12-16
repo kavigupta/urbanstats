@@ -213,11 +213,13 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const tableRef = useRef<HTMLDivElement>(null)
     const [loadedData, setLoadedData] = useState<StatisticData | undefined>(undefined)
     const navContext = useContext(Navigator.Context)
-    const currentUniverse = useUniverse()
     const colors = useColors()
 
     const isEditMode = props.edit ?? false
     const [editUniverse, setEditUniverse] = useState<string>(props.universe)
+    useEffect(() => {
+        setEditUniverse(props.universe)
+    }, [props.universe])
     const [editGeographyKind, setEditGeographyKind] = useState<typeof validGeographies[number]>(props.articleType as typeof validGeographies[number])
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(editUniverse as Universe | undefined), [editUniverse])
     const [editErrors, setEditErrors] = useState<EditorError[]>([])
@@ -281,7 +283,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 scroll: { kind: 'none' },
             })
         }
-    }, [editUSS, editUniverse, editGeographyKind, isEditMode, props.descriptor.type, navContext, currentUniverse, props.articleType, props.start, props.amount, props.order, props.highlight])
+    }, [editUSS, editUniverse, editGeographyKind, isEditMode, props.descriptor.type, navContext, props.universe, props.articleType, props.start, props.amount, props.order, props.highlight])
 
     const handleApplyUSS = (): void => {
         const ussString = unparse(editUSS)
