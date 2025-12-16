@@ -82,29 +82,20 @@ type StatisticDataOutcome = (
 )
 
 function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (typeof validGeographies)[number], universe: Universe): StatisticDataOutcome {
-    // const [data, setData] = useState<{ value: number[], populationPercentile: number[] } | undefined>(undefined)
-    // const [articleNames, setArticleNames] = useState<string[] | undefined>(undefined)
     const [loading, setLoading] = useState(true)
     const [errors, setErrors] = useState<EditorError[]>([])
-    // const [name, setName] = useState<string | undefined>(undefined)
     const [successData, setSuccessData] = useState<StatisticData | undefined>(undefined)
 
-    // Use a ref to track the last USS string to prevent re-execution when the AST object reference changes but content is the same
-    const lastUSSStringRef = useRef<string | undefined>(undefined)
-    const lastGeographyKindRef = useRef<string | undefined>(undefined)
-    const lastUniverseRef = useRef<string | undefined>(undefined)
+    // Use a ref to track the last executed state (uss, geographyKind, universe)
+    const lastState = useRef<string | undefined>(undefined)
 
     useEffect(() => {
-        // Serialize the USS AST to a string for comparison
-        // This prevents re-execution when the object reference changes but the content is the same
-        const ussString = JSON.stringify(uss)
-        // Only execute if the USS string actually changed
-        if (ussString === lastUSSStringRef.current && geographyKind === lastGeographyKindRef.current && universe === lastUniverseRef.current) {
+        const state = JSON.stringify([uss, geographyKind, universe])
+        if (state === lastState.current) {
+            // state unchanged, no need to re-execute
             return
         }
-        lastUSSStringRef.current = ussString
-        lastGeographyKindRef.current = geographyKind
-        lastUniverseRef.current = universe
+        lastState.current = state
 
         setLoading(true)
         setErrors([])
