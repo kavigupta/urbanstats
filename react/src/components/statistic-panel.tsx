@@ -421,7 +421,6 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 onDataLoaded={setLoadedData}
                 tableRef={tableRef}
                 setErrors={setEditErrors}
-                hideErrors={isEditMode}
             />
         )
     }
@@ -524,12 +523,11 @@ interface USSStatisticPanelProps extends StatisticCommonProps {
     onDataLoaded: (data: StatisticData) => void
     tableRef: React.RefObject<HTMLDivElement>
     setErrors: (errors: EditorError[]) => void
-    hideErrors?: boolean // If true, don't show errors separately (they're shown in editor)
     ussAST: UrbanStatsASTStatement
 }
 
 function USSStatisticPanel(props: USSStatisticPanelProps): ReactNode {
-    const { onDataLoaded, tableRef, setErrors, hideErrors, ...restProps } = props
+    const { onDataLoaded, tableRef, setErrors, ...restProps } = props
     const data = useUSSStatisticPanelData(
         restProps.ussAST,
         restProps.articleType as (typeof validGeographies)[number],
@@ -559,12 +557,6 @@ function USSStatisticPanel(props: USSStatisticPanelProps): ReactNode {
     }
 
     if (data.type === 'error') {
-        // Errors should be shown in the editor (TopLevelEditor) when in edit mode
-        // When not in edit mode or hideErrors is false, show errors here
-        if (hideErrors) {
-            // Errors are shown in editor, don't show them here
-            return <div>Error: Please check the editor above for details.</div>
-        }
         return (
             <div>
                 <DisplayResults results={data.errors} editor={false} />
