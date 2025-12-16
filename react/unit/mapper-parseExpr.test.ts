@@ -1,10 +1,8 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { custom } from 'zod'
-
 import { defaultTypeEnvironment } from '../src/mapper/context'
-import { parseExpr, maybeParseExpr } from '../src/mapper/settings/parseExpr'
+import { parseExpr } from '../src/mapper/settings/parseExpr'
 import { UrbanStatsASTExpression } from '../src/urban-stats-script/ast'
 import { parse, unparse } from '../src/urban-stats-script/parser'
 import type { TypeEnvironment, USSType } from '../src/urban-stats-script/types-values'
