@@ -61,7 +61,7 @@ function attemptParseExpr(
             return {
                 type: 'vectorLiteral',
                 entireLoc: emptyLocation(blockIdent),
-                elements: expr.elements.map((elem, idx) => parseExpr(elem, extendBlockIdVectorElement(blockIdent, idx), elementTypes, typeEnvironment, fallback, preserveCustomNodes)),
+                elements: expr.elements.map((elem, idx) => parseExpr(elem, extendBlockIdVectorElement(blockIdent, idx), elementTypes, typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes)),
             }
         case 'objectLiteral':
             const exprProps = new Set(expr.properties.map(([key]) => key))
@@ -87,7 +87,7 @@ function attemptParseExpr(
                 entireLoc: emptyLocation(blockIdent),
                 properties: expr.properties.map(([key, value]) => [
                     key,
-                    parseExpr(value, extendBlockIdObjectProperty(blockIdent, key), compatibleTypes.map(t => t.properties.get(key)!) satisfies USSType[], typeEnvironment, fallback, preserveCustomNodes),
+                    parseExpr(value, extendBlockIdObjectProperty(blockIdent, key), compatibleTypes.map(t => t.properties.get(key)!) satisfies USSType[], typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes),
                 ]),
             }
         case 'do':
@@ -155,7 +155,7 @@ function attemptParseExpr(
             }
             positionals = positionals.map((a, i) => ({
                 type: 'unnamed',
-                value: parseExpr(a.value, extendBlockIdPositionalArg(blockIdent, i), [(fnType.posArgs[i] as { type: 'concrete', value: USSType }).value], typeEnvironment, fallback, preserveCustomNodes),
+                value: parseExpr(a.value, extendBlockIdPositionalArg(blockIdent, i), [(fnType.posArgs[i] as { type: 'concrete', value: USSType }).value], typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes),
             }))
             if (Object.values(fnType.namedArgs).some(a => a.type.type !== 'concrete')) {
                 return undefined
