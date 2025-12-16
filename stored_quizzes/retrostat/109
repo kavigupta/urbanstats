@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Life Expectancy (2019)",
+      "stat_path": "life_expectancy_2019",
+      "question": "higher life expectancy",
+      "longname_a": "Duval County, Florida, USA",
+      "longname_b": "Anoka County, Minnesota, USA",
+      "stat_a": 75.69999999999993,
+      "stat_b": 81.39999999999978
+    },
+    "b": {
+      "stat_column": "LICO-AT %",
+      "stat_path": "lico_at_canada",
+      "question": "higher % of people who are low income based on the Low-income cut-offs, after tax (LICO-AT)",
+      "longname_a": "Qu\u00e9bec Territory, Quebec, Canada",
+      "longname_b": "Greater Vancouver Regional district, British Columbia, Canada",
+      "stat_a": 0.05905283164971299,
+      "stat_b": 0.07691282144423565
+    },
+    "a_ease": 0.7542051003798155,
+    "b_ease": 0.3501651722510618
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2020 Presidential Election",
+      "stat_path": "2020 Presidential Election-margin",
+      "question": "!FULL Which voted more for Biden in the 2020 presidential election?",
+      "longname_a": "Kennewick-Richland-Pasco [Urban Area], WA, USA",
+      "longname_b": "Concord [Urban Area], NC, USA",
+      "stat_a": -0.16120363183659275,
+      "stat_b": -0.04791360538513489
+    },
+    "b": {
+      "stat_column": "COPD %",
+      "stat_path": "COPD_cdc_2",
+      "question": "higher % of adults with COPD !TOOLTIP (Chronic obstructive pulmonary disease, a lung disease linked to smoking)",
+      "longname_a": "Clarksburg-Weston WV Media Market, USA",
+      "longname_b": "Madison WI Media Market, USA",
+      "stat_a": 0.11258946965045018,
+      "stat_b": 0.05184595063747808
+    },
+    "a_ease": 0.3977211068909387,
+    "b_ease": 0.8022269353128314
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household Income < $50k %",
+      "stat_path": "household_income_under_50k",
+      "question": "higher % of households who have household income under $50k",
+      "longname_a": "McLennan County, Texas, USA",
+      "longname_b": "Orange County, New York, USA",
+      "stat_a": 0.4699556235004371,
+      "stat_b": 0.29925496688741715
+    },
+    "b": {
+      "stat_column": "Racial Homogeneity Change (2000-2020) %",
+      "stat_path": "homogeneity_250_diff_2000",
+      "question": "!FULL Which diversified less between 2000 and 2020?!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "Kansas City city, Missouri, USA",
+      "longname_b": "Sacramento city, California, USA",
+      "stat_a": -0.15205434861717593,
+      "stat_b": -0.05001096437610003
+    },
+    "a_ease": 0.8414006179196705,
+    "b_ease": 0.4232749742533471
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built pre-1970",
+      "stat_path": "year_built_1969_or_earlier",
+      "question": "higher % of housing units built before 1970",
+      "longname_a": "South Central Connecticut Planning Region, Connecticut, USA",
+      "longname_b": "Ada County, Idaho, USA",
+      "stat_a": 0.5966712012031021,
+      "stat_b": 0.15364436949597166
+    },
+    "b": {
+      "stat_column": "Private Insurance %",
+      "stat_path": "insurance_coverage_private",
+      "question": "higher % of people who are on private insurance!TOOLTIP The denominator for this statistic is the the total number of adults, including those without health insurance coverage.",
+      "longname_a": "Lincoln [Urban Area], NE, USA",
+      "longname_b": "Phoenix West-Goodyear-Avondale [Urban Area], AZ, USA",
+      "stat_a": 0.8140973668649737,
+      "stat_b": 0.6698880333359746
+    },
+    "a_ease": 0.8532326569136385,
+    "b_ease": 0.40995607613469986
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Citizen by Naturalization %",
+      "stat_path": "citizenship_citizen_by_naturalization",
+      "question": "higher % of residents who are citizens by naturalization",
+      "longname_a": "Wisconsin, USA",
+      "longname_b": "New Jersey, USA",
+      "stat_a": 0.023794797848699957,
+      "stat_b": 0.1313474371453308
+    },
+    "b": {
+      "stat_column": "Divorced %",
+      "stat_path": "marriage_divorced",
+      "question": "higher % of people who are divorced",
+      "longname_a": "Ontario, Canada",
+      "longname_b": "Montana, USA",
+      "stat_a": 0.10438829452690741,
+      "stat_b": 0.12630643027494834
+    },
+    "a_ease": 0.8744690891930156,
+    "b_ease": 0.4676564156945917
+  }
+]
