@@ -26,7 +26,6 @@ import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
-import { ArrowUpOrDown } from './statistic-panel'
 import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
@@ -1204,4 +1203,26 @@ function PointerButtonIndex(props: {
             <PointerArrow direction={props.direction} disabled={disabled} />
         </button>
     )
+}
+
+export function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearInScreenshot: boolean }): ReactNode {
+    const isScreenshot = useScreenshotMode()
+
+    if (isScreenshot && !props.shouldAppearInScreenshot) {
+        return null
+    }
+
+    let image: string
+    switch (props.direction) {
+        case 'up':
+            image = '/sort-up.png'
+            break
+        case 'down':
+            image = '/sort-down.png'
+            break
+        case 'both':
+            image = '/sort-both.png'
+            break
+    }
+    return <img src={image} className="testing-order-swap" alt={props.direction} style={{ width: '16px', height: '16px' }} />
 }
