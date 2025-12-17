@@ -24,7 +24,7 @@ import { CountsByUT } from './countsByArticleType'
 import { CSVExportData } from './csv-export'
 import { forType, StatCol, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow } from './pointer-cell'
-import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
+import { createScreenshot, ScreencapElements } from './screenshot'
 import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
 
 export interface StatisticDescriptor {
