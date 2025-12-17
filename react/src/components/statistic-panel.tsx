@@ -24,7 +24,7 @@ import { CountsByUT } from './countsByArticleType'
 import { CSVExportData } from './csv-export'
 import { forType, StatCol, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow } from './pointer-cell'
-import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
+import { createScreenshot, ScreencapElements } from './screenshot'
 import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
 
 export interface StatisticDescriptor {
@@ -649,26 +649,4 @@ function StatisticPanelSubhead(props: { articleType: string, renderedOther: stri
             {displayType(currentUniverse, props.articleType)}
         </div>
     )
-}
-
-export function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearInScreenshot: boolean }): ReactNode {
-    const isScreenshot = useScreenshotMode()
-
-    if (isScreenshot && !props.shouldAppearInScreenshot) {
-        return null
-    }
-
-    let image: string
-    switch (props.direction) {
-        case 'up':
-            image = '/sort-up.png'
-            break
-        case 'down':
-            image = '/sort-down.png'
-            break
-        case 'both':
-            image = '/sort-both.png'
-            break
-    }
-    return <img src={image} className="testing-order-swap" alt={props.direction} style={{ width: '16px', height: '16px' }} />
 }
