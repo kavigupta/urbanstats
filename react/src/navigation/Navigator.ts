@@ -334,6 +334,7 @@ export class Navigator {
             case 'article':
             case 'comparison':
             case 'statistic':
+            case 'mapper':
                 return data.universe
             default:
                 return undefined
@@ -349,6 +350,7 @@ export class Navigator {
             case 'article':
             case 'comparison':
             case 'statistic':
+            case 'mapper':
                 void this.navigate({
                     ...this.pageState.current.descriptor,
                     universe: newUniverse,

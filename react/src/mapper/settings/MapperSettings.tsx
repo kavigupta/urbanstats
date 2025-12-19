@@ -1,7 +1,9 @@
-import React, { ReactNode, useCallback, useMemo } from 'react'
+import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef } from 'react'
 
 import { articleTypes, CountsByUT } from '../../components/countsByArticleType'
 import universes_ordered from '../../data/universes_ordered'
+import { Navigator } from '../../navigation/Navigator'
+import { Universe, useUniverse } from '../../universe'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 import { settingNameStyle } from '../style'
@@ -26,6 +28,11 @@ export function MapperSettings({
     typeEnvironment: TypeEnvironment
     targetOutputTypes: USSType[]
 }): ReactNode {
+    const navContext = useContext(Navigator.Context)
+    const urlUniverse = useUniverse()
+    const lastUrlUniverse = useRef<string | undefined>(undefined)
+    const lastSettingsUniverse = useRef<string | undefined>(mapSettings.universe)
+
     const uss = mapSettings.script.uss
 
     const renderString = useCallback((universe: string | undefined) => ({ text: universe ?? '' }), [])
@@ -35,6 +42,31 @@ export function MapperSettings({
     const geographyKinds = useMemo(() =>
         mapSettings.universe === undefined ? undefined : [undefined, ...articleTypes(counts, mapSettings.universe)] as Exclude<MapSettings['geographyKind'], undefined>[],
     [mapSettings.universe, counts])
+
+    // Update map settings when universe changes in URL (from header selector)
+    useEffect(() => {
+        if (lastUrlUniverse.current === undefined || lastUrlUniverse.current !== urlUniverse) {
+            lastUrlUniverse.current = urlUniverse
+            if (mapSettings.universe !== urlUniverse) {
+                setMapSettings({
+                    ...mapSettings,
+                    universe: urlUniverse as Universe,
+                }, {})
+            }
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- we only need mapSettings.universe here
+    }, [urlUniverse, mapSettings.universe, counts, setMapSettings])
+
+    // Update URL when universe changes in map settings
+    useEffect(() => {
+        if (mapSettings.universe !== undefined && mapSettings.universe !== lastSettingsUniverse.current) {
+            lastSettingsUniverse.current = mapSettings.universe
+            // Only update URL if different
+            if (urlUniverse !== mapSettings.universe) {
+                navContext.setUniverse(mapSettings.universe)
+            }
+        }
+    }, [mapSettings.universe, urlUniverse, navContext])
 
     return (
         <>
