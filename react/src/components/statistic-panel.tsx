@@ -217,9 +217,6 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     const isEditMode = props.edit ?? false
     const [editUniverse, setEditUniverse] = useState<string>(props.universe)
-    useEffect(() => {
-        setEditUniverse(props.universe)
-    }, [props.universe])
     const [editGeographyKind, setEditGeographyKind] = useState<typeof validGeographies[number]>(props.articleType as typeof validGeographies[number])
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(editUniverse as Universe | undefined), [editUniverse])
     const [editErrors, setEditErrors] = useState<EditorError[]>([])
