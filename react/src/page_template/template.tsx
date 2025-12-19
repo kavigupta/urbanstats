@@ -1,7 +1,7 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
 import { exportToCSV, CSVExportData } from '../components/csv-export'
-import { Header } from '../components/header'
+import { Header, UniverseSelectorConfig } from '../components/header'
 import { ScreenshotContext } from '../components/screenshot'
 import { Sidebar } from '../components/sidebar'
 import '../common.css'
@@ -17,15 +17,13 @@ import { useHideSidebarDesktop } from './utils'
 export function PageTemplate({
     screencap = undefined,
     csvExportData = undefined,
-    hasUniverseSelector = false,
-    universes = [],
+    universeSelector = undefined,
     children,
     showFooter = true,
 }: {
     screencap?: (currentUniverse: string | undefined, colors: Colors) => Promise<void>
     csvExportData?: CSVExportData
-    hasUniverseSelector?: boolean
-    universes?: readonly string[]
+    universeSelector?: UniverseSelectorConfig
     children?: React.ReactNode
     showFooter?: boolean
 }): ReactNode {
@@ -111,8 +109,7 @@ export function PageTemplate({
                     setHamburgerOpen={setHamburgerOpen}
                     hasScreenshot={hasScreenshotButton}
                     hasCSV={hasCSVButton}
-                    hasUniverseSelector={hasUniverseSelector}
-                    allUniverses={universes}
+                    universeSelector={universeSelector}
                     initiateScreenshot={(currentUniverse) => { initiateScreenshot(currentUniverse) }}
                     exportCSV={exportCSV}
                 />

@@ -142,8 +142,10 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         <PageTemplate
             screencap={screencapElements ? (universe, templateColors) => createScreenshot(screencapElements(), universe, templateColors) : undefined}
             csvExportData={csvExportData}
-            hasUniverseSelector={true}
-            universes={universesFiltered}
+            universeSelector={{
+                universes: universesFiltered,
+                onChange: 'navigator',
+            }}
         >
             <div ref={headersRef}>
                 <div className={headerTextClass}>{loadedData?.renderedStatname ?? 'Table'}</div>

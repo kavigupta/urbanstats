@@ -7,7 +7,7 @@ import { Navigator } from '../navigation/Navigator'
 import { universePath } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useHeaderLogoKey, useHideSidebarDesktop } from '../page_template/utils'
-import { useUniverse } from '../universe'
+import { Universe, useUniverse } from '../universe'
 import { useMobileLayout } from '../utils/responsive'
 import { zIndex } from '../utils/zIndex'
 
@@ -21,11 +21,15 @@ const flagIconWidthRatio = 1.8
 const flagIconMaxHeightPercent = 0.85
 const headerBarSizeDesktop = '60px'
 
+export interface UniverseSelectorConfig {
+    universes: readonly Universe[]
+    onChange: 'navigator' | ((universe: Universe) => void)
+}
+
 export function Header(props: {
     hamburgerOpen: boolean
     setHamburgerOpen: (newValue: boolean) => void
-    hasUniverseSelector: boolean
-    allUniverses: readonly string[]
+    universeSelector?: UniverseSelectorConfig
     hasScreenshot: boolean
     hasCSV: boolean
     initiateScreenshot: (currentUniverse: string | undefined) => void
@@ -40,17 +44,16 @@ export function Header(props: {
             <TopLeft
                 hamburgerOpen={props.hamburgerOpen}
                 setHamburgerOpen={props.setHamburgerOpen}
-                hasUniverseSelector={props.hasUniverseSelector}
-                allUniverses={props.allUniverses}
+                universeSelector={props.universeSelector}
             />
             <div className="right_panel_top" style={{ height: `${headerBarSize}px` }}>
                 {/* flex but stretch to fill */}
                 <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
-                    {!isMobile && props.hasUniverseSelector
+                    {!isMobile && props.universeSelector
                         ? (
                                 <div style={{ paddingRight: '0.5em' }}>
                                     <UniverseSelector
-                                        allUniverses={props.allUniverses}
+                                        config={props.universeSelector}
                                     />
                                 </div>
                             )
@@ -124,8 +127,7 @@ export function Header(props: {
 function TopLeft(props: {
     hamburgerOpen: boolean
     setHamburgerOpen: (newValue: boolean) => void
-    hasUniverseSelector: boolean
-    allUniverses: readonly string[]
+    universeSelector?: UniverseSelectorConfig
 }): ReactNode {
     const hideSidebarDesktop = useHideSidebarDesktop()
     if (useMobileLayout()) {
@@ -134,10 +136,10 @@ function TopLeft(props: {
                 <Nav hamburgerOpen={props.hamburgerOpen} setHamburgerOpen={props.setHamburgerOpen} />
                 <div className="hgap"></div>
                 {
-                    props.hasUniverseSelector
+                    props.universeSelector
                         ? (
                                 <UniverseSelector
-                                    allUniverses={props.allUniverses}
+                                    config={props.universeSelector}
                                 />
                             )
                         : <HeaderImage />
@@ -181,7 +183,7 @@ function HeaderImage(): ReactNode {
 const showSearchThreshold = 10
 
 function UniverseSelector(
-    { allUniverses }: { allUniverses: readonly string[] },
+    { config }: { config: UniverseSelectorConfig },
 ): ReactNode {
     const currentUniverse = useUniverse()
     // button to select universe. Image is icons/flags/${universe}.png
@@ -194,8 +196,8 @@ function UniverseSelector(
     let dropdown = dropdownOpen
         ? (
                 <UniverseDropdown
+                    config={config}
                     flagSize={headerBarSize}
-                    allUniverses={allUniverses}
                     closeDropdown={() => { setDropdownOpen(false) }}
                 />
             )
@@ -211,7 +213,7 @@ function UniverseSelector(
             borderRadius: '0.25em',
             display: dropdownOpen ? 'block' : 'none',
             width: '500%',
-            maxHeight: allUniverses.length > showSearchThreshold ? '22em' : '20em',
+            maxHeight: config.universes.length > showSearchThreshold ? '22em' : '20em',
             overflowY: 'auto',
         }}
         >
@@ -266,12 +268,12 @@ function Flag(props: { height: number, onClick?: () => void, universe: string, c
 }
 
 function UniverseDropdown(
-    { allUniverses, flagSize, closeDropdown }: { allUniverses: readonly string[], flagSize: number, closeDropdown: () => void },
+    { config, flagSize, closeDropdown }: { config: UniverseSelectorConfig, flagSize: number, closeDropdown: () => void },
 ): ReactNode {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
     const [searchTerm, setSearchTerm] = useState('')
-    const filteredUniverses = allUniverses.filter(universe => universe.toLowerCase().includes(searchTerm.toLowerCase()))
+    const filteredUniverses = config.universes.filter(universe => universe.toLowerCase().includes(searchTerm.toLowerCase()))
 
     return (
         <div>
@@ -285,7 +287,7 @@ function UniverseDropdown(
                 Select universe for statistics
             </div>
             {
-                allUniverses.length > showSearchThreshold
+                config.universes.length > showSearchThreshold
                     ? (
                             <div style={{
                                 padding: '0.5em',
@@ -320,7 +322,12 @@ function UniverseDropdown(
                     <div
                         key={altUniverse}
                         onClick={() => {
-                            navContext.setUniverse(altUniverse)
+                            if (config.onChange === 'navigator') {
+                                navContext.setUniverse(altUniverse)
+                            }
+                            else {
+                                config.onChange(altUniverse)
+                            }
                             closeDropdown()
                         }}
                     >

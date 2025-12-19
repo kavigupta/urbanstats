@@ -10,7 +10,7 @@ import { rowExpandedKey, useSetting, useSettings } from '../page_template/settin
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
-import { useUniverse } from '../universe'
+import { Universe, useUniverse } from '../universe'
 import { Article, IRelatedButtons } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
@@ -56,8 +56,10 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
             <PageTemplate
                 screencap={(universe, colors) => createScreenshot(screencapElements(), universe, colors)}
                 csvExportData={csvExportData}
-                hasUniverseSelector={true}
-                universes={article.universes}
+                universeSelector={{
+                    universes: article.universes as Universe[],
+                    onChange: 'navigator',
+                }}
             >
                 <div>
                     <div ref={headersRef}>

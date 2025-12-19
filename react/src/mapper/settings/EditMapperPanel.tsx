@@ -176,8 +176,15 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
             csvExportData={mapGenerator.exportCSV}
             screencap={exportPng}
             showFooter={false}
-            hasUniverseSelector={true}
-            universes={universes_ordered}
+            universeSelector={{
+                universes: universes_ordered,
+                onChange(universe) {
+                    setMapSettings({
+                        ...mapSettings,
+                        universe,
+                    }, {})
+                },
+            }}
         >
             <MaybeSplitLayout
                 error={mapGenerator.errors.some(e => e.kind === 'error')}
@@ -412,8 +419,6 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
         <PageTemplate
             csvExportData={mapGenerator.exportCSV}
             showFooter={false}
-            hasUniverseSelector={true}
-            universes={universes_ordered}
         >
             <MaybeSplitLayout
                 left={undefined}
@@ -634,8 +639,6 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
         <PageTemplate
             csvExportData={mapGenerator.exportCSV}
             showFooter={false}
-            hasUniverseSelector={true}
-            universes={universes_ordered}
         >
             <TextBoxesSelectionContext.Provider value={selectionProperty}>
                 <MaybeSplitLayout

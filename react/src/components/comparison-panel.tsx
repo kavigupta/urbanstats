@@ -15,7 +15,7 @@ import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-set
 import { statParents, Year } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
-import { useUniverse } from '../universe'
+import { Universe, useUniverse } from '../universe'
 import { mixWithBackground } from '../utils/color'
 import { assert } from '../utils/defensive'
 import { notWaiting, waiting } from '../utils/promiseStream'
@@ -36,7 +36,7 @@ import { SearchBox } from './search'
 import { TableContents, CellSpec } from './supertable'
 import { ColumnIdentifier } from './table'
 
-export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][], mapPartitions: number[][] }): ReactNode {
+export function ComparisonPanel(props: { universes: readonly Universe[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][], mapPartitions: number[][] }): ReactNode {
     const colors = useColors()
     const tableRef = useRef<HTMLDivElement>(null)
     const mapRef = useRef(null)
@@ -290,8 +290,10 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             <PageTemplate
                 screencap={universe => createScreenshot(screencapElements(), universe, colors)}
                 csvExportData={csvExportData}
-                hasUniverseSelector={true}
-                universes={props.universes}
+                universeSelector={{
+                    universes: props.universes,
+                    onChange: 'navigator',
+                }}
             >
                 <DndContext
                     sensors={sensors}

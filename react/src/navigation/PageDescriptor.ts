@@ -183,8 +183,8 @@ export type PageData =
     | {
         kind: 'comparison'
         articles: Article[]
-        universe: string
-        universes: string[]
+        universe: Universe
+        universes: readonly Universe[]
         rows: (settings: StatGroupSettings) => ArticleRow[][]
         statPaths: StatPath[][]
         mapPartitions: number[][]
@@ -460,8 +460,8 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 pageData: {
                     kind: 'comparison',
                     articles,
-                    universe: comparisonUniverse,
-                    universes,
+                    universe: comparisonUniverse as Universe,
+                    universes: universes as Universe[],
                     rows: comparisonRows,
                     statPaths: comparisonStatPaths,
                     comparisonPanel: panel.ComparisonPanel,
