@@ -3,6 +3,7 @@ import { gzipSync } from 'zlib'
 import React, { ReactNode, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { CountsByUT } from '../../components/countsByArticleType'
+import universes_ordered from '../../data/universes_ordered'
 import { Navigator } from '../../navigation/Navigator'
 import { useColors } from '../../page_template/colors'
 import { useSetting } from '../../page_template/settings'
@@ -171,7 +172,13 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
         : undefined
 
     return (
-        <PageTemplate csvExportData={mapGenerator.exportCSV} screencap={exportPng} showFooter={false}>
+        <PageTemplate
+            csvExportData={mapGenerator.exportCSV}
+            screencap={exportPng}
+            showFooter={false}
+            hasUniverseSelector={true}
+            universes={universes_ordered}
+        >
             <MaybeSplitLayout
                 error={mapGenerator.errors.some(e => e.kind === 'error')}
                 left={(
@@ -402,7 +409,12 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
     })
 
     return (
-        <PageTemplate csvExportData={mapGenerator.exportCSV} showFooter={false}>
+        <PageTemplate
+            csvExportData={mapGenerator.exportCSV}
+            showFooter={false}
+            hasUniverseSelector={true}
+            universes={universes_ordered}
+        >
             <MaybeSplitLayout
                 left={undefined}
                 error={false}
@@ -619,8 +631,12 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
     })
 
     return (
-        <PageTemplate csvExportData={mapGenerator.exportCSV} showFooter={false}>
-
+        <PageTemplate
+            csvExportData={mapGenerator.exportCSV}
+            showFooter={false}
+            hasUniverseSelector={true}
+            universes={universes_ordered}
+        >
             <TextBoxesSelectionContext.Provider value={selectionProperty}>
                 <MaybeSplitLayout
                     left={undefined}

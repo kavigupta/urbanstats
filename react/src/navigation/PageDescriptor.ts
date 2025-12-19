@@ -7,6 +7,7 @@ import { CountsByUT, getCountsByArticleType } from '../components/countsByArticl
 import { ArticleRow, loadArticles } from '../components/load-article'
 import type { QuizPanel } from '../components/quiz-panel'
 import type { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
+import universes_ordered from '../data/universes_ordered'
 import type { DataCreditPanel } from '../data-credit'
 import type { ScreenshotDiffViewerPanel } from '../dev/ScreenshotDiffViewerPanel'
 import { loadJSON } from '../load_json'
@@ -24,9 +25,10 @@ import type {
 } from '../quiz/quiz'
 import { loadSYAUData, SYAUData } from '../syau/load'
 import type { SYAUPanel } from '../syau/syau-panel'
-import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
+import { defaultArticleUniverse, defaultComparisonUniverse, Universe } from '../universe'
 import type { DebugEditorPanel } from '../urban-stats-script/DebugEditorPanel'
 import type { USSDocumentationPanel } from '../uss-documentation'
+import { assert } from '../utils/defensive'
 import type { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
 import { loadArticleFromPossibleSymlink, loadArticlesFromPossibleSymlink as loadArticlesFromPossibleSymlinks } from '../utils/symlinks'
@@ -142,11 +144,13 @@ const syauSchema = z.object({
 const mapperSchema = z.object({
     settings: z.optional(z.string()),
     view: z.boolean(),
+    universe: z.optional(z.string()),
 })
 
 const mapperSchemaForParams = z.object({
     settings: z.optional(z.string()),
     view: z.union([z.undefined().transform(() => false), z.literal('true').transform(() => true), z.literal('false').transform(() => false)]),
+    universe: z.optional(z.string()),
 })
 
 const editorSchema = z.object({
@@ -201,7 +205,7 @@ export type PageData =
     | { kind: 'ussDocumentation', ussDocumentationPanel: typeof USSDocumentationPanel, hash: string }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
-    | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel, counts: CountsByUT }
+    | { kind: 'mapper', settings: MapSettings, view: boolean, universe: string, mapperPanel: typeof MapperPanel, counts: CountsByUT }
     | { kind: 'editor', editorPanel: typeof DebugEditorPanel | typeof DebugMapTextBoxPanel, undoChunking?: number }
     | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true }, oauthCallbackPanel: typeof OauthCallbackPanel }
     | {
@@ -356,6 +360,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             searchParams = {
                 view: pageDescriptor.view ? 'true' : undefined,
                 settings: pageDescriptor.settings,
+                universe: pageDescriptor.universe,
             }
             break
         case 'editor':
@@ -693,15 +698,24 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             const panel = import('../mapper/components/MapperPanel')
             const utils = import('../mapper/settings/utils')
             const counts = getCountsByArticleType()
+            const mapSettings = (await utils).mapSettingsFromURLParam(newDescriptor.settings)
+            // Use universe from URL if provided, otherwise from settings, otherwise default to 'world'
+            const mapperUniverse = newDescriptor.universe ?? mapSettings.universe ?? 'world'
+            assert((universes_ordered as readonly string[]).includes(mapperUniverse), `Universe ${mapperUniverse} is not a valid universe`)
+            const mapSettingsWithUniverse = { ...mapSettings, universe: mapperUniverse as Universe }
             return {
                 pageData: {
                     kind: 'mapper',
                     view: newDescriptor.view,
-                    settings: (await utils).mapSettingsFromURLParam(newDescriptor.settings),
+                    settings: mapSettingsWithUniverse,
+                    universe: mapperUniverse,
                     mapperPanel: (await panel).MapperPanel,
                     counts: await counts,
                 },
-                newPageDescriptor: newDescriptor,
+                newPageDescriptor: {
+                    ...newDescriptor,
+                    universe: mapperUniverse !== 'world' ? mapperUniverse : undefined,
+                },
                 effects: () => undefined,
             }
         }
