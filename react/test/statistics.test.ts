@@ -303,7 +303,7 @@ test('navigation on USS statistics page works', async (t) => {
 
 urbanstatsFixture('edit starting from a statname page', `${target}/statistic.html?statname=Population&article_type=County&start=1&amount=5&universe=California%2C+USA`)
 
-test.only('edit starting from a statname page works', async (t) => {
+test('edit starting from a statname page works', async (t) => {
     await t.click(Selector('button[data-test-id="edit"]'))
     await waitForLoading()
     await t.wait(1000)

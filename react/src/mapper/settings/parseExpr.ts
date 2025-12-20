@@ -30,7 +30,6 @@ export function parseExpr(
     preserveCustomNodes: boolean,
 ): UrbanStatsASTExpression {
     const parsed = attemptParseExpr(expr, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)
-    console.log('Attempting to parse expr:', expr, 'with types:', types, 'got:', parsed)
     return parsed ?? fallback(unparse(expr), blockIdent, types)
 }
 

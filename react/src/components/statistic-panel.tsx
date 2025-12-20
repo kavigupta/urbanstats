@@ -6,7 +6,6 @@ import React, { ChangeEvent, ReactNode, useCallback, useContext, useEffect, useM
 import explanation_pages from '../data/explanation_page'
 import validGeographies from '../data/mapper/used_geographies'
 import stats from '../data/statistic_list'
-import names from '../data/statistic_name_list'
 import statistic_name_list from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import statistic_variables_info from '../data/statistic_variables_info'
@@ -191,7 +190,7 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
 }
 
 async function loadStatisticsData(universe: string, statname: StatName, articleType: string, counts: CountsByUT): Promise<StatisticDataOutcome> {
-    const statIndex = names.indexOf(statname)
+    const statIndex = statistic_name_list.indexOf(statname)
     const [data, articleNames] = await loadStatisticsPage(universe, paths[statIndex], articleType)
     const totalCountInClass = forType(counts, universe, stats[statIndex], articleType)
     const totalCountOverall = forType(counts, universe, stats[statIndex], 'overall')
