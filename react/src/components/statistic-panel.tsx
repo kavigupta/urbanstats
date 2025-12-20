@@ -64,6 +64,7 @@ interface StatisticCommonProps {
     highlight: string | undefined
     counts: CountsByUT
     universe: string
+    edit?: boolean
 }
 
 export interface StatisticPanelProps extends StatisticCommonProps {
@@ -408,6 +409,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         highlight: props.highlight,
         counts: props.counts,
         universe: editUniverse,
+        edit: isEditMode,
     }
 
     let content: ReactNode
@@ -608,6 +610,7 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
             start: 1,
             amount,
             order: newOrder,
+            edit: props.edit,
         }), {
             history: 'push',
             scroll: { kind: 'none' },
@@ -754,6 +757,7 @@ function Pagination(props: {
     statDesc: StatisticDescriptor
     articleType: string
     order: 'ascending' | 'descending'
+    edit?: boolean
 }): ReactNode {
     // next and previous buttons, along with the current range (editable to jump to a specific page)
     // also a button to change the number of items per page
@@ -767,6 +771,7 @@ function Pagination(props: {
             universe: currentUniverse,
             ...props,
             start: newStart,
+            edit: props.edit,
         }), {
             history: 'push',
             scroll: { kind: 'none' },
@@ -796,6 +801,7 @@ function Pagination(props: {
             start,
             amount: newAmount === 'All' ? 'All' : newAmountNum,
             order: props.order,
+            edit: props.edit,
         }), {
             history: 'push',
             scroll: { kind: 'none' },
@@ -820,6 +826,7 @@ function Pagination(props: {
                 amount: props.amount,
                 order: props.order,
                 start: (newPage - 1) * perPage + 1,
+                edit: props.edit,
             }), {
                 history: 'replace',
                 scroll: { kind: 'none' },
@@ -832,7 +839,7 @@ function Pagination(props: {
         else if (currentPage < 1) {
             goToPage(1)
         }
-    }, [currentPage, maxPages, currentUniverse, perPage, props.statDesc, props.articleType, props.amount, props.order, navContext])
+    }, [currentPage, maxPages, currentUniverse, perPage, props.statDesc, props.articleType, props.amount, props.order, props.edit, navContext])
 
     const selectPage = (
         <SelectPage
