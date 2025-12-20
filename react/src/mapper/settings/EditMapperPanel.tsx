@@ -3,12 +3,10 @@ import { gzipSync } from 'zlib'
 import React, { ReactNode, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { CountsByUT } from '../../components/countsByArticleType'
-import universes_ordered from '../../data/universes_ordered'
 import { Navigator } from '../../navigation/Navigator'
 import { useColors } from '../../page_template/colors'
 import { useSetting } from '../../page_template/settings'
 import { PageTemplate } from '../../page_template/template'
-import { universeContext } from '../../universe'
 import { Inset } from '../../urban-stats-script/constants/insets'
 import { documentLength } from '../../urban-stats-script/constants/rich-text'
 import { defaults, TextBox } from '../../urban-stats-script/constants/text-box'
@@ -173,75 +171,63 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
         : undefined
 
     return (
-        <universeContext.Provider value={{
-            universe: mapSettings.universe ?? 'world',
-            universes: universes_ordered,
-            setUniverse(newUniverse) {
-                setMapSettings({
-                    ...mapSettings,
-                    universe: newUniverse,
-                }, {})
-            },
-        }}
-        >
-            <PageTemplate csvExportData={mapGenerator.exportCSV} screencap={exportPng} showFooter={false}>
-                <MaybeSplitLayout
-                    error={mapGenerator.errors.some(e => e.kind === 'error')}
-                    left={(
-                        <MapperSettings
-                            mapSettings={mapSettings}
-                            setMapSettings={setMapSettings}
-                            errors={mapGenerator.errors}
-                            counts={counts}
-                            typeEnvironment={typeEnvironment}
-                            targetOutputTypes={validMapperOutputs}
-                        />
-                    )}
-                    right={(
-                        <>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
-                                <Export pngExport={exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
-                                {
-                                    getInsets(mapSettings, typeEnvironment) && (
-                                        <div style={{
-                                            display: 'flex',
-                                            gap: '0.5em',
-                                            margin: '0.5em 0',
-                                        }}
-                                        >
-                                            <button onClick={() => { setMapEditorMode('insets') }}>
-                                                Edit Insets
-                                            </button>
-                                        </div>
-                                    )
-                                }
-                                {
-                                    getTextBoxes(mapSettings, typeEnvironment) && (
-                                        <div style={{
-                                            display: 'flex',
-                                            gap: '0.5em',
-                                            margin: '0.5em 0',
-                                        }}
-                                        >
-                                            <button onClick={() => { setMapEditorMode('textBoxes') }}>
-                                                Edit Text Boxes
-                                            </button>
-                                        </div>
-                                    )
-                                }
-                                <ImportExportCode
-                                    mapSettings={mapSettings}
-                                    setMapSettings={setMapSettings}
-                                />
-                            </div>
-                            <div style={{ position: 'relative', flex: 1 }}>
-                                {ui.node}
-                            </div>
-                        </>
-                    )}
-                />
-            </PageTemplate>
-        </universeContext.Provider>
+        <PageTemplate csvExportData={mapGenerator.exportCSV} screencap={exportPng} showFooter={false}>
+            <MaybeSplitLayout
+                error={mapGenerator.errors.some(e => e.kind === 'error')}
+                left={(
+                    <MapperSettings
+                        mapSettings={mapSettings}
+                        setMapSettings={setMapSettings}
+                        errors={mapGenerator.errors}
+                        counts={counts}
+                        typeEnvironment={typeEnvironment}
+                        targetOutputTypes={validMapperOutputs}
+                    />
+                )}
+                right={(
+                    <>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
+                            <Export pngExport={exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
+                            {
+                                getInsets(mapSettings, typeEnvironment) && (
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: '0.5em',
+                                        margin: '0.5em 0',
+                                    }}
+                                    >
+                                        <button onClick={() => { setMapEditorMode('insets') }}>
+                                            Edit Insets
+                                        </button>
+                                    </div>
+                                )
+                            }
+                            {
+                                getTextBoxes(mapSettings, typeEnvironment) && (
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: '0.5em',
+                                        margin: '0.5em 0',
+                                    }}
+                                    >
+                                        <button onClick={() => { setMapEditorMode('textBoxes') }}>
+                                            Edit Text Boxes
+                                        </button>
+                                    </div>
+                                )
+                            }
+                            <ImportExportCode
+                                mapSettings={mapSettings}
+                                setMapSettings={setMapSettings}
+                            />
+                        </div>
+                        <div style={{ position: 'relative', flex: 1 }}>
+                            {ui.node}
+                        </div>
+                    </>
+                )}
+            />
+        </PageTemplate>
     )
 }
 
