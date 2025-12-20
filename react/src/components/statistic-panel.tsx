@@ -490,8 +490,12 @@ function SimpleStatisticPanel(props: SimpleStatisticPanelProps): ReactNode {
         }
     }, [data.result, onDataLoaded])
 
-    if (data.result === undefined) {
-        return <RelativeLoader loading={true} />
+    if (data.result === undefined || data.result.type === 'loading') {
+        return (
+            <div style={{ position: 'relative' }}>
+                <RelativeLoader loading={true} />
+            </div>
+        )
     }
 
     if (data.result.type === 'error') {
@@ -502,11 +506,7 @@ function SimpleStatisticPanel(props: SimpleStatisticPanelProps): ReactNode {
         )
     }
 
-    if (data.result.type === 'success') {
-        return <StatisticPanelOnceLoaded {...restProps} {...data.result} statDesc={restProps.descriptor} tableRef={tableRef} />
-    }
-
-    return <RelativeLoader loading={true} />
+    return <StatisticPanelOnceLoaded {...restProps} {...data.result} statDesc={restProps.descriptor} tableRef={tableRef} />
 }
 
 interface USSStatisticPanelProps extends StatisticCommonProps {
@@ -544,7 +544,11 @@ function USSStatisticPanel(props: USSStatisticPanelProps): ReactNode {
     }, [data.errors, setErrors])
 
     if (data.type === 'loading') {
-        return <RelativeLoader loading={true} />
+        return (
+            <div style={{ position: 'relative' }}>
+                <RelativeLoader loading={true} />
+            </div>
+        )
     }
 
     if (data.type === 'error') {
