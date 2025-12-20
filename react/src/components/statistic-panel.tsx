@@ -176,13 +176,13 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
     }, [successData])
 
     if (loading) {
-        return { type: 'loading', errors, uuid: uuid() }
+        return { type: 'loading', errors, uuid: 'loading' }
     }
     assert(errors.length > 0 || successDataSorted !== undefined, 'errors and successDataSorted cannot both be empty/undefined')
     if (successDataSorted !== undefined) {
         return { type: 'success', ...successDataSorted, errors }
     }
-    return { type: 'error', errors, uuid: uuid() }
+    return { type: 'error', errors, uuid: objectHash(errors) }
 }
 
 async function loadStatisticsData(universe: string, statname: StatName, articleType: string, counts: CountsByUT): Promise<StatisticDataOutcome> {
