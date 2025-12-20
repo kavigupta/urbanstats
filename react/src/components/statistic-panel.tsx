@@ -208,12 +208,12 @@ async function loadStatisticsData(universe: string, statname: StatName, articleT
     }
 }
 
-function parseUSSFromString(ussString: string, typeEnvironment: TypeEnvironment): MapUSS {
+function parseUSSFromString(ussString: string, typeEnvironment: TypeEnvironment, isUssStatistic: boolean): MapUSS {
     const parsed = parse(ussString, { type: 'single', ident: idOutput })
     if (parsed.type === 'error') {
         return parseNoErrorAsCustomNode(ussString, idOutput, [tableType])
     }
-    const res = attemptParseAsTopLevel(convertToMapUss(parsed), typeEnvironment, true, [tableType])
+    const res = attemptParseAsTopLevel(convertToMapUss(parsed), typeEnvironment, isUssStatistic, [tableType])
     return res
 }
 
@@ -236,8 +236,8 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const [editUSS, setEditUSS] = useState<MapUSS>(() => {
         const initialUSS = props.descriptor.type === 'uss-statistic'
             ? props.descriptor.uss
-            : `table(columns=[column(values=${varName(props.descriptor.statname)})])`
-        return parseUSSFromString(initialUSS, typeEnvironment)
+            : `customNode(""); condition (true); table(columns=[column(values=${varName(props.descriptor.statname)})])`
+        return parseUSSFromString(initialUSS, typeEnvironment, props.descriptor.type === 'uss-statistic')
     })
 
     // Construct MapSettings from separate state for MapperSettings component
@@ -300,9 +300,9 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             universe: editUniverse,
             statDesc: { type: 'uss-statistic', uss: ussString },
             articleType: editGeographyKind,
-            start: 1,
-            amount: 20,
-            order: 'descending',
+            start: props.start,
+            amount: props.amount,
+            order: props.order,
             highlight: undefined,
             edit: false,
         }), {
@@ -375,6 +375,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                     targetOutputTypes={[tableType]}
                 />
                 <button
+                    data-test-id="view"
                     onClick={handleApplyUSS}
                     style={{
                         padding: '0.5em 1em',
@@ -386,7 +387,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                         fontSize: '14px',
                     }}
                 >
-                    Apply
+                    View
                 </button>
             </div>
         )
@@ -444,6 +445,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 />
                 {!isEditMode && (
                     <button
+                        data-test-id="edit"
                         onClick={handleEditSettingsClick}
                         style={{
                             position: 'absolute',

@@ -1,6 +1,8 @@
 import { Selector } from 'testcafe'
 
-import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForDownload, waitForLoading } from './test_utils'
+import { nthEditor, typeTextWithKeys } from './editor_test_utils'
+import { replaceInput } from './mapper-utils'
+import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForDownload, waitForLoading, dataValues, checkTextboxes } from './test_utils'
 
 urbanstatsFixture('statistics', `${target}/article.html?longname=Indianapolis+IN+HRR%2C+USA`)
 
@@ -297,4 +299,59 @@ test('navigation on USS statistics page works', async (t) => {
     })
     await t.expect(Selector('div').withText(/, California, USA/).exists).notOk()
     await t.expect(Selector('div').withExactText('Fort Bend County, Texas, USA').exists).ok()
+})
+
+urbanstatsFixture('edit starting from a statname page', `${target}/statistic.html?statname=Population&article_type=County&start=1&amount=5&universe=California%2C+USA`)
+
+test.only('edit starting from a statname page works', async (t) => {
+    await t.click(Selector('button[data-test-id="edit"]'))
+    await waitForLoading()
+    await t.wait(1000)
+    const populations = [
+        '10.0', '3.30', '3.19', '2.42', '2.18',
+    ]
+    const hispanic = ['85.16', '65.50', '61.83', '61.71', '61.11']
+    const densityRatio = ['3.035', '2.490', '2.282', '2.276', '2.100']
+    const densityRatioPage2 = ['1.971', '1.956', '1.897', '1.888', '1.811']
+    await t.expect(await dataValues()).eql(populations)
+    // should be a USS page now
+    await t.expect(getLocation()).contains('uss=')
+    await t.wait(1000)
+    await t.expect(await dataValues()).eql(populations)
+    // replace Population with White %
+    await replaceInput(t, 'Population', 'Hispanic %')
+    await t.wait(1000)
+    await t.expect(await dataValues()).eql(hispanic)
+    // switch to custom expression
+    await replaceInput(t, 'Hispanic %', 'Custom Expression')
+    await t.wait(1000)
+    await t.expect(await dataValues()).eql(hispanic)
+    await t.expect(nthEditor(0).exists).ok()
+    await t.expect(nthEditor(0).textContent).eql('hispanic\n')
+    await t.click(nthEditor(0))
+    await t.pressKey('ctrl+a backspace')
+    await typeTextWithKeys(t, 'density_pw_1km / density_pw_2km')
+    await t.wait(1000)
+    await t.expect(await dataValues()).eql(densityRatio)
+    const text = Selector('div').withAttribute('id', 'test-editor-result')
+    await t.expect(text.textContent).eql('Name could not be derived for column, please pass name="<your name here>" to column(...)')
+    await screencap(t)
+    // set the name
+    await checkTextboxes(t, ['Name', 'Unit'])
+    await t.click(Selector('textarea'))
+    await typeTextWithKeys(t, 'Density Ratio')
+    await t.expect(text.exists).notOk() // error box should be gone
+    await screencap(t)
+    // next page
+    await t.click(Selector('button[data-test-id="1"]'))
+    await waitForLoading()
+    await t.wait(1000)
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+    await screencap(t)
+    // switch to view mode
+    await t.click(Selector('button[data-test-id="view"]'))
+    await waitForLoading()
+    await t.wait(1000)
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+    await screencap(t)
 })
