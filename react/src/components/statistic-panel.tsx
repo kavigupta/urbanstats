@@ -1,3 +1,5 @@
+import { randomBytes } from 'crypto'
+
 import objectHash from 'object-hash'
 import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -82,10 +84,14 @@ type StatisticDataOutcome = (
     | { type: 'loading', errors: EditorError[] }
 )
 
-function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (typeof validGeographies)[number], universe: Universe): StatisticDataOutcome {
+function uuid(): string {
+    return randomBytes(20).toString('hex')
+}
+
+function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (typeof validGeographies)[number], universe: Universe): StatisticDataOutcome & { uuid: string } {
     const [loading, setLoading] = useState(true)
     const [errors, setErrors] = useState<EditorError[]>([])
-    const [successData, setSuccessData] = useState<StatisticData | undefined>(undefined)
+    const [successData, setSuccessData] = useState<StatisticData & { uuid: string } | undefined>(undefined)
 
     // Use a ref to track the last executed state (uss, geographyKind, universe)
     const lastState = useRef<string | undefined>(undefined)
@@ -140,6 +146,7 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
                     totalCountInClass: values.length,
                     totalCountOverall: values.length,
                     unit: firstColumn.unit,
+                    uuid: uuid(),
                 })
                 setErrors(execErrors)
                 setLoading(false)
@@ -153,7 +160,7 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
         void executeUSS()
     }, [uss, geographyKind, universe])
 
-    const successDataSorted = useMemo((): StatisticData | undefined => {
+    const successDataSorted = useMemo((): StatisticData & { uuid: string } | undefined => {
         if (successData === undefined) {
             return undefined
         }
@@ -165,17 +172,17 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
             populationPercentile: sortedIndices.map(i => successData.data.populationPercentile[i]),
         }
         const sortedArticleNames = sortedIndices.map(i => successData.articleNames[i])
-        return { data: sortedData, articleNames: sortedArticleNames, renderedStatname: successData.renderedStatname, totalCountInClass: successData.totalCountInClass, totalCountOverall: successData.totalCountOverall, unit: successData.unit }
+        return { data: sortedData, articleNames: sortedArticleNames, renderedStatname: successData.renderedStatname, totalCountInClass: successData.totalCountInClass, totalCountOverall: successData.totalCountOverall, unit: successData.unit, uuid: successData.uuid }
     }, [successData])
 
     if (loading) {
-        return { type: 'loading', errors }
+        return { type: 'loading', errors, uuid: uuid() }
     }
     assert(errors.length > 0 || successDataSorted !== undefined, 'errors and successDataSorted cannot both be empty/undefined')
     if (successDataSorted !== undefined) {
         return { type: 'success', ...successDataSorted, errors }
     }
-    return { type: 'error', errors }
+    return { type: 'error', errors, uuid: uuid() }
 }
 
 async function loadStatisticsData(universe: string, statname: StatName, articleType: string, counts: CountsByUT): Promise<StatisticDataOutcome> {
@@ -358,13 +365,12 @@ function USSStatisticPanel(props: USSStatisticPanelProps): ReactNode {
         restProps.universe as Universe,
     )
 
-    const lastDataHashRef = useRef<string | undefined>(undefined)
+    const lastDataUUID = useRef<string | undefined>(undefined)
     useEffect(() => {
         if (data.type === 'success') {
             // Only call onDataLoaded if the data has actually changed
-            const dataHash = objectHash(data)
-            if (lastDataHashRef.current !== dataHash) {
-                lastDataHashRef.current = dataHash
+            if (lastDataUUID.current !== data.uuid) {
+                lastDataUUID.current = data.uuid
                 onDataLoaded(data)
             }
         }
