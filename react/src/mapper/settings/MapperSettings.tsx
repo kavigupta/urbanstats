@@ -1,9 +1,7 @@
-import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef } from 'react'
+import React, { ReactNode, useCallback, useMemo } from 'react'
 
 import { articleTypes, CountsByUT } from '../../components/countsByArticleType'
 import universes_ordered from '../../data/universes_ordered'
-import { Navigator } from '../../navigation/Navigator'
-import { Universe, useUniverse } from '../../universe'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 import { settingNameStyle } from '../style'
