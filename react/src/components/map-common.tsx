@@ -275,7 +275,7 @@ function useClickable({ id, clickable, features }: { id: string, clickable: bool
         }
 
         return () => undefined
-    }, [id, map, clickable, navigator, features])
+    }, [id, map, clickable, navigator, features, universe])
 }
 
 // eslint-disable-next-line no-restricted-syntax -- This is the default maplibre background color
