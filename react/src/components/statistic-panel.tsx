@@ -40,7 +40,7 @@ import { CountsByUT } from './countsByArticleType'
 import { CSVExportData } from './csv-export'
 import { forType, StatCol, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow } from './pointer-cell'
-import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
+import { createScreenshot, ScreencapElements } from './screenshot'
 import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
 
 export type StatisticDescriptor =
@@ -94,7 +94,7 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
     const lastState = useRef<string | undefined>(undefined)
 
     useEffect(() => {
-        const state = JSON.stringify([uss, geographyKind, universe])
+        const state = objectHash([uss, geographyKind, universe])
         if (state === lastState.current) {
             // state unchanged, no need to re-execute
             return
@@ -525,14 +525,13 @@ function USSStatisticPanel(props: USSStatisticPanelProps): ReactNode {
         restProps.universe as Universe,
     )
 
-    const lastDataRef = useRef<string | undefined>(undefined)
+    const lastDataHashRef = useRef<string | undefined>(undefined)
     useEffect(() => {
         if (data.type === 'success') {
             // Only call onDataLoaded if the data has actually changed
-            // JSON stringify to compare the actual data values
-            const dataString = JSON.stringify(data)
-            if (lastDataRef.current !== dataString) {
-                lastDataRef.current = dataString
+            const dataHash = objectHash(data)
+            if (lastDataHashRef.current !== dataHash) {
+                lastDataHashRef.current = dataHash
                 onDataLoaded(data)
             }
         }
@@ -1013,26 +1012,4 @@ function StatisticPanelSubhead(props: { articleType: string, renderedOther: stri
             {displayType(currentUniverse, props.articleType)}
         </div>
     )
-}
-
-export function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearInScreenshot: boolean }): ReactNode {
-    const isScreenshot = useScreenshotMode()
-
-    if (isScreenshot && !props.shouldAppearInScreenshot) {
-        return null
-    }
-
-    let image: string
-    switch (props.direction) {
-        case 'up':
-            image = '/sort-up.png'
-            break
-        case 'down':
-            image = '/sort-down.png'
-            break
-        case 'both':
-            image = '/sort-both.png'
-            break
-    }
-    return <img src={image} className="testing-order-swap" alt={props.direction} style={{ width: '16px', height: '16px' }} />
 }

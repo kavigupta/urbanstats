@@ -220,3 +220,81 @@ test('shows correct number of rows when count is multiple of amount', async (t) 
     await t.expect(Selector('div').withExactText('20').exists).ok()
     await t.expect(Selector('div').withExactText('21').exists).notOk()
 })
+
+function createUSSStatisticsPage(uss: string, start = 1, amount = 20, universe = 'California, USA'): string {
+    return `${target}/statistic.html?uss=${encodeURIComponent(uss)}&article_type=County&start=${start}&amount=${amount}&universe=${encodeURIComponent(universe)}`
+}
+
+const basicPage = `table(
+    columns=[
+        column(
+            values=(density_pw_1km / density_pw_2km),
+            name="Density Ratio",
+            unit=unitNumber
+        )
+    ]
+)`
+
+function extractComponents(url: string, exclude: string[]): Record<string, string> {
+    const params = new URL(url).searchParams
+    const result: Record<string, string> = {}
+    params.forEach((value, key) => {
+        if (exclude.includes(key)) return
+        result[key] = value
+    })
+    return result
+}
+
+urbanstatsFixture('Basic USS statistics page with named column', createUSSStatisticsPage(basicPage))
+
+test('USS statistics page displays correctly', async (t) => {
+    await t.expect(Selector('div').withExactText('Density Ratio').exists).ok()
+    await screencap(t)
+})
+
+test('navigation on USS statistics page works', async (t) => {
+    const first = 'Sierra County, California, USA'
+    const twentyFirst = 'San Luis Obispo County, California, USA'
+    const last = 'Santa Clara County, California, USA'
+    await t.expect(Selector('div').withExactText(first).exists).ok()
+    await t.expect(Selector('div').withExactText(twentyFirst).exists).notOk()
+    await t.expect(Selector('div').withExactText(last).exists).notOk()
+    // second page (21-58)
+    await t.click(Selector('button[data-test-id="1"]'))
+    await waitForLoading()
+    await t.expect(extractComponents(await getLocation(), ['uss'])).eql({
+        article_type: 'County',
+        start: '21',
+        amount: '20',
+        universe: 'California, USA',
+    })
+    await t.expect(Selector('div').withExactText(first).exists).notOk()
+    await t.expect(Selector('div').withExactText(twentyFirst).exists).ok()
+    await t.expect(Selector('div').withExactText(last).exists).ok()
+    // swap order to ascending (58-39)
+    await t.click(Selector('.testing-order-swap'))
+    await waitForLoading()
+    await t.expect(extractComponents(await getLocation(), ['uss'])).eql({
+        article_type: 'County',
+        start: '1',
+        amount: '20',
+        universe: 'California, USA',
+        order: 'ascending',
+    })
+    await t.expect(Selector('div').withExactText(first).exists).notOk()
+    await t.expect(Selector('div').withExactText(twentyFirst).exists).notOk()
+    await t.expect(Selector('div').withExactText(last).exists).ok()
+    // swap universe to Texas
+    await t.click(Selector(universeSelector))
+    await t.click(Selector('div').withExactText('Texas, USA'))
+    await waitForLoading()
+    await t.expect(extractComponents(await getLocation(), ['uss'])).eql({
+        article_type: 'County',
+        start: '1',
+        amount: '20',
+        universe: 'Texas, USA',
+        order: 'ascending',
+    })
+    await t.expect(Selector('div').withText(/, California, USA/).exists).notOk()
+    await t.expect(Selector('div').withExactText('Fort Bend County, Texas, USA').exists).ok()
+})

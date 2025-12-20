@@ -204,6 +204,15 @@ test('lr-overall-other-stat', async (t) => {
     await waitForLoading()
 })
 
+// Regression test for California article with specific settings (US Census and Area/Compactness unchecked)
+urbanstatsFixture('california-article-area-compactness-no-us-census', '/article.html?longname=California%2C+USA&universe=world&s=2jZmh2wde1Kqyhw')
+
+test('california-article-area-compactness-no-us-census', async (t) => {
+    // If this page fails to load, the fixture will surface console errors or network failures.
+    // Simply take a screenshot to verify the page renders without crashing.
+    await screencap(t)
+})
+
 urbanstatsFixture('all stats test', `/article.html?longname=California%2C+USA`)
 
 test('california-all-stats', async (t) => {

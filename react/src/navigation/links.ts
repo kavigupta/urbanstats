@@ -1,4 +1,4 @@
-import { StatisticDescriptor } from '../components/statistic-panel'
+import type { StatisticDescriptor } from '../components/statistic-panel'
 import type_ordering_idx from '../data/type_ordering_idx'
 
 import { PageDescriptor } from './PageDescriptor'
