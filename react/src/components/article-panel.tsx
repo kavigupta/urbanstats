@@ -50,6 +50,8 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     const csvFilename = `${sanitize(article.longname)}.csv`
     const csvExportData: CSVExportData = { csvData, csvFilename }
 
+    const navigator = useContext(Navigator.Context)
+
     return (
         <>
             <QuerySettingsConnection />
@@ -58,7 +60,13 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                 csvExportData={csvExportData}
                 universeSelector={{
                     universes: article.universes as Universe[],
-                    onChange: 'navigator',
+                    onChange(newUniverse) {
+                        void navigator.navigate({
+                            kind: 'article',
+                            longname: article.longname,
+                            universe: newUniverse,
+                        }, { history: 'push', scroll: { kind: 'none' } })
+                    },
                 }}
             >
                 <div>

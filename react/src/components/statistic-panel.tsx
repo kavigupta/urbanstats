@@ -138,13 +138,26 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     const content = <SimpleStatisticPanel {...props} descriptor={props.descriptor} onDataLoaded={setLoadedData} tableRef={tableRef} />
 
+    const navigator = useContext(Navigator.Context)
+
     return (
         <PageTemplate
             screencap={screencapElements ? (universe, templateColors) => createScreenshot(screencapElements(), universe, templateColors) : undefined}
             csvExportData={csvExportData}
             universeSelector={{
                 universes: universesFiltered,
-                onChange: 'navigator',
+                onChange(newUniverse) {
+                    void navigator.navigate({
+                        kind: 'statistic',
+                        ...props,
+                        article_type: props.articleType,
+                        statname: props.descriptor.statname,
+                        universe: newUniverse,
+                    }, {
+                        history: 'push',
+                        scroll: { kind: 'none' },
+                    })
+                },
             }}
         >
             <div ref={headersRef}>

@@ -1,13 +1,12 @@
-import { useContext } from 'react'
+import React, { useContext } from 'react'
 
 import universes_default from './data/universes_default'
 import universes_ordered from './data/universes_ordered'
-import { Navigator } from './navigation/Navigator'
 
 export type Universe = (typeof universes_ordered)[number]
 
 export function useUniverse(): string {
-    return useContext(Navigator.Context).useUniverse() ?? (() => { throw new Error(`No universe for current page`) })()
+    return useContext(universeContext) ?? (() => { throw new Error(`No universe for current page`) })()
 }
 
 export function defaultArticleUniverse(articleUniverses: string[]): typeof universes_default[number] {
@@ -28,3 +27,5 @@ export function defaultComparisonUniverse(articleUniverses: string[][], availabl
     const maxIndex = Math.max(...universeIndices)
     return availableUniverses[maxIndex]
 }
+
+export const universeContext = React.createContext<Universe | undefined>(undefined)

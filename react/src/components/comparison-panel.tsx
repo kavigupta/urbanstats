@@ -103,7 +103,7 @@ export function ComparisonPanel(props: { universes: readonly Universe[], article
             // Update the URL to reflect the new order
             void navContext.navigate({
                 kind: 'comparison',
-                universe: navContext.universe,
+                universe: currentUniverse,
                 longnames: newLongnames,
             }, { history: 'push', scroll: { kind: 'none' } })
         }
@@ -140,7 +140,7 @@ export function ComparisonPanel(props: { universes: readonly Universe[], article
 
         void navContext.navigate({
             kind: 'comparison',
-            universe: navContext.universe,
+            universe: currentUniverse,
             longnames: newArticles.map(a => a.longname),
         }, { history: 'push', scroll: { kind: 'none' } })
     }
@@ -260,7 +260,7 @@ export function ComparisonPanel(props: { universes: readonly Universe[], article
             onNavigate: (x: string) => {
                 void navContext.navigate({
                     kind: 'comparison',
-                    universe: navContext.universe,
+                    universe: currentUniverse,
                     longnames: names.map((value, index) => index === articleIndex ? x : value),
                 }, { history: 'push', scroll: { kind: 'none' } })
             },
@@ -292,7 +292,16 @@ export function ComparisonPanel(props: { universes: readonly Universe[], article
                 csvExportData={csvExportData}
                 universeSelector={{
                     universes: props.universes,
-                    onChange: 'navigator',
+                    onChange(newUniverse) {
+                        void navContext.navigate({
+                            kind: 'comparison',
+                            universe: newUniverse,
+                            longnames: names,
+                        }, {
+                            history: 'push',
+                            scroll: { kind: 'none' },
+                        })
+                    },
                 }}
             >
                 <DndContext

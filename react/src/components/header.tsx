@@ -23,7 +23,7 @@ const headerBarSizeDesktop = '60px'
 
 export interface UniverseSelectorConfig {
     universes: readonly Universe[]
-    onChange: 'navigator' | ((universe: Universe) => void)
+    onChange: (universe: Universe) => void
 }
 
 export function Header(props: {
@@ -36,7 +36,7 @@ export function Header(props: {
     exportCSV: () => void
 }): ReactNode {
     const navContext = useContext(Navigator.Context)
-    const currentUniverse = navContext.useUniverse()
+    const currentUniverse = useUniverse()
     const [searchHasText, setSearchHasText] = useState(false)
     const isMobile = useMobileLayout()
     return (
@@ -271,7 +271,6 @@ function UniverseDropdown(
     { config, flagSize, closeDropdown }: { config: UniverseSelectorConfig, flagSize: number, closeDropdown: () => void },
 ): ReactNode {
     const colors = useColors()
-    const navContext = useContext(Navigator.Context)
     const [searchTerm, setSearchTerm] = useState('')
     const filteredUniverses = config.universes.filter(universe => universe.toLowerCase().includes(searchTerm.toLowerCase()))
 
@@ -322,12 +321,7 @@ function UniverseDropdown(
                     <div
                         key={altUniverse}
                         onClick={() => {
-                            if (config.onChange === 'navigator') {
-                                navContext.setUniverse(altUniverse)
-                            }
-                            else {
-                                config.onChange(altUniverse)
-                            }
+                            config.onChange(altUniverse)
                             closeDropdown()
                         }}
                     >

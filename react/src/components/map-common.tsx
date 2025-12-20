@@ -7,6 +7,7 @@ import { boundingBox, extendBoxes, geometry } from '../map-partition'
 import { Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
+import { useUniverse } from '../universe'
 import { TestUtils } from '../utils/TestUtils'
 import { assert } from '../utils/defensive'
 import { promiseStream, waiting } from '../utils/promiseStream'
@@ -228,6 +229,7 @@ export function PointFeatureCollection({ features, clickable }: { features: GeoJ
 
 function useClickable({ id, clickable, features }: { id: string, clickable: boolean, features: GeoJSON.Feature[] }): void {
     const navigator = useContext(Navigator.Context)
+    const universe = useUniverse()
 
     const { current: map } = useMap()
 
@@ -238,7 +240,7 @@ function useClickable({ id, clickable, features }: { id: string, clickable: bool
             const clickFeature = (name: string): void => {
                 void navigator.navigate({
                     kind: 'article',
-                    universe: navigator.universe,
+                    universe,
                     longname: name,
                 }, { history: 'push', scroll: { kind: 'element', element: map.getContainer() } })
             }
