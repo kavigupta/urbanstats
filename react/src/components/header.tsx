@@ -7,7 +7,8 @@ import { Navigator } from '../navigation/Navigator'
 import { universePath } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useHeaderLogoKey, useHideSidebarDesktop } from '../page_template/utils'
-import { Universe, useUniverse } from '../universe'
+import { universeContext, useUniverse, useUniverseContext } from '../universe'
+import { assert } from '../utils/defensive'
 import { useMobileLayout } from '../utils/responsive'
 import { zIndex } from '../utils/zIndex'
 
@@ -21,15 +22,9 @@ const flagIconWidthRatio = 1.8
 const flagIconMaxHeightPercent = 0.85
 const headerBarSizeDesktop = '60px'
 
-export interface UniverseSelectorConfig {
-    universes: readonly Universe[]
-    onChange: (universe: Universe) => void
-}
-
 export function Header(props: {
     hamburgerOpen: boolean
     setHamburgerOpen: (newValue: boolean) => void
-    universeSelector?: UniverseSelectorConfig
     hasScreenshot: boolean
     hasCSV: boolean
     initiateScreenshot: (currentUniverse: string | undefined) => void
@@ -44,17 +39,14 @@ export function Header(props: {
             <TopLeft
                 hamburgerOpen={props.hamburgerOpen}
                 setHamburgerOpen={props.setHamburgerOpen}
-                universeSelector={props.universeSelector}
             />
             <div className="right_panel_top" style={{ height: `${headerBarSize}px` }}>
                 {/* flex but stretch to fill */}
                 <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
-                    {!isMobile && props.universeSelector
+                    {!isMobile && currentUniverse
                         ? (
                                 <div style={{ paddingRight: '0.5em' }}>
-                                    <UniverseSelector
-                                        config={props.universeSelector}
-                                    />
+                                    <UniverseSelector />
                                 </div>
                             )
                         : undefined}
@@ -127,20 +119,18 @@ export function Header(props: {
 function TopLeft(props: {
     hamburgerOpen: boolean
     setHamburgerOpen: (newValue: boolean) => void
-    universeSelector?: UniverseSelectorConfig
 }): ReactNode {
     const hideSidebarDesktop = useHideSidebarDesktop()
+    const universeCtx = useUniverseContext()
     if (useMobileLayout()) {
         return (
             <div className="left_panel_top" style={{ minWidth: '28%' }}>
                 <Nav hamburgerOpen={props.hamburgerOpen} setHamburgerOpen={props.setHamburgerOpen} />
                 <div className="hgap"></div>
                 {
-                    props.universeSelector
+                    universeCtx
                         ? (
-                                <UniverseSelector
-                                    config={props.universeSelector}
-                                />
+                                <UniverseSelector />
                             )
                         : <HeaderImage />
                 }
@@ -182,10 +172,9 @@ function HeaderImage(): ReactNode {
 
 const showSearchThreshold = 10
 
-function UniverseSelector(
-    { config }: { config: UniverseSelectorConfig },
-): ReactNode {
-    const currentUniverse = useUniverse()
+function UniverseSelector(): ReactNode {
+    const universeCtx = useUniverseContext()
+    assert(universeCtx !== undefined, 'No universe context')
     // button to select universe. Image is icons/flags/${universe}.png
     // when clicked, a dropdown appears with all universes, labeled by their flags
 
@@ -196,7 +185,6 @@ function UniverseSelector(
     let dropdown = dropdownOpen
         ? (
                 <UniverseDropdown
-                    config={config}
                     flagSize={headerBarSize}
                     closeDropdown={() => { setDropdownOpen(false) }}
                 />
@@ -213,7 +201,7 @@ function UniverseSelector(
             borderRadius: '0.25em',
             display: dropdownOpen ? 'block' : 'none',
             width: '500%',
-            maxHeight: config.universes.length > showSearchThreshold ? '22em' : '20em',
+            maxHeight: universeCtx.universes.length > showSearchThreshold ? '22em' : '20em',
             overflowY: 'auto',
         }}
         >
@@ -237,7 +225,7 @@ function UniverseSelector(
                 <Flag
                     height={headerBarSize}
                     onClick={() => { setDropdownOpen(!dropdownOpen) }}
-                    universe={currentUniverse}
+                    universe={universeCtx.universe}
                     classNameToUse="universe-selector"
                 />
             </div>
@@ -268,11 +256,14 @@ function Flag(props: { height: number, onClick?: () => void, universe: string, c
 }
 
 function UniverseDropdown(
-    { config, flagSize, closeDropdown }: { config: UniverseSelectorConfig, flagSize: number, closeDropdown: () => void },
+    { flagSize, closeDropdown }: { flagSize: number, closeDropdown: () => void },
 ): ReactNode {
     const colors = useColors()
     const [searchTerm, setSearchTerm] = useState('')
-    const filteredUniverses = config.universes.filter(universe => universe.toLowerCase().includes(searchTerm.toLowerCase()))
+    const universeCtx = useContext(universeContext)
+    assert(universeCtx !== undefined, 'No universe context')
+    const { universes, setUniverse } = universeCtx
+    const filteredUniverses = universes.filter(universe => universe.toLowerCase().includes(searchTerm.toLowerCase()))
 
     return (
         <div>
@@ -286,7 +277,7 @@ function UniverseDropdown(
                 Select universe for statistics
             </div>
             {
-                config.universes.length > showSearchThreshold
+                universes.length > showSearchThreshold
                     ? (
                             <div style={{
                                 padding: '0.5em',
@@ -321,7 +312,7 @@ function UniverseDropdown(
                     <div
                         key={altUniverse}
                         onClick={() => {
-                            config.onChange(altUniverse)
+                            setUniverse(altUniverse)
                             closeDropdown()
                         }}
                     >

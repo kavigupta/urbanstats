@@ -10,7 +10,8 @@ import { rowExpandedKey, useSetting, useSettings } from '../page_template/settin
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
-import { Universe, useUniverse } from '../universe'
+import { Universe, universeContext, useUniverse } from '../universe'
+import { assert } from '../utils/defensive'
 import { Article, IRelatedButtons } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
@@ -28,7 +29,7 @@ import { SearchBox } from './search'
 import { CellSpec, PlotSpec, TableContents } from './supertable'
 import { ColumnIdentifier } from './table'
 
-export function ArticlePanel({ article, rows }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
+export function ArticlePanel({ article, rows, universe }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][], universe: Universe }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
     const mapRef = useRef<HTMLDivElement>(null)
@@ -53,21 +54,23 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     const navigator = useContext(Navigator.Context)
 
     return (
-        <>
+        <universeContext.Provider value={{
+            universes: article.universes as readonly Universe[],
+            universe,
+            setUniverse(newUniverse) {
+                void navigator.navigate({
+                    kind: 'article',
+                    longname: article.longname,
+                    universe: newUniverse,
+                }, { history: 'push', scroll: { kind: 'none' } })
+            },
+
+        }}
+        >
             <QuerySettingsConnection />
             <PageTemplate
-                screencap={(universe, colors) => createScreenshot(screencapElements(), universe, colors)}
+                screencap={(u, colors) => createScreenshot(screencapElements(), u, colors)}
                 csvExportData={csvExportData}
-                universeSelector={{
-                    universes: article.universes as Universe[],
-                    onChange(newUniverse) {
-                        void navigator.navigate({
-                            kind: 'article',
-                            longname: article.longname,
-                            universe: newUniverse,
-                        }, { history: 'push', scroll: { kind: 'none' } })
-                    },
-                }}
             >
                 <div>
                     <div ref={headersRef}>
@@ -113,7 +116,7 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                     />
                 </div>
             </PageTemplate>
-        </>
+        </universeContext.Provider>
     )
 }
 
@@ -171,6 +174,7 @@ function ArticleTable(props: {
     const expandedSettings = useSettings(props.filteredRows.map(row => rowExpandedKey(row.statpath)))
     const expandedEach = props.filteredRows.map(row => expandedSettings[rowExpandedKey(row.statpath)])
     const currentUniverse = useUniverse()
+    assert(currentUniverse !== undefined, 'no universe')
     const [simpleOrdinals] = useSetting('simple_ordinals')
     const navContext = useContext(Navigator.Context)
 

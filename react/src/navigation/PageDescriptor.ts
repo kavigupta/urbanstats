@@ -24,7 +24,7 @@ import type {
 } from '../quiz/quiz'
 import { loadSYAUData, SYAUData } from '../syau/load'
 import type { SYAUPanel } from '../syau/syau-panel'
-import { defaultArticleUniverse, defaultComparisonUniverse, Universe } from '../universe'
+import { defaultArticleUniverse, defaultComparisonUniverse, Universe, universeSchema } from '../universe'
 import type { DebugEditorPanel } from '../urban-stats-script/DebugEditorPanel'
 import type { USSDocumentationPanel } from '../uss-documentation'
 import type { Article } from '../utils/protos'
@@ -36,14 +36,14 @@ import { byPopulation, uniform } from './random'
 
 const articleSchema = z.object({
     longname: z.string(),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema),
     s: z.optional(z.string()),
     category: z.optional(z.string()) as z.ZodOptional<z.ZodType<CategoryIdentifier, z.ZodTypeDef, CategoryIdentifier>>,
 })
 
 const articleSchemaFromParams = z.object({
     longname: z.string(),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema).catch(undefined),
     s: z.optional(z.string()),
     category: z.optional(z.string().transform((s) => {
         if (!statsTree.some(category => category.id === s)) {
@@ -55,13 +55,13 @@ const articleSchemaFromParams = z.object({
 
 const comparisonSchema = z.object({
     longnames: z.array(z.string()),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema),
     s: z.optional(z.string()),
 })
 
 const comparisonSchemaFromParams = z.object({
     longnames: z.string().transform(value => z.array(z.string()).parse(JSON.parse(value))),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema).catch(undefined),
     s: z.optional(z.string()),
 })
 
@@ -72,7 +72,7 @@ const statisticSchema = z.object({
     amount: z.union([z.literal('All'), z.number().int()]),
     order: z.union([z.literal('descending'), z.literal('ascending')]),
     highlight: z.optional(z.string()),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema),
 })
 
 const statisticSchemaFromParams = z.object({
@@ -82,7 +82,7 @@ const statisticSchemaFromParams = z.object({
     amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
     order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
     highlight: z.optional(z.string()),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema).catch(undefined),
 })
 
 const randomSchema = z.object({
@@ -128,7 +128,7 @@ const quizSchema = z.intersection(
 
 const syauSchema = z.object({
     typ: z.optional(z.string()),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema),
 })
 
 const mapperSchema = z.object({
@@ -175,7 +175,7 @@ export type ExceptionalPageDescriptor = PageDescriptor
     | { kind: 'error', url: URL }
 
 export type PageData =
-    { kind: 'article', article: Article, universe: string, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
+    { kind: 'article', article: Article, universe: Universe, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
     | {
         kind: 'comparison'
         articles: Article[]
@@ -186,13 +186,13 @@ export type PageData =
         mapPartitions: number[][]
         comparisonPanel: typeof ComparisonPanel
     }
-    | { kind: 'statistic', universe: string, statisticPanel: typeof StatisticPanel } & StatisticPanelProps
+    | { kind: 'statistic', universe: Universe, statisticPanel: typeof StatisticPanel } & StatisticPanelProps
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit', dataCreditPanel: typeof DataCreditPanel }
     | { kind: 'ussDocumentation', ussDocumentationPanel: typeof USSDocumentationPanel, hash: string }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
-    | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
+    | { kind: 'syau', typ: string | undefined, universe: Universe | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
     | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel, counts: CountsByUT }
     | { kind: 'editor', editorPanel: typeof DebugEditorPanel | typeof DebugMapTextBoxPanel, undoChunking?: number }
     | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true }, oauthCallbackPanel: typeof OauthCallbackPanel }
@@ -395,7 +395,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 getCountsByArticleType(),
             ])
 
-            const defaultUniverse = defaultArticleUniverse(article.universes)
+            const defaultUniverse = defaultArticleUniverse(article.universes as Universe[])
 
             const articleUniverse = newDescriptor.universe !== undefined && article.universes.includes(newDescriptor.universe) ? newDescriptor.universe : defaultUniverse
 
@@ -440,7 +440,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             ])
 
             // intersection of all the data.universes
-            const articleUniverses = articles.map(x => x.universes)
+            const articleUniverses = articles.map(x => x.universes as Universe[])
             const universes = articleUniverses.reduce((a, b) => a.filter(c => b.includes(c)))
 
             const defaultUniverseComparison = defaultComparisonUniverse(articleUniverses, universes)
@@ -455,8 +455,8 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 pageData: {
                     kind: 'comparison',
                     articles,
-                    universe: comparisonUniverse as Universe,
-                    universes: universes as Universe[],
+                    universe: comparisonUniverse,
+                    universes,
                     rows: comparisonRows,
                     statPaths: comparisonStatPaths,
                     comparisonPanel: panel.ComparisonPanel,
