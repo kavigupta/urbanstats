@@ -23,6 +23,8 @@ interface LiteralExprParser<T> {
     ) => T
 }
 
+export type infer<P extends LiteralExprParser<unknown>> = P extends LiteralExprParser<infer T> ? T : never
+
 export function string(): LiteralExprParser<string> {
     return {
         parse(expr) {

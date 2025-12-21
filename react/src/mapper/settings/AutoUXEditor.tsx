@@ -5,6 +5,7 @@ import { ExpandButton } from '../../components/ExpandButton'
 import { RenderTwiceHidden } from '../../components/RenderTwiceHidden'
 import { CheckboxSettingCustom } from '../../components/sidebar'
 import { UrbanStatsASTExpression, UrbanStatsASTArg, locationOf } from '../../urban-stats-script/ast'
+import { AutoUXMetadata, getAutoUXMetadata } from '../../urban-stats-script/autoux-metadata'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
@@ -58,6 +59,7 @@ function ArgumentEditor(props: {
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
+    collapsed: boolean | undefined
 }): ReactNode {
     const arg = props.argWDefault.type
     assert(arg.type === 'concrete', `Named argument ${props.name} must be concrete`)
@@ -73,7 +75,7 @@ function ArgumentEditor(props: {
     const humanReadableName = tdoc?.documentation?.namedArgs?.[props.name] ?? props.name
     assert(tdoc?.type === undefined || tdoc.type.type === 'function', `AutoUX looked up function identifier ${functionUss.fn.name.node}m, but it was not a function`)
     const collapsable = hasDefault && isEnabled && (tdoc?.type.namedArgs[props.name]?.documentation?.collapsable ?? false)
-    const collapsed = collapsable && argValue.type === 'named' && (argValue.collapsed ?? false)
+    const collapsed = collapsable && argValue.type === 'named' && (props.collapsed ?? false)
 
     return (
         <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', gap: '0.25em', width: '100%', margin: '0.25em 0' }}>
@@ -199,6 +201,7 @@ export function AutoUXEditor(props: {
     type: USSType[]
     label?: string
     labelWidth?: string
+    metadata?: AutoUXMetadata
 }): ReactNode {
     const ussLoc = locationOf(props.uss).start
     if (ussLoc.block.type !== 'single' || ussLoc.block.ident !== props.blockIdent) {
@@ -209,10 +212,10 @@ export function AutoUXEditor(props: {
     }
     const labelWidth = props.labelWidth ?? '5%'
     const subcomponent = (): [ReactNode | undefined, 'consumes-errors' | 'does-not-consume-errors'] => {
-        if (props.uss.type === 'constant') {
+        const uss = props.uss
+        if (uss.type === 'constant') {
             return [undefined, 'does-not-consume-errors']
         }
-        const uss = props.uss
         if (uss.type === 'customNode') {
             const editor = (
                 <CustomEditor
@@ -267,6 +270,7 @@ export function AutoUXEditor(props: {
                             typeEnvironment={props.typeEnvironment}
                             errors={props.errors}
                             blockIdent={props.blockIdent}
+                            collapsed={props.metadata?.collapsed}
                         />,
                     )
                 }
@@ -436,6 +440,29 @@ export function AutoUXEditor(props: {
         }
     }
 
+    if (props.uss.type === 'autoUX') {
+        const uss = props.uss
+        const metadata = getAutoUXMetadata(uss.metadata, props.typeEnvironment)
+        return (
+            <AutoUXEditor
+                {...props}
+                uss={uss.expr}
+                setUss={(newUss, o) => {
+                    if (newUss.type === 'autoUX') {
+                        props.setUss(newUss, o)
+                    }
+                    else {
+                        props.setUss({
+                            ...uss,
+                            expr: newUss,
+                        }, o)
+                    }
+                }}
+                metadata={metadata}
+            />
+        )
+    }
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1, margin: '0.25em 0', gap: '0.25em' }} id={`auto-ux-editor-${props.blockIdent}`}>
             {leftSegment !== undefined || rightSegment !== undefined ? <div style={{ width: '100%', flex: 1 }}>{component()}</div> : undefined}
@@ -504,7 +531,6 @@ function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnv
                 type: 'named',
                 name: { node: name, location: emptyLocation(blockIdent) },
                 value: prev?.value ?? createDefaultExpression(arg.value, extendBlockIdKwarg(blockIdent, name), typeEnvironment),
-                collapsed: prev?.collapsed,
             })
         }
     }

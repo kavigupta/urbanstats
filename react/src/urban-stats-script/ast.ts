@@ -6,7 +6,7 @@ import { USSType } from './types-values'
 
 export type UrbanStatsASTArg = (
     { type: 'unnamed', value: UrbanStatsASTExpression } |
-    { type: 'named', name: Decorated<string>, value: UrbanStatsASTExpression, collapsed?: boolean })
+    { type: 'named', name: Decorated<string>, value: UrbanStatsASTExpression })
 
 export type UrbanStatsASTLHS = (
     { type: 'identifier', name: Decorated<string> } |
@@ -24,7 +24,7 @@ export type UrbanStatsASTExpression = (
     { type: 'do', entireLoc: LocInfo, statements: UrbanStatsASTStatement[] } |
     // for internal purposes only
     { type: 'customNode', entireLoc: LocInfo, expr: UrbanStatsASTStatement, originalCode: string, expectedType?: USSType[] } |
-    { type: 'autoUX', entireLoc: LocInfo, expr: UrbanStatsASTExpression, metadata: UrbanStatsASTExpression }
+    { type: 'autoUX', entireLoc: LocInfo, expr: UrbanStatsASTExpression, metadata: UrbanStatsASTExpression & { type: 'objectLiteral' } }
 )
 
 export type UrbanStatsASTStatement = (
