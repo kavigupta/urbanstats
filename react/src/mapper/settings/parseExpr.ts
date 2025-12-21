@@ -99,6 +99,13 @@ function attemptParseExpr(
             else {
                 return parseExpr(expr.expr, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)
             }
+        case 'autoUX':
+            return {
+                type: 'autoUX',
+                entireLoc: emptyLocation(blockIdent),
+                expr: parseExpr(expr.expr, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes),
+                metadata: expr.metadata,
+            }
         case 'statements':
             if (expr.result.length === 1) {
                 return parseExpr(expr.result[0], blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)

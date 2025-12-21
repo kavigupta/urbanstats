@@ -22,9 +22,9 @@ export type UrbanStatsASTExpression = (
     { type: 'vectorLiteral', entireLoc: LocInfo, elements: UrbanStatsASTExpression[] } |
     { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement } |
     { type: 'do', entireLoc: LocInfo, statements: UrbanStatsASTStatement[] } |
-    { type: 'autoUX', entireLoc: LocInfo, expr: UrbanStatsASTExpression, metadata: UrbanStatsASTExpression } |
     // for internal purposes only
-    { type: 'customNode', entireLoc: LocInfo, expr: UrbanStatsASTStatement, originalCode: string, expectedType?: USSType[] }
+    { type: 'customNode', entireLoc: LocInfo, expr: UrbanStatsASTStatement, originalCode: string, expectedType?: USSType[] } |
+    { type: 'autoUX', entireLoc: LocInfo, expr: UrbanStatsASTExpression, metadata: UrbanStatsASTExpression }
 )
 
 export type UrbanStatsASTStatement = (
