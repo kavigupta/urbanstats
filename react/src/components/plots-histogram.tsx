@@ -351,7 +351,7 @@ function HistogramSettings(props: {
                             link={(regionName) => {
                                 return navContext.link({
                                     kind: 'comparison',
-                                    universe: navContext.universe!,
+                                    universe,
                                     longnames: [...deduplicate(props.longnames), regionName],
                                 }, { scroll: { kind: 'none' } })
                             }}

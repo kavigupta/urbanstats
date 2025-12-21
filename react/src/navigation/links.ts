@@ -1,5 +1,6 @@
 import type { StatisticDescriptor } from '../components/statistic-panel'
 import type_ordering_idx from '../data/type_ordering_idx'
+import { Universe } from '../universe'
 
 import { PageDescriptor } from './PageDescriptor'
 
@@ -77,7 +78,7 @@ export function centroidsPath(universe: string, typ: string): string {
 }
 
 export function statisticDescriptor(props: {
-    universe: string | undefined
+    universe: Universe | undefined
     statDesc: StatisticDescriptor
     articleType: string
     start: number

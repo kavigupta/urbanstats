@@ -5,14 +5,15 @@ import { GenericSearchBox } from '../components/search-generic'
 import syau_region_types from '../data/syau_region_types'
 import universes_ordered from '../data/universes_ordered'
 import { Navigator } from '../navigation/Navigator'
+import { Universe } from '../universe'
 import { useSubHeaderTextClass } from '../utils/responsive'
 
 import { populationColumns } from './load'
 
-function EditableSelector(props: {
-    items: string[]
-    selected: string | undefined
-    onSelect: (item: string) => ReturnType<Navigator['link']>
+function EditableSelector<T extends string>(props: {
+    items: T[]
+    selected: T | undefined
+    onSelect: (item: T) => ReturnType<Navigator['link']>
     placeholder: string
 }): ReactNode {
     let selected = props.selected
@@ -46,7 +47,7 @@ function EditableSelector(props: {
     )
 }
 
-export function SelectUniverse(props: { typ?: string, universe?: string, counts: CountsByUT }): ReactNode {
+export function SelectUniverse(props: { typ?: string, universe?: Universe, counts: CountsByUT }): ReactNode {
     const navContext = useContext(Navigator.Context)
     const universes = universes_ordered.filter(
         universe => props.typ === undefined || populationColumns(props.counts, props.typ, universe).length > 0,
@@ -67,7 +68,7 @@ export function SelectUniverse(props: { typ?: string, universe?: string, counts:
     )
 }
 
-export function SelectType(props: { typ?: string, universe?: string, counts: CountsByUT }): ReactNode {
+export function SelectType(props: { typ?: string, universe?: Universe, counts: CountsByUT }): ReactNode {
     const types = syau_region_types.filter(
         type => props.universe === undefined || populationColumns(props.counts, type, props.universe).length > 0,
     )
