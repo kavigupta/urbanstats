@@ -148,9 +148,12 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             setUniverse(newUniverse) {
                 void navigator.navigate({
                     kind: 'statistic',
-                    ...props,
                     article_type: props.articleType,
                     statname: props.descriptor.statname,
+                    start: props.start,
+                    amount: props.amount,
+                    order: props.order,
+                    highlight: props.highlight,
                     universe: newUniverse,
                 }, {
                     history: 'push',
