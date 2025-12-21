@@ -224,12 +224,12 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const colors = useColors()
 
     const isEditMode = props.edit ?? false
-    const [editUniverse, setEditUniverse] = useState<string>(props.universe)
+    const [editUniverse, setEditUniverse] = useState<Universe>(props.universe)
     useEffect(() => {
         setEditUniverse(props.universe)
     }, [props.universe])
     const [editGeographyKind, setEditGeographyKind] = useState<typeof validGeographies[number]>(props.articleType as typeof validGeographies[number])
-    const typeEnvironment = useMemo(() => defaultTypeEnvironment(editUniverse as Universe | undefined), [editUniverse])
+    const typeEnvironment = useMemo(() => defaultTypeEnvironment(editUniverse), [editUniverse])
     const [editErrors, setEditErrors] = useState<EditorError[]>([])
 
     const [editUSS, setEditUSS] = useState<MapUSS>(() => {
@@ -241,7 +241,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     // Construct MapSettings from separate state for MapperSettings component
     const editMapSettings = useMemo((): MapSettings => ({
-        universe: editUniverse as Universe | undefined,
+        universe: editUniverse,
         geographyKind: editGeographyKind as (typeof validGeographies)[number] | undefined,
         script: { uss: editUSS },
     }), [editUniverse, editGeographyKind, editUSS])
