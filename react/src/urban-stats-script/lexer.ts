@@ -6,7 +6,7 @@ import { expressionOperatorMap } from './operators'
 const nonExpressionOperators = ['=', ',', ';', '.', ':']
 const operatorCharacters = '!@$%^&*-+=~`<>/?:|,;.'
 
-const keywords = ['if', 'do', 'else', 'customNode', 'condition']
+const keywords = ['if', 'do', 'else', 'autoUX', 'customNode', 'condition']
 export type Keyword = (typeof keywords)[number]
 
 interface NumericToken { type: 'number', value: number }

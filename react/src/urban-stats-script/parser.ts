@@ -55,6 +55,8 @@ export function toSExp(node: UrbanStatsAST): string {
             return `(condition ${toSExp(node.condition)} ${node.rest.map(toSExp).join(' ')})`
         case 'parseError':
             return `(parseError ${JSON.stringify(node.originalCode)} ${JSON.stringify(node.errors)})`
+        case 'autoUX':
+            return `(autoUX ${toSExp(node.expr)} ${toSExp(node.metadata)})`
         case 'customNode':
             return `(customNode ${toSExp(node.expr)} ${JSON.stringify(node.originalCode)})`
     }
@@ -254,6 +256,9 @@ class ParseState {
     }
 
     parseFunctionalExpression(): UrbanStatsASTExpression | ParseError {
+        if (this.consumeKeyword('autoUX')) {
+            return this.parseAutoUXExpression()
+        }
         if (this.consumeKeyword('customNode')) {
             return this.parseCustomNodeExpression()
         }
@@ -408,6 +413,7 @@ class ParseState {
             case 'objectLiteral':
             case 'if':
             case 'do':
+            case 'autoUX':
             case 'customNode':
                 return { type: 'error', value: 'Cannot assign to this expression', location: locationOf(expr) }
         }
@@ -593,6 +599,39 @@ class ParseState {
             entireLoc: locArg,
         }
     }
+
+    parseAutoUXExpression(): UrbanStatsASTExpression | ParseError {
+        const argsRes = this.parseParenthesizedArgs()
+
+        if (argsRes === undefined) {
+            return { type: 'error', value: 'Expected arguments for autoUX', location: this.maybeLastNonEOLToken(-1).location }
+        }
+
+        if (argsRes.type === 'error') {
+            return argsRes
+        }
+
+        const [args, locArg] = argsRes.args
+
+        if (args.length !== 2 || args[0].type !== 'unnamed' || args[1].type !== 'unnamed') {
+            return { type: 'error', value: 'autoUX requires exactly 2 unnamed arguments: expression and metadata object', location: locArg }
+        }
+
+        const expr = args[0].value
+        const metadata = args[1].value
+
+        // Validate that metadata is an object literal
+        if (metadata.type !== 'objectLiteral') {
+            return { type: 'error', value: 'Second argument to autoUX must be an object literal', location: locationOf(metadata) }
+        }
+
+        return {
+            type: 'autoUX',
+            expr,
+            metadata,
+            entireLoc: locArg,
+        }
+    }
 }
 
 export function mergeStatements(statements: UrbanStatsASTStatement[], fallbackLocation?: LocInfo): UrbanStatsASTStatement {
@@ -721,6 +760,10 @@ function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
                 return true
             case 'parseError':
                 return true
+            case 'autoUX':
+                helper(n.expr)
+                helper(n.metadata)
+                return true
             case 'customNode':
                 // do not actually put this in the expressions list, as is for internal use only
                 helper(n.expr)
@@ -778,7 +821,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
     opts.indent = opts.indent ?? 0
     opts.wrap = opts.wrap ?? true
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
-        return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant' || expr.type === 'customNode'
+        return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant' || expr.type === 'autoUX' || expr.type === 'customNode'
     }
     function indentSpaces(level: number): string {
         return '    '.repeat(level)
@@ -787,6 +830,8 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
     const characterLimit = 80 - indentSpaces(opts.indent).length
 
     switch (node.type) {
+        case 'autoUX':
+            return `autoUX(${unparse(node.expr, { ...opts, inline: true })}, ${unparse(node.metadata, { ...opts, inline: true })})`
         case 'customNode':
             if (!opts.simplify) {
                 return `customNode(${JSON.stringify(node.originalCode.trim())})`

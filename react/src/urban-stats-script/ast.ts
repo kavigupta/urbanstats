@@ -22,6 +22,7 @@ export type UrbanStatsASTExpression = (
     { type: 'vectorLiteral', entireLoc: LocInfo, elements: UrbanStatsASTExpression[] } |
     { type: 'if', entireLoc: LocInfo, condition: UrbanStatsASTExpression, then: UrbanStatsASTStatement, else?: UrbanStatsASTStatement } |
     { type: 'do', entireLoc: LocInfo, statements: UrbanStatsASTStatement[] } |
+    { type: 'autoUX', entireLoc: LocInfo, expr: UrbanStatsASTExpression, metadata: UrbanStatsASTExpression } |
     // for internal purposes only
     { type: 'customNode', entireLoc: LocInfo, expr: UrbanStatsASTStatement, originalCode: string, expectedType?: USSType[] }
 )
@@ -82,6 +83,7 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
         case 'parseError':
             assert(node.errors.length > 0, 'parseError node must have at least one error')
             return node.errors[0].location
+        case 'autoUX':
         case 'customNode':
             return node.entireLoc
     }
@@ -165,6 +167,10 @@ export function getAllParseErrors(node: UrbanStatsAST): ParseError[] {
                 break
             case 'parseError':
                 errors.push(...n.errors)
+                break
+            case 'autoUX':
+                collectErrors(n.expr)
+                collectErrors(n.metadata)
                 break
             case 'customNode':
                 collectErrors(n.expr)

@@ -364,3 +364,19 @@ export function customNodeExpr<T>(schema: LiteralExprParser<T>): LiteralExprPars
         },
     }
 }
+
+export function autoUXExpr<T>(schema: LiteralExprParser<T>): LiteralExprParser<T> {
+    return {
+        parse(expr, env, doEdit = e => e) {
+            if (expr?.type === 'autoUX') {
+                return schema.parse(expr.expr, env, newExpr => newExpr === undefined
+                    ? undefined
+                    : doEdit({
+                        ...expr,
+                        expr: newExpr,
+                    }))
+            }
+            return schema.parse(expr, env, doEdit)
+        },
+    }
+}
