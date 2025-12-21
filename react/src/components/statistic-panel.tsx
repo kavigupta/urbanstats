@@ -301,7 +301,8 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 void navigator.navigate({
                     kind: 'statistic',
                     article_type: props.articleType,
-                    descriptor: props.descriptor,
+                    statname: props.descriptor.type === 'simple-statistic' ? props.descriptor.statname : undefined,
+                    uss: props.descriptor.type === 'uss-statistic' ? props.descriptor.uss : undefined,
                     start: props.start,
                     amount: props.amount,
                     order: props.order,
