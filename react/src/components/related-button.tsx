@@ -10,6 +10,7 @@ import { relationshipKey, useSettings } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { DefaultMap } from '../utils/DefaultMap'
 import { mixWithBackground } from '../utils/color'
+import { assert } from '../utils/defensive'
 import { useMobileLayout } from '../utils/responsive'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 import { displayType } from '../utils/text'
@@ -144,6 +145,7 @@ function Row(props: {
     const checkId = useId()
 
     const universe = useUniverse()
+    assert(universe !== undefined, 'no universe')
 
     return (
         <li style={{
