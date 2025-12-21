@@ -14,7 +14,8 @@ import { StatName } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './article.css'
-import { useUniverse } from '../universe'
+import { Universe, universeContext, useUniverse } from '../universe'
+import { assert } from '../utils/defensive'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType } from '../utils/text'
 import { UnitType } from '../utils/unit'
@@ -39,7 +40,7 @@ interface StatisticCommonProps {
     articleType: string
     highlight: string | undefined
     counts: CountsByUT
-    universe: string
+    universe: Universe
 }
 
 export interface StatisticPanelProps extends StatisticCommonProps {
@@ -63,7 +64,7 @@ type StatisticDataOutcome = (
     | { type: 'loading' }
 )
 
-async function loadStatisticsData(universe: string, statname: StatName, articleType: string, counts: CountsByUT): Promise<StatisticDataOutcome> {
+async function loadStatisticsData(universe: Universe, statname: StatName, articleType: string, counts: CountsByUT): Promise<StatisticDataOutcome> {
     const statIndex = names.indexOf(statname)
     const [data, articleNames] = await loadStatisticsPage(universe, paths[statIndex], articleType)
     const totalCountInClass = forType(counts, universe, stats[statIndex], articleType)
@@ -138,23 +139,44 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     const content = <SimpleStatisticPanel {...props} descriptor={props.descriptor} onDataLoaded={setLoadedData} tableRef={tableRef} />
 
+    const navigator = useContext(Navigator.Context)
+
     return (
-        <PageTemplate
-            screencap={screencapElements ? (universe, templateColors) => createScreenshot(screencapElements(), universe, templateColors) : undefined}
-            csvExportData={csvExportData}
-            hasUniverseSelector={true}
-            universes={universesFiltered}
+        <universeContext.Provider value={{
+            universe: props.universe,
+            universes: universesFiltered,
+            setUniverse(newUniverse) {
+                void navigator.navigate({
+                    kind: 'statistic',
+                    article_type: props.articleType,
+                    statname: props.descriptor.statname,
+                    start: props.start,
+                    amount: props.amount,
+                    order: props.order,
+                    highlight: props.highlight,
+                    universe: newUniverse,
+                }, {
+                    history: 'push',
+                    scroll: { kind: 'none' },
+                })
+            },
+        }}
         >
-            <div ref={headersRef}>
-                <div className={headerTextClass}>{loadedData?.renderedStatname ?? 'Table'}</div>
-                <StatisticPanelSubhead
-                    articleType={props.articleType}
-                    renderedOther={props.order}
-                />
-            </div>
-            <div style={{ marginBlockEnd: '16px' }}></div>
-            {content}
-        </PageTemplate>
+            <PageTemplate
+                screencap={screencapElements ? (universe, templateColors) => createScreenshot(screencapElements(), universe, templateColors) : undefined}
+                csvExportData={csvExportData}
+            >
+                <div ref={headersRef}>
+                    <div className={headerTextClass}>{loadedData?.renderedStatname ?? 'Table'}</div>
+                    <StatisticPanelSubhead
+                        articleType={props.articleType}
+                        renderedOther={props.order}
+                    />
+                </div>
+                <div style={{ marginBlockEnd: '16px' }}></div>
+                {content}
+            </PageTemplate>
+        </universeContext.Provider>
     )
 }
 
@@ -229,7 +251,7 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
         return result
     }, [props.start, amount, count, isAscending])
 
-    const swapAscendingDescending = (currentUniverse: string | undefined): void => {
+    const swapAscendingDescending = (currentUniverse: Universe | undefined): void => {
         const newOrder = isAscending ? 'descending' : 'ascending'
         void navContext.navigate(statisticDescriptor({
             universe: currentUniverse,
@@ -286,7 +308,7 @@ function StatisticPanelTable(props: {
     indexRange: number[]
     props: StatisticPanelLoadedProps
     isAscending: boolean
-    swapAscendingDescending: (currentUniverse: string | undefined) => void
+    swapAscendingDescending: (currentUniverse: Universe | undefined) => void
     getRowBackgroundColor: (rowIdx: number) => string
     widthLeftHeader: number
     columnWidth: number
@@ -294,6 +316,7 @@ function StatisticPanelTable(props: {
     articleNames: string[]
 }): ReactNode {
     const currentUniverse = useUniverse()
+    assert(currentUniverse !== undefined, 'no universe')
 
     const articleRows: StatisticCellRenderingInfo[] = props.indexRange.map((i) => {
         return {
@@ -643,6 +666,7 @@ function SelectPage(props: {
 
 function StatisticPanelSubhead(props: { articleType: string, renderedOther: string }): ReactNode {
     const currentUniverse = useUniverse()
+    assert(currentUniverse !== undefined, 'no universe')
     const subHeaderTextClass = useSubHeaderTextClass()
     return (
         <div className={subHeaderTextClass}>
