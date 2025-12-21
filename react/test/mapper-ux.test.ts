@@ -451,3 +451,34 @@ urbanstatsFixture('mapper default', `${target}/mapper.html?settings=H4sIAAAAAAAA
 test('download file via site screencap button', async (t) => {
     await downloadImage(t)
 })
+
+mapper(() => test)('universe navigation', { code: `cMap(
+    data=density_pw_1km,
+    scale=logScale(),
+    ramp=rampUridis,
+    basemap=noBasemap()
+)` }, async (t) => {
+    await waitForLoading()
+    await screencap(t)
+    await downloadImage(t)
+    const universeSelector = Selector('.universe-selector')
+    // assert the current universe in the mapper settings is Iceland
+    await t.expect(universeSelector.exists).ok()
+    await t.expect(universeSelector.getAttribute('alt')).eql('Iceland')
+    await t.expect(getInput('Iceland').exists).ok()
+    // Step 1: change universe via universe selector in the mapper settings
+    await replaceInput(t, 'Iceland', 'Denmark')
+    await waitForLoading()
+    await screencap(t)
+    await downloadImage(t)
+    await t.expect(universeSelector.getAttribute('alt')).eql('Denmark') // change reflected in universe selector
+    await t.expect(getInput('Denmark').exists).ok() // change reflected in mapper settings
+    // Step 2: change universe via header universe selector
+    await t.click(universeSelector)
+    await t.click(Selector('div').withExactText('Ireland').nth(0))
+    await waitForLoading()
+    await screencap(t)
+    await downloadImage(t)
+    await t.expect(universeSelector.getAttribute('alt')).eql('Ireland') // change reflected in universe selector
+    await t.expect(getInput('Ireland').exists).ok() // change reflected in mapper settings
+})

@@ -9,7 +9,8 @@ import { statisticDescriptor } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
-import { useUniverse } from '../universe'
+import { Universe, useUniverse } from '../universe'
+import { assert } from '../utils/defensive'
 import { useComparisonHeadStyle, useMobileLayout } from '../utils/responsive'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 import { displayType } from '../utils/text'
@@ -20,12 +21,11 @@ import { Icon } from './Icon'
 import { Modal } from './Modal'
 import { Percentile, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
-import { ArticleRow, Disclaimer, FirstLastStatus } from './load-article'
+import { ArticleRow, Disclaimer, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
-import { ArrowUpOrDown } from './statistic-panel'
 import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
@@ -433,7 +433,7 @@ export function StatisticRowCells(props: {
     width: number
     longname: string
     statisticStyle?: CSSProperties
-    row: ArticleRow
+    row: StatisticCellRenderingInfo
     onlyColumns?: string[]
     blankColumns?: string[]
     onNavigate?: (newArticle: string) => void
@@ -455,6 +455,7 @@ export function StatisticRowCells(props: {
                         value={props.row.statval}
                         isUnit={false}
                         style={props.statisticStyle ?? {}}
+                        unit={props.row.unit}
                     />
                 </span>
             ),
@@ -470,6 +471,7 @@ export function StatisticRowCells(props: {
                             statname={props.row.statname}
                             value={props.row.statval}
                             isUnit={true}
+                            unit={props.row.unit}
                         />
                     </span>
                 </div>
@@ -524,11 +526,17 @@ export function StatisticRowCells(props: {
     )
 }
 
-function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleRow, longname: string }): ColumnLayoutProps['cells'] {
+function PointerRowCells(props: { ordinalStyle: CSSProperties, row: StatisticCellRenderingInfo, longname: string }): ColumnLayoutProps['cells'] {
     const screenshotMode = useScreenshotMode()
 
     const singlePointerCell = useSinglePointerCell()
     const [preferredPointerCell] = useSetting('mobile_article_pointers')
+
+    const statpath = props.row.statpath
+
+    if (statpath === undefined) {
+        return []
+    }
 
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
@@ -537,7 +545,7 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleRow, 
             <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
                 <PointerButtonsIndex
                     ordinal={props.row.ordinal}
-                    statpath={props.row.statpath}
+                    statpath={statpath}
                     type={props.row.articleType}
                     total={props.row.totalCountInClass}
                     longname={props.longname}
@@ -553,7 +561,7 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleRow, 
         content: (
             <span className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
                 <PointerButtonsIndex
-                    statpath={props.row.statpath}
+                    statpath={statpath}
                     type="overall"
                     total={props.row.totalCountOverall}
                     longname={props.longname}
@@ -778,7 +786,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                 <ComparisonColorBar highlightIndex={props.highlightIndex} />
             )}
             <div
-                key={`statName_${props.row.statpath}`}
+                key={`statName_${props.renderedStatname}`}
                 style={{ width: `${width}%`, padding: '1px', paddingLeft: props.isIndented ? '1em' : '1px', textAlign: props.center ? 'center' : undefined }}
             >
                 <span className="serif value" style={{ display: 'flex', alignItems: 'center', justifyContent: props.center ? 'center' : 'flex-start', gap: '0.25em' }}>
@@ -787,7 +795,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                         longname={props.longname}
                         currentUniverse={props.currentUniverse}
                         center={props.center}
-                        displayName={props.displayName ?? props.row.renderedStatname}
+                        displayName={props.displayName ?? props.renderedStatname}
                     />
                     {props.sortInfo && (
                         <span
@@ -807,14 +815,27 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
     )
 }
 
+export function ExpansionButton(props: { row: ArticleRow }): ReactNode {
+    const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
+    const colors = useColors()
+    return (
+        <div
+            className="expand-toggle"
+            onClick={() => { setExpanded(!expanded) }}
+            style={articleStatnameButtonStyle(colors)}
+        >
+            {expanded ? '-' : '+'}
+        </div>
+    )
+}
+
 export function StatisticName(props: {
-    row: ArticleRow
+    row?: ArticleRow
     longname: string
-    currentUniverse: string
+    currentUniverse: Universe
     center?: boolean
     displayName: string
 }): ReactNode {
-    const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
 
@@ -822,15 +843,19 @@ export function StatisticName(props: {
         <a
             style={{ textDecoration: 'none', color: colors.textMain }}
             {
-                ...navContext.link(statisticDescriptor({
-                    universe: props.currentUniverse,
-                    statname: props.row.statname,
-                    articleType: props.row.articleType,
-                    start: props.row.ordinal,
-                    amount: 20,
-                    order: 'descending',
-                    highlight: props.longname,
-                }), { scroll: { kind: 'position', top: 0 } })
+                ...(
+                    props.row === undefined
+                        ? {}
+                        : navContext.link(statisticDescriptor({
+                            universe: props.currentUniverse,
+                            statDesc: { type: 'simple-statistic', statname: props.row.statname },
+                            articleType: props.row.articleType,
+                            start: props.row.ordinal,
+                            amount: 20,
+                            order: 'descending',
+                            highlight: props.longname,
+                        }), { scroll: { kind: 'position', top: 0 } })
+                )
             }
             data-test-id="statistic-link"
         >
@@ -839,18 +864,12 @@ export function StatisticName(props: {
     )
     const screenshotMode = useScreenshotMode()
     const elements = [link]
-    if (props.row.extraStat !== undefined && !screenshotMode) {
+    if (props.row?.extraStat !== undefined && !screenshotMode) {
         elements.push(
-            <div
-                className="expand-toggle"
-                onClick={() => { setExpanded(!expanded) }}
-                style={articleStatnameButtonStyle(colors)}
-            >
-                {expanded ? '-' : '+'}
-            </div>,
+            <ExpansionButton key="expansion" row={props.row} />,
         )
     }
-    if (props.row.disclaimer !== undefined) {
+    if (props.row?.disclaimer !== undefined) {
         elements.push(<StatisticNameDisclaimer disclaimer={props.row.disclaimer} />)
     }
     if (elements.length > 1) {
@@ -1005,7 +1024,7 @@ function ordinalWidthInEm(ordinal: number, total: number, type: string, universe
     }
 }
 
-export function computeSizesForRow(row: ArticleRow, universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
+export function computeSizesForRow(row: StatisticCellRenderingInfo, universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
     // Compute the size of the ordinal and percentile text
     const [ordinalColumnWidthEm, ordinalColumnPadding] = ordinalWidthInEm(row.totalCountInClass, row.totalCountInClass, row.articleType, universe, simpleOrdinals)
     const percentileTextSample = percentileText(row.percentileByPopulation, simpleOrdinals)
@@ -1022,12 +1041,17 @@ function Ordinal(props: {
     ordinal: number
     total: number
     type: string
-    statpath: string
+    statpath?: string
     simpleOrdinals: boolean
     onNavigate?: (newArticle: string) => void
 }): ReactNode {
     const currentUniverse = useUniverse()
+    assert(currentUniverse !== undefined, 'no universe')
     const onNewNumber = async (number: number): Promise<void> => {
+        if (props.onNavigate === undefined) {
+            return
+        }
+        assert(props.statpath !== undefined, 'statpath must be defined if onNavigate is provided')
         let num = number
         if (num < 0) {
             // -1 -> props.total, -2 -> props.total - 1, etc.
@@ -1040,7 +1064,7 @@ function Ordinal(props: {
             num = 1
         }
         const data = await loadOrdering(currentUniverse, props.statpath, props.type)
-        props.onNavigate?.(data.longnames[num - 1])
+        props.onNavigate(data.longnames[num - 1])
     }
     const ordinal = props.ordinal
     const total = props.total
@@ -1081,6 +1105,7 @@ function Ordinal(props: {
 // Lacks some customization since its column is not show in the comparison view
 function PointerButtonsIndex(props: { ordinal?: number, statpath: string, type: string, total: number, longname: string, overallFirstLast?: FirstLastStatus }): ReactNode {
     const currentUniverse = useUniverse()
+    assert(currentUniverse !== undefined, 'no universe')
     const getData = async (): Promise<ArticleOrderingListInternal> => await loadOrdering(currentUniverse, props.statpath, props.type)
     return (
         <span style={{ margin: 'auto', whiteSpace: 'nowrap' }}>
@@ -1180,4 +1205,26 @@ function PointerButtonIndex(props: {
             <PointerArrow direction={props.direction} disabled={disabled} />
         </button>
     )
+}
+
+export function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearInScreenshot: boolean }): ReactNode {
+    const isScreenshot = useScreenshotMode()
+
+    if (isScreenshot && !props.shouldAppearInScreenshot) {
+        return null
+    }
+
+    let image: string
+    switch (props.direction) {
+        case 'up':
+            image = '/sort-up.png'
+            break
+        case 'down':
+            image = '/sort-down.png'
+            break
+        case 'both':
+            image = '/sort-both.png'
+            break
+    }
+    return <img src={image} className="testing-order-swap" alt={props.direction} style={{ width: '16px', height: '16px' }} />
 }

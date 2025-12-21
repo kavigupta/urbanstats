@@ -17,15 +17,11 @@ import { useHideSidebarDesktop } from './utils'
 export function PageTemplate({
     screencap = undefined,
     csvExportData = undefined,
-    hasUniverseSelector = false,
-    universes = [],
     children,
     showFooter = true,
 }: {
     screencap?: (currentUniverse: string | undefined, colors: Colors) => Promise<void>
     csvExportData?: CSVExportData
-    hasUniverseSelector?: boolean
-    universes?: readonly string[]
     children?: React.ReactNode
     showFooter?: boolean
 }): ReactNode {
@@ -111,8 +107,6 @@ export function PageTemplate({
                     setHamburgerOpen={setHamburgerOpen}
                     hasScreenshot={hasScreenshotButton}
                     hasCSV={hasCSVButton}
-                    hasUniverseSelector={hasUniverseSelector}
-                    allUniverses={universes}
                     initiateScreenshot={(currentUniverse) => { initiateScreenshot(currentUniverse) }}
                     exportCSV={exportCSV}
                 />

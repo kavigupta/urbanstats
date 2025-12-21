@@ -117,7 +117,7 @@ test(`friends with email`, async (t) => {
     ])
 })
 
-const friendEmailLinkHash = '#name=spudwaffle&id=urban.stats.test%40gmail.com'
+const friendEmailLinkHash = '#name=spudwaffle&id=urban.stats.test%40pavonine.co'
 const friendEmailLink = `https://juxtastat.org/${friendEmailLinkHash}`
 
 test('copy friend email link', async (t) => {

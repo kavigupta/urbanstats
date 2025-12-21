@@ -1,9 +1,10 @@
 import React, { CSSProperties, Fragment, ReactNode } from 'react'
 
-import { useUniverse } from '../universe'
+import { Universe, useUniverse } from '../universe'
+import { assert } from '../utils/defensive'
 import { Article } from '../utils/protos'
 
-import { ArticleRow } from './load-article'
+import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
 import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeSizesForRow, CommonLayoutInformation } from './table'
 
@@ -39,6 +40,7 @@ export interface TableContentsProps {
 
 export function TableContents(props: TableContentsProps): ReactNode {
     const universe = useUniverse()
+    assert(universe !== undefined, 'no universe')
     const headerHeight = props.verticalPlotSpecs.flatMap(p => p === undefined ? [] : p.plotProps).map(p => extraHeaderSpaceForVertical(p)).reduce((a, b) => Math.max(a, b), 0)
     const contentHeight = '379.5px'
 
@@ -211,13 +213,14 @@ export interface ComparisonLongnameCellProps {
 
 export interface StatisticPanelLongnameCellProps {
     longname: string
-    currentUniverse: string
+    currentUniverse: Universe
 }
 
 export interface StatisticNameCellProps {
-    row: ArticleRow
+    row?: ArticleRow
+    renderedStatname: string
     longname: string
-    currentUniverse: string
+    currentUniverse: Universe
     center?: boolean
     highlightIndex?: number
     transpose?: boolean
@@ -232,7 +235,7 @@ export interface StatisticNameCellProps {
 export interface StatisticRowCellProps {
     longname: string
     statisticStyle?: CSSProperties
-    row: ArticleRow
+    row: StatisticCellRenderingInfo
     onlyColumns?: string[]
     blankColumns?: string[]
     onNavigate?: (newArticle: string) => void

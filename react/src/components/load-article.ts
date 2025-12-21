@@ -6,6 +6,7 @@ import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, statDataOrderToOrder, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { Article, IFirstOrLast } from '../utils/protos'
+import { UnitType } from '../utils/unit'
 
 import { CountsByUT } from './countsByArticleType'
 
@@ -48,6 +49,19 @@ export interface ArticleRow {
     extraStat?: ExtraStat
     disclaimer?: Disclaimer
     overallFirstLast: FirstLastStatus
+}
+
+export interface StatisticCellRenderingInfo {
+    totalCountInClass: number
+    totalCountOverall: number
+    percentileByPopulation: number
+    articleType: string
+    statname: string
+    statval: number
+    ordinal: number
+    unit?: UnitType
+    statpath?: StatPath
+    overallFirstLast?: FirstLastStatus
 }
 
 function lookupInCompressedSequence(seq: [number, number][], idx: number): number {
