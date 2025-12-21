@@ -328,40 +328,6 @@ export class Navigator {
         return this.pageState.current.descriptor
     }
 
-    get universe(): string | undefined {
-        const data = this.pageState.current.data
-        switch (data.kind) {
-            case 'article':
-            case 'comparison':
-            case 'statistic':
-                return data.universe
-            default:
-                return undefined
-        }
-    }
-
-    useUniverse(): string | undefined {
-        return useSyncExternalStore(this.subscribeToPageState, () => this.universe)
-    }
-
-    setUniverse(newUniverse: string): void {
-        switch (this.pageState.current.descriptor.kind) {
-            case 'article':
-            case 'comparison':
-            case 'statistic':
-                void this.navigate({
-                    ...this.pageState.current.descriptor,
-                    universe: newUniverse,
-                }, {
-                    history: 'push',
-                    scroll: { kind: 'none' },
-                })
-                break
-            default:
-                throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have a universe`)
-        }
-    }
-
     private get statPaths(): StatPath[][] | undefined {
         switch (this.pageState.current.data.kind) {
             case 'article':

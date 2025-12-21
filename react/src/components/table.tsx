@@ -9,7 +9,7 @@ import { statisticDescriptor } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
-import { useUniverse } from '../universe'
+import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { useComparisonHeadStyle, useMobileLayout } from '../utils/responsive'
 import { isAllowedToBeShown } from '../utils/restricted-types'
@@ -832,7 +832,7 @@ export function ExpansionButton(props: { row: ArticleRow }): ReactNode {
 export function StatisticName(props: {
     row?: ArticleRow
     longname: string
-    currentUniverse: string
+    currentUniverse: Universe
     center?: boolean
     displayName: string
 }): ReactNode {
@@ -1046,6 +1046,7 @@ function Ordinal(props: {
     onNavigate?: (newArticle: string) => void
 }): ReactNode {
     const currentUniverse = useUniverse()
+    assert(currentUniverse !== undefined, 'no universe')
     const onNewNumber = async (number: number): Promise<void> => {
         if (props.onNavigate === undefined) {
             return
@@ -1104,6 +1105,7 @@ function Ordinal(props: {
 // Lacks some customization since its column is not show in the comparison view
 function PointerButtonsIndex(props: { ordinal?: number, statpath: string, type: string, total: number, longname: string, overallFirstLast?: FirstLastStatus }): ReactNode {
     const currentUniverse = useUniverse()
+    assert(currentUniverse !== undefined, 'no universe')
     const getData = async (): Promise<ArticleOrderingListInternal> => await loadOrdering(currentUniverse, props.statpath, props.type)
     return (
         <span style={{ margin: 'auto', whiteSpace: 'nowrap' }}>

@@ -5,6 +5,7 @@ import { loadProtobuf, loadStatisticsPage } from '../load_json'
 import { centroidsPath } from '../navigation/links'
 import { Statistic, allGroups } from '../page_template/statistic-tree'
 import { normalize } from '../search'
+import { Universe } from '../universe'
 import { ICoordinate } from '../utils/protos'
 
 export const populationStatcols: Statistic[] = allGroups.find(g => g.id === 'population')!.contents.find(g => g.year === 2020)!.stats[0].bySource
@@ -92,7 +93,7 @@ export function confirmMatch(target: MatchInfo, query: string): boolean {
 
 export async function loadSYAUData(
     typ: string | undefined,
-    universe: string | undefined,
+    universe: Universe | undefined,
     counts: CountsByUT,
 ): Promise<SYAUData | undefined> {
     if (typ === undefined || universe === undefined) {

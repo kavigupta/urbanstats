@@ -138,8 +138,8 @@ export async function loadUniverses(type: string): Promise<ArticleUniverseList> 
     return loadProtobuf(`/universes/${type}.gz`, 'ArticleUniverseList')
 }
 
-async function loadOrderingProtobuf(universe: string, statpath: string, type: string): Promise<IOrderList> {
-    const universeIdx = universes_ordered.indexOf(universe as Universe)
+async function loadOrderingProtobuf(universe: Universe, statpath: string, type: string): Promise<IOrderList> {
+    const universeIdx = universes_ordered.indexOf(universe)
     const links = order_links
     const idx = type in links ? pullKey(links[type], statpath) : 0
     const orderLink = orderingLink(type, idx)
@@ -151,7 +151,7 @@ async function loadOrderingProtobuf(universe: string, statpath: string, type: st
     return { orderIdxs: orderIndices }
 }
 
-export async function loadOrderingDataProtobuf(universe: string, statpath: string, type: string): Promise<{
+export async function loadOrderingDataProtobuf(universe: Universe, statpath: string, type: string): Promise<{
     value: number[]
     populationPercentile: number[]
 }> {
@@ -161,7 +161,7 @@ export async function loadOrderingDataProtobuf(universe: string, statpath: strin
     const dataLists = await loadProtobuf(orderLink, 'DataLists')
     const index = dataLists.statnames.indexOf(statpath)
     const res = dataLists.dataLists[index]
-    const universeIdx = universes_ordered.indexOf(universe as Universe)
+    const universeIdx = universes_ordered.indexOf(universe)
     const universes = await loadUniverses(type)
     return {
         value: res.value!.filter((_, i) => universes.universes[i].universeIdxs?.includes(universeIdx)),
@@ -176,7 +176,7 @@ export async function loadOrderingDataProtobuf(universe: string, statpath: strin
 }
 
 export async function loadDataInIndexOrder(
-    universe: string, statpath: string, type: string,
+    universe: Universe, statpath: string, type: string,
 ): Promise<[number[], number[]]> {
     const dataPromise = await loadOrderingDataProtobuf(universe, statpath, type)
     return [dataPromise.value, dataPromise.populationPercentile]
@@ -187,7 +187,7 @@ export interface ArticleOrderingListInternal {
     typeIndices: number[]
 }
 
-export async function loadOrdering(universe: string, statpath: string, type: string): Promise<ArticleOrderingListInternal> {
+export async function loadOrdering(universe: Universe, statpath: string, type: string): Promise<ArticleOrderingListInternal> {
     const idxLink = indexLink('world', type)
     const dataPromise = loadProtobuf(idxLink, 'ArticleOrderingList')
     const orderingPromise = loadOrderingProtobuf(universe, statpath, type)
@@ -214,7 +214,7 @@ function reindex(indices: number[]): number[] {
 }
 
 export async function loadStatisticsPage(
-    statUniverse: string, statpath: string, articleType: string,
+    statUniverse: Universe, statpath: string, articleType: string,
 ): Promise<[NormalizeProto<{ value: number[], populationPercentile: number[] }>, string[]]> {
     const orderingOriginal = await loadOrderingProtobuf(statUniverse, statpath, articleType)
     const ordering = await loadOrdering(statUniverse, statpath, articleType)
