@@ -505,7 +505,7 @@ function defaultForSelection(
 
     switch (selection.type) {
         case 'custom':
-            return parseNoErrorAsCustomNode(unparse(current), blockIdent, [type])
+            return parseNoErrorAsCustomNode(unparse(current, { simplify: true }), blockIdent, [type])
         case 'constant':
             return createDefaultExpression(type, blockIdent, typeEnvironment)
         case 'variable':
