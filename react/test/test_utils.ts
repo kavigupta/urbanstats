@@ -25,16 +25,19 @@ export function comparisonPage(locations: string[]): string {
     return `${target}/comparison.html?${params.toString()}`
 }
 
+export async function checkTextboxesDirect(t: TestController, txts: string[]): Promise<void> {
+    for (const txt of txts) {
+        const checkbox = Selector('div.checkbox-setting:not([inert] *)')
+        // filter for label
+            .filter(node => node.querySelector('label')!.innerText === txt, { txt })
+        // find checkbox
+            .find('input')
+        await t.click(checkbox)
+    }
+}
 export async function checkTextboxes(t: TestController, txts: string[]): Promise<void> {
     await withHamburgerMenu(t, async () => {
-        for (const txt of txts) {
-            const checkbox = Selector('div.checkbox-setting:not([inert] *)')
-                // filter for label
-                .filter(node => node.querySelector('label')!.innerText === txt, { txt })
-                // find checkbox
-                .find('input')
-            await t.click(checkbox)
-        }
+        await checkTextboxesDirect(t, txts)
     })
 }
 
