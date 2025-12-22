@@ -98,3 +98,35 @@ void test('vectorLiteral with invalid element uses customNode', (): void => {
 
     assert.strictEqual(unparse(result), `[population, ${customNode('population + 2')}, density_pw_1km]`)
 })
+
+void test('function parameter with constant just works', (): void => {
+    const parsed = getExpr(customNode(`linearScale(min=0, max=100)`))
+    const typeEnv = createTypeEnvironment()
+    const result = parseExpr(
+        parsed,
+        'test',
+        [{ type: 'opaque', name: 'scale' }],
+        typeEnv,
+        (e) => {
+            throw new Error(`Fallback should not be called for valid expression, but was for ${JSON.stringify(e)}`)
+        },
+        false,
+    )
+    assert.strictEqual(unparse(result), 'linearScale(min=0, max=100)')
+})
+
+void test('function parameter with invalid expression uses customNode', (): void => {
+    const parsed = getExpr(customNode(`linearScale(min=0, max=2 + 5)`))
+    const typeEnv = createTypeEnvironment()
+    const result = parseExpr(
+        parsed,
+        'test',
+        [{ type: 'opaque', name: 'scale' }],
+        typeEnv,
+        (e) => {
+            throw new Error(`Fallback should not be called for valid expression, but was for ${JSON.stringify(e)}`)
+        },
+        false,
+    )
+    assert.strictEqual(unparse(result), `linearScale(min=0, max=${customNode('2 + 5')})`)
+})
