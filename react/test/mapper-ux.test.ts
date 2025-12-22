@@ -5,7 +5,7 @@ import { Selector } from 'testcafe'
 import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor } from './editor_test_utils'
 import { checkBox, checkSelector, downloadPNG, getCodeFromMainField, getErrors, getInput, replaceInput, settingsFromURL, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { tempfileName } from './quiz_test_utils'
-import { downloadImage, getLocation, safeReload, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading, withHamburgerMenu } from './test_utils'
+import { checkTextboxes, checkTextboxesDirect, downloadImage, getLocation, safeReload, screencap, target, urbanstatsFixture, waitForDownload, waitForLoading, withHamburgerMenu } from './test_utils'
 
 const mapper = (testFn: () => TestFn) => (
     name: string,
@@ -445,6 +445,18 @@ for (const constant of ['linearScale', 'rampUridis']) {
         await screencap(t, { fullPage: false })
     })
 }
+
+test('custom node propagation linear scale', async (t) => {
+    await checkTextboxesDirect(t, ['center'])
+    await replaceInput(t, 'Constant', 'Custom Expression')
+    await typeInEditor(t, 0, '2 + 3', true)
+    // switch whole thing to a custom expression
+    await replaceInput(t, 'Linear Scale', 'Custom Expression')
+    await t.expect(nthEditor(0).textContent).eql('linearScale(center=2 + 3)\n')
+    // switch back to linear scale
+    await replaceInput(t, 'Custom Expression', 'Linear Scale')
+    await t.expect(nthEditor(0).textContent).eql('2 + 3\n')
+})
 
 urbanstatsFixture('mapper default', `${target}/mapper.html?settings=H4sIAAAAAAAAAy2NwQrCMAxAf2Xk1MEuXpUd9Cp6cOw2GHENM7ilpWkVGf67HS6H8HgPkgVGcmNA%2F%2FicWSzsoUl3wchOcCpuNGaACpLwi4JS7m1zzEKHwD7CfoGkmu2QNLr56iyZDjooD50MTiyvhwoTQ6Iymwt600mRx2LE2pIox0%2Fv3%2F3uOVf%2FogNOVE8shKFZ2ZRbCTj7el1tYMu62Tsqzehrcac%2FmfyphO%2F3B5Qv%2BrjbAAAA`)
 
