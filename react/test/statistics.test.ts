@@ -1,8 +1,8 @@
 import { Selector } from 'testcafe'
 
-import { nthEditor, typeTextWithKeys } from './editor_test_utils'
-import { replaceInput } from './mapper-utils'
-import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForDownload, waitForLoading, dataValues, checkTextboxes } from './test_utils'
+import { nthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
+import { getErrors, replaceInput } from './mapper-utils'
+import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForDownload, waitForLoading, dataValues, checkTextboxes, checkTextboxesDirect } from './test_utils'
 
 urbanstatsFixture('statistics', `${target}/article.html?longname=Indianapolis+IN+HRR%2C+USA`)
 
@@ -303,6 +303,9 @@ test('navigation on USS statistics page works', async (t) => {
 
 urbanstatsFixture('edit starting from a statname page', `${target}/statistic.html?statname=Population&article_type=County&start=1&amount=5&universe=California%2C+USA`)
 
+const densityRatio = ['3.035', '2.490', '2.282', '2.276', '2.100']
+const densityRatioPage2 = ['1.971', '1.956', '1.897', '1.888', '1.811']
+
 test('edit starting from a statname page works', async (t) => {
     await t.click(Selector('button[data-test-id="edit"]'))
     await waitForLoading()
@@ -311,8 +314,6 @@ test('edit starting from a statname page works', async (t) => {
         '10.0', '3.30', '3.19', '2.42', '2.18',
     ]
     const hispanic = ['85.16', '65.50', '61.83', '61.71', '61.11']
-    const densityRatio = ['3.035', '2.490', '2.282', '2.276', '2.100']
-    const densityRatioPage2 = ['1.971', '1.956', '1.897', '1.888', '1.811']
     await t.expect(await dataValues()).eql(populations)
     // should be a USS page now
     await t.expect(getLocation()).contains('uss=')
@@ -353,5 +354,76 @@ test('edit starting from a statname page works', async (t) => {
     await waitForLoading()
     await t.wait(1000)
     await t.expect(await dataValues()).eql(densityRatioPage2)
+    await screencap(t)
+})
+
+urbanstatsFixture('statistic page uss navigation tests', `${target}/statistic.html?uss=customNode%28%22%22%29%3B%0Acondition+%28true%29%0Atable%28%0A++++columns%3D%5B%0A++++++++column%28%0A++++++++++++values%3DcustomNode%28%22density_pw_1km+%2F+density_pw_2km%22%29%2C%0A++++++++++++name%3D%22Density+Ratio%22%2C%0A++++++++++++unit%3DunitNumber%0A++++++++%29%0A++++%5D%0A%29&article_type=County&start=6&amount=5&universe=California%2C+USA&edit=true`)
+
+test('uss statistics page regression', async (t) => {
+    await screencap(t)
+})
+
+test('convert table to custom expression and back', async (t) => {
+    const url = await getLocation()
+    await replaceInput(t, 'Table', 'Custom Expression')
+    await waitForLoading()
+    await t.wait(500)
+    // get code
+    await t.expect(nthEditor(0).exists).ok()
+    await t.expect(nthEditor(0).textContent).eql(`table(
+    columns=[
+        column(
+            values=density_pw_1km / density_pw_2km,
+            name="Density Ratio",
+            unit=unitNumber
+        )
+    ]
+)
+`)
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+    await replaceInput(t, 'Custom Expression', 'Table')
+    await t.expect(await getLocation()).eql(url)
+})
+
+test('parse error', async (t) => {
+    await typeInEditor(t, 0, '+')
+    await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:32', 'Parse error: Unexpected end of input'])
+    await screencap(t)
+})
+
+test('type error', async (t) => {
+    await typeInEditor(t, 0, '+"a"')
+    await t.expect(await getErrors()).eql(['Invalid types for operator +: number and string at 1:1-35', 'Invalid types for operator +: number and string'])
+    await screencap(t)
+    await t.click(Selector('button[data-test-id="view"]'))
+    await waitForLoading()
+    await t.wait(500)
+    await t.expect(await getErrors()).eql(['Invalid types for operator +: number and string'])
+    await screencap(t)
+})
+
+test('error display on correct field -- first', async (t) => {
+    await replaceInput(t, 'Constant', 'Custom Expression')
+    await typeInEditor(t, 0, '+')
+    await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:32', 'Parse error: Unexpected end of input'])
+    await screencap(t)
+})
+
+test('error display on correct field -- second', async (t) => {
+    await replaceInput(t, 'Constant', 'Custom Expression')
+    await typeInEditor(t, 1, '+')
+    await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:16', 'Parse error: Unexpected end of input'])
+    await screencap(t)
+})
+
+test('warning', async (t) => {
+    await checkTextboxesDirect(t, ['Name', 'Unit'])
+    await t.expect(await getErrors()).eql(['Name could not be derived for column, please pass name="<your name here>" to column(...)'])
+    await screencap(t)
+    // switch to view mode
+    await t.click(Selector('button[data-test-id="view"]'))
+    await waitForLoading()
+    await t.wait(1000)
+    await t.expect(await getErrors()).eql([])
     await screencap(t)
 })
