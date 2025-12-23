@@ -6,6 +6,7 @@ import { colorType } from '../src/urban-stats-script/constants/color'
 import { CMap, CMapRGB, Outline, PMap } from '../src/urban-stats-script/constants/map'
 import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
 import { instantiate, ScaleDescriptor, Scale } from '../src/urban-stats-script/constants/scale'
+import { Table, TableColumn } from '../src/urban-stats-script/constants/table'
 import { Context } from '../src/urban-stats-script/context'
 import { Effect, evaluate, execute, InterpretationError } from '../src/urban-stats-script/interpreter'
 import { parseNoErrorAsCustomNode } from '../src/urban-stats-script/parser'
@@ -2191,4 +2192,207 @@ pMap(data=data, scale=logScale(), ramp=rampUridis, relativeArea=population, maxR
     assert.deepStrictEqual(
         effects, [],
     )
+})
+
+void test('test basic column with name', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContext(effects)
+    const resultColumn = evaluate(parseExpr('column(values=[1, 2, 3], name="Test Column")'), ctx)
+    assert.deepStrictEqual(resultColumn.type, { type: 'opaque', name: 'column' })
+    const resultColumnRaw = (resultColumn.value as { type: 'opaque', value: TableColumn }).value
+    assert.deepStrictEqual(resultColumnRaw.name, 'Test Column')
+    assert.deepStrictEqual(resultColumnRaw.values, [1, 2, 3])
+    assert.deepStrictEqual(resultColumnRaw.unit, undefined)
+    assert.deepStrictEqual(effects, [])
+})
+
+void test('test column without name', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContext(effects)
+    const resultColumn = evaluate(parseExpr('column(values=[1, 2, 3])'), ctx)
+    assert.deepStrictEqual(resultColumn.type, { type: 'opaque', name: 'column' })
+    const resultColumnRaw = (resultColumn.value as { type: 'opaque', value: TableColumn }).value
+    assert.deepStrictEqual(resultColumnRaw.name, '[Unnamed Column]')
+    assert.deepStrictEqual(resultColumnRaw.values, [1, 2, 3])
+    assert.deepStrictEqual(effects, [{
+        type: 'warning',
+        message: 'Name could not be derived for column, please pass name="<your name here>" to column(...)',
+        location: {
+            start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
+            end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
+        },
+    }])
+})
+
+void test('test column with unit', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContext(effects)
+    const resultColumn = evaluate(parseExpr('column(values=[1, 2, 3], name="Population", unit=unitPopulation)'), ctx)
+    assert.deepStrictEqual(resultColumn.type, { type: 'opaque', name: 'column' })
+    const resultColumnRaw = (resultColumn.value as { type: 'opaque', value: TableColumn }).value
+    assert.deepStrictEqual(resultColumnRaw.name, 'Population')
+    assert.deepStrictEqual(resultColumnRaw.values, [1, 2, 3])
+    assert.deepStrictEqual(resultColumnRaw.unit, 'population')
+    assert.deepStrictEqual(effects, [])
+})
+
+void test('test basic table', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    // Add population variable
+    ctx.assignVariable('population', {
+        type: { type: 'vector', elementType: numType },
+        value: [100, 200, 300],
+        documentation: { humanReadableName: 'Population' },
+    })
+    const resultTable = evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="Col1")])'), ctx)
+    assert.deepStrictEqual(resultTable.type, { type: 'opaque', name: 'table' })
+    const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
+    assert.deepStrictEqual(resultTableRaw.geo, ['A', 'B', 'C'])
+    assert.deepStrictEqual(resultTableRaw.population, [100, 200, 300])
+    assert.deepStrictEqual(resultTableRaw.columns.length, 1)
+    assert.deepStrictEqual(resultTableRaw.columns[0].name, 'Col1')
+    assert.deepStrictEqual(resultTableRaw.columns[0].values, [1, 2, 3])
+    assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 16, 50])
+    assert.deepStrictEqual(effects, [])
+})
+
+void test('test table with multiple columns', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    ctx.assignVariable('population', {
+        type: { type: 'vector', elementType: numType },
+        value: [100, 200, 300],
+        documentation: { humanReadableName: 'Population' },
+    })
+    const resultTable = evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="Col1"), column(values=[5, 6, 4], name="Col2")])'), ctx)
+    assert.deepStrictEqual(resultTable.type, { type: 'opaque', name: 'table' })
+    const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
+    assert.deepStrictEqual(resultTableRaw.geo, ['A', 'B', 'C'])
+    assert.deepStrictEqual(resultTableRaw.population, [100, 200, 300])
+    assert.deepStrictEqual(resultTableRaw.columns.length, 2)
+    assert.deepStrictEqual(resultTableRaw.columns[0].name, 'Col1')
+    assert.deepStrictEqual(resultTableRaw.columns[0].values, [1, 2, 3])
+    assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 16, 50])
+    assert.deepStrictEqual(resultTableRaw.columns[1].name, 'Col2')
+    assert.deepStrictEqual(resultTableRaw.columns[1].values, [5, 6, 4])
+    assert.deepStrictEqual(resultTableRaw.columns[1].populationPercentiles, [50, 66, 0])
+    assert.deepStrictEqual(effects, [])
+})
+
+void test('test table with non-default population', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    const resultTable = execute(parseProgram('table(columns=[column(values=[1, 2, 3], name="Col1")], population=[100, 200, 300])'), ctx)
+    assert.deepStrictEqual(resultTable.type, { type: 'opaque', name: 'table' })
+    const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
+    assert.deepStrictEqual(resultTableRaw.geo, ['A', 'B', 'C'])
+    assert.deepStrictEqual(resultTableRaw.population, [100, 200, 300])
+    assert.deepStrictEqual(resultTableRaw.columns.length, 1)
+    assert.deepStrictEqual(resultTableRaw.columns[0].name, 'Col1')
+    assert.deepStrictEqual(resultTableRaw.columns[0].values, [1, 2, 3])
+    assert.deepStrictEqual(effects, [])
+})
+
+void test('test table column length mismatch error', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    ctx.assignVariable('population', {
+        type: { type: 'vector', elementType: numType },
+        value: [100, 200, 300],
+        documentation: { humanReadableName: 'Population' },
+    })
+    assert.throws(
+        () => evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="Col1"), column(values=[4, 5], name="Col2")])'), ctx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message.includes('All columns must have the same length. Column "Col1" has length 3, but column "Col2" has length 2')
+        },
+    )
+})
+
+void test('test table geo length mismatch error', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    ctx.assignVariable('population', {
+        type: { type: 'vector', elementType: numType },
+        value: [100, 200, 300],
+        documentation: { humanReadableName: 'Population' },
+    })
+    // Create custom geo with different length
+    ctx.assignVariable('geo', {
+        type: { type: 'vector', elementType: { type: 'opaque', name: 'geoFeatureHandle' } },
+        value: [
+            { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'A' },
+            { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'B' },
+        ],
+        documentation: { humanReadableName: 'Geography' },
+    })
+    assert.throws(
+        () => evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="Col1")])'), ctx),
+        (err: Error): boolean => {
+            return err instanceof InterpretationError && err.message.includes('geo must have the same length as columns. geo has length 2, but columns have length 3')
+        },
+    )
+})
+
+void test('test table population percentiles calculation', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    ctx.assignVariable('population', {
+        type: { type: 'vector', elementType: numType },
+        value: [100, 200, 300, 400],
+        documentation: { humanReadableName: 'Population' },
+    })
+    // Create custom geo with 4 values
+    ctx.assignVariable('geo', {
+        type: { type: 'vector', elementType: { type: 'opaque', name: 'geoFeatureHandle' } },
+        value: [
+            { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'A' },
+            { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'B' },
+            { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'C' },
+            { type: 'opaque' as const, opaqueType: 'geoFeatureHandle' as const, value: 'D' },
+        ],
+        documentation: { humanReadableName: 'Geography' },
+    })
+    // Values [1, 3, 2, 4] - sorted: [1, 2, 3, 4] with indices [0, 2, 1, 3]
+    // Populations at sorted indices: [100, 300, 200, 400]
+    // Cumulative: [0, 100, 400, 600]
+    // Total: 1000
+    // Percentiles: [0, 10, 40, 60]
+    const resultTable = evaluate(parseExpr('table(columns=[column(values=[1, 3, 2, 4], name="Col1")])'), ctx)
+    assert.deepStrictEqual(resultTable.type, { type: 'opaque', name: 'table' })
+    const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
+    assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 40, 10, 60])
+})
+
+void test('test table with zero population', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    ctx.assignVariable('population', {
+        type: { type: 'vector', elementType: numType },
+        value: [0, 0, 0],
+        documentation: { humanReadableName: 'Population' },
+    })
+    const resultTable = evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="Col1")])'), ctx)
+    assert.deepStrictEqual(resultTable.type, { type: 'opaque', name: 'table' })
+    const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
+    assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 0, 0])
+})
+
+void test('test conditional table', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    ctx.assignVariable('population', {
+        type: { type: 'vector', elementType: numType },
+        value: [100, 200, 300],
+        documentation: { humanReadableName: 'Population' },
+    })
+    const resultTable = execute(parseProgram('condition (population > 100); table(columns=[column(values=[1, 2], name="Col1")])'), ctx)
+    assert.deepStrictEqual(resultTable.type, { type: 'opaque', name: 'table' })
+    const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
+    assert.deepStrictEqual(resultTableRaw.columns[0].name, 'Col1')
+    assert.deepStrictEqual(resultTableRaw.geo, ['B', 'C'])
+    assert.deepStrictEqual(resultTableRaw.columns[0].values, [1, 2])
+    assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 40])
+    assert.deepStrictEqual(effects, [])
 })
