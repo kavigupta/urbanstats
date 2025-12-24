@@ -427,3 +427,21 @@ test('warning', async (t) => {
     await t.expect(await getErrors()).eql([])
     await screencap(t)
 })
+
+test('add filter', async (t) => {
+    await checkTextboxesDirect(t, ['Filter?'])
+    await typeInEditor(t, 0, 'population > 1m', true)
+    await waitForLoading()
+    await t.wait(1000)
+    await t.expect(await dataValues()).eql(['1.163', '1.141', '1.129', '1.127', '1.125'])
+    await screencap(t)
+})
+
+test.only('add filter that kicks you to an earlier page', async (t) => {
+    await checkTextboxesDirect(t, ['Filter?'])
+    await typeInEditor(t, 0, 'population > 6m', true) // only one county matches
+    await waitForLoading()
+    await t.expect(await getLocation()).contains('start=1')
+    await t.expect(await dataValues()).eql(['1.127'])
+    await screencap(t)
+})

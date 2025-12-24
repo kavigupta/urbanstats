@@ -272,14 +272,21 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             scroll: { kind: 'none' },
         })
     }
+    // Memoize the USS string to prevent unnecessary re-renders in custom script mode
+    const ussString = useMemo(() => {
+        return unparse(editUSS)
+    }, [editUSS])
+
+    const statDesc: StatisticDescriptor = useMemo(() => {
+        return { type: 'uss-statistic', uss: ussString }
+    }, [ussString])
 
     // Update URL when USS changes in edit mode
     useEffect(() => {
         if (isEditMode && props.descriptor.type === 'uss-statistic') {
-            const ussString = unparse(editUSS)
             void navContext.navigate(statisticDescriptor({
                 universe: editUniverse,
-                statDesc: { type: 'uss-statistic', uss: ussString },
+                statDesc,
                 articleType: editGeographyKind,
                 start: props.start,
                 amount: props.amount,
@@ -291,13 +298,12 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 scroll: { kind: 'none' },
             })
         }
-    }, [editUSS, editUniverse, editGeographyKind, isEditMode, props.descriptor.type, navContext, props.universe, props.articleType, props.start, props.amount, props.order, props.highlight])
+    }, [statDesc, editUniverse, editGeographyKind, isEditMode, props.descriptor.type, navContext, props.universe, props.articleType, props.start, props.amount, props.order, props.highlight])
 
     const handleApplyUSS = (): void => {
-        const ussString = unparse(editUSS)
         void navContext.navigate(statisticDescriptor({
             universe: editUniverse,
-            statDesc: { type: 'uss-statistic', uss: ussString },
+            statDesc,
             articleType: editGeographyKind,
             start: props.start,
             amount: props.amount,
@@ -391,10 +397,6 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             </div>
         )
     }
-    // Memoize the USS string to prevent unnecessary re-renders in custom script mode
-    const ussString = useMemo(() => {
-        return unparse(editUSS)
-    }, [editUSS])
 
     // Memoize the USS AST to prevent unnecessary re-executions
     const ussAST = useMemo(() => {
@@ -417,7 +419,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         content = (
             <USSStatisticPanel
                 {...commonProps}
-                descriptor={{ type: 'uss-statistic', uss: ussString }}
+                descriptor={statDesc}
                 ussAST={ussAST}
                 onDataLoaded={setLoadedData}
                 tableRef={tableRef}
