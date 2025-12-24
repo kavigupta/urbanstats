@@ -10,6 +10,8 @@ import xmlFormat from 'xml-formatter'
 import type { TestWindow } from '../src/utils/TestUtils'
 import { checkString } from '../src/utils/checkString'
 
+import { urlFromCode } from './mapper-utils'
+
 export const target = process.env.URBANSTATS_TEST_TARGET ?? 'http://localhost:8000'
 export const searchField = Selector('input').withAttribute('placeholder', 'Search Urban Stats')
 export const getLocation = ClientFunction(() => document.location.href)
@@ -455,4 +457,14 @@ export function getCurrentTest(t: TestController): string {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe private API
     const testFileName: string = t.testRun.test.testFile.filename
     return /([^/]+)\.test\.ts$/.exec(testFileName)![1]
+}
+
+export const mapper = (testFn: () => TestFn) => (
+    name: string,
+    { code, geo = 'Urban Center', universe = 'Iceland' }: { code: string, geo?: string, universe?: string },
+    testBlock: (t: TestController) => Promise<void>,
+): void => {
+    // use Iceland and Urban Center as a quick test (less data to load)
+    urbanstatsFixture(`quick-${code}`, urlFromCode(geo, universe, code))
+    testFn()(name, testBlock)
 }
