@@ -494,3 +494,10 @@ mapper(() => test)('universe navigation', { code: `cMap(
     await t.expect(universeSelector.getAttribute('alt')).eql('Ireland') // change reflected in universe selector
     await t.expect(getInput('Ireland').exists).ok() // change reflected in mapper settings
 })
+
+mapper(() => test)('add elements to vector', { code: 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    await toggleCustomScript(t)
+    await checkTextboxesDirect(t, ['Insets'])
+    await replaceInput(t, 'Iceland', 'Custom Expression', 1)
+    await t.click(Selector('button[data-test-id="test-add-vector-element-button"]'))
+})
