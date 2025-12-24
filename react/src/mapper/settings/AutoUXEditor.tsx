@@ -246,6 +246,7 @@ export function AutoUXEditor(props: {
                         </div>
                     ))}
                     <button
+                        data-test-id="test-add-vector-element-button"
                         style={{ alignSelf: 'flex-start', marginTop: 4 }}
                         onClick={() => {
                             const newElements = [
