@@ -668,6 +668,7 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
                     columnWidth={(100 - widthLeftHeader) / 1}
                     data={props.data}
                     articleNames={props.articleNames}
+                    disclaimer={props.statDesc.type === 'uss-statistic'}
                 />
             </div>
             <div style={{ marginBlockEnd: '1em' }}></div>
@@ -690,8 +691,10 @@ function StatisticPanelTable(props: {
     columnWidth: number
     data: { value: number[], populationPercentile: number[] }
     articleNames: string[]
+    disclaimer: boolean
 }): ReactNode {
     const currentUniverse = useUniverse()
+    const colors = useColors()
     assert(currentUniverse !== undefined, 'no universe')
 
     const articleRows: StatisticCellRenderingInfo[] = props.indexRange.map((i) => {
@@ -757,21 +760,30 @@ function StatisticPanelTable(props: {
     }
 
     const highlightRowIndex = props.indexRange.indexOf(props.articleNames.indexOf(props.props.highlight ?? ''))
-
+    const footer = props.disclaimer
+        ? (
+                <div style={{ fontSize: '0.8em', color: colors.textMain, marginTop: '1em', textAlign: 'right' }}>
+                    Note: percentiles are calculated among articles that have a valid value for this statistic.
+                </div>
+            )
+        : null
     return (
-        <TableContents
-            leftHeaderSpec={{ leftHeaderSpecs }}
-            rowSpecs={rowSpecs}
-            horizontalPlotSpecs={[]}
-            verticalPlotSpecs={[]}
-            topLeftSpec={topLeftSpec}
-            superHeaderSpec={superHeaderSpec}
-            widthLeftHeader={props.widthLeftHeader}
-            columnWidth={props.columnWidth}
-            onlyColumns={['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']}
-            simpleOrdinals={true}
-            highlightRowIndex={highlightRowIndex}
-        />
+        <>
+            <TableContents
+                leftHeaderSpec={{ leftHeaderSpecs }}
+                rowSpecs={rowSpecs}
+                horizontalPlotSpecs={[]}
+                verticalPlotSpecs={[]}
+                topLeftSpec={topLeftSpec}
+                superHeaderSpec={superHeaderSpec}
+                widthLeftHeader={props.widthLeftHeader}
+                columnWidth={props.columnWidth}
+                onlyColumns={['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']}
+                simpleOrdinals={true}
+                highlightRowIndex={highlightRowIndex}
+            />
+            {footer}
+        </>
     )
 }
 
