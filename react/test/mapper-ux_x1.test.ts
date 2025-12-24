@@ -109,7 +109,7 @@ mapper(() => test)('add custom elements to vector', { code: 'pMap(data=density_p
     await t.click(Selector('button[data-test-id="test-add-vector-element-button"]'))
 })
 
-mapper(() => test.only)('add non-custom elements to vector', { code: 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+mapper(() => test)('add non-custom elements to vector', { code: 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     await toggleCustomScript(t)
     await checkTextboxesDirect(t, ['Insets'])
     await replaceInput(t, 'Iceland', 'Custom Inset', 1)
