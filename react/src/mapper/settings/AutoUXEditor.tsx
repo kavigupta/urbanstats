@@ -2,12 +2,12 @@ import stableStringify from 'json-stable-stringify'
 import React, { ReactNode } from 'react'
 
 import { CheckboxSettingCustom } from '../../components/sidebar'
-import { UrbanStatsASTExpression, UrbanStatsASTArg, locationOf, UrbanStatsASTStatement, UrbanStatsASTLHS } from '../../urban-stats-script/ast'
+import { UrbanStatsASTExpression, UrbanStatsASTArg, locationOf } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
-import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement, LocInfo } from '../../urban-stats-script/location'
-import { Decorated, ParseError, parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
+import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement } from '../../urban-stats-script/location'
+import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
 import { USSType, USSFunctionArgType, renderType, USSFunctionType, TypeEnvironment } from '../../urban-stats-script/types-values'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { assert } from '../../utils/defensive'
@@ -16,7 +16,7 @@ import { useMobileLayout } from '../../utils/responsive'
 import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import { Selector, classifyExpr, getColor, labelPadding } from './Selector'
-import { maybeParseExpr, parseExpr, Selection, possibilities } from './parseExpr'
+import { maybeParseExpr, parseExpr, Selection, possibilities, changeBlockId } from './parseExpr'
 
 function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression {
     if (type.type === 'number') {
@@ -530,168 +530,4 @@ function defaultForSelection(
                 properties: [],
             }
     }
-}
-
-function changeBlockId(expr: UrbanStatsASTExpression, a: string, b: string): UrbanStatsASTExpression {
-    function recD<T>(e: Decorated<T>): Decorated<T> {
-        return {
-            node: e.node,
-            location: recL(e.location),
-        }
-    }
-
-    function recL(l: LocInfo): LocInfo {
-        switch (l.start.block.type) {
-            case 'single':
-                assert(l.end.block.type === 'single', 'Mismatched block types in LocInfo in changeBlockId')
-                assert(l.start.block.ident === l.end.block.ident, 'Mismatched block idents in LocInfo in changeBlockId')
-                assert(l.start.block.ident.startsWith(a), 'Block ident mismatch in changeBlockId')
-                const newBlockIdentStart = b + l.start.block.ident.slice(a.length)
-                return {
-                    start: {
-                        ...l.start,
-                        block: {
-                            type: 'single',
-                            ident: newBlockIdentStart,
-                        },
-                    },
-                    end: {
-                        ...l.end,
-                        block: {
-                            type: 'single',
-                            ident: newBlockIdentStart,
-                        },
-                    },
-                }
-            case 'multi':
-                assert(l.end.block.type === 'multi', 'Mismatched block types in LocInfo in changeBlockId')
-                return l // do nothing
-        }
-    }
-
-    function recErr(err: ParseError): ParseError {
-        return {
-            ...err,
-            location: recL(err.location),
-        }
-    }
-
-    function recS(s: UrbanStatsASTStatement): UrbanStatsASTStatement {
-        switch (s.type) {
-            case 'expression':
-                return {
-                    type: 'expression',
-                    value: recE(s.value),
-                }
-            case 'assignment':
-                return {
-                    type: 'assignment',
-                    lhs: recE(s.lhs) as UrbanStatsASTLHS,
-                    value: recE(s.value),
-                }
-            case 'statements':
-                return {
-                    type: 'statements',
-                    entireLoc: recL(s.entireLoc),
-                    result: s.result.map(recS),
-                }
-            case 'parseError':
-                return {
-                    type: 'parseError',
-                    originalCode: s.originalCode,
-                    errors: s.errors.map(recErr),
-                }
-            case 'condition':
-                return {
-                    type: 'condition',
-                    condition: recE(s.condition),
-                    entireLoc: recL(s.entireLoc),
-                    rest: s.rest.map(recS),
-                }
-        }
-    }
-
-    function recE(e: UrbanStatsASTExpression): UrbanStatsASTExpression {
-        switch (e.type) {
-            case 'identifier':
-                return { type: 'identifier', name: recD(e.name) }
-            case 'constant':
-                return { type: 'constant', value: recD(e.value) }
-            case 'call':
-                return {
-                    type: 'call',
-                    fn: recE(e.fn),
-                    args: e.args.map((arg) => {
-                        if (arg.type === 'named') {
-                            return {
-                                type: 'named' as const,
-                                name: recD(arg.name),
-                                value: recE(arg.value),
-                            }
-                        }
-                        else {
-                            return {
-                                type: 'unnamed' as const,
-                                value: recE(arg.value),
-                            }
-                        }
-                    }),
-                    entireLoc: recL(e.entireLoc),
-                }
-            case 'vectorLiteral':
-                return {
-                    type: 'vectorLiteral',
-                    entireLoc: recL(e.entireLoc),
-                    elements: e.elements.map(recE),
-                }
-            case 'objectLiteral':
-                return {
-                    type: 'objectLiteral',
-                    entireLoc: recL(e.entireLoc),
-                    properties: e.properties.map(([k, v]) => [k, recE(v)]),
-                }
-            case 'customNode':
-                return {
-                    type: 'customNode',
-                    expr: recS(e.expr),
-                    entireLoc: recL(e.entireLoc),
-                    originalCode: e.originalCode,
-                }
-            case 'attribute':
-                return {
-                    type: 'attribute',
-                    expr: recE(e.expr),
-                    name: recD(e.name),
-                }
-            case 'binaryOperator':
-                return {
-                    type: 'binaryOperator',
-                    operator: recD(e.operator),
-                    left: recE(e.left),
-                    right: recE(e.right),
-                }
-            case 'unaryOperator':
-                return {
-                    type: 'unaryOperator',
-                    operator: recD(e.operator),
-                    expr: recE(e.expr),
-                }
-            case 'if':
-                return {
-                    type: 'if',
-                    condition: recE(e.condition),
-                    then: recS(e.then),
-                    else: e.else ? recS(e.else) : undefined,
-                    entireLoc: recL(e.entireLoc),
-                }
-            case 'do':
-                return {
-                    type: 'do',
-                    statements: e.statements.map(recS),
-                    entireLoc: recL(e.entireLoc),
-                }
-        }
-    }
-
-    return recE(expr)
 }
