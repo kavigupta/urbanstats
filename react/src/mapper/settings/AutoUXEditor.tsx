@@ -545,7 +545,10 @@ function changeBlockId(expr: UrbanStatsASTExpression, a: string, b: string): Urb
             case 'single':
                 assert(l.end.block.type === 'single', 'Mismatched block types in LocInfo in changeBlockId')
                 assert(l.start.block.ident === l.end.block.ident, 'Mismatched block idents in LocInfo in changeBlockId')
-                assert(l.start.block.ident.startsWith(a), 'Block ident mismatch in changeBlockId')
+                if (!l.start.block.ident.startsWith(a)) {
+                    console.error(`[failtest] Block ident mismatch in changeBlockId: expected to start with ${JSON.stringify(a)}, got ${JSON.stringify(l.start.block.ident)}`)
+                    return l
+                }
                 const newBlockIdentStart = b + l.start.block.ident.slice(a.length)
                 return {
                     start: {
