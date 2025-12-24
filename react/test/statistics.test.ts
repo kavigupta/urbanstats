@@ -437,7 +437,7 @@ test('add filter', async (t) => {
     await screencap(t)
 })
 
-test.only('add filter that kicks you to an earlier page', async (t) => {
+test('add filter that kicks you to an earlier page', async (t) => {
     await checkTextboxesDirect(t, ['Filter?'])
     await typeInEditor(t, 0, 'population > 6m', true) // only one county matches
     await waitForLoading()
