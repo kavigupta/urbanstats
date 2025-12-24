@@ -854,6 +854,7 @@ export function StatisticName(props: {
                             amount: 20,
                             order: 'descending',
                             highlight: props.longname,
+                            sortColumn: 0,
                         }), { scroll: { kind: 'position', top: 0 } })
                 )
             }
