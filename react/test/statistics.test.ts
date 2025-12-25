@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForDownload, waitForLoading } from './test_utils'
+import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, downloadCSV } from './test_utils'
 
 urbanstatsFixture('statistics', `${target}/article.html?longname=Indianapolis+IN+HRR%2C+USA`)
 
@@ -80,15 +80,7 @@ test('statistics-navigation-last-page', async (t) => {
 })
 
 test('statistics-csv-export', async (t) => {
-    const laterThan = Date.now()
-
-    const csvButton = Selector('img').withAttribute('src', '/csv.png')
-    await t.click(csvButton)
-
-    const downloadedFilePath = await waitForDownload(t, laterThan, '.csv')
-    const fs = await import('fs')
-    const csvContent = fs.readFileSync(downloadedFilePath, 'utf-8')
-
+    const csvContent = await downloadCSV(t)
     await downloadOrCheckString(t, csvContent, 'csv-export-population-statistics', 'csv', false)
 })
 

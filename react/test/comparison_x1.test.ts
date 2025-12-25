@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, comparisonPage, downloadImage, screencap, urbanstatsFixture, waitForSelectedSearchResult, downloadOrCheckString, waitForDownload } from './test_utils'
+import { target, comparisonPage, downloadImage, screencap, urbanstatsFixture, waitForSelectedSearchResult, downloadOrCheckString, downloadCSV } from './test_utils'
 
 urbanstatsFixture('transpose comparision', `${target}/comparison.html?longnames=%5B%22China%22%2C%22USA%22%2C%22Japan%22%2C%22Indonesia%22%5D&s=6TunChiToWxwZeDP`)
 
@@ -13,14 +13,7 @@ test('transpose screencap', async (t) => {
 })
 
 test('transpose csv export', async (t) => {
-    const laterThan = Date.now()
-
-    const csvButton = Selector('img').withAttribute('src', '/csv.png')
-    await t.click(csvButton)
-
-    const downloadedFilePath = await waitForDownload(t, laterThan, '.csv')
-    const fs = await import('fs')
-    const csvContent = fs.readFileSync(downloadedFilePath, 'utf-8')
+    const csvContent = await downloadCSV(t)
     await downloadOrCheckString(t, csvContent, 'csv-export-transpose-comparison', 'csv', false)
 })
 
@@ -31,14 +24,7 @@ test('renders scrolling transpose comparision', async (t) => {
 })
 
 test('scrolling transpose csv export', async (t) => {
-    const laterThan = Date.now()
-
-    const csvButton = Selector('img').withAttribute('src', '/csv.png')
-    await t.click(csvButton)
-
-    const downloadedFilePath = await waitForDownload(t, laterThan, '.csv')
-    const fs = await import('fs')
-    const csvContent = fs.readFileSync(downloadedFilePath, 'utf-8')
+    const csvContent = await downloadCSV(t)
     await downloadOrCheckString(t, csvContent, 'csv-export-scrolling-transpose-comparison', 'csv', false)
 })
 
