@@ -538,8 +538,8 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
 
     return (
         <div>
-            <div className="serif" ref={props.tableRef}>
-                <MaybeScroll widthColumns={computeComparisonWidthColumns(ncols, true)}>
+            <MaybeScroll widthColumns={computeComparisonWidthColumns(ncols, true)}>
+                <div className="serif" ref={props.tableRef}>
                     <StatisticPanelTable
                         indexRange={indexRange}
                         sortedIndices={sortedIndices}
@@ -554,8 +554,8 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
                         data={props.data}
                         articleNames={props.articleNames}
                     />
-                </MaybeScroll>
-            </div>
+                </div>
+            </MaybeScroll>
             <div style={{ marginBlockEnd: '1em' }}></div>
             <Pagination
                 {...props}
