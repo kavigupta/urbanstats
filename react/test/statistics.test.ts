@@ -445,3 +445,63 @@ test('add filter that kicks you to an earlier page', async (t) => {
     await t.expect(await dataValues()).eql(['1.127'])
     await screencap(t)
 })
+
+function addCaCounty(county: string[]): string[] {
+    return county.map(c => `${c} County, California, USA`)
+}
+
+async function getAllLongnames(): Promise<string[]> {
+    const elements = Selector('a').withAttribute('data-test-id', 'statistic-panel-longname-link')
+    const texts: string[] = []
+    for (let i = 0; i < (await elements.count); i++) {
+        texts.push(await elements.nth(i).innerText)
+    }
+    return texts
+}
+
+async function setUpSecondColumn(t: TestController): Promise<void> {
+    await t.click(Selector('button[data-test-id="test-add-vector-element-button"]'))
+    // Inyo, Mariposa, Mono, Siskiyou, Trinity
+    await waitForLoading()
+    await typeInEditor(t, 1, 'density_pw_1km', true)
+    await checkTextboxesDirect(t, ['Name', 'Unit'], 1)
+}
+
+test('sorting by columns', async (t) => {
+    await setUpSecondColumn(t)
+    const secondPageByRatio = addCaCounty(['Inyo', 'Mariposa', 'Mono', 'Siskiyou', 'Plumas'])
+    const firstPageByDensity = addCaCounty(['San Francisco', 'Los Angeles', 'Alameda', 'Santa Clara', 'San Mateo'])
+    // eslint-disable-next-line no-restricted-syntax -- the county, not the color
+    const secondPageByDensity = addCaCounty(['Orange', 'San Diego', 'Monterey', 'Santa Barbara', 'Sacramento'])
+    // Alpine, Mariposa, Sierra, Trinity, Modoc
+    const firstPageByAscDensity = addCaCounty(['Alpine', 'Mariposa', 'Sierra', 'Trinity', 'Modoc'])
+    await t.expect(await getAllLongnames()).eql(secondPageByRatio)
+    await screencap(t)
+    // click second testing-order-swap to sort by second column
+    await t.click(Selector('.testing-order-swap').nth(1))
+    await waitForLoading()
+    await t.expect(await getAllLongnames()).eql(firstPageByDensity)
+    await screencap(t)
+    // next page
+    await t.click(Selector('button[data-test-id="1"]'))
+    await waitForLoading()
+    await t.expect(await getAllLongnames()).eql(secondPageByDensity)
+    await screencap(t)
+    // flip to ascending
+    await t.click(Selector('.testing-order-swap').nth(1))
+    await waitForLoading()
+    await t.expect(await getAllLongnames()).eql(firstPageByAscDensity)
+    await screencap(t)
+})
+
+test.only('render many columns', async (t) => {
+    await setUpSecondColumn(t)
+    const columns = ['commute_transit', 'traffic_fatalities_per_capita', 'binge_drinking', 'uninsured', 'median_household_income_usd', 'poverty']
+    for (let i = 0; i < columns.length; i++) {
+        await t.click(Selector('button[data-test-id="test-add-vector-element-button"]'))
+        await waitForLoading()
+        await typeInEditor(t, i + 2, columns[i], true)
+        await waitForLoading()
+        await screencap(t)
+    }
+})
