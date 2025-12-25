@@ -716,9 +716,12 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
         return colors.background
     }
 
-    const widthLeftHeader = 50
+    const ncols = props.data.length
+
+    const widthLeftHeader = ncols > 1 ? 25 : 50
 
     const numStatColumns = props.data.length
+    const columnWidth = (100 - widthLeftHeader) / (numStatColumns === 0 ? 1 : numStatColumns)
 
     return (
         <div>
@@ -733,7 +736,7 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
                     sortColumn={props.sortColumn}
                     getRowBackgroundColor={getRowBackgroundColor}
                     widthLeftHeader={widthLeftHeader}
-                    columnWidth={(100 - widthLeftHeader) / (numStatColumns === 0 ? 1 : numStatColumns)}
+                    columnWidth={columnWidth}
                     data={props.data}
                     articleNames={props.articleNames}
                     disclaimer={props.statDesc.type === 'uss-statistic'}
