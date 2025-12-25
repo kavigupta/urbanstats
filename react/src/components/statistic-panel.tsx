@@ -373,7 +373,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 const ordinal = col.ordinal[i]
                 const percentile = col.populationPercentile[i]
 
-                const formattedValue = value.toLocaleString()
+                const formattedValue = value.toLocaleString(undefined, { maximumFractionDigits: 10 })
 
                 row.push(
                     formattedValue,

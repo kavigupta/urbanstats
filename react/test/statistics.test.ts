@@ -1,8 +1,9 @@
+import { parse } from 'csv-parse/sync'
 import { Selector } from 'testcafe'
 
 import { nthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
 import { getErrors, replaceInput } from './mapper-utils'
-import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForDownload, waitForLoading, dataValues, checkTextboxes, checkTextboxesDirect } from './test_utils'
+import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, dataValues, checkTextboxes, checkTextboxesDirect, downloadCSV, downloadImage } from './test_utils'
 
 urbanstatsFixture('statistics', `${target}/article.html?longname=Indianapolis+IN+HRR%2C+USA`)
 
@@ -82,15 +83,7 @@ test('statistics-navigation-last-page', async (t) => {
 })
 
 test('statistics-csv-export', async (t) => {
-    const laterThan = Date.now()
-
-    const csvButton = Selector('img').withAttribute('src', '/csv.png')
-    await t.click(csvButton)
-
-    const downloadedFilePath = await waitForDownload(t, laterThan, '.csv')
-    const fs = await import('fs')
-    const csvContent = fs.readFileSync(downloadedFilePath, 'utf-8')
-
+    const csvContent = await downloadCSV(t)
     await downloadOrCheckString(t, csvContent, 'csv-export-population-statistics', 'csv', false)
 })
 
@@ -494,14 +487,69 @@ test('sorting by columns', async (t) => {
     await screencap(t)
 })
 
+interface CSVRow {
+    name: string
+    values: number[]
+    percentiles: number[]
+    ordinals: number[]
+}
+
+async function getParsedCsv(t: TestController): Promise<CSVRow[]> {
+    const csvContent = await downloadCSV(t)
+    const parsed: Record<string, string>[] = parse(csvContent, {
+        columns: true,
+        skip_empty_lines: true,
+    })
+    return parsed.map((row) => {
+        const values: number[] = []
+        const percentiles: number[] = []
+        const ordinals: number[] = []
+        for (let i = 0; true; i++) {
+            const name = `C${i + 1}`
+            if (!row[name]) break
+            values.push(parseFloat(row[name].replace(/,/g, '')))
+            percentiles.push(parseFloat(row[`${name} percentile`]))
+            ordinals.push(parseInt(row[`${name} Ord`], 10))
+        }
+        return {
+            name: row.Name,
+            values,
+            percentiles,
+            ordinals,
+        }
+    })
+}
+
+urbanstatsFixture('render many columns', `${target}/statistic.html?uss=customNode%28%22%22%29%3B%0Acondition+%28true%29%0Atable%28%0A++++columns%3D%5B%0A++++++++column%28values%3Ddensity_pw_1km%2C+name%3D%22C1%22%2C+unit%3DunitDensity%29%2C%0A++++++++column%28values%3Dcommute_transit%2C+name%3D%22C2%22%2C+unit%3DunitPercentage%29%2C%0A++++++++column%28%0A++++++++++++values%3Dtraffic_fatalities_per_capita%2C%0A++++++++++++name%3D%22C3%22%2C%0A++++++++++++unit%3DunitFatalitiesPerCapita%0A++++++++%29%2C%0A++++++++column%28values%3Dbinge_drinking%2C+name%3D%22C4%22%2C+unit%3DunitPercentage%29%2C%0A++++++++column%28values%3Dmedian_household_income_usd%2C+name%3D%22C5%22%2C+unit%3DunitUsd%29%2C%0A++++++++column%28values%3Dindustry_manufacturing%2C+name%3D%22C6%22%2C+unit%3DunitPercentage%29%2C%0A++++++++column%28values%3Dracial_homogeneity_2010%2C+name%3D%22C7%22%2C+unit%3DunitPercentage%29%2C%0A++++++++column%28values%3Duninsured%2C+name%3D%22C8%22%2C+unit%3DunitPercentage%29%0A++++%5D%0A%29&article_type=County&start=1&amount=10&universe=California%2C+USA`)
+
+function inOrder(data: CSVRow[], colIndex: number, ascending: boolean): string[] {
+    data.sort((a, b) => {
+        if (a.values[colIndex] < b.values[colIndex]) return ascending ? -1 : 1
+        if (a.values[colIndex] > b.values[colIndex]) return ascending ? 1 : -1
+        return 0
+    })
+    return data.map(d => d.name)
+}
+
 test.only('render many columns', async (t) => {
-    await setUpSecondColumn(t)
-    const columns = ['commute_transit', 'traffic_fatalities_per_capita', 'binge_drinking', 'uninsured', 'median_household_income_usd', 'poverty']
-    for (let i = 0; i < columns.length; i++) {
-        await t.click(Selector('button[data-test-id="test-add-vector-element-button"]'))
-        await waitForLoading()
-        await typeInEditor(t, i + 2, columns[i], true)
-        await waitForLoading()
-        await screencap(t)
+    await waitForLoading()
+    await screencap(t)
+    const parsedCsv = await getParsedCsv(t)
+    await t.click(Selector('.testing-order-swap').nth(0))
+    for (let col = 0; col < 8; col++) {
+        for (const isAscending of [false, true]) {
+            await t.click(Selector('.testing-order-swap').nth(col))
+            await waitForLoading()
+            const names = await getAllLongnames()
+            const expectedNames = inOrder(parsedCsv, col, isAscending)
+            await t.expect(names).eql(expectedNames.slice(0, 10))
+            // next page
+            await t.click(Selector('button[data-test-id="1"]'))
+            await waitForLoading()
+            const namesPage2 = await getAllLongnames()
+            await t.expect(namesPage2).eql(expectedNames.slice(10, 20))
+        }
     }
+    await screencap(t)
+    await downloadImage(t)
 })
