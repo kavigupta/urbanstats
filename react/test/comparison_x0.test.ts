@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues, createComparison, downloadOrCheckString, waitForDownload } from './test_utils'
+import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues, createComparison, downloadOrCheckString, downloadCSV } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -25,14 +25,7 @@ test('comparison-heterogenous-search', async (t) => {
 })
 
 test('comparison-heterogenous-csv-export', async (t) => {
-    const laterThan = Date.now()
-
-    const csvButton = Selector('img').withAttribute('src', '/csv.png')
-    await t.click(csvButton)
-
-    const downloadedFilePath = await waitForDownload(t, laterThan, '.csv')
-    const fs = await import('fs')
-    const csvContent = fs.readFileSync(downloadedFilePath, 'utf-8')
+    const csvContent = await downloadCSV(t)
     await downloadOrCheckString(t, csvContent, 'csv-export-heterogenous-comparison', 'txt', false)
 })
 
