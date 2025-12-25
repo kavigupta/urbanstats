@@ -6,7 +6,7 @@ import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, 
 import explanation_pages from '../data/explanation_page'
 import validGeographies from '../data/mapper/used_geographies'
 import stats from '../data/statistic_list'
-import names from '../data/statistic_name_list'
+import statistic_name_list from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import universes_ordered from '../data/universes_ordered'
 import { loadStatisticsPage } from '../load_json'
@@ -88,6 +88,16 @@ type StatisticDataOutcome = (
 
 function uuid(): string {
     return randomBytes(20).toString('hex')
+}
+
+function computeOrdinals(values: number[]): number[] {
+    const indices: number[] = values.map((_, idx) => idx)
+    indices.sort((a, b) => values[b] - values[a]) // descending: 1 = largest value
+    const ordinals: number[] = new Array<number>(values.length)
+    indices.forEach((rowIdx, rank) => {
+        ordinals[rowIdx] = rank + 1
+    })
+    return ordinals
 }
 
 function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (typeof validGeographies)[number], universe: Universe): StatisticDataOutcome & { uuid: string } {
@@ -192,18 +202,8 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
     return { type: 'error', errors, uuid: objectHash(errors) }
 }
 
-function computeOrdinals(values: number[]): number[] {
-    const indices: number[] = values.map((_, idx) => idx)
-    indices.sort((a, b) => values[b] - values[a]) // descending: 1 = largest value
-    const ordinals: number[] = new Array<number>(values.length)
-    indices.forEach((rowIdx, rank) => {
-        ordinals[rowIdx] = rank + 1
-    })
-    return ordinals
-}
-
 async function loadStatisticsData(universe: Universe, statname: StatName, articleType: string, counts: CountsByUT): Promise<StatisticDataOutcome> {
-    const statIndex = names.indexOf(statname)
+    const statIndex = statistic_name_list.indexOf(statname)
     const [data, articleNames] = await loadStatisticsPage(universe, paths[statIndex], articleType)
     const totalCountInClass = forType(counts, universe, stats[statIndex], articleType)
     const totalCountOverall = forType(counts, universe, stats[statIndex], 'overall')
@@ -226,12 +226,12 @@ async function loadStatisticsData(universe: Universe, statname: StatName, articl
     }
 }
 
-function parseUSSFromString(ussString: string, typeEnvironment: TypeEnvironment): MapUSS {
+function parseUSSFromString(ussString: string, typeEnvironment: TypeEnvironment, isUssStatistic: boolean): MapUSS {
     const parsed = parse(ussString, { type: 'single', ident: idOutput })
     if (parsed.type === 'error') {
         return parseNoErrorAsCustomNode(ussString, idOutput, [tableType])
     }
-    const res = attemptParseAsTopLevel(convertToMapUss(parsed), typeEnvironment, true, [tableType])
+    const res = attemptParseAsTopLevel(convertToMapUss(parsed), typeEnvironment, isUssStatistic, [tableType])
     return res
 }
 
