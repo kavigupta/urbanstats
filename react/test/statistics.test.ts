@@ -531,7 +531,7 @@ function inOrder(data: CSVRow[], colIndex: number, ascending: boolean): string[]
     return data.map(d => d.name)
 }
 
-test.only('render many columns', async (t) => {
+test('render many columns', async (t) => {
     await waitForLoading()
     await screencap(t)
     const parsedCsv = await getParsedCsv(t)
