@@ -166,7 +166,7 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
                 setSuccessData({
                     data: dataColumns,
                     articleNames: geonames,
-                    renderedStatname: firstColumn.name,
+                    renderedStatname: table.columns.map(col => col.name).join(', '),
                     totalCountInClass: firstColumn.values.length,
                     totalCountOverall: firstColumn.values.length,
                     uuid: uuid(),
