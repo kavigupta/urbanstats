@@ -41,6 +41,7 @@ import { CSVExportData } from './csv-export'
 import { forType, StatCol, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow } from './pointer-cell'
 import { createScreenshot, ScreencapElements } from './screenshot'
+import { computeComparisonWidthColumns, MaybeScroll } from './scrollable'
 import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
 
 export type StatisticDescriptor =
@@ -538,20 +539,22 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
     return (
         <div>
             <div className="serif" ref={props.tableRef}>
-                <StatisticPanelTable
-                    indexRange={indexRange}
-                    sortedIndices={sortedIndices}
-                    props={props}
-                    isAscending={isAscending}
-                    swapAscendingDescending={swapAscendingDescending}
-                    changeSortColumn={changeSortColumn}
-                    sortColumn={props.sortColumn}
-                    getRowBackgroundColor={getRowBackgroundColor}
-                    widthLeftHeader={widthLeftHeader}
-                    columnWidth={columnWidth}
-                    data={props.data}
-                    articleNames={props.articleNames}
-                />
+                <MaybeScroll widthColumns={computeComparisonWidthColumns(ncols, true)}>
+                    <StatisticPanelTable
+                        indexRange={indexRange}
+                        sortedIndices={sortedIndices}
+                        props={props}
+                        isAscending={isAscending}
+                        swapAscendingDescending={swapAscendingDescending}
+                        changeSortColumn={changeSortColumn}
+                        sortColumn={props.sortColumn}
+                        getRowBackgroundColor={getRowBackgroundColor}
+                        widthLeftHeader={widthLeftHeader}
+                        columnWidth={columnWidth}
+                        data={props.data}
+                        articleNames={props.articleNames}
+                    />
+                </MaybeScroll>
             </div>
             <div style={{ marginBlockEnd: '1em' }}></div>
             <Pagination
