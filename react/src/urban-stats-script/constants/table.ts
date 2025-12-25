@@ -18,6 +18,7 @@ export interface Table {
     columns: TableColumnWithPopulationPercentiles[]
     geo: string[]
     population: number[]
+    includeOrdinalsPercentiles: boolean
 }
 
 export const columnType = {
@@ -114,6 +115,10 @@ export const table: USSValue = {
             columns: {
                 type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'opaque', name: 'column' } } },
             },
+            includeOrdinalsPercentiles: {
+                type: { type: 'concrete', value: { type: 'boolean' } },
+                defaultValue: createConstantExpression(true),
+            },
         },
         returnType: { type: 'concrete', value: tableType },
     },
@@ -146,12 +151,13 @@ export const table: USSValue = {
             throw new Error(`geo must have the same length as columns. geo has length ${geo.length}, but columns have length ${columns[0].values.length}`)
         }
 
+        const includeOrdinalsPercentiles = namedArgs.includeOrdinalsPercentiles as boolean
         const annotatedColumns = columns.map(col => attachPopulationPercentilesToColumn(col, population))
 
         return {
             type: 'opaque',
             opaqueType: 'table',
-            value: { columns: annotatedColumns, geo, population } satisfies Table,
+            value: { columns: annotatedColumns, geo, population, includeOrdinalsPercentiles } satisfies Table,
         }
     },
     documentation: {
@@ -160,8 +166,9 @@ export const table: USSValue = {
         isDefault: true,
         namedArgs: {
             columns: 'Columns',
+            includeOrdinalsPercentiles: 'Include Ordinals and Percentiles',
         },
-        longDescription: 'Creates a table with named columns, where each column contains a list of numbers. All columns must have the same length.',
+        longDescription: 'Creates a table with named columns, where each column contains a list of numbers. All columns must have the same length. Optionally include ordinals and percentiles (default: true).',
     },
 } satisfies USSValue
 

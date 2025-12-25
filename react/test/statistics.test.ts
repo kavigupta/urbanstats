@@ -487,6 +487,50 @@ test('sorting by columns', async (t) => {
     await screencap(t)
 })
 
+test('disable ordinals/percentiles and verify CSV export', async (t) => {
+    await setUpSecondColumn(t)
+
+    const csvBefore = await downloadCSV(t)
+    const parsedBefore: Record<string, string>[] = parse(csvBefore, {
+        columns: true,
+        skip_empty_lines: true,
+    })
+
+    await checkTextboxesDirect(t, ['Include Ordinals and Percentiles'])
+    await replaceInput(t, 'true', 'false')
+
+    await waitForLoading()
+    await t.wait(500)
+
+    const csvAfter = await downloadCSV(t)
+    const parsedAfter: Record<string, string>[] = parse(csvAfter, {
+        columns: true,
+        skip_empty_lines: true,
+    })
+
+    const headersAfter = Object.keys(parsedAfter[0] || {})
+    await t.expect(headersAfter.some(h => h.includes('Ord'))).notOk('CSV should not contain Ordinal columns')
+    await t.expect(headersAfter.some(h => h.includes('percentile'))).notOk('CSV should not contain Percentile columns')
+
+    await t.expect(parsedBefore.length).eql(parsedAfter.length, 'CSV should have same number of rows')
+
+    const headersBefore = Object.keys(parsedBefore[0] || {})
+    const dataHeadersBefore = headersBefore.filter(h => !h.includes('Ord') && !h.includes('percentile'))
+
+    await t.expect(headersAfter).eql(dataHeadersBefore, 'CSV headers should match (excluding ordinal/percentile columns)')
+
+    for (let i = 0; i < parsedBefore.length; i++) {
+        const rowBefore = parsedBefore[i]
+        const rowAfter = parsedAfter[i]
+        await t.expect(rowAfter.Name).eql(rowBefore.Name, `Row ${i} Name should match`)
+        for (const header of dataHeadersBefore) {
+            await t.expect(rowAfter[header]).eql(rowBefore[header], `Row ${i} column ${header} should match`)
+        }
+    }
+    await screencap(t)
+    await downloadImage(t)
+})
+
 interface CSVRow {
     name: string
     values: number[]

@@ -2396,3 +2396,51 @@ void test('test conditional table', () => {
     assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 40])
     assert.deepStrictEqual(effects, [])
 })
+
+void test('test table includeOrdinalsPercentiles default is true', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    ctx.assignVariable('population', {
+        type: { type: 'vector', elementType: numType },
+        value: [100, 200, 300],
+        documentation: { humanReadableName: 'Population' },
+    })
+    const resultTable = evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="Col1")])'), ctx)
+    assert.deepStrictEqual(resultTable.type, { type: 'opaque', name: 'table' })
+    const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
+    assert.deepStrictEqual(resultTableRaw.includeOrdinalsPercentiles, true)
+    // Percentiles should still be computed
+    assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 16, 50])
+})
+
+void test('test table includeOrdinalsPercentiles explicitly set to true', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    ctx.assignVariable('population', {
+        type: { type: 'vector', elementType: numType },
+        value: [100, 200, 300],
+        documentation: { humanReadableName: 'Population' },
+    })
+    const resultTable = evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="Col1")], includeOrdinalsPercentiles=true)'), ctx)
+    assert.deepStrictEqual(resultTable.type, { type: 'opaque', name: 'table' })
+    const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
+    assert.deepStrictEqual(resultTableRaw.includeOrdinalsPercentiles, true)
+    // Percentiles should still be computed
+    assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 16, 50])
+})
+
+void test('test table includeOrdinalsPercentiles set to false', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    ctx.assignVariable('population', {
+        type: { type: 'vector', elementType: numType },
+        value: [100, 200, 300],
+        documentation: { humanReadableName: 'Population' },
+    })
+    const resultTable = evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="Col1")], includeOrdinalsPercentiles=false)'), ctx)
+    assert.deepStrictEqual(resultTable.type, { type: 'opaque', name: 'table' })
+    const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
+    assert.deepStrictEqual(resultTableRaw.includeOrdinalsPercentiles, false)
+    // Percentiles should still be computed even when flag is false
+    assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 16, 50])
+})
