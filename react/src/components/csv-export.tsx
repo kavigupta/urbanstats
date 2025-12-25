@@ -157,11 +157,16 @@ export function generateMapperCSVData(
 export function generateStatisticsPanelCSVData(
     articleNames: string[],
     data: { name: string, value: number[], ordinal: number[], populationPercentile: number[] }[],
+    includeOrdinalsPercentiles: boolean,
 ): string[][] {
-    // Build header row: Name, then for each column: column name, "column name Ord", "column name percentile"
+    // Build header row: Name, then for each column: column name, optionally "column name Ord", "column name percentile"
     const headerRow: string[] = ['Name']
+
     for (const col of data) {
-        headerRow.push(col.name, `${col.name} Ord`, `${col.name} percentile`)
+        headerRow.push(col.name)
+        if (includeOrdinalsPercentiles) {
+            headerRow.push(`${col.name} Ord`, `${col.name} percentile`)
+        }
     }
 
     const dataRows: string[][] = []
@@ -172,16 +177,17 @@ export function generateStatisticsPanelCSVData(
 
         for (const col of data) {
             const value = col.value[i]
-            const ordinal = col.ordinal[i]
-            const percentile = col.populationPercentile[i]
-
             const formattedValue = formatNumberForCSV(value)
+            row.push(formattedValue)
 
-            row.push(
-                formattedValue,
-                ordinal.toString(),
-                percentile.toFixed(1),
-            )
+            if (includeOrdinalsPercentiles) {
+                const ordinal = col.ordinal[i]
+                const percentile = col.populationPercentile[i]
+                row.push(
+                    ordinal.toString(),
+                    percentile.toFixed(1),
+                )
+            }
         }
 
         dataRows.push(row)

@@ -43,6 +43,7 @@ import { PointerArrow } from './pointer-cell'
 import { createScreenshot, ScreencapElements } from './screenshot'
 import { computeComparisonWidthColumns, MaybeScroll } from './scrollable'
 import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
+import { ColumnIdentifier } from './table'
 
 export type StatisticDescriptor =
     | {
@@ -79,6 +80,7 @@ interface StatisticData {
     explanationPage?: string
     totalCountInClass: number
     totalCountOverall: number
+    includeOrdinalsPercentiles: boolean
 }
 
 type StatisticDataOutcome = (
@@ -165,6 +167,7 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
                     renderedStatname: table.columns.map(col => col.name).join(', '),
                     totalCountInClass: firstColumn.values.length,
                     totalCountOverall: firstColumn.values.length,
+                    includeOrdinalsPercentiles: table.includeOrdinalsPercentiles,
                     uuid: uuid(),
                 })
                 setErrors(execErrors)
@@ -190,6 +193,7 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
             totalCountInClass: successData.totalCountInClass,
             totalCountOverall: successData.totalCountOverall,
             uuid: successData.uuid,
+            includeOrdinalsPercentiles: successData.includeOrdinalsPercentiles,
         }
     }, [successData])
 
@@ -223,6 +227,7 @@ async function loadStatisticsData(universe: Universe, statname: StatName, articl
         explanationPage: explanation_pages[statIndex],
         totalCountInClass,
         totalCountOverall,
+        includeOrdinalsPercentiles: true, // Statistics pages always include ordinals/percentiles
         errors: [],
     }
 }
@@ -258,7 +263,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         }
 
         return {
-            csvData: generateStatisticsPanelCSVData(loadedData.articleNames, loadedData.data),
+            csvData: generateStatisticsPanelCSVData(loadedData.articleNames, loadedData.data, loadedData.includeOrdinalsPercentiles),
             csvFilename: `${sanitize(loadedData.renderedStatname)}.csv`,
         }
     }, [loadedData])
@@ -534,6 +539,7 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
                         columnWidth={columnWidth}
                         data={props.data}
                         articleNames={props.articleNames}
+                        includeOrdinalsPercentiles={props.includeOrdinalsPercentiles}
                     />
                 </div>
             </MaybeScroll>
@@ -559,10 +565,13 @@ function StatisticPanelTable(props: {
     widthLeftHeader: number
     columnWidth: number
     data: { value: number[], populationPercentile: number[], ordinal: number[], name: string, unit?: UnitType }[]
+    includeOrdinalsPercentiles: boolean
     articleNames: string[]
 }): ReactNode {
     const currentUniverse = useUniverse()
     assert(currentUniverse !== undefined, 'no universe')
+
+    const onlyColumns: ColumnIdentifier[] = props.includeOrdinalsPercentiles ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
 
     const allColumnRows: StatisticCellRenderingInfo[][] = props.data.map((col) => {
         return props.indexRange.map((rangeIdx) => {
@@ -598,7 +607,7 @@ function StatisticPanelTable(props: {
             type: 'statistic-row',
             longname: articleName,
             row: columnRows[rowIdx],
-            onlyColumns: ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'],
+            onlyColumns,
             simpleOrdinals: true,
             onNavigate: undefined,
         } satisfies CellSpec))
@@ -642,7 +651,7 @@ function StatisticPanelTable(props: {
             superHeaderSpec={superHeaderSpec}
             widthLeftHeader={props.widthLeftHeader}
             columnWidth={props.columnWidth}
-            onlyColumns={['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']}
+            onlyColumns={onlyColumns}
             simpleOrdinals={true}
             highlightRowIndex={highlightRowIndex}
         />
