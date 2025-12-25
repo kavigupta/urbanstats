@@ -297,7 +297,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     let content: ReactNode
     if (props.descriptor.type === 'uss-statistic') {
         const initialUSS = props.descriptor.uss
-        const editUSS = parseUSSFromString(initialUSS, typeEnvironment)
+        const editUSS = parseUSSFromString(initialUSS, typeEnvironment, true)
 
         const ussString = unparse(editUSS)
         const ussAST = toStatement(editUSS)
