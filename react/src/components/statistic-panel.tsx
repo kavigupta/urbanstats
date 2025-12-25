@@ -256,24 +256,33 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         if (loadedData === undefined) {
             return undefined
         }
-        const headerRow = ['Rank', 'Name', 'Value', 'Percentile']
+        // Build header row: Name, then for each column: column name, "column name Ord", "column name percentile"
+        const headerRow: string[] = ['Name']
+        for (const col of loadedData.data) {
+            headerRow.push(col.name, `${col.name} Ord`, `${col.name} percentile`)
+        }
+
         const dataRows: string[][] = []
 
         for (let i = 0; i < loadedData.articleNames.length; i++) {
-            const rank = i + 1
             const name = loadedData.articleNames[i]
-            const primary = loadedData.data[0]
-            const value = primary.value[i]
-            const percentile = primary.populationPercentile[i]
+            const row: string[] = [name]
 
-            const formattedValue = value.toLocaleString()
+            for (const col of loadedData.data) {
+                const value = col.value[i]
+                const ordinal = col.ordinal[i]
+                const percentile = col.populationPercentile[i]
 
-            dataRows.push([
-                rank.toString(),
-                name,
-                formattedValue,
-                percentile.toFixed(1),
-            ])
+                const formattedValue = value.toLocaleString()
+
+                row.push(
+                    formattedValue,
+                    ordinal.toString(),
+                    percentile.toFixed(1),
+                )
+            }
+
+            dataRows.push(row)
         }
 
         return {
