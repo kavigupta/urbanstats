@@ -22,7 +22,7 @@ import { UnitType } from '../utils/unit'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { CountsByUT } from './countsByArticleType'
-import { CSVExportData } from './csv-export'
+import { CSVExportData, generateStatisticsPanelCSVData } from './csv-export'
 import { forType, StatCol, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow } from './pointer-cell'
 import { createScreenshot, ScreencapElements } from './screenshot'
@@ -116,37 +116,9 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         if (loadedData === undefined) {
             return undefined
         }
-        // Build header row: Name, then for each column: column name, "column name Ord", "column name percentile"
-        const headerRow: string[] = ['Name']
-        for (const col of loadedData.data) {
-            headerRow.push(col.name, `${col.name} Ord`, `${col.name} percentile`)
-        }
-
-        const dataRows: string[][] = []
-
-        for (let i = 0; i < loadedData.articleNames.length; i++) {
-            const name = loadedData.articleNames[i]
-            const row: string[] = [name]
-
-            for (const col of loadedData.data) {
-                const value = col.value[i]
-                const ordinal = col.ordinal[i]
-                const percentile = col.populationPercentile[i]
-
-                const formattedValue = value.toLocaleString()
-
-                row.push(
-                    formattedValue,
-                    ordinal.toString(),
-                    percentile.toFixed(1),
-                )
-            }
-
-            dataRows.push(row)
-        }
 
         return {
-            csvData: [headerRow, ...dataRows],
+            csvData: generateStatisticsPanelCSVData(loadedData.articleNames, loadedData.data),
             csvFilename: `${sanitize(loadedData.renderedStatname)}.csv`,
         }
     }, [loadedData])
