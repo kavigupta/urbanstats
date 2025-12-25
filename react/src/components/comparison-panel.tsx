@@ -32,7 +32,7 @@ import { ArticleRow } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
-import { computeMaxColumns, MaybeScroll } from './scrollable'
+import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
 import { TableContents, CellSpec } from './supertable'
 import { ColumnIdentifier } from './table'
@@ -168,7 +168,7 @@ export function ComparisonPanel(props: {
     const expandedByStatIndex = dataByStatArticle.map(([{ statpath }]) => expandedSettings[rowExpandedKey(statpath)] ?? false)
     const numExpandedExtras = expandedByStatIndex.filter(v => v).length
 
-    let widthColumns = (includeOrdinals ? 1.5 : 1) * localArticlesToUse.length + 1
+    let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, includeOrdinals)
     let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (dataByArticleStat[0].length + numExpandedExtras) + 1.5
 
     const transpose = widthColumns > computeMaxColumns(mobileLayout) && widthColumns > widthTransposeColumns

@@ -2,6 +2,10 @@ import React, { ReactNode } from 'react'
 
 import { useMobileLayout } from '../utils/responsive'
 
+export function computeComparisonWidthColumns(numDataColumns: number, includeOrdinals: boolean): number {
+    return (includeOrdinals ? 1.5 : 1) * numDataColumns + 1
+}
+
 export function computeMaxColumns(mobileLayout: boolean): number {
     return mobileLayout ? 3 : 6
 }
