@@ -37,6 +37,8 @@ interface StatisticCommonProps {
     start: number
     amount: number | 'All'
     order: 'ascending' | 'descending'
+    // Index of the column to use for sorting
+    sortColumn: number
     articleType: string
     highlight: string | undefined
     counts: CountsByUT
@@ -48,14 +50,14 @@ export interface StatisticPanelProps extends StatisticCommonProps {
 }
 
 interface StatisticData {
-    data: { value: number[], populationPercentile: number[] }
+    // One entry per column
+    data: { value: number[], populationPercentile: number[], ordinal: number[], name: string, unit?: UnitType }[]
     articleNames: string[]
     renderedStatname: string
     statcol?: StatCol
     explanationPage?: string
     totalCountInClass: number
     totalCountOverall: number
-    unit?: UnitType
 }
 
 type StatisticDataOutcome = (
@@ -64,6 +66,15 @@ type StatisticDataOutcome = (
     | { type: 'loading' }
 )
 
+function computeOrdinals(values: number[]): number[] {
+    const indices: number[] = values.map((_, idx) => idx)
+    indices.sort((a, b) => values[b] - values[a]) // descending: 1 = largest value
+    const ordinals: number[] = new Array<number>(values.length)
+    indices.forEach((rowIdx, rank) => {
+        ordinals[rowIdx] = rank + 1
+    })
+    return ordinals
+}
 async function loadStatisticsData(universe: Universe, statname: StatName, articleType: string, counts: CountsByUT): Promise<StatisticDataOutcome> {
     const statIndex = names.indexOf(statname)
     const [data, articleNames] = await loadStatisticsPage(universe, paths[statIndex], articleType)
@@ -71,7 +82,13 @@ async function loadStatisticsData(universe: Universe, statname: StatName, articl
     const totalCountOverall = forType(counts, universe, stats[statIndex], 'overall')
     return {
         type: 'success',
-        data,
+        data: [{
+            value: data.value,
+            populationPercentile: data.populationPercentile,
+            ordinal: computeOrdinals(data.value),
+            name: statname,
+            unit: undefined,
+        }],
         articleNames,
         renderedStatname: statname,
         statcol: stats[statIndex],
@@ -105,8 +122,9 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         for (let i = 0; i < loadedData.articleNames.length; i++) {
             const rank = i + 1
             const name = loadedData.articleNames[i]
-            const value = loadedData.data.value[i]
-            const percentile = loadedData.data.populationPercentile[i]
+            const primary = loadedData.data[0]
+            const value = primary.value[i]
+            const percentile = primary.populationPercentile[i]
 
             const formattedValue = value.toLocaleString()
 
@@ -155,6 +173,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                     order: props.order,
                     highlight: props.highlight,
                     universe: newUniverse,
+                    sort_column: props.sortColumn,
                 }, {
                     history: 'push',
                     scroll: { kind: 'none' },
@@ -228,7 +247,24 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
 
     const isAscending = props.order === 'ascending'
 
-    const count = props.data.value.filter(x => !isNaN(x)).length
+    // Compute sorted row indices based on the selected sort column and order
+    const { sortedIndices, count } = useMemo(() => {
+        if (props.data.length === 0) {
+            return { sortedIndices: [] as number[], count: 0 }
+        }
+        const sortColumnIndex = Math.max(0, Math.min(props.sortColumn, props.data.length - 1))
+        const sortByColumn = props.data[sortColumnIndex]
+        const indices = sortByColumn.value.map((_, i) => i).filter(i => !isNaN(sortByColumn.value[i]))
+        indices.sort((a, b) => {
+            const va = sortByColumn.value[a]
+            const vb = sortByColumn.value[b]
+            if (isAscending) {
+                return va - vb
+            }
+            return vb - va
+        })
+        return { sortedIndices: indices, count: indices.length }
+    }, [props.data, props.sortColumn, isAscending])
 
     const amount = props.amount === 'All' ? count : props.amount
 
@@ -241,15 +277,11 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
         if (end + amount > count) {
             end = count
         }
-        const total = count
         const result = Array.from({ length: end - start }, (_, i) => {
-            if (isAscending) {
-                return total - start - i - 1
-            }
             return start + i
         })
         return result
-    }, [props.start, amount, count, isAscending])
+    }, [props.start, amount, count])
 
     const swapAscendingDescending = (currentUniverse: Universe | undefined): void => {
         const newOrder = isAscending ? 'descending' : 'ascending'
@@ -260,6 +292,25 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
             start: 1,
             amount,
             order: newOrder,
+            sortColumn: props.sortColumn,
+        }), {
+            history: 'push',
+            scroll: { kind: 'none' },
+        })
+    }
+
+    const changeSortColumn = (columnIndex: number, currentUniverse: Universe | undefined): void => {
+        // If clicking the same column, toggle order. Otherwise, switch to that column with descending order.
+        const newSortColumn = columnIndex
+        const newOrder = columnIndex === props.sortColumn ? (isAscending ? 'descending' : 'ascending') : 'descending'
+        void navContext.navigate(statisticDescriptor({
+            universe: currentUniverse,
+            statDesc: props.statDesc,
+            articleType: props.articleType,
+            start: 1,
+            amount,
+            order: newOrder,
+            sortColumn: newSortColumn,
         }), {
             history: 'push',
             scroll: { kind: 'none' },
@@ -267,7 +318,8 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
     }
 
     const getRowBackgroundColor = (rowIdx: number): string => {
-        const nameAtIdx = props.articleNames[indexRange[rowIdx]]
+        const actualRowIdx = sortedIndices[indexRange[rowIdx]]
+        const nameAtIdx = props.articleNames[actualRowIdx]
         if (nameAtIdx === props.highlight) {
             return colors.highlight
         }
@@ -279,17 +331,22 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
 
     const widthLeftHeader = 50
 
+    const numStatColumns = props.data.length
+
     return (
         <div>
             <div className="serif" ref={props.tableRef}>
                 <StatisticPanelTable
                     indexRange={indexRange}
+                    sortedIndices={sortedIndices}
                     props={props}
                     isAscending={isAscending}
                     swapAscendingDescending={swapAscendingDescending}
+                    changeSortColumn={changeSortColumn}
+                    sortColumn={props.sortColumn}
                     getRowBackgroundColor={getRowBackgroundColor}
                     widthLeftHeader={widthLeftHeader}
-                    columnWidth={(100 - widthLeftHeader) / 1}
+                    columnWidth={(100 - widthLeftHeader) / (numStatColumns === 0 ? 1 : numStatColumns)}
                     data={props.data}
                     articleNames={props.articleNames}
                 />
@@ -306,34 +363,41 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
 
 function StatisticPanelTable(props: {
     indexRange: number[]
+    sortedIndices: number[]
     props: StatisticPanelLoadedProps
     isAscending: boolean
     swapAscendingDescending: (currentUniverse: Universe | undefined) => void
+    changeSortColumn: (columnIndex: number, currentUniverse: Universe | undefined) => void
+    sortColumn: number
     getRowBackgroundColor: (rowIdx: number) => string
     widthLeftHeader: number
     columnWidth: number
-    data: { value: number[], populationPercentile: number[] }
+    data: { value: number[], populationPercentile: number[], ordinal: number[], name: string, unit?: UnitType }[]
     articleNames: string[]
 }): ReactNode {
     const currentUniverse = useUniverse()
     assert(currentUniverse !== undefined, 'no universe')
 
-    const articleRows: StatisticCellRenderingInfo[] = props.indexRange.map((i) => {
-        return {
-            statval: props.data.value[i],
-            ordinal: i + 1,
-            percentileByPopulation: props.data.populationPercentile[i],
-            statname: props.props.renderedStatname,
-            articleType: props.props.articleType,
-            totalCountInClass: props.props.totalCountInClass,
-            totalCountOverall: props.props.totalCountOverall,
-            overallFirstLast: { isFirst: false, isLast: false },
-            unit: props.props.unit,
-        } satisfies StatisticCellRenderingInfo
+    const allColumnRows: StatisticCellRenderingInfo[][] = props.data.map((col) => {
+        return props.indexRange.map((rangeIdx) => {
+            const actualRowIdx = props.sortedIndices[rangeIdx]
+            return {
+                statval: col.value[actualRowIdx],
+                ordinal: col.ordinal[actualRowIdx],
+                percentileByPopulation: col.populationPercentile[actualRowIdx],
+                statname: col.name,
+                articleType: props.props.articleType,
+                totalCountInClass: props.props.totalCountInClass,
+                totalCountOverall: props.props.totalCountOverall,
+                overallFirstLast: { isFirst: false, isLast: false },
+                unit: col.unit,
+            } satisfies StatisticCellRenderingInfo
+        })
     })
 
-    const leftHeaderSpecs: CellSpec[] = props.articleNames.map((row, rowIdx) => {
-        const articleName = props.articleNames[props.indexRange[rowIdx]]
+    const leftHeaderSpecs: CellSpec[] = props.indexRange.map((rangeIdx) => {
+        const actualRowIdx = props.sortedIndices[rangeIdx]
+        const articleName = props.articleNames[actualRowIdx]
         return {
             type: 'statistic-panel-longname',
             longname: articleName,
@@ -341,16 +405,17 @@ function StatisticPanelTable(props: {
         } satisfies CellSpec
     })
 
-    const rowSpecs: CellSpec[][] = articleRows.map((row, rowIdx) => {
-        const articleName = props.articleNames[props.indexRange[rowIdx]]
-        return [{
+    const rowSpecs: CellSpec[][] = props.indexRange.map((rangeIdx, rowIdx) => {
+        const actualRowIdx = props.sortedIndices[rangeIdx]
+        const articleName = props.articleNames[actualRowIdx]
+        return allColumnRows.map(columnRows => ({
             type: 'statistic-row',
             longname: articleName,
-            row,
+            row: columnRows[rowIdx],
             onlyColumns: ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'],
             simpleOrdinals: true,
             onNavigate: undefined,
-        } satisfies CellSpec]
+        } satisfies CellSpec))
     })
 
     const topLeftSpec: CellSpec = {
@@ -358,30 +423,29 @@ function StatisticPanelTable(props: {
         statNameOverride: 'Name',
     }
 
-    const headerSpecs: CellSpec[] = articleRows.length > 0
-        ? [{
-                type: 'statistic-name',
-                // row: articleRows[0],
-                renderedStatname: props.props.renderedStatname,
-                longname: props.props.renderedStatname,
-                currentUniverse,
-                sortInfo: {
-                    onSort: () => {
-                        props.swapAscendingDescending(currentUniverse)
-                    },
-                    sortDirection: props.isAscending ? 'up' : 'down',
-                },
-                center: true,
-                transpose: true, // This is a header not on the left, so it's in "transpose" mode
-            }]
-        : []
+    const headerSpecs: CellSpec[] = props.data.map((col, colIndex) => ({
+        type: 'statistic-name',
+        renderedStatname: col.name,
+        longname: col.name,
+        currentUniverse,
+        sortInfo: {
+            onSort: () => {
+                props.changeSortColumn(colIndex, currentUniverse)
+            },
+            sortDirection: props.sortColumn === colIndex ? (props.isAscending ? 'up' : 'down') : 'both',
+        },
+        center: true,
+        transpose: true, // This is a header not on the left, so it's in "transpose" mode
+    } satisfies CellSpec))
     const superHeaderSpec: SuperHeaderSpec = {
         headerSpecs,
         showBottomBar: false,
     }
 
-    const highlightRowIndex = props.indexRange.indexOf(props.articleNames.indexOf(props.props.highlight ?? ''))
-
+    const highlightOriginalIdx = props.articleNames.indexOf(props.props.highlight ?? '')
+    const highlightRowIndex = highlightOriginalIdx >= 0
+        ? props.indexRange.findIndex(rangeIdx => props.sortedIndices[rangeIdx] === highlightOriginalIdx)
+        : -1
     return (
         <TableContents
             leftHeaderSpec={{ leftHeaderSpecs }}
@@ -407,6 +471,7 @@ function Pagination(props: {
     statDesc: StatisticDescriptor
     articleType: string
     order: 'ascending' | 'descending'
+    sortColumn: number
 }): ReactNode {
     // next and previous buttons, along with the current range (editable to jump to a specific page)
     // also a button to change the number of items per page
@@ -449,6 +514,7 @@ function Pagination(props: {
             start,
             amount: newAmount === 'All' ? 'All' : newAmountNum,
             order: props.order,
+            sortColumn: props.sortColumn,
         }), {
             history: 'push',
             scroll: { kind: 'none' },
@@ -473,6 +539,7 @@ function Pagination(props: {
                 amount: props.amount,
                 order: props.order,
                 start: (newPage - 1) * perPage + 1,
+                sortColumn: props.sortColumn,
             }), {
                 history: 'replace',
                 scroll: { kind: 'none' },
@@ -485,7 +552,7 @@ function Pagination(props: {
         else if (currentPage < 1) {
             goToPage(1)
         }
-    }, [currentPage, maxPages, currentUniverse, perPage, props.statDesc, props.articleType, props.amount, props.order, navContext])
+    }, [currentPage, maxPages, currentUniverse, perPage, props.statDesc, props.articleType, props.amount, props.order, props.sortColumn, navContext])
 
     const selectPage = (
         <SelectPage
