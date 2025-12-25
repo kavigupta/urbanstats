@@ -32,6 +32,7 @@ import { ArticleRow } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
+import { computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
 import { TableContents, CellSpec } from './supertable'
 import { ColumnIdentifier } from './table'
@@ -162,8 +163,6 @@ export function ComparisonPanel(props: {
 
     const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
 
-    const maxColumns = mobileLayout ? 3 : 6
-
     const expandedSettings = useSettings(dataByStatArticle.filter(statData => statData.some(row => row.extraStat !== undefined)).map(([{ statpath }]) => rowExpandedKey(statpath)))
 
     const expandedByStatIndex = dataByStatArticle.map(([{ statpath }]) => expandedSettings[rowExpandedKey(statpath)] ?? false)
@@ -172,7 +171,7 @@ export function ComparisonPanel(props: {
     let widthColumns = (includeOrdinals ? 1.5 : 1) * localArticlesToUse.length + 1
     let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (dataByArticleStat[0].length + numExpandedExtras) + 1.5
 
-    const transpose = widthColumns > maxColumns && widthColumns > widthTransposeColumns
+    const transpose = widthColumns > computeMaxColumns(mobileLayout) && widthColumns > widthTransposeColumns
 
     if (transpose) {
         ([widthColumns, widthTransposeColumns] = [widthTransposeColumns, widthColumns])
@@ -181,21 +180,6 @@ export function ComparisonPanel(props: {
     const leftMarginPercent = transpose ? 0.24 : 0.18
     const numColumns = transpose ? dataByArticleStat[0].length : localArticlesToUse.length
     const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
-
-    const scrollColumnsDivisor = mobileLayout ? 3.5 : 5.3
-
-    const maybeScroll = (contents: React.ReactNode): ReactNode => {
-        if (widthColumns > maxColumns) {
-            return (
-                <div style={{ overflowX: 'scroll' }}>
-                    <div style={{ width: `${100 * widthColumns / scrollColumnsDivisor}%` }}>
-                        {contents}
-                    </div>
-                </div>
-            )
-        }
-        return contents
-    }
 
     const highlightArticleIndicesByStat: (number | undefined)[] = dataByStatArticle.map(articlesStatData => getHighlightIndex(articlesStatData))
 
@@ -345,7 +329,7 @@ export function ComparisonPanel(props: {
 
                                 <div style={{ marginBlockEnd: '1em' }}></div>
 
-                                {maybeScroll(
+                                <MaybeScroll widthColumns={widthColumns}>
                                     <div ref={tableRef}>
                                         {transpose
                                             ? (
@@ -377,8 +361,8 @@ export function ComparisonPanel(props: {
                                                     />
                                                 )}
                                         <ArticleWarnings />
-                                    </div>,
-                                )}
+                                    </div>
+                                </MaybeScroll>
                                 <div className="gap"></div>
 
                                 <div ref={mapRef}>
