@@ -151,6 +151,16 @@ export async function downloadHistogram(t: TestController, nth: number): Promise
     await grabDownload(t, download, '.png')
 }
 
+export async function downloadCSV(t: TestController): Promise<string> {
+    const laterThan = Date.now()
+    const csvButton = Selector('img').withAttribute('src', '/csv.png')
+    await t.click(csvButton)
+
+    const downloadedFilePath = await waitForDownload(t, laterThan, '.csv')
+    const csvContent = fs.readFileSync(downloadedFilePath, 'utf-8')
+    return csvContent
+}
+
 function mostRecentDownload(suffix: string): { path: string, mtime: number } | undefined {
     // get the most recent file in the downloads folder
     const files = fs.readdirSync(downloadsFolder())
@@ -174,7 +184,7 @@ export async function waitForDownload(t: TestController, laterThan: number, suff
         }
         console.warn(chalkTemplate`{yellow No file found in downloads folder, waiting for download to complete}`)
         // wait for the download to finish
-        await t.wait(1000)
+        await t.wait(100)
     }
 }
 
