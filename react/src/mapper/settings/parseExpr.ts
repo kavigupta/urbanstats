@@ -31,7 +31,9 @@ export function parseExpr(
     preserveCustomNodes: boolean,
 ): UrbanStatsASTExpression {
     const parsed = attemptParseExpr(expr, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)
-    // just to confirm everything is fine
+    // just to confirm the block IDs have been set correctly
+    // this will emit a console error if they are not correct that is picked up by tests
+    // shouldn't be a significant performance issue since it's just a single traversal
     if (parsed !== undefined) changeBlockId(parsed, blockIdent, '')
     return parsed ?? fallback(unparse(expr), blockIdent, types)
 }

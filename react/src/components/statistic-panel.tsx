@@ -662,15 +662,11 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
         if (end + amount > count) {
             end = count
         }
-        const total = count
         const result = Array.from({ length: end - start }, (_, i) => {
-            if (isAscending) {
-                return total - start - i - 1
-            }
             return start + i
         })
         return result
-    }, [props.start, amount, count, isAscending])
+    }, [props.start, amount, count])
 
     const swapAscendingDescending = (currentUniverse: Universe | undefined): void => {
         const newOrder = isAscending ? 'descending' : 'ascending'
