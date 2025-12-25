@@ -73,6 +73,7 @@ const statisticSchema = z.object({
     order: z.union([z.literal('descending'), z.literal('ascending')]),
     highlight: z.optional(z.string()),
     universe: z.optional(universeSchema),
+    sort_column: z.optional(z.number().int()),
 })
 
 const statisticSchemaFromParams = z.object({
@@ -83,6 +84,7 @@ const statisticSchemaFromParams = z.object({
     order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
     highlight: z.optional(z.string()),
     universe: z.optional(universeSchema).catch(undefined),
+    sort_column: z.optional(z.coerce.number().int()).default(0),
 })
 
 const randomSchema = z.object({
@@ -278,6 +280,9 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 order: pageDescriptor.order === 'descending' ? undefined : 'ascending',
                 highlight: pageDescriptor.highlight,
                 universe: pageDescriptor.universe,
+                sort_column: pageDescriptor.sort_column === undefined || pageDescriptor.sort_column === 0
+                    ? undefined
+                    : pageDescriptor.sort_column.toString(),
             }
             break
         case 'random':
@@ -498,6 +503,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     start: newDescriptor.start,
                     amount: newDescriptor.amount,
                     universe: statUniverse,
+                    sortColumn: newDescriptor.sort_column ?? 0,
                     // StatisticPanel needs this to compute the set of universes to display
                     counts: countsByArticleType,
                     statisticPanel: panel.StatisticPanel,
