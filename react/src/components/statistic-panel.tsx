@@ -472,6 +472,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                     highlight: props.highlight,
                     universe: newUniverse,
                     sort_column: props.sortColumn,
+                    edit: isEditMode,
                 }, {
                     history: 'push',
                     scroll: { kind: 'none' },

@@ -292,6 +292,15 @@ test('navigation on USS statistics page works', async (t) => {
     })
     await t.expect(Selector('div').withText(/, California, USA/).exists).notOk()
     await t.expect(Selector('div').withExactText('Fort Bend County, Texas, USA').exists).ok()
+    // switch to edit mode
+    await t.click(Selector('button[data-test-id="edit"]'))
+    await waitForLoading()
+    // switch back to California via universe selector
+    await t.click(Selector(universeSelector))
+    await t.click(Selector('div').withExactText('California, USA'))
+    await waitForLoading()
+    // check that we are still in edit mode
+    await t.expect(Selector('button[data-test-id="view"]').exists).ok()
 })
 
 urbanstatsFixture('edit starting from a statname page', `${target}/statistic.html?statname=Population&article_type=County&start=1&amount=5&universe=California%2C+USA`)
