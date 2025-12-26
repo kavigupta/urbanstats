@@ -27,6 +27,8 @@ export function GenericSearchBox<T>(
     const [focused, setFocused] = React.useState(0)
     const [matches, setMatches] = useState<T[]>([])
 
+    const [isFocused, setIsFocused] = useState(false)
+
     const searchQuery = queryRef.current
 
     const reset = (): void => {
@@ -73,6 +75,9 @@ export function GenericSearchBox<T>(
     // Do the search
     useEffect(() => {
         void (async () => {
+            if (!isFocused) {
+                return
+            }
             if (!props.allowEmptyQuery && searchQuery === '') {
                 setMatches([])
                 setFocused(0)
@@ -89,7 +94,7 @@ export function GenericSearchBox<T>(
             setMatches(result)
             setFocused(f => Math.max(0, Math.min(f, result.length - 1)))
         })()
-    }, [searchQuery, doSearch])
+    }, [searchQuery, doSearch, props.allowEmptyQuery, isFocused])
 
     return (
         <form
@@ -114,8 +119,14 @@ export function GenericSearchBox<T>(
                     props.onTextPresenceChange?.(newValue.length > 0)
                 }}
                 value={query}
-                onFocus={props.onFocus}
-                onBlur={props.onBlur}
+                onFocus={() => {
+                    setIsFocused(true)
+                    props.onFocus?.()
+                }}
+                onBlur={() => {
+                    setIsFocused(false)
+                    props.onBlur?.()
+                }}
                 spellCheck={false}
             />
 
