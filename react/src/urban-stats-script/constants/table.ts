@@ -19,6 +19,7 @@ export interface Table {
     geo: string[]
     population: number[]
     includeOrdinalsPercentiles: boolean
+    title?: string
 }
 
 export const columnType = {
@@ -119,6 +120,10 @@ export const table: USSValue = {
                 type: { type: 'concrete', value: { type: 'boolean' } },
                 defaultValue: createConstantExpression(true),
             },
+            title: {
+                type: { type: 'concrete', value: { type: 'string' } },
+                defaultValue: createConstantExpression(null),
+            },
         },
         returnType: { type: 'concrete', value: tableType },
     },
@@ -152,12 +157,13 @@ export const table: USSValue = {
         }
 
         const includeOrdinalsPercentiles = namedArgs.includeOrdinalsPercentiles as boolean
+        const title = namedArgs.title as string | null
         const annotatedColumns = columns.map(col => attachPopulationPercentilesToColumn(col, population))
 
         return {
             type: 'opaque',
             opaqueType: 'table',
-            value: { columns: annotatedColumns, geo, population, includeOrdinalsPercentiles } satisfies Table,
+            value: { columns: annotatedColumns, geo, population, includeOrdinalsPercentiles, title: title ?? undefined } satisfies Table,
         }
     },
     documentation: {
@@ -167,8 +173,9 @@ export const table: USSValue = {
         namedArgs: {
             columns: 'Columns',
             includeOrdinalsPercentiles: 'Include Ordinals and Percentiles',
+            title: 'Title',
         },
-        longDescription: 'Creates a table with named columns, where each column contains a list of numbers. All columns must have the same length. Optionally include ordinals and percentiles (default: true).',
+        longDescription: 'Creates a table with named columns, where each column contains a list of numbers. All columns must have the same length. Optionally include ordinals and percentiles (default: true). Optionally specify a title for the table.',
     },
 } satisfies USSValue
 
