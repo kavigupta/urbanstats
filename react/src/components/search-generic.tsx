@@ -29,6 +29,7 @@ export function GenericSearchBox<T>(
     const searchQuery = queryRef.current
 
     const reset = (): void => {
+        setIsFocused(false)
         setQuery('')
         queryRef.current = ''
         setMatches([])
