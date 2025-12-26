@@ -137,7 +137,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         })
     }, [loadedData])
 
-    const headerTextClass = useHeaderTextClass()
+    const subHeaderTextClass = useSubHeaderTextClass()
 
     const content = <SimpleStatisticPanel {...props} descriptor={props.descriptor} onDataLoaded={setLoadedData} tableRef={tableRef} />
 
@@ -170,11 +170,11 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 csvExportData={csvExportData}
             >
                 <div ref={headersRef}>
-                    <div className={headerTextClass}>{loadedData?.renderedStatname ?? 'Table'}</div>
-                    <StatisticPanelSubhead
+                    <StatisticPanelHead
                         articleType={props.articleType}
                         renderedOther={props.order}
                     />
+                    <div className={subHeaderTextClass}>{loadedData?.renderedStatname ?? 'Table'}</div>
                 </div>
                 <div style={{ marginBlockEnd: '16px' }}></div>
                 {content}
@@ -719,12 +719,12 @@ function SelectPage(props: {
     )
 }
 
-function StatisticPanelSubhead(props: { articleType: string, renderedOther: string }): ReactNode {
+function StatisticPanelHead(props: { articleType: string, renderedOther: string }): ReactNode {
     const currentUniverse = useUniverse()
     assert(currentUniverse !== undefined, 'no universe')
-    const subHeaderTextClass = useSubHeaderTextClass()
+    const headerTextClass = useHeaderTextClass()
     return (
-        <div className={subHeaderTextClass}>
+        <div className={headerTextClass}>
             {displayType(currentUniverse, props.articleType)}
         </div>
     )
