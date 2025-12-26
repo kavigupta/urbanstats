@@ -9,7 +9,7 @@ export function GenericSearchBox<T>(
         matches: T[]
         doSearch: (sq: string) => Promise<T[]>
         onChange?: (inp: T) => void
-        link: (inp: T) => ReturnType<Navigator['link']>
+        link?: (inp: T) => ReturnType<Navigator['link']>
         onFocus?: () => void
         onBlur?: () => void
         onTextPresenceChange?: (hasText: boolean) => void
@@ -17,6 +17,7 @@ export function GenericSearchBox<T>(
         placeholder: string
         style: CSSProperties | string
         renderMatch: (currentMatch: () => T, onMouseOver: () => void, onClick: () => void, style: CSSProperties, dataTestId: string | undefined) => ReactElement
+        allowEmptyQuery?: boolean
     }): ReactElement {
     const colors = useColors()
 
@@ -48,7 +49,7 @@ export function GenericSearchBox<T>(
         event.preventDefault()
         const terms = matches
         if (terms.length > 0) {
-            void props.link(terms[focused]).onClick()
+            void props.link?.(terms[focused]).onClick()
             props.onChange?.(terms[focused])
             reset()
         }
@@ -72,7 +73,7 @@ export function GenericSearchBox<T>(
     // Do the search
     useEffect(() => {
         void (async () => {
-            if (searchQuery === '') {
+            if (!props.allowEmptyQuery && searchQuery === '') {
                 setMatches([])
                 setFocused(0)
                 return
