@@ -385,7 +385,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         })
     }, [loadedData])
 
-    const headerTextClass = useHeaderTextClass()
+    const subHeaderTextClass = useSubHeaderTextClass()
 
     let preamble: ReactNode | undefined = undefined
     if (isEditMode) {
@@ -484,11 +484,11 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 csvExportData={csvExportData}
             >
                 <div ref={headersRef} style={{ position: 'relative' }}>
-                    <div className={headerTextClass}>{loadedData?.renderedStatname ?? 'Table'}</div>
-                    <StatisticPanelSubhead
+                    <StatisticPanelHead
                         articleType={props.articleType}
                         renderedOther={props.order}
                     />
+                    <div className={subHeaderTextClass}>{loadedData?.renderedStatname ?? 'Table'}</div>
                     {!isEditMode && (
                         <div style={{ marginLeft: 'auto', marginTop: '8px', display: 'flex', gap: '8px', width: 'fit-content' }}>
                             {colAdder && (
@@ -1239,12 +1239,12 @@ function createCall(vn: string, blockId: string | undefined): UrbanStatsASTExpre
     return call
 }
 
-function StatisticPanelSubhead(props: { articleType: string, renderedOther: string }): ReactNode {
+function StatisticPanelHead(props: { articleType: string, renderedOther: string }): ReactNode {
     const currentUniverse = useUniverse()
     assert(currentUniverse !== undefined, 'no universe')
-    const subHeaderTextClass = useSubHeaderTextClass()
+    const headerTextClass = useHeaderTextClass()
     return (
-        <div className={subHeaderTextClass}>
+        <div className={headerTextClass}>
             {displayType(currentUniverse, props.articleType)}
         </div>
     )
