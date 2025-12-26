@@ -1204,6 +1204,7 @@ function AddColumnSearchBox(props: {
             placeholder="Add column..."
             style={{ width: '100%' }}
             renderMatch={renderMatch}
+            allowEmptyQuery={true}
         />
     )
 }
