@@ -33,9 +33,11 @@ export function GenericSearchBox<T>(
     const searchQuery = queryRef.current
 
     const reset = (): void => {
-        setIsFocused(false)
-        // actually do blur the input
-        searchboxRef.current?.blur()
+        // blur the input if we allow empty queries
+        if (props.allowEmptyQuery) {
+            searchboxRef.current?.blur()
+            setIsFocused(false)
+        }
         setQuery('')
         queryRef.current = ''
         setMatches([])
