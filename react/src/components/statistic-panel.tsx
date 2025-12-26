@@ -81,6 +81,7 @@ interface StatisticData {
     totalCountInClass: number
     totalCountOverall: number
     includeOrdinalsPercentiles: boolean
+    title?: string
 }
 
 type StatisticDataOutcome = (
@@ -168,6 +169,7 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
                     totalCountInClass: firstColumn.values.length,
                     totalCountOverall: firstColumn.values.length,
                     includeOrdinalsPercentiles: table.includeOrdinalsPercentiles,
+                    title: table.title,
                     uuid: uuid(),
                 })
                 setErrors(execErrors)
@@ -194,6 +196,7 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
             totalCountOverall: successData.totalCountOverall,
             uuid: successData.uuid,
             includeOrdinalsPercentiles: successData.includeOrdinalsPercentiles,
+            title: successData.title,
         }
     }, [successData])
 
@@ -332,7 +335,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 csvExportData={csvExportData}
             >
                 <div ref={headersRef} style={{ position: 'relative' }}>
-                    <div className={headerTextClass}>{loadedData?.renderedStatname ?? 'Table'}</div>
+                    <div className={headerTextClass}>{loadedData?.title ?? loadedData?.renderedStatname ?? 'Table'}</div>
                     <StatisticPanelSubhead
                         articleType={props.articleType}
                         renderedOther={props.order}
