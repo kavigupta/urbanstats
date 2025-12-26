@@ -2,7 +2,7 @@ import { parse } from 'csv-parse/sync'
 import { Selector } from 'testcafe'
 
 import { nthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
-import { getErrors, replaceInput } from './mapper-utils'
+import { getErrors, replaceInput, toggleCustomScript } from './mapper-utils'
 import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, dataValues, checkTextboxes, checkTextboxesDirect, downloadCSV, downloadImage } from './test_utils'
 
 urbanstatsFixture('statistics', `${target}/article.html?longname=Indianapolis+IN+HRR%2C+USA`)
@@ -596,4 +596,59 @@ test('render many columns', async (t) => {
     }
     await screencap(t)
     await downloadImage(t)
+})
+
+async function addColumn(t: TestController, string: string): Promise<void> {
+    await t.click(Selector('input').withAttribute('placeholder', 'Add column...'))
+    await t.typeText(Selector('input').withAttribute('placeholder', 'Add column...'), string)
+    await t.pressKey('enter')
+    await waitForLoading()
+}
+
+test('add columns starting from uss page', async (t) => {
+    await addColumn(t, 'binge')
+    await t.click(Selector('button[data-test-id="edit"]'))
+    await waitForLoading()
+    await toggleCustomScript(t)
+    // check the custom script
+    await t.expect(nthEditor(0).textContent).eql(`table(
+    columns=[
+        column(values=density_pw_1km, name="C1", unit=unitDensity),
+        column(values=commute_transit, name="C2", unit=unitPercentage),
+        column(
+            values=traffic_fatalities_per_capita,
+            name="C3",
+            unit=unitFatalitiesPerCapita
+        ),
+        column(values=binge_drinking, name="C4", unit=unitPercentage),
+        column(values=median_household_income_usd, name="C5", unit=unitUsd),
+        column(values=industry_manufacturing, name="C6", unit=unitPercentage),
+        column(values=racial_homogeneity_2010, name="C7", unit=unitPercentage),
+        column(values=uninsured, name="C8", unit=unitPercentage),
+        column(values=binge_drinking)
+    ]
+)
+`)
+})
+
+urbanstatsFixture('start from a statname', `${target}/statistic.html?statname=White+__PCT__&article_type=County&start=1&amount=20&universe=California%2C+USA`)
+
+test('add columns starting from a statname', async (t) => {
+    await addColumn(t, 'binge')
+    await addColumn(t, 'natura')
+    await addColumn(t, 'z %')
+    await screencap(t)
+    await t.click(Selector('button[data-test-id="edit"]'))
+    await waitForLoading()
+    await screencap(t)
+    await toggleCustomScript(t)
+    await t.expect(nthEditor(0).textContent).eql(`table(
+    columns=[
+        column(values=white),
+        column(values=binge_drinking),
+        column(values=naturalized_citizen),
+        column(values=gen_z)
+    ]
+)
+`)
 })
