@@ -37,7 +37,7 @@ import { renderType, TypeEnvironment } from '../urban-stats-script/types-values'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
-import { displayType } from '../utils/text'
+import { displayType, pluralize } from '../utils/text'
 import { UnitType } from '../utils/unit'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
@@ -111,7 +111,21 @@ function computeOrdinals(values: number[]): number[] {
     return ordinals
 }
 
-function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (typeof validGeographies)[number], universe: Universe): StatisticDataOutcome & { uuid: string } {
+function checkArticleCount(counts: CountsByUT, universe: Universe, articleType: string): EditorError[] {
+    let maxCount = 0
+    for (const statcol of stats) {
+        const count = forType(counts, universe, statcol, articleType)
+        if (count > maxCount) {
+            maxCount = count
+        }
+    }
+    if (maxCount === 0) {
+        return [{ type: 'error', value: `There are no ${pluralize(articleType)} in ${universe}. Either adjust your universe or geography kind.`, location: noLocation, kind: 'error' }]
+    }
+    return []
+}
+
+function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (typeof validGeographies)[number], universe: Universe, counts: CountsByUT): StatisticDataOutcome & { uuid: string } {
     const [loading, setLoading] = useState(true)
     const [errors, setErrors] = useState<EditorError[]>([])
     const [successData, setSuccessData] = useState<StatisticData & { uuid: string } | undefined>(undefined)
@@ -126,6 +140,15 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
             return
         }
         lastState.current = state
+
+        // Check if there are no geographic entities using counts before executing
+        const countErrors = checkArticleCount(counts, universe, geographyKind)
+        if (countErrors.length > 0) {
+            setErrors(countErrors)
+            setSuccessData(undefined)
+            setLoading(false)
+            return
+        }
 
         setLoading(true)
         setErrors([])
@@ -188,7 +211,7 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
             }
         }
         void executeUSS()
-    }, [uss, geographyKind, universe])
+    }, [uss, geographyKind, universe, counts])
 
     const successDataSorted = useMemo((): StatisticData & { uuid: string } | undefined => {
         if (successData === undefined) {
@@ -217,6 +240,13 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
 
 async function loadStatisticsData(universe: Universe, statname: StatName, articleType: string, counts: CountsByUT): Promise<StatisticDataOutcome> {
     const statIndex = statistic_name_list.indexOf(statname)
+
+    // Check if there are no geographic entities using counts
+    const countErrors = checkArticleCount(counts, universe, articleType)
+    if (countErrors.length > 0) {
+        return { type: 'error', errors: countErrors }
+    }
+
     const [data, articleNames] = await loadStatisticsPage(universe, paths[statIndex], articleType)
     const totalCountInClass = forType(counts, universe, stats[statIndex], articleType)
     const totalCountOverall = forType(counts, universe, stats[statIndex], 'overall')
@@ -592,6 +622,7 @@ function USSStatisticPanel(props: USSStatisticPanelProps): ReactNode {
         restProps.ussAST,
         restProps.articleType as (typeof validGeographies)[number],
         restProps.universe,
+        restProps.counts,
     )
 
     const lastDataUUID = useRef<string | undefined>(undefined)

@@ -303,6 +303,15 @@ test('navigation on USS statistics page works', async (t) => {
     await t.expect(Selector('button[data-test-id="view"]').exists).ok()
 })
 
+test('universe/geography have no overlap', async (t) => {
+    // change universe to Europe (no US counties should appear)
+    await t.click(Selector(universeSelector))
+    await t.click(Selector('div').withExactText('Europe'))
+    await waitForLoading()
+    await t.expect(Selector('div').withText(/, USA/).exists).notOk()
+    await t.expect(await getErrors()).eql([`There are no Counties in Europe. Either adjust your universe or geography kind.`])
+})
+
 urbanstatsFixture('edit starting from a statname page', `${target}/statistic.html?statname=Population&article_type=County&start=1&amount=5&universe=California%2C+USA`)
 
 const densityRatio = ['3.035', '2.490', '2.282', '2.276', '2.100']
