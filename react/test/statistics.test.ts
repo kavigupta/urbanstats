@@ -598,6 +598,17 @@ test('render many columns', async (t) => {
     await downloadImage(t)
 })
 
+test('change title', async (t) => {
+    await t.click(Selector('button[data-test-id="edit"]'))
+    await waitForLoading()
+    await checkTextboxesDirect(t, ['Title'])
+    const titleArea = Selector('textarea').withAttribute('placeholder', 'Enter string').nth(-1)
+    await t.click(titleArea)
+    await t.typeText(titleArea, 'Custom Title')
+    await waitForLoading()
+    await screencap(t)
+})
+
 async function addColumn(t: TestController, string: string): Promise<void> {
     await t.click(Selector('input').withAttribute('placeholder', 'Add column...'))
     await t.typeText(Selector('input').withAttribute('placeholder', 'Add column...'), string)
