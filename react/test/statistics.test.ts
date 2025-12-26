@@ -324,7 +324,7 @@ test('edit starting from a statname page works', async (t) => {
     await t.expect(nthEditor(0).textContent).eql('hispanic\n')
     await t.click(nthEditor(0))
     await t.pressKey('ctrl+a backspace')
-    await typeTextWithKeys(t, 'density_pw_1km / density_pw_2km')
+    await typeTextWithKeys(t, 'density_pw_1km/density_pw_2km')
     await t.wait(1000)
     await t.expect(await dataValues()).eql(densityRatio)
     const text = Selector('div').withAttribute('id', 'test-editor-result')
@@ -423,7 +423,7 @@ test('warning', async (t) => {
 
 test('add filter', async (t) => {
     await checkTextboxesDirect(t, ['Filter?'])
-    await typeInEditor(t, 0, 'population > 1m', true)
+    await typeInEditor(t, 0, 'population>1m', true)
     await waitForLoading()
     await t.wait(1000)
     await t.expect(await dataValues()).eql(['1.163', '1.141', '1.129', '1.127', '1.125'])
@@ -432,7 +432,7 @@ test('add filter', async (t) => {
 
 test('add filter that kicks you to an earlier page', async (t) => {
     await checkTextboxesDirect(t, ['Filter?'])
-    await typeInEditor(t, 0, 'population > 6m', true) // only one county matches
+    await typeInEditor(t, 0, 'population>6m', true) // only one county matches
     await waitForLoading()
     await t.expect(await getLocation()).contains('start=1')
     await t.expect(await dataValues()).eql(['1.127'])
