@@ -28,10 +28,16 @@ export function GenericSearchBox<T>(
     const [matches, setMatches] = useState<T[]>([])
 
     const [isFocused, setIsFocused] = useState(false)
+    const searchboxRef = useRef<HTMLInputElement>(null)
 
     const searchQuery = queryRef.current
 
     const reset = (): void => {
+        // blur the input if we allow empty queries
+        if (props.allowEmptyQuery) {
+            searchboxRef.current?.blur()
+            setIsFocused(false)
+        }
         setQuery('')
         queryRef.current = ''
         setMatches([])
@@ -128,6 +134,7 @@ export function GenericSearchBox<T>(
                     props.onBlur?.()
                 }}
                 spellCheck={false}
+                ref={searchboxRef}
             />
 
             <div
