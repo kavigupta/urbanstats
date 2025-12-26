@@ -14,6 +14,7 @@ import { loadStatisticsPage } from '../load_json'
 import { defaultTypeEnvironment } from '../mapper/context'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { attemptParseAsTopLevel, idOutput, MapUSS } from '../mapper/settings/TopLevelEditor'
+import { possibilities, Selection } from '../mapper/settings/parseExpr'
 import { MapSettings, convertToMapUss } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { sanitize, statisticDescriptor } from '../navigation/links'
@@ -25,10 +26,12 @@ import '../common.css'
 import './article.css'
 import { Universe, universeContext, useUniverse } from '../universe'
 import { DisplayResults } from '../urban-stats-script/Editor'
-import { toStatement, UrbanStatsASTStatement } from '../urban-stats-script/ast'
+import { addColumn, UrbanStatsASTExpressionCreator } from '../urban-stats-script/add-column'
+import { toStatement, UrbanStatsASTStatement, UrbanStatsASTExpression } from '../urban-stats-script/ast'
 import { tableType, type TableColumnWithPopulationPercentiles } from '../urban-stats-script/constants/table'
 import { EditorError } from '../urban-stats-script/editor-utils'
-import { noLocation } from '../urban-stats-script/location'
+import { emptyLocation } from '../urban-stats-script/lexer'
+import { extendBlockIdKwarg, noLocation } from '../urban-stats-script/location'
 import { parse, parseNoErrorAsCustomNode, unparse } from '../urban-stats-script/parser'
 import { renderType, TypeEnvironment } from '../urban-stats-script/types-values'
 import { executeAsync } from '../urban-stats-script/workerManager'
@@ -44,6 +47,7 @@ import { forType, StatCol, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow } from './pointer-cell'
 import { createScreenshot, ScreencapElements } from './screenshot'
 import { computeComparisonWidthColumns, MaybeScroll } from './scrollable'
+import { GenericSearchBox } from './search-generic'
 import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
 import { ColumnIdentifier } from './table'
 
@@ -261,11 +265,11 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(editUniverse), [editUniverse])
     const [editErrors, setEditErrors] = useState<EditorError[]>([])
 
-    const [editUSS, setEditUSS] = useState<MapUSS>(() => {
+    const [[editUSS, isFromStatName], setEditUSS] = useState<[MapUSS, boolean]>(() => {
         const initialUSS = props.descriptor.type === 'uss-statistic'
             ? props.descriptor.uss
             : `customNode(""); condition (true); table(columns=[column(values=${varName(props.descriptor.statname)})])`
-        return parseUSSFromString(initialUSS, typeEnvironment, props.descriptor.type === 'uss-statistic')
+        return [parseUSSFromString(initialUSS, typeEnvironment, props.descriptor.type === 'uss-statistic'), props.descriptor.type === 'simple-statistic']
     })
 
     // Construct MapSettings from separate state for MapperSettings component
@@ -279,8 +283,10 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const handleMapSettingsChange = useCallback((newMapSettings: MapSettings): void => {
         setEditUniverse(newMapSettings.universe ?? props.universe)
         setEditGeographyKind(newMapSettings.geographyKind ?? props.articleType as typeof validGeographies[number])
-        setEditUSS(newMapSettings.script.uss)
-    }, [props.universe, props.articleType])
+        if (unparse(newMapSettings.script.uss) !== unparse(editUSS)) {
+            setEditUSS([newMapSettings.script.uss, false])
+        }
+    }, [props.universe, props.articleType, editUSS])
 
     const handleEditSettingsClick = (): void => {
         const ussString = unparse(editUSS, { simplify: true })
@@ -313,7 +319,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     // Update URL when USS changes in edit mode
     useEffect(() => {
-        if (isEditMode && props.descriptor.type === 'uss-statistic') {
+        if (!isFromStatName) {
             void navContext.navigate(statisticDescriptor({
                 universe: editUniverse,
                 statDesc,
@@ -322,14 +328,14 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 amount: props.amount,
                 order: props.order,
                 highlight: props.highlight,
-                edit: true,
+                edit: isEditMode,
                 sortColumn: props.sortColumn,
             }), {
                 history: 'replace',
                 scroll: { kind: 'none' },
             })
         }
-    }, [statDesc, editUniverse, editGeographyKind, isEditMode, props.descriptor.type, navContext, props.universe, props.articleType, props.start, props.amount, props.order, props.highlight, props.sortColumn])
+    }, [statDesc, editUniverse, editGeographyKind, isFromStatName, navContext, props.start, props.amount, props.order, props.highlight, props.sortColumn, isEditMode])
 
     const handleApplyUSS = (): void => {
         void navContext.navigate(statisticDescriptor({
@@ -417,6 +423,8 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         return toStatement(editUSS)
     }, [editUSS])
 
+    const colAdder = useMemo(() => addColumn(ussAST), [ussAST])
+
     const commonProps = {
         start: props.start,
         amount: props.amount,
@@ -482,24 +490,33 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                         renderedOther={props.order}
                     />
                     {!isEditMode && (
-                        <button
-                            data-test-id="edit"
-                            onClick={handleEditSettingsClick}
-                            style={{
-                                position: 'absolute',
-                                top: 0,
-                                right: 0,
-                                padding: '0.25em 0.5em',
-                                backgroundColor: colors.unselectedButton,
-                                color: colors.textMain,
-                                border: `1px solid ${colors.textMain}`,
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                fontSize: '12px',
-                            }}
-                        >
-                            Edit Settings
-                        </button>
+                        <div style={{ marginLeft: 'auto', marginTop: '8px', display: 'flex', gap: '8px', width: 'fit-content' }}>
+                            {colAdder && (
+                                <div style={{ flexGrow: 1, minWidth: '300px' }}>
+                                    <AddColumnSearchBox
+                                        editUSS={editUSS}
+                                        setEditUSS={(newUSS) => { setEditUSS([newUSS, false]) }}
+                                        typeEnvironment={typeEnvironment}
+                                        colAdder={colAdder}
+                                    />
+                                </div>
+                            )}
+                            <button
+                                data-test-id="edit"
+                                onClick={handleEditSettingsClick}
+                                style={{
+                                    padding: '0.25em 0.5em',
+                                    backgroundColor: colors.unselectedButton,
+                                    color: colors.textMain,
+                                    border: `1px solid ${colors.textMain}`,
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                }}
+                            >
+                                Filter / Edit Table
+                            </button>
+                        </div>
                     )}
                 </div>
                 <div style={{ marginBlockEnd: '16px' }}></div>
@@ -1129,6 +1146,96 @@ function SelectPage(props: {
             </button>
         </div>
     )
+}
+
+interface VariableSearchResult { name: string, displayName: string }
+
+function AddColumnSearchBox(props: {
+    editUSS: MapUSS
+    setEditUSS: (uss: MapUSS) => void
+    typeEnvironment: TypeEnvironment
+    colAdder: ((expr: UrbanStatsASTExpressionCreator) => UrbanStatsASTStatement | UrbanStatsASTExpression)
+}): ReactNode {
+    const allVariables = useMemo(() => relevantSelections(props.typeEnvironment), [props.typeEnvironment])
+
+    const doSearch = useMemo(() => {
+        return (query: string): Promise<VariableSearchResult[]> => {
+            const lowerQuery = query.toLowerCase()
+            const filtered = allVariables.filter(v =>
+                v.displayName.toLowerCase().includes(lowerQuery)
+                || v.name.toLowerCase().includes(lowerQuery),
+            )
+            return Promise.resolve(filtered)
+        }
+    }, [allVariables])
+
+    const handleAddColumn = (variable: VariableSearchResult): void => {
+        // Add the column using addColumn
+        const newAST = props.colAdder(locInfo => createCall(variable.name, locInfo)) as UrbanStatsASTStatement
+        const newUSS = convertToMapUss(newAST)
+        props.setEditUSS(newUSS)
+    }
+
+    const renderMatch = (
+        currentMatch: () => VariableSearchResult,
+        onMouseOver: () => void,
+        onClick: () => void,
+        style: React.CSSProperties,
+        dataTestId: string | undefined,
+    ): React.ReactElement => (
+        <div
+            key={currentMatch().name}
+            className="serif searchbox-dropdown-item"
+            style={style}
+            onClick={onClick}
+            onMouseOver={onMouseOver}
+            data-test-id={dataTestId}
+        >
+            {currentMatch().displayName}
+        </div>
+    )
+
+    return (
+        <GenericSearchBox
+            matches={[]}
+            doSearch={doSearch}
+            onChange={(result) => { handleAddColumn(result) }}
+            autoFocus={false}
+            placeholder="Add column..."
+            style={{ width: '100%' }}
+            renderMatch={renderMatch}
+        />
+    )
+}
+
+function relevantSelections(typeEnvironment: TypeEnvironment): VariableSearchResult[] {
+    const selections = possibilities([{ type: 'vector', elementType: { type: 'number' } }], typeEnvironment)
+    return selections
+        .filter((s): s is Selection & { type: 'variable' } => s.type === 'variable')
+        .map((selection): VariableSearchResult => {
+            const varDoc = typeEnvironment.get(selection.name)
+            const displayName = varDoc?.documentation?.humanReadableName ?? selection.name
+            return { name: selection.name, displayName }
+        })
+}
+
+function createCall(vn: string, blockId: string | undefined): UrbanStatsASTExpression {
+    assert(blockId !== undefined, 'blockId is undefined in createCall')
+    const location = emptyLocation(blockId)
+    const ident: UrbanStatsASTExpression = {
+        type: 'identifier',
+        name: { node: vn, location: emptyLocation(extendBlockIdKwarg(blockId, 'values')) },
+    }
+    const call: UrbanStatsASTExpression = {
+        type: 'call',
+        fn: {
+            type: 'identifier',
+            name: { node: 'column', location },
+        },
+        args: [{ type: 'named', name: { node: 'values', location }, value: ident }],
+        entireLoc: location,
+    }
+    return call
 }
 
 function StatisticPanelSubhead(props: { articleType: string, renderedOther: string }): ReactNode {
