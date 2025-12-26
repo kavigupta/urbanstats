@@ -17,6 +17,7 @@ export function GenericSearchBox<T>(
         placeholder: string
         style: CSSProperties | string
         renderMatch: (currentMatch: () => T, onMouseOver: () => void, onClick: () => void, style: CSSProperties, dataTestId: string | undefined) => ReactElement
+        allowEmptyQuery?: boolean
     }): ReactElement {
     const colors = useColors()
 
@@ -72,7 +73,7 @@ export function GenericSearchBox<T>(
     // Do the search
     useEffect(() => {
         void (async () => {
-            if (searchQuery === '') {
+            if (!props.allowEmptyQuery && searchQuery === '') {
                 setMatches([])
                 setFocused(0)
                 return
