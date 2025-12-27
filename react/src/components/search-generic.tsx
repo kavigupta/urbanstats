@@ -81,10 +81,7 @@ export function GenericSearchBox<T>(
     // Do the search
     useEffect(() => {
         void (async () => {
-            if (!isFocused) {
-                return
-            }
-            if (!props.allowEmptyQuery && searchQuery === '') {
+            if (!isFocused || (!props.allowEmptyQuery && searchQuery === '')) {
                 setMatches([])
                 setFocused(0)
                 return
