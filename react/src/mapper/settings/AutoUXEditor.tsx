@@ -5,7 +5,6 @@ import { ExpandButton } from '../../components/ExpandButton'
 import { RenderTwiceHidden } from '../../components/RenderTwiceHidden'
 import { CheckboxSettingCustom } from '../../components/sidebar'
 import { UrbanStatsASTExpression, UrbanStatsASTArg, locationOf } from '../../urban-stats-script/ast'
-import { AutoUXMetadata } from '../../urban-stats-script/autoux-metadata'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
@@ -59,7 +58,6 @@ function ArgumentEditor(props: {
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
-    collapsed: boolean | undefined
 }): ReactNode {
     const arg = props.argWDefault.type
     assert(arg.type === 'concrete', `Named argument ${props.name} must be concrete`)
@@ -75,7 +73,7 @@ function ArgumentEditor(props: {
     const humanReadableName = tdoc?.documentation?.namedArgs?.[props.name] ?? props.name
     assert(tdoc?.type === undefined || tdoc.type.type === 'function', `AutoUX looked up function identifier ${functionUss.fn.name.node}m, but it was not a function`)
     const collapsable = hasDefault && isEnabled && (tdoc?.type.namedArgs[props.name]?.documentation?.collapsable ?? false)
-    const collapsed = collapsable && argValue.type === 'named' && (props.collapsed ?? false)
+    const collapsed = collapsable && argValue.type === 'named' && argValue.value.type === 'autoUX' && argValue.value.metadata.collapsed === true
 
     return (
         <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', gap: '0.25em', width: '100%', margin: '0.25em 0' }}>
@@ -92,7 +90,12 @@ function ArgumentEditor(props: {
                     }}
                     onClick={() => {
                         props.setUss(
-                            { ...functionUss, args: functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, collapsed: !collapsed } : a) },
+                            { ...functionUss, args: functionUss.args.map(a =>
+                                a.type === 'named' && a.name.node === props.name
+                                    ? { ...a, value: a.value.type === 'autoUX'
+                                            ? { ...a.value, metadata: { ...a.value.metadata, collapsed: !a.value.metadata.collapsed } }
+                                            : { type: 'autoUX', expr: a.value, entireLoc: locationOf(a.value), metadata: { collapsed: true } } }
+                                    : a) },
                             {
                                 undoable: false,
                                 updateMap: false,
@@ -201,7 +204,6 @@ export function AutoUXEditor(props: {
     type: USSType[]
     label?: string
     labelWidth?: string
-    metadata?: AutoUXMetadata
 }): ReactNode {
     const ussLoc = locationOf(props.uss).start
     if (ussLoc.block.type !== 'single' || ussLoc.block.ident !== props.blockIdent) {
@@ -211,6 +213,29 @@ export function AutoUXEditor(props: {
         console.error('[failtest] USS expression location does not match block identifier', props.uss, ussLoc.block.type === 'single' ? ussLoc.block.ident : '(multi)', props.blockIdent)
     }
     const labelWidth = props.labelWidth ?? '5%'
+    const twoLines = useMobileLayout() || (props.label?.length ?? 0) > 5
+
+    if (props.uss.type === 'autoUX') {
+        const uss = props.uss
+        return (
+            <AutoUXEditor
+                {...props}
+                uss={uss.expr}
+                setUss={(newUss, o) => {
+                    if (newUss.type === 'autoUX') {
+                        props.setUss(newUss, o)
+                    }
+                    else {
+                        props.setUss({
+                            ...uss,
+                            expr: newUss,
+                        }, o)
+                    }
+                }}
+            />
+        )
+    }
+
     const subcomponent = (): [ReactNode | undefined, 'consumes-errors' | 'does-not-consume-errors'] => {
         const uss = props.uss
         if (uss.type === 'constant') {
@@ -270,7 +295,6 @@ export function AutoUXEditor(props: {
                             typeEnvironment={props.typeEnvironment}
                             errors={props.errors}
                             blockIdent={props.blockIdent}
-                            collapsed={props.metadata?.collapsed}
                         />,
                     )
                 }
@@ -415,8 +439,6 @@ export function AutoUXEditor(props: {
 
             )
 
-    const twoLines = useMobileLayout() || (props.label?.length ?? 0) > 5
-
     const component = (): ReactNode => {
         if (twoLines) {
             return (
@@ -441,28 +463,6 @@ export function AutoUXEditor(props: {
                 </div>
             )
         }
-    }
-
-    if (props.uss.type === 'autoUX') {
-        const uss = props.uss
-        return (
-            <AutoUXEditor
-                {...props}
-                uss={uss.expr}
-                setUss={(newUss, o) => {
-                    if (newUss.type === 'autoUX') {
-                        props.setUss(newUss, o)
-                    }
-                    else {
-                        props.setUss({
-                            ...uss,
-                            expr: newUss,
-                        }, o)
-                    }
-                }}
-                metadata={uss.metadata}
-            />
-        )
     }
 
     return (
