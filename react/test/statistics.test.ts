@@ -612,6 +612,7 @@ test('render many columns', async (t) => {
             await t.expect(namesPage2).eql(expectedNames.slice(10, 20))
         }
     }
+    await t.wait(500)
     await waitForLoading()
     await screencap(t)
     await downloadImage(t)
