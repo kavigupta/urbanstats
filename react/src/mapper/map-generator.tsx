@@ -122,7 +122,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
     const mapResultMain = execResult.resultingValue.value
 
-    const csvExportCallback = () => {
+    const csvExportCallback: CSVExportData = () => {
         const csvData = generateMapperCSVData(mapResultMain, execResult.context)
         const csvFilename = `${mapSettings.geographyKind}-${mapSettings.universe}-data.csv`
         return {
