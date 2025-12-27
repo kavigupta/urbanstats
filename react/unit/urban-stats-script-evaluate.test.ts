@@ -2397,7 +2397,7 @@ void test('test conditional table', () => {
     assert.deepStrictEqual(effects, [])
 })
 
-void test('test table includeOrdinalsPercentiles default is true', () => {
+void test('test table hideOrdinalsPercentiles default is false', () => {
     const effects: Effect[] = []
     const ctx = emptyContextWithInsets(effects)
     ctx.assignVariable('population', {
@@ -2408,12 +2408,12 @@ void test('test table includeOrdinalsPercentiles default is true', () => {
     const resultTable = evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="Col1")])'), ctx)
     assert.deepStrictEqual(resultTable.type, { type: 'opaque', name: 'table' })
     const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
-    assert.deepStrictEqual(resultTableRaw.includeOrdinalsPercentiles, true)
+    assert.deepStrictEqual(resultTableRaw.hideOrdinalsPercentiles, false)
     // Percentiles should still be computed
     assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 16, 50])
 })
 
-void test('test table includeOrdinalsPercentiles explicitly set to true', () => {
+void test('test table hideOrdinalsPercentiles explicitly set to true (hide)', () => {
     const effects: Effect[] = []
     const ctx = emptyContextWithInsets(effects)
     ctx.assignVariable('population', {
@@ -2421,15 +2421,15 @@ void test('test table includeOrdinalsPercentiles explicitly set to true', () => 
         value: [100, 200, 300],
         documentation: { humanReadableName: 'Population' },
     })
-    const resultTable = evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="Col1")], includeOrdinalsPercentiles=true)'), ctx)
+    const resultTable = evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="Col1")], hideOrdinalsPercentiles=true)'), ctx)
     assert.deepStrictEqual(resultTable.type, { type: 'opaque', name: 'table' })
     const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
-    assert.deepStrictEqual(resultTableRaw.includeOrdinalsPercentiles, true)
+    assert.deepStrictEqual(resultTableRaw.hideOrdinalsPercentiles, true)
     // Percentiles should still be computed
     assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 16, 50])
 })
 
-void test('test table includeOrdinalsPercentiles set to false', () => {
+void test('test table hideOrdinalsPercentiles set to false (show)', () => {
     const effects: Effect[] = []
     const ctx = emptyContextWithInsets(effects)
     ctx.assignVariable('population', {
@@ -2437,10 +2437,10 @@ void test('test table includeOrdinalsPercentiles set to false', () => {
         value: [100, 200, 300],
         documentation: { humanReadableName: 'Population' },
     })
-    const resultTable = evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="Col1")], includeOrdinalsPercentiles=false)'), ctx)
+    const resultTable = evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="Col1")], hideOrdinalsPercentiles=false)'), ctx)
     assert.deepStrictEqual(resultTable.type, { type: 'opaque', name: 'table' })
     const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
-    assert.deepStrictEqual(resultTableRaw.includeOrdinalsPercentiles, false)
-    // Percentiles should still be computed even when flag is false
+    assert.deepStrictEqual(resultTableRaw.hideOrdinalsPercentiles, false)
+    // Percentiles should still be computed even when flag is false (show ordinals/percentiles)
     assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 16, 50])
 })
