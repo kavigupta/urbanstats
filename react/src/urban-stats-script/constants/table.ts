@@ -18,7 +18,7 @@ export interface Table {
     columns: TableColumnWithPopulationPercentiles[]
     geo: string[]
     population: number[]
-    includeOrdinalsPercentiles: boolean
+    hideOrdinalsPercentiles: boolean
     title?: string
 }
 
@@ -116,9 +116,9 @@ export const table: USSValue = {
             columns: {
                 type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'opaque', name: 'column' } } },
             },
-            includeOrdinalsPercentiles: {
+            hideOrdinalsPercentiles: {
                 type: { type: 'concrete', value: { type: 'boolean' } },
-                defaultValue: createConstantExpression(true),
+                defaultValue: createConstantExpression(false),
             },
             title: {
                 type: { type: 'concrete', value: { type: 'string' } },
@@ -156,14 +156,14 @@ export const table: USSValue = {
             throw new Error(`geo must have the same length as columns. geo has length ${geo.length}, but columns have length ${columns[0].values.length}`)
         }
 
-        const includeOrdinalsPercentiles = namedArgs.includeOrdinalsPercentiles as boolean
+        const hideOrdinalsPercentiles = namedArgs.hideOrdinalsPercentiles as boolean
         const title = namedArgs.title as string | null
         const annotatedColumns = columns.map(col => attachPopulationPercentilesToColumn(col, population))
 
         return {
             type: 'opaque',
             opaqueType: 'table',
-            value: { columns: annotatedColumns, geo, population, includeOrdinalsPercentiles, title: title ?? undefined } satisfies Table,
+            value: { columns: annotatedColumns, geo, population, hideOrdinalsPercentiles, title: title ?? undefined } satisfies Table,
         }
     },
     documentation: {
@@ -172,10 +172,10 @@ export const table: USSValue = {
         isDefault: true,
         namedArgs: {
             columns: 'Columns',
-            includeOrdinalsPercentiles: 'Include Ordinals and Percentiles',
+            hideOrdinalsPercentiles: 'Hide Ordinals/Percentiles',
             title: 'Title',
         },
-        longDescription: 'Creates a table with named columns, where each column contains a list of numbers. All columns must have the same length. Optionally include ordinals and percentiles (default: true). Optionally specify a title for the table.',
+        longDescription: 'Creates a table with named columns, where each column contains a list of numbers. All columns must have the same length. Optionally hide ordinals and percentiles (default: false, i.e., show them). Optionally specify a title for the table.',
     },
 } satisfies USSValue
 
