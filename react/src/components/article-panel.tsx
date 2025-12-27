@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useContext, useRef } from 'react'
+import React, { ReactNode, useCallback, useContext, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
@@ -47,9 +47,11 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     const settings = useSettings(groupYearKeys())
     const filteredRows = rows(settings)[0]
 
-    const csvData = generateCSVDataForArticles([article], [filteredRows], true)
-    const csvFilename = `${sanitize(article.longname)}.csv`
-    const csvExportData: CSVExportData = { csvData, csvFilename }
+    const csvExportCallback = useCallback<CSVExportData>(() => {
+        const data = generateCSVDataForArticles([article], [filteredRows], true)
+        const filename = `${sanitize(article.longname)}.csv`
+        return { csvData: data, csvFilename: filename }
+    }, [article, filteredRows])
 
     const navigator = useContext(Navigator.Context)
 
@@ -70,7 +72,7 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
             <QuerySettingsConnection />
             <PageTemplate
                 screencap={(u, colors) => createScreenshot(screencapElements(), u, colors)}
-                csvExportData={csvExportData}
+                csvExportCallback={csvExportCallback}
             >
                 <div>
                     <div ref={headersRef}>
