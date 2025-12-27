@@ -127,8 +127,13 @@ export function GenericSearchBox<T>(
                     props.onFocus?.()
                 }}
                 onBlur={() => {
-                    setIsFocused(false)
-                    props.onBlur?.()
+                    // allow people to click on stuff
+                    void setTimeout(() => {
+                        if (document.activeElement !== searchboxRef.current) {
+                            setIsFocused(false)
+                            props.onBlur?.()
+                        }
+                    }, 200)
                 }}
                 spellCheck={false}
                 ref={searchboxRef}
