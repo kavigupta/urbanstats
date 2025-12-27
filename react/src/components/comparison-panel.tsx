@@ -3,7 +3,7 @@ import './article.css'
 
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, TouchSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import { SortableContext, arrayMove, horizontalListSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import React, { ReactNode, useContext, useId, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useContext, useId, useMemo, useRef, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import { boundingBox, extendBoxes } from '../map-partition'
@@ -268,9 +268,11 @@ export function ComparisonPanel(props: {
 
     const topLeftSpec: CellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
 
-    const csvData = generateCSVDataForArticles(localArticlesToUse, dataByArticleStat, includeOrdinals)
-    const csvFilename = `${sanitize(joinedString)}.csv`
-    const csvExportData: CSVExportData = { csvData, csvFilename }
+    const csvExportCallback = useCallback<CSVExportData>(() => {
+        const data = generateCSVDataForArticles(localArticlesToUse, dataByArticleStat, includeOrdinals)
+        const filename = `${sanitize(joinedString)}.csv`
+        return { csvData: data, csvFilename: filename }
+    }, [joinedString, localArticlesToUse, dataByArticleStat, includeOrdinals])
 
     return (
         <universeContext.Provider value={{
@@ -292,7 +294,7 @@ export function ComparisonPanel(props: {
                 <QuerySettingsConnection />
                 <PageTemplate
                     screencap={universe => createScreenshot(screencapElements(), universe, colors)}
-                    csvExportData={csvExportData}
+                    csvExportCallback={csvExportCallback}
                 >
                     <DndContext
                         sensors={sensors}

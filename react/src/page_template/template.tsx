@@ -16,12 +16,12 @@ import { useHideSidebarDesktop } from './utils'
 
 export function PageTemplate({
     screencap = undefined,
-    csvExportData = undefined,
+    csvExportCallback = undefined,
     children,
     showFooter = true,
 }: {
     screencap?: (currentUniverse: string | undefined, colors: Colors) => Promise<void>
-    csvExportData?: CSVExportData
+    csvExportCallback?: CSVExportData
     children?: React.ReactNode
     showFooter?: boolean
 }): ReactNode {
@@ -45,9 +45,10 @@ export function PageTemplate({
     }, [hamburgerOpen, mobileLayout, hideSidebarDesktop])
 
     const hasScreenshotButton = screencap !== undefined
-    const hasCSVButton = csvExportData !== undefined
+    const hasCSVButton = csvExportCallback !== undefined
 
     const exportCSV = (): void => {
+        const csvExportData = csvExportCallback?.()
         if (csvExportData === undefined) {
             return
         }
