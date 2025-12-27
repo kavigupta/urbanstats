@@ -167,7 +167,7 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
                     renderedStatname: table.title ?? table.columns.map(col => col.name).join(', '),
                     totalCountInClass: firstColumn.values.length,
                     totalCountOverall: firstColumn.values.length,
-                    includeOrdinalsPercentiles: table.includeOrdinalsPercentiles,
+                    hideOrdinalsPercentiles: table.hideOrdinalsPercentiles,
                     uuid: uuid(),
                 })
                 setErrors(execErrors)
@@ -193,7 +193,7 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
             totalCountInClass: successData.totalCountInClass,
             totalCountOverall: successData.totalCountOverall,
             uuid: successData.uuid,
-            includeOrdinalsPercentiles: successData.includeOrdinalsPercentiles,
+            hideOrdinalsPercentiles: successData.hideOrdinalsPercentiles,
         }
     }, [successData])
 
