@@ -96,7 +96,7 @@ export function statisticDescriptor(props: {
     }
     return {
         kind: 'statistic',
-        statname: props.statDesc.statname,
+        ...(props.statDesc.type === 'simple-statistic' ? { statname: props.statDesc.statname } : { uss: props.statDesc.uss }),
         article_type: props.articleType,
         start,
         amount: props.amount,

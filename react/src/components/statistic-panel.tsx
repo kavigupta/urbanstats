@@ -1,11 +1,18 @@
+import { randomBytes } from 'crypto'
+
+import objectHash from 'object-hash'
 import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import explanation_pages from '../data/explanation_page'
+import validGeographies from '../data/mapper/used_geographies'
 import stats from '../data/statistic_list'
-import names from '../data/statistic_name_list'
+import statistic_name_list from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import universes_ordered from '../data/universes_ordered'
 import { loadStatisticsPage } from '../load_json'
+import { defaultTypeEnvironment } from '../mapper/context'
+import { attemptParseAsTopLevel, idOutput, MapUSS } from '../mapper/settings/TopLevelEditor'
+import { convertToMapUss } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { sanitize, statisticDescriptor } from '../navigation/links'
 import { RelativeLoader } from '../navigation/loading'
@@ -15,6 +22,14 @@ import { PageTemplate } from '../page_template/template'
 import '../common.css'
 import './article.css'
 import { Universe, universeContext, useUniverse } from '../universe'
+import { DisplayResults } from '../urban-stats-script/Editor'
+import { toStatement, UrbanStatsASTStatement } from '../urban-stats-script/ast'
+import { TableColumnWithPopulationPercentiles, tableType } from '../urban-stats-script/constants/table'
+import { EditorError } from '../urban-stats-script/editor-utils'
+import { noLocation } from '../urban-stats-script/location'
+import { parse, parseNoErrorAsCustomNode, unparse } from '../urban-stats-script/parser'
+import { renderType, TypeEnvironment } from '../urban-stats-script/types-values'
+import { executeAsync } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType } from '../utils/text'
@@ -26,13 +41,19 @@ import { CSVExportData, generateStatisticsPanelCSVData } from './csv-export'
 import { forType, StatCol, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow } from './pointer-cell'
 import { createScreenshot, ScreencapElements } from './screenshot'
+import { computeComparisonWidthColumns, MaybeScroll } from './scrollable'
 import { TableContents, CellSpec, SuperHeaderSpec } from './supertable'
 import { ColumnIdentifier } from './table'
 
-export interface StatisticDescriptor {
-    type: 'simple-statistic'
-    statname: StatName
-}
+export type StatisticDescriptor =
+    | {
+        type: 'simple-statistic'
+        statname: StatName
+    }
+    | {
+        type: 'uss-statistic'
+        uss: string
+    }
 
 interface StatisticCommonProps {
     start: number
@@ -63,10 +84,14 @@ interface StatisticData {
 }
 
 type StatisticDataOutcome = (
-    { type: 'success' } & StatisticData
-    | { type: 'error', error: string }
-    | { type: 'loading' }
+    { type: 'success' } & StatisticData & { errors: EditorError[] }
+    | { type: 'error', errors: EditorError[] }
+    | { type: 'loading', errors: EditorError[] }
 )
+
+function uuid(): string {
+    return randomBytes(20).toString('hex')
+}
 
 function computeOrdinals(values: number[]): number[] {
     const indices: number[] = values.map((_, idx) => idx)
@@ -77,8 +102,113 @@ function computeOrdinals(values: number[]): number[] {
     })
     return ordinals
 }
+
+function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (typeof validGeographies)[number], universe: Universe): StatisticDataOutcome & { uuid: string } {
+    const [loading, setLoading] = useState(true)
+    const [errors, setErrors] = useState<EditorError[]>([])
+    const [successData, setSuccessData] = useState<StatisticData & { uuid: string } | undefined>(undefined)
+
+    // Use a ref to track the last executed state (uss, geographyKind, universe)
+    const lastState = useRef<string | undefined>(undefined)
+
+    useEffect(() => {
+        const state = objectHash([uss, geographyKind, universe])
+        if (state === lastState.current) {
+            // state unchanged, no need to re-execute
+            return
+        }
+        lastState.current = state
+
+        setLoading(true)
+        setErrors([])
+        const executeUSS = async (): Promise<void> => {
+            try {
+                const exec = await executeAsync({ descriptor: { kind: 'statistics', geographyKind, universe }, stmts: uss })
+
+                const execErrors = exec.error
+
+                if (exec.resultingValue === undefined) {
+                    setErrors(execErrors)
+                    setSuccessData(undefined) // Clear output on execution error
+                    setLoading(false)
+                    return
+                }
+                const res = exec.resultingValue
+
+                assert(res.type.name === 'table', `Expected resulting value to be of type table, got ${renderType(res.type)}. This was checked earlier (hence assertion not error)`)
+
+                const tableValue = exec.resultingValue.value
+                const table = tableValue.value
+                assert(table.columns.length > 0, 'Table has no columns. This was checked earlier (hence assertion not error)')
+
+                if (table.columns.length === 0) {
+                    const error: EditorError = { type: 'error', value: 'Table has no columns', location: noLocation, kind: 'error' }
+                    const allErrors = [...execErrors, error]
+                    setErrors(allErrors)
+                    setLoading(false)
+                    return
+                }
+
+                // Convert all columns to the data format
+                const firstColumn = table.columns[0]
+                const geonames = table.geo
+
+                const dataColumns = table.columns.map((col: TableColumnWithPopulationPercentiles) => ({
+                    value: col.values,
+                    populationPercentile: col.populationPercentiles,
+                    ordinal: computeOrdinals(col.values),
+                    name: col.name,
+                    unit: col.unit,
+                }))
+
+                setSuccessData({
+                    data: dataColumns,
+                    articleNames: geonames,
+                    renderedStatname: table.title ?? table.columns.map(col => col.name).join(', '),
+                    totalCountInClass: firstColumn.values.length,
+                    totalCountOverall: firstColumn.values.length,
+                    hideOrdinalsPercentiles: table.hideOrdinalsPercentiles,
+                    uuid: uuid(),
+                })
+                setErrors(execErrors)
+                setLoading(false)
+            }
+            catch (e) {
+                const error: EditorError = { type: 'error', value: e instanceof Error ? e.message : 'Unknown error', location: noLocation, kind: 'error' }
+                setErrors([error])
+                setLoading(false)
+            }
+        }
+        void executeUSS()
+    }, [uss, geographyKind, universe])
+
+    const successDataSorted = useMemo((): StatisticData & { uuid: string } | undefined => {
+        if (successData === undefined) {
+            return undefined
+        }
+        return {
+            data: successData.data,
+            articleNames: successData.articleNames,
+            renderedStatname: successData.renderedStatname,
+            totalCountInClass: successData.totalCountInClass,
+            totalCountOverall: successData.totalCountOverall,
+            uuid: successData.uuid,
+            hideOrdinalsPercentiles: successData.hideOrdinalsPercentiles,
+        }
+    }, [successData])
+
+    if (loading) {
+        return { type: 'loading', errors, uuid: 'loading' }
+    }
+    assert(errors.length > 0 || successDataSorted !== undefined, 'errors and successDataSorted cannot both be empty/undefined')
+    if (successDataSorted !== undefined) {
+        return { type: 'success', ...successDataSorted, errors }
+    }
+    return { type: 'error', errors, uuid: objectHash(errors) }
+}
+
 async function loadStatisticsData(universe: Universe, statname: StatName, articleType: string, counts: CountsByUT): Promise<StatisticDataOutcome> {
-    const statIndex = names.indexOf(statname)
+    const statIndex = statistic_name_list.indexOf(statname)
     const [data, articleNames] = await loadStatisticsPage(universe, paths[statIndex], articleType)
     const totalCountInClass = forType(counts, universe, stats[statIndex], articleType)
     const totalCountOverall = forType(counts, universe, stats[statIndex], 'overall')
@@ -98,13 +228,25 @@ async function loadStatisticsData(universe: Universe, statname: StatName, articl
         totalCountInClass,
         totalCountOverall,
         hideOrdinalsPercentiles: false, // Statistics pages show ordinals/percentiles by default (false = show)
+        errors: [],
     }
+}
+
+function parseUSSFromString(ussString: string, typeEnvironment: TypeEnvironment, isUssStatistic: boolean): MapUSS {
+    const parsed = parse(ussString, { type: 'single', ident: idOutput })
+    if (parsed.type === 'error') {
+        return parseNoErrorAsCustomNode(ussString, idOutput, [tableType])
+    }
+    const res = attemptParseAsTopLevel(convertToMapUss(parsed), typeEnvironment, isUssStatistic, [tableType])
+    return res
 }
 
 export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
     const [loadedData, setLoadedData] = useState<StatisticData | undefined>(undefined)
+
+    const typeEnvironment = useMemo(() => defaultTypeEnvironment(props.universe as Universe | undefined), [props.universe])
 
     const universesFiltered = useMemo(() => {
         if (loadedData?.statcol === undefined) {
@@ -139,7 +281,26 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     const subHeaderTextClass = useSubHeaderTextClass()
 
-    const content = <SimpleStatisticPanel {...props} descriptor={props.descriptor} onDataLoaded={setLoadedData} tableRef={tableRef} />
+    let content: ReactNode
+    if (props.descriptor.type === 'uss-statistic') {
+        const initialUSS = props.descriptor.uss
+        const editUSS = parseUSSFromString(initialUSS, typeEnvironment, true)
+
+        const ussString = unparse(editUSS)
+        const ussAST = toStatement(editUSS)
+        content = (
+            <USSStatisticPanel
+                {...props}
+                descriptor={{ type: 'uss-statistic', uss: ussString }}
+                ussAST={ussAST}
+                onDataLoaded={setLoadedData}
+                tableRef={tableRef}
+            />
+        )
+    }
+    else {
+        content = <SimpleStatisticPanel {...props} descriptor={props.descriptor} onDataLoaded={setLoadedData} tableRef={tableRef} />
+    }
 
     const navigator = useContext(Navigator.Context)
 
@@ -151,7 +312,8 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 void navigator.navigate({
                     kind: 'statistic',
                     article_type: props.articleType,
-                    statname: props.descriptor.statname,
+                    statname: props.descriptor.type === 'simple-statistic' ? props.descriptor.statname : undefined,
+                    uss: props.descriptor.type === 'uss-statistic' ? props.descriptor.uss : undefined,
                     start: props.start,
                     amount: props.amount,
                     order: props.order,
@@ -169,7 +331,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                 screencap={screencapElements ? (universe, templateColors) => createScreenshot(screencapElements(), universe, templateColors) : undefined}
                 csvExportCallback={csvExportCallback}
             >
-                <div ref={headersRef}>
+                <div ref={headersRef} style={{ position: 'relative' }}>
                     <StatisticPanelHead
                         articleType={props.articleType}
                         renderedOther={props.order}
@@ -210,8 +372,7 @@ function SimpleStatisticPanel(props: SimpleStatisticPanelProps): ReactNode {
     if (data.result.type === 'error') {
         return (
             <div>
-                Error:
-                {data.result.error}
+                <DisplayResults results={data.result.errors} editor={false} />
             </div>
         )
     }
@@ -221,6 +382,47 @@ function SimpleStatisticPanel(props: SimpleStatisticPanelProps): ReactNode {
     }
 
     return <RelativeLoader loading={true} />
+}
+
+interface USSStatisticPanelProps extends StatisticCommonProps {
+    descriptor: { type: 'uss-statistic', uss: string }
+    onDataLoaded: (data: StatisticData) => void
+    tableRef: React.RefObject<HTMLDivElement>
+    ussAST: UrbanStatsASTStatement
+}
+
+function USSStatisticPanel(props: USSStatisticPanelProps): ReactNode {
+    const { onDataLoaded, tableRef, ...restProps } = props
+    const data = useUSSStatisticPanelData(
+        restProps.ussAST,
+        restProps.articleType as (typeof validGeographies)[number],
+        restProps.universe,
+    )
+
+    const lastDataUUID = useRef<string | undefined>(undefined)
+    useEffect(() => {
+        if (data.type === 'success') {
+            // Only call onDataLoaded if the data has actually changed
+            if (lastDataUUID.current !== data.uuid) {
+                lastDataUUID.current = data.uuid
+                onDataLoaded(data)
+            }
+        }
+    }, [data, onDataLoaded])
+
+    if (data.type === 'loading') {
+        return <RelativeLoader loading={true} />
+    }
+
+    if (data.type === 'error') {
+        return (
+            <div>
+                <DisplayResults results={data.errors} editor={false} />
+            </div>
+        )
+    }
+
+    return <StatisticPanelOnceLoaded {...restProps} {...data} statDesc={restProps.descriptor} tableRef={tableRef} />
 }
 
 type StatisticPanelLoadedProps = StatisticCommonProps & StatisticData & { statDesc: StatisticDescriptor, tableRef: React.RefObject<HTMLDivElement> }
@@ -313,29 +515,34 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
         return colors.background
     }
 
-    const widthLeftHeader = 50
+    const ncols = props.data.length
+
+    const widthLeftHeader = ncols > 1 ? 25 : 50
 
     const numStatColumns = props.data.length
+    const columnWidth = (100 - widthLeftHeader) / (numStatColumns === 0 ? 1 : numStatColumns)
 
     return (
         <div>
-            <div className="serif" ref={props.tableRef}>
-                <StatisticPanelTable
-                    indexRange={indexRange}
-                    sortedIndices={sortedIndices}
-                    props={props}
-                    isAscending={isAscending}
-                    swapAscendingDescending={swapAscendingDescending}
-                    changeSortColumn={changeSortColumn}
-                    sortColumn={props.sortColumn}
-                    getRowBackgroundColor={getRowBackgroundColor}
-                    widthLeftHeader={widthLeftHeader}
-                    columnWidth={(100 - widthLeftHeader) / (numStatColumns === 0 ? 1 : numStatColumns)}
-                    data={props.data}
-                    articleNames={props.articleNames}
-                    hideOrdinalsPercentiles={props.hideOrdinalsPercentiles}
-                />
-            </div>
+            <MaybeScroll widthColumns={computeComparisonWidthColumns(ncols, true)}>
+                <div className="serif" ref={props.tableRef}>
+                    <StatisticPanelTable
+                        indexRange={indexRange}
+                        sortedIndices={sortedIndices}
+                        props={props}
+                        isAscending={isAscending}
+                        swapAscendingDescending={swapAscendingDescending}
+                        changeSortColumn={changeSortColumn}
+                        sortColumn={props.sortColumn}
+                        getRowBackgroundColor={getRowBackgroundColor}
+                        widthLeftHeader={widthLeftHeader}
+                        columnWidth={columnWidth}
+                        data={props.data}
+                        articleNames={props.articleNames}
+                        hideOrdinalsPercentiles={props.hideOrdinalsPercentiles}
+                    />
+                </div>
+            </MaybeScroll>
             <div style={{ marginBlockEnd: '1em' }}></div>
             <Pagination
                 {...props}

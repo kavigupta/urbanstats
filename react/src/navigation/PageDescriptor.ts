@@ -67,24 +67,30 @@ const comparisonSchemaFromParams = z.object({
 
 const statisticSchema = z.object({
     article_type: z.string(),
-    statname: z.string() as z.ZodType<StatName, z.ZodTypeDef, StatName>,
+    statname: z.optional(z.string() as z.ZodType<StatName, z.ZodTypeDef, StatName>),
+    uss: z.optional(z.string()),
     start: z.number().int(),
     amount: z.union([z.literal('All'), z.number().int()]),
     order: z.union([z.literal('descending'), z.literal('ascending')]),
     highlight: z.optional(z.string()),
     universe: z.optional(universeSchema),
     sort_column: z.optional(z.number().int()),
+}).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
+    message: 'Either statname or uss must be provided, but not both',
 })
 
 const statisticSchemaFromParams = z.object({
     article_type: z.string(),
-    statname: z.string().transform(s => s.replaceAll('__PCT__', '%') as StatName),
+    statname: z.optional(z.string().transform(s => s.replaceAll('__PCT__', '%') as StatName)),
+    uss: z.optional(z.string()),
     start: z.optional(z.coerce.number().int()).default(1),
     amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
     order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
     highlight: z.optional(z.string()),
     universe: z.optional(universeSchema).catch(undefined),
     sort_column: z.optional(z.coerce.number().int()).default(0),
+}).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
+    message: 'Either statname or uss must be provided, but not both',
 })
 
 const randomSchema = z.object({
@@ -273,7 +279,8 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
         case 'statistic':
             pathname = '/statistic.html'
             searchParams = {
-                statname: pageDescriptor.statname.replaceAll('%', '__PCT__'),
+                statname: pageDescriptor.statname?.replaceAll('%', '__PCT__'),
+                uss: pageDescriptor.uss,
                 article_type: pageDescriptor.article_type,
                 start: pageDescriptor.start.toString(),
                 amount: pageDescriptor.amount.toString(),
@@ -493,10 +500,15 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             return {
                 pageData: {
                     kind: 'statistic',
-                    descriptor: {
-                        type: 'simple-statistic',
-                        statname: newDescriptor.statname,
-                    },
+                    descriptor: newDescriptor.statname !== undefined
+                        ? {
+                                type: 'simple-statistic',
+                                statname: newDescriptor.statname,
+                            }
+                        : {
+                                type: 'uss-statistic',
+                                uss: newDescriptor.uss!,
+                            },
                     order: newDescriptor.order,
                     highlight: newDescriptor.highlight ?? undefined,
                     articleType: newDescriptor.article_type,
@@ -761,7 +773,7 @@ export function pageTitle(pageData: PageData): string {
         case 'article':
             return pageData.article.shortname
         case 'statistic':
-            return pageData.descriptor.statname
+            return pageData.descriptor.type === 'simple-statistic' ? pageData.descriptor.statname : 'Urban Stats: Custom Table'
         case 'comparison':
             return pageData.articles.map(x => x.shortname).join(' vs ')
         case 'editor':
