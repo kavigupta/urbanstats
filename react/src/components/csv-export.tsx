@@ -134,13 +134,13 @@ export function generateMapperCSVData(
         row.push(name)
         if (result.opaqueType === 'cMap' || result.opaqueType === 'pMap') {
             const value = result.value.data[i]
-            row.push(value.toLocaleString())
+            row.push(formatNumberForCSV(value))
         }
         else {
             const r = result.value.dataR[i]
             const g = result.value.dataG[i]
             const b = result.value.dataB[i]
-            row.push(r.toLocaleString(), g.toLocaleString(), b.toLocaleString())
+            row.push(formatNumberForCSV(r), formatNumberForCSV(g), formatNumberForCSV(b))
         }
         if (contextVarNames !== undefined) {
             const contextValues = valuesEach.get(name)
@@ -152,4 +152,49 @@ export function generateMapperCSVData(
     })
 
     return [headerRow, ...dataRows]
+}
+
+export function generateStatisticsPanelCSVData(
+    articleNames: string[],
+    data: { name: string, value: number[], ordinal: number[], populationPercentile: number[] }[],
+    includeOrdinalsPercentiles: boolean,
+): string[][] {
+    // Build header row: Name, then for each column: column name, optionally "column name Ord", "column name percentile"
+    const headerRow: string[] = ['Name']
+
+    for (const col of data) {
+        headerRow.push(col.name)
+        if (includeOrdinalsPercentiles) {
+            headerRow.push(`${col.name} Ord`, `${col.name} percentile`)
+        }
+    }
+
+    const dataRows: string[][] = []
+
+    for (let i = 0; i < articleNames.length; i++) {
+        const name = articleNames[i]
+        const row: string[] = [name]
+
+        for (const col of data) {
+            const value = col.value[i]
+            const formattedValue = formatNumberForCSV(value)
+            row.push(formattedValue)
+
+            if (includeOrdinalsPercentiles) {
+                const ordinal = col.ordinal[i]
+                const percentile = col.populationPercentile[i]
+                row.push(
+                    ordinal.toString(),
+                    percentile.toFixed(1),
+                )
+            }
+        }
+
+        dataRows.push(row)
+    }
+    return [headerRow, ...dataRows]
+}
+
+function formatNumberForCSV(value: number): string {
+    return value.toLocaleString(undefined, { maximumFractionDigits: 10 })
 }

@@ -1,8 +1,9 @@
-import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
+import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { emptyLocation } from '../../urban-stats-script/lexer'
-import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement } from '../../urban-stats-script/location'
-import { parseNoErrorAsCustomNode, unparse } from '../../urban-stats-script/parser'
+import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement, LocInfo } from '../../urban-stats-script/location'
+import { Decorated, ParseError, parseNoErrorAsCustomNode, unparse } from '../../urban-stats-script/parser'
 import { renderType, TypeEnvironment, USSObjectType, USSType } from '../../urban-stats-script/types-values'
+import { assert } from '../../utils/defensive'
 
 export function maybeParseExpr(
     expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
@@ -30,6 +31,10 @@ export function parseExpr(
     preserveCustomNodes: boolean,
 ): UrbanStatsASTExpression {
     const parsed = attemptParseExpr(expr, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)
+    // just to confirm the block IDs have been set correctly
+    // this will emit a console error if they are not correct that is picked up by tests
+    // shouldn't be a significant performance issue since it's just a single traversal
+    if (parsed !== undefined) changeBlockId(parsed, blockIdent, '')
     return parsed ?? fallback(unparse(expr), blockIdent, types)
 }
 
@@ -168,8 +173,8 @@ function attemptParseExpr(
             }
             nameds = nameds.map(a => ({
                 type: 'named',
-                name: a.name,
-                value: parseExpr(a.value, extendBlockIdKwarg(blockIdent, a.name.node), [(fnType.namedArgs[a.name.node].type as { type: 'concrete', value: USSType }).value], typeEnvironment, fallback, preserveCustomNodes),
+                name: { node: a.name.node, location: emptyLocation(blockIdent) },
+                value: parseExpr(a.value, extendBlockIdKwarg(blockIdent, a.name.node), [(fnType.namedArgs[a.name.node].type as { type: 'concrete', value: USSType }).value], typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes),
             }))
             return {
                 type: 'call',
@@ -236,4 +241,169 @@ export function possibilities(target: USSType[], env: TypeEnvironment): Selectio
         results.push(...variables)
     }
     return results
+} export function changeBlockId(expr: UrbanStatsASTExpression, a: string, b: string): UrbanStatsASTExpression {
+    function recD<T>(e: Decorated<T>): Decorated<T> {
+        return {
+            node: e.node,
+            location: recL(e.location),
+        }
+    }
+
+    function recL(l: LocInfo): LocInfo {
+        switch (l.start.block.type) {
+            case 'single':
+                assert(l.end.block.type === 'single', 'Mismatched block types in LocInfo in changeBlockId')
+                assert(l.start.block.ident === l.end.block.ident, 'Mismatched block idents in LocInfo in changeBlockId')
+                if (!l.start.block.ident.startsWith(a)) {
+                    console.error(`[failtest] Block ident mismatch in changeBlockId: expected to start with ${JSON.stringify(a)}, got ${JSON.stringify(l.start.block.ident)}`)
+                    return l
+                }
+                const newBlockIdentStart = b + l.start.block.ident.slice(a.length)
+                return {
+                    start: {
+                        ...l.start,
+                        block: {
+                            type: 'single',
+                            ident: newBlockIdentStart,
+                        },
+                    },
+                    end: {
+                        ...l.end,
+                        block: {
+                            type: 'single',
+                            ident: newBlockIdentStart,
+                        },
+                    },
+                }
+            case 'multi':
+                assert(l.end.block.type === 'multi', 'Mismatched block types in LocInfo in changeBlockId')
+                return l // do nothing
+        }
+    }
+
+    function recErr(err: ParseError): ParseError {
+        return {
+            ...err,
+            location: recL(err.location),
+        }
+    }
+
+    function recS(s: UrbanStatsASTStatement): UrbanStatsASTStatement {
+        switch (s.type) {
+            case 'expression':
+                return {
+                    type: 'expression',
+                    value: recE(s.value),
+                }
+            case 'assignment':
+                return {
+                    type: 'assignment',
+                    lhs: recE(s.lhs) as UrbanStatsASTLHS,
+                    value: recE(s.value),
+                }
+            case 'statements':
+                return {
+                    type: 'statements',
+                    entireLoc: recL(s.entireLoc),
+                    result: s.result.map(recS),
+                }
+            case 'parseError':
+                return {
+                    type: 'parseError',
+                    originalCode: s.originalCode,
+                    errors: s.errors.map(recErr),
+                }
+            case 'condition':
+                return {
+                    type: 'condition',
+                    condition: recE(s.condition),
+                    entireLoc: recL(s.entireLoc),
+                    rest: s.rest.map(recS),
+                }
+        }
+    }
+
+    function recE(e: UrbanStatsASTExpression): UrbanStatsASTExpression {
+        switch (e.type) {
+            case 'identifier':
+                return { type: 'identifier', name: recD(e.name) }
+            case 'constant':
+                return { type: 'constant', value: recD(e.value) }
+            case 'call':
+                return {
+                    type: 'call',
+                    fn: recE(e.fn),
+                    args: e.args.map((arg) => {
+                        if (arg.type === 'named') {
+                            return {
+                                type: 'named' as const,
+                                name: recD(arg.name),
+                                value: recE(arg.value),
+                            }
+                        }
+                        else {
+                            return {
+                                type: 'unnamed' as const,
+                                value: recE(arg.value),
+                            }
+                        }
+                    }),
+                    entireLoc: recL(e.entireLoc),
+                }
+            case 'vectorLiteral':
+                return {
+                    type: 'vectorLiteral',
+                    entireLoc: recL(e.entireLoc),
+                    elements: e.elements.map(recE),
+                }
+            case 'objectLiteral':
+                return {
+                    type: 'objectLiteral',
+                    entireLoc: recL(e.entireLoc),
+                    properties: e.properties.map(([k, v]) => [k, recE(v)]),
+                }
+            case 'customNode':
+                return {
+                    type: 'customNode',
+                    expr: recS(e.expr),
+                    entireLoc: recL(e.entireLoc),
+                    originalCode: e.originalCode,
+                }
+            case 'attribute':
+                return {
+                    type: 'attribute',
+                    expr: recE(e.expr),
+                    name: recD(e.name),
+                }
+            case 'binaryOperator':
+                return {
+                    type: 'binaryOperator',
+                    operator: recD(e.operator),
+                    left: recE(e.left),
+                    right: recE(e.right),
+                }
+            case 'unaryOperator':
+                return {
+                    type: 'unaryOperator',
+                    operator: recD(e.operator),
+                    expr: recE(e.expr),
+                }
+            case 'if':
+                return {
+                    type: 'if',
+                    condition: recE(e.condition),
+                    then: recS(e.then),
+                    else: e.else ? recS(e.else) : undefined,
+                    entireLoc: recL(e.entireLoc),
+                }
+            case 'do':
+                return {
+                    type: 'do',
+                    statements: e.statements.map(recS),
+                    entireLoc: recL(e.entireLoc),
+                }
+        }
+    }
+
+    return recE(expr)
 }

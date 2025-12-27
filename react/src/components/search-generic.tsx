@@ -9,7 +9,7 @@ export function GenericSearchBox<T>(
         matches: T[]
         doSearch: (sq: string) => Promise<T[]>
         onChange?: (inp: T) => void
-        link: (inp: T) => ReturnType<Navigator['link']>
+        link?: (inp: T) => ReturnType<Navigator['link']>
         onFocus?: () => void
         onBlur?: () => void
         onTextPresenceChange?: (hasText: boolean) => void
@@ -17,6 +17,7 @@ export function GenericSearchBox<T>(
         placeholder: string
         style: CSSProperties | string
         renderMatch: (currentMatch: () => T, onMouseOver: () => void, onClick: () => void, style: CSSProperties, dataTestId: string | undefined) => ReactElement
+        allowEmptyQuery?: boolean
     }): ReactElement {
     const colors = useColors()
 
@@ -26,9 +27,17 @@ export function GenericSearchBox<T>(
     const [focused, setFocused] = React.useState(0)
     const [matches, setMatches] = useState<T[]>([])
 
+    const [isFocused, setIsFocused] = useState(false)
+    const searchboxRef = useRef<HTMLInputElement>(null)
+
     const searchQuery = queryRef.current
 
     const reset = (): void => {
+        // blur the input if we allow empty queries
+        if (props.allowEmptyQuery) {
+            searchboxRef.current?.blur()
+            setIsFocused(false)
+        }
         setQuery('')
         queryRef.current = ''
         setMatches([])
@@ -48,7 +57,7 @@ export function GenericSearchBox<T>(
         event.preventDefault()
         const terms = matches
         if (terms.length > 0) {
-            void props.link(terms[focused]).onClick()
+            void props.link?.(terms[focused]).onClick()
             props.onChange?.(terms[focused])
             reset()
         }
@@ -72,7 +81,10 @@ export function GenericSearchBox<T>(
     // Do the search
     useEffect(() => {
         void (async () => {
-            if (searchQuery === '') {
+            if (!isFocused) {
+                return
+            }
+            if (!props.allowEmptyQuery && searchQuery === '') {
                 setMatches([])
                 setFocused(0)
                 return
@@ -88,7 +100,7 @@ export function GenericSearchBox<T>(
             setMatches(result)
             setFocused(f => Math.max(0, Math.min(f, result.length - 1)))
         })()
-    }, [searchQuery, doSearch])
+    }, [searchQuery, doSearch, props.allowEmptyQuery, isFocused])
 
     return (
         <form
@@ -113,9 +125,16 @@ export function GenericSearchBox<T>(
                     props.onTextPresenceChange?.(newValue.length > 0)
                 }}
                 value={query}
-                onFocus={props.onFocus}
-                onBlur={props.onBlur}
+                onFocus={() => {
+                    setIsFocused(true)
+                    props.onFocus?.()
+                }}
+                onBlur={() => {
+                    setIsFocused(false)
+                    props.onBlur?.()
+                }}
                 spellCheck={false}
+                ref={searchboxRef}
             />
 
             <div

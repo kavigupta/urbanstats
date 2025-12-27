@@ -21,7 +21,7 @@ import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import { SelectionContext, Selection as ContextSelection } from './SelectionContext'
 import { Selector, classifyExpr, getColor, labelPadding } from './Selector'
-import { maybeParseExpr, parseExpr, Selection, possibilities } from './parseExpr'
+import { maybeParseExpr, parseExpr, Selection, possibilities, changeBlockId } from './parseExpr'
 
 function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression {
     if (type.type === 'number') {
@@ -315,14 +315,17 @@ export function AutoUXEditor(props: {
                         </div>
                     ))}
                     <button
+                        data-test-id="test-add-vector-element-button"
                         style={{ alignSelf: 'flex-start', marginTop: 4 }}
                         onClick={() => {
+                            const subIdentPrev = extendBlockIdVectorElement(props.blockIdent, uss.elements.length - 1)
+                            const subIdent = extendBlockIdVectorElement(props.blockIdent, uss.elements.length)
                             const newElements = [
                                 ...uss.elements,
                                 // Copy the last element if there is one
                                 uss.elements.length > 0
-                                    ? uss.elements[uss.elements.length - 1]
-                                    : createDefaultExpression(elementType, extendBlockIdVectorElement(props.blockIdent, uss.elements.length), props.typeEnvironment),
+                                    ? changeBlockId(uss.elements[uss.elements.length - 1], subIdentPrev, subIdent)
+                                    : createDefaultExpression(elementType, subIdent, props.typeEnvironment),
                             ]
                             props.setUss({ ...uss, elements: newElements }, {})
                         }}
@@ -608,7 +611,7 @@ function defaultForSelection(
 
     switch (selection.type) {
         case 'custom':
-            return parseNoErrorAsCustomNode(unparse(current), blockIdent, [type])
+            return parseNoErrorAsCustomNode(unparse(current, { simplify: true }), blockIdent, [type])
         case 'constant':
             return createDefaultExpression(type, blockIdent, typeEnvironment)
         case 'variable':
