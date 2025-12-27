@@ -684,11 +684,23 @@ test('add columns starting from a statname', async (t) => {
 `)
 })
 
-test('column errors', async (t) => {
+test('column click off', async (t) => {
     await t.click(Selector('input').withAttribute('placeholder', 'Add column...'))
     const searchResult = Selector('.searchbox-dropdown-item').withExactText('Population')
     await t.expect(searchResult.exists).ok()
     // click off
     await t.click(Selector('div').withExactText('Value'))
     await t.expect(searchResult.exists).notOk()
+})
+
+test('column click on element', async (t) => {
+    await t.click(Selector('input').withAttribute('placeholder', 'Add column...'))
+    const searchResult = Selector('.searchbox-dropdown-item').withExactText('Population')
+    await t.expect(searchResult.exists).ok()
+    await t.click(searchResult)
+    await waitForLoading()
+    await t.click(Selector('button[data-test-id="edit"]'))
+    await waitForLoading()
+    await toggleCustomScript(t)
+    await t.expect(nthEditor(0).textContent).eql('table(columns=[column(values=white), column(values=population)])\n')
 })
