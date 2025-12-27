@@ -1,4 +1,4 @@
-import React, { ChangeEvent, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import explanation_pages from '../data/explanation_page'
 import stats from '../data/statistic_list'
