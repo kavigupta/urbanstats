@@ -184,7 +184,7 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
             },
         }}
         >
-            <PageTemplate csvExportData={mapGenerator.exportCSV} screencap={exportPng} showFooter={false}>
+            <PageTemplate csvExportCallback={mapGenerator.exportCSV} screencap={exportPng} showFooter={false}>
                 <MaybeSplitLayout
                     error={mapGenerator.errors.some(e => e.kind === 'error')}
                     left={(
@@ -416,7 +416,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
     })
 
     return (
-        <PageTemplate csvExportData={mapGenerator.exportCSV} showFooter={false}>
+        <PageTemplate csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
             <MaybeSplitLayout
                 left={undefined}
                 error={false}
@@ -633,7 +633,7 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
     })
 
     return (
-        <PageTemplate csvExportData={mapGenerator.exportCSV} showFooter={false}>
+        <PageTemplate csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
 
             <TextBoxesSelectionContext.Provider value={selectionProperty}>
                 <MaybeSplitLayout
