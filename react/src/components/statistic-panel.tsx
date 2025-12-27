@@ -884,7 +884,7 @@ function StatisticPanelTable(props: {
     const footer = props.disclaimer
         ? (
                 <div style={{ fontSize: '0.8em', color: colors.textMain, marginTop: '1em', textAlign: 'right' }}>
-                    Note: percentiles are calculated among articles that have a valid value for this statistic.
+                    Note: percentiles are calculated among geographies that have a valid value for this statistic.
                 </div>
             )
         : null
