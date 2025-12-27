@@ -369,6 +369,13 @@ export function possibilities(target: USSType[], env: TypeEnvironment): Selectio
                     entireLoc: recL(e.entireLoc),
                     originalCode: e.originalCode,
                 }
+            case 'autoUX':
+                return {
+                    type: 'autoUX',
+                    expr: recE(e.expr),
+                    entireLoc: recL(e.entireLoc),
+                    metadata: e.metadata,
+                }
             case 'attribute':
                 return {
                     type: 'attribute',

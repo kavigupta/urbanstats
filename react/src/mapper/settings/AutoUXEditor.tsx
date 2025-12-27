@@ -5,7 +5,7 @@ import { ExpandButton } from '../../components/ExpandButton'
 import { RenderTwiceHidden } from '../../components/RenderTwiceHidden'
 import { CheckboxSettingCustom } from '../../components/sidebar'
 import { UrbanStatsASTExpression, UrbanStatsASTArg, locationOf } from '../../urban-stats-script/ast'
-import { AutoUXMetadata, getAutoUXMetadata } from '../../urban-stats-script/autoux-metadata'
+import { AutoUXMetadata } from '../../urban-stats-script/autoux-metadata'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
@@ -445,7 +445,6 @@ export function AutoUXEditor(props: {
 
     if (props.uss.type === 'autoUX') {
         const uss = props.uss
-        const metadata = getAutoUXMetadata(uss.metadata, props.typeEnvironment)
         return (
             <AutoUXEditor
                 {...props}
@@ -461,7 +460,7 @@ export function AutoUXEditor(props: {
                         }, o)
                     }
                 }}
-                metadata={metadata}
+                metadata={uss.metadata}
             />
         )
     }

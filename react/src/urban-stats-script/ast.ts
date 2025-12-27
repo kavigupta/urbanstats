@@ -1,5 +1,6 @@
 import assert from 'assert'
 
+import { AutoUXMetadata } from './autoux-metadata'
 import { LocInfo } from './location'
 import { Decorated, ParseError } from './parser'
 import { USSType } from './types-values'
@@ -24,7 +25,7 @@ export type UrbanStatsASTExpression = (
     { type: 'do', entireLoc: LocInfo, statements: UrbanStatsASTStatement[] } |
     // for internal purposes only
     { type: 'customNode', entireLoc: LocInfo, expr: UrbanStatsASTStatement, originalCode: string, expectedType?: USSType[] } |
-    { type: 'autoUX', entireLoc: LocInfo, expr: UrbanStatsASTExpression, metadata: UrbanStatsASTExpression & { type: 'objectLiteral' } }
+    { type: 'autoUX', entireLoc: LocInfo, expr: UrbanStatsASTExpression, metadata: AutoUXMetadata }
 )
 
 export type UrbanStatsASTStatement = (
@@ -170,7 +171,6 @@ export function getAllParseErrors(node: UrbanStatsAST): ParseError[] {
                 break
             case 'autoUX':
                 collectErrors(n.expr)
-                collectErrors(n.metadata)
                 break
             case 'customNode':
                 collectErrors(n.expr)

@@ -1,6 +1,7 @@
 import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
+import { getAutoUXMetadata } from './autoux-metadata'
 import { Context } from './context'
 import { AnnotatedToken, AnnotatedTokenWithValue, lex, Keyword, emptyLocation } from './lexer'
 import { noLocation, LocInfo, Block } from './location'
@@ -56,7 +57,7 @@ export function toSExp(node: UrbanStatsAST): string {
         case 'parseError':
             return `(parseError ${JSON.stringify(node.originalCode)} ${JSON.stringify(node.errors)})`
         case 'autoUX':
-            return `(autoUX ${toSExp(node.expr)} ${toSExp(node.metadata)})`
+            return `(autoUX ${toSExp(node.expr)} ${JSON.stringify(node.metadata)})`
         case 'customNode':
             return `(customNode ${toSExp(node.expr)} ${JSON.stringify(node.originalCode)})`
     }
@@ -614,21 +615,21 @@ class ParseState {
         const [args, locArg] = argsRes.args
 
         if (args.length !== 2 || args[0].type !== 'unnamed' || args[1].type !== 'unnamed') {
-            return { type: 'error', value: 'autoUX requires exactly 2 unnamed arguments: expression and metadata object', location: locArg }
+            return { type: 'error', value: 'autoUX requires exactly 2 unnamed arguments: expression and metadata JSON string', location: locArg }
         }
 
         const expr = args[0].value
         const metadata = args[1].value
 
-        // Validate that metadata is an object literal
-        if (metadata.type !== 'objectLiteral') {
-            return { type: 'error', value: 'Second argument to autoUX must be an object literal', location: locationOf(metadata) }
+        // Validate that metadata is a string
+        if (metadata.type !== 'constant' || metadata.value.node.type !== 'string') {
+            return { type: 'error', value: 'Second argument to autoUX must be a string', location: locationOf(metadata) }
         }
 
         return {
             type: 'autoUX',
             expr,
-            metadata,
+            metadata: getAutoUXMetadata(metadata.value.node.value),
             entireLoc: locArg,
         }
     }
@@ -690,7 +691,7 @@ export function parseTokens(tokens: AnnotatedToken[], originalCode: string, retu
     return stmts
 }
 
-function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression): UrbanStatsASTExpression[] {
+function leafExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression): UrbanStatsASTExpression[] {
     const expressions: UrbanStatsASTExpression[] = []
     function helper(n: UrbanStatsASTStatement | UrbanStatsASTExpression | UrbanStatsASTArg): boolean {
         switch (n.type) {
@@ -762,7 +763,6 @@ function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
                 return true
             case 'autoUX':
                 helper(n.expr)
-                helper(n.metadata)
                 return true
             case 'customNode':
                 // do not actually put this in the expressions list, as is for internal use only
@@ -776,7 +776,7 @@ function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
 
 function identifiersInExpr(node: UrbanStatsASTStatement | UrbanStatsASTExpression): Set<string> {
     const identifiers = new Set<string>()
-    allExpressions(node).forEach((expr) => {
+    leafExpressions(node).forEach((expr) => {
         if (expr.type === 'identifier') {
             identifiers.add(expr.name.node)
         }
@@ -831,7 +831,10 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
 
     switch (node.type) {
         case 'autoUX':
-            return `autoUX(${unparse(node.expr, { ...opts, inline: true })}, ${unparse(node.metadata, { ...opts, inline: true })})`
+            if (opts.simplify) {
+                return unparse(node.expr, opts)
+            }
+            return `autoUX(${unparse(node.expr, { ...opts, inline: true })}, ${JSON.stringify(JSON.stringify(node.metadata))})`
         case 'customNode':
             if (!opts.simplify) {
                 return `customNode(${JSON.stringify(node.originalCode.trim())})`

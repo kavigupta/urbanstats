@@ -13,27 +13,27 @@ const testBlock: Block = {
 }
 
 void test('parse autoUX expression', () => {
-    const result = parse('autoUX(1 + 2, {type: "arithmetic", operation: "addition"})', testBlock)
+    const result = parse('autoUX(1 + 2, "{}")', testBlock)
     assert.strictEqual(result.type, 'expression')
     assert.strictEqual(result.value.type, 'autoUX')
     assert.strictEqual(result.value.expr.type, 'binaryOperator')
-    assert.strictEqual(result.value.metadata.type, 'objectLiteral')
+    assert.deepStrictEqual(result.value.metadata, {})
 })
 
 void test('autoUX S-expression representation', () => {
-    const result = parse('autoUX(x, {hint: "variable"})', testBlock)
+    const result = parse('autoUX(x, "{\\"collapsed\\": true }")', testBlock)
     assert.strictEqual(result.type, 'expression')
     const sexp = toSExp(result.value)
-    assert.strictEqual(sexp, '(autoUX (id x) (object (hint (const variable))))')
+    assert.strictEqual(sexp, '(autoUX (id x) {"collapsed":true})')
 })
 
-void test('autoUX with invalid arguments should fail', () => {
+void test('autoUX with invalid arguments', () => {
     // Should fail with only one argument
     const result1 = parse('autoUX(x)', testBlock)
     assert.strictEqual(result1.type, 'error')
 
-    // Should fail with non-object metadata
-    const result2 = parse('autoUX(x, "not an object")', testBlock)
+    // Wrong arg type
+    const result2 = parse('autoUX(x, {})', testBlock)
     assert.strictEqual(result2.type, 'error')
 
     // Should fail with three arguments
@@ -41,8 +41,29 @@ void test('autoUX with invalid arguments should fail', () => {
     assert.strictEqual(result3.type, 'error')
 })
 
+void test('invalid metadata', () => {
+    // Should return empty object with invalid metadata (for forwards compatiblity)
+    for (const code of [
+        'autoUX(x, "not an object")',
+        'autoUX(x, "{}")',
+        'autoUX(x, "{ \\"invalidKey\\": 0 }")',
+    ]) {
+        const result = parse(code, testBlock)
+        assert.strictEqual(result.type, 'expression')
+        assert.strictEqual(result.value.type, 'autoUX')
+        assert.deepStrictEqual(result.value.metadata, {})
+    }
+})
+
+void test('forwards compatibility', () => {
+    const result = parse('autoUX(x, "{ \\"collapsed\\": true, \\"futureProperty\\": [] }")', testBlock)
+    assert.strictEqual(result.type, 'expression')
+    assert.strictEqual(result.value.type, 'autoUX')
+    assert.deepStrictEqual(result.value.metadata, { collapsed: true })
+})
+
 void test('autoUX expression evaluates correctly', () => {
-    const result = parse('autoUX(5 + 3, {operation: "addition"})', testBlock)
+    const result = parse('autoUX(5 + 3, "{\\"collapsed\\": true}")', testBlock)
     assert.strictEqual(result.type, 'expression')
     const ctx = emptyContext()
     const evaluated = evaluate(result.value, ctx)

@@ -1,20 +1,17 @@
-import { UrbanStatsASTExpression } from './ast'
-import * as l from './literal-parser'
-import { TypeEnvironment } from './types-values'
+import { z } from 'zod'
 
-const autoUXMetadataSchema = l.object({
-    collapsed: l.optional(l.boolean()),
+// Don't make backwards incompatible changes
+const autoUXMetadataSchema = z.object({
+    collapsed: z.optional(z.boolean()),
 })
 
-export type AutoUXMetadata = l.infer<typeof autoUXMetadataSchema>
+export type AutoUXMetadata = z.infer<typeof autoUXMetadataSchema>
 
-export function getAutoUXMetadata(expr: UrbanStatsASTExpression & { type: 'objectLiteral' }, typeEnvironment: TypeEnvironment): AutoUXMetadata {
+export function getAutoUXMetadata(str: string): AutoUXMetadata {
     try {
-        return autoUXMetadataSchema.parse(expr, typeEnvironment)
+        return autoUXMetadataSchema.parse(JSON.parse(str))
     }
     catch {
-        return {
-            collapsed: undefined,
-        }
+        return {}
     }
 }
