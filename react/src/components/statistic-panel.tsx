@@ -393,15 +393,15 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         )
     }, [loadedData?.statcol, props.counts, props.articleType])
 
-    const csvExportData = useMemo((): CSVExportData | undefined => {
+    const csvExportCallback = useMemo <CSVExportData | undefined>(() => {
         if (loadedData === undefined) {
             return undefined
         }
 
-        return {
+        return () => ({
             csvData: generateStatisticsPanelCSVData(loadedData.articleNames, loadedData.data, loadedData.includeOrdinalsPercentiles),
             csvFilename: `${sanitize(loadedData.renderedStatname)}.csv`,
-        }
+        })
     }, [loadedData])
 
     const screencapElements = useMemo((): (() => ScreencapElements) | undefined => {
@@ -512,7 +512,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         >
             <PageTemplate
                 screencap={screencapElements ? (universe, templateColors) => createScreenshot(screencapElements(), universe, templateColors) : undefined}
-                csvExportData={csvExportData}
+                csvExportCallback={csvExportCallback}
             >
                 <div ref={headersRef} style={{ position: 'relative' }}>
                     <StatisticPanelHead

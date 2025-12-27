@@ -122,8 +122,14 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
     const mapResultMain = execResult.resultingValue.value
 
-    const csvData = generateMapperCSVData(mapResultMain, execResult.context)
-    const csvFilename = `${mapSettings.geographyKind}-${mapSettings.universe}-data.csv`
+    const csvExportCallback = () => {
+        const csvData = generateMapperCSVData(mapResultMain, execResult.context)
+        const csvFilename = `${mapSettings.geographyKind}-${mapSettings.universe}-data.csv`
+        return {
+            csvData,
+            csvFilename,
+        }
+    }
 
     const { features, mapChildren, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache })
 
@@ -226,10 +232,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
     return {
         errors: execResult.error,
-        exportCSV: {
-            csvData,
-            csvFilename,
-        },
+        exportCSV: csvExportCallback,
         exportGeoJSON: () => exportAsGeoJSON(features),
         ui: (props) => {
             let exportImage: () => Promise<HTMLCanvasElement>
