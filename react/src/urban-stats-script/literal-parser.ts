@@ -23,8 +23,6 @@ interface LiteralExprParser<T> {
     ) => T
 }
 
-export type infer<P extends LiteralExprParser<unknown>> = P extends LiteralExprParser<infer T> ? T : never
-
 export function string(): LiteralExprParser<string> {
     return {
         parse(expr) {
@@ -360,22 +358,6 @@ export function customNodeExpr<T>(schema: LiteralExprParser<T>): LiteralExprPars
                             value: newExpr,
                         },
                         originalCode: unparse(newExpr),
-                    }))
-            }
-            return schema.parse(expr, env, doEdit)
-        },
-    }
-}
-
-export function autoUXExpr<T>(schema: LiteralExprParser<T>): LiteralExprParser<T> {
-    return {
-        parse(expr, env, doEdit = e => e) {
-            if (expr?.type === 'autoUX') {
-                return schema.parse(expr.expr, env, newExpr => newExpr === undefined
-                    ? undefined
-                    : doEdit({
-                        ...expr,
-                        expr: newExpr,
                     }))
             }
             return schema.parse(expr, env, doEdit)

@@ -482,32 +482,21 @@ function getDefaultVariable(selection: Selection & { type: 'variable' }, typeEnv
 // Returns a function that pulls named or unnamed arguments of the same type and position out of the passed `expr`
 // Returns undefined if incompatible
 // We're assuming the result will have the correct idnet, since we're using the same position, and it's hard to check
-function extractCompatiblePreviousArgs(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): {
-    unnamed: (arg: number, type: USSType) => UrbanStatsASTArg & { type: 'unnamed' } | undefined
-    named: (arg: string, type: USSType) => UrbanStatsASTArg & { type: 'named' } | undefined
-} {
+function extractCompatiblePreviousArgs(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnvironment): (arg: number | string, type: USSType) => UrbanStatsASTExpression | undefined {
     let type
     if (expr.type === 'call' && expr.fn.type === 'identifier' && (type = typeEnvironment.get(expr.fn.name.node)) && type.type.type === 'function') {
         const foundType: USSFunctionType = type.type
-        return {
-            unnamed: (arg, targetType) => {
-                if (arg < foundType.posArgs.length && foundType.posArgs[arg].type === 'concrete' && renderType(targetType) === renderType(foundType.posArgs[arg].value)) {
-                    return expr.args.filter(a => a.type === 'unnamed')[arg]
-                }
-                return undefined
-            },
-            named: (arg, targetType) => {
-                if (arg in foundType.namedArgs && foundType.namedArgs[arg].type.type === 'concrete' && renderType(targetType) === renderType(foundType.namedArgs[arg].type.value)) {
-                    return expr.args.find((a): a is UrbanStatsASTArg & { type: 'named' } => a.type === 'named' && a.name.node === arg)
-                }
-                return undefined
-            },
+        return (arg, targetType) => {
+            if (typeof arg === 'number' && arg < foundType.posArgs.length && foundType.posArgs[arg].type === 'concrete' && renderType(targetType) === renderType(foundType.posArgs[arg].value)) {
+                return expr.args.filter(a => a.type === 'unnamed')[arg]?.value
+            }
+            if (typeof arg === 'string' && arg in foundType.namedArgs && foundType.namedArgs[arg].type.type === 'concrete' && renderType(targetType) === renderType(foundType.namedArgs[arg].type.value)) {
+                return expr.args.find(a => a.type === 'named' && a.name.node === arg)?.value
+            }
+            return undefined
         }
     }
-    return {
-        unnamed: () => undefined,
-        named: () => undefined,
-    }
+    return () => undefined
 }
 
 function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnvironment: TypeEnvironment, blockIdent: string, previous?: UrbanStatsASTExpression): UrbanStatsASTExpression {
@@ -521,18 +510,18 @@ function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnv
         assert(arg.type === 'concrete', `Positional argument must be concrete`)
         args.push({
             type: 'unnamed',
-            value: compatiblePreviousArg?.unnamed(i, arg.value)?.value ?? createDefaultExpression(arg.value, extendBlockIdPositionalArg(blockIdent, i), typeEnvironment),
+            value: compatiblePreviousArg?.(i, arg.value) ?? createDefaultExpression(arg.value, extendBlockIdPositionalArg(blockIdent, i), typeEnvironment),
         })
     }
     for (const [name, argWDefault] of Object.entries(fn.type.namedArgs)) {
         const arg = argWDefault.type
         assert(arg.type === 'concrete', `Named argument ${name} must be concrete`)
-        const prev = compatiblePreviousArg?.named(name, arg.value)
+        const prev = compatiblePreviousArg?.(name, arg.value)
         if (prev || argWDefault.defaultValue === undefined) {
             args.push({
                 type: 'named',
                 name: { node: name, location: emptyLocation(blockIdent) },
-                value: prev?.value ?? createDefaultExpression(arg.value, extendBlockIdKwarg(blockIdent, name), typeEnvironment),
+                value: prev ?? createDefaultExpression(arg.value, extendBlockIdKwarg(blockIdent, name), typeEnvironment),
             })
         }
     }
