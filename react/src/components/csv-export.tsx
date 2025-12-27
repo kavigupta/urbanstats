@@ -157,14 +157,14 @@ export function generateMapperCSVData(
 export function generateStatisticsPanelCSVData(
     articleNames: string[],
     data: { name: string, value: number[], ordinal: number[], populationPercentile: number[] }[],
-    includeOrdinalsPercentiles: boolean,
+    hideOrdinalsPercentiles: boolean,
 ): string[][] {
     // Build header row: Name, then for each column: column name, optionally "column name Ord", "column name percentile"
     const headerRow: string[] = ['Name']
 
     for (const col of data) {
         headerRow.push(col.name)
-        if (includeOrdinalsPercentiles) {
+        if (!hideOrdinalsPercentiles) {
             headerRow.push(`${col.name} Ord`, `${col.name} percentile`)
         }
     }
@@ -180,7 +180,7 @@ export function generateStatisticsPanelCSVData(
             const formattedValue = formatNumberForCSV(value)
             row.push(formattedValue)
 
-            if (includeOrdinalsPercentiles) {
+            if (!hideOrdinalsPercentiles) {
                 const ordinal = col.ordinal[i]
                 const percentile = col.populationPercentile[i]
                 row.push(

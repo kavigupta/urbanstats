@@ -59,7 +59,7 @@ interface StatisticData {
     explanationPage?: string
     totalCountInClass: number
     totalCountOverall: number
-    includeOrdinalsPercentiles: boolean
+    hideOrdinalsPercentiles: boolean
 }
 
 type StatisticDataOutcome = (
@@ -97,7 +97,7 @@ async function loadStatisticsData(universe: Universe, statname: StatName, articl
         explanationPage: explanation_pages[statIndex],
         totalCountInClass,
         totalCountOverall,
-        includeOrdinalsPercentiles: true, // Statistics pages always include ordinals/percentiles
+        hideOrdinalsPercentiles: false, // Statistics pages show ordinals/percentiles by default (false = show)
     }
 }
 
@@ -121,7 +121,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
         }
 
         return {
-            csvData: generateStatisticsPanelCSVData(loadedData.articleNames, loadedData.data, loadedData.includeOrdinalsPercentiles),
+            csvData: generateStatisticsPanelCSVData(loadedData.articleNames, loadedData.data, loadedData.hideOrdinalsPercentiles),
             csvFilename: `${sanitize(loadedData.renderedStatname)}.csv`,
         }
     }, [loadedData])
@@ -333,7 +333,7 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
                     columnWidth={(100 - widthLeftHeader) / (numStatColumns === 0 ? 1 : numStatColumns)}
                     data={props.data}
                     articleNames={props.articleNames}
-                    includeOrdinalsPercentiles={props.includeOrdinalsPercentiles}
+                    hideOrdinalsPercentiles={props.hideOrdinalsPercentiles}
                 />
             </div>
             <div style={{ marginBlockEnd: '1em' }}></div>
@@ -358,13 +358,13 @@ function StatisticPanelTable(props: {
     widthLeftHeader: number
     columnWidth: number
     data: { value: number[], populationPercentile: number[], ordinal: number[], name: string, unit?: UnitType }[]
-    includeOrdinalsPercentiles: boolean
+    hideOrdinalsPercentiles: boolean
     articleNames: string[]
 }): ReactNode {
     const currentUniverse = useUniverse()
     assert(currentUniverse !== undefined, 'no universe')
 
-    const onlyColumns: ColumnIdentifier[] = props.includeOrdinalsPercentiles ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
+    const onlyColumns: ColumnIdentifier[] = props.hideOrdinalsPercentiles ? ['statval', 'statval_unit'] : ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
 
     const allColumnRows: StatisticCellRenderingInfo[][] = props.data.map((col) => {
         return props.indexRange.map((rangeIdx) => {
