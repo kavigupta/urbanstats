@@ -682,3 +682,12 @@ test('add columns starting from a statname', async (t) => {
 )
 `)
 })
+
+test('column errors', async (t) => {
+    await t.click(Selector('input').withAttribute('placeholder', 'Add column...'))
+    const searchResult = Selector('.searchbox-dropdown-item').withExactText('Population')
+    await t.expect(searchResult.exists).ok()
+    // click off
+    await t.click(Selector('div').withExactText('Value'))
+    await t.expect(searchResult.exists).notOk()
+})
