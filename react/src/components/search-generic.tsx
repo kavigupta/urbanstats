@@ -81,10 +81,7 @@ export function GenericSearchBox<T>(
     // Do the search
     useEffect(() => {
         void (async () => {
-            if (!isFocused) {
-                return
-            }
-            if (!props.allowEmptyQuery && searchQuery === '') {
+            if ((props.allowEmptyQuery && !isFocused) || (!props.allowEmptyQuery && searchQuery === '')) {
                 setMatches([])
                 setFocused(0)
                 return
@@ -130,8 +127,13 @@ export function GenericSearchBox<T>(
                     props.onFocus?.()
                 }}
                 onBlur={() => {
-                    setIsFocused(false)
-                    props.onBlur?.()
+                    // allow people to click on stuff
+                    void setTimeout(() => {
+                        if (document.activeElement !== searchboxRef.current) {
+                            setIsFocused(false)
+                            props.onBlur?.()
+                        }
+                    }, 200)
                 }}
                 spellCheck={false}
                 ref={searchboxRef}
