@@ -13,6 +13,7 @@ import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation, parseNumber } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 import { Documentation, TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
+import { TestUtils } from '../../utils/TestUtils'
 import { assert } from '../../utils/defensive'
 
 import * as l from './../../urban-stats-script/literal-parser'
@@ -150,7 +151,7 @@ function TextInput({ currentValue, blockIdent, setUss }: { currentValue: string,
                     },
                 }, {})
             }}
-            style={{ width: '200px', fontSize: '14px', padding: '4px 8px', resize: 'vertical' }}
+            style={{ width: '200px', fontSize: '14px', padding: '4px 8px', resize: 'vertical', borderRadius: TestUtils.shared.isTesting ? 0 : undefined }}
             placeholder="Enter string"
         />
     )
