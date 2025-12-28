@@ -614,6 +614,7 @@ function inOrder(data: CSVRow[], colIndex: number, ascending: boolean): string[]
 }
 
 test('render many columns', async (t) => {
+    await t.wait(1000)
     await waitForLoading()
     await screencap(t)
     const parsedCsv = await getParsedCsv(t)
@@ -632,7 +633,7 @@ test('render many columns', async (t) => {
             await t.expect(namesPage2).eql(expectedNames.slice(10, 20))
         }
     }
-    await t.wait(500)
+    await t.wait(1000)
     await waitForLoading()
     await screencap(t)
     await downloadImage(t)
