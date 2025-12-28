@@ -201,34 +201,6 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
                             <>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
                                     <Export pngExport={exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
-                                    {
-                                        getInsets(mapSettings, typeEnvironment) && (
-                                            <div style={{
-                                                display: 'flex',
-                                                gap: '0.5em',
-                                                margin: '0.5em 0',
-                                            }}
-                                            >
-                                                <button onClick={() => { setMapEditorMode('insets') }}>
-                                                    Edit Insets
-                                                </button>
-                                            </div>
-                                        )
-                                    }
-                                    {
-                                        getTextBoxes(mapSettings, typeEnvironment) && (
-                                            <div style={{
-                                                display: 'flex',
-                                                gap: '0.5em',
-                                                margin: '0.5em 0',
-                                            }}
-                                            >
-                                                <button onClick={() => { setMapEditorMode('textBoxes') }}>
-                                                    Edit Text Boxes
-                                                </button>
-                                            </div>
-                                        )
-                                    }
                                     <ImportExportCode
                                         mapSettings={mapSettings}
                                         setMapSettings={setMapSettings}
