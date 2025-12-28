@@ -65,23 +65,20 @@ const comparisonSchemaFromParams = z.object({
     s: z.optional(z.string()),
 })
 
-const statisticSchema = z.union([
-    z.object({}),
-    z.object({
-        article_type: z.string(),
-        statname: z.optional(z.string() as z.ZodType<StatName, z.ZodTypeDef, StatName>),
-        uss: z.optional(z.string()),
-        start: z.number().int(),
-        amount: z.union([z.literal('All'), z.number().int()]),
-        order: z.union([z.literal('descending'), z.literal('ascending')]),
-        highlight: z.optional(z.string()),
-        universe: z.optional(universeSchema),
-        edit: z.optional(z.boolean()),
-        sort_column: z.optional(z.number().int()),
-    }).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
-        message: 'Either statname or uss must be provided, but not both',
-    }),
-])
+const statisticSchema = z.object({
+    article_type: z.string(),
+    statname: z.optional(z.string() as z.ZodType<StatName, z.ZodTypeDef, StatName>),
+    uss: z.optional(z.string()),
+    start: z.number().int(),
+    amount: z.union([z.literal('All'), z.number().int()]),
+    order: z.union([z.literal('descending'), z.literal('ascending')]),
+    highlight: z.optional(z.string()),
+    universe: z.optional(universeSchema),
+    edit: z.optional(z.boolean()),
+    sort_column: z.optional(z.number().int()),
+}).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
+    message: 'Either statname or uss must be provided, but not both',
+})
 
 const statisticSchemaFromParams = z.union([
     z.object({}),
@@ -233,7 +230,21 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
         case '/comparison.html':
             return { kind: 'comparison', ...comparisonSchemaFromParams.parse(params) }
         case '/statistic.html':
-            return { kind: 'statistic', ...statisticSchemaFromParams.parse(params) }
+            const statisticParams = statisticSchemaFromParams.parse(params)
+            if ('article_type' in statisticParams) {
+                return { kind: 'statistic', ...statisticParams }
+            }
+            return {
+                kind: 'statistic',
+                article_type: 'Subnational Region',
+                uss: 'customNode(""); condition (true); table(columns=[column(values=density_pw_1km)])',
+                start: 1,
+                amount: 20,
+                order: 'descending',
+                universe: 'USA',
+                edit: true,
+                sort_column: 0,
+            }
         case '/random.html':
             return { kind: 'random', ...randomSchemaForParams.parse(params) }
         case '/':
@@ -287,24 +298,19 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
         case 'statistic':
             pathname = '/statistic.html'
             // If article_type is empty and statname/uss are undefined, generate URL with no params (will trigger redirect)
-            if (!('article_type' in pageDescriptor)) {
-                searchParams = {}
-            }
-            else {
-                searchParams = {
-                    statname: pageDescriptor.statname?.replaceAll('%', '__PCT__'),
-                    uss: pageDescriptor.uss,
-                    article_type: pageDescriptor.article_type,
-                    start: pageDescriptor.start.toString(),
-                    amount: pageDescriptor.amount.toString(),
-                    order: pageDescriptor.order === 'descending' ? undefined : 'ascending',
-                    highlight: pageDescriptor.highlight,
-                    universe: pageDescriptor.universe,
-                    edit: pageDescriptor.edit ? 'true' : undefined,
-                    sort_column: pageDescriptor.sort_column === undefined || pageDescriptor.sort_column === 0
-                        ? undefined
-                        : pageDescriptor.sort_column.toString(),
-                }
+            searchParams = {
+                statname: pageDescriptor.statname?.replaceAll('%', '__PCT__'),
+                uss: pageDescriptor.uss,
+                article_type: pageDescriptor.article_type,
+                start: pageDescriptor.start.toString(),
+                amount: pageDescriptor.amount.toString(),
+                order: pageDescriptor.order === 'descending' ? undefined : 'ascending',
+                highlight: pageDescriptor.highlight,
+                universe: pageDescriptor.universe,
+                edit: pageDescriptor.edit ? 'true' : undefined,
+                sort_column: pageDescriptor.sort_column === undefined || pageDescriptor.sort_column === 0
+                    ? undefined
+                    : pageDescriptor.sort_column.toString(),
             }
             break
         case 'random':
