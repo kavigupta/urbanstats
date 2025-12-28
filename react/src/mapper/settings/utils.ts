@@ -143,3 +143,5 @@ export function convertToMapUss(uss: UrbanStatsASTStatement): MapUSS {
     // Support arbitrary scripts
     return parseNoErrorAsCustomNode(unparse(uss), rootBlockIdent)
 }
+
+export type MapEditorMode = 'uss' | 'insets' | 'textBoxes'

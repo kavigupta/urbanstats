@@ -15,7 +15,7 @@ const maxErrors = 31
 
 export interface SelectorRenderResult { text: string, node?: (highlighted: boolean) => ReactNode }
 
-function PencilButton({ onEdit }: { onEdit: () => void }): ReactNode {
+export function PencilButton({ onEdit }: { onEdit: () => void }): ReactNode {
     const size = { width: '20px', height: '20px' }
     const colors = useColors()
     return (

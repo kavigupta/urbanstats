@@ -1,3 +1,4 @@
+import type * as ArgEditButtons from '../mapper/settings/ArgEditButtons'
 import { Basemap } from '../mapper/settings/utils'
 import { assert } from '../utils/defensive'
 
@@ -90,6 +91,7 @@ export interface USSFunctionType {
 interface NamedFunctionArgumentDocumentation {
     hide?: boolean
     collapsable?: boolean
+    editButton?: keyof typeof ArgEditButtons
 }
 
 export type USSType = (
