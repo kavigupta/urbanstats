@@ -304,7 +304,7 @@ export function ComparisonPanel(props: {
                     >
                         <SortableContext items={localArticlesToUse.map(a => a.shortname)} strategy={transpose ? verticalListSortingStrategy : horizontalListSortingStrategy}>
                             <div>
-                                <div className={headerTextClass}>Comparison2</div>
+                                <div className={headerTextClass}>Comparison</div>
                                 <div className={subHeaderTextClass}>{joinedString}</div>
                                 <div style={{ marginBlockEnd: '16px' }}></div>
 
