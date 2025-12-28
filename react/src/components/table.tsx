@@ -1085,7 +1085,11 @@ function Ordinal(props: {
                 <span>{ordinal}</span>
             )
     return (
-        <div className="serif" style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : 0 }}>
+        <div
+            className="serif"
+            data-test-id="statistic-ordinal"
+            style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : 0 }}
+        >
             {en}
             {props.simpleOrdinals
                 ? <></>
