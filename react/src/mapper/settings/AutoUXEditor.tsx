@@ -79,6 +79,9 @@ function ArgumentEditor(props: {
         <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', gap: '0.25em', width: '100%', margin: '0.25em 0' }}>
             {collapsable && (
                 <ExpandButton
+                    data-test="expand-button"
+                    data-test-name={props.name}
+                    data-test-state={!collapsed}
                     pointing="right"
                     isExpanded={!collapsed}
                     style={{
