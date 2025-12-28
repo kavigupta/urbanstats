@@ -98,21 +98,19 @@ export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvir
     else {
         currentInsetsAst = loadInsetExpression(settings.universe)
     }
-    let currentMetadata: AutoUXNodeMetadata = {}
-    if (mapInsets.expr?.type === 'autoUXNode') {
-        currentMetadata = mapInsets.expr.metadata
-    }
 
     const newConstructInsets = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment).edit(edits.ast) as UrbanStatsASTExpression
 
-    const result = mapInsets.edit({
-        type: 'autoUXNode',
-        expr: newConstructInsets,
-        metadata: {
-            ...currentMetadata,
-            collapsed: currentMetadata.collapsed ?? mapInsets.expr === undefined,
-        },
-        entireLoc: emptyLocation(''),
-    })
+    const result = mapInsets.edit(newConstructInsets.type === 'autoUXNode'
+        ? newConstructInsets
+        : {
+                type: 'autoUXNode',
+                expr: newConstructInsets,
+                metadata: {
+                    collapsed: mapInsets.expr === undefined,
+                },
+                entireLoc: emptyLocation(''),
+            })
+
     return result as MapUSS
 }
