@@ -7,10 +7,9 @@ import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSi
 import { ISearchIndexMetadata } from './utils/protos'
 import { isAllowedToBeShown, ShowGeographySettings } from './utils/restricted-types'
 
-export interface SearchResult {
-    longname: string
-    typeIndex: number
-}
+export type SearchResult =
+    | { type: 'article', longname: string, typeIndex: number }
+    | { type: 'other', longname: string, index: number }
 
 const debugSearch: boolean = false
 
@@ -21,7 +20,7 @@ function debug(arg: unknown): void {
     }
 }
 
-const debugSearchPerformance: boolean = false
+const debugSearchPerformance: boolean = true
 
 export function debugPerformance(arg: unknown): void {
     if (debugSearchPerformance) {
@@ -48,6 +47,7 @@ interface NormalizedSearchIndex {
         priority: number
         signature: number
         typeIndex: number
+        extraIndex?: number // If present, this is an extra string entry
     }[]
     lengthOfLongestToken: number
     maxPriority: number
@@ -107,10 +107,16 @@ export interface SearchParams {
     maxResults: number
     showSettings: ShowGeographySettings
     prioritizeTypeIndex?: number
+    extraStrings?: string[]
 }
 
-function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxResults, showSettings, prioritizeTypeIndex }: SearchParams): SearchResult[] {
+function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxResults, showSettings, prioritizeTypeIndex, extraStrings }: SearchParams): SearchResult[] {
     const start = performance.now()
+
+    // Add extra strings to index if provided (they're dynamic, so add them during search, not during index creation)
+    if (extraStrings !== undefined && extraStrings.length > 0) {
+        searchIndex = addExtraStringsToIndex(searchIndex, extraStrings)
+    }
 
     const pattern = normalize(unnormalizedPattern)
 
@@ -259,7 +265,28 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
 
     debugPerformance(`Took ${performance.now() - start} ms to execute search`)
 
-    return results.map(result => result.entry)
+    // Convert results to SearchResult format, preserving order
+    const searchResults: SearchResult[] = []
+
+    for (const result of results) {
+        // Check if this is an extra string result
+        if (result.entry.extraIndex !== undefined) {
+            searchResults.push({
+                type: 'other' as const,
+                longname: result.entry.longname,
+                index: result.entry.extraIndex,
+            })
+        }
+        else {
+            searchResults.push({
+                type: 'article' as const,
+                longname: result.entry.longname,
+                typeIndex: result.entry.typeIndex,
+            })
+        }
+    }
+
+    return searchResults.slice(0, maxResults)
 }
 
 // Potentially cached
@@ -314,6 +341,37 @@ export async function createIndex(cacheKey: string | undefined): Promise<(params
 async function createIndexNoCache(): Promise<NormalizedSearchIndex> {
     const rawIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
     return processRawSearchIndex(rawIndex)
+}
+
+function addExtraStringsToIndex(index: NormalizedSearchIndex, extraStrings: string[]): NormalizedSearchIndex {
+    const haystackCache = new DefaultMap<string, Haystack>((token) => {
+        if (token.length > index.lengthOfLongestToken) {
+            index.lengthOfLongestToken = token.length
+        }
+        return toHaystack(token)
+    })
+
+    const extraEntries = extraStrings.map((extraString, extraIndex) => {
+        const normalizedExtra = normalize(extraString)
+        const entryTokens = tokenize(normalizedExtra)
+        const tokens = entryTokens.map(token => haystackCache.get(token))
+        if (tokens.length > index.mostTokens) {
+            index.mostTokens = tokens.length
+        }
+        return {
+            longname: extraString,
+            tokens,
+            priority: 0, // No priority for extra strings
+            signature: toSignature(normalizedExtra),
+            typeIndex: 0, // Not used for extra strings
+            extraIndex,
+        }
+    })
+
+    return {
+        ...index,
+        entries: [...index.entries, ...extraEntries],
+    }
 }
 
 function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISearchIndexMetadata[] }): NormalizedSearchIndex {

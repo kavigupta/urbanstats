@@ -108,6 +108,7 @@ export function Header(props: {
                             }}
                             autoFocus={false}
                             onTextPresenceChange={(hasText: boolean) => { setSearchHasText(hasText) }}
+                            shouldIncludeStatisticPages={true}
                         />
                     </div>
                 </div>
