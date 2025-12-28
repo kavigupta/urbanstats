@@ -32,7 +32,7 @@ const insetSchema = l.transformExpr(l.deconstruct(l.call({ fn: l.identifier('con
     name,
 } satisfies Inset))
 
-const constructInsetsSchema = l.transformExpr(l.autoUXExpr(l.call({ fn: l.identifier('constructInsets'), namedArgs: {}, unnamedArgs: [l.editableVector(insetSchema)] })), call => call.expr.unnamedArgs[0])
+const constructInsetsSchema = l.transformExpr(l.maybeAutoUXNode(l.call({ fn: l.identifier('constructInsets'), namedArgs: {}, unnamedArgs: [l.editableVector(insetSchema)] })), call => call.expr.unnamedArgs[0])
 
 const mapSchema = l.transformStmt(l.statements([
     l.ignore(),

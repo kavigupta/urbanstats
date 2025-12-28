@@ -6,7 +6,7 @@ import { parseExpr } from '../mapper/settings/parseExpr'
 import { assert } from '../utils/defensive'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
-import { AutoUXMetadata } from './autoux-metadata'
+import { AutoUXNodeMetadata } from './autoux-node-metadata'
 import { noLocation } from './location'
 import { unparse } from './parser'
 import { TypeEnvironment, USSType } from './types-values'
@@ -345,7 +345,7 @@ export function transformStmt<T, U>(schema: LiteralStmtParser<T>, map: (t: T) =>
     }
 }
 
-export function customNodeExpr<T>(schema: LiteralExprParser<T>): LiteralExprParser<T> {
+export function maybeCustomNodeExpr<T>(schema: LiteralExprParser<T>): LiteralExprParser<T> {
     return {
         parse(expr, env, doEdit = e => e) {
             if (expr?.type === 'customNode' && expr.expr.type === 'expression') {
@@ -366,16 +366,16 @@ export function customNodeExpr<T>(schema: LiteralExprParser<T>): LiteralExprPars
     }
 }
 
-export function autoUXExpr<T>(schema: LiteralExprParser<T>): LiteralExprParser<{ expr: T, metadata: AutoUXMetadata }> {
+export function maybeAutoUXNode<T>(schema: LiteralExprParser<T>): LiteralExprParser<{ expr: T, metadata: AutoUXNodeMetadata }> {
     return {
         parse(expr, env, doEdit = e => e) {
-            if (expr?.type === 'autoUX') {
+            if (expr?.type === 'autoUXNode') {
                 return {
                     expr: schema.parse(expr.expr, env, (newExpr) => {
                         if (newExpr === undefined) {
                             return undefined
                         }
-                        if (newExpr.type === 'autoUX') {
+                        if (newExpr.type === 'autoUXNode') {
                             return doEdit(newExpr)
                         }
                         return doEdit({

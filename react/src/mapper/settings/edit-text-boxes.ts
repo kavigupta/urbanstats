@@ -57,7 +57,7 @@ const mapSchema = l.transformStmt(l.statements([
                     fn: l.ignore(),
                     unnamedArgs: [],
                     namedArgs: {
-                        textBoxes: l.edit(l.optional(l.autoUXExpr(l.vector(textBoxSchema)))),
+                        textBoxes: l.edit(l.optional(l.maybeAutoUXNode(l.vector(textBoxSchema)))),
                     },
                 }))),
         ],
