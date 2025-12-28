@@ -1,5 +1,5 @@
 import stableStringify from 'json-stable-stringify'
-import React, { ReactNode, useState, useEffect, useRef, useMemo, CSSProperties } from 'react'
+import React, { ReactNode, useState, useEffect, useRef, useMemo, CSSProperties, ComponentProps } from 'react'
 
 import { useColors } from '../../page_template/colors'
 import { IFrameInput } from '../../utils/IFrameInput'
@@ -16,7 +16,7 @@ const maxErrors = 31
 
 export interface SelectorRenderResult { text: string, node?: (highlighted: boolean) => ReactNode }
 
-export function PencilButton({ onEdit }: { onEdit: () => void }): ReactNode {
+export function PencilButton({ onEdit, ...buttonProps }: ComponentProps<'button'> & { onEdit: () => void }): ReactNode {
     const size = { width: '20px', height: '20px' }
     const colors = useColors()
     return (
@@ -38,6 +38,7 @@ export function PencilButton({ onEdit }: { onEdit: () => void }): ReactNode {
                 onEdit()
             }}
             title="Edit"
+            {...buttonProps}
         >
             <img
                 src={colors.pencilIcon}
