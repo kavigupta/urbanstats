@@ -281,4 +281,5 @@ void test('autoUX', () => {
     assert.deepEqual(l.autoUXExpr(l.identifier('x')).parse(parseExpr('x'), defaultConstants), { expr: 'x', metadata: {} })
     assert.equal(unparse(l.autoUXExpr(l.edit(l.identifier('x'))).parse(parseExpr('autoUX(x, "{\\"collapsed\\":true}")'), defaultConstants).expr.edit(parseExpr('y'))!), 'autoUX(y, "{\\"collapsed\\":true}")')
     assert.equal(unparse(l.autoUXExpr(l.edit(l.identifier('x'))).parse(parseExpr('autoUX(x, "{\\"collapsed\\":true}")'), defaultConstants).expr.edit(parseExpr('autoUX(y, "{\\"collapsed\\":false}")'))!), 'autoUX(y, "{\\"collapsed\\":false}")')
+    assert.equal(unparse(l.vector(l.autoUXExpr(l.edit(l.identifier('x')))).parse(parseExpr('[autoUX(x, "{\\"collapsed\\":true}")]'), defaultConstants)[0].expr.edit(parseExpr('autoUX(y, "{\\"collapsed\\":false}")'))!), '[autoUX(y, "{\\"collapsed\\":false}")]')
 })

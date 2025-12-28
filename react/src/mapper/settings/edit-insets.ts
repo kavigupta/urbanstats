@@ -1,5 +1,7 @@
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
+import { AutoUXMetadata } from '../../urban-stats-script/autoux-metadata'
 import { deconstruct as deconstructInset, Inset } from '../../urban-stats-script/constants/insets'
+import { emptyLocation } from '../../urban-stats-script/lexer'
 import * as l from '../../urban-stats-script/literal-parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { ArrayEdits, replace, swap } from '../../utils/array-edits'
@@ -30,7 +32,7 @@ const insetSchema = l.transformExpr(l.deconstruct(l.call({ fn: l.identifier('con
     name,
 } satisfies Inset))
 
-const constructInsetsSchema = l.transformExpr(l.call({ fn: l.identifier('constructInsets'), namedArgs: {}, unnamedArgs: [l.editableVector(insetSchema)] }), call => call.unnamedArgs[0])
+const constructInsetsSchema = l.transformExpr(l.autoUXExpr(l.call({ fn: l.identifier('constructInsets'), namedArgs: {}, unnamedArgs: [l.editableVector(insetSchema)] })), call => call.expr.unnamedArgs[0])
 
 const mapSchema = l.transformStmt(l.statements([
     l.ignore(),
@@ -96,9 +98,21 @@ export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvir
     else {
         currentInsetsAst = loadInsetExpression(settings.universe)
     }
+    let currentMetadata: AutoUXMetadata = {}
+    if (mapInsets.expr?.type === 'autoUX') {
+        currentMetadata = mapInsets.expr.metadata
+    }
 
     const newConstructInsets = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment).edit(edits.ast) as UrbanStatsASTExpression
 
-    const result = mapInsets.edit(newConstructInsets)
+    const result = mapInsets.edit({
+        type: 'autoUX',
+        expr: newConstructInsets,
+        metadata: {
+            ...currentMetadata,
+            collapsed: currentMetadata.collapsed !== false,
+        },
+        entireLoc: emptyLocation(''),
+    })
     return result as MapUSS
 }
