@@ -34,7 +34,7 @@ export async function typeTextWithKeys(t: TestController, inputText: string): Pr
 }
 
 export function nthEditor(n: number): Selector {
-    return Selector('pre[contenteditable="plaintext-only"]:not([inert] *)').nth(n)
+    return Selector('pre[contenteditable="plaintext-only"]').nth(n)
 }
 
 export async function typeInEditor(t: TestController, n: number, text: string, clear = false): Promise<void> {
@@ -76,7 +76,7 @@ export function selectionIsNthEditor(n: number | null): Promise<boolean> {
             return document.activeElement === document.body
         }
         else {
-            return document.activeElement === document.querySelectorAll('pre[contenteditable="plaintext-only"]:not([inert] *)').item(n)
+            return document.activeElement === document.querySelectorAll('pre[contenteditable="plaintext-only"]').item(n)
         }
     }, { dependencies: { n } })()
 }
