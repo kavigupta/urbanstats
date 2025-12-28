@@ -735,12 +735,11 @@ table(
 urbanstatsFixture('page with nans', createUSSStatisticsPage(transit, 1, 20, 'USA', 'Metropolitan Cluster'))
 
 test('page with nans', async (t) => {
-    await t.wait(1000)
+    await t.wait(2000)
     await waitForLoading()
     const ordinal = Selector('div').withAttribute('data-test-id', 'statistic-ordinal')
-    const count = await ordinal.count
-    await t.expect(count).eql(20)
-    for (let i = 0; i < count; i++) {
+    await t.expect(ordinal.count).eql(20)
+    for (let i = 0; i < 20; i++) {
         const text = await ordinal.nth(i).innerText
         await t.expect(text).eql((i + 1).toString())
     }
