@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import { AutoUXMetadata } from './autoux-metadata'
+import { AutoUXNodeMetadata } from './autoux-node-metadata'
 import { LocInfo } from './location'
 import { Decorated, ParseError } from './parser'
 import { USSType } from './types-values'
@@ -25,7 +25,7 @@ export type UrbanStatsASTExpression = (
     { type: 'do', entireLoc: LocInfo, statements: UrbanStatsASTStatement[] } |
     // for internal purposes only
     { type: 'customNode', entireLoc: LocInfo, expr: UrbanStatsASTStatement, originalCode: string, expectedType?: USSType[] } |
-    { type: 'autoUX', entireLoc: LocInfo, expr: UrbanStatsASTExpression, metadata: AutoUXMetadata }
+    { type: 'autoUXNode', entireLoc: LocInfo, expr: UrbanStatsASTExpression, metadata: AutoUXNodeMetadata }
 )
 
 export type UrbanStatsASTStatement = (
@@ -84,7 +84,7 @@ export function locationOf(node: UrbanStatsAST): LocInfo {
         case 'parseError':
             assert(node.errors.length > 0, 'parseError node must have at least one error')
             return node.errors[0].location
-        case 'autoUX':
+        case 'autoUXNode':
         case 'customNode':
             return node.entireLoc
     }
@@ -169,7 +169,7 @@ export function getAllParseErrors(node: UrbanStatsAST): ParseError[] {
             case 'parseError':
                 errors.push(...n.errors)
                 break
-            case 'autoUX':
+            case 'autoUXNode':
                 collectErrors(n.expr)
                 break
             case 'customNode':

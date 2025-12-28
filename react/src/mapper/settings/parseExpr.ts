@@ -104,9 +104,9 @@ function attemptParseExpr(
             else {
                 return parseExpr(expr.expr, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)
             }
-        case 'autoUX':
+        case 'autoUXNode':
             return {
-                type: 'autoUX',
+                type: 'autoUXNode',
                 entireLoc: emptyLocation(blockIdent),
                 expr: parseExpr(expr.expr, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes),
                 metadata: expr.metadata,
@@ -369,9 +369,9 @@ export function possibilities(target: USSType[], env: TypeEnvironment): Selectio
                     entireLoc: recL(e.entireLoc),
                     originalCode: e.originalCode,
                 }
-            case 'autoUX':
+            case 'autoUXNode':
                 return {
-                    type: 'autoUX',
+                    type: 'autoUXNode',
                     expr: recE(e.expr),
                     entireLoc: recL(e.entireLoc),
                     metadata: e.metadata,
