@@ -6,6 +6,7 @@ import { parseExpr } from '../mapper/settings/parseExpr'
 import { assert } from '../utils/defensive'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
+import { AutoUXMetadata } from './autoux-metadata'
 import { noLocation } from './location'
 import { unparse } from './parser'
 import { TypeEnvironment, USSType } from './types-values'
@@ -361,6 +362,34 @@ export function customNodeExpr<T>(schema: LiteralExprParser<T>): LiteralExprPars
                     }))
             }
             return schema.parse(expr, env, doEdit)
+        },
+    }
+}
+
+export function autoUXExpr<T>(schema: LiteralExprParser<T>): LiteralExprParser<{ expr: T, metadata: AutoUXMetadata }> {
+    return {
+        parse(expr, env, doEdit = e => e) {
+            if (expr?.type === 'autoUX') {
+                return {
+                    expr: schema.parse(expr.expr, env, (newExpr) => {
+                        if (newExpr === undefined) {
+                            return undefined
+                        }
+                        if (newExpr.type === 'autoUX') {
+                            return doEdit(newExpr)
+                        }
+                        return doEdit({
+                            ...expr,
+                            expr: newExpr,
+                        })
+                    }),
+                    metadata: expr.metadata,
+                }
+            }
+            return {
+                expr: schema.parse(expr, env, doEdit),
+                metadata: {},
+            }
         },
     }
 }
