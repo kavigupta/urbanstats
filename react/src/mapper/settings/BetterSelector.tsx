@@ -3,6 +3,7 @@ import React, { ReactNode, useState, useEffect, useRef, useMemo, CSSProperties }
 
 import { useColors } from '../../page_template/colors'
 import { IFrameInput } from '../../utils/IFrameInput'
+import { TestUtils } from '../../utils/TestUtils'
 import { toNeedle } from '../../utils/bitap'
 import { bitap } from '../../utils/bitap-selector'
 import { zIndex } from '../../utils/zIndex'
@@ -178,7 +179,7 @@ export function BetterSelector<T>({ value, onChange, possibleValues, renderValue
                     flex: 1,
                     padding: `${labelPadding} 8px`,
                     border: `1px solid ${colors.ordinalTextColor}`,
-                    borderRadius: '4px',
+                    borderRadius: TestUtils.shared.isTesting ? 0 : '4px',
                     fontSize: '14px',
                     ...inputStyle,
                 }}
