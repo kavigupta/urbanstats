@@ -3,12 +3,12 @@ import React, { ReactNode, useState, useEffect, useRef, useMemo, CSSProperties }
 
 import { useColors } from '../../page_template/colors'
 import { IFrameInput } from '../../utils/IFrameInput'
+import { TestUtils } from '../../utils/TestUtils'
 import { toNeedle } from '../../utils/bitap'
 import { bitap } from '../../utils/bitap-selector'
 import { zIndex } from '../../utils/zIndex'
 
 import '../../common.css'
-import { TestUtils } from '../../utils/TestUtils'
 
 export const labelPadding = '4px'
 
