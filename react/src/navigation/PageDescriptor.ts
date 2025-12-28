@@ -80,20 +80,23 @@ const statisticSchema = z.object({
     message: 'Either statname or uss must be provided, but not both',
 })
 
-const statisticSchemaFromParams = z.object({
-    article_type: z.string(),
-    statname: z.optional(z.string().transform(s => s.replaceAll('__PCT__', '%') as StatName)),
-    uss: z.optional(z.string()),
-    start: z.optional(z.coerce.number().int()).default(1),
-    amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
-    order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
-    highlight: z.optional(z.string()),
-    universe: z.optional(universeSchema).catch(undefined),
-    edit: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.undefined().transform(() => false)]),
-    sort_column: z.optional(z.coerce.number().int()).default(0),
-}).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
-    message: 'Either statname or uss must be provided, but not both',
-})
+const statisticSchemaFromParams = z.union([
+    z.object({
+        article_type: z.string(),
+        statname: z.optional(z.string().transform(s => s.replaceAll('__PCT__', '%') as StatName)),
+        uss: z.optional(z.string()),
+        start: z.optional(z.coerce.number().int()).default(1),
+        amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
+        order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
+        highlight: z.optional(z.string()),
+        universe: z.optional(universeSchema).catch(undefined),
+        edit: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.undefined().transform(() => false)]),
+        sort_column: z.optional(z.coerce.number().int()).default(0),
+    }).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
+        message: 'Either statname or uss must be provided, but not both',
+    }),
+    z.object({}),
+])
 
 const randomSchema = z.object({
     sampleby: z.union([z.literal('uniform'), z.literal('population')]),
@@ -227,7 +230,21 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
         case '/comparison.html':
             return { kind: 'comparison', ...comparisonSchemaFromParams.parse(params) }
         case '/statistic.html':
-            return { kind: 'statistic', ...statisticSchemaFromParams.parse(params) }
+            const statisticParams = statisticSchemaFromParams.parse(params)
+            if ('article_type' in statisticParams) {
+                return { kind: 'statistic', ...statisticParams }
+            }
+            return {
+                kind: 'statistic',
+                article_type: 'Subnational Region',
+                uss: 'customNode(""); condition (true); table(columns=[column(values=density_pw_1km)])',
+                start: 1,
+                amount: 20,
+                order: 'descending',
+                universe: 'USA',
+                edit: true,
+                sort_column: 0,
+            }
         case '/random.html':
             return { kind: 'random', ...randomSchemaForParams.parse(params) }
         case '/':
