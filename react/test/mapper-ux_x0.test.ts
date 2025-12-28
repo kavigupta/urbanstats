@@ -201,7 +201,7 @@ function undoRedoTest(testFn: () => TestFn, name: string, { doUndo, doRedo, canU
 mapper(() => test)('custom ramp', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     await replaceInput(t, 'Uridis', 'Custom Ramp')
     // eslint-disable-next-line no-restricted-syntax -- Test color
-    await t.typeText(Selector('input[type="color"]:not([inert] *)'), '#ff0000')
+    await t.typeText(Selector('input[type="color"]'), '#ff0000')
     await replaceInput(t, '0.353', '1')
     await screencap(t, { selector: Selector('#auto-ux-editor-ro_ramp') })
     await replaceInput(t, 'Custom Ramp', 'Custom Expression')
@@ -316,7 +316,7 @@ mapper(() => test)('custom rendering for selector options', { code: 'customNode(
     const inputSelector = getInput('Uridis')
     await t.typeText(inputSelector, 'Custom', { replace: true })
     await t.hover(Selector('div').withExactText('Autumn'))
-    await screencap(t, { fullPage: false, selector: Selector('#auto-ux-editor-ro_ramp:not([inert] *)') })
+    await screencap(t, { fullPage: false, selector: Selector('#auto-ux-editor-ro_ramp') })
 })
 
 const expectedExportOutput = `meta(kind="mapper", universe="USA", geographyKind="Urban Area")
