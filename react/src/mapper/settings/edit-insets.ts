@@ -7,8 +7,7 @@ import { ArrayEdits, replace, swap } from '../../utils/array-edits'
 import { assert } from '../../utils/defensive'
 import { loadInsetExpression, loadInsets } from '../context'
 
-import { idOutput, MapUSS, validMapperOutputs } from './TopLevelEditor'
-import { MapSettings } from './utils'
+import { MapSettings, idOutput, MapUSS, validMapperOutputs } from './utils'
 
 export const neswSchema = l.object({
     north: l.number(),

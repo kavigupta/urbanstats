@@ -29,10 +29,9 @@ import { ImportExportCode } from './ImportExportCode'
 import { mapSettingsContext } from './MapSettingsContext'
 import { MapperSettings } from './MapperSettings'
 import { Selection, SelectionContext } from './SelectionContext'
-import { validMapperOutputs } from './TopLevelEditor'
 import { doEditInsets, getInsets, InsetEdits, replaceInsets, swapInsets } from './edit-insets'
 import { getTextBoxes, scriptWithNewTextBoxes } from './edit-text-boxes'
-import { MapEditorMode, MapSettings } from './utils'
+import { MapEditorMode, MapSettings, validMapperOutputs } from './utils'
 
 export interface ActionOptions { undoable?: boolean, updateMap?: boolean }
 

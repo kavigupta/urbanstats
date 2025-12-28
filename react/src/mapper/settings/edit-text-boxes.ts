@@ -6,9 +6,8 @@ import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
 
 import { colorSchema } from './Selector'
-import { idOutput, MapUSS, validMapperOutputs } from './TopLevelEditor'
 import { neswSchema } from './edit-insets'
-import { MapSettings } from './utils'
+import { MapSettings, idOutput, MapUSS, validMapperOutputs } from './utils'
 
 const attributesArgs = {
     size: l.optional(l.number()),
