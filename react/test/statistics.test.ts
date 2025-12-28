@@ -429,6 +429,8 @@ test('error display on correct field -- second', async (t) => {
 
 test('warning', async (t) => {
     await checkTextboxesDirect(t, ['Name', 'Unit'])
+    await t.wait(100)
+    await waitForLoading()
     await t.expect(await getErrors()).eql(['Name could not be derived for column, please pass name="<your name here>" to column(...)'])
     await screencap(t)
     // switch to view mode
