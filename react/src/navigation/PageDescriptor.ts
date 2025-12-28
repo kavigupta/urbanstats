@@ -74,6 +74,7 @@ const statisticSchema = z.object({
     order: z.union([z.literal('descending'), z.literal('ascending')]),
     highlight: z.optional(z.string()),
     universe: z.optional(universeSchema),
+    edit: z.optional(z.boolean()),
     sort_column: z.optional(z.number().int()),
 }).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
     message: 'Either statname or uss must be provided, but not both',
@@ -88,6 +89,7 @@ const statisticSchemaFromParams = z.object({
     order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
     highlight: z.optional(z.string()),
     universe: z.optional(universeSchema).catch(undefined),
+    edit: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.undefined().transform(() => false)]),
     sort_column: z.optional(z.coerce.number().int()).default(0),
 }).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
     message: 'Either statname or uss must be provided, but not both',
@@ -287,6 +289,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 order: pageDescriptor.order === 'descending' ? undefined : 'ascending',
                 highlight: pageDescriptor.highlight,
                 universe: pageDescriptor.universe,
+                edit: pageDescriptor.edit ? 'true' : undefined,
                 sort_column: pageDescriptor.sort_column === undefined || pageDescriptor.sort_column === 0
                     ? undefined
                     : pageDescriptor.sort_column.toString(),
@@ -515,6 +518,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     start: newDescriptor.start,
                     amount: newDescriptor.amount,
                     universe: statUniverse,
+                    edit: newDescriptor.edit ?? false,
                     sortColumn: newDescriptor.sort_column ?? 0,
                     // StatisticPanel needs this to compute the set of universes to display
                     counts: countsByArticleType,

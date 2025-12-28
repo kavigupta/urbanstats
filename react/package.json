@@ -38,6 +38,7 @@
     "chalk-template": "^1.1.0",
     "compression": "^1.8.0",
     "css-loader": "^6.8.1",
+    "csv-parse": "^6.1.0",
     "diff": "^8.0.2",
     "downloads-folder": "^3.0.3",
     "eslint": "^8.57.0",
