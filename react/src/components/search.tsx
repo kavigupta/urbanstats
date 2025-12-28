@@ -119,10 +119,11 @@ export function SearchBox(props: {
 }
 
 function SingleSearchResult(props: SearchResult): ReactNode {
+    const src = props.type === 'article' ? searchIconLink(props.typeIndex) : '/icons/search_icons/table.png'
     return (
         <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ width: '80%' }}>{props.longname}</div>
-            <div style={{ width: '20%', textAlign: 'right' }}><img height="25em" src={searchIconLink(props.typeIndex)} /></div>
+            <div style={{ width: '20%', textAlign: 'right' }}><img height="25em" src={src} /></div>
         </div>
     )
 }
