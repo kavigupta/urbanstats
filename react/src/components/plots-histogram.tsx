@@ -348,7 +348,7 @@ function HistogramSettings(props: {
                             onChange={() => {
                                 setShowSearchBox(false)
                             }}
-                            link={(regionName) => {
+                            articleLink={(regionName) => {
                                 return navContext.link({
                                     kind: 'comparison',
                                     universe,

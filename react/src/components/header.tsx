@@ -88,7 +88,7 @@ export function Header(props: {
                     }}
                     >
                         <SearchBox
-                            link={
+                            articleLink={
                                 newLocation => navContext.link({
                                     kind: 'article',
                                     universe: currentUniverse,
