@@ -45,6 +45,7 @@ def top_level_pages():
         "https://urbanstats.org/about.html",
         "https://urbanstats.org/data-credit.html",
         "https://urbanstats.org/mapper.html",
+        "https://urbanstats.org/statistic.html",
         "https://urbanstats.org/random.html?sampleby=uniform",
         "https://urbanstats.org/random.html?sampleby=population",
         "https://urbanstats.org/random.html?sampleby=population&us_only=true",
