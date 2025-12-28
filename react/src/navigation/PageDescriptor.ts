@@ -510,19 +510,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'statistic': {
-            if (!('article_type' in newDescriptor)) {
-                return loadPageDescriptor({
-                    kind: 'statistic',
-                    article_type: 'Subnational Region',
-                    uss: 'customNode(""); condition (true); table(columns=[column(values=density_pw_1km)])',
-                    start: 1,
-                    amount: 20,
-                    order: 'descending',
-                    universe: 'USA',
-                    edit: true,
-                    sort_column: 0,
-                }, settings)
-            }
             const statUniverse = newDescriptor.universe ?? 'world'
             const displayStatUniverse = statUniverse !== 'world' ? statUniverse : undefined
 
