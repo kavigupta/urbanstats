@@ -30,6 +30,44 @@ test('expanded when checking insets, click expand button to collapse', async (t)
     await t.expect(expandButton('insets').getAttribute('data-test-state')).eql('true')
 })
 
+for (const [argName, humanName] of [
+    ['insets', 'Insets'],
+    ['textBoxes', 'Text Boxes'],
+]) {
+    async function editAddAccept(t: TestController): Promise<void> {
+        await t.click(Selector('button').withExactText(`Edit ${humanName}`))
+        await t.click('[data-test=add]')
+        await t.click(Selector('button').withExactText('Accept'))
+    }
+
+    test(`edit ${humanName} without first checking`, async (t) => {
+        await editAddAccept(t)
+        await t.expect(expandButton().count).eql(1)
+        await t.expect(expandButton(argName).getAttribute('data-test-state')).eql('false')
+    })
+
+    test(`edit ${humanName} after first checking`, async (t) => {
+        await checkBox(t, new RegExp(humanName))
+        await t.expect(expandButton(argName).getAttribute('data-test-state')).eql('true')
+        await editAddAccept(t)
+        await t.expect(expandButton(argName).getAttribute('data-test-state')).eql('true')
+    })
+
+    test(`edit ${humanName} after first checking and collapsing`, async (t) => {
+        await checkBox(t, new RegExp(humanName))
+        await t.click(expandButton(argName))
+        await t.expect(expandButton(argName).getAttribute('data-test-state')).eql('false')
+        await editAddAccept(t)
+        await t.expect(expandButton(argName).getAttribute('data-test-state')).eql('false')
+    })
+
+    test(`edit ${humanName} twice, and still able to edit`, async (t) => {
+        await editAddAccept(t)
+        await editAddAccept(t)
+        await t.expect(Selector('button').withExactText(`Edit ${humanName}`).exists).ok()
+    })
+}
+
 urbanstatsFixture('mapper with collapsed insets', `${target}/mapper.html?settings=H4sIAAAAAAAAA12QTWvDMAyG%2F0rwKYFcdu3IoeywldFRGjIG8yiabTJRRzaWvVJC%2FvucpuwQH4z0vC%2F6GkVvXB%2FA%2F1xfkbTYiDZ9E0R0BLY4mj4HohaJ8NcENlnv2m0GrAL6KDajSMyZqsTRDW9Om1IKKapHScqRxrlQUcaQTJXJHnwpqchPQ4RGG2KM15O%2FnB7OQ70orMCaxiIZCO0cl9VdCTD4Zv66gBr5TpHYRG4gRdd93AbIjTl3VHF3k8rPxfhvfnIUc3mKYPMy9Up9TjCs2SGZEN0RlTvYxF37vls7XuACiGu6tcBnWOBXVRdSjFJKoZy14NnoOdnMx5nyySRVYpr%2BAB4FYM6RAQAA`)
 
 test('compatibility with links', async (t) => {

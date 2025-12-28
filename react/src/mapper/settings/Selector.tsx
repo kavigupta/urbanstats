@@ -243,7 +243,7 @@ export function renderSelection(typeEnvironment: TypeEnvironment, selection: Sel
     }
 }
 
-export const colorSchema = l.transformExpr(l.customNodeExpr(l.deconstruct(l.call({
+export const colorSchema = l.transformExpr(l.maybeCustomNodeExpr(l.deconstruct(l.call({
     fn: l.union([l.identifier('rgb'), l.identifier('hsv')]),
     unnamedArgs: [l.number(), l.number(), l.number()],
     namedArgs: { a: l.optional(l.number()) },
