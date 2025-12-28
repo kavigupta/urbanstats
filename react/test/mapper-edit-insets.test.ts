@@ -126,11 +126,11 @@ function insetsEditTest(testFn: () => TestFn, { description, action, before, aft
 
             if (confirmation === 'Accept') {
                 await check(after)
-                await t.expect(Selector('input[value="Custom Inset"]').count).eql(customInsetsAfterEdit)
+                await t.expect(Selector('input[value="Custom Inset"]:not([inert] *)').count).eql(customInsetsAfterEdit)
             }
             else {
                 await check(before)
-                await t.expect(Selector('input[value="Custom Inset"]').count).eql(0)
+                await t.expect(Selector('input[value="Custom Inset"]:not([inert] *)').count).eql(0)
             }
         })
     }
