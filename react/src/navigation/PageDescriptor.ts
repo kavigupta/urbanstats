@@ -81,7 +81,6 @@ const statisticSchema = z.object({
 })
 
 const statisticSchemaFromParams = z.union([
-    z.object({}),
     z.object({
         article_type: z.string(),
         statname: z.optional(z.string().transform(s => s.replaceAll('__PCT__', '%') as StatName)),
@@ -96,6 +95,7 @@ const statisticSchemaFromParams = z.union([
     }).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
         message: 'Either statname or uss must be provided, but not both',
     }),
+    z.object({}),
 ])
 
 const randomSchema = z.object({
