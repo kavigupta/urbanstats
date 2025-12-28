@@ -1,5 +1,5 @@
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
-import { AutoUXMetadata } from '../../urban-stats-script/autoux-metadata'
+import { AutoUXNodeMetadata } from '../../urban-stats-script/autoux-node-metadata'
 import { deconstruct as deconstructInset, Inset } from '../../urban-stats-script/constants/insets'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import * as l from '../../urban-stats-script/literal-parser'
@@ -98,19 +98,19 @@ export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvir
     else {
         currentInsetsAst = loadInsetExpression(settings.universe)
     }
-    let currentMetadata: AutoUXMetadata = {}
-    if (mapInsets.expr?.type === 'autoUX') {
+    let currentMetadata: AutoUXNodeMetadata = {}
+    if (mapInsets.expr?.type === 'autoUXNode') {
         currentMetadata = mapInsets.expr.metadata
     }
 
     const newConstructInsets = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment).edit(edits.ast) as UrbanStatsASTExpression
 
     const result = mapInsets.edit({
-        type: 'autoUX',
+        type: 'autoUXNode',
         expr: newConstructInsets,
         metadata: {
             ...currentMetadata,
-            collapsed: currentMetadata.collapsed !== false,
+            collapsed: currentMetadata.collapsed ?? mapInsets.expr === undefined,
         },
         entireLoc: emptyLocation(''),
     })

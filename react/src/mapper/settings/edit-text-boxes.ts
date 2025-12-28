@@ -82,7 +82,7 @@ export function scriptWithNewTextBoxes(settings: MapSettings, textBoxes: TextBox
     const result = parsed.edit(textBoxes.length === 0
         ? undefined
         : {
-                type: 'autoUX',
+                type: 'autoUXNode',
                 expr: {
                     type: 'vectorLiteral',
                     elements: textBoxes.map(deconstruct),
@@ -90,7 +90,7 @@ export function scriptWithNewTextBoxes(settings: MapSettings, textBoxes: TextBox
                 },
                 metadata: {
                     ...parsed.currentValue?.metadata,
-                    collapsed: parsed.currentValue?.metadata.collapsed !== false,
+                    collapsed: parsed.currentValue?.metadata.collapsed ?? parsed.expr === undefined,
                 },
                 entireLoc: noLocation,
             })
