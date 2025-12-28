@@ -682,7 +682,7 @@ export function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, m
                             onChange={() => {
                                 setIsEditing(false)
                             }}
-                            link={onReplace}
+                            articleLink={onReplace}
                             prioritizeArticleType={sharedTypeOfAllArticles ?? undefined}
                         />
                     )
