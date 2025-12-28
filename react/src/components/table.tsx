@@ -698,6 +698,7 @@ export function StatisticPanelLongnameCell(props: StatisticPanelLongnameCellProp
     return (
         <div style={{ width: `${props.width}%`, padding: '1px' }}>
             <a
+                data-test-id="statistic-panel-longname-link"
                 style={{ textDecoration: 'none', color: colors.textMain }}
                 {...navContext.link({
                     kind: 'article',

@@ -229,7 +229,7 @@ function mergeValuesViaMasksSpecialCaseMap(
         return undefined
     }
     const nonNullValue = nonNullValues[0]
-    if (nonNullValue.type.type !== 'opaque' || (nonNullValue.type.name !== 'cMap' && nonNullValue.type.name !== 'cMapRGB' && nonNullValue.type.name !== 'pMap')) {
+    if (nonNullValue.type.type !== 'opaque' || (nonNullValue.type.name !== 'cMap' && nonNullValue.type.name !== 'cMapRGB' && nonNullValue.type.name !== 'pMap' && nonNullValue.type.name !== 'table')) {
         // If the non-null value is not a map, this is not a special case we handle
         return undefined
     }

@@ -27,11 +27,13 @@ export function comparisonPage(locations: string[]): string {
     return `${target}/comparison.html?${params.toString()}`
 }
 
-export async function checkTextboxesDirect(t: TestController, txts: string[]): Promise<void> {
+export async function checkTextboxesDirect(t: TestController, txts: string[], nth: number = 0): Promise<void> {
     for (const txt of txts) {
         const checkbox = Selector('div.checkbox-setting:not([inert] *)')
         // filter for label
             .filter(node => node.querySelector('label')!.innerText === txt, { txt })
+        // get nth
+            .nth(nth)
         // find checkbox
             .find('input')
         await t.click(checkbox)
