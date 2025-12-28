@@ -73,7 +73,7 @@ function ArgumentEditor(props: {
     const humanReadableName = tdoc?.documentation?.namedArgs?.[props.name] ?? props.name
     assert(tdoc?.type === undefined || tdoc.type.type === 'function', `AutoUX looked up function identifier ${functionUss.fn.name.node}m, but it was not a function`)
     const collapsable = hasDefault && isEnabled && (tdoc?.type.namedArgs[props.name]?.documentation?.collapsable ?? false)
-    const collapsed = collapsable && argValue.type === 'named' && argValue.value.type === 'autoUX' && argValue.value.metadata.collapsed === true
+    const collapsed = collapsable && argValue.type === 'named' && argValue.value.type === 'autoUXNode' && argValue.value.metadata.collapsed === true
 
     return (
         <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', gap: '0.25em', width: '100%', margin: '0.25em 0' }}>
@@ -95,9 +95,9 @@ function ArgumentEditor(props: {
                         props.setUss(
                             { ...functionUss, args: functionUss.args.map(a =>
                                 a.type === 'named' && a.name.node === props.name
-                                    ? { ...a, value: a.value.type === 'autoUX'
+                                    ? { ...a, value: a.value.type === 'autoUXNode'
                                             ? { ...a.value, metadata: { ...a.value.metadata, collapsed: !a.value.metadata.collapsed } }
-                                            : { type: 'autoUX', expr: a.value, entireLoc: locationOf(a.value), metadata: { collapsed: true } } }
+                                            : { type: 'autoUXNode', expr: a.value, entireLoc: locationOf(a.value), metadata: { collapsed: true } } }
                                     : a) },
                             {
                                 undoable: false,
@@ -218,14 +218,14 @@ export function AutoUXEditor(props: {
     const labelWidth = props.labelWidth ?? '5%'
     const twoLines = useMobileLayout() || (props.label?.length ?? 0) > 5
 
-    if (props.uss.type === 'autoUX') {
+    if (props.uss.type === 'autoUXNode') {
         const uss = props.uss
         return (
             <AutoUXEditor
                 {...props}
                 uss={uss.expr}
                 setUss={(newUss, o) => {
-                    if (newUss.type === 'autoUX') {
+                    if (newUss.type === 'autoUXNode') {
                         props.setUss(newUss, o)
                     }
                     else {

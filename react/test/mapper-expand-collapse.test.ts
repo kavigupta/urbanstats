@@ -29,3 +29,9 @@ test('expanded when checking insets, click expand button to collapse', async (t)
     await toggleCustomScript(t)
     await t.expect(expandButton('insets').getAttribute('data-test-state')).eql('true')
 })
+
+urbanstatsFixture('mapper with collapsed insets', `${target}/mapper.html?settings=H4sIAAAAAAAAA12QTWvDMAyG%2F0rwKYFcdu3IoeywldFRGjIG8yiabTJRRzaWvVJC%2FvucpuwQH4z0vC%2F6GkVvXB%2FA%2F1xfkbTYiDZ9E0R0BLY4mj4HohaJ8NcENlnv2m0GrAL6KDajSMyZqsTRDW9Om1IKKapHScqRxrlQUcaQTJXJHnwpqchPQ4RGG2KM15O%2FnB7OQ70orMCaxiIZCO0cl9VdCTD4Zv66gBr5TpHYRG4gRdd93AbIjTl3VHF3k8rPxfhvfnIUc3mKYPMy9Up9TjCs2SGZEN0RlTvYxF37vls7XuACiGu6tcBnWOBXVRdSjFJKoZy14NnoOdnMx5nyySRVYpr%2BAB4FYM6RAQAA`)
+
+test('compatibility with links', async (t) => {
+    await t.expect(expandButton('insets').getAttribute('data-test-state')).eql('false')
+})

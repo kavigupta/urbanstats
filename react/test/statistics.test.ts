@@ -350,7 +350,7 @@ test('edit starting from a statname page works', async (t) => {
     await screencap(t)
     // set the name
     await checkTextboxes(t, ['Name', 'Unit'])
-    await t.click(Selector('textarea'))
+    await t.click(Selector('textarea:not([inert] *)'))
     await typeTextWithKeys(t, 'Density Ratio')
     await t.expect(text.exists).notOk() // error box should be gone
     await screencap(t)
@@ -473,7 +473,7 @@ async function getAllLongnames(): Promise<string[]> {
 }
 
 async function setUpSecondColumn(t: TestController): Promise<void> {
-    await t.click(Selector('button[data-test-id="test-add-vector-element-button"]'))
+    await t.click(Selector('button[data-test-id="test-add-vector-element-button"]:not([inert] *)'))
     // Inyo, Mariposa, Mono, Siskiyou, Trinity
     await waitForLoading()
     await typeInEditor(t, 1, 'density_pw_1km', true)
