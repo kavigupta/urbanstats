@@ -1,5 +1,4 @@
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
-import { AutoUXNodeMetadata } from '../../urban-stats-script/autoux-node-metadata'
 import { deconstruct as deconstructInset, Inset } from '../../urban-stats-script/constants/insets'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import * as l from '../../urban-stats-script/literal-parser'
