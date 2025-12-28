@@ -297,7 +297,6 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             break
         case 'statistic':
             pathname = '/statistic.html'
-            // If article_type is empty and statname/uss are undefined, generate URL with no params (will trigger redirect)
             searchParams = {
                 statname: pageDescriptor.statname?.replaceAll('%', '__PCT__'),
                 uss: pageDescriptor.uss,
