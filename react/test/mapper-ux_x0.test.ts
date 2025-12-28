@@ -316,7 +316,7 @@ mapper(() => test)('custom rendering for selector options', { code: 'customNode(
     const inputSelector = getInput('Uridis')
     await t.typeText(inputSelector, 'Custom', { replace: true })
     await t.hover(Selector('div').withExactText('Autumn'))
-    await screencap(t, { fullPage: false, selector: Selector('#auto-ux-editor-ro_ramp') })
+    await screencap(t, { fullPage: false, selector: Selector('#auto-ux-editor-ro_ramp:not([inert] *)') })
 })
 
 const expectedExportOutput = `meta(kind="mapper", universe="USA", geographyKind="Urban Area")
