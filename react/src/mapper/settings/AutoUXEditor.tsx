@@ -75,6 +75,21 @@ function ArgumentEditor(props: {
     const collapsable = hasDefault && isEnabled && (tdoc?.type.namedArgs[props.name]?.documentation?.collapsable ?? false)
     const collapsed = collapsable && argValue.type === 'named' && argValue.value.type === 'autoUXNode' && argValue.value.metadata.collapsed === true
 
+    const editor = isEnabled && (
+        <AutoUXEditor
+            uss={argValue.value}
+            setUss={(newUss, actionKind) => {
+                const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
+                props.setUss({ ...functionUss, args: newArgs }, actionKind)
+            }}
+            typeEnvironment={props.typeEnvironment}
+            errors={props.errors}
+            blockIdent={subident}
+            type={[arg.value]}
+            margin={!collapsed}
+        />
+    )
+
     return (
         <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', gap: '0.25em', width: '100%', margin: '0.25em 0' }}>
             {collapsable && (
@@ -144,52 +159,44 @@ function ArgumentEditor(props: {
 
                 </div>
                 {
-                    isEnabled && (
-                        <RenderTwiceHidden<HTMLDivElement>>
-                            {(renderArg) => {
-                                const result = (
-                                    <div
-                                        // @ts-expect-error -- inert is not in the type definitions yet
-                                        inert={renderArg.kind === 'hidden' ? '' : undefined}
-                                        style={{
-                                            ...(renderArg.kind === 'hidden'
-                                                ? {
-                                                        opacity: 0,
-                                                        position: 'absolute',
-                                                    }
-                                                : {
-                                                        maxHeight: collapsed ? 0 : renderArg.height,
-                                                        transition: 'max-height 0.25s',
-                                                        overflowY: collapsed ? 'clip' : undefined,
-                                                    }),
-                                        }}
-                                        ref={renderArg.kind === 'hidden' ? renderArg.ref : undefined}
-                                    >
-                                        <AutoUXEditor
-                                            uss={argValue.value}
-                                            setUss={(newUss, actionKind) => {
-                                                const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
-                                                props.setUss({ ...functionUss, args: newArgs }, actionKind)
-                                            }}
-                                            typeEnvironment={props.typeEnvironment}
-                                            errors={props.errors}
-                                            blockIdent={subident}
-                                            type={[arg.value]}
-                                        />
-                                    </div>
-                                )
-                                if (renderArg.kind === 'hidden') {
-                                    return (
-                                        <SelectionContext.Provider value={nullSelectionContext}>
-                                            {result}
-                                        </SelectionContext.Provider>
-                                    )
-                                }
-                                return result
-                            }}
+                    isEnabled && (collapsable
+                        ? (
+                                <RenderTwiceHidden<HTMLDivElement>>
+                                    {(renderArg) => {
+                                        const result = (
+                                            <div
+                                                // @ts-expect-error -- inert is not in the type definitions yet
+                                                inert={renderArg.kind === 'hidden' ? '' : undefined}
+                                                style={{
+                                                    ...(renderArg.kind === 'hidden'
+                                                        ? {
+                                                                opacity: 0,
+                                                                position: 'absolute',
+                                                            }
+                                                        : {
+                                                                maxHeight: collapsed ? 0 : renderArg.height,
+                                                                transition: 'max-height 0.25s',
+                                                                overflowY: collapsed ? 'clip' : undefined,
+                                                            }),
+                                                }}
+                                                ref={renderArg.kind === 'hidden' ? renderArg.ref : undefined}
+                                            >
+                                                {editor}
+                                            </div>
+                                        )
+                                        if (renderArg.kind === 'hidden') {
+                                            return (
+                                                <SelectionContext.Provider value={nullSelectionContext}>
+                                                    {result}
+                                                </SelectionContext.Provider>
+                                            )
+                                        }
+                                        return result
+                                    }}
 
-                        </RenderTwiceHidden>
-                    )
+                                </RenderTwiceHidden>
+                            )
+                        : editor)
                 }
             </div>
         </div>
@@ -207,6 +214,7 @@ export function AutoUXEditor(props: {
     type: USSType[]
     label?: string
     labelWidth?: string
+    margin?: boolean
 }): ReactNode {
     const ussLoc = locationOf(props.uss).start
     if (ussLoc.block.type !== 'single' || ussLoc.block.ident !== props.blockIdent) {
@@ -469,7 +477,16 @@ export function AutoUXEditor(props: {
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1, margin: '0.25em 0', gap: '0.25em' }} id={`auto-ux-editor-${props.blockIdent}`}>
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100%',
+                flex: 1,
+                margin: props.margin === false ? 0 : '0.25em 0', gap: '0.25em',
+            }}
+            id={`auto-ux-editor-${props.blockIdent}`}
+        >
             {leftSegment !== undefined || rightSegment !== undefined ? <div style={{ width: '100%', flex: 1 }}>{component()}</div> : undefined}
             {wrapped}
         </div>

@@ -5,6 +5,24 @@ import { nthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
 import { getErrors, replaceInput, toggleCustomScript } from './mapper-utils'
 import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, dataValues, checkTextboxes, checkTextboxesDirect, downloadCSV, downloadImage } from './test_utils'
 
+urbanstatsFixture('statistic.html default page', `${target}/statistic.html`)
+
+test('statistic.html-default-page', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await t.wait(1000)
+    await waitForLoading()
+    const location = await getLocation()
+    // Check that it redirected to the default Custom Table page
+    await t.expect(location).contains('/statistic.html?')
+    await t.expect(location).contains('article_type=Subnational+Region')
+    await t.expect(location).contains('uss=')
+    await t.expect(location).contains('start=1')
+    await t.expect(location).contains('amount=20')
+    await t.expect(location).contains('universe=USA')
+    await t.expect(location).contains('edit=true')
+    await screencap(t)
+})
+
 urbanstatsFixture('statistics', `${target}/article.html?longname=Indianapolis+IN+HRR%2C+USA`)
 
 test('statistics-page', async (t) => {
