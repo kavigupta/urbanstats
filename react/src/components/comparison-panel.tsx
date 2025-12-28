@@ -317,7 +317,7 @@ export function ComparisonPanel(props: {
                                         <SearchBox
                                             style={{ ...searchComparisonStyle, width: '100%' }}
                                             placeholder="Name"
-                                            link={x =>
+                                            articleLink={x =>
                                                 navContext.link({
                                                     kind: 'comparison',
                                                     universe: props.universe,

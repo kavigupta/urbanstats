@@ -21,7 +21,7 @@ import used_geographies from '../data/mapper/used_geographies'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
-    link: (inp: string) => ReturnType<Navigator['link']>
+    articleLink: (inp: string) => ReturnType<Navigator['link']>
     autoFocus: boolean
     placeholder: string
     style: CSSProperties
@@ -67,7 +67,7 @@ export function SearchBox(props: {
     const renderMatch = (currentMatch: (() => SearchResult), onMouseOver: () => void, onClick: () => void, style: React.CSSProperties, dataTestId: string | undefined): ReactElement => (
         <a
             key={currentMatch().longname}
-            {...props.link(currentMatch().longname)}
+            {...props.articleLink(currentMatch().longname)}
             style={{
                 textDecoration: 'none',
                 color: colors.textMain,
@@ -90,7 +90,7 @@ export function SearchBox(props: {
             matches={[]}
             doSearch={doSearch}
             onChange={(result) => { props.onChange?.(result.longname) }}
-            link={result => props.link(result.longname)}
+            link={result => props.articleLink(result.longname)}
             onFocus={(): void => {
                 if (searchWorker.current === undefined) {
                     searchWorker.current = cacheKey.then(createSearchWorker)
