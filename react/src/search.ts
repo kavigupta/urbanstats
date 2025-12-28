@@ -272,14 +272,14 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
         // Check if this is an extra string result
         if (result.entry.extraIndex !== undefined) {
             searchResults.push({
-                type: 'other' as const,
+                type: 'other',
                 longname: result.entry.longname,
                 index: result.entry.extraIndex,
             })
         }
         else {
             searchResults.push({
-                type: 'article' as const,
+                type: 'article',
                 longname: result.entry.longname,
                 typeIndex: result.entry.typeIndex,
             })
