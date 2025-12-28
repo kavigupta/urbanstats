@@ -67,3 +67,9 @@ urbanstatsFixture('mapper with collapsed insets', `${target}/mapper.html?setting
 test('compatibility with links', async (t) => {
     await t.expect(expandButton('insets').getAttribute('data-test-state')).eql('false')
 })
+
+test('undo state not affected', async (t) => {
+    await t.resizeWindow(400, 800)
+    await t.click(expandButton('insets'))
+    await t.expect(Selector('button:disabled').withExactText('Undo').count).eql(1) // So other buttons don't mess up this test
+})
