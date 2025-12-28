@@ -834,7 +834,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
             if (opts.simplify) {
                 return unparse(node.expr, opts)
             }
-            return `autoUX(${unparse(node.expr, { ...opts, inline: true })}, ${JSON.stringify(JSON.stringify(node.metadata))})`
+            return `autoUX(${unparse(node.expr, { ...opts, inline: true, expressionalContext: true })}, ${JSON.stringify(JSON.stringify(node.metadata))})`
         case 'customNode':
             if (!opts.simplify) {
                 return `customNode(${JSON.stringify(node.originalCode.trim())})`

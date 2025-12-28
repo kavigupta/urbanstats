@@ -3,7 +3,7 @@ import { test } from 'node:test'
 
 import { evaluate } from '../src/urban-stats-script/interpreter'
 import { Block } from '../src/urban-stats-script/location'
-import { parse, toSExp } from '../src/urban-stats-script/parser'
+import { parse, parseNoError, toSExp, unparse } from '../src/urban-stats-script/parser'
 
 import { emptyContext } from './urban-stats-script-utils'
 
@@ -69,4 +69,10 @@ void test('autoUX expression evaluates correctly', () => {
     const evaluated = evaluate(result.value, ctx)
     assert.strictEqual(evaluated.type.type, 'number')
     assert.strictEqual(evaluated.value, 8)
+})
+
+void test('unparsing', () => {
+    assert.equal(unparse(parseNoError('autoUX(1 + 2, "{}")', 'test')), 'autoUX(1 + 2, "{}")')
+    assert.equal(unparse(parseNoError('autoUX(1 + 2, "{\\"collapsed\\": true}")', 'test')), 'autoUX(1 + 2, "{\\"collapsed\\":true}")')
+    assert.equal(unparse(parseNoError('autoUX(1 + 2, "{\\"collapsed\\": true}")', 'test'), { simplify: true }), '1 + 2')
 })
