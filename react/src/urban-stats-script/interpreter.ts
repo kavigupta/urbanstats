@@ -136,8 +136,8 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
             }
 
             return result
-        case 'autoUX':
-            // autoUX is an annotation that wraps an expression with metadata
+        case 'autoUXNode':
+            // autoUXNode is an annotation that wraps an expression with metadata
             return evaluate(expr.expr, env)
     }
 }
