@@ -83,11 +83,8 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                     <li>
                         <a
                             style={linkStyle}
-                            {...navContext.link(
-                                {
-                                    kind: 'statistic',
-                                },
-                                { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}
+                            // eslint-disable-next-line no-restricted-syntax -- to get the redirect behavior for free
+                            href="/statistic.html"
                         >
                             Custom Table
                         </a>
