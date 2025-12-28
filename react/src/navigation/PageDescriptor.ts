@@ -65,35 +65,41 @@ const comparisonSchemaFromParams = z.object({
     s: z.optional(z.string()),
 })
 
-const statisticSchema = z.object({
-    article_type: z.string(),
-    statname: z.optional(z.string() as z.ZodType<StatName, z.ZodTypeDef, StatName>),
-    uss: z.optional(z.string()),
-    start: z.number().int(),
-    amount: z.union([z.literal('All'), z.number().int()]),
-    order: z.union([z.literal('descending'), z.literal('ascending')]),
-    highlight: z.optional(z.string()),
-    universe: z.optional(universeSchema),
-    edit: z.optional(z.boolean()),
-    sort_column: z.optional(z.number().int()),
-}).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
-    message: 'Either statname or uss must be provided, but not both',
-})
+const statisticSchema = z.union([
+    z.object({}),
+    z.object({
+        article_type: z.string(),
+        statname: z.optional(z.string() as z.ZodType<StatName, z.ZodTypeDef, StatName>),
+        uss: z.optional(z.string()),
+        start: z.number().int(),
+        amount: z.union([z.literal('All'), z.number().int()]),
+        order: z.union([z.literal('descending'), z.literal('ascending')]),
+        highlight: z.optional(z.string()),
+        universe: z.optional(universeSchema),
+        edit: z.optional(z.boolean()),
+        sort_column: z.optional(z.number().int()),
+    }).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
+        message: 'Either statname or uss must be provided, but not both',
+    }),
+])
 
-const statisticSchemaFromParams = z.object({
-    article_type: z.string(),
-    statname: z.optional(z.string().transform(s => s.replaceAll('__PCT__', '%') as StatName)),
-    uss: z.optional(z.string()),
-    start: z.optional(z.coerce.number().int()).default(1),
-    amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
-    order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
-    highlight: z.optional(z.string()),
-    universe: z.optional(universeSchema).catch(undefined),
-    edit: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.undefined().transform(() => false)]),
-    sort_column: z.optional(z.coerce.number().int()).default(0),
-}).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
-    message: 'Either statname or uss must be provided, but not both',
-})
+const statisticSchemaFromParams = z.union([
+    z.object({}),
+    z.object({
+        article_type: z.string(),
+        statname: z.optional(z.string().transform(s => s.replaceAll('__PCT__', '%') as StatName)),
+        uss: z.optional(z.string()),
+        start: z.optional(z.coerce.number().int()).default(1),
+        amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
+        order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
+        highlight: z.optional(z.string()),
+        universe: z.optional(universeSchema).catch(undefined),
+        edit: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.undefined().transform(() => false)]),
+        sort_column: z.optional(z.coerce.number().int()).default(0),
+    }).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
+        message: 'Either statname or uss must be provided, but not both',
+    }),
+])
 
 const randomSchema = z.object({
     sampleby: z.union([z.literal('uniform'), z.literal('population')]),
@@ -280,19 +286,25 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             break
         case 'statistic':
             pathname = '/statistic.html'
-            searchParams = {
-                statname: pageDescriptor.statname?.replaceAll('%', '__PCT__'),
-                uss: pageDescriptor.uss,
-                article_type: pageDescriptor.article_type,
-                start: pageDescriptor.start.toString(),
-                amount: pageDescriptor.amount.toString(),
-                order: pageDescriptor.order === 'descending' ? undefined : 'ascending',
-                highlight: pageDescriptor.highlight,
-                universe: pageDescriptor.universe,
-                edit: pageDescriptor.edit ? 'true' : undefined,
-                sort_column: pageDescriptor.sort_column === undefined || pageDescriptor.sort_column === 0
-                    ? undefined
-                    : pageDescriptor.sort_column.toString(),
+            // If article_type is empty and statname/uss are undefined, generate URL with no params (will trigger redirect)
+            if (!('article_type' in pageDescriptor)) {
+                searchParams = {}
+            }
+            else {
+                searchParams = {
+                    statname: pageDescriptor.statname?.replaceAll('%', '__PCT__'),
+                    uss: pageDescriptor.uss,
+                    article_type: pageDescriptor.article_type,
+                    start: pageDescriptor.start.toString(),
+                    amount: pageDescriptor.amount.toString(),
+                    order: pageDescriptor.order === 'descending' ? undefined : 'ascending',
+                    highlight: pageDescriptor.highlight,
+                    universe: pageDescriptor.universe,
+                    edit: pageDescriptor.edit ? 'true' : undefined,
+                    sort_column: pageDescriptor.sort_column === undefined || pageDescriptor.sort_column === 0
+                        ? undefined
+                        : pageDescriptor.sort_column.toString(),
+                }
             }
             break
         case 'random':
@@ -492,6 +504,19 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'statistic': {
+            if (!('article_type' in newDescriptor)) {
+                return loadPageDescriptor({
+                    kind: 'statistic',
+                    article_type: 'Subnational Region',
+                    uss: 'customNode(""); condition (true); table(columns=[column(values=density_pw_1km)])',
+                    start: 1,
+                    amount: 20,
+                    order: 'descending',
+                    universe: 'USA',
+                    edit: true,
+                    sort_column: 0,
+                }, settings)
+            }
             const statUniverse = newDescriptor.universe ?? 'world'
             const displayStatUniverse = statUniverse !== 'world' ? statUniverse : undefined
 
