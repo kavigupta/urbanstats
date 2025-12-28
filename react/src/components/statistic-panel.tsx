@@ -28,7 +28,7 @@ import { Universe, universeContext, useUniverse } from '../universe'
 import { DisplayResults } from '../urban-stats-script/Editor'
 import { addColumn, UrbanStatsASTExpressionCreator } from '../urban-stats-script/add-column'
 import { toStatement, UrbanStatsASTStatement, UrbanStatsASTExpression } from '../urban-stats-script/ast'
-import { tableType, type TableColumnWithPopulationPercentiles } from '../urban-stats-script/constants/table'
+import { orderNonNan, tableType, type TableColumnWithPopulationPercentiles } from '../urban-stats-script/constants/table'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { emptyLocation } from '../urban-stats-script/lexer'
 import { extendBlockIdKwarg, noLocation } from '../urban-stats-script/location'
@@ -103,7 +103,7 @@ function uuid(): string {
 
 function computeOrdinals(values: number[]): number[] {
     const indices: number[] = values.map((_, idx) => idx)
-    indices.sort((a, b) => values[b] - values[a]) // descending: 1 = largest value
+    indices.sort((a, b) => orderNonNan(values[b], values[a])) // descending: 1 = largest value
     const ordinals: number[] = new Array<number>(values.length)
     indices.forEach((rowIdx, rank) => {
         ordinals[rowIdx] = rank + 1
@@ -680,9 +680,9 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
             const va = sortByColumn.value[a]
             const vb = sortByColumn.value[b]
             if (isAscending) {
-                return va - vb
+                return orderNonNan(va, vb)
             }
-            return vb - va
+            return orderNonNan(vb, va)
         })
         return { sortedIndices: indices, count: indices.length }
     }, [props.data, props.sortColumn, isAscending])
