@@ -11,6 +11,7 @@ import '../common.css'
 import { SearchResult, SearchParams, debugPerformance, getIndexCacheKey } from '../search'
 import { Universe, useUniverse } from '../universe'
 import { TestUtils } from '../utils/TestUtils'
+import { assert } from '../utils/defensive'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { CountsByUT, getCountsByArticleType } from './countsByArticleType'
@@ -22,19 +23,19 @@ import used_geographies from '../data/mapper/used_geographies'
 export function SearchBox(props: {
     onChange?: (inp: string) => void
     articleLink: (inp: string) => ReturnType<Navigator['link']>
+    statisticLink?: (statIdx: number, articleType: string, universe: Universe) => ReturnType<Navigator['link']>
     autoFocus: boolean
     placeholder: string
     style: CSSProperties
     prioritizeArticleType?: string
     onTextPresenceChange?: (hasText: boolean) => void
-    shouldIncludeStatisticPages?: boolean
 }): ReactNode {
     const colors = useColors()
     const showSettings = useSettings(['show_historical_cds', 'show_person_circles'])
     const universe = useUniverse()
     const extraStringsPromise = useMemo<Promise<[string[], StatisticPage[]] | undefined>>(() => {
-        return computeStatisticsPages(props.shouldIncludeStatisticPages ?? false, universe)
-    }, [props.shouldIncludeStatisticPages, universe])
+        return computeStatisticsPages(props.statisticLink !== undefined, universe)
+    }, [props.statisticLink, universe])
 
     const extraStrings = useOrderedResolve<[string[], StatisticPage[]] | undefined>(extraStringsPromise).result
 
@@ -64,10 +65,19 @@ export function SearchBox(props: {
         }
     }, [searchWorker, cacheKey, showSettings, props.prioritizeArticleType, extraStrings])
 
+    function link(sr: SearchResult): ReturnType<Navigator['link']> | undefined {
+        if (sr.type === 'article') {
+            return props.articleLink(sr.longname)
+        }
+        assert(extraStrings !== undefined && props.statisticLink !== undefined, 'this should never happen!')
+        const res = extraStrings[1][sr.index]
+        return props.statisticLink(res.statisticIndex, res.articleType, res.universe)
+    }
+
     const renderMatch = (currentMatch: (() => SearchResult), onMouseOver: () => void, onClick: () => void, style: React.CSSProperties, dataTestId: string | undefined): ReactElement => (
         <a
             key={currentMatch().longname}
-            {...props.articleLink(currentMatch().longname)}
+            {...link(currentMatch())}
             style={{
                 textDecoration: 'none',
                 color: colors.textMain,
@@ -120,7 +130,7 @@ function SingleSearchResult(props: SearchResult): ReactNode {
 const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { worker.terminate() })
 
 interface StatisticPage {
-    statisticName: string
+    statisticIndex: number
     articleType: string
     universe: Universe
 }
@@ -150,7 +160,7 @@ function generateStatisticStrings(counts: CountsByUT, universe: Universe | undef
             const name = `${statistic_name_list[i]} by ${articleType}`
             names.push(name)
             pages.push({
-                statisticName: statistic_name_list[i],
+                statisticIndex: i,
                 articleType,
                 universe: u,
             })

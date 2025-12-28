@@ -3,6 +3,7 @@ import React, { ReactNode, useContext, useState } from 'react'
 import '../common.css'
 import './header.css'
 import flag_dimensions from '../data/flag_dimensions'
+import statistic_name_list from '../data/statistic_name_list'
 import { Navigator } from '../navigation/Navigator'
 import { universePath } from '../navigation/links'
 import { useColors } from '../page_template/colors'
@@ -98,6 +99,18 @@ export function Header(props: {
                                     postNavigationCallback: () => { props.setHamburgerOpen(false) },
                                 })
                             }
+                            statisticLink={(statisticIndex, articleType, universe) => navContext.link({
+                                kind: 'statistic',
+                                universe,
+                                statname: statistic_name_list[statisticIndex],
+                                article_type: articleType,
+                                start: 1,
+                                amount: 20,
+                                order: 'descending',
+                            }, {
+                                scroll: { kind: 'position', top: 0 },
+                                postNavigationCallback: () => { props.setHamburgerOpen(false) },
+                            })}
                             placeholder="Search Urban Stats"
                             style={{
                                 fontSize: '30px',
@@ -108,7 +121,6 @@ export function Header(props: {
                             }}
                             autoFocus={false}
                             onTextPresenceChange={(hasText: boolean) => { setSearchHasText(hasText) }}
-                            shouldIncludeStatisticPages={true}
                         />
                     </div>
                 </div>
