@@ -734,7 +734,7 @@ table(
 
 urbanstatsFixture('page with nans', createUSSStatisticsPage(transit, 1, 20, 'USA', 'Metropolitan Cluster'))
 
-test.only('page with nans', async (t) => {
+test('page with nans', async (t) => {
     await t.wait(1000)
     await waitForLoading()
     const ordinal = Selector('div').withAttribute('data-test-id', 'statistic-ordinal')
