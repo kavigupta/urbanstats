@@ -75,6 +75,26 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                     <li>
                         <a style={linkStyle} {...navContext.link({ kind: 'mapper', view: false }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>Mapper (beta)</a>
                     </li>
+                    <li>
+                        <a
+                            style={linkStyle}
+                            {...navContext.link(
+                                {
+                                    kind: 'statistic',
+                                    article_type: 'Subnational Region',
+                                    uss: 'customNode(""); condition (true); table(columns=[column(values=density_pw_1km)])',
+                                    start: 1,
+                                    amount: 20,
+                                    order: 'descending',
+                                    universe: 'USA',
+                                    edit: true,
+                                    sort_column: 0,
+                                },
+                                { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}
+                        >
+                            Custom Table
+                        </a>
+                    </li>
                 </ul>
             </div>
             <div className="sidebar-section">
