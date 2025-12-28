@@ -212,7 +212,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '[Screenshots merge ${{ github.event.pull_request.head.sha }}](http://localhost:8000/screenshot-diff-viewer.html?artifactId=${{ steps.upload-combined.outputs.artifact-id }}&hash=${{ github.sha }})\n\n`!updateScreenshots` to update'
+              body: '[Screenshots merge ${{ github.event.pull_request.head.sha }}](https://urbanstats.org/screenshot-diff-viewer.html?artifactId=${{ steps.upload-combined.outputs.artifact-id }}&hash=${{ github.sha }})\n\n`!updateScreenshots` to update'
             })
 
   merge-and-save-durations:
