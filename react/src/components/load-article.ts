@@ -75,8 +75,7 @@ function lookupInCompressedSequence(seq: [number, number][], idx: number): numbe
     throw new Error('Index out of bounds')
 }
 
-export function forType(counts: CountsByUT, universe: string, statcol: StatCol, typ: string): number {
-    const idx = stats.indexOf(statcol) // Works because `require` is global
+export function forTypeByIndex(counts: CountsByUT, universe: string, statIdx: number, typ: string): number {
     if (!(universe in counts)) {
         return 0
     }
@@ -85,7 +84,12 @@ export function forType(counts: CountsByUT, universe: string, statcol: StatCol, 
     }
     const countsByType = counts[universe][typ]
 
-    return lookupInCompressedSequence(countsByType, idx)
+    return lookupInCompressedSequence(countsByType, statIdx)
+}
+
+export function forType(counts: CountsByUT, universe: string, statcol: StatCol, typ: string): number {
+    const idx = stats.indexOf(statcol) // Works because `require` is global
+    return forTypeByIndex(counts, universe, idx, typ)
 }
 
 function unpackBytes(bytes: Uint8Array): number[] {
