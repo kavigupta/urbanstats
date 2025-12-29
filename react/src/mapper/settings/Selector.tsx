@@ -13,10 +13,12 @@ import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation, parseNumber } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 import { Documentation, TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
+import { TestUtils } from '../../utils/TestUtils'
 import { assert } from '../../utils/defensive'
 
 import * as l from './../../urban-stats-script/literal-parser'
 import { BetterSelector, SelectorRenderResult } from './BetterSelector'
+import { ActionOptions } from './EditMapperPanel'
 import { parseExpr, possibilities, Selection } from './parseExpr'
 
 export const labelPadding = '4px'
@@ -28,7 +30,7 @@ function isCustomConstructor(possibility: Selection, typeEnvironment: TypeEnviro
 export function Selector(props: {
     uss: UrbanStatsASTExpression
     setSelection: (selection: Selection) => void
-    setUss: (u: UrbanStatsASTExpression) => void
+    setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void
     typeEnvironment: TypeEnvironment
     type: USSType[]
     blockIdent: string
@@ -120,7 +122,7 @@ export function Selector(props: {
                                 () => { throw new Error('Should not happen') },
                                 true,
                             )
-                            props.setUss(newUss)
+                            props.setUss(newUss, {})
                         }
                     }}
                 />
@@ -135,7 +137,7 @@ export function Selector(props: {
     )
 }
 
-function TextInput({ currentValue, blockIdent, setUss }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression) => void }): ReactNode {
+function TextInput({ currentValue, blockIdent, setUss }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void }): ReactNode {
     return (
         <textarea
             value={currentValue}
@@ -147,15 +149,15 @@ function TextInput({ currentValue, blockIdent, setUss }: { currentValue: string,
                         node: { type: 'string', value },
                         location: emptyLocation(blockIdent),
                     },
-                })
+                }, {})
             }}
-            style={{ width: '200px', fontSize: '14px', padding: '4px 8px', resize: 'vertical' }}
+            style={{ width: '200px', fontSize: '14px', padding: '4px 8px', resize: 'vertical', borderRadius: TestUtils.shared.isTesting ? 0 : undefined }}
             placeholder="Enter string"
         />
     )
 }
 
-function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression) => void }): ReactNode {
+function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void }): ReactNode {
     return (
         <input
             type="text"
@@ -177,7 +179,7 @@ function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: strin
                         location: emptyLocation(blockIdent),
                     },
                 }
-                setUss(newUss)
+                setUss(newUss, {})
             }}
             style={{ width: '200px', fontSize: '14px', padding: '4px 8px', resize: 'none' }}
             placeholder="Enter number"
@@ -241,7 +243,7 @@ export function renderSelection(typeEnvironment: TypeEnvironment, selection: Sel
     }
 }
 
-export const colorSchema = l.transformExpr(l.customNodeExpr(l.deconstruct(l.call({
+export const colorSchema = l.transformExpr(l.maybeCustomNodeExpr(l.deconstruct(l.call({
     fn: l.union([l.identifier('rgb'), l.identifier('hsv')]),
     unnamedArgs: [l.number(), l.number(), l.number()],
     namedArgs: { a: l.optional(l.number()) },

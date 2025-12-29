@@ -1,5 +1,6 @@
+import type { StatisticDescriptor } from '../components/statistic-panel'
 import type_ordering_idx from '../data/type_ordering_idx'
-import { StatName } from '../page_template/statistic-tree'
+import { Universe } from '../universe'
 
 import { PageDescriptor } from './PageDescriptor'
 
@@ -77,13 +78,15 @@ export function centroidsPath(universe: string, typ: string): string {
 }
 
 export function statisticDescriptor(props: {
-    universe: string | undefined
-    statname: StatName
+    universe: Universe | undefined
+    statDesc: StatisticDescriptor
     articleType: string
     start: number
     amount: number | 'All'
     order: 'ascending' | 'descending'
     highlight?: string
+    edit?: boolean
+    sortColumn: number
 }): PageDescriptor & { kind: 'statistic' } {
     let start = props.start
     // make start % amount == 0
@@ -94,13 +97,15 @@ export function statisticDescriptor(props: {
     }
     return {
         kind: 'statistic',
-        statname: props.statname,
+        ...(props.statDesc.type === 'simple-statistic' ? { statname: props.statDesc.statname } : { uss: props.statDesc.uss }),
         article_type: props.articleType,
         start,
         amount: props.amount,
         order: props.order,
         highlight: props.highlight,
         universe: props.universe,
+        edit: props.edit,
+        sort_column: props.sortColumn,
     }
 }
 

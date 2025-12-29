@@ -348,10 +348,10 @@ function HistogramSettings(props: {
                             onChange={() => {
                                 setShowSearchBox(false)
                             }}
-                            link={(regionName) => {
+                            articleLink={(regionName) => {
                                 return navContext.link({
                                     kind: 'comparison',
-                                    universe: navContext.universe!,
+                                    universe,
                                     longnames: [...deduplicate(props.longnames), regionName],
                                 }, { scroll: { kind: 'none' } })
                             }}

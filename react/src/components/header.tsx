@@ -7,7 +7,8 @@ import { Navigator } from '../navigation/Navigator'
 import { universePath } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useHeaderLogoKey, useHideSidebarDesktop } from '../page_template/utils'
-import { useUniverse } from '../universe'
+import { universeContext, useUniverse, useUniverseContext } from '../universe'
+import { assert } from '../utils/defensive'
 import { useMobileLayout } from '../utils/responsive'
 import { zIndex } from '../utils/zIndex'
 
@@ -24,15 +25,13 @@ const headerBarSizeDesktop = '60px'
 export function Header(props: {
     hamburgerOpen: boolean
     setHamburgerOpen: (newValue: boolean) => void
-    hasUniverseSelector: boolean
-    allUniverses: readonly string[]
     hasScreenshot: boolean
     hasCSV: boolean
     initiateScreenshot: (currentUniverse: string | undefined) => void
     exportCSV: () => void
 }): ReactNode {
     const navContext = useContext(Navigator.Context)
-    const currentUniverse = navContext.useUniverse()
+    const currentUniverse = useUniverse()
     const [searchHasText, setSearchHasText] = useState(false)
     const isMobile = useMobileLayout()
     return (
@@ -40,18 +39,14 @@ export function Header(props: {
             <TopLeft
                 hamburgerOpen={props.hamburgerOpen}
                 setHamburgerOpen={props.setHamburgerOpen}
-                hasUniverseSelector={props.hasUniverseSelector}
-                allUniverses={props.allUniverses}
             />
             <div className="right_panel_top" style={{ height: `${headerBarSize}px` }}>
                 {/* flex but stretch to fill */}
                 <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
-                    {!isMobile && props.hasUniverseSelector
+                    {!isMobile && currentUniverse
                         ? (
                                 <div style={{ paddingRight: '0.5em' }}>
-                                    <UniverseSelector
-                                        allUniverses={props.allUniverses}
-                                    />
+                                    <UniverseSelector />
                                 </div>
                             )
                         : undefined}
@@ -93,7 +88,7 @@ export function Header(props: {
                     }}
                     >
                         <SearchBox
-                            link={
+                            articleLink={
                                 newLocation => navContext.link({
                                     kind: 'article',
                                     universe: currentUniverse,
@@ -124,21 +119,18 @@ export function Header(props: {
 function TopLeft(props: {
     hamburgerOpen: boolean
     setHamburgerOpen: (newValue: boolean) => void
-    hasUniverseSelector: boolean
-    allUniverses: readonly string[]
 }): ReactNode {
     const hideSidebarDesktop = useHideSidebarDesktop()
+    const universeCtx = useUniverseContext()
     if (useMobileLayout()) {
         return (
             <div className="left_panel_top" style={{ minWidth: '28%' }}>
                 <Nav hamburgerOpen={props.hamburgerOpen} setHamburgerOpen={props.setHamburgerOpen} />
                 <div className="hgap"></div>
                 {
-                    props.hasUniverseSelector
+                    universeCtx
                         ? (
-                                <UniverseSelector
-                                    allUniverses={props.allUniverses}
-                                />
+                                <UniverseSelector />
                             )
                         : <HeaderImage />
                 }
@@ -180,10 +172,9 @@ function HeaderImage(): ReactNode {
 
 const showSearchThreshold = 10
 
-function UniverseSelector(
-    { allUniverses }: { allUniverses: readonly string[] },
-): ReactNode {
-    const currentUniverse = useUniverse()
+function UniverseSelector(): ReactNode {
+    const universeCtx = useUniverseContext()
+    assert(universeCtx !== undefined, 'No universe context')
     // button to select universe. Image is icons/flags/${universe}.png
     // when clicked, a dropdown appears with all universes, labeled by their flags
 
@@ -195,7 +186,6 @@ function UniverseSelector(
         ? (
                 <UniverseDropdown
                     flagSize={headerBarSize}
-                    allUniverses={allUniverses}
                     closeDropdown={() => { setDropdownOpen(false) }}
                 />
             )
@@ -211,7 +201,7 @@ function UniverseSelector(
             borderRadius: '0.25em',
             display: dropdownOpen ? 'block' : 'none',
             width: '500%',
-            maxHeight: allUniverses.length > showSearchThreshold ? '22em' : '20em',
+            maxHeight: universeCtx.universes.length > showSearchThreshold ? '22em' : '20em',
             overflowY: 'auto',
         }}
         >
@@ -235,7 +225,7 @@ function UniverseSelector(
                 <Flag
                     height={headerBarSize}
                     onClick={() => { setDropdownOpen(!dropdownOpen) }}
-                    universe={currentUniverse}
+                    universe={universeCtx.universe}
                     classNameToUse="universe-selector"
                 />
             </div>
@@ -266,12 +256,14 @@ function Flag(props: { height: number, onClick?: () => void, universe: string, c
 }
 
 function UniverseDropdown(
-    { allUniverses, flagSize, closeDropdown }: { allUniverses: readonly string[], flagSize: number, closeDropdown: () => void },
+    { flagSize, closeDropdown }: { flagSize: number, closeDropdown: () => void },
 ): ReactNode {
     const colors = useColors()
-    const navContext = useContext(Navigator.Context)
     const [searchTerm, setSearchTerm] = useState('')
-    const filteredUniverses = allUniverses.filter(universe => universe.toLowerCase().includes(searchTerm.toLowerCase()))
+    const universeCtx = useContext(universeContext)
+    assert(universeCtx !== undefined, 'No universe context')
+    const { universes, setUniverse } = universeCtx
+    const filteredUniverses = universes.filter(universe => universe.toLowerCase().includes(searchTerm.toLowerCase()))
 
     return (
         <div>
@@ -285,7 +277,7 @@ function UniverseDropdown(
                 Select universe for statistics
             </div>
             {
-                allUniverses.length > showSearchThreshold
+                universes.length > showSearchThreshold
                     ? (
                             <div style={{
                                 padding: '0.5em',
@@ -320,7 +312,7 @@ function UniverseDropdown(
                     <div
                         key={altUniverse}
                         onClick={() => {
-                            navContext.setUniverse(altUniverse)
+                            setUniverse(altUniverse)
                             closeDropdown()
                         }}
                     >

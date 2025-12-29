@@ -244,7 +244,8 @@ void test('edit statements', () => {
     const stmt = parseProgram('1; 2')
     const parser = l.statements([l.expression(l.number()), l.expression(l.edit(l.number()))])
     const parsed = parser.parse(stmt, defaultConstants)
-    assert.partialDeepStrictEqual(parsed, [1, { currentValue: 2 }])
+    assert.equal(parsed[0], 1)
+    assert.equal(parsed[1].currentValue, 2)
 
     // Edit the second statement
     const edited = parsed[1].edit(parseExpr('3'))!
@@ -270,7 +271,15 @@ void test('edit condition', () => {
 })
 
 void test('customNode', () => {
-    assert.equal(l.customNodeExpr(l.identifier('x')).parse(parseExpr('customNode("x")'), defaultConstants), 'x')
-    assert.equal(unparse(l.customNodeExpr(l.edit(l.identifier('x'))).parse(parseExpr('customNode("x")'), defaultConstants).edit(parseExpr('y'))!), 'customNode("y")')
-    assert.equal(l.customNodeExpr(l.edit(l.identifier('x'))).parse(parseExpr('customNode("x")'), defaultConstants).edit(undefined), undefined)
+    assert.equal(l.maybeCustomNodeExpr(l.identifier('x')).parse(parseExpr('customNode("x")'), defaultConstants), 'x')
+    assert.equal(unparse(l.maybeCustomNodeExpr(l.edit(l.identifier('x'))).parse(parseExpr('customNode("x")'), defaultConstants).edit(parseExpr('y'))!), 'customNode("y")')
+    assert.equal(l.maybeCustomNodeExpr(l.edit(l.identifier('x'))).parse(parseExpr('customNode("x")'), defaultConstants).edit(undefined), undefined)
+})
+
+void test('autoUXNode', () => {
+    assert.deepEqual(l.maybeAutoUXNode(l.identifier('x')).parse(parseExpr('autoUXNode(x, "{\\"collapsed\\":true}")'), defaultConstants), { expr: 'x', metadata: { collapsed: true } })
+    assert.deepEqual(l.maybeAutoUXNode(l.identifier('x')).parse(parseExpr('x'), defaultConstants), { expr: 'x', metadata: {} })
+    assert.equal(unparse(l.maybeAutoUXNode(l.edit(l.identifier('x'))).parse(parseExpr('autoUXNode(x, "{\\"collapsed\\":true}")'), defaultConstants).expr.edit(parseExpr('y'))!), 'autoUXNode(y, "{\\"collapsed\\":true}")')
+    assert.equal(unparse(l.maybeAutoUXNode(l.edit(l.identifier('x'))).parse(parseExpr('autoUXNode(x, "{\\"collapsed\\":true}")'), defaultConstants).expr.edit(parseExpr('autoUXNode(y, "{\\"collapsed\\":false}")'))!), 'autoUXNode(y, "{\\"collapsed\\":false}")')
+    assert.equal(unparse(l.vector(l.maybeAutoUXNode(l.edit(l.identifier('x')))).parse(parseExpr('[autoUXNode(x, "{\\"collapsed\\":true}")]'), defaultConstants)[0].expr.edit(parseExpr('autoUXNode(y, "{\\"collapsed\\":false}")'))!), '[autoUXNode(y, "{\\"collapsed\\":false}")]')
 })

@@ -18,6 +18,30 @@ export function ScreenshotDiffViewerPanel({ hash, artifactId, index }: { hash: s
         <>
             <style>
                 {`
+.navigation-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.navigation-buttons button {
+    padding: 8px 16px;
+    font-size: 16px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
+
+.navigation-buttons button:hover:not(:disabled) {
+    background-color: #e0e0e0;
+}
+
+.navigation-buttons button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 
 .wrapper {
     container-type: size;
@@ -79,12 +103,12 @@ function Entires({ hash, entries, index, artifactId }: { hash: string, entries: 
         const handleKeyDown = (event: KeyboardEvent): void => {
             if (event.key === 'ArrowLeft') {
                 if (index > 0) {
-                    void navigator.navigate({ kind: 'screenshotDiffViewer', hash, artifactId, index: index - 1 }, { history: 'push', scroll: { kind: 'position', top: 0 } })
+                    void navigator.navigate({ kind: 'screenshotDiffViewer', hash, artifactId, index: index - 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
                 }
             }
             else if (event.key === 'ArrowRight') {
                 if (index < changed.length - 1) {
-                    void navigator.navigate({ kind: 'screenshotDiffViewer', hash, artifactId, index: index + 1 }, { history: 'push', scroll: { kind: 'position', top: 0 } })
+                    void navigator.navigate({ kind: 'screenshotDiffViewer', hash, artifactId, index: index + 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
                 }
             }
         }
@@ -121,14 +145,32 @@ function Entires({ hash, entries, index, artifactId }: { hash: string, entries: 
         )
     }
 
-    return <Diff {...changed[index]} hash={hash} index={index} total={changed.length} />
+    return <Diff {...changed[index]} hash={hash} index={index} total={changed.length} navigator={navigator} artifactId={artifactId} />
 }
 
-function Diff({ test, file, hash, delta, changed, index, total }: { test: string, file: string, hash: string, changed: Delayed, delta?: Delayed, index: number, total: number }): ReactNode {
+function Diff({ test, file, hash, delta, changed, index, total, navigator, artifactId }: { test: string, file: string, hash: string, changed: Delayed, delta?: Delayed, index: number, total: number, navigator: Navigator, artifactId: string }): ReactNode {
+    const canGoBack = index > 0
+    const canGoForward = index < total - 1
+
+    const handleBack = (): void => {
+        if (canGoBack) {
+            void navigator.navigate({ kind: 'screenshotDiffViewer', hash, artifactId, index: index - 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
+        }
+    }
+
+    const handleForward = (): void => {
+        if (canGoForward) {
+            void navigator.navigate({ kind: 'screenshotDiffViewer', hash, artifactId, index: index + 1 }, { history: 'replace', scroll: { kind: 'position', top: 0 } })
+        }
+    }
+
     return (
         <div className="wrapper">
-            <div>
-                <h2>
+            <div className="navigation-buttons">
+                <button onClick={handleBack} disabled={!canGoBack}>
+                    ← Back
+                </button>
+                <h2 style={{ margin: 0 }}>
                     (
                     {index + 1}
                     {' '}
@@ -143,6 +185,9 @@ function Diff({ test, file, hash, delta, changed, index, total }: { test: string
                     {' '}
                     {file}
                 </h2>
+                <button onClick={handleForward} disabled={!canGoForward}>
+                    Forward →
+                </button>
             </div>
             <div className="container">
                 {delta

@@ -1,10 +1,12 @@
 import React, { CSSProperties, Fragment, ReactNode } from 'react'
 
+import { Universe, useUniverse } from '../universe'
+import { assert } from '../utils/defensive'
 import { Article } from '../utils/protos'
 
-import { ArticleRow } from './load-article'
+import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
-import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader } from './table'
+import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeSizesForRow, CommonLayoutInformation } from './table'
 
 export interface PlotSpec {
     statDescription: string
@@ -33,9 +35,12 @@ export interface TableContentsProps {
     columnWidth: number
     onlyColumns: ColumnIdentifier[]
     simpleOrdinals: boolean
+    highlightRowIndex?: number
 }
 
 export function TableContents(props: TableContentsProps): ReactNode {
+    const universe = useUniverse()
+    assert(universe !== undefined, 'no universe')
     const headerHeight = props.verticalPlotSpecs.flatMap(p => p === undefined ? [] : p.plotProps).map(p => extraHeaderSpaceForVertical(p)).reduce((a, b) => Math.max(a, b), 0)
     const contentHeight = '379.5px'
 
@@ -48,6 +53,24 @@ export function TableContents(props: TableContentsProps): ReactNode {
 
     const extraSpaceRight = Array.from({ length: ncols }).map((_, i) => (props.verticalPlotSpecs[i] === undefined ? 0 : props.columnWidth))
     const columnFullWidths = extraSpaceRight.map(extra => props.columnWidth + extra)
+
+    const columnWidthsInfo = Array.from({ length: ncols }).map((_, colIndex) => {
+        const widthsEach = props.rowSpecs.map(row => row[colIndex].type === 'statistic-row' ? computeSizesForRow(row[colIndex].row, universe, props.simpleOrdinals) : undefined)
+        const maxima = widthsEach.reduce((acc, curr) => {
+            if (curr === undefined) {
+                return acc
+            }
+            else if (acc === undefined) {
+                return curr
+            }
+            return {
+                ordinalColumnWidthEm: Math.max(acc.ordinalColumnWidthEm, curr.ordinalColumnWidthEm),
+                percentileColumnWidthEm: Math.max(acc.percentileColumnWidthEm, curr.percentileColumnWidthEm),
+                ordinalColumnPadding: Math.max(acc.ordinalColumnPadding, curr.ordinalColumnPadding),
+            }
+        }, { ordinalColumnWidthEm: 0, percentileColumnWidthEm: 0, ordinalColumnPadding: 0 })
+        return maxima
+    })
 
     return (
         <>
@@ -68,6 +91,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
                         onlyColumns={props.onlyColumns}
                         extraSpaceRight={extraSpaceRight}
                         simpleOrdinals={props.simpleOrdinals}
+                        columnWidthsInfo={columnWidthsInfo}
                     />
                 </TableHeaderContainer>
                 {props.rowSpecs.map((rowSpecsForItem, rowIndex) => {
@@ -77,7 +101,15 @@ export function TableContents(props: TableContentsProps): ReactNode {
                             key={`TableRowContainer_${rowIndex}`}
                             rowIndex={rowIndex}
                             rowMinHeight={rowMinHeight}
-                            cellSpecs={rowSpecsForItem}
+                            cellSpecs={rowSpecsForItem.map((cellSpec, colIndex) => {
+                                if (cellSpec.type === 'statistic-row') {
+                                    return {
+                                        ...cellSpec,
+                                        columnWidthsInfo: columnWidthsInfo[colIndex],
+                                    }
+                                }
+                                return cellSpec
+                            })}
                             extraSpaceRight={extraSpaceRight}
                             plotSpec={plotSpec}
                             leftHeaderSpec={props.leftHeaderSpec.leftHeaderSpecs[rowIndex]}
@@ -85,6 +117,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
                             columnWidth={props.columnWidth}
                             groupName={props.leftHeaderSpec.groupNames?.[rowIndex]}
                             prevGroupName={rowIndex > 0 ? props.leftHeaderSpec.groupNames?.[rowIndex - 1] : undefined}
+                            isHighlighted={props.highlightRowIndex === rowIndex}
                         />
                     )
                 })}
@@ -112,11 +145,12 @@ export function SuperTableRow(props: {
     groupName?: string
     prevGroupName?: string
     extraSpaceRight: number[]
+    isHighlighted: boolean
 }): ReactNode {
     return (
         <div>
             {props.groupName !== undefined && (props.groupName !== props.prevGroupName) && (
-                <TableRowContainer index={props.rowIndex}>
+                <TableRowContainer index={props.rowIndex} isHighlighted={props.isHighlighted}>
                     <div style={{ width: '100%', padding: '1px' }}>
                         <span className="serif value">
                             <span>{props.groupName}</span>
@@ -124,7 +158,7 @@ export function SuperTableRow(props: {
                     </div>
                 </TableRowContainer>
             )}
-            <TableRowContainer index={props.rowIndex} minHeight={props.rowMinHeight}>
+            <TableRowContainer index={props.rowIndex} minHeight={props.rowMinHeight} isHighlighted={props.isHighlighted}>
                 <Cell {...props.leftHeaderSpec} width={props.widthLeftHeader} />
                 {props.cellSpecs.map((spec, colIndex) => (
                     <Fragment key={`cells_${colIndex}_${props.rowIndex}`}>
@@ -145,6 +179,7 @@ export function SuperTableRow(props: {
 export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCellProps) |
     ({ type: 'statistic-name' } & StatisticNameCellProps) |
     ({ type: 'statistic-row' } & StatisticRowCellProps) |
+    ({ type: 'statistic-panel-longname' } & StatisticPanelLongnameCellProps) |
     ({ type: 'comparison-top-left-header' } & TopLeftHeaderProps) |
     ({ type: 'top-left-header' } & TopLeftHeaderProps)
 
@@ -156,6 +191,8 @@ export function Cell(props: CellSpec & { width: number }): ReactNode {
             return <StatisticNameCell {...props} width={props.width} />
         case 'statistic-row':
             return <StatisticRowCells {...props} width={props.width} />
+        case 'statistic-panel-longname':
+            return <StatisticPanelLongnameCell {...props} width={props.width} />
         case 'comparison-top-left-header':
             return <ComparisonTopLeftHeader {...props} width={props.width} />
         case 'top-left-header':
@@ -174,10 +211,16 @@ export interface ComparisonLongnameCellProps {
     articleId?: string
 }
 
-export interface StatisticNameCellProps {
-    row: ArticleRow
+export interface StatisticPanelLongnameCellProps {
     longname: string
-    currentUniverse: string
+    currentUniverse: Universe
+}
+
+export interface StatisticNameCellProps {
+    row?: ArticleRow
+    renderedStatname: string
+    longname: string
+    currentUniverse: Universe
     center?: boolean
     highlightIndex?: number
     transpose?: boolean
@@ -192,12 +235,13 @@ export interface StatisticNameCellProps {
 export interface StatisticRowCellProps {
     longname: string
     statisticStyle?: CSSProperties
-    row: ArticleRow
+    row: StatisticCellRenderingInfo
     onlyColumns?: string[]
     blankColumns?: string[]
     onNavigate?: (newArticle: string) => void
     simpleOrdinals: boolean
     extraSpaceRight?: number
+    columnWidthsInfo?: CommonLayoutInformation
 }
 
 export interface TopLeftHeaderProps {

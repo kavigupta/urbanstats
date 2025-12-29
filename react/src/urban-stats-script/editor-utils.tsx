@@ -377,6 +377,15 @@ export interface UndoRedoOptions {
     onlyElement?: { current: HTMLElement | null }
 }
 
+const logMessages: boolean = true
+
+function debugUndo(arg: string): void {
+    if (logMessages) {
+        // eslint-disable-next-line no-console -- Conditionally logger
+        console.log(arg)
+    }
+}
+
 export function useUndoRedo<T, S>(
     initialState: T,
     initialSelection: S,
@@ -386,6 +395,7 @@ export function useUndoRedo<T, S>(
 ): {
         addState: (state: T, selection: S) => void
         updateCurrentSelection: (selection: S) => void
+        updateCurrentState: (state: T) => void
         ui: ReactNode
         canUndo: boolean
         canRedo: boolean
@@ -405,6 +415,8 @@ export function useUndoRedo<T, S>(
             // Amend current item rather than making a new one
             currentUndoState.state = state
             currentUndoState.selection = selection
+
+            debugUndo(`Updated undo stack tail`)
         }
         else {
             undoStack.current.push({ time: Date.now(), state, selection })
@@ -412,6 +424,7 @@ export function useUndoRedo<T, S>(
                 undoStack.current.shift()
             }
             setCanUndo(true)
+            debugUndo(`Pushed to undo stack. Length: ${undoStack.current.length}`)
         }
         redoStack.current = []
         setCanRedo(false)
@@ -419,6 +432,10 @@ export function useUndoRedo<T, S>(
 
     const updateCurrentSelection = useCallback((selection: S): void => {
         undoStack.current[undoStack.current.length - 1].selection = selection
+    }, [])
+
+    const updateCurrentState = useCallback((state: T): void => {
+        undoStack.current[undoStack.current.length - 1].state = state
     }, [])
 
     const doUndo = useCallback((): void => {
@@ -430,6 +447,10 @@ export function useUndoRedo<T, S>(
             onSelectionChange(prevState.selection)
             setCanRedo(true)
             setCanUndo(undoStack.current.length >= 2)
+            debugUndo(`Undo completed, Undo Stack: ${undoStack.current.length}, Redo Stack: ${redoStack.current.length}`)
+        }
+        else {
+            debugUndo(`Undo requested but stack is too short (${undoStack.current.length})`)
         }
     }, [onStateChange, onSelectionChange])
 
@@ -441,6 +462,10 @@ export function useUndoRedo<T, S>(
             onSelectionChange(futureState.selection)
             setCanUndo(true)
             setCanRedo(redoStack.current.length >= 1)
+            debugUndo(`Redo completed, Undo Stack: ${undoStack.current.length}, Redo Stack: ${redoStack.current.length}`)
+        }
+        else {
+            debugUndo(`Redo requested but stack is too short (${redoStack.current.length})`)
         }
     }, [onStateChange, onSelectionChange])
 
@@ -490,6 +515,7 @@ export function useUndoRedo<T, S>(
     return {
         addState,
         updateCurrentSelection,
+        updateCurrentState,
         ui,
         canUndo,
         canRedo,
@@ -539,6 +565,12 @@ function UndoRedoControls({ doUndo, doRedo, canUndo, canRedo }: { doUndo: () => 
 
     const isMobile = useMobileLayout()
 
+    useEffect(() => {
+        if (isMobile) {
+            debugUndo(`canUndo=${canUndo}, canRedo=${canRedo}`)
+        }
+    }, [canUndo, canRedo, isMobile])
+
     if (!isMobile) {
         return null
     }
@@ -560,6 +592,7 @@ function UndoRedoControls({ doUndo, doRedo, canUndo, canRedo }: { doUndo: () => 
             >
                 <button
                     onPointerDown={(e) => {
+                        debugUndo(`Got mobile undo touch`)
                         e.preventDefault()
                         doUndo()
                     }}
@@ -570,6 +603,7 @@ function UndoRedoControls({ doUndo, doRedo, canUndo, canRedo }: { doUndo: () => 
                 </button>
                 <button
                     onPointerDown={(e) => {
+                        debugUndo(`Got mobile redo touch`)
                         e.preventDefault()
                         doRedo()
                     }}

@@ -3,17 +3,18 @@ import { gzipSync } from 'zlib'
 import React, { ReactNode, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { CountsByUT } from '../../components/countsByArticleType'
+import universes_ordered from '../../data/universes_ordered'
 import { Navigator } from '../../navigation/Navigator'
 import { useColors } from '../../page_template/colors'
 import { useSetting } from '../../page_template/settings'
 import { PageTemplate } from '../../page_template/template'
+import { universeContext } from '../../universe'
 import { Inset } from '../../urban-stats-script/constants/insets'
 import { documentLength } from '../../urban-stats-script/constants/rich-text'
 import { defaults, TextBox } from '../../urban-stats-script/constants/text-box'
 import { useUndoRedo } from '../../urban-stats-script/editor-utils'
 import { unparse } from '../../urban-stats-script/parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
-import { loadInsets } from '../../urban-stats-script/worker'
 import { Property } from '../../utils/Property'
 import { TestUtils } from '../../utils/TestUtils'
 import { mixWithBackground } from '../../utils/color'
@@ -21,20 +22,27 @@ import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
 import { saveAsFile } from '../../utils/saveAsFile'
 import { Selection as TextBoxesSelection, SelectionContext as TextBoxesSelectionContext } from '../components/MapTextBox'
-import { defaultTypeEnvironment } from '../context'
+import { defaultTypeEnvironment, loadInsets } from '../context'
 import { MapGenerator, useMapGenerator } from '../map-generator'
 
 import { ImportExportCode } from './ImportExportCode'
+import { mapSettingsContext } from './MapSettingsContext'
 import { MapperSettings } from './MapperSettings'
 import { Selection, SelectionContext } from './SelectionContext'
 import { doEditInsets, getInsets, InsetEdits, replaceInsets, swapInsets } from './edit-insets'
 import { getTextBoxes, scriptWithNewTextBoxes } from './edit-text-boxes'
-import { MapSettings } from './utils'
+import { MapEditorMode, MapSettings, validMapperOutputs } from './utils'
 
-type MapEditorMode = 'uss' | 'insets' | 'textBoxes'
+export interface ActionOptions { undoable?: boolean, updateMap?: boolean }
 
 export function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
+    const [generatorMapSettings, setGeneratorMapSettings] = useState(props.mapSettings)
+
+    const setAllMapSettings = useCallback((newSettings: MapSettings) => {
+        setMapSettings(newSettings)
+        setGeneratorMapSettings(newSettings)
+    }, [])
 
     const [mapEditorMode, setMapEditorMode] = useState<MapEditorMode>('uss')
 
@@ -43,7 +51,7 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
     const undoRedo = useUndoRedo(
         mapSettings,
         selectionContext.value,
-        setMapSettings,
+        setAllMapSettings,
         (selection) => {
             selectionContext.value = selection
         },
@@ -54,12 +62,22 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
         },
     )
 
-    const { updateCurrentSelection, addState } = undoRedo
+    const { updateCurrentSelection, addState, updateCurrentState } = undoRedo
 
-    const setMapSettingsWrapper = useCallback((newSettings: MapSettings): void => {
-        setMapSettings(newSettings)
-        addState(newSettings, selectionContext.value)
-    }, [selectionContext, addState])
+    const setMapSettingsWrapper = useCallback((newSettings: MapSettings, actionOptions: ActionOptions): void => {
+        if (actionOptions.updateMap === false) {
+            setMapSettings(newSettings)
+        }
+        else {
+            setAllMapSettings(newSettings)
+        }
+        if (actionOptions.undoable === false) {
+            updateCurrentState(newSettings)
+        }
+        else {
+            addState(newSettings, selectionContext.value)
+        }
+    }, [selectionContext, addState, updateCurrentState, setAllMapSettings])
 
     const firstEffect = useRef(true)
 
@@ -70,7 +88,7 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
         }
         else {
             // So that map settings are updated when the prop changes
-            setMapSettingsWrapper(props.mapSettings)
+            setMapSettingsWrapper(props.mapSettings, {})
             setMapEditorMode('uss')
         }
     }, [props.mapSettings, setMapSettingsWrapper])
@@ -105,7 +123,7 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
         return () => { selectionContext.observers.delete(observer) }
     }, [selectionContext, updateCurrentSelection])
 
-    const mapGenerator = useMapGenerator({ mapSettings })
+    const mapGenerator = useMapGenerator({ mapSettings: generatorMapSettings })
 
     const commonProps: CommonEditorProps = {
         mapSettings,
@@ -131,7 +149,7 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
 
 interface CommonEditorProps {
     mapSettings: MapSettings
-    setMapSettings: (s: MapSettings) => void
+    setMapSettings: (s: MapSettings, o: ActionOptions) => void
     typeEnvironment: TypeEnvironment
     setMapEditorMode: (m: MapEditorMode) => void
     mapGenerator: MapGenerator
@@ -153,62 +171,49 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
         : undefined
 
     return (
-        <PageTemplate csvExportData={mapGenerator.exportCSV} screencap={exportPng} showFooter={false}>
-            <MaybeSplitLayout
-                error={mapGenerator.errors.some(e => e.kind === 'error')}
-                left={(
-                    <MapperSettings
-                        mapSettings={mapSettings}
-                        setMapSettings={setMapSettings}
-                        errors={mapGenerator.errors}
-                        counts={counts}
-                        typeEnvironment={typeEnvironment}
-                    />
-                )}
-                right={(
-                    <>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
-                            <Export pngExport={exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
-                            {
-                                getInsets(mapSettings, typeEnvironment) && (
-                                    <div style={{
-                                        display: 'flex',
-                                        gap: '0.5em',
-                                        margin: '0.5em 0',
-                                    }}
-                                    >
-                                        <button onClick={() => { setMapEditorMode('insets') }}>
-                                            Edit Insets
-                                        </button>
-                                    </div>
-                                )
-                            }
-                            {
-                                getTextBoxes(mapSettings, typeEnvironment) && (
-                                    <div style={{
-                                        display: 'flex',
-                                        gap: '0.5em',
-                                        margin: '0.5em 0',
-                                    }}
-                                    >
-                                        <button onClick={() => { setMapEditorMode('textBoxes') }}>
-                                            Edit Text Boxes
-                                        </button>
-                                    </div>
-                                )
-                            }
-                            <ImportExportCode
+        <universeContext.Provider value={{
+            universe: mapSettings.universe ?? 'world',
+            universes: universes_ordered,
+            setUniverse(newUniverse) {
+                setMapSettings({
+                    ...mapSettings,
+                    universe: newUniverse,
+                }, {})
+            },
+        }}
+        >
+            <mapSettingsContext.Provider value={{ mapSettings, typeEnvironment, setMapEditorMode }}>
+                <PageTemplate csvExportCallback={mapGenerator.exportCSV} screencap={exportPng} showFooter={false}>
+                    <MaybeSplitLayout
+                        error={mapGenerator.errors.some(e => e.kind === 'error')}
+                        left={(
+                            <MapperSettings
                                 mapSettings={mapSettings}
                                 setMapSettings={setMapSettings}
+                                errors={mapGenerator.errors}
+                                counts={counts}
+                                typeEnvironment={typeEnvironment}
+                                targetOutputTypes={validMapperOutputs}
                             />
-                        </div>
-                        <div style={{ position: 'relative', flex: 1 }}>
-                            {ui.node}
-                        </div>
-                    </>
-                )}
-            />
-        </PageTemplate>
+                        )}
+                        right={(
+                            <>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
+                                    <Export pngExport={exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
+                                    <ImportExportCode
+                                        mapSettings={mapSettings}
+                                        setMapSettings={setMapSettings}
+                                    />
+                                </div>
+                                <div style={{ position: 'relative', flex: 1 }}>
+                                    {ui.node}
+                                </div>
+                            </>
+                        )}
+                    />
+                </PageTemplate>
+            </mapSettingsContext.Provider>
+        </universeContext.Provider>
     )
 }
 
@@ -383,7 +388,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
     })
 
     return (
-        <PageTemplate csvExportData={mapGenerator.exportCSV} showFooter={false}>
+        <PageTemplate csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
             <MaybeSplitLayout
                 left={undefined}
                 error={false}
@@ -411,7 +416,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                                 </button>
                                 <button
                                     onClick={() => {
-                                        setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, insetEdits, typeEnvironment) } })
+                                        setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, insetEdits, typeEnvironment) } }, {})
                                         setMapEditorMode('uss')
                                     }}
                                     disabled={!canUndo}
@@ -600,7 +605,7 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
     })
 
     return (
-        <PageTemplate csvExportData={mapGenerator.exportCSV} showFooter={false}>
+        <PageTemplate csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
 
             <TextBoxesSelectionContext.Provider value={selectionProperty}>
                 <MaybeSplitLayout
@@ -628,7 +633,7 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
                                     </button>
                                     <button
                                         onClick={() => {
-                                            setMapSettings({ ...mapSettings, script: { uss: scriptWithNewTextBoxes(mapSettings, textBoxes, typeEnvironment) } })
+                                            setMapSettings({ ...mapSettings, script: { uss: scriptWithNewTextBoxes(mapSettings, textBoxes, typeEnvironment) } }, {})
                                             setMapEditorMode('uss')
                                         }}
                                         disabled={!canUndo}

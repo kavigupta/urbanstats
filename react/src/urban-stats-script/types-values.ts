@@ -1,3 +1,4 @@
+import type * as ArgEditButtons from '../mapper/settings/ArgEditButtons'
 import { Basemap } from '../mapper/settings/utils'
 import { assert } from '../utils/defensive'
 
@@ -7,6 +8,7 @@ import { CMap, CMapRGB, Outline, PMap } from './constants/map'
 import { RampT } from './constants/ramp'
 import { RichTextAttributes, RichTextDocument, RichTextSegment } from './constants/rich-text'
 import { Scale } from './constants/scale'
+import { Table, TableColumn } from './constants/table'
 import { TextBox } from './constants/text-box'
 import { Context } from './context'
 import { noLocation } from './location'
@@ -25,6 +27,8 @@ export type USSOpaqueValue =
     | { type: 'opaque', opaqueType: 'cMap', value: CMap }
     | { type: 'opaque', opaqueType: 'cMapRGB', value: CMapRGB }
     | { type: 'opaque', opaqueType: 'pMap', value: PMap }
+    | { type: 'opaque', opaqueType: 'table', value: Table }
+    | { type: 'opaque', opaqueType: 'column', value: TableColumn }
     | { type: 'opaque', opaqueType: 'outline', value: Outline }
     | { type: 'opaque', opaqueType: 'unit', value: { unit: string } }
     | { type: 'opaque', opaqueType: 'ramp', value: RampT }
@@ -86,6 +90,8 @@ export interface USSFunctionType {
 
 interface NamedFunctionArgumentDocumentation {
     hide?: boolean
+    collapsable?: boolean
+    editButton?: keyof typeof ArgEditButtons
 }
 
 export type USSType = (
@@ -371,6 +377,8 @@ export function renderValue(input: USSValue): string {
                     case 'pMap':
                     case 'cMap':
                     case 'cMapRGB':
+                    case 'table':
+                    case 'column':
                     case 'basemap':
                     case 'inset':
                     case 'insets':

@@ -1,6 +1,7 @@
 import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
+import { getAutoUXNodeMetadata } from './autoux-node-metadata'
 import { Context } from './context'
 import { AnnotatedToken, AnnotatedTokenWithValue, lex, Keyword, emptyLocation } from './lexer'
 import { noLocation, LocInfo, Block } from './location'
@@ -55,6 +56,8 @@ export function toSExp(node: UrbanStatsAST): string {
             return `(condition ${toSExp(node.condition)} ${node.rest.map(toSExp).join(' ')})`
         case 'parseError':
             return `(parseError ${JSON.stringify(node.originalCode)} ${JSON.stringify(node.errors)})`
+        case 'autoUXNode':
+            return `(autoUX ${toSExp(node.expr)} ${JSON.stringify(node.metadata)})`
         case 'customNode':
             return `(customNode ${toSExp(node.expr)} ${JSON.stringify(node.originalCode)})`
     }
@@ -254,6 +257,9 @@ class ParseState {
     }
 
     parseFunctionalExpression(): UrbanStatsASTExpression | ParseError {
+        if (this.consumeKeyword('autoUXNode')) {
+            return this.parseAutoUXExpression()
+        }
         if (this.consumeKeyword('customNode')) {
             return this.parseCustomNodeExpression()
         }
@@ -408,6 +414,7 @@ class ParseState {
             case 'objectLiteral':
             case 'if':
             case 'do':
+            case 'autoUXNode':
             case 'customNode':
                 return { type: 'error', value: 'Cannot assign to this expression', location: locationOf(expr) }
         }
@@ -593,6 +600,39 @@ class ParseState {
             entireLoc: locArg,
         }
     }
+
+    parseAutoUXExpression(): UrbanStatsASTExpression | ParseError {
+        const argsRes = this.parseParenthesizedArgs()
+
+        if (argsRes === undefined) {
+            return { type: 'error', value: 'Expected arguments for autoUX', location: this.maybeLastNonEOLToken(-1).location }
+        }
+
+        if (argsRes.type === 'error') {
+            return argsRes
+        }
+
+        const [args, locArg] = argsRes.args
+
+        if (args.length !== 2 || args[0].type !== 'unnamed' || args[1].type !== 'unnamed') {
+            return { type: 'error', value: 'autoUX requires exactly 2 unnamed arguments: expression and metadata JSON string', location: locArg }
+        }
+
+        const expr = args[0].value
+        const metadata = args[1].value
+
+        // Validate that metadata is a string
+        if (metadata.type !== 'constant' || metadata.value.node.type !== 'string') {
+            return { type: 'error', value: 'Second argument to autoUX must be a string', location: locationOf(metadata) }
+        }
+
+        return {
+            type: 'autoUXNode',
+            expr,
+            metadata: getAutoUXNodeMetadata(metadata.value.node.value),
+            entireLoc: locArg,
+        }
+    }
 }
 
 export function mergeStatements(statements: UrbanStatsASTStatement[], fallbackLocation?: LocInfo): UrbanStatsASTStatement {
@@ -651,7 +691,7 @@ export function parseTokens(tokens: AnnotatedToken[], originalCode: string, retu
     return stmts
 }
 
-function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression): UrbanStatsASTExpression[] {
+function leafExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression): UrbanStatsASTExpression[] {
     const expressions: UrbanStatsASTExpression[] = []
     function helper(n: UrbanStatsASTStatement | UrbanStatsASTExpression | UrbanStatsASTArg): boolean {
         switch (n.type) {
@@ -721,6 +761,9 @@ function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
                 return true
             case 'parseError':
                 return true
+            case 'autoUXNode':
+                helper(n.expr)
+                return true
             case 'customNode':
                 // do not actually put this in the expressions list, as is for internal use only
                 helper(n.expr)
@@ -733,7 +776,7 @@ function allExpressions(node: UrbanStatsASTStatement | UrbanStatsASTExpression):
 
 function identifiersInExpr(node: UrbanStatsASTStatement | UrbanStatsASTExpression): Set<string> {
     const identifiers = new Set<string>()
-    allExpressions(node).forEach((expr) => {
+    leafExpressions(node).forEach((expr) => {
         if (expr.type === 'identifier') {
             identifiers.add(expr.name.node)
         }
@@ -778,7 +821,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
     opts.indent = opts.indent ?? 0
     opts.wrap = opts.wrap ?? true
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
-        return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant' || expr.type === 'customNode'
+        return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant' || expr.type === 'autoUXNode' || expr.type === 'customNode'
     }
     function indentSpaces(level: number): string {
         return '    '.repeat(level)
@@ -787,6 +830,11 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
     const characterLimit = 80 - indentSpaces(opts.indent).length
 
     switch (node.type) {
+        case 'autoUXNode':
+            if (opts.simplify) {
+                return unparse(node.expr, opts)
+            }
+            return `autoUXNode(${unparse(node.expr, { ...opts, inline: true, expressionalContext: true })}, ${JSON.stringify(JSON.stringify(node.metadata))})`
         case 'customNode':
             if (!opts.simplify) {
                 return `customNode(${JSON.stringify(node.originalCode.trim())})`

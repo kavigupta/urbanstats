@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Bachelor's degree [25-64] %",
+      "stat_path": "education_ugrad_canada",
+      "question": "higher % of people between 25 and 64 who have at least an undergrad degree",
+      "longname_a": "Surrey City, Greater Vancouver Regional district, British Columbia, Canada",
+      "longname_b": "Calgary City, Division No. 6, Alberta, Canada",
+      "stat_a": 0.33190503763752194,
+      "stat_b": 0.42455671938112005
+    },
+    "b": {
+      "stat_column": "Population Change (2000-2020)",
+      "stat_path": "population_change_2000",
+      "question": "higher % increase in population from 2000 to 2020",
+      "longname_a": "Capitol Planning Region, Connecticut, USA",
+      "longname_b": "Washington County, Minnesota, USA",
+      "stat_a": 0.05812645242967639,
+      "stat_b": 0.3303236712573957
+    },
+    "a_ease": 0.2632794457274827,
+    "b_ease": 0.667816091954023
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Chronic kidney disease %",
+      "stat_path": "KIDNEY_cdc_2",
+      "question": "higher % of adults with chronic kidney disease",
+      "longname_a": "Winnebago County, Illinois, USA",
+      "longname_b": "St. Charles County, Missouri, USA",
+      "stat_a": 0.03166150870785897,
+      "stat_b": 0.02387273090968799
+    },
+    "b": {
+      "stat_column": "Vision disability %",
+      "stat_path": "VISION_cdc_2",
+      "question": "higher % of adults with a vision disability",
+      "longname_a": "AR-04 (2023), USA",
+      "longname_b": "KS-03 (2023), USA",
+      "stat_a": 0.06952825395522313,
+      "stat_b": 0.031125894571138416
+    },
+    "a_ease": 0.33783783783783783,
+    "b_ease": 0.7489361702127659
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=4km)",
+      "stat_path": "ad_4",
+      "question": "higher population-weighted density (r=4km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Barishal, Bangladesh",
+      "longname_b": "Xizang Zizhiqu, China",
+      "stat_a": 1585.8907112287623,
+      "stat_b": 354.15792624847643
+    },
+    "b": {
+      "stat_column": "Law enforcement workers including supervisors %",
+      "stat_path": "occupation_law_enforcement_workers_including_supervisors",
+      "question": "higher % of workers employed as law enforcement workers including supervisors!TOOLTIP police officers, detectives, etc.",
+      "longname_a": "Albany County, New York, USA",
+      "longname_b": "Lake County, Illinois, USA",
+      "stat_a": 0.012942297642103988,
+      "stat_b": 0.004722563452418759
+    },
+    "a_ease": 0.775,
+    "b_ease": 0.36954022988505747
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Housing Units per Adult",
+      "stat_path": "housing_per_pop",
+      "question": "higher number of housing units per adult",
+      "longname_a": "AR-01 (2023), USA",
+      "longname_b": "AZ-05 (2023), USA",
+      "stat_a": 0.5930792226430344,
+      "stat_b": 0.5277387808769851
+    },
+    "b": {
+      "stat_column": "Asian %",
+      "stat_path": "asian",
+      "question": "higher % of people who are Asian",
+      "longname_a": "NJ-03 (2023), USA",
+      "longname_b": "TX-14 (2023), USA",
+      "stat_a": 0.08503336657995127,
+      "stat_b": 0.029126960430880835
+    },
+    "a_ease": 0.38127659574468087,
+    "b_ease": 0.7900318133616119
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Non-citizen %",
+      "stat_path": "citizenship_not_citizen",
+      "question": "higher % of residents who are non-citizens",
+      "longname_a": "Yakima-Pasco-Richland-Kennewick WA Media Market, USA",
+      "longname_b": "Shreveport LA Media Market, USA",
+      "stat_a": 0.09395286681907362,
+      "stat_b": 0.02363914120304466
+    },
+    "b": {
+      "stat_column": "% units built pre-1970",
+      "stat_path": "year_built_1969_or_earlier",
+      "question": "higher % of housing units built before 1970",
+      "longname_a": "IN-04 (2023), USA",
+      "longname_b": "FL-11 (2023), USA",
+      "stat_a": 0.37085920323990235,
+      "stat_b": 0.08538718975465621
+    },
+    "a_ease": 0.3810344827586207,
+    "b_ease": 0.803038829487901
+  }
+]

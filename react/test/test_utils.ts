@@ -10,6 +10,8 @@ import xmlFormat from 'xml-formatter'
 import type { TestWindow } from '../src/utils/TestUtils'
 import { checkString } from '../src/utils/checkString'
 
+import { urlFromCode } from './mapper-utils'
+
 export const target = process.env.URBANSTATS_TEST_TARGET ?? 'http://localhost:8000'
 export const searchField = Selector('input').withAttribute('placeholder', 'Search Urban Stats')
 export const getLocation = ClientFunction(() => document.location.href)
@@ -25,16 +27,21 @@ export function comparisonPage(locations: string[]): string {
     return `${target}/comparison.html?${params.toString()}`
 }
 
+export async function checkTextboxesDirect(t: TestController, txts: string[], nth: number = 0): Promise<void> {
+    for (const txt of txts) {
+        const checkbox = Selector('div.checkbox-setting:not([inert] *)')
+        // filter for label
+            .filter(node => node.querySelector('label')!.innerText === txt, { txt })
+        // get nth
+            .nth(nth)
+        // find checkbox
+            .find('input')
+        await t.click(checkbox)
+    }
+}
 export async function checkTextboxes(t: TestController, txts: string[]): Promise<void> {
     await withHamburgerMenu(t, async () => {
-        for (const txt of txts) {
-            const checkbox = Selector('div.checkbox-setting:not([inert] *)')
-                // filter for label
-                .filter(node => node.querySelector('label')!.innerText === txt, { txt })
-                // find checkbox
-                .find('input')
-            await t.click(checkbox)
-        }
+        await checkTextboxesDirect(t, txts)
     })
 }
 
@@ -114,13 +121,15 @@ function screenshotPath(t: TestController): string {
     return `${t.browser.name}/${t.test.name}-${screenshotNumber}.png`
 }
 
-export async function screencap(t: TestController, { fullPage = true, wait = true, selector }: { fullPage?: boolean, wait?: boolean, selector?: Selector } = {}): Promise<void> {
+type ScreencapOptions = { wait?: boolean, fullPage?: boolean } & ({ selector?: undefined } | ({ selector?: Selector } & TakeElementScreenshotOptions))
+
+export async function screencap(t: TestController, { fullPage = true, wait = true, selector, ...options }: ScreencapOptions = {}): Promise<void> {
     if (wait) {
         await waitForLoading()
     }
     await prepForImage(t, { hover: fullPage })
     if (selector !== undefined) {
-        await t.takeElementScreenshot(selector, screenshotPath(t))
+        await t.takeElementScreenshot(selector, screenshotPath(t), options)
     }
     else {
         await t.takeScreenshot({
@@ -146,6 +155,16 @@ export async function downloadHistogram(t: TestController, nth: number): Promise
     await grabDownload(t, download, '.png')
 }
 
+export async function downloadCSV(t: TestController): Promise<string> {
+    const laterThan = Date.now()
+    const csvButton = Selector('img').withAttribute('src', '/csv.png')
+    await t.click(csvButton)
+
+    const downloadedFilePath = await waitForDownload(t, laterThan, '.csv')
+    const csvContent = fs.readFileSync(downloadedFilePath, 'utf-8')
+    return csvContent
+}
+
 function mostRecentDownload(suffix: string): { path: string, mtime: number } | undefined {
     // get the most recent file in the downloads folder
     const files = fs.readdirSync(downloadsFolder())
@@ -169,7 +188,7 @@ export async function waitForDownload(t: TestController, laterThan: number, suff
         }
         console.warn(chalkTemplate`{yellow No file found in downloads folder, waiting for download to complete}`)
         // wait for the download to finish
-        await t.wait(1000)
+        await t.wait(100)
     }
 }
 
@@ -317,6 +336,7 @@ export function urbanstatsFixture(name: string, url: string, beforeEach?: (t: Te
 }
 
 export async function flaky<T>(t: TestController, doThing: () => Promise<T>): Promise<T> {
+    const start = Date.now()
     while (true) {
         try {
             return await doThing()
@@ -327,6 +347,10 @@ export async function flaky<T>(t: TestController, doThing: () => Promise<T>): Pr
                 path: `${t.browser.name}/${t.test.name}.flaky.error.png`,
                 fullPage: true,
             })
+            if (Date.now() > start + 30 * 1000) {
+                console.error(chalkTemplate`{red flaky timed out}`)
+                throw error
+            }
         }
     }
 }
@@ -342,7 +366,9 @@ export function pageDescriptorKind(): Promise<string | undefined> {
 export async function safeReload(t: TestController): Promise<void> {
     // eslint-disable-next-line no-restricted-syntax -- This is the utility that replaces location.reload()
     await t.eval(() => setTimeout(() => { location.reload() }, 0))
-    await waitForLoading()
+    await flaky(t, async () => {
+        await waitForLoading() // This is flaky since the page can unload while it's running
+    })
 }
 
 export const openInNewTabModifiers = process.platform === 'darwin' ? { meta: true } : { ctrl: true }
@@ -445,4 +471,14 @@ export function getCurrentTest(t: TestController): string {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- TestCafe private API
     const testFileName: string = t.testRun.test.testFile.filename
     return /([^/]+)\.test\.ts$/.exec(testFileName)![1]
+}
+
+export const mapper = (testFn: () => TestFn) => (
+    name: string,
+    { code, geo = 'Urban Center', universe = 'Iceland' }: { code: string, geo?: string, universe?: string },
+    testBlock: (t: TestController) => Promise<void>,
+): void => {
+    // use Iceland and Urban Center as a quick test (less data to load)
+    urbanstatsFixture(`quick-${code}`, urlFromCode(geo, universe, code))
+    testFn()(name, testBlock)
 }

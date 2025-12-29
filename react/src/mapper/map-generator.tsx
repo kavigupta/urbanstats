@@ -10,7 +10,7 @@ import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
 import { boundingBox, geometry } from '../map-partition'
 import { consolidatedShapeLink, indexLink } from '../navigation/links'
-import { LongLoad } from '../navigation/loading'
+import { RelativeLoader } from '../navigation/loading'
 import { Colors, colorThemes } from '../page_template/color-themes'
 import { OverrideTheme, useColors } from '../page_template/colors'
 import { loadCentroids } from '../syau/load'
@@ -23,7 +23,6 @@ import { TextBox } from '../urban-stats-script/constants/text-box'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { USSOpaqueValue } from '../urban-stats-script/types-values'
-import { loadInsets } from '../urban-stats-script/worker'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { loadImage } from '../utils/Image'
 import { editIndex, EditSeq } from '../utils/array-edits'
@@ -36,6 +35,7 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar'
 import { InsetMap } from './components/InsetMap'
 import { AddTextBox, MapTextBoxComponent } from './components/MapTextBox'
+import { loadInsets } from './context'
 import { splitLayoutContext } from './settings/EditMapperPanel'
 import { Basemap, computeUSS, MapSettings } from './settings/utils'
 
@@ -122,8 +122,14 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
     const mapResultMain = execResult.resultingValue.value
 
-    const csvData = generateMapperCSVData(mapResultMain, execResult.context)
-    const csvFilename = `${mapSettings.geographyKind}-${mapSettings.universe}-data.csv`
+    const csvExportCallback: CSVExportData = () => {
+        const csvData = generateMapperCSVData(mapResultMain, execResult.context)
+        const csvFilename = `${mapSettings.geographyKind}-${mapSettings.universe}-data.csv`
+        return {
+            csvData,
+            csvFilename,
+        }
+    }
 
     const { features, mapChildren, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache })
 
@@ -226,10 +232,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
     return {
         errors: execResult.error,
-        exportCSV: {
-            csvData,
-            csvFilename,
-        },
+        exportCSV: csvExportCallback,
         exportGeoJSON: () => exportAsGeoJSON(features),
         ui: (props) => {
             let exportImage: () => Promise<HTMLCanvasElement>
@@ -333,18 +336,6 @@ function MapLayout({ maps, colorbar, loading, mapsContainerRef, aspectRatio, who
                 {colorbar}
             </div>
         </TransformConstantWidth>
-    )
-}
-
-function RelativeLoader({ loading }: { loading: boolean }): ReactNode {
-    return (
-        <LongLoad containerStyleOverride={{
-            position: 'absolute',
-            transition: 'opacity 0.25s',
-            opacity: loading ? 1 : 0,
-            pointerEvents: 'none',
-        }}
-        />
     )
 }
 

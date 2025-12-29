@@ -8,8 +8,8 @@ import {
     createComparison,
     clickMapFeature,
     downloadOrCheckString,
-    waitForDownload,
     waitForLoading,
+    downloadCSV,
 } from './test_utils'
 
 urbanstatsFixture('longer article test', '/article.html?longname=California%2C+USA')
@@ -204,6 +204,15 @@ test('lr-overall-other-stat', async (t) => {
     await waitForLoading()
 })
 
+// Regression test for California article with specific settings (US Census and Area/Compactness unchecked)
+urbanstatsFixture('california-article-area-compactness-no-us-census', '/article.html?longname=California%2C+USA&universe=world&s=2jZmh2wde1Kqyhw')
+
+test('california-article-area-compactness-no-us-census', async (t) => {
+    // If this page fails to load, the fixture will surface console errors or network failures.
+    // Simply take a screenshot to verify the page renders without crashing.
+    await screencap(t)
+})
+
 urbanstatsFixture('all stats test', `/article.html?longname=California%2C+USA`)
 
 test('california-all-stats', async (t) => {
@@ -364,14 +373,22 @@ test('region on map is not clickable', async (t) => {
 urbanstatsFixture('csv-export', `/article.html?longname=Rafael+Pena+CDP%2C+Texas%2C+USA&s=4YGF3xUkfbjxoj`)
 
 test('download-article-csv-settings-ignored', async (t) => {
-    const laterThan = Date.now()
-
-    const csvButton = Selector('img').withAttribute('src', '/csv.png')
-    await t.click(csvButton)
-
-    const downloadedFilePath = await waitForDownload(t, laterThan, '.csv')
-    const fs = await import('fs')
-    const csvContent = fs.readFileSync(downloadedFilePath, 'utf-8')
+    const csvContent = await downloadCSV(t)
 
     await downloadOrCheckString(t, csvContent, 'csv-export-california-article', 'csv', false)
+})
+
+test('loading indicator', async (t) => {
+    // Loading indicator appears when shape load fails or is delayed
+    const cdp = await t.getCurrentCDPSession()
+
+    await cdp.Network.enable({})
+    await cdp.Network.setBlockedURLs({
+        urls: ['*shape*Roscoe'],
+    })
+
+    await t.click(Selector('button[data-test-id="1"]'))
+    await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
+
+    await screencap(t, { wait: false })
 })

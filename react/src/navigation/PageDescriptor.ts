@@ -4,16 +4,12 @@ import { applySettingsParamSettings, settingsConnectionConfig } from '../compone
 import type { ArticlePanel } from '../components/article-panel'
 import type { ComparisonPanel } from '../components/comparison-panel'
 import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
-import { ArticleRow, forType, loadArticles } from '../components/load-article'
+import { ArticleRow, loadArticles } from '../components/load-article'
 import type { QuizPanel } from '../components/quiz-panel'
 import type { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
-import explanation_pages from '../data/explanation_page'
-import stats from '../data/statistic_list'
-import names from '../data/statistic_name_list'
-import paths from '../data/statistic_path_list'
 import type { DataCreditPanel } from '../data-credit'
 import type { ScreenshotDiffViewerPanel } from '../dev/ScreenshotDiffViewerPanel'
-import { loadJSON, loadStatisticsPage } from '../load_json'
+import { loadJSON } from '../load_json'
 import type { DebugMapTextBoxPanel } from '../mapper/components/DebugMapTextBox'
 import type { MapperPanel } from '../mapper/components/MapperPanel'
 import type { MapSettings } from '../mapper/settings/utils'
@@ -28,7 +24,7 @@ import type {
 } from '../quiz/quiz'
 import { loadSYAUData, SYAUData } from '../syau/load'
 import type { SYAUPanel } from '../syau/syau-panel'
-import { defaultArticleUniverse, defaultComparisonUniverse } from '../universe'
+import { defaultArticleUniverse, defaultComparisonUniverse, Universe, universeSchema } from '../universe'
 import type { DebugEditorPanel } from '../urban-stats-script/DebugEditorPanel'
 import type { USSDocumentationPanel } from '../uss-documentation'
 import type { Article } from '../utils/protos'
@@ -40,14 +36,14 @@ import { byPopulation, uniform } from './random'
 
 const articleSchema = z.object({
     longname: z.string(),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema),
     s: z.optional(z.string()),
     category: z.optional(z.string()) as z.ZodOptional<z.ZodType<CategoryIdentifier, z.ZodTypeDef, CategoryIdentifier>>,
 })
 
 const articleSchemaFromParams = z.object({
     longname: z.string(),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema).catch(undefined),
     s: z.optional(z.string()),
     category: z.optional(z.string().transform((s) => {
         if (!statsTree.some(category => category.id === s)) {
@@ -59,35 +55,48 @@ const articleSchemaFromParams = z.object({
 
 const comparisonSchema = z.object({
     longnames: z.array(z.string()),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema),
     s: z.optional(z.string()),
 })
 
 const comparisonSchemaFromParams = z.object({
     longnames: z.string().transform(value => z.array(z.string()).parse(JSON.parse(value))),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema).catch(undefined),
     s: z.optional(z.string()),
 })
 
 const statisticSchema = z.object({
     article_type: z.string(),
-    statname: z.string() as z.ZodType<StatName, z.ZodTypeDef, StatName>,
+    statname: z.optional(z.string() as z.ZodType<StatName, z.ZodTypeDef, StatName>),
+    uss: z.optional(z.string()),
     start: z.number().int(),
     amount: z.union([z.literal('All'), z.number().int()]),
     order: z.union([z.literal('descending'), z.literal('ascending')]),
     highlight: z.optional(z.string()),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema),
+    edit: z.optional(z.boolean()),
+    sort_column: z.optional(z.number().int()),
+}).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
+    message: 'Either statname or uss must be provided, but not both',
 })
 
-const statisticSchemaFromParams = z.object({
-    article_type: z.string(),
-    statname: z.string().transform(s => s.replaceAll('__PCT__', '%') as StatName),
-    start: z.optional(z.coerce.number().int()).default(1),
-    amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
-    order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
-    highlight: z.optional(z.string()),
-    universe: z.optional(z.string()),
-})
+const statisticSchemaFromParams = z.union([
+    z.object({
+        article_type: z.string(),
+        statname: z.optional(z.string().transform(s => s.replaceAll('__PCT__', '%') as StatName)),
+        uss: z.optional(z.string()),
+        start: z.optional(z.coerce.number().int()).default(1),
+        amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
+        order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
+        highlight: z.optional(z.string()),
+        universe: z.optional(universeSchema).catch(undefined),
+        edit: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.undefined().transform(() => false)]),
+        sort_column: z.optional(z.coerce.number().int()).default(0),
+    }).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
+        message: 'Either statname or uss must be provided, but not both',
+    }),
+    z.object({}),
+])
 
 const randomSchema = z.object({
     sampleby: z.union([z.literal('uniform'), z.literal('population')]),
@@ -132,7 +141,7 @@ const quizSchema = z.intersection(
 
 const syauSchema = z.object({
     typ: z.optional(z.string()),
-    universe: z.optional(z.string()),
+    universe: z.optional(universeSchema),
 })
 
 const mapperSchema = z.object({
@@ -179,24 +188,24 @@ export type ExceptionalPageDescriptor = PageDescriptor
     | { kind: 'error', url: URL }
 
 export type PageData =
-    { kind: 'article', article: Article, universe: string, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
+    { kind: 'article', article: Article, universe: Universe, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
     | {
         kind: 'comparison'
         articles: Article[]
-        universe: string
-        universes: string[]
+        universe: Universe
+        universes: readonly Universe[]
         rows: (settings: StatGroupSettings) => ArticleRow[][]
         statPaths: StatPath[][]
         mapPartitions: number[][]
         comparisonPanel: typeof ComparisonPanel
     }
-    | { kind: 'statistic', universe: string, statisticPanel: typeof StatisticPanel } & StatisticPanelProps
+    | { kind: 'statistic', universe: Universe, statisticPanel: typeof StatisticPanel } & StatisticPanelProps
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit', dataCreditPanel: typeof DataCreditPanel }
     | { kind: 'ussDocumentation', ussDocumentationPanel: typeof USSDocumentationPanel, hash: string }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
-    | { kind: 'syau', typ: string | undefined, universe: string | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
+    | { kind: 'syau', typ: string | undefined, universe: Universe | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
     | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel, counts: CountsByUT }
     | { kind: 'editor', editorPanel: typeof DebugEditorPanel | typeof DebugMapTextBoxPanel, undoChunking?: number }
     | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true }, oauthCallbackPanel: typeof OauthCallbackPanel }
@@ -221,7 +230,21 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
         case '/comparison.html':
             return { kind: 'comparison', ...comparisonSchemaFromParams.parse(params) }
         case '/statistic.html':
-            return { kind: 'statistic', ...statisticSchemaFromParams.parse(params) }
+            const statisticParams = statisticSchemaFromParams.parse(params)
+            if ('article_type' in statisticParams) {
+                return { kind: 'statistic', ...statisticParams }
+            }
+            return {
+                kind: 'statistic',
+                article_type: 'Subnational Region',
+                uss: 'customNode(""); condition (true); table(columns=[column(values=density_pw_1km)])',
+                start: 1,
+                amount: 20,
+                order: 'descending',
+                universe: 'USA',
+                edit: true,
+                sort_column: 0,
+            }
         case '/random.html':
             return { kind: 'random', ...randomSchemaForParams.parse(params) }
         case '/':
@@ -275,13 +298,18 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
         case 'statistic':
             pathname = '/statistic.html'
             searchParams = {
-                statname: pageDescriptor.statname.replaceAll('%', '__PCT__'),
+                statname: pageDescriptor.statname?.replaceAll('%', '__PCT__'),
+                uss: pageDescriptor.uss,
                 article_type: pageDescriptor.article_type,
                 start: pageDescriptor.start.toString(),
                 amount: pageDescriptor.amount.toString(),
                 order: pageDescriptor.order === 'descending' ? undefined : 'ascending',
                 highlight: pageDescriptor.highlight,
                 universe: pageDescriptor.universe,
+                edit: pageDescriptor.edit ? 'true' : undefined,
+                sort_column: pageDescriptor.sort_column === undefined || pageDescriptor.sort_column === 0
+                    ? undefined
+                    : pageDescriptor.sort_column.toString(),
             }
             break
         case 'random':
@@ -399,7 +427,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 getCountsByArticleType(),
             ])
 
-            const defaultUniverse = defaultArticleUniverse(article.universes)
+            const defaultUniverse = defaultArticleUniverse(article.universes as Universe[])
 
             const articleUniverse = newDescriptor.universe !== undefined && article.universes.includes(newDescriptor.universe) ? newDescriptor.universe : defaultUniverse
 
@@ -444,7 +472,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             ])
 
             // intersection of all the data.universes
-            const articleUniverses = articles.map(x => x.universes)
+            const articleUniverses = articles.map(x => x.universes as Universe[])
             const universes = articleUniverses.reduce((a, b) => a.filter(c => b.includes(c)))
 
             const defaultUniverseComparison = defaultComparisonUniverse(articleUniverses, universes)
@@ -484,42 +512,31 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             const statUniverse = newDescriptor.universe ?? 'world'
             const displayStatUniverse = statUniverse !== 'world' ? statUniverse : undefined
 
-            const statIndex = names.indexOf(newDescriptor.statname)
-            const statpath = paths[statIndex]
-            const statcol = stats[statIndex]
-            const explanationPage = explanation_pages[statIndex]
-
-            const [[data, articleNames], countsByArticleType, panel] = await Promise.all([
-                loadStatisticsPage(statUniverse, statpath, newDescriptor.article_type),
+            const [countsByArticleType, panel] = await Promise.all([
                 getCountsByArticleType(),
                 import('../components/statistic-panel'),
             ])
 
-            let parsedAmount: number
-            if (newDescriptor.amount === 'All') {
-                parsedAmount = articleNames.length
-            }
-            else {
-                parsedAmount = newDescriptor.amount
-            }
-
             return {
                 pageData: {
                     kind: 'statistic',
-                    statcol,
-                    statname: newDescriptor.statname,
-                    count: forType(countsByArticleType, statUniverse, statcol, newDescriptor.article_type),
-                    explanationPage,
+                    descriptor: newDescriptor.statname !== undefined
+                        ? {
+                                type: 'simple-statistic',
+                                statname: newDescriptor.statname,
+                            }
+                        : {
+                                type: 'uss-statistic',
+                                uss: newDescriptor.uss!,
+                            },
                     order: newDescriptor.order,
                     highlight: newDescriptor.highlight ?? undefined,
                     articleType: newDescriptor.article_type,
-                    joinedString: statpath,
                     start: newDescriptor.start,
-                    amount: parsedAmount,
-                    articleNames,
-                    data,
-                    renderedStatname: newDescriptor.statname,
+                    amount: newDescriptor.amount,
                     universe: statUniverse,
+                    edit: newDescriptor.edit ?? false,
+                    sortColumn: newDescriptor.sort_column ?? 0,
                     // StatisticPanel needs this to compute the set of universes to display
                     counts: countsByArticleType,
                     statisticPanel: panel.StatisticPanel,
@@ -777,7 +794,7 @@ export function pageTitle(pageData: PageData): string {
         case 'article':
             return pageData.article.shortname
         case 'statistic':
-            return pageData.statname
+            return pageData.descriptor.type === 'simple-statistic' ? pageData.descriptor.statname : 'Urban Stats: Custom Table'
         case 'comparison':
             return pageData.articles.map(x => x.shortname).join(' vs ')
         case 'editor':

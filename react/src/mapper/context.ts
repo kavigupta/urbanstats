@@ -1,12 +1,14 @@
+import insets from '../data/insets'
 import statistic_variables_info from '../data/statistic_variables_info'
 import { Universe } from '../universe'
-import { UrbanStatsASTStatement } from '../urban-stats-script/ast'
+import { UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { defaultConstants } from '../urban-stats-script/constants/constants'
+import { Inset, insetNameToConstantName } from '../urban-stats-script/constants/insets'
 import { Context } from '../urban-stats-script/context'
 import { Effect, InterpretationError } from '../urban-stats-script/interpreter'
+import { noLocation } from '../urban-stats-script/location'
 import { allIdentifiers } from '../urban-stats-script/parser'
 import { TypeEnvironment, USSValue } from '../urban-stats-script/types-values'
-import { loadInsetExpression } from '../urban-stats-script/worker'
 import { assert } from '../utils/defensive'
 import { firstNonNan } from '../utils/math'
 
@@ -165,4 +167,45 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvi
     }
 
     return te
+}
+
+export function loadInsets(universe: Universe): Inset[] {
+    const insetsU = insets[universe]
+    assert(insetsU.length > 0, `No insets for universe ${universe}`)
+    assert(insetsU[0].mainMap, `No main map for universe ${universe}`)
+    const insetsProc = insetsU.map((inset) => {
+        return {
+            bottomLeft: [inset.bottomLeft[0], inset.bottomLeft[1]],
+            topRight: [inset.topRight[0], inset.topRight[1]],
+            // copy to get rid of readonly
+            coordBox: [...inset.coordBox],
+            mainMap: inset.mainMap,
+        } satisfies Inset
+    })
+    return insetsProc
+}
+
+export function loadInsetExpression(universe: Universe): UrbanStatsASTExpression {
+    const insetsU = insets[universe]
+    const names = insetsU.map(x => x.name)
+
+    const exprs = names.map((name) => {
+        const expr = insetNameToConstantName.get(name)
+        assert(expr !== undefined, `No inset constant for ${name}`)
+        return { type: 'identifier', name: { node: expr, location: noLocation } } satisfies UrbanStatsASTExpression
+    })
+
+    return {
+        type: 'call',
+        fn: { type: 'identifier', name: { node: 'constructInsets', location: noLocation } },
+        args: [{
+            type: 'unnamed',
+            value: {
+                type: 'vectorLiteral',
+                elements: exprs,
+                entireLoc: noLocation,
+            } satisfies UrbanStatsASTExpression,
+        }],
+        entireLoc: noLocation,
+    } satisfies UrbanStatsASTExpression
 }

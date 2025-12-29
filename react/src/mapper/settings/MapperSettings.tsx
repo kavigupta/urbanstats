@@ -3,19 +3,28 @@ import React, { ReactNode, useCallback, useMemo } from 'react'
 import { articleTypes, CountsByUT } from '../../components/countsByArticleType'
 import universes_ordered from '../../data/universes_ordered'
 import { EditorError } from '../../urban-stats-script/editor-utils'
-import { TypeEnvironment } from '../../urban-stats-script/types-values'
+import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 import { settingNameStyle } from '../style'
 
 import { BetterSelector } from './BetterSelector'
+import { ActionOptions } from './EditMapperPanel'
 import { TopLevelEditor } from './TopLevelEditor'
 import { MapSettings } from './utils'
 
-export function MapperSettings({ mapSettings, setMapSettings, errors, counts, typeEnvironment }: {
+export function MapperSettings({
+    mapSettings,
+    setMapSettings,
+    errors,
+    counts,
+    typeEnvironment,
+    targetOutputTypes,
+}: {
     mapSettings: MapSettings
-    setMapSettings: (s: MapSettings) => void
+    setMapSettings: (s: MapSettings, o: ActionOptions) => void
     errors: EditorError[]
     counts: CountsByUT
     typeEnvironment: TypeEnvironment
+    targetOutputTypes: USSType[]
 }): ReactNode {
     const uss = mapSettings.script.uss
 
@@ -46,7 +55,7 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts, ty
                                 : articleTypes(counts, newUniverse).includes(mapSettings.geographyKind)
                                     ? mapSettings.geographyKind
                                     : undefined,
-                        })
+                        }, {})
                     }
                 }
             />
@@ -64,7 +73,7 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts, ty
                                 setMapSettings({
                                     ...mapSettings,
                                     geographyKind: newGeographyKind,
-                                })
+                                }, {})
                             }
                         }
                     />
@@ -72,14 +81,15 @@ export function MapperSettings({ mapSettings, setMapSettings, errors, counts, ty
             )}
             <TopLevelEditor
                 uss={uss}
-                setUss={(newUss) => {
+                setUss={(newUss, options) => {
                     setMapSettings({
                         ...mapSettings,
                         script: { uss: newUss },
-                    })
+                    }, options)
                 }}
                 typeEnvironment={typeEnvironment}
                 errors={errors}
+                targetOutputTypes={targetOutputTypes}
             />
         </>
     )

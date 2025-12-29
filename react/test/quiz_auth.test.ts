@@ -117,7 +117,7 @@ test(`friends with email`, async (t) => {
     ])
 })
 
-const friendEmailLinkHash = '#name=spudwaffle&id=urban.stats.test%40gmail.com'
+const friendEmailLinkHash = '#name=spudwaffle&id=urban.stats.test%40pavonine.co'
 const friendEmailLink = `https://juxtastat.org/${friendEmailLinkHash}`
 
 test('copy friend email link', async (t) => {
@@ -172,6 +172,7 @@ test('sync quiz progress two devices', async (t) => {
     await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
     await t.navigateTo(`${target}/quiz.html`)
     await t.expect(Selector('div').withExactText('2\nPlayed').exists).ok()
+    await waitForSync(t)
     await restoreUser(t, 'Alice', state)
     await waitForSync(t)
     await t.expect(Selector('div').withExactText('2\nPlayed').exists).ok()

@@ -6,9 +6,8 @@ import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
 
 import { colorSchema } from './Selector'
-import { idOutput, MapUSS, validMapperOutputs } from './TopLevelEditor'
 import { neswSchema } from './edit-insets'
-import { MapSettings } from './utils'
+import { MapSettings, idOutput, MapUSS, validMapperOutputs } from './utils'
 
 const attributesArgs = {
     size: l.optional(l.number()),
@@ -21,15 +20,6 @@ const attributesArgs = {
     indent: l.optional(l.number()),
     align: l.optional(l.transformExpr(l.union(Object.keys(alignIdentifierToValue).map(l.identifier)), align => alignIdentifierToValue[align])),
 }
-
-/*
-[
-    l.transformExpr(l.call({ fn: l.identifier('rtfString'), unnamedArgs: [l.string()], namedArgs: attributesArgs }), call => ({
-        insert: call.unnamedArgs[0],
-        attributes: call.namedArgs,
-    } satisfies RichTextSegment)),
-]
- */
 
 const segmentTypes: [string, (insert: string) => RichTextSegment['insert']][] = [['rtfString', i => i], ['rtfFormula', formula => ({ formula })], ['rtfImage', image => ({ image })]]
 
@@ -66,7 +56,7 @@ const mapSchema = l.transformStmt(l.statements([
                     fn: l.ignore(),
                     unnamedArgs: [],
                     namedArgs: {
-                        textBoxes: l.edit(l.optional(l.vector(textBoxSchema))),
+                        textBoxes: l.edit(l.optional(l.maybeAutoUXNode(l.vector(textBoxSchema)))),
                     },
                 }))),
         ],
@@ -76,7 +66,7 @@ const mapSchema = l.transformStmt(l.statements([
 export function getTextBoxes(settings: MapSettings, typeEnvironment: TypeEnvironment): TextBox[] | undefined {
     if (settings.script.uss.type === 'statements') {
         try {
-            return mapSchema.parse(settings.script.uss, typeEnvironment).currentValue ?? []
+            return mapSchema.parse(settings.script.uss, typeEnvironment).currentValue?.expr ?? []
         }
         catch {
             return undefined
@@ -87,11 +77,20 @@ export function getTextBoxes(settings: MapSettings, typeEnvironment: TypeEnviron
 
 export function scriptWithNewTextBoxes(settings: MapSettings, textBoxes: TextBox[], typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an text boxes edit on USS that is not text boxes editable')
-    const result = mapSchema.parse(settings.script.uss, typeEnvironment).edit(textBoxes.length === 0
+    const parsed = mapSchema.parse(settings.script.uss, typeEnvironment)
+    const result = parsed.edit(textBoxes.length === 0
         ? undefined
         : {
-                type: 'vectorLiteral',
-                elements: textBoxes.map(deconstruct),
+                type: 'autoUXNode',
+                expr: {
+                    type: 'vectorLiteral',
+                    elements: textBoxes.map(deconstruct),
+                    entireLoc: noLocation,
+                },
+                metadata: {
+                    ...parsed.currentValue?.metadata,
+                    collapsed: parsed.currentValue?.metadata.collapsed ?? parsed.expr === undefined,
+                },
                 entireLoc: noLocation,
             })
     return result as MapUSS

@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useContext, useRef } from 'react'
+import React, { ReactNode, useCallback, useContext, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { sanitize } from '../navigation/links'
@@ -10,7 +10,8 @@ import { rowExpandedKey, useSetting, useSettings } from '../page_template/settin
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
-import { useUniverse } from '../universe'
+import { Universe, universeContext, useUniverse } from '../universe'
+import { assert } from '../utils/defensive'
 import { Article, IRelatedButtons } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
@@ -28,7 +29,7 @@ import { SearchBox } from './search'
 import { CellSpec, PlotSpec, TableContents } from './supertable'
 import { ColumnIdentifier } from './table'
 
-export function ArticlePanel({ article, rows }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
+export function ArticlePanel({ article, rows, universe }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][], universe: Universe }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
     const mapRef = useRef<HTMLDivElement>(null)
@@ -46,18 +47,32 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
     const settings = useSettings(groupYearKeys())
     const filteredRows = rows(settings)[0]
 
-    const csvData = generateCSVDataForArticles([article], [filteredRows], true)
-    const csvFilename = `${sanitize(article.longname)}.csv`
-    const csvExportData: CSVExportData = { csvData, csvFilename }
+    const csvExportCallback = useCallback<CSVExportData>(() => {
+        const data = generateCSVDataForArticles([article], [filteredRows], true)
+        const filename = `${sanitize(article.longname)}.csv`
+        return { csvData: data, csvFilename: filename }
+    }, [article, filteredRows])
+
+    const navigator = useContext(Navigator.Context)
 
     return (
-        <>
+        <universeContext.Provider value={{
+            universes: article.universes as readonly Universe[],
+            universe,
+            setUniverse(newUniverse) {
+                void navigator.navigate({
+                    kind: 'article',
+                    longname: article.longname,
+                    universe: newUniverse,
+                }, { history: 'push', scroll: { kind: 'none' } })
+            },
+
+        }}
+        >
             <QuerySettingsConnection />
             <PageTemplate
-                screencap={(universe, colors) => createScreenshot(screencapElements(), universe, colors)}
-                csvExportData={csvExportData}
-                hasUniverseSelector={true}
-                universes={article.universes}
+                screencap={(u, colors) => createScreenshot(screencapElements(), u, colors)}
+                csvExportCallback={csvExportCallback}
             >
                 <div>
                     <div ref={headersRef}>
@@ -103,42 +118,51 @@ export function ArticlePanel({ article, rows }: { article: Article, rows: (setti
                     />
                 </div>
             </PageTemplate>
-        </>
+        </universeContext.Provider>
     )
 }
 
 type NameSpec = Extract<CellSpec, { type: 'statistic-name' }>
+
+function getGroupAndDisplayNames(nameSpec: NameSpec, nameSpecs: NameSpec[]): [string | undefined, string] {
+    if (nameSpec.row === undefined) {
+        return [undefined, nameSpec.renderedStatname]
+    }
+    const statParent = statParents.get(nameSpec.row.statpath)
+
+    const groupRows = nameSpecs.filter(s => s.row !== undefined && statParents.get(s.row.statpath)?.group.id === statParent?.group.id)
+    const groupSize = groupRows.length
+
+    const groupSourcesSet = new Set(
+        groupRows
+            .map(s => statParents.get(s.row!.statpath)?.source)
+            .filter(source => source !== null)
+            .map(source => source!.name),
+    )
+    const groupHasMultipleSources = groupSourcesSet.size > 1
+
+    const sourceName = statParent?.source?.name
+    let displayName = groupSize > 1 ? (statParent?.indentedName ?? nameSpec.renderedStatname) : nameSpec.renderedStatname
+    if (groupHasMultipleSources && sourceName) {
+        displayName = `${displayName} [${sourceName}]`
+    }
+    const groupName = groupSize > 1 ? statParent?.group.name : undefined
+    return [groupName, displayName]
+}
 
 export function computeNameSpecsWithGroups(nameSpecs: NameSpec[]): { updatedNameSpecs: NameSpec[], groupNames: (string | undefined)[] } {
     const updatedNameSpecs: NameSpec[] = []
     const groupNames: (string | undefined)[] = []
 
     for (const spec of nameSpecs) {
-        const statParent = statParents.get(spec.row.statpath)
-
-        const groupRows = nameSpecs.filter(s => statParents.get(s.row.statpath)?.group.id === statParent?.group.id)
-        const groupSize = groupRows.length
-
-        const groupSourcesSet = new Set(
-            groupRows
-                .map(s => statParents.get(s.row.statpath)?.source)
-                .filter(source => source !== null)
-                .map(source => source!.name),
-        )
-        const groupHasMultipleSources = groupSourcesSet.size > 1
-
-        const sourceName = statParent?.source?.name
-        let displayName = groupSize > 1 ? (statParent?.indentedName ?? spec.row.renderedStatname) : spec.row.renderedStatname
-        if (groupHasMultipleSources && sourceName) {
-            displayName = `${displayName} [${sourceName}]`
-        }
+        const [groupName, displayName] = getGroupAndDisplayNames(spec, nameSpecs)
 
         updatedNameSpecs.push({
             ...spec,
-            isIndented: groupSize > 1,
+            isIndented: groupName !== undefined,
             displayName,
         })
-        groupNames.push(groupSize > 1 ? statParent?.group.name : undefined)
+        groupNames.push(groupName)
     }
 
     return { updatedNameSpecs, groupNames }
@@ -152,6 +176,7 @@ function ArticleTable(props: {
     const expandedSettings = useSettings(props.filteredRows.map(row => rowExpandedKey(row.statpath)))
     const expandedEach = props.filteredRows.map(row => expandedSettings[rowExpandedKey(row.statpath)])
     const currentUniverse = useUniverse()
+    assert(currentUniverse !== undefined, 'no universe')
     const [simpleOrdinals] = useSetting('simple_ordinals')
     const navContext = useContext(Navigator.Context)
 
@@ -161,6 +186,7 @@ function ArticleTable(props: {
         type: 'statistic-name',
         longname: props.article.longname,
         row,
+        renderedStatname: row.renderedStatname,
         currentUniverse,
     }))
 
@@ -237,7 +263,7 @@ function ComparisonSearchBox({ longname, type }: { longname: string, type: strin
         <SearchBox
             style={{ ...useComparisonHeadStyle(), width: '100%' }}
             placeholder="Other region..."
-            link={x => navContext.link({
+            articleLink={x => navContext.link({
                 kind: 'comparison',
                 universe: currentUniverse,
                 longnames: [longname, x],

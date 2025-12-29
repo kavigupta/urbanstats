@@ -16,16 +16,12 @@ import { useHideSidebarDesktop } from './utils'
 
 export function PageTemplate({
     screencap = undefined,
-    csvExportData = undefined,
-    hasUniverseSelector = false,
-    universes = [],
+    csvExportCallback = undefined,
     children,
     showFooter = true,
 }: {
     screencap?: (currentUniverse: string | undefined, colors: Colors) => Promise<void>
-    csvExportData?: CSVExportData
-    hasUniverseSelector?: boolean
-    universes?: readonly string[]
+    csvExportCallback?: CSVExportData
     children?: React.ReactNode
     showFooter?: boolean
 }): ReactNode {
@@ -49,9 +45,10 @@ export function PageTemplate({
     }, [hamburgerOpen, mobileLayout, hideSidebarDesktop])
 
     const hasScreenshotButton = screencap !== undefined
-    const hasCSVButton = csvExportData !== undefined
+    const hasCSVButton = csvExportCallback !== undefined
 
     const exportCSV = (): void => {
+        const csvExportData = csvExportCallback?.()
         if (csvExportData === undefined) {
             return
         }
@@ -111,8 +108,6 @@ export function PageTemplate({
                     setHamburgerOpen={setHamburgerOpen}
                     hasScreenshot={hasScreenshotButton}
                     hasCSV={hasCSVButton}
-                    hasUniverseSelector={hasUniverseSelector}
-                    allUniverses={universes}
                     initiateScreenshot={(currentUniverse) => { initiateScreenshot(currentUniverse) }}
                     exportCSV={exportCSV}
                 />
@@ -150,7 +145,7 @@ function TemplateFooter(): ReactNode {
 function Version(): ReactNode {
     return (
         <span id="current-version">
-            {TestUtils.shared.isTesting ? '<VERSION>' : '30.3.9'}
+            {TestUtils.shared.isTesting ? '<VERSION>' : '31.0.1'}
         </span>
     )
 }
@@ -158,7 +153,7 @@ function Version(): ReactNode {
 function LastUpdated(): ReactNode {
     return (
         <span id="last-updated">
-            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2025-11-21'}
+            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2025-12-28'}
         </span>
     )
 }

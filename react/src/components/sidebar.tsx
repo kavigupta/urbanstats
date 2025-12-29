@@ -31,6 +31,10 @@ export function useSidebarSectionTitleStyle(): CSSProperties {
     }
 }
 
+export function useSidebarFontSize(): string {
+    return useMobileLayout() ? '27px' : '16px'
+}
+
 export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
     const colors = useColors()
     const currentTheme = useCurrentTheme()
@@ -41,7 +45,7 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
 
     const navContext = useContext(Navigator.Context)
 
-    const fontSize = useMobileLayout() ? '27px' : '16px'
+    const fontSize = useSidebarFontSize()
 
     return (
         <div
@@ -68,8 +72,22 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                     <li>
                         <a style={linkStyle} {...navContext.link({ kind: 'ussDocumentation', hash: '' }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>USS Documentation</a>
                     </li>
+                </ul>
+            </div>
+            <div className="sidebar-section">
+                <div style={sidebarSectionTitle}>Tools</div>
+                <ul className={sidebarSectionContent}>
                     <li>
-                        <a style={linkStyle} {...navContext.link({ kind: 'mapper', view: false }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>Mapper (beta)</a>
+                        <a style={linkStyle} {...navContext.link({ kind: 'mapper', view: false }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>Mapper</a>
+                    </li>
+                    <li>
+                        <a
+                            style={linkStyle}
+                            // eslint-disable-next-line no-restricted-syntax -- to get the redirect behavior for free
+                            href="/statistic.html"
+                        >
+                            Custom Table
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -104,57 +122,10 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                     </li>
                 </ul>
             </div>
-            {
-                useStagedSettingKeys() === undefined
-                    ? null
-                    : (
-                            <div className="sidebar-section">
-                                <div style={sidebarSectionTitle}>Link Settings</div>
-                                <ul className={sidebarSectionContent}>
-                                    <StagingControls />
-                                </ul>
-                            </div>
-                        )
-            }
-            <div className="sidebar-section">
-                <div style={sidebarSectionTitle}>Settings</div>
-                <ul className={sidebarSectionContent}>
-                    <li>
-                        <CheckboxSetting
-                            name="Use Imperial Units"
-                            settingKey="use_imperial"
-                            testId="use_imperial"
-                            fontSize={fontSize}
-                        />
-                    </li>
-                    <li>
-                        <CheckboxSetting
-                            name="Include Historical Districts"
-                            settingKey="show_historical_cds"
-                            fontSize={fontSize}
-                        />
-                    </li>
-                    <li>
-                        <CheckboxSetting
-                            name="Include Person Circles"
-                            settingKey="show_person_circles"
-                            fontSize={fontSize}
-                        />
-                    </li>
-                    <li>
-                        <CheckboxSetting
-                            name="Simple Ordinals"
-                            settingKey="simple_ordinals"
-                            fontSize={fontSize}
-                        />
-                    </li>
-                    <li>
-                        <TemperatureSetting />
-                    </li>
-                </ul>
-            </div>
+            <MaybeStagingControlsSidebarSection />
+            <SettingsSidebarSection />
             { navContext.useStatPathsAll() !== undefined
-                ? <SidebarForStatisticChoice fontSize={fontSize} />
+                ? <SidebarForStatisticChoice />
                 : null}
             <div className="sidebar-section">
                 <div style={sidebarSectionTitle}>Appearance</div>
@@ -183,10 +154,75 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
     )
 }
 
-export function SidebarForStatisticChoice({ fontSize }: { fontSize: string }): ReactNode {
+export function MaybeStagingControlsSidebarSection(): ReactNode {
+    const sidebarSectionTitle = useSidebarSectionTitleStyle()
+    const sidebarSectionContent = useSidebarSectionContentClassName()
+
+    return (
+        useStagedSettingKeys() === undefined
+            ? null
+            : (
+                    <div className="sidebar-section">
+                        <div style={sidebarSectionTitle}>Link Settings</div>
+                        <ul className={sidebarSectionContent}>
+                            <StagingControls />
+                        </ul>
+                    </div>
+                )
+    )
+}
+
+export function SettingsSidebarSection(): ReactNode {
+    const sidebarSectionTitle = useSidebarSectionTitleStyle()
+    const sidebarSectionContent = useSidebarSectionContentClassName()
+    const fontSize = useSidebarFontSize()
+
+    return (
+        <div className="sidebar-section">
+            <div style={sidebarSectionTitle}>Settings</div>
+            <ul className={sidebarSectionContent}>
+                <li>
+                    <CheckboxSetting
+                        name="Use Imperial Units"
+                        settingKey="use_imperial"
+                        testId="use_imperial"
+                        fontSize={fontSize}
+                    />
+                </li>
+                <li>
+                    <CheckboxSetting
+                        name="Include Historical Districts"
+                        settingKey="show_historical_cds"
+                        fontSize={fontSize}
+                    />
+                </li>
+                <li>
+                    <CheckboxSetting
+                        name="Include Person Circles"
+                        settingKey="show_person_circles"
+                        fontSize={fontSize}
+                    />
+                </li>
+                <li>
+                    <CheckboxSetting
+                        name="Simple Ordinals"
+                        settingKey="simple_ordinals"
+                        fontSize={fontSize}
+                    />
+                </li>
+                <li>
+                    <TemperatureSetting />
+                </li>
+            </ul>
+        </div>
+    )
+}
+
+export function SidebarForStatisticChoice(): ReactNode {
     const sidebarSectionContent = useSidebarSectionContentClassName()
     const sidebarSectionTitle = useSidebarSectionTitleStyle()
     const checkboxes = useDataSourceCheckboxes()
+    const fontSize = useSidebarFontSize()
     return (
         <>
             {checkboxes.map(({ category, checkboxSpecs }) => (
@@ -284,7 +320,7 @@ export function TemperatureSetting(): ReactNode {
 
     return (
         <div style={divStyle}>
-            <label style={{ verticalAlign: 'middle' }}>{'Temperatures '}</label>
+            <label style={{ verticalAlign: 'middle', fontSize: useSidebarFontSize() }}>{'Temperatures '}</label>
             <select
                 className="serif"
                 style={{ backgroundColor: colors.background, color: colors.textMain, verticalAlign: 'middle', minWidth: '50px' }}

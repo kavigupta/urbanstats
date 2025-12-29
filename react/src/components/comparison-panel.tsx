@@ -3,7 +3,7 @@ import './article.css'
 
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, TouchSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import { SortableContext, arrayMove, horizontalListSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import React, { ReactNode, useContext, useId, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useContext, useId, useMemo, useRef, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import { boundingBox, extendBoxes } from '../map-partition'
@@ -15,7 +15,7 @@ import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-set
 import { statParents, Year } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
-import { useUniverse } from '../universe'
+import { Universe, universeContext } from '../universe'
 import { mixWithBackground } from '../utils/color'
 import { assert } from '../utils/defensive'
 import { notWaiting, waiting } from '../utils/promiseStream'
@@ -32,11 +32,18 @@ import { ArticleRow } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
+import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
 import { TableContents, CellSpec } from './supertable'
 import { ColumnIdentifier } from './table'
 
-export function ComparisonPanel(props: { universes: string[], articles: Article[], rows: (settings: StatGroupSettings) => ArticleRow[][], mapPartitions: number[][] }): ReactNode {
+export function ComparisonPanel(props: {
+    universe: Universe
+    universes: readonly Universe[]
+    articles: Article[]
+    rows: (settings: StatGroupSettings) => ArticleRow[][]
+    mapPartitions: number[][]
+}): ReactNode {
     const colors = useColors()
     const tableRef = useRef<HTMLDivElement>(null)
     const mapRef = useRef(null)
@@ -103,7 +110,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             // Update the URL to reflect the new order
             void navContext.navigate({
                 kind: 'comparison',
-                universe: navContext.universe,
+                universe: props.universe,
                 longnames: newLongnames,
             }, { history: 'push', scroll: { kind: 'none' } })
         }
@@ -140,7 +147,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
         void navContext.navigate({
             kind: 'comparison',
-            universe: navContext.universe,
+            universe: props.universe,
             longnames: newArticles.map(a => a.longname),
         }, { history: 'push', scroll: { kind: 'none' } })
     }
@@ -156,17 +163,15 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
 
-    const maxColumns = mobileLayout ? 3 : 6
-
     const expandedSettings = useSettings(dataByStatArticle.filter(statData => statData.some(row => row.extraStat !== undefined)).map(([{ statpath }]) => rowExpandedKey(statpath)))
 
     const expandedByStatIndex = dataByStatArticle.map(([{ statpath }]) => expandedSettings[rowExpandedKey(statpath)] ?? false)
     const numExpandedExtras = expandedByStatIndex.filter(v => v).length
 
-    let widthColumns = (includeOrdinals ? 1.5 : 1) * localArticlesToUse.length + 1
+    let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, includeOrdinals)
     let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (dataByArticleStat[0].length + numExpandedExtras) + 1.5
 
-    const transpose = widthColumns > maxColumns && widthColumns > widthTransposeColumns
+    const transpose = widthColumns > computeMaxColumns(mobileLayout) && widthColumns > widthTransposeColumns
 
     if (transpose) {
         ([widthColumns, widthTransposeColumns] = [widthTransposeColumns, widthColumns])
@@ -176,29 +181,12 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
     const numColumns = transpose ? dataByArticleStat[0].length : localArticlesToUse.length
     const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
 
-    const scrollColumnsDivisor = mobileLayout ? 3.5 : 5.3
-
-    const maybeScroll = (contents: React.ReactNode): ReactNode => {
-        if (widthColumns > maxColumns) {
-            return (
-                <div style={{ overflowX: 'scroll' }}>
-                    <div style={{ width: `${100 * widthColumns / scrollColumnsDivisor}%` }}>
-                        {contents}
-                    </div>
-                </div>
-            )
-        }
-        return contents
-    }
-
     const highlightArticleIndicesByStat: (number | undefined)[] = dataByStatArticle.map(articlesStatData => getHighlightIndex(articlesStatData))
 
     const headerTextClass = useHeaderTextClass()
     const subHeaderTextClass = useSubHeaderTextClass()
     const comparisonRightStyle = useComparisonHeadStyle('right')
     const searchComparisonStyle = useComparisonHeadStyle()
-
-    const currentUniverse = useUniverse()
 
     const navContext = useContext(Navigator.Context)
 
@@ -226,12 +214,14 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
         } satisfies CellSpec
     ))
 
-    const statisticNameHeaderSpecsOriginal: (CellSpec & { type: 'statistic-name' })[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => (
-        {
+    const statisticNameHeaderSpecsOriginal: (CellSpec & { type: 'statistic-name' })[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => {
+        const row = rowToDisplayForStat(statIndex)
+        return {
             type: 'statistic-name',
-            row: rowToDisplayForStat(statIndex),
+            row,
+            renderedStatname: row.renderedStatname,
             longname: names[0],
-            currentUniverse,
+            currentUniverse: props.universe,
             center: transpose ? true : false,
             transpose,
             highlightIndex: highlightArticleIndicesByStat[statIndex],
@@ -241,8 +231,8 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
                 },
                 sortDirection: sortByStatIndex === statIndex ? sortDirection : 'both',
             },
-        }
-    ))
+        } satisfies CellSpec
+    })
 
     const { updatedNameSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames } = computeNameSpecsWithGroups(statisticNameHeaderSpecsOriginal)
 
@@ -258,7 +248,7 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
             onNavigate: (x: string) => {
                 void navContext.navigate({
                     kind: 'comparison',
-                    universe: navContext.universe,
+                    universe: props.universe,
                     longnames: names.map((value, index) => index === articleIndex ? x : value),
                 }, { history: 'push', scroll: { kind: 'none' } })
             },
@@ -278,111 +268,127 @@ export function ComparisonPanel(props: { universes: string[], articles: Article[
 
     const topLeftSpec: CellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
 
-    const csvData = generateCSVDataForArticles(localArticlesToUse, dataByArticleStat, includeOrdinals)
-    const csvFilename = `${sanitize(joinedString)}.csv`
-    const csvExportData: CSVExportData = { csvData, csvFilename }
+    const csvExportCallback = useCallback<CSVExportData>(() => {
+        const data = generateCSVDataForArticles(localArticlesToUse, dataByArticleStat, includeOrdinals)
+        const filename = `${sanitize(joinedString)}.csv`
+        return { csvData: data, csvFilename: filename }
+    }, [joinedString, localArticlesToUse, dataByArticleStat, includeOrdinals])
 
     return (
-        <TransposeContext.Provider value={transpose}>
-            <QuerySettingsConnection />
-            <PageTemplate
-                screencap={universe => createScreenshot(screencapElements(), universe, colors)}
-                csvExportData={csvExportData}
-                hasUniverseSelector={true}
-                universes={props.universes}
-            >
-                <DndContext
-                    sensors={sensors}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                    collisionDetection={closestCenter}
+        <universeContext.Provider value={{
+            universes: props.universes,
+            universe: props.universe,
+            setUniverse(newUniverse) {
+                void navContext.navigate({
+                    kind: 'comparison',
+                    universe: newUniverse,
+                    longnames: names,
+                }, {
+                    history: 'push',
+                    scroll: { kind: 'none' },
+                })
+            },
+        }}
+        >
+            <TransposeContext.Provider value={transpose}>
+                <QuerySettingsConnection />
+                <PageTemplate
+                    screencap={universe => createScreenshot(screencapElements(), universe, colors)}
+                    csvExportCallback={csvExportCallback}
                 >
-                    <SortableContext items={localArticlesToUse.map(a => a.shortname)} strategy={transpose ? verticalListSortingStrategy : horizontalListSortingStrategy}>
-                        <div>
-                            <div className={headerTextClass}>Comparison</div>
-                            <div className={subHeaderTextClass}>{joinedString}</div>
-                            <div style={{ marginBlockEnd: '16px' }}></div>
+                    <DndContext
+                        sensors={sensors}
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                        collisionDetection={closestCenter}
+                    >
+                        <SortableContext items={localArticlesToUse.map(a => a.shortname)} strategy={transpose ? verticalListSortingStrategy : horizontalListSortingStrategy}>
+                            <div>
+                                <div className={headerTextClass}>Comparison</div>
+                                <div className={subHeaderTextClass}>{joinedString}</div>
+                                <div style={{ marginBlockEnd: '16px' }}></div>
 
-                            <div style={{ display: 'flex' }}>
-                                <div style={{ width: `${100 * leftMarginPercent}%` }} />
-                                <div style={{ width: `${50 * (1 - leftMarginPercent)}%`, marginRight: '1em' }}>
-                                    <div className="serif" style={comparisonRightStyle}>Add another region:</div>
+                                <div style={{ display: 'flex' }}>
+                                    <div style={{ width: `${100 * leftMarginPercent}%` }} />
+                                    <div style={{ width: `${50 * (1 - leftMarginPercent)}%`, marginRight: '1em' }}>
+                                        <div className="serif" style={comparisonRightStyle}>Add another region:</div>
+                                    </div>
+                                    <div style={{ width: `${50 * (1 - leftMarginPercent)}%` }}>
+                                        <SearchBox
+                                            style={{ ...searchComparisonStyle, width: '100%' }}
+                                            placeholder="Name"
+                                            articleLink={x =>
+                                                navContext.link({
+                                                    kind: 'comparison',
+                                                    universe: props.universe,
+                                                    longnames: [...names, x],
+                                                }, { scroll: { kind: 'none' } })}
+                                            autoFocus={false}
+                                            prioritizeArticleType={sharedTypeOfAllArticles}
+                                        />
+                                    </div>
                                 </div>
-                                <div style={{ width: `${50 * (1 - leftMarginPercent)}%` }}>
-                                    <SearchBox
-                                        style={{ ...searchComparisonStyle, width: '100%' }}
-                                        placeholder="Name"
-                                        link={x =>
-                                            navContext.link({
-                                                kind: 'comparison',
-                                                universe: currentUniverse,
-                                                longnames: [...names, x],
-                                            }, { scroll: { kind: 'none' } })}
-                                        autoFocus={false}
-                                        prioritizeArticleType={sharedTypeOfAllArticles}
+
+                                <div style={{ marginBlockEnd: '1em' }}></div>
+
+                                <MaybeScroll widthColumns={widthColumns}>
+                                    <div ref={tableRef}>
+                                        {transpose
+                                            ? (
+                                                    <TableContents
+                                                        superHeaderSpec={{ headerSpecs: statisticNameHeaderSpecs, showBottomBar: false, groupNames: statisticNameGroupNames }}
+                                                        leftHeaderSpec={{ leftHeaderSpecs: longnameHeaderSpecs }}
+                                                        rowSpecs={rowSpecsByStatTransposed}
+                                                        horizontalPlotSpecs={plotSpecs.map(() => undefined)}
+                                                        verticalPlotSpecs={plotSpecs}
+                                                        topLeftSpec={topLeftSpec}
+                                                        widthLeftHeader={leftMarginPercent * 100}
+                                                        columnWidth={columnWidth}
+                                                        onlyColumns={onlyColumns}
+                                                        simpleOrdinals={true}
+                                                    />
+                                                )
+                                            : (
+                                                    <TableContents
+                                                        superHeaderSpec={{ headerSpecs: longnameHeaderSpecs, showBottomBar: true }}
+                                                        leftHeaderSpec={{ leftHeaderSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames }}
+                                                        rowSpecs={rowSpecsByStat}
+                                                        horizontalPlotSpecs={plotSpecs}
+                                                        verticalPlotSpecs={[]}
+                                                        topLeftSpec={topLeftSpec}
+                                                        widthLeftHeader={leftMarginPercent * 100}
+                                                        columnWidth={columnWidth}
+                                                        onlyColumns={onlyColumns}
+                                                        simpleOrdinals={true}
+                                                    />
+                                                )}
+                                        <ArticleWarnings />
+                                    </div>
+                                </MaybeScroll>
+                                <div className="gap"></div>
+
+                                <div ref={mapRef}>
+                                    <ComparisonMultiMap
+                                        longnames={localArticlesToUse.map(x => x.longname)}
+                                        colors={localArticlesToUse.map((_, i) => colorFromCycle(colors.hueColors, i))}
+                                        mapPartitions={props.mapPartitions}
                                     />
                                 </div>
                             </div>
-
-                            <div style={{ marginBlockEnd: '1em' }}></div>
-
-                            {maybeScroll(
-                                <div ref={tableRef}>
-                                    {transpose
-                                        ? (
-                                                <TableContents
-                                                    superHeaderSpec={{ headerSpecs: statisticNameHeaderSpecs, showBottomBar: false, groupNames: statisticNameGroupNames }}
-                                                    leftHeaderSpec={{ leftHeaderSpecs: longnameHeaderSpecs }}
-                                                    rowSpecs={rowSpecsByStatTransposed}
-                                                    horizontalPlotSpecs={plotSpecs.map(() => undefined)}
-                                                    verticalPlotSpecs={plotSpecs}
-                                                    topLeftSpec={topLeftSpec}
-                                                    widthLeftHeader={leftMarginPercent * 100}
-                                                    columnWidth={columnWidth}
-                                                    onlyColumns={onlyColumns}
-                                                    simpleOrdinals={true}
-                                                />
-                                            )
-                                        : (
-                                                <TableContents
-                                                    superHeaderSpec={{ headerSpecs: longnameHeaderSpecs, showBottomBar: true }}
-                                                    leftHeaderSpec={{ leftHeaderSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames }}
-                                                    rowSpecs={rowSpecsByStat}
-                                                    horizontalPlotSpecs={plotSpecs}
-                                                    verticalPlotSpecs={[]}
-                                                    topLeftSpec={topLeftSpec}
-                                                    widthLeftHeader={leftMarginPercent * 100}
-                                                    columnWidth={columnWidth}
-                                                    onlyColumns={onlyColumns}
-                                                    simpleOrdinals={true}
-                                                />
-                                            )}
-                                    <ArticleWarnings />
-                                </div>,
-                            )}
-                            <div className="gap"></div>
-
-                            <div ref={mapRef}>
-                                <ComparisonMultiMap
-                                    longnames={localArticlesToUse.map(x => x.longname)}
-                                    colors={localArticlesToUse.map((_, i) => colorFromCycle(colors.hueColors, i))}
-                                    mapPartitions={props.mapPartitions}
-                                />
-                            </div>
-                        </div>
-                    </SortableContext>
-                    <DragOverlay>
-                        {activeId
-                            ? (
-                                    <div style={{ opacity: 0.5, backgroundColor: colors.background, padding: '8px', borderRadius: '4px' }}>
-                                        {localArticlesToUse.find(a => a.shortname === activeId)?.longname}
-                                    </div>
-                                )
-                            : null}
-                    </DragOverlay>
-                </DndContext>
-            </PageTemplate>
-        </TransposeContext.Provider>
+                        </SortableContext>
+                        <DragOverlay>
+                            {activeId
+                                ? (
+                                        <div style={{ opacity: 0.5, backgroundColor: colors.background, padding: '8px', borderRadius: '4px' }}>
+                                            {localArticlesToUse.find(a => a.shortname === activeId)?.longname}
+                                        </div>
+                                    )
+                                : null}
+                        </DragOverlay>
+                    </DndContext>
+                </PageTemplate>
+            </TransposeContext.Provider>
+        </universeContext.Provider>
     )
 }
 

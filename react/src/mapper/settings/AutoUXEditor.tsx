@@ -1,6 +1,8 @@
 import stableStringify from 'json-stable-stringify'
 import React, { ReactNode } from 'react'
 
+import { ExpandButton } from '../../components/ExpandButton'
+import { RenderTwiceHidden } from '../../components/RenderTwiceHidden'
 import { CheckboxSettingCustom } from '../../components/sidebar'
 import { UrbanStatsASTExpression, UrbanStatsASTArg, locationOf } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
@@ -10,12 +12,16 @@ import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositiona
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
 import { USSType, USSFunctionArgType, renderType, USSFunctionType, TypeEnvironment } from '../../urban-stats-script/types-values'
 import { DefaultMap } from '../../utils/DefaultMap'
+import { Property } from '../../utils/Property'
 import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
 
+import * as ArgEditButtons from './ArgEditButtons'
 import { CustomEditor } from './CustomEditor'
+import { ActionOptions } from './EditMapperPanel'
+import { SelectionContext, Selection as ContextSelection } from './SelectionContext'
 import { Selector, classifyExpr, getColor, labelPadding } from './Selector'
-import { maybeParseExpr, parseExpr, Selection, possibilities } from './parseExpr'
+import { maybeParseExpr, parseExpr, Selection, possibilities, changeBlockId } from './parseExpr'
 
 function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression {
     if (type.type === 'number') {
@@ -49,7 +55,7 @@ function ArgumentEditor(props: {
     name: string
     argWDefault: { type: USSFunctionArgType, defaultValue?: UrbanStatsASTExpression }
     uss: UrbanStatsASTExpression & { type: 'call', fn: UrbanStatsASTExpression & { type: 'identifier' } }
-    setUss: (u: UrbanStatsASTExpression) => void
+    setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
@@ -66,11 +72,62 @@ function ArgumentEditor(props: {
     // Get the function's documentation to find human-readable argument names
     const tdoc = props.typeEnvironment.get(functionUss.fn.name.node)
     const humanReadableName = tdoc?.documentation?.namedArgs?.[props.name] ?? props.name
+    assert(tdoc?.type === undefined || tdoc.type.type === 'function', `AutoUX looked up function identifier ${functionUss.fn.name.node}m, but it was not a function`)
+    const argDoc = tdoc?.type.namedArgs[props.name]?.documentation
+    const collapsable = hasDefault && isEnabled && (argDoc?.collapsable ?? false)
+    const collapsed = collapsable && argValue.type === 'named' && argValue.value.type === 'autoUXNode' && argValue.value.metadata.collapsed === true
+    // eslint-disable-next-line no-restricted-syntax -- Must be capital for JSX
+    const EditButton = argDoc?.editButton && ArgEditButtons[argDoc.editButton]
+
+    const editor = isEnabled && (
+        <AutoUXEditor
+            uss={argValue.value}
+            setUss={(newUss, actionKind) => {
+                const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
+                props.setUss({ ...functionUss, args: newArgs }, actionKind)
+            }}
+            typeEnvironment={props.typeEnvironment}
+            errors={props.errors}
+            blockIdent={subident}
+            type={[arg.value]}
+            margin={!collapsed}
+        />
+    )
 
     return (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.25em', width: '100%', margin: '0.25em 0' }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', gap: '0.25em', width: '100%', margin: '0.25em 0' }}>
+            {collapsable && (
+                <ExpandButton
+                    data-test="expand-button"
+                    data-test-name={props.name}
+                    data-test-state={!collapsed}
+                    pointing="right"
+                    isExpanded={!collapsed}
+                    style={{
+                        position: 'absolute',
+                        width: 16,
+                        height: 16,
+                        left: -14,
+                        top: 3,
+                    }}
+                    onClick={() => {
+                        props.setUss(
+                            { ...functionUss, args: functionUss.args.map(a =>
+                                a.type === 'named' && a.name.node === props.name
+                                    ? { ...a, value: a.value.type === 'autoUXNode'
+                                            ? { ...a.value, metadata: { ...a.value.metadata, collapsed: !a.value.metadata.collapsed } }
+                                            : { type: 'autoUXNode', expr: a.value, entireLoc: locationOf(a.value), metadata: { collapsed: true } } }
+                                    : a) },
+                            {
+                                undoable: false,
+                                updateMap: false,
+                            },
+                        )
+                    }}
+                />
+            )}
             <div style={{ flex: 1 }}>
-                <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     {hasDefault
                         ? (
                                 <CheckboxSettingCustom
@@ -92,47 +149,76 @@ function ArgumentEditor(props: {
                                                 value: exprToUse,
                                             }
                                             const newArgs = [...functionUss.args, newArg]
-                                            props.setUss({ ...functionUss, args: newArgs })
+                                            props.setUss({ ...functionUss, args: newArgs }, {})
                                         }
                                         else {
                                             // Remove the argument
                                             const newArgs = functionUss.args.filter(a => !(a.type === 'named' && a.name.node === props.name))
-                                            props.setUss({ ...functionUss, args: newArgs })
+                                            props.setUss({ ...functionUss, args: newArgs }, {})
                                         }
                                     }}
                                 />
                             )
                         : <span>{humanReadableName}</span>}
-
+                    {EditButton && <EditButton />}
                 </div>
-                {isEnabled
-                && (
-                    <AutoUXEditor
-                        uss={argValue.value}
-                        setUss={(newUss) => {
-                            const newArgs = functionUss.args.map(a => a.type === 'named' && a.name.node === props.name ? { ...a, value: newUss } : a)
-                            props.setUss({ ...functionUss, args: newArgs })
-                        }}
-                        typeEnvironment={props.typeEnvironment}
-                        errors={props.errors}
-                        blockIdent={subident}
-                        type={[arg.value]}
-                    />
-                )}
+                {
+                    isEnabled && (collapsable
+                        ? (
+                                <RenderTwiceHidden<HTMLDivElement>>
+                                    {(renderArg) => {
+                                        const result = (
+                                            <div
+                                                // @ts-expect-error -- inert is not in the type definitions yet
+                                                inert={renderArg.kind === 'hidden' ? '' : undefined}
+                                                style={{
+                                                    ...(renderArg.kind === 'hidden'
+                                                        ? {
+                                                                opacity: 0,
+                                                                position: 'absolute',
+                                                            }
+                                                        : {
+                                                                maxHeight: collapsed ? 0 : renderArg.height,
+                                                                transition: 'max-height 0.25s',
+                                                                overflowY: collapsed ? 'clip' : undefined,
+                                                            }),
+                                                }}
+                                                ref={renderArg.kind === 'hidden' ? renderArg.ref : undefined}
+                                            >
+                                                {editor}
+                                            </div>
+                                        )
+                                        if (renderArg.kind === 'hidden') {
+                                            return (
+                                                <SelectionContext.Provider value={nullSelectionContext}>
+                                                    {result}
+                                                </SelectionContext.Provider>
+                                            )
+                                        }
+                                        return result
+                                    }}
+
+                                </RenderTwiceHidden>
+                            )
+                        : editor)
+                }
             </div>
         </div>
     )
 }
 
+const nullSelectionContext = new Property<ContextSelection | undefined>(undefined)
+
 export function AutoUXEditor(props: {
     uss: UrbanStatsASTExpression
-    setUss: (u: UrbanStatsASTExpression) => void
+    setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
     type: USSType[]
     label?: string
     labelWidth?: string
+    margin?: boolean
 }): ReactNode {
     const ussLoc = locationOf(props.uss).start
     if (ussLoc.block.type !== 'single' || ussLoc.block.ident !== props.blockIdent) {
@@ -142,11 +228,34 @@ export function AutoUXEditor(props: {
         console.error('[failtest] USS expression location does not match block identifier', props.uss, ussLoc.block.type === 'single' ? ussLoc.block.ident : '(multi)', props.blockIdent)
     }
     const labelWidth = props.labelWidth ?? '5%'
+    const twoLines = useMobileLayout() || (props.label?.length ?? 0) > 5
+
+    if (props.uss.type === 'autoUXNode') {
+        const uss = props.uss
+        return (
+            <AutoUXEditor
+                {...props}
+                uss={uss.expr}
+                setUss={(newUss, o) => {
+                    if (newUss.type === 'autoUXNode') {
+                        props.setUss(newUss, o)
+                    }
+                    else {
+                        props.setUss({
+                            ...uss,
+                            expr: newUss,
+                        }, o)
+                    }
+                }}
+            />
+        )
+    }
+
     const subcomponent = (): [ReactNode | undefined, 'consumes-errors' | 'does-not-consume-errors'] => {
-        if (props.uss.type === 'constant') {
+        const uss = props.uss
+        if (uss.type === 'constant') {
             return [undefined, 'does-not-consume-errors']
         }
-        const uss = props.uss
         if (uss.type === 'customNode') {
             const editor = (
                 <CustomEditor
@@ -176,10 +285,10 @@ export function AutoUXEditor(props: {
                     <AutoUXEditor
                         key={`pos-${i}`}
                         uss={uss.args[i].value}
-                        setUss={(newUss) => {
+                        setUss={(newUss, options) => {
                             const newArgs = [...uss.args]
                             newArgs[i] = { ...newArgs[i], value: newUss }
-                            props.setUss({ ...uss, args: newArgs })
+                            props.setUss({ ...uss, args: newArgs }, options)
                         }}
                         typeEnvironment={props.typeEnvironment}
                         errors={props.errors}
@@ -221,10 +330,10 @@ export function AutoUXEditor(props: {
                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5em', width: '100%' }}>
                             <AutoUXEditor
                                 uss={el}
-                                setUss={(newEl) => {
+                                setUss={(newEl, options) => {
                                     const newElements = [...uss.elements]
                                     newElements[i] = newEl
-                                    props.setUss({ ...uss, elements: newElements })
+                                    props.setUss({ ...uss, elements: newElements }, options)
                                 }}
                                 typeEnvironment={props.typeEnvironment}
                                 errors={props.errors}
@@ -236,7 +345,7 @@ export function AutoUXEditor(props: {
                                 style={{ flexShrink: 0 }}
                                 onClick={() => {
                                     const newElements = uss.elements.filter((_, j) => j !== i)
-                                    props.setUss({ ...uss, elements: newElements })
+                                    props.setUss({ ...uss, elements: newElements }, {})
                                 }}
                                 title="Remove element"
                             >
@@ -245,16 +354,19 @@ export function AutoUXEditor(props: {
                         </div>
                     ))}
                     <button
+                        data-test-id="test-add-vector-element-button"
                         style={{ alignSelf: 'flex-start', marginTop: 4 }}
                         onClick={() => {
+                            const subIdentPrev = extendBlockIdVectorElement(props.blockIdent, uss.elements.length - 1)
+                            const subIdent = extendBlockIdVectorElement(props.blockIdent, uss.elements.length)
                             const newElements = [
                                 ...uss.elements,
                                 // Copy the last element if there is one
                                 uss.elements.length > 0
-                                    ? uss.elements[uss.elements.length - 1]
-                                    : createDefaultExpression(elementType, extendBlockIdVectorElement(props.blockIdent, uss.elements.length), props.typeEnvironment),
+                                    ? changeBlockId(uss.elements[uss.elements.length - 1], subIdentPrev, subIdent)
+                                    : createDefaultExpression(elementType, subIdent, props.typeEnvironment),
                             ]
-                            props.setUss({ ...uss, elements: newElements })
+                            props.setUss({ ...uss, elements: newElements }, {})
                         }}
                     >
                         + Add element
@@ -278,8 +390,8 @@ export function AutoUXEditor(props: {
                             <AutoUXEditor
                                 key={key}
                                 uss={uss.properties.find(([k]) => k === key)?.[1] ?? createDefaultExpression(propertyType, extendBlockIdObjectProperty(props.blockIdent, key), props.typeEnvironment)}
-                                setUss={(newVal) => {
-                                    props.setUss({ ...uss, properties: uss.properties.map(([k, v]) => [k, k === key ? newVal : v]) })
+                                setUss={(newVal, options) => {
+                                    props.setUss({ ...uss, properties: uss.properties.map(([k, v]) => [k, k === key ? newVal : v]) }, options)
                                 }}
                                 typeEnvironment={props.typeEnvironment}
                                 errors={props.errors}
@@ -330,7 +442,7 @@ export function AutoUXEditor(props: {
                     <Selector
                         uss={props.uss}
                         setSelection={(selection: Selection) => {
-                            props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent, props.type[0]))
+                            props.setUss(defaultForSelection(selection, props.uss, props.typeEnvironment, props.blockIdent, props.type[0]), {})
                         }}
                         setUss={props.setUss}
                         typeEnvironment={props.typeEnvironment}
@@ -341,8 +453,6 @@ export function AutoUXEditor(props: {
                 </div>
 
             )
-
-    const twoLines = useMobileLayout() || (props.label?.length ?? 0) > 5
 
     const component = (): ReactNode => {
         if (twoLines) {
@@ -371,7 +481,16 @@ export function AutoUXEditor(props: {
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1, margin: '0.25em 0', gap: '0.25em' }} id={`auto-ux-editor-${props.blockIdent}`}>
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100%',
+                flex: 1,
+                margin: props.margin === false ? 0 : '0.25em 0', gap: '0.25em',
+            }}
+            id={`auto-ux-editor-${props.blockIdent}`}
+        >
             {leftSegment !== undefined || rightSegment !== undefined ? <div style={{ width: '100%', flex: 1 }}>{component()}</div> : undefined}
             {wrapped}
         </div>
@@ -504,7 +623,7 @@ function defaultForSelection(
 
     switch (selection.type) {
         case 'custom':
-            return parseNoErrorAsCustomNode(unparse(current), blockIdent, [type])
+            return parseNoErrorAsCustomNode(unparse(current, { simplify: true }), blockIdent, [type])
         case 'constant':
             return createDefaultExpression(type, blockIdent, typeEnvironment)
         case 'variable':

@@ -24,21 +24,27 @@ jobs:
     steps:
       - &checkout
         name: Checkout repository
-        shell: bash
-        run: |
-          git config --global --add safe.directory $GITHUB_WORKSPACE
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 2
+          timeout_minutes: 2
+          shell: bash
+          command: |
+            rm -rf $GITHUB_WORKSPACE/*
 
-          # Clone the repo
-          git clone --no-checkout --filter=blob:none ${{ github.server_url }}/${{ github.repository }}.git $GITHUB_WORKSPACE
+            git config --global --add safe.directory $GITHUB_WORKSPACE
 
-          # Enable sparse checkout
-          git config core.sparseCheckout true
+            # Clone the repo
+            git clone --no-checkout --filter=blob:none ${{ github.server_url }}/${{ github.repository }}.git $GITHUB_WORKSPACE
 
-          # Configure sparse checkout
-          echo "$SPARSE_CHECKOUT" > .git/info/sparse-checkout
+            # Enable sparse checkout
+            git config core.sparseCheckout true
 
-          # Check out the ref
-          git checkout --progress --force ${{ github.sha }}
+            # Configure sparse checkout
+            echo "$SPARSE_CHECKOUT" > .git/info/sparse-checkout
+
+            # Check out the ref
+            git checkout --progress --force ${{ github.sha }}
 
       - uses: ./.github/actions/docker_image
         with:
@@ -197,7 +203,7 @@ jobs:
           pattern: "{delta,changed_screenshots}"
           separate-directories: true
         continue-on-error: true
-      - if: ${{ steps.upload-combined.outputs.artifact-id != '' }}
+      - if: ${{ steps.upload-combined.outputs.artifact-id != '' && github.event_name == 'pull_request' }}
         uses: actions/github-script@v7
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
@@ -206,7 +212,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '[Screenshots merge ${{ github.event.pull_request.head.sha }}](http://localhost:8000/screenshot-diff-viewer.html?artifactId=${{ steps.upload-combined.outputs.artifact-id }}&hash=${{ github.sha }})\n\n`!updateScreenshots` to update'
+              body: '[Screenshots merge ${{ github.event.pull_request.head.sha }}](https://urbanstats.org/screenshot-diff-viewer.html?artifactId=${{ steps.upload-combined.outputs.artifact-id }}&hash=${{ github.sha }})\n\n`!updateScreenshots` to update'
             })
 
   merge-and-save-durations:
@@ -255,3 +261,23 @@ jobs:
         working-directory: urbanstats-persistent-data
         run: python -m pytest --cov=. --cov-report=xml --cov-report=term-missing tests
         if: "!cancelled()"
+
+  # Sink job so that github can gate PR merge
+  tests-passed:
+    runs-on: ubuntu-22.04
+    if: ${{ always() }}
+    needs:
+      - lint
+      - run-unit-tests
+      - e2e
+    steps:
+      - name: Tests Failed
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}
+        run: |
+          echo "${{ toJSON(needs) }}"
+          echo "Tests failed!"
+          exit 1
+      - name: Tests Succeeded
+        run: |
+          echo "${{ toJSON(needs) }}"
+          echo "Tests succeeded!"
