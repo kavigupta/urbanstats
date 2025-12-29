@@ -30,12 +30,14 @@ test('expanded when checking insets, click expand button to collapse', async (t)
     await t.expect(expandButton('insets').getAttribute('data-test-state')).eql('true')
 })
 
-for (const [argName, humanName] of [
-    ['insets', 'Insets'],
-    ['textBoxes', 'Text Boxes'],
+for (const [argName, humanName, editButtonName] of [
+    ['insets', 'Insets', 'insets'],
+    ['textBoxes', 'Text Boxes', 'text-boxes'],
 ]) {
+    const editButton = Selector(`button[data-test=edit-${editButtonName}]`)
+
     async function editAddAccept(t: TestController): Promise<void> {
-        await t.click(Selector('button').withExactText(`Edit ${humanName}`))
+        await t.click(editButton)
         await t.click('[data-test=add]')
         await t.click(Selector('button').withExactText('Accept'))
     }
@@ -64,7 +66,7 @@ for (const [argName, humanName] of [
     test(`edit ${humanName} twice, and still able to edit`, async (t) => {
         await editAddAccept(t)
         await editAddAccept(t)
-        await t.expect(Selector('button').withExactText(`Edit ${humanName}`).exists).ok()
+        await t.expect(editButton.exists).ok()
     })
 }
 
