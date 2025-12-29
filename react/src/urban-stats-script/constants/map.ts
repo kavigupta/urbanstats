@@ -147,6 +147,7 @@ function mapConstructorArguments(
             },
             documentation: {
                 collapsable: true,
+                editButton: 'Insets',
             },
         },
         textBoxes: {
@@ -154,6 +155,7 @@ function mapConstructorArguments(
             defaultValue: createConstantExpression(null),
             documentation: {
                 collapsable: true,
+                editButton: 'TextBoxes',
             },
         },
     } satisfies Record<string, NamedFunctionArgumentWithDocumentation>
