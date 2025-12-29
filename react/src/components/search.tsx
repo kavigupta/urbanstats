@@ -93,9 +93,9 @@ export function SearchBox(props: {
 
 function SingleSearchResult(props: SearchResult): ReactNode {
     return (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ width: '80%' }}>{props.longname}</div>
-            <div style={{ width: '20%', textAlign: 'right' }}><img height="25em" src={searchIconLink(props.typeIndex)} /></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
+            <img height="25em" src={searchIconLink(props.typeIndex)} />
+            <div>{props.longname}</div>
         </div>
     )
 }
