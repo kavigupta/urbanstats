@@ -64,7 +64,7 @@ export function SearchBox(props: {
         }
     }, [searchWorker, cacheKey, showSettings, props.prioritizeArticleType, extraStrings])
 
-    function link(sr: SearchResult): ReturnType<Navigator['link']> | undefined {
+    function link(sr: SearchResult): ReturnType<Navigator['link']> {
         if (sr.type === 'article') {
             return props.articleLink(sr.longname)
         }
@@ -99,7 +99,7 @@ export function SearchBox(props: {
             matches={[]}
             doSearch={doSearch}
             onChange={(result) => { props.onChange?.(result.longname) }}
-            link={result => props.articleLink(result.longname)}
+            link={link}
             onFocus={(): void => {
                 if (searchWorker.current === undefined) {
                     searchWorker.current = cacheKey.then(createSearchWorker)
