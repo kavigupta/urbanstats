@@ -1,9 +1,6 @@
 import React, { CSSProperties, ReactElement, ReactNode, useMemo, useRef } from 'react'
 
-import used_geographies from '../data/mapper/used_geographies'
-import statistic_name_list from '../data/statistic_name_list'
 import type_ordering_idx from '../data/type_ordering_idx'
-import universes_ordered from '../data/universes_ordered'
 import { Navigator } from '../navigation/Navigator'
 import { searchIconLink } from '../navigation/links'
 import { useColors } from '../page_template/colors'
@@ -15,8 +12,8 @@ import { TestUtils } from '../utils/TestUtils'
 import { assert } from '../utils/defensive'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
-import { CountsByUT, getCountsByArticleType, forTypeByIndex } from './countsByArticleType'
 import { GenericSearchBox } from './search-generic'
+import { computeStatisticsPages, StatisticPage } from './search-statistic'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -127,60 +124,6 @@ function SingleSearchResult(props: SearchResult): ReactNode {
 }
 
 const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { worker.terminate() })
-
-interface StatisticPage {
-    statisticIndex: number
-    articleType: string
-    universe: Universe
-}
-
-async function computeStatisticsPages(shouldIncludeStatisticsPages: boolean, universe: Universe | undefined): Promise<[string[], StatisticPage[]] | undefined> {
-    const counts = shouldIncludeStatisticsPages ? await getCountsByArticleType() : undefined
-    if (counts === undefined) {
-        return undefined
-    }
-    const time = Date.now()
-    const res = generateStatisticStrings(counts, universe)
-    debugPerformance(`Generated statistic strings for universe ${universe} in ${Date.now() - time} ms`)
-    return res
-}
-
-function generateStatisticStrings(counts: CountsByUT, universe: Universe | undefined): [string[], StatisticPage[]] {
-    // Generate strings like "Population by Judicial District" for the given universe. If universe is undefined, try all universes
-    const universes: readonly Universe[] = universe !== undefined ? [universe] : universes_ordered
-    const names: string[] = []
-    const pages: StatisticPage[] = []
-    for (let i = 0; i < statistic_name_list.length; i++) {
-        for (const articleType of used_geographies) {
-            const u = findUniverse(counts, i, articleType, universes)
-            if (u === undefined) {
-                continue
-            }
-            const name = `${statistic_name_list[i]} by ${articleType}`
-            names.push(name)
-            pages.push({
-                statisticIndex: i,
-                articleType,
-                universe: u,
-            })
-        }
-    }
-    return [names, pages]
-}
-
-function findUniverse(counts: CountsByUT, statIdx: number, articleType: string, universes: readonly Universe[]): Universe | undefined {
-    // find the last universe in the list that ties with the maximum count
-    let bestUniverse = undefined
-    let bestCount = 1
-    for (const universe of universes) {
-        const count = forTypeByIndex(counts, universe, statIdx, articleType)
-        if (count >= bestCount) {
-            bestCount = count
-            bestUniverse = universe
-        }
-    }
-    return bestUniverse
-}
 
 type SearchWorker = (params: SearchParams) => Promise<SearchResult[]>
 
