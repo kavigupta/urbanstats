@@ -203,7 +203,7 @@ jobs:
           pattern: "{delta,changed_screenshots}"
           separate-directories: true
         continue-on-error: true
-      - if: ${{ steps.upload-combined.outputs.artifact-id != '' }}
+      - if: ${{ steps.upload-combined.outputs.artifact-id != '' && github.event_name == 'pull_request' }}
         uses: actions/github-script@v7
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
@@ -212,7 +212,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '[Screenshots merge ${{ github.event.pull_request.head.sha }}](http://localhost:8000/screenshot-diff-viewer.html?artifactId=${{ steps.upload-combined.outputs.artifact-id }}&hash=${{ github.sha }})\n\n`!updateScreenshots` to update'
+              body: '[Screenshots merge ${{ github.event.pull_request.head.sha }}](https://urbanstats.org/screenshot-diff-viewer.html?artifactId=${{ steps.upload-combined.outputs.artifact-id }}&hash=${{ github.sha }})\n\n`!updateScreenshots` to update'
             })
 
   merge-and-save-durations:
