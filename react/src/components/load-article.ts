@@ -8,7 +8,7 @@ import { findAmbiguousSourcesAll, statDataOrderToOrder, statParents, StatName, S
 import { Article, IFirstOrLast } from '../utils/protos'
 import { UnitType } from '../utils/unit'
 
-import { CountsByUT } from './countsByArticleType'
+import { CountsByUT, forType } from './countsByArticleType'
 
 export interface HistogramExtraStat {
     type: 'histogram'
@@ -62,34 +62,6 @@ export interface StatisticCellRenderingInfo {
     unit?: UnitType
     statpath?: StatPath
     overallFirstLast?: FirstLastStatus
-}
-
-function lookupInCompressedSequence(seq: [number, number][], idx: number): number {
-    // translation of sharding.py::lookup_in_compressed_sequence
-    for (const [value, length] of seq) {
-        if (idx < length) {
-            return value
-        }
-        idx -= length
-    }
-    throw new Error('Index out of bounds')
-}
-
-export function forTypeByIndex(counts: CountsByUT, universe: string, statIdx: number, typ: string): number {
-    if (!(universe in counts)) {
-        return 0
-    }
-    if (!(typ in counts[universe])) {
-        return 0
-    }
-    const countsByType = counts[universe][typ]
-
-    return lookupInCompressedSequence(countsByType, statIdx)
-}
-
-export function forType(counts: CountsByUT, universe: string, statcol: StatCol, typ: string): number {
-    const idx = stats.indexOf(statcol) // Works because `require` is global
-    return forTypeByIndex(counts, universe, idx, typ)
 }
 
 function unpackBytes(bytes: Uint8Array): number[] {
