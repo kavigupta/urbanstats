@@ -15,8 +15,7 @@ import { TestUtils } from '../utils/TestUtils'
 import { assert } from '../utils/defensive'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
-import { CountsByUT, getCountsByArticleType } from './countsByArticleType'
-import { forTypeByIndex } from './load-article'
+import { CountsByUT, getCountsByArticleType, forTypeByIndex } from './countsByArticleType'
 import { GenericSearchBox } from './search-generic'
 
 export function SearchBox(props: {

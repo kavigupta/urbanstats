@@ -1,5 +1,4 @@
-import { CountsByUT } from '../components/countsByArticleType'
-import { forType } from '../components/load-article'
+import { CountsByUT, forType } from '../components/countsByArticleType'
 import syau_suffixes from '../data/syau_suffixes'
 import { loadProtobuf, loadStatisticsPage } from '../load_json'
 import { centroidsPath } from '../navigation/links'
