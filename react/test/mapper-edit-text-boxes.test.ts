@@ -5,15 +5,17 @@ import { screencap, urbanstatsFixture } from './test_utils'
 
 urbanstatsFixture(`default map`, '/mapper.html')
 
+const editTextBoxesButton = Selector('button[data-test=edit-text-boxes]')
+
 test('basic add box', async (t) => {
-    await t.click(Selector('button').withExactText('Edit Text Boxes'))
+    await t.click(editTextBoxesButton)
     await t.click('[data-test="add"]')
     await t.typeText('.ql-editor', 'Hello, World!')
     await screencap(t)
     await t.click(Selector('button:not(:disabled)').withExactText('Accept'))
 
     await t.expect(Selector('p').withExactText('Hello,\u00a0World!').exists).ok()
-    await t.expect(Selector('button').withExactText('Edit Text Boxes').exists).ok()
+    await t.expect(editTextBoxesButton.exists).ok()
     await screencap(t)
 })
 
@@ -63,7 +65,7 @@ const expectedNewTextBoxCode = `cMap(
 
 test('create a new text box with formatting', async (t) => {
     // Open the "Edit Text Boxes" dialog and add a new text box
-    await t.click(Selector('button').withExactText('Edit Text Boxes'))
+    await t.click(editTextBoxesButton)
     await t.click('[data-test="add"]')
 
     // Set font, size, and formatting
@@ -80,7 +82,7 @@ test('create a new text box with formatting', async (t) => {
     // Finalize changes and verify still editable
     await screencap(t)
     await t.click(Selector('button').withExactText('Accept'))
-    await t.expect(Selector('button').withExactText('Edit Text Boxes').exists).ok()
+    await t.expect(editTextBoxesButton.exists).ok()
 
     // Verify no errors and expected code
     await toggleCustomScript(t)
@@ -104,7 +106,7 @@ async function inputColor(t: TestController, selector: string, value: string): P
 }
 
 test('change background color, border color, border width, insert images, insert formulas, format formulas', async (t) => {
-    await t.click(Selector('button').withExactText('Edit Text Boxes'))
+    await t.click(editTextBoxesButton)
     await t.click('[data-test="add"]')
 
     // Change background color
@@ -145,7 +147,7 @@ test('change background color, border color, border width, insert images, insert
 
     // Accept changes and verify the "Edit Text Boxes" button is visible
     await t.click(Selector('button').withExactText('Accept'))
-    await t.expect(Selector('button').withExactText('Edit Text Boxes').exists).ok()
+    await t.expect(editTextBoxesButton.exists).ok()
 
     // Ensure no errors, take a screenshot, and toggle custom script
     await t.expect(getErrors()).eql([])
@@ -182,7 +184,7 @@ test('change background color, border color, border width, insert images, insert
 
     // Reopen dialog, duplicate, delete, and finalize changes
     await toggleCustomScript(t)
-    await t.click(Selector('button').withExactText('Edit Text Boxes'))
+    await t.click(editTextBoxesButton)
     await t.click('[data-test="duplicate"]')
     await t.click(Selector('[data-test="delete"]').nth(1))
     await t.click(Selector('button').withExactText('Accept'))
@@ -202,7 +204,7 @@ function getSelection(): Promise<Selection | null> {
 
 test('duplicate text box, edit, resize, resposition, move down', async (t) => {
     // Open dialog and duplicate text box
-    await t.click(Selector('button').withExactText('Edit Text Boxes'))
+    await t.click(editTextBoxesButton)
     await t.click('[data-test="duplicate"]')
 
     // Edit duplicated text box
@@ -229,7 +231,7 @@ test('duplicate text box, edit, resize, resposition, move down', async (t) => {
 
     // Finalize and verify
     await t.click(Selector('button').withExactText('Accept'))
-    await t.expect(Selector('button').withExactText('Edit Text Boxes').exists).ok()
+    await t.expect(editTextBoxesButton.exists).ok()
     await t.expect(getErrors()).eql([])
     await screencap(t)
     await toggleCustomScript(t)

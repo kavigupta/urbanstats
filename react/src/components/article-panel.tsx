@@ -263,7 +263,7 @@ function ComparisonSearchBox({ longname, type }: { longname: string, type: strin
         <SearchBox
             style={{ ...useComparisonHeadStyle(), width: '100%' }}
             placeholder="Other region..."
-            link={x => navContext.link({
+            articleLink={x => navContext.link({
                 kind: 'comparison',
                 universe: currentUniverse,
                 longnames: [longname, x],
