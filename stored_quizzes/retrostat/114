@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Mean % of parkland within 1km",
+      "stat_path": "park_percent_1km_v2",
+      "question": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
+      "longname_a": "Syracuse NY Media Market, USA",
+      "longname_b": "Tri-Cities TN-VA Media Market, USA",
+      "stat_a": 0.016882647767975,
+      "stat_b": 0.00417079490966755
+    },
+    "b": {
+      "stat_column": "Employed in Accommodation and food services %",
+      "stat_path": "industry_accommodation_and_food_services",
+      "question": "higher % of workers employed in the accommodation and food services industry!TOOLTIP hotels, restaurants, bars, caterers, food services contractors, etc.",
+      "longname_a": "TX-35 (2023), USA",
+      "longname_b": "CA-17 (2023), USA",
+      "stat_a": 0.10404783605476517,
+      "stat_b": 0.04942999661716007
+    },
+    "a_ease": 0.7593337162550259,
+    "b_ease": 0.3588410104011887
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High School %",
+      "stat_path": "education_high_school",
+      "question": "higher % of people who have at least a high school diploma",
+      "longname_a": "Lexington-Fayette urban county, Kentucky, USA",
+      "longname_b": "Laredo city, Texas, USA",
+      "stat_a": 0.9263871803023391,
+      "stat_b": 0.706338382785546
+    },
+    "b": {
+      "stat_column": "Racial Homogeneity Change (2010-2020) %",
+      "stat_path": "homogeneity_250_diff_2010",
+      "question": "!FULL Which diversified less between 2010 and 2020?!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "San Antonio Urban Center, USA",
+      "longname_b": "Madison Urban Center, USA",
+      "stat_a": -0.0337651355605183,
+      "stat_b": -0.08083606100780327
+    },
+    "a_ease": 0.7618343195266272,
+    "b_ease": 0.34104046242774566
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Divorced %",
+      "stat_path": "marriage_divorced",
+      "question": "higher % of people who are divorced",
+      "longname_a": "Manitoba, Canada",
+      "longname_b": "Idaho, USA",
+      "stat_a": 0.09261268052325274,
+      "stat_b": 0.12081660043263233
+    },
+    "b": {
+      "stat_column": "Employed in Health care and social assistance %",
+      "stat_path": "industry_health_care_and_social_assistance",
+      "question": "higher % of workers employed in the health care and social assistance industry!TOOLTIP hospitals, nursing care facilities, offices of physicians, dentists, day care centers, etc.",
+      "longname_a": "TX-33 (2023), USA",
+      "longname_b": "ID-02 (2023), USA",
+      "stat_a": 0.09204779873072443,
+      "stat_b": 0.13131750474566153
+    },
+    "a_ease": 0.630057803468208,
+    "b_ease": 0.22633136094674555
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Chronic kidney disease %",
+      "stat_path": "KIDNEY_cdc_2",
+      "question": "higher % of adults with chronic kidney disease",
+      "longname_a": "Worcester County, Massachusetts, USA",
+      "longname_b": "McHenry County, Illinois, USA",
+      "stat_a": 0.027231149367188186,
+      "stat_b": 0.024502470729644375
+    },
+    "b": {
+      "stat_column": "No internet access %",
+      "stat_path": "internet_no_access",
+      "question": "higher % of people who have no internet access",
+      "longname_a": "Luzerne County, Pennsylvania, USA",
+      "longname_b": "Kane County, Illinois, USA",
+      "stat_a": 0.14522332694822038,
+      "stat_b": 0.0749187644472396
+    },
+    "a_ease": 0.20066006600660066,
+    "b_ease": 0.6047765793528506
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household income > C$100k %",
+      "stat_path": "household_income_above_100_cad",
+      "question": "higher % of households that have household income over C$100k",
+      "longname_a": "Qu\u00e9bec CMA, QC, Canada",
+      "longname_b": "Kitchener - Cambridge - Waterloo CMA, ON, Canada",
+      "stat_a": 0.3617687145964144,
+      "stat_b": 0.46348901034458556
+    },
+    "b": {
+      "stat_column": "2020 Presidential Election",
+      "stat_path": "2020 Presidential Election-margin",
+      "question": "!FULL Which voted more for Biden in the 2020 presidential election?",
+      "longname_a": "Columbus-Tupelo-West Point MS Media Market, USA",
+      "longname_b": "Las Vegas NV Media Market, USA",
+      "stat_a": -0.29459986241687236,
+      "stat_b": 0.078904037278567
+    },
+    "a_ease": 0.4264026402640264,
+    "b_ease": 0.833092485549133
+  }
+]
