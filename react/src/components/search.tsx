@@ -1,5 +1,6 @@
 import React, { CSSProperties, ReactElement, ReactNode, useMemo, useRef } from 'react'
 
+import used_geographies from '../data/mapper/used_geographies'
 import statistic_name_list from '../data/statistic_name_list'
 import type_ordering_idx from '../data/type_ordering_idx'
 import universes_ordered from '../data/universes_ordered'
@@ -17,8 +18,6 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 import { CountsByUT, getCountsByArticleType } from './countsByArticleType'
 import { forTypeByIndex } from './load-article'
 import { GenericSearchBox } from './search-generic'
-
-import used_geographies from '../data/mapper/used_geographies'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
