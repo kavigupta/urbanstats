@@ -234,8 +234,8 @@ test('shows correct number of rows when count is multiple of amount', async (t) 
     await t.expect(Selector('div').withExactText('21').exists).notOk()
 })
 
-function createUSSStatisticsPage(uss: string, start = 1, amount = 20, universe = 'California, USA'): string {
-    return `${target}/statistic.html?uss=${encodeURIComponent(uss)}&article_type=County&start=${start}&amount=${amount}&universe=${encodeURIComponent(universe)}`
+function createUSSStatisticsPage(uss: string, start = 1, amount = 20, universe = 'California, USA', articleType = 'County'): string {
+    return `${target}/statistic.html?uss=${encodeURIComponent(uss)}&article_type=${encodeURIComponent(articleType)}&start=${start}&amount=${amount}&universe=${encodeURIComponent(universe)}`
 }
 
 const basicPage = `table(
@@ -724,4 +724,24 @@ test('column click on element', async (t) => {
     await waitForLoading()
     await toggleCustomScript(t)
     await t.expect(nthEditor(0).textContent).eql('table(columns=[column(values=white), column(values=population)])\n')
+})
+
+const transit = `condition (population > 500k)
+table(
+    columns=[column(values=commute_transit)],
+    title="Transit % among metropolitan clusters over 500k people"
+)`
+
+urbanstatsFixture('page with nans', createUSSStatisticsPage(transit, 1, 20, 'USA', 'Metropolitan Cluster'))
+
+test('page with nans', async (t) => {
+    await t.wait(2000)
+    await waitForLoading()
+    const ordinal = Selector('div').withAttribute('data-test-id', 'statistic-ordinal')
+    await t.expect(ordinal.count).eql(20)
+    for (let i = 0; i < 20; i++) {
+        const text = await ordinal.nth(i).innerText
+        await t.expect(text).eql((i + 1).toString())
+    }
+    await screencap(t)
 })

@@ -16,6 +16,7 @@ import { Property } from '../../utils/Property'
 import { assert } from '../../utils/defensive'
 import { useMobileLayout } from '../../utils/responsive'
 
+import * as ArgEditButtons from './ArgEditButtons'
 import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import { SelectionContext, Selection as ContextSelection } from './SelectionContext'
@@ -72,8 +73,11 @@ function ArgumentEditor(props: {
     const tdoc = props.typeEnvironment.get(functionUss.fn.name.node)
     const humanReadableName = tdoc?.documentation?.namedArgs?.[props.name] ?? props.name
     assert(tdoc?.type === undefined || tdoc.type.type === 'function', `AutoUX looked up function identifier ${functionUss.fn.name.node}m, but it was not a function`)
-    const collapsable = hasDefault && isEnabled && (tdoc?.type.namedArgs[props.name]?.documentation?.collapsable ?? false)
+    const argDoc = tdoc?.type.namedArgs[props.name]?.documentation
+    const collapsable = hasDefault && isEnabled && (argDoc?.collapsable ?? false)
     const collapsed = collapsable && argValue.type === 'named' && argValue.value.type === 'autoUXNode' && argValue.value.metadata.collapsed === true
+    // eslint-disable-next-line no-restricted-syntax -- Must be capital for JSX
+    const EditButton = argDoc?.editButton && ArgEditButtons[argDoc.editButton]
 
     const editor = isEnabled && (
         <AutoUXEditor
@@ -123,7 +127,7 @@ function ArgumentEditor(props: {
                 />
             )}
             <div style={{ flex: 1 }}>
-                <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     {hasDefault
                         ? (
                                 <CheckboxSettingCustom
@@ -156,7 +160,7 @@ function ArgumentEditor(props: {
                                 />
                             )
                         : <span>{humanReadableName}</span>}
-
+                    {EditButton && <EditButton />}
                 </div>
                 {
                     isEnabled && (collapsable

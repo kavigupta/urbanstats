@@ -179,10 +179,25 @@ export const table: USSValue = {
     },
 } satisfies USSValue
 
+export function orderNonNan(a: number, b: number): number {
+    const aIsNan = Number.isNaN(a)
+    const bIsNan = Number.isNaN(b)
+    if (aIsNan && bIsNan) {
+        return 0
+    }
+    if (aIsNan) {
+        return -1
+    }
+    if (bIsNan) {
+        return 1
+    }
+    return a - b
+}
+
 function attachPopulationPercentilesToColumn(col: TableColumn, population: number[]): TableColumnWithPopulationPercentiles {
     const sortedIdxs = col.values
         .map((v, idx) => ({ v, idx }))
-        .sort((a, b) => a.v - b.v)
+        .sort((a, b) => orderNonNan(a.v, b.v))
         .map(({ idx }) => idx)
 
     const cumulativePopulations: number[] = []

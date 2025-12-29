@@ -9,6 +9,7 @@ const layers = [
     'plotSettings',
     'betterSelectorMenu',
     'statisticNameDisclaimer',
+    'mapLoading',
     'mobileUndoRedoControls',
     'modal',
     'sidebarOverlay',

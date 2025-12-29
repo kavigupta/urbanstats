@@ -83,6 +83,8 @@ function mapPositionsEqual(a: MapPositions, b: MapPositions): boolean {
     })
 }
 
+const editInsetsButton = Selector('button[data-test=edit-insets]')
+
 function insetsEditTest(testFn: () => TestFn, { description, action, before, after, customInsetsAfterEdit }: {
     description: string
     action: (t: TestController) => Promise<void>
@@ -112,7 +114,7 @@ function insetsEditTest(testFn: () => TestFn, { description, action, before, aft
             }
 
             await check(before)
-            await t.click(Selector('button').withExactText('Edit Insets'))
+            await t.click(editInsetsButton)
             await check(before)
             await action(t)
             await check(after)
@@ -243,13 +245,13 @@ insetsEditTest(() => test, {
 })
 
 test('no duplicate/delete on main', async (t) => {
-    await t.click(Selector('button').withExactText('Edit Insets'))
+    await t.click(editInsetsButton)
     await t.expect(Selector(handle(0, 'duplicate')).exists).notOk()
     await t.expect(Selector(handle(0, 'delete')).exists).notOk()
 })
 
 test('edit interface', async (t) => {
-    await t.click(Selector('button').withExactText('Edit Insets'))
+    await t.click(editInsetsButton)
     await screencap(t)
 })
 
@@ -263,6 +265,6 @@ urbanstatsFixture(`insets with population condition`, populationConditionUrl)
 
 test('insets page with population condition', async (t) => {
     await toggleCustomScript(t)
-    await t.click(Selector('button').withExactText('Edit Insets'))
+    await t.click(editInsetsButton)
     await screencap(t)
 })

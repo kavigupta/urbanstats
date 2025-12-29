@@ -1,13 +1,13 @@
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { deconstruct as deconstructInset, Inset } from '../../urban-stats-script/constants/insets'
+import { emptyLocation } from '../../urban-stats-script/lexer'
 import * as l from '../../urban-stats-script/literal-parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { ArrayEdits, replace, swap } from '../../utils/array-edits'
 import { assert } from '../../utils/defensive'
 import { loadInsetExpression, loadInsets } from '../context'
 
-import { idOutput, MapUSS, validMapperOutputs } from './TopLevelEditor'
-import { MapSettings } from './utils'
+import { MapSettings, idOutput, MapUSS, validMapperOutputs } from './utils'
 
 export const neswSchema = l.object({
     north: l.number(),
@@ -30,7 +30,7 @@ const insetSchema = l.transformExpr(l.deconstruct(l.call({ fn: l.identifier('con
     name,
 } satisfies Inset))
 
-const constructInsetsSchema = l.transformExpr(l.call({ fn: l.identifier('constructInsets'), namedArgs: {}, unnamedArgs: [l.editableVector(insetSchema)] }), call => call.unnamedArgs[0])
+const constructInsetsSchema = l.transformExpr(l.maybeAutoUXNode(l.call({ fn: l.identifier('constructInsets'), namedArgs: {}, unnamedArgs: [l.editableVector(insetSchema)] })), call => call.expr.unnamedArgs[0])
 
 const mapSchema = l.transformStmt(l.statements([
     l.ignore(),
@@ -99,6 +99,16 @@ export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvir
 
     const newConstructInsets = constructInsetsSchema.parse(currentInsetsAst, typeEnvironment).edit(edits.ast) as UrbanStatsASTExpression
 
-    const result = mapInsets.edit(newConstructInsets)
+    const result = mapInsets.edit(newConstructInsets.type === 'autoUXNode'
+        ? newConstructInsets
+        : {
+                type: 'autoUXNode',
+                expr: newConstructInsets,
+                metadata: {
+                    collapsed: mapInsets.expr === undefined,
+                },
+                entireLoc: emptyLocation(''),
+            })
+
     return result as MapUSS
 }
