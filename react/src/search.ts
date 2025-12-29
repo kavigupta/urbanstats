@@ -361,7 +361,7 @@ function addExtraStringsToIndex(index: NormalizedSearchIndex, extraStrings: stri
         return {
             longname: extraString,
             tokens,
-            priority: 0, // No priority for extra strings
+            priority: 0, // the highest priority is 0
             signature: toSignature(normalizedExtra),
             typeIndex: 0, // Not used for extra strings
             extraIndex,
@@ -370,7 +370,8 @@ function addExtraStringsToIndex(index: NormalizedSearchIndex, extraStrings: stri
 
     return {
         ...index,
-        entries: [...index.entries, ...extraEntries],
+        // extra entries go first so they are prioritized if all other things are equal
+        entries: [...extraEntries, ...index.entries],
     }
 }
 
