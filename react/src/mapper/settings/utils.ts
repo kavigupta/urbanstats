@@ -10,7 +10,7 @@ import { longMessage } from '../../urban-stats-script/editor-utils'
 import { parse, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
 import { defaultTypeEnvironment } from '../context'
 
-import { attemptParseAsTopLevel, convertToMapUss, rootBlockIdent, validMapperOutputs, type MapUSS } from './map-uss'
+import { attemptParseAsTopLevel, convertToMapUss, MapUSS, rootBlockIdent, validMapperOutputs } from './map-uss'
 
 export type StatisticsForGeography = { stats: number[] }[]
 

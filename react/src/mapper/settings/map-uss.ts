@@ -1,4 +1,4 @@
-import { locationOf, unify, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
+import { UrbanStatsASTExpression, UrbanStatsASTStatement, locationOf, unify } from '../../urban-stats-script/ast'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsCustomNode, unparse } from '../../urban-stats-script/parser'
 import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
@@ -30,15 +30,13 @@ export function convertToMapUss(uss: UrbanStatsASTStatement): MapUSS {
     if (uss.type === 'expression' && uss.value.type === 'customNode') {
         return uss.value
     }
-    if (
-        uss.type === 'statements'
+    if (uss.type === 'statements'
         && uss.result.length === 2
         && uss.result[0].type === 'expression'
         && uss.result[0].value.type === 'customNode'
         && uss.result[1].type === 'condition'
         && uss.result[1].rest.length === 1
-        && uss.result[1].rest[0].type === 'expression'
-    ) {
+        && uss.result[1].rest[0].type === 'expression') {
         return {
             ...uss,
             result: [
@@ -69,7 +67,7 @@ export function makeStatements<const T extends UrbanStatsASTStatement[]>(element
     }
 }
 
-function attemptParseCondition(conditionStmt: UrbanStatsASTStatement | undefined): { conditionRest: UrbanStatsASTStatement[], conditionExpr: UrbanStatsASTExpression } {
+export function attemptParseCondition(conditionStmt: UrbanStatsASTStatement | undefined): { conditionRest: UrbanStatsASTStatement[], conditionExpr: UrbanStatsASTExpression } {
     let stmts = conditionStmt !== undefined ? [conditionStmt] : []
     if (conditionStmt?.type === 'condition') {
         const conditionText = unparse(conditionStmt.condition, { simplify: true })
@@ -92,8 +90,7 @@ export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, ty
      * Splits up the statements into a preamble and a condition statement. Make the body of the condition a custom node.
      */
     if (stmt.type === 'customNode') {
-        // Extract the expression from customNode and process it
-        return attemptParseAsTopLevel(stmt.expr, typeEnvironment, preserveCustomNodes, targetOutputTypes)
+        return stmt
     }
     const stmts = stmt.type === 'statements' ? stmt.result : [stmt]
     const preamble = {
@@ -103,11 +100,7 @@ export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, ty
     } satisfies UrbanStatsASTStatement
     const conditionStmt = stmts.length > 0 ? stmts[stmts.length - 1] : undefined
     const { conditionRest, conditionExpr } = attemptParseCondition(conditionStmt)
-    // If conditionRest has a single expression statement, extract the expression directly
-    const exprToParse = conditionRest.length === 1 && conditionRest[0].type === 'expression'
-        ? conditionRest[0].value
-        : makeStatements(conditionRest, idOutput)
-    const body = parseExpr(exprToParse, idOutput, targetOutputTypes, typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes)
+    const body = parseExpr(makeStatements(conditionRest, idOutput), idOutput, targetOutputTypes, typeEnvironment, parseNoErrorAsCustomNode, preserveCustomNodes)
     const condition = {
         type: 'condition',
         entireLoc: locationOf(conditionExpr),
