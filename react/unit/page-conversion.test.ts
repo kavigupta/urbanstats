@@ -117,19 +117,25 @@ void describe('mapperToTable', () => {
 
 void describe('convertTableToMapper', () => {
     void test('converts simple table to mapper', () => {
-        const parsed = parseNoErrorAsCustomNode('table(columns=[column(values=density_pw_1km)])', idOutput, [{ type: 'opaque', name: 'table', allowCustomExpression: false }])
-        const result = convertTableToMapper(parsed)
+        const fullInput = `customNode("");\ncondition (true)\ntable(columns=[column(values=density_pw_1km)])`
+        const parsed = parse(fullInput, { type: 'multi' })
+        if (parsed.type === 'error') {
+            throw new Error(`Failed to parse: ${fullInput}`)
+        }
+        const result = convertTableToMapper(parsed as MapUSS)
         assert(result !== undefined, 'Should convert successfully')
-        // parseNoErrorAsCustomNode wraps in customNode
-        assert.equal(result, 'customNode("cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)")')
+        assert.equal(result, 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)')
     })
 
     void test('converts table with complex expression to mapper', () => {
-        const parsed = parseNoErrorAsCustomNode('table(columns=[column(values=density_pw_1km * 2)])', idOutput, [{ type: 'opaque', name: 'table', allowCustomExpression: false }])
-        const result = convertTableToMapper(parsed)
+        const fullInput = `customNode("");\ncondition (true)\ntable(columns=[column(values=density_pw_1km * 2)])`
+        const parsed = parse(fullInput, { type: 'multi' })
+        if (parsed.type === 'error') {
+            throw new Error(`Failed to parse: ${fullInput}`)
+        }
+        const result = convertTableToMapper(parsed as MapUSS)
         assert(result !== undefined, 'Should convert successfully')
-        // Complex expressions get wrapped in customNode
-        assert.equal(result, 'customNode("cMap(data=density_pw_1km * 2, scale=linearScale(), ramp=rampUridis)")')
+        assert.equal(result, 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km * 2, scale=linearScale(), ramp=rampUridis)')
     })
 
     void test('converts table with preamble to mapper', () => {
@@ -138,7 +144,7 @@ void describe('convertTableToMapper', () => {
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = convertTableToMapper(parsed)
+        const result = convertTableToMapper(parsed as MapUSS)
         assert(result !== undefined, 'Should convert successfully')
         assert.equal(result, 'customNode("let x = 5");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)')
     })
@@ -149,55 +155,48 @@ void describe('convertTableToMapper', () => {
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = convertTableToMapper(parsed)
+        const result = convertTableToMapper(parsed as MapUSS)
         assert(result !== undefined, 'Should convert successfully')
-        // convertTableToMapper returns the unparsed string of the transformed AST
-        // For conditions, it preserves the condition structure as "condition (true) ..."
         assert.equal(result, 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)')
     })
 
     void test('returns undefined for table without columns', () => {
-        const parsed = parse('table()', { type: 'single', ident: idOutput })
+        const fullInput = `customNode("");\ncondition (true)\ntable()`
+        const parsed = parse(fullInput, { type: 'multi' })
         if (parsed.type === 'error') {
-            throw new Error('Failed to parse')
+            throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = convertTableToMapper(parsed)
+        const result = convertTableToMapper(parsed as MapUSS)
         assert.equal(result, undefined, 'Should return undefined for table without columns')
     })
 
     void test('returns undefined for table with empty columns', () => {
-        const parsed = parse('table(columns=[])', { type: 'single', ident: idOutput })
+        const fullInput = `customNode("");\ncondition (true)\ntable(columns=[])`
+        const parsed = parse(fullInput, { type: 'multi' })
         if (parsed.type === 'error') {
-            throw new Error('Failed to parse')
+            throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = convertTableToMapper(parsed)
+        const result = convertTableToMapper(parsed as MapUSS)
         assert.equal(result, undefined, 'Should return undefined for table with empty columns')
     })
 
     void test('returns undefined for non-table expression', () => {
-        const parsed = parse('density_pw_1km', { type: 'single', ident: idOutput })
+        const fullInput = `customNode("");\ncondition (true)\ndensity_pw_1km`
+        const parsed = parse(fullInput, { type: 'multi' })
         if (parsed.type === 'error') {
-            throw new Error('Failed to parse')
+            throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = convertTableToMapper(parsed)
+        const result = convertTableToMapper(parsed as MapUSS)
         assert.equal(result, undefined, 'Should return undefined for non-table expression')
     })
 
     void test('returns undefined for table with column without values', () => {
-        const parsed = parse('table(columns=[column()])', { type: 'single', ident: idOutput })
+        const fullInput = `customNode("");\ncondition (true)\ntable(columns=[column()])`
+        const parsed = parse(fullInput, { type: 'multi' })
         if (parsed.type === 'error') {
-            throw new Error('Failed to parse')
+            throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = convertTableToMapper(parsed)
+        const result = convertTableToMapper(parsed as MapUSS)
         assert.equal(result, undefined, 'Should return undefined for column without values')
-    })
-
-    void test('handles customNode wrapper', () => {
-        const parsed = parseNoErrorAsCustomNode('table(columns=[column(values=density_pw_1km)])', idOutput, [{ type: 'opaque', name: 'table', allowCustomExpression: false }])
-        // parseNoErrorAsCustomNode returns a customNode, which should be handled
-        const result = convertTableToMapper(parsed)
-        assert(result !== undefined, 'Should convert successfully')
-        // The customNode wrapper is preserved in the output
-        assert.equal(result, 'customNode("cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)")')
     })
 })

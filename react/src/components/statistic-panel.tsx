@@ -36,7 +36,7 @@ import { parse, parseNoErrorAsCustomNode, unparse } from '../urban-stats-script/
 import { renderType, TypeEnvironment } from '../urban-stats-script/types-values'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
-import { canConvertTableToMapper, convertTableToMapper } from '../utils/page-conversion'
+import { convertTableToMapper } from '../utils/page-conversion'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType, pluralize } from '../utils/text'
 import { UnitType } from '../utils/unit'
@@ -1301,8 +1301,6 @@ function ConvertToMapButton(props: {
         () => convertTableToMapper(props.editUSS),
         [props.editUSS],
     )
-    const canConvert = canConvertTableToMapper(props.editUSS)
-
     const handleConvertToMap = useCallback((): void => {
         if (!mapperExpression) return
         const settingsJson = JSON.stringify({
@@ -1323,7 +1321,7 @@ function ConvertToMapButton(props: {
         })
     }, [mapperExpression, navContext, props.editGeographyKind, props.editUniverse])
 
-    if (!canConvert) {
+    if (mapperExpression === undefined) {
         return null
     }
 
