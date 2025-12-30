@@ -8,18 +8,83 @@
  * intact and only swaps the final output expression.
  */
 
+import { idOutput, MapUSS } from '../mapper/settings/utils'
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
+import { tableType } from '../urban-stats-script/constants/table'
+import * as l from '../urban-stats-script/literal-parser'
+import { noLocation } from '../urban-stats-script/location'
 import { unparse } from '../urban-stats-script/parser'
+import { TypeEnvironment } from '../urban-stats-script/types-values'
+
+export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression | undefined {
+    const dataSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
+
+    const mapCallSchema = l.reparse(idOutput, [tableType], l.edit(l.union([
+        l.transformExpr(l.call({
+            fn: l.union([l.identifier('cMap'), l.identifier('pMap')]),
+            namedArgs: {
+                data: dataSchema,
+            },
+            unnamedArgs: [],
+        }), x => x.namedArgs.data),
+        l.transformExpr(l.call({
+            fn: l.identifier('cMapRGB'),
+            namedArgs: {
+                dataR: dataSchema,
+            },
+            unnamedArgs: [],
+        }), x => x.namedArgs.dataR),
+    ])))
+
+    const mapSchema = l.transformStmt(l.statements([
+        l.ignore(),
+        l.condition({
+            condition: l.ignore(),
+            rest: [
+                l.expression(mapCallSchema),
+            ],
+        }),
+    ]), r => r[1].rest[0])
+
+    if (uss.type !== 'statements') {
+        return undefined
+    }
+
+    try {
+        const { currentValue: dataExpr, edit } = mapSchema.parse(uss, typeEnvironment)
+        if (dataExpr === undefined) {
+            return undefined
+        }
+        return edit({
+            type: 'call',
+            fn: { type: 'identifier', name: { node: 'table', location: noLocation } },
+            args: [{
+                type: 'named',
+                name: { node: 'columns', location: noLocation },
+                value: {
+                    type: 'vectorLiteral',
+                    entireLoc: uss.entireLoc,
+                    elements: [{
+                        type: 'call',
+                        fn: { type: 'identifier', name: { node: 'column', location: noLocation } },
+                        args: [{
+                            type: 'named',
+                            name: { node: 'values', location: noLocation },
+                            value: dataExpr,
+                        }],
+                        entireLoc: uss.entireLoc,
+                    }],
+                },
+            }],
+            entireLoc: uss.entireLoc,
+        }) as UrbanStatsASTExpression
+    }
+    catch {
+        return undefined
+    }
+}
 
 type TransformResult<T> = { success: true, result: T } | { success: false }
-
-/**
- * Check if a mapper expression can be converted to a table.
- * Returns true if the expression contains a cMap, pMap, or cMapRGB call.
- */
-export function canConvertMapperToTable(uss: UrbanStatsASTExpression | UrbanStatsASTStatement): boolean {
-    return extractDataFromMapperExpression(uss) !== undefined
-}
 
 /**
  * Check if a table expression can be converted to a mapper.
@@ -27,51 +92,6 @@ export function canConvertMapperToTable(uss: UrbanStatsASTExpression | UrbanStat
  */
 export function canConvertTableToMapper(uss: UrbanStatsASTExpression | UrbanStatsASTStatement): boolean {
     return extractFirstColumnFromTableExpression(uss) !== undefined
-}
-
-/**
- * Extract the 'data' expression from a cMap or pMap call.
- * Returns the unparsed string of the data expression, or undefined if not found.
- */
-function extractDataFromMapperExpression(uss: UrbanStatsASTExpression | UrbanStatsASTStatement): string | undefined {
-    switch (uss.type) {
-        case 'customNode':
-            return extractDataFromMapperExpression(uss.expr)
-        case 'statements':
-            if (uss.result.length === 0) {
-                return undefined
-            }
-            return extractDataFromMapperExpression(uss.result[uss.result.length - 1])
-        case 'condition':
-            if (uss.rest.length === 0) {
-                return undefined
-            }
-            return extractDataFromMapperExpression(uss.rest[uss.rest.length - 1])
-        case 'expression':
-            return extractDataFromMapperExpression(uss.value)
-        case 'call':
-        {
-            const fn = uss.fn
-            if (fn.type !== 'identifier') {
-                return undefined
-            }
-            if (fn.name.node === 'cMap' || fn.name.node === 'pMap') {
-                const dataArg = uss.args.find(arg => arg.type === 'named' && arg.name.node === 'data')
-                if (dataArg && dataArg.type === 'named') {
-                    return unparse(dataArg.value, { simplify: true })
-                }
-            }
-            else if (fn.name.node === 'cMapRGB') {
-                const dataRArg = uss.args.find(arg => arg.type === 'named' && arg.name.node === 'dataR')
-                if (dataRArg && dataRArg.type === 'named') {
-                    return unparse(dataRArg.value, { simplify: true })
-                }
-            }
-            return undefined
-        }
-        default:
-            return undefined
-    }
 }
 
 /**
@@ -120,125 +140,6 @@ function extractFirstColumnFromTableExpression(uss: UrbanStatsASTExpression | Ur
         }
         default:
             return undefined
-    }
-}
-
-/**
- * Transform a mapper AST to a table AST, preserving the overall structure.
- * Replaces cMap/pMap/cMapRGB with table(columns=[column(values=data)]).
- */
-function transformMapperToTableAST(uss: UrbanStatsASTStatement): TransformResult<UrbanStatsASTStatement>
-function transformMapperToTableAST(uss: UrbanStatsASTExpression): TransformResult<UrbanStatsASTExpression>
-function transformMapperToTableAST(uss: UrbanStatsASTExpression | UrbanStatsASTStatement): TransformResult<UrbanStatsASTExpression | UrbanStatsASTStatement>
-function transformMapperToTableAST(uss: UrbanStatsASTExpression | UrbanStatsASTStatement): TransformResult<UrbanStatsASTExpression | UrbanStatsASTStatement> {
-    switch (uss.type) {
-        case 'customNode':
-        {
-            const inner = transformMapperToTableAST(uss.expr)
-            if (!inner.success) return { success: false }
-            return {
-                success: true,
-                result: {
-                    ...uss,
-                    expr: inner.result,
-                    originalCode: unparse(inner.result),
-                },
-            }
-        }
-        case 'statements':
-        {
-            if (uss.result.length === 0) {
-                return { success: false }
-            }
-            const lastIdx = uss.result.length - 1
-            const lastTransformed = transformMapperToTableAST(uss.result[lastIdx])
-            if (!lastTransformed.success) return { success: false }
-            return {
-                success: true,
-                result: {
-                    ...uss,
-                    result: [...uss.result.slice(0, lastIdx), lastTransformed.result],
-                },
-            }
-        }
-        case 'condition':
-        {
-            if (uss.rest.length === 0) {
-                return { success: false }
-            }
-            const lastIdx = uss.rest.length - 1
-            const lastTransformed = transformMapperToTableAST(uss.rest[lastIdx])
-            if (!lastTransformed.success) return { success: false }
-            return {
-                success: true,
-                result: {
-                    ...uss,
-                    rest: [...uss.rest.slice(0, lastIdx), lastTransformed.result],
-                },
-            }
-        }
-        case 'expression':
-        {
-            const inner = transformMapperToTableAST(uss.value)
-            if (!inner.success) return { success: false }
-            return {
-                success: true,
-                result: {
-                    ...uss,
-                    value: inner.result,
-                },
-            }
-        }
-        case 'call':
-        {
-            const fn = uss.fn
-            if (fn.type !== 'identifier') {
-                return { success: false }
-            }
-            let dataExpr: UrbanStatsASTExpression | undefined
-            if (fn.name.node === 'cMap' || fn.name.node === 'pMap') {
-                const dataArg = uss.args.find(arg => arg.type === 'named' && arg.name.node === 'data')
-                if (dataArg && dataArg.type === 'named') {
-                    dataExpr = dataArg.value
-                }
-            }
-            else if (fn.name.node === 'cMapRGB') {
-                const dataRArg = uss.args.find(arg => arg.type === 'named' && arg.name.node === 'dataR')
-                if (dataRArg && dataRArg.type === 'named') {
-                    dataExpr = dataRArg.value
-                }
-            }
-            if (!dataExpr) {
-                return { success: false }
-            }
-            // Create table(columns=[column(values=dataExpr)])
-            const tableCall: UrbanStatsASTExpression = {
-                type: 'call',
-                fn: { type: 'identifier', name: { node: 'table', location: fn.name.location } },
-                args: [{
-                    type: 'named',
-                    name: { node: 'columns', location: fn.name.location },
-                    value: {
-                        type: 'vectorLiteral',
-                        entireLoc: uss.entireLoc,
-                        elements: [{
-                            type: 'call',
-                            fn: { type: 'identifier', name: { node: 'column', location: fn.name.location } },
-                            args: [{
-                                type: 'named',
-                                name: { node: 'values', location: fn.name.location },
-                                value: dataExpr,
-                            }],
-                            entireLoc: uss.entireLoc,
-                        }],
-                    },
-                }],
-                entireLoc: uss.entireLoc,
-            }
-            return { success: true, result: tableCall }
-        }
-        default:
-            return { success: false }
     }
 }
 
@@ -364,16 +265,6 @@ function transformTableToMapperAST(uss: UrbanStatsASTExpression | UrbanStatsASTS
         default:
             return { success: false }
     }
-}
-
-/**
- * Convert a mapper USS to a table USS string, preserving the AST structure.
- * Returns undefined if conversion is not possible.
- */
-export function convertMapperToTable(uss: UrbanStatsASTExpression | UrbanStatsASTStatement): string | undefined {
-    const result = transformMapperToTableAST(uss)
-    if (!result.success) return undefined
-    return unparse(result.result)
 }
 
 /**
