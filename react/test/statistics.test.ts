@@ -769,7 +769,8 @@ test('convert-table-to-map', async (t) => {
 })
 
 // Test that AST structure is preserved with conditions
-const tableWithCondition = `condition (population > 100000)
+const tableWithCondition = `customNode("")
+condition (population > 100000)
 table(columns=[column(values=density_pw_1km)])`
 const expectedMapWithCondition = `condition (population > 100000)
 cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)
@@ -783,7 +784,7 @@ test('convert-table-to-map-preserves-condition', async (t) => {
     await t.click(Selector('button[data-test-id="convert-to-map"]'))
     await waitForLoading()
     await screencap(t)
-    // Mapper starts in custom mode with code visible, verify the code
+    await toggleCustomScript(t)
     const code = await getCodeFromMainField()
     await t.expect(code).eql(expectedMapWithCondition)
 })
