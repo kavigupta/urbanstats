@@ -747,7 +747,7 @@ test('page with nans', async (t) => {
 })
 
 // Tests for Convert to Map button
-const simpleTableCode = 'table(columns=[column(values=density_pw_1km)])'
+const simpleTableCode = 'customNode(""); condition(true); table(columns=[column(values=density_pw_1km)])'
 const expectedSimpleMapCode = `cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)
 `
 
@@ -763,7 +763,7 @@ test('convert-table-to-map', async (t) => {
     await t.expect(location).contains('/mapper.html')
     await t.expect(location).contains('settings=')
     await screencap(t)
-    // Mapper starts in custom mode with code visible, verify the code
+    await toggleCustomScript(t)
     const code = await getCodeFromMainField()
     await t.expect(code).eql(expectedSimpleMapCode)
 })
