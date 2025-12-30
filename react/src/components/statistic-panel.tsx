@@ -552,6 +552,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                                 editUSS={editUSS}
                                 editGeographyKind={editGeographyKind}
                                 editUniverse={editUniverse}
+                                typeEnvironment={typeEnvironment}
                             />
                         </div>
                     )}
@@ -1292,15 +1293,16 @@ function ConvertToMapButton(props: {
     editUSS: MapUSS
     editGeographyKind: string
     editUniverse: Universe
+    typeEnvironment: TypeEnvironment
 }): ReactNode {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
 
     const mapperExpression = useMemo(
-        () => convertTableToMapper(props.editUSS),
-        [props.editUSS],
+        () => convertTableToMapper(props.editUSS, props.typeEnvironment),
+        [props.editUSS, props.typeEnvironment],
     )
-    const canConvert = canConvertTableToMapper(props.editUSS)
+    const canConvert = canConvertTableToMapper(props.editUSS, props.typeEnvironment)
 
     const handleConvertToMap = useCallback((): void => {
         if (!mapperExpression) return
