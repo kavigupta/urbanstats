@@ -8,7 +8,7 @@
  * intact and only swaps the final output expression.
  */
 
-import { idOutput, MapUSS } from '../mapper/settings/utils'
+import { idOutput, MapUSS } from '../mapper/settings/map-uss'
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
 import { tableType } from '../urban-stats-script/constants/table'
 import * as l from '../urban-stats-script/literal-parser'
@@ -19,7 +19,7 @@ import { TypeEnvironment } from '../urban-stats-script/types-values'
 export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression | undefined {
     const dataSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
 
-    const mapCallSchema = l.reparse(idOutput, [tableType], l.edit(l.union([
+    const mapCallSchema = l.maybeCustomNodeExpr(l.reparse(idOutput, [tableType], l.edit(l.union([
         l.transformExpr(l.call({
             fn: l.union([l.identifier('cMap'), l.identifier('pMap')]),
             namedArgs: {
@@ -34,7 +34,7 @@ export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): Ur
             },
             unnamedArgs: [],
         }), x => x.namedArgs.dataR),
-    ])))
+    ]))))
 
     const mapSchema = l.transformStmt(l.statements([
         l.ignore(),
