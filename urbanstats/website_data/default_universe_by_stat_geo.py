@@ -1,14 +1,14 @@
-from collections import Counter
 import os
+from collections import Counter
+
 import numpy as np
 import tqdm.auto as tqdm
 
+from urbanstats.geometry.relationship import type_to_type_category
+from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.universe.universe_list import all_universes
-from urbanstats.geometry.relationship import type_to_type_category
-
-from urbanstats.protobuf import data_files_pb2
 
 
 def default_universe_by_stat_geo(table):

@@ -42,7 +42,9 @@ from urbanstats.website_data.create_article_gzips import (
     create_symlink_gzips,
     extra_stats,
 )
-from urbanstats.website_data.default_universe_by_stat_geo import output_default_universe_by_stat_geo
+from urbanstats.website_data.default_universe_by_stat_geo import (
+    output_default_universe_by_stat_geo,
+)
 from urbanstats.website_data.index import export_index, type_to_priority_list
 from urbanstats.website_data.ordinals import all_ordinals
 from urbanstats.website_data.output_geometry import produce_all_geometry_json
