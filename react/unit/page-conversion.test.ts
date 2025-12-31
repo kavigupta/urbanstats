@@ -3,7 +3,7 @@ import { describe, test } from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { idOutput, type MapUSS } from '../src/mapper/settings/map-uss'
-import { parse, parseNoErrorAsCustomNode, unparse } from '../src/urban-stats-script/parser'
+import { parse, unparse } from '../src/urban-stats-script/parser'
 import type { TypeEnvironment } from '../src/urban-stats-script/types-values'
 import { convertTableToMapper, mapperToTable } from '../src/utils/page-conversion'
 
