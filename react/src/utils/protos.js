@@ -9066,4 +9066,567 @@ export const Symlinks = $root.Symlinks = (() => {
     return Symlinks;
 })();
 
+export const DefaultUniverseTriple = $root.DefaultUniverseTriple = (() => {
+
+    /**
+     * Properties of a DefaultUniverseTriple.
+     * @exports IDefaultUniverseTriple
+     * @interface IDefaultUniverseTriple
+     * @property {number|null} [typeIdx] DefaultUniverseTriple typeIdx
+     * @property {number|null} [statIdx] DefaultUniverseTriple statIdx
+     * @property {number|null} [universeIdx] DefaultUniverseTriple universeIdx
+     */
+
+    /**
+     * Constructs a new DefaultUniverseTriple.
+     * @exports DefaultUniverseTriple
+     * @classdesc Represents a DefaultUniverseTriple.
+     * @implements IDefaultUniverseTriple
+     * @constructor
+     * @param {IDefaultUniverseTriple=} [properties] Properties to set
+     */
+    function DefaultUniverseTriple(properties) {
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * DefaultUniverseTriple typeIdx.
+     * @member {number|null|undefined} typeIdx
+     * @memberof DefaultUniverseTriple
+     * @instance
+     */
+    DefaultUniverseTriple.prototype.typeIdx = null;
+
+    /**
+     * DefaultUniverseTriple statIdx.
+     * @member {number|null|undefined} statIdx
+     * @memberof DefaultUniverseTriple
+     * @instance
+     */
+    DefaultUniverseTriple.prototype.statIdx = null;
+
+    /**
+     * DefaultUniverseTriple universeIdx.
+     * @member {number|null|undefined} universeIdx
+     * @memberof DefaultUniverseTriple
+     * @instance
+     */
+    DefaultUniverseTriple.prototype.universeIdx = null;
+
+    // OneOf field names bound to virtual getters and setters
+    let $oneOfFields;
+
+    /**
+     * DefaultUniverseTriple _typeIdx.
+     * @member {"typeIdx"|undefined} _typeIdx
+     * @memberof DefaultUniverseTriple
+     * @instance
+     */
+    Object.defineProperty(DefaultUniverseTriple.prototype, "_typeIdx", {
+        get: $util.oneOfGetter($oneOfFields = ["typeIdx"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * DefaultUniverseTriple _statIdx.
+     * @member {"statIdx"|undefined} _statIdx
+     * @memberof DefaultUniverseTriple
+     * @instance
+     */
+    Object.defineProperty(DefaultUniverseTriple.prototype, "_statIdx", {
+        get: $util.oneOfGetter($oneOfFields = ["statIdx"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * DefaultUniverseTriple _universeIdx.
+     * @member {"universeIdx"|undefined} _universeIdx
+     * @memberof DefaultUniverseTriple
+     * @instance
+     */
+    Object.defineProperty(DefaultUniverseTriple.prototype, "_universeIdx", {
+        get: $util.oneOfGetter($oneOfFields = ["universeIdx"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Creates a new DefaultUniverseTriple instance using the specified properties.
+     * @function create
+     * @memberof DefaultUniverseTriple
+     * @static
+     * @param {IDefaultUniverseTriple=} [properties] Properties to set
+     * @returns {DefaultUniverseTriple} DefaultUniverseTriple instance
+     */
+    DefaultUniverseTriple.create = function create(properties) {
+        return new DefaultUniverseTriple(properties);
+    };
+
+    /**
+     * Encodes the specified DefaultUniverseTriple message. Does not implicitly {@link DefaultUniverseTriple.verify|verify} messages.
+     * @function encode
+     * @memberof DefaultUniverseTriple
+     * @static
+     * @param {IDefaultUniverseTriple} message DefaultUniverseTriple message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    DefaultUniverseTriple.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.typeIdx != null && Object.hasOwnProperty.call(message, "typeIdx"))
+            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.typeIdx);
+        if (message.statIdx != null && Object.hasOwnProperty.call(message, "statIdx"))
+            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.statIdx);
+        if (message.universeIdx != null && Object.hasOwnProperty.call(message, "universeIdx"))
+            writer.uint32(/* id 3, wireType 0 =*/24).int32(message.universeIdx);
+        return writer;
+    };
+
+    /**
+     * Encodes the specified DefaultUniverseTriple message, length delimited. Does not implicitly {@link DefaultUniverseTriple.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof DefaultUniverseTriple
+     * @static
+     * @param {IDefaultUniverseTriple} message DefaultUniverseTriple message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    DefaultUniverseTriple.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a DefaultUniverseTriple message from the specified reader or buffer.
+     * @function decode
+     * @memberof DefaultUniverseTriple
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {DefaultUniverseTriple} DefaultUniverseTriple
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    DefaultUniverseTriple.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.DefaultUniverseTriple();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.typeIdx = reader.int32();
+                    break;
+                }
+            case 2: {
+                    message.statIdx = reader.int32();
+                    break;
+                }
+            case 3: {
+                    message.universeIdx = reader.int32();
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a DefaultUniverseTriple message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof DefaultUniverseTriple
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {DefaultUniverseTriple} DefaultUniverseTriple
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    DefaultUniverseTriple.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a DefaultUniverseTriple message.
+     * @function verify
+     * @memberof DefaultUniverseTriple
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    DefaultUniverseTriple.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        let properties = {};
+        if (message.typeIdx != null && message.hasOwnProperty("typeIdx")) {
+            properties._typeIdx = 1;
+            if (!$util.isInteger(message.typeIdx))
+                return "typeIdx: integer expected";
+        }
+        if (message.statIdx != null && message.hasOwnProperty("statIdx")) {
+            properties._statIdx = 1;
+            if (!$util.isInteger(message.statIdx))
+                return "statIdx: integer expected";
+        }
+        if (message.universeIdx != null && message.hasOwnProperty("universeIdx")) {
+            properties._universeIdx = 1;
+            if (!$util.isInteger(message.universeIdx))
+                return "universeIdx: integer expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a DefaultUniverseTriple message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof DefaultUniverseTriple
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {DefaultUniverseTriple} DefaultUniverseTriple
+     */
+    DefaultUniverseTriple.fromObject = function fromObject(object) {
+        if (object instanceof $root.DefaultUniverseTriple)
+            return object;
+        let message = new $root.DefaultUniverseTriple();
+        if (object.typeIdx != null)
+            message.typeIdx = object.typeIdx | 0;
+        if (object.statIdx != null)
+            message.statIdx = object.statIdx | 0;
+        if (object.universeIdx != null)
+            message.universeIdx = object.universeIdx | 0;
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a DefaultUniverseTriple message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof DefaultUniverseTriple
+     * @static
+     * @param {DefaultUniverseTriple} message DefaultUniverseTriple
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    DefaultUniverseTriple.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (message.typeIdx != null && message.hasOwnProperty("typeIdx")) {
+            object.typeIdx = message.typeIdx;
+            if (options.oneofs)
+                object._typeIdx = "typeIdx";
+        }
+        if (message.statIdx != null && message.hasOwnProperty("statIdx")) {
+            object.statIdx = message.statIdx;
+            if (options.oneofs)
+                object._statIdx = "statIdx";
+        }
+        if (message.universeIdx != null && message.hasOwnProperty("universeIdx")) {
+            object.universeIdx = message.universeIdx;
+            if (options.oneofs)
+                object._universeIdx = "universeIdx";
+        }
+        return object;
+    };
+
+    /**
+     * Converts this DefaultUniverseTriple to JSON.
+     * @function toJSON
+     * @memberof DefaultUniverseTriple
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    DefaultUniverseTriple.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for DefaultUniverseTriple
+     * @function getTypeUrl
+     * @memberof DefaultUniverseTriple
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    DefaultUniverseTriple.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/DefaultUniverseTriple";
+    };
+
+    return DefaultUniverseTriple;
+})();
+
+export const DefaultUniverseTable = $root.DefaultUniverseTable = (() => {
+
+    /**
+     * Properties of a DefaultUniverseTable.
+     * @exports IDefaultUniverseTable
+     * @interface IDefaultUniverseTable
+     * @property {number|null} [mostCommonUniverseIdx] DefaultUniverseTable mostCommonUniverseIdx
+     * @property {Array.<IDefaultUniverseTriple>|null} [exceptions] DefaultUniverseTable exceptions
+     */
+
+    /**
+     * Constructs a new DefaultUniverseTable.
+     * @exports DefaultUniverseTable
+     * @classdesc Represents a DefaultUniverseTable.
+     * @implements IDefaultUniverseTable
+     * @constructor
+     * @param {IDefaultUniverseTable=} [properties] Properties to set
+     */
+    function DefaultUniverseTable(properties) {
+        this.exceptions = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * DefaultUniverseTable mostCommonUniverseIdx.
+     * @member {number|null|undefined} mostCommonUniverseIdx
+     * @memberof DefaultUniverseTable
+     * @instance
+     */
+    DefaultUniverseTable.prototype.mostCommonUniverseIdx = null;
+
+    /**
+     * DefaultUniverseTable exceptions.
+     * @member {Array.<IDefaultUniverseTriple>} exceptions
+     * @memberof DefaultUniverseTable
+     * @instance
+     */
+    DefaultUniverseTable.prototype.exceptions = $util.emptyArray;
+
+    // OneOf field names bound to virtual getters and setters
+    let $oneOfFields;
+
+    /**
+     * DefaultUniverseTable _mostCommonUniverseIdx.
+     * @member {"mostCommonUniverseIdx"|undefined} _mostCommonUniverseIdx
+     * @memberof DefaultUniverseTable
+     * @instance
+     */
+    Object.defineProperty(DefaultUniverseTable.prototype, "_mostCommonUniverseIdx", {
+        get: $util.oneOfGetter($oneOfFields = ["mostCommonUniverseIdx"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Creates a new DefaultUniverseTable instance using the specified properties.
+     * @function create
+     * @memberof DefaultUniverseTable
+     * @static
+     * @param {IDefaultUniverseTable=} [properties] Properties to set
+     * @returns {DefaultUniverseTable} DefaultUniverseTable instance
+     */
+    DefaultUniverseTable.create = function create(properties) {
+        return new DefaultUniverseTable(properties);
+    };
+
+    /**
+     * Encodes the specified DefaultUniverseTable message. Does not implicitly {@link DefaultUniverseTable.verify|verify} messages.
+     * @function encode
+     * @memberof DefaultUniverseTable
+     * @static
+     * @param {IDefaultUniverseTable} message DefaultUniverseTable message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    DefaultUniverseTable.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.mostCommonUniverseIdx != null && Object.hasOwnProperty.call(message, "mostCommonUniverseIdx"))
+            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.mostCommonUniverseIdx);
+        if (message.exceptions != null && message.exceptions.length)
+            for (let i = 0; i < message.exceptions.length; ++i)
+                $root.DefaultUniverseTriple.encode(message.exceptions[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified DefaultUniverseTable message, length delimited. Does not implicitly {@link DefaultUniverseTable.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof DefaultUniverseTable
+     * @static
+     * @param {IDefaultUniverseTable} message DefaultUniverseTable message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    DefaultUniverseTable.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a DefaultUniverseTable message from the specified reader or buffer.
+     * @function decode
+     * @memberof DefaultUniverseTable
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {DefaultUniverseTable} DefaultUniverseTable
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    DefaultUniverseTable.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.DefaultUniverseTable();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.mostCommonUniverseIdx = reader.int32();
+                    break;
+                }
+            case 2: {
+                    if (!(message.exceptions && message.exceptions.length))
+                        message.exceptions = [];
+                    message.exceptions.push($root.DefaultUniverseTriple.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a DefaultUniverseTable message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof DefaultUniverseTable
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {DefaultUniverseTable} DefaultUniverseTable
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    DefaultUniverseTable.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a DefaultUniverseTable message.
+     * @function verify
+     * @memberof DefaultUniverseTable
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    DefaultUniverseTable.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        let properties = {};
+        if (message.mostCommonUniverseIdx != null && message.hasOwnProperty("mostCommonUniverseIdx")) {
+            properties._mostCommonUniverseIdx = 1;
+            if (!$util.isInteger(message.mostCommonUniverseIdx))
+                return "mostCommonUniverseIdx: integer expected";
+        }
+        if (message.exceptions != null && message.hasOwnProperty("exceptions")) {
+            if (!Array.isArray(message.exceptions))
+                return "exceptions: array expected";
+            for (let i = 0; i < message.exceptions.length; ++i) {
+                let error = $root.DefaultUniverseTriple.verify(message.exceptions[i]);
+                if (error)
+                    return "exceptions." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a DefaultUniverseTable message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof DefaultUniverseTable
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {DefaultUniverseTable} DefaultUniverseTable
+     */
+    DefaultUniverseTable.fromObject = function fromObject(object) {
+        if (object instanceof $root.DefaultUniverseTable)
+            return object;
+        let message = new $root.DefaultUniverseTable();
+        if (object.mostCommonUniverseIdx != null)
+            message.mostCommonUniverseIdx = object.mostCommonUniverseIdx | 0;
+        if (object.exceptions) {
+            if (!Array.isArray(object.exceptions))
+                throw TypeError(".DefaultUniverseTable.exceptions: array expected");
+            message.exceptions = [];
+            for (let i = 0; i < object.exceptions.length; ++i) {
+                if (typeof object.exceptions[i] !== "object")
+                    throw TypeError(".DefaultUniverseTable.exceptions: object expected");
+                message.exceptions[i] = $root.DefaultUniverseTriple.fromObject(object.exceptions[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a DefaultUniverseTable message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof DefaultUniverseTable
+     * @static
+     * @param {DefaultUniverseTable} message DefaultUniverseTable
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    DefaultUniverseTable.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults)
+            object.exceptions = [];
+        if (message.mostCommonUniverseIdx != null && message.hasOwnProperty("mostCommonUniverseIdx")) {
+            object.mostCommonUniverseIdx = message.mostCommonUniverseIdx;
+            if (options.oneofs)
+                object._mostCommonUniverseIdx = "mostCommonUniverseIdx";
+        }
+        if (message.exceptions && message.exceptions.length) {
+            object.exceptions = [];
+            for (let j = 0; j < message.exceptions.length; ++j)
+                object.exceptions[j] = $root.DefaultUniverseTriple.toObject(message.exceptions[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this DefaultUniverseTable to JSON.
+     * @function toJSON
+     * @memberof DefaultUniverseTable
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    DefaultUniverseTable.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for DefaultUniverseTable
+     * @function getTypeUrl
+     * @memberof DefaultUniverseTable
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    DefaultUniverseTable.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/DefaultUniverseTable";
+    };
+
+    return DefaultUniverseTable;
+})();
+
 export { $root as default };
