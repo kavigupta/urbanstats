@@ -812,3 +812,51 @@ test('convert-table-to-map-button-hidden-for-non-table', async (t) => {
     await waitForLoading()
     await t.expect(convertToMapButtonSelector.exists).notOk()
 })
+
+const tableWithLabelAndUnit = `customNode("");\ncondition (true)\ntable(\n    columns=[\n        column(\n            values=density_pw_1km,\n            name="Population Density",\n            unit=unitDensity\n        )\n    ]\n)`
+
+urbanstatsFixture('convert table to map with label and unit', createUSSStatisticsPage(tableWithLabelAndUnit, 1, 20, 'California, USA', 'County'))
+
+test('convert-table-to-map-with-label-and-unit', async (t) => {
+    await waitForLoading()
+    await screencap(t)
+    // Click the Convert to Map button
+    await t.click(Selector('button[data-test-id="convert-to-map"]'))
+    await waitForLoading()
+    await screencap(t)
+    // Verify the mapper code has the label and unit transferred
+    await toggleCustomScript(t)
+    const code = await getCodeFromMainField()
+    const expectedCode = `cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    label="Population Density",
+    unit=unitDensity
+)
+`
+    await t.expect(code).eql(expectedCode)
+})
+
+urbanstatsFixture('convert table to map and back preserves fields', createUSSStatisticsPage(tableWithLabelAndUnit, 1, 20, 'California, USA', 'County'))
+
+test('convert-table-to-map-and-back-preserves-fields', async (t) => {
+    await waitForLoading()
+    await screencap(t)
+    // Convert to mapper
+    await t.click(Selector('button[data-test-id="convert-to-map"]'))
+    await waitForLoading()
+    await screencap(t)
+    // Convert back to table
+    await t.click(Selector('button[data-test-id="convert-to-table"]'))
+    await waitForLoading()
+    await screencap(t)
+    // Toggle custom script to verify the converted code
+    await toggleCustomScript(t)
+    const code = await getCodeFromMainField()
+    const expectedCode = `table(
+    columns=[column(values=density_pw_1km, name="Population Density", unit=unitDensity)]
+)
+`
+    await t.expect(code).eql(expectedCode)
+})

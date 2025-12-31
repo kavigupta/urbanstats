@@ -18,22 +18,28 @@ import { TypeEnvironment } from '../urban-stats-script/types-values'
 
 export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression | undefined {
     const dataSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
+    const labelSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
+    const unitSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
 
     const mapCallSchema = l.maybeCustomNodeExpr(l.reparse(idOutput, [tableType], l.edit(l.union([
         l.transformExpr(l.call({
             fn: l.union([l.identifier('cMap'), l.identifier('pMap')]),
             namedArgs: {
                 data: dataSchema,
+                label: labelSchema,
+                unit: unitSchema,
             },
             unnamedArgs: [],
-        }), x => x.namedArgs.data),
+        }), x => ({ data: x.namedArgs.data, label: x.namedArgs.label, unit: x.namedArgs.unit })),
         l.transformExpr(l.call({
             fn: l.identifier('cMapRGB'),
             namedArgs: {
                 dataR: dataSchema,
+                label: labelSchema,
+                unit: unitSchema,
             },
             unnamedArgs: [],
-        }), x => x.namedArgs.dataR),
+        }), x => ({ data: x.namedArgs.dataR, label: x.namedArgs.label, unit: x.namedArgs.unit })),
     ]))))
 
     const mapSchema = l.transformStmt(l.statements([
@@ -51,10 +57,35 @@ export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): Ur
     }
 
     try {
-        const { currentValue: dataExpr, edit } = mapSchema.parse(uss, typeEnvironment)
+        const { currentValue, edit } = mapSchema.parse(uss, typeEnvironment)
+        const { data: dataExpr, label: labelExpr, unit: unitExpr } = currentValue
         if (dataExpr === undefined) {
             return undefined
         }
+
+        // Build column args, including name (from label) and unit if present
+        const columnArgs: { type: 'named', name: { node: string, location: typeof noLocation }, value: UrbanStatsASTExpression }[] = [
+            {
+                type: 'named',
+                name: { node: 'values', location: noLocation },
+                value: dataExpr,
+            },
+        ]
+        if (labelExpr !== undefined) {
+            columnArgs.push({
+                type: 'named',
+                name: { node: 'name', location: noLocation },
+                value: labelExpr,
+            })
+        }
+        if (unitExpr !== undefined) {
+            columnArgs.push({
+                type: 'named',
+                name: { node: 'unit', location: noLocation },
+                value: unitExpr,
+            })
+        }
+
         return edit({
             type: 'call',
             fn: { type: 'identifier', name: { node: 'table', location: noLocation } },
@@ -67,11 +98,7 @@ export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): Ur
                     elements: [{
                         type: 'call',
                         fn: { type: 'identifier', name: { node: 'column', location: noLocation } },
-                        args: [{
-                            type: 'named',
-                            name: { node: 'values', location: noLocation },
-                            value: dataExpr,
-                        }],
+                        args: columnArgs,
                         entireLoc: uss.entireLoc,
                     }],
                 },
@@ -90,9 +117,11 @@ export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): Ur
  * Returns undefined if conversion is not possible.
  */
 export function tableToMapper(uss: MapUSS): string | undefined {
-    // Schema to match table(columns=[column(values=dataExpr)])
-    // Extract the dataExpr using the same pattern as mapperToTable
+    // Schema to match table(columns=[column(values=dataExpr, name=..., unit=...)])
+    // Extract the dataExpr, name, and unit using the same pattern as mapperToTable
     const dataSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
+    const nameSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
+    const unitSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
 
     const tableCallSchema = l.transformExpr(l.call({
         fn: l.identifier('table'),
@@ -101,13 +130,19 @@ export function tableToMapper(uss: MapUSS): string | undefined {
                 fn: l.identifier('column'),
                 namedArgs: {
                     values: dataSchema,
+                    name: nameSchema,
+                    unit: unitSchema,
                 },
                 unnamedArgs: [],
             })), (columns) => {
                 if (columns.length === 0) {
                     throw new Error('table must have at least one column')
                 }
-                return columns[0].namedArgs.values
+                return {
+                    values: columns[0].namedArgs.values,
+                    name: columns[0].namedArgs.name,
+                    unit: columns[0].namedArgs.unit,
+                }
             }),
         },
         unnamedArgs: [],
@@ -131,38 +166,55 @@ export function tableToMapper(uss: MapUSS): string | undefined {
     }
 
     try {
-        const { currentValue: dataExpr, edit } = tableSchema.parse(uss, {} as TypeEnvironment)
+        const { currentValue, edit } = tableSchema.parse(uss, {} as TypeEnvironment)
+        const { values: dataExpr, name: nameExpr, unit: unitExpr } = currentValue
         if (dataExpr === undefined) {
             return undefined
         }
         // Use uss.entireLoc for location
         const location = uss.entireLoc
+        // Build cMap args, including label (from name) and unit if present
+        const cMapArgs: { type: 'named', name: { node: string, location: typeof noLocation }, value: UrbanStatsASTExpression }[] = [
+            {
+                type: 'named',
+                name: { node: 'data', location: noLocation },
+                value: dataExpr,
+            },
+            {
+                type: 'named',
+                name: { node: 'scale', location: noLocation },
+                value: {
+                    type: 'call',
+                    fn: { type: 'identifier', name: { node: 'linearScale', location: noLocation } },
+                    args: [],
+                    entireLoc: location,
+                },
+            },
+            {
+                type: 'named',
+                name: { node: 'ramp', location: noLocation },
+                value: { type: 'identifier', name: { node: 'rampUridis', location: noLocation } },
+            },
+        ]
+        if (nameExpr !== undefined) {
+            cMapArgs.push({
+                type: 'named',
+                name: { node: 'label', location: noLocation },
+                value: nameExpr,
+            })
+        }
+        if (unitExpr !== undefined) {
+            cMapArgs.push({
+                type: 'named',
+                name: { node: 'unit', location: noLocation },
+                value: unitExpr,
+            })
+        }
         // Create cMap call
         const cMapCall: UrbanStatsASTExpression = {
             type: 'call',
             fn: { type: 'identifier', name: { node: 'cMap', location: noLocation } },
-            args: [
-                {
-                    type: 'named',
-                    name: { node: 'data', location: noLocation },
-                    value: dataExpr,
-                },
-                {
-                    type: 'named',
-                    name: { node: 'scale', location: noLocation },
-                    value: {
-                        type: 'call',
-                        fn: { type: 'identifier', name: { node: 'linearScale', location: noLocation } },
-                        args: [],
-                        entireLoc: location,
-                    },
-                },
-                {
-                    type: 'named',
-                    name: { node: 'ramp', location: noLocation },
-                    value: { type: 'identifier', name: { node: 'rampUridis', location: noLocation } },
-                },
-            ],
+            args: cMapArgs,
             entireLoc: location,
         }
         const result = edit(cMapCall) as UrbanStatsASTExpression

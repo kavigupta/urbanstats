@@ -113,6 +113,19 @@ void describe('mapperToTable', () => {
         const result = mapperToTable(parsed as MapUSS, typeEnvironment)
         assert.equal(result, undefined, 'Should return undefined for invalid structure')
     })
+
+    void test('transfers label and unit from mapper to table', () => {
+        const typeEnvironment = getTypeEnvironment()
+        const fullInput = `customNode("");\ncondition (true)\ncMap(data=density_pw_1km, label="Population Density", unit=unitPeoplePerSquareKilometer)`
+        const parsed = parse(fullInput, { type: 'multi' })
+        if (parsed.type === 'error') {
+            throw new Error(`Failed to parse: ${fullInput}`)
+        }
+        const result = mapperToTable(parsed as MapUSS, typeEnvironment)
+        assert(result !== undefined, 'Should convert successfully')
+        const unparsed = unparse(result)
+        assert.equal(unparsed, 'customNode("");\ncondition (true)\ntable(\n    columns=[\n        column(\n            values=density_pw_1km,\n            name="Population Density",\n            unit=customNode("unitPeoplePerSquareKilometer")\n        )\n    ]\n)')
+    })
 })
 
 void describe('tableToMapper', () => {
@@ -198,5 +211,16 @@ void describe('tableToMapper', () => {
         }
         const result = tableToMapper(parsed as MapUSS)
         assert.equal(result, undefined, 'Should return undefined for column without values')
+    })
+
+    void test('transfers name and unit from table to mapper', () => {
+        const fullInput = `customNode("");\ncondition (true)\ntable(columns=[column(values=density_pw_1km, name="Population Density", unit=unitPeoplePerSquareKilometer)])`
+        const parsed = parse(fullInput, { type: 'multi' })
+        if (parsed.type === 'error') {
+            throw new Error(`Failed to parse: ${fullInput}`)
+        }
+        const result = tableToMapper(parsed as MapUSS)
+        assert(result !== undefined, 'Should convert successfully')
+        assert.equal(result, 'customNode("");\ncondition (true)\ncMap(\n    data=density_pw_1km,\n    scale=linearScale(),\n    ramp=rampUridis,\n    label="Population Density",\n    unit=unitPeoplePerSquareKilometer\n)')
     })
 })
