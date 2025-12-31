@@ -42,6 +42,7 @@ from urbanstats.website_data.create_article_gzips import (
     create_symlink_gzips,
     extra_stats,
 )
+from urbanstats.website_data.default_universe_by_stat_geo import output_default_universe_by_stat_geo
 from urbanstats.website_data.index import export_index, type_to_priority_list
 from urbanstats.website_data.ordinals import all_ordinals
 from urbanstats.website_data.output_geometry import produce_all_geometry_json
@@ -267,6 +268,8 @@ def build_urbanstats(
             )
 
         compute_all_insets(shapefile_without_ordinals())
+
+    output_default_universe_by_stat_geo(shapefile_without_ordinals(), site_folder)
 
     if not no_juxta:
         output_quiz_sampling_info(site_folder, "quiz_sampling_info")

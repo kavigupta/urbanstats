@@ -449,3 +449,30 @@ class Symlinks(_message.Message):
         link_name: _Optional[_Iterable[str]] = ...,
         target_name: _Optional[_Iterable[str]] = ...,
     ) -> None: ...
+
+class DefaultUniverseTriple(_message.Message):
+    __slots__ = ("type_idx", "stat_idx", "universe_idx")
+    TYPE_IDX_FIELD_NUMBER: _ClassVar[int]
+    STAT_IDX_FIELD_NUMBER: _ClassVar[int]
+    UNIVERSE_IDX_FIELD_NUMBER: _ClassVar[int]
+    type_idx: int
+    stat_idx: int
+    universe_idx: int
+    def __init__(
+        self,
+        type_idx: _Optional[int] = ...,
+        stat_idx: _Optional[int] = ...,
+        universe_idx: _Optional[int] = ...,
+    ) -> None: ...
+
+class DefaultUniverseTable(_message.Message):
+    __slots__ = ("most_common_universe_idx", "exceptions")
+    MOST_COMMON_UNIVERSE_IDX_FIELD_NUMBER: _ClassVar[int]
+    EXCEPTIONS_FIELD_NUMBER: _ClassVar[int]
+    most_common_universe_idx: int
+    exceptions: _containers.RepeatedCompositeFieldContainer[DefaultUniverseTriple]
+    def __init__(
+        self,
+        most_common_universe_idx: _Optional[int] = ...,
+        exceptions: _Optional[_Iterable[_Union[DefaultUniverseTriple, _Mapping]]] = ...,
+    ) -> None: ...
