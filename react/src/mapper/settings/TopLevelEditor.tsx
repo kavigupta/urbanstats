@@ -14,7 +14,7 @@ import { ConditionEditor } from './ConditionEditor'
 import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import { PreambleEditor } from './PreambleEditor'
-import { attemptParseAsTopLevel, idCondition, idOutput, idPreamble, makeStatements, MapUSS, rootBlockIdent } from './utils'
+import { MapUSS, makeStatements, idOutput, idCondition, idPreamble, rootBlockIdent, attemptParseAsTopLevel } from './map-uss'
 
 export function TopLevelEditor({
     uss,

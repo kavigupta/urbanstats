@@ -7,7 +7,8 @@ import { assert } from '../../utils/defensive'
 
 import { colorSchema } from './Selector'
 import { neswSchema } from './edit-insets'
-import { MapSettings, idOutput, MapUSS, validMapperOutputs } from './utils'
+import { MapUSS, idOutput, validMapperOutputs } from './map-uss'
+import { MapSettings } from './utils'
 
 const attributesArgs = {
     size: l.optional(l.number()),
