@@ -84,13 +84,12 @@ export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): Ur
     }
 }
 
-type TransformResult<T> = { success: true, result: T } | { success: false }
-
 /**
- * Transform a table AST to a mapper AST, preserving the overall structure.
+ * Convert a table USS to a mapper USS string, preserving the AST structure.
  * Replaces table(columns=[column(values=X)]) with cMap(data=X, scale=linearScale(), ramp=rampUridis).
+ * Returns undefined if conversion is not possible.
  */
-function transformTableToMapperAST(uss: MapUSS): TransformResult<MapUSS> {
+export function tableToMapper(uss: MapUSS): string | undefined {
     // Schema to match table(columns=[column(values=dataExpr)])
     // Extract the dataExpr using the same pattern as mapperToTable
     const dataSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
@@ -128,13 +127,13 @@ function transformTableToMapperAST(uss: MapUSS): TransformResult<MapUSS> {
     ]), r => r[1].rest[0])
 
     if (uss.type !== 'statements') {
-        return { success: false }
+        return undefined
     }
 
     try {
         const { currentValue: dataExpr, edit } = tableSchema.parse(uss, {} as TypeEnvironment)
         if (dataExpr === undefined) {
-            return { success: false }
+            return undefined
         }
         // Use uss.entireLoc for location
         const location = uss.entireLoc
@@ -166,29 +165,10 @@ function transformTableToMapperAST(uss: MapUSS): TransformResult<MapUSS> {
             ],
             entireLoc: location,
         }
-        const result = edit(cMapCall)
-        if (result === undefined) {
-            return { success: false }
-        }
-        if (result.type !== 'statements') {
-            return { success: false }
-        }
-        return {
-            success: true,
-            result: result as MapUSS,
-        }
+        const result = edit(cMapCall) as UrbanStatsASTExpression
+        return unparse(result)
     }
     catch {
-        return { success: false }
+        return undefined
     }
-}
-
-/**
- * Convert a table USS to a mapper USS string, preserving the AST structure.
- * Returns undefined if conversion is not possible.
- */
-export function convertTableToMapper(uss: MapUSS): string | undefined {
-    const result = transformTableToMapperAST(uss)
-    if (!result.success) return undefined
-    return unparse(result.result)
 }

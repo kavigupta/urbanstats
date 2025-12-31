@@ -36,7 +36,7 @@ import { parse, parseNoErrorAsCustomNode, unparse } from '../urban-stats-script/
 import { renderType, TypeEnvironment } from '../urban-stats-script/types-values'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
-import { convertTableToMapper } from '../utils/page-conversion'
+import { tableToMapper } from '../utils/page-conversion'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType, pluralize } from '../utils/text'
 import { UnitType } from '../utils/unit'
@@ -1298,7 +1298,7 @@ function ConvertToMapButton(props: {
     const navContext = useContext(Navigator.Context)
 
     const mapperExpression = useMemo(
-        () => convertTableToMapper(props.editUSS),
+        () => tableToMapper(props.editUSS),
         [props.editUSS],
     )
     const handleConvertToMap = useCallback((): void => {

@@ -5,7 +5,7 @@ import { defaultTypeEnvironment } from '../src/mapper/context'
 import { idOutput, type MapUSS } from '../src/mapper/settings/map-uss'
 import { parse, unparse } from '../src/urban-stats-script/parser'
 import type { TypeEnvironment } from '../src/urban-stats-script/types-values'
-import { convertTableToMapper, mapperToTable } from '../src/utils/page-conversion'
+import { mapperToTable, tableToMapper } from '../src/utils/page-conversion'
 
 function getTypeEnvironment(): TypeEnvironment {
     return defaultTypeEnvironment('USA')
@@ -115,14 +115,14 @@ void describe('mapperToTable', () => {
     })
 })
 
-void describe('convertTableToMapper', () => {
+void describe('tableToMapper', () => {
     void test('converts simple table to mapper', () => {
         const fullInput = `customNode("");\ncondition (true)\ntable(columns=[column(values=density_pw_1km)])`
         const parsed = parse(fullInput, { type: 'multi' })
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = convertTableToMapper(parsed as MapUSS)
+        const result = tableToMapper(parsed as MapUSS)
         assert(result !== undefined, 'Should convert successfully')
         assert.equal(result, 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)')
     })
@@ -133,7 +133,7 @@ void describe('convertTableToMapper', () => {
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = convertTableToMapper(parsed as MapUSS)
+        const result = tableToMapper(parsed as MapUSS)
         assert(result !== undefined, 'Should convert successfully')
         assert.equal(result, 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km * 2, scale=linearScale(), ramp=rampUridis)')
     })
@@ -144,7 +144,7 @@ void describe('convertTableToMapper', () => {
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = convertTableToMapper(parsed as MapUSS)
+        const result = tableToMapper(parsed as MapUSS)
         assert(result !== undefined, 'Should convert successfully')
         assert.equal(result, 'customNode("let x = 5");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)')
     })
@@ -155,7 +155,7 @@ void describe('convertTableToMapper', () => {
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = convertTableToMapper(parsed as MapUSS)
+        const result = tableToMapper(parsed as MapUSS)
         assert(result !== undefined, 'Should convert successfully')
         assert.equal(result, 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)')
     })
@@ -166,7 +166,7 @@ void describe('convertTableToMapper', () => {
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = convertTableToMapper(parsed as MapUSS)
+        const result = tableToMapper(parsed as MapUSS)
         assert.equal(result, undefined, 'Should return undefined for table without columns')
     })
 
@@ -176,7 +176,7 @@ void describe('convertTableToMapper', () => {
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = convertTableToMapper(parsed as MapUSS)
+        const result = tableToMapper(parsed as MapUSS)
         assert.equal(result, undefined, 'Should return undefined for table with empty columns')
     })
 
@@ -186,7 +186,7 @@ void describe('convertTableToMapper', () => {
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = convertTableToMapper(parsed as MapUSS)
+        const result = tableToMapper(parsed as MapUSS)
         assert.equal(result, undefined, 'Should return undefined for non-table expression')
     })
 
@@ -196,7 +196,7 @@ void describe('convertTableToMapper', () => {
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = convertTableToMapper(parsed as MapUSS)
+        const result = tableToMapper(parsed as MapUSS)
         assert.equal(result, undefined, 'Should return undefined for column without values')
     })
 })
