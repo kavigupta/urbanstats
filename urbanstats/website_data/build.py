@@ -269,7 +269,7 @@ def build_urbanstats(
 
         compute_all_insets(shapefile_without_ordinals())
 
-    output_default_universe_by_stat_geo(shapefile_without_ordinals(), site_folder)
+        output_default_universe_by_stat_geo(shapefile_without_ordinals(), site_folder)
 
     if not no_juxta:
         output_quiz_sampling_info(site_folder, "quiz_sampling_info")
