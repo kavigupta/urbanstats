@@ -36,9 +36,11 @@ import { parse, parseNoErrorAsCustomNode, unparse } from '../urban-stats-script/
 import { renderType, TypeEnvironment } from '../urban-stats-script/types-values'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
+import { tableToMapper } from '../utils/page-conversion'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType, pluralize } from '../utils/text'
 import { UnitType } from '../utils/unit'
+import { base64Gzip } from '../utils/urlParamShort'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { CountsByUT, forType } from './countsByArticleType'
@@ -419,6 +421,8 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     let preamble: ReactNode | undefined = undefined
     if (isEditMode) {
+        const mapperExpression = tableToMapper(editUSS)
+        const hasConvertButton = mapperExpression !== undefined
         preamble = (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1em', padding: '1em' }}>
                 <MapperSettings
@@ -429,21 +433,32 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                     typeEnvironment={typeEnvironment}
                     targetOutputTypes={[tableType]}
                 />
-                <button
-                    data-test-id="view"
-                    onClick={handleApplyUSS}
-                    style={{
-                        padding: '0.5em 1em',
-                        backgroundColor: colors.unselectedButton,
-                        color: colors.textMain,
-                        border: `1px solid ${colors.textMain}`,
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                    }}
-                >
-                    View
-                </button>
+                <div style={{ display: 'flex', gap: '0.5em', width: '100%' }}>
+                    <button
+                        data-test-id="view"
+                        onClick={handleApplyUSS}
+                        style={{
+                            flex: hasConvertButton ? '0 0 85%' : '1 1 100%',
+                            padding: '0.5em 1em',
+                            backgroundColor: colors.unselectedButton,
+                            color: colors.textMain,
+                            border: `1px solid ${colors.textMain}`,
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                        }}
+                    >
+                        View
+                    </button>
+                    {hasConvertButton && (
+                        <ConvertToMapButton
+                            editUSS={editUSS}
+                            editGeographyKind={editGeographyKind}
+                            editUniverse={editUniverse}
+                            flexWidth="15%"
+                        />
+                    )}
+                </div>
             </div>
         )
     }
@@ -547,6 +562,11 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                             >
                                 Filter / Edit Table
                             </button>
+                            <ConvertToMapButton
+                                editUSS={editUSS}
+                                editGeographyKind={editGeographyKind}
+                                editUniverse={editUniverse}
+                            />
                         </div>
                     )}
                 </div>
@@ -1279,5 +1299,62 @@ function StatisticPanelHead(props: { articleType: string, renderedOther: string 
         <div className={headerTextClass}>
             {displayType(currentUniverse, props.articleType)}
         </div>
+    )
+}
+
+function ConvertToMapButton(props: {
+    editUSS: MapUSS
+    editGeographyKind: string
+    editUniverse: Universe
+    flexWidth?: string
+}): ReactNode {
+    const colors = useColors()
+    const navContext = useContext(Navigator.Context)
+
+    const mapperExpression = useMemo(
+        () => tableToMapper(props.editUSS),
+        [props.editUSS],
+    )
+    const handleConvertToMap = useCallback((): void => {
+        if (!mapperExpression) return
+        const settingsJson = JSON.stringify({
+            geographyKind: props.editGeographyKind,
+            universe: props.editUniverse,
+            script: {
+                uss: mapperExpression,
+            },
+        })
+        const encodedSettings = base64Gzip(settingsJson)
+        void navContext.navigate({
+            kind: 'mapper',
+            settings: encodedSettings,
+            view: false,
+        }, {
+            history: 'push',
+            scroll: { kind: 'position', top: 0 },
+        })
+    }, [mapperExpression, navContext, props.editGeographyKind, props.editUniverse])
+
+    if (mapperExpression === undefined) {
+        return null
+    }
+
+    return (
+        <button
+            data-test-id="convert-to-map"
+            onClick={handleConvertToMap}
+            style={{
+                flex: props.flexWidth ? `0 0 ${props.flexWidth}` : undefined,
+                padding: '0.25em 0.5em',
+                backgroundColor: colors.unselectedButton,
+                color: colors.textMain,
+                border: `1px solid ${colors.textMain}`,
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px',
+            }}
+        >
+            Convert to Map
+        </button>
     )
 }

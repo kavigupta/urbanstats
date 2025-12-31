@@ -19,6 +19,7 @@ import { Property } from '../../utils/Property'
 import { TestUtils } from '../../utils/TestUtils'
 import { mixWithBackground } from '../../utils/color'
 import { assert } from '../../utils/defensive'
+import { mapperToTable } from '../../utils/page-conversion'
 import { useMobileLayout } from '../../utils/responsive'
 import { saveAsFile } from '../../utils/saveAsFile'
 import { Selection as TextBoxesSelection, SelectionContext as TextBoxesSelectionContext } from '../components/MapTextBox'
@@ -200,7 +201,7 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
                         right={(
                             <>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
-                                    <Export pngExport={exportPng} geoJSONExport={mapGenerator.exportGeoJSON} />
+                                    <Export pngExport={exportPng} geoJSONExport={mapGenerator.exportGeoJSON} mapSettings={mapSettings} typeEnvironment={typeEnvironment} />
                                     <ImportExportCode
                                         mapSettings={mapSettings}
                                         setMapSettings={setMapSettings}
@@ -465,7 +466,9 @@ function offsetInsetInBounds<T extends Inset | TextBox>(inset: T, exclude: T[]):
     return inset
 }
 
-function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => string }): ReactNode {
+function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => string, mapSettings: MapSettings, typeEnvironment: TypeEnvironment }): ReactNode {
+    const navContext = useContext(Navigator.Context)
+
     const doPngExport = (): void => {
         if (props.pngExport === undefined) {
             return
@@ -478,6 +481,26 @@ function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => 
             return
         }
         saveAsFile('map.geojson', props.geoJSONExport(), 'application/geo+json')
+    }
+
+    const tableExpression = mapperToTable(props.mapSettings.script.uss, props.typeEnvironment)
+
+    const handleConvertToTable = (): void => {
+        if (!tableExpression) return
+        void navContext.navigate({
+            kind: 'statistic',
+            article_type: props.mapSettings.geographyKind ?? 'Subnational Region',
+            uss: unparse(tableExpression),
+            start: 1,
+            amount: 20,
+            order: 'descending',
+            universe: props.mapSettings.universe,
+            edit: true,
+            sort_column: 0,
+        }, {
+            history: 'push',
+            scroll: { kind: 'position', top: 0 },
+        })
     }
 
     return (
@@ -513,6 +536,14 @@ function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => 
             >
                 View as Zoomable Page
             </button>
+            {tableExpression && (
+                <button
+                    data-test-id="convert-to-table"
+                    onClick={handleConvertToTable}
+                >
+                    Convert to Table
+                </button>
+            )}
         </div>
     )
 }

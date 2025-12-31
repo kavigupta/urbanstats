@@ -2,7 +2,7 @@ import { parse } from 'csv-parse/sync'
 import { Selector } from 'testcafe'
 
 import { nthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
-import { getErrors, replaceInput, toggleCustomScript } from './mapper-utils'
+import { getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
 import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, dataValues, checkTextboxes, checkTextboxesDirect, downloadCSV, downloadImage } from './test_utils'
 
 urbanstatsFixture('statistic.html default page', `${target}/statistic.html`)
@@ -744,4 +744,124 @@ test('page with nans', async (t) => {
         await t.expect(text).eql((i + 1).toString())
     }
     await screencap(t)
+})
+
+// Tests for Convert to Map button
+const simpleTableCode = 'customNode(""); condition(true); table(columns=[column(values=density_pw_1km)])'
+const expectedSimpleMapCode = `cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)
+`
+
+urbanstatsFixture('convert table to map', createUSSStatisticsPage(simpleTableCode, 1, 20, 'California, USA', 'County'))
+
+test('convert-table-to-map', async (t) => {
+    await waitForLoading()
+    // Click the Convert to Map button
+    await t.click(Selector('button[data-test-id="convert-to-map"]'))
+    await waitForLoading()
+    // Should be on the mapper page
+    const location = await getLocation()
+    await t.expect(location).contains('/mapper.html')
+    await t.expect(location).contains('settings=')
+    // make sure autoux is fully expanded
+    await t.expect(getInput('PW Density (r=1km)').exists).ok()
+    await toggleCustomScript(t)
+    const code = await getCodeFromMainField()
+    await t.expect(code).eql(expectedSimpleMapCode)
+})
+
+// Test that AST structure is preserved with conditions
+const tableWithCondition = `customNode("")
+condition (population > 100000)
+table(columns=[column(values=density_pw_1km)])`
+const expectedMapWithCondition = `condition (population > 100000)
+cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)
+`
+
+urbanstatsFixture('convert table to map preserves condition', createUSSStatisticsPage(tableWithCondition, 1, 20, 'California, USA', 'County'))
+
+test('convert-table-to-map-preserves-condition', async (t) => {
+    await waitForLoading()
+    // Click the Convert to Map button
+    await t.click(Selector('button[data-test-id="convert-to-map"]'))
+    await waitForLoading()
+    // make sure autoux is fully expanded
+    await t.expect(getInput('PW Density (r=1km)').exists).ok()
+    await toggleCustomScript(t)
+    const code = await getCodeFromMainField()
+    await t.expect(code).eql(expectedMapWithCondition)
+})
+
+// Tests for when Convert to Map button should be hidden
+const convertToMapButtonSelector = Selector('button[data-test-id="convert-to-map"]')
+
+urbanstatsFixture('convert table to map button hidden - empty columns', createUSSStatisticsPage('table(columns=[])', 1, 20, 'California, USA', 'County'))
+
+test('convert-table-to-map-button-hidden-for-empty-columns', async (t) => {
+    await waitForLoading()
+    await t.expect(convertToMapButtonSelector.exists).notOk()
+})
+
+urbanstatsFixture('convert table to map button hidden - column without values', createUSSStatisticsPage('table(columns=[column()])', 1, 20, 'California, USA', 'County'))
+
+test('convert-table-to-map-button-hidden-for-column-without-values', async (t) => {
+    await waitForLoading()
+    await t.expect(convertToMapButtonSelector.exists).notOk()
+})
+
+urbanstatsFixture('convert table to map button hidden - not a table', createUSSStatisticsPage('density_pw_1km', 1, 20, 'California, USA', 'County'))
+
+test('convert-table-to-map-button-hidden-for-non-table', async (t) => {
+    await waitForLoading()
+    await t.expect(convertToMapButtonSelector.exists).notOk()
+})
+
+const tableWithLabelAndUnit = `customNode("");\ncondition (true)\ntable(\n    columns=[\n        column(\n            values=density_pw_1km,\n            name="Population Density",\n            unit=unitDensity\n        )\n    ]\n)`
+
+urbanstatsFixture('convert table to map with label and unit', createUSSStatisticsPage(tableWithLabelAndUnit, 1, 20, 'California, USA', 'County'))
+
+test('convert-table-to-map-with-label-and-unit', async (t) => {
+    await waitForLoading()
+    // Click the Convert to Map button
+    await t.click(Selector('button[data-test-id="convert-to-map"]'))
+    await waitForLoading()
+    // make sure autoux is fully expanded
+    await t.expect(getInput('PW Density (r=1km)').exists).ok()
+    // Verify the mapper code has the label and unit transferred
+    await toggleCustomScript(t)
+    const code = await getCodeFromMainField()
+    const expectedCode = `cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    label="Population Density",
+    unit=unitDensity
+)
+`
+    await t.expect(code).eql(expectedCode)
+})
+
+urbanstatsFixture('convert table to map and back preserves fields', createUSSStatisticsPage(tableWithLabelAndUnit, 1, 20, 'California, USA', 'County'))
+
+test('convert-table-to-map-and-back-preserves-fields', async (t) => {
+    // switch to edit mode to see the custom script toggle
+    await t.click(Selector('button[data-test-id="edit"]'))
+    // await toggleCustomScript(t)
+    await waitForLoading()
+    const url = await getLocation()
+    // Convert to mapper
+    await t.click(Selector('button[data-test-id="convert-to-map"]'))
+    await waitForLoading()
+    // Convert back to table
+    await t.click(Selector('button[data-test-id="convert-to-table"]'))
+    await waitForLoading()
+    // Toggle custom script to verify the converted code
+    const finalUrl = await getLocation()
+    await toggleCustomScript(t)
+    const code = await getCodeFromMainField()
+    const expectedCode = `table(
+    columns=[column(values=density_pw_1km, name="Population Density", unit=unitDensity)]
+)
+`
+    await t.expect(code).eql(expectedCode)
+    await t.expect(finalUrl).eql(url)
 })
