@@ -398,13 +398,7 @@ mapper(() => test)('convert mapper to table', { code: 'customNode("");\nconditio
     await toggleCustomScript(t)
     const code = await getCodeFromMainField()
     const expectedCode = `table(
-    columns=[
-        column(
-            values=density_pw_1km,
-            name="Population Density",
-            unit=unitDensity
-        )
-    ]
+    columns=[column(values=density_pw_1km, name="Population Density", unit=unitDensity)]
 )
 `
     await t.expect(code).eql(expectedCode)
