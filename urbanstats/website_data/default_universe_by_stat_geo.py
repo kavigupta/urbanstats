@@ -42,6 +42,7 @@ def compress_default_universes(triples):
     most_common_overall = most_common(u for _, _, u in triples)
     triples = [x for x in triples if x[2] != most_common_overall]
     f = data_files_pb2.DefaultUniverseTable()
+    # vulture: ignore -- protobuf
     f.most_common_universe_idx = most_common_overall
     for tidx, sidx, uidx in triples:
         f.exceptions.add(type_idx=tidx, stat_idx=sidx, universe_idx=uidx)
