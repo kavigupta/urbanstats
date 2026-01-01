@@ -332,13 +332,17 @@ export async function createIndex(config: SearchIndexConfig): Promise<(params: S
         index = await createIndexNoCache()
     }
 
+    let modifiedIndex = index // Don't want to store this one back to the cache
+
     if (statsIndexPromise) {
+        const checkpoint = performance.now()
         // stats go first so they are prioritized if all other things are equal
-        index = concatIndices(await statsIndexPromise, index)
+        modifiedIndex = concatIndices(await statsIndexPromise, index)
+        debugPerformance(`Waited ${performance.now() - checkpoint}ms for stats index`)
     }
 
     return (params) => {
-        return search(index, params)
+        return search(modifiedIndex, params)
     }
 }
 
