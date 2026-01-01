@@ -1,7 +1,9 @@
 import * as idb from 'idb'
 
+import { AllUniverses, createStatsIndex } from './components/search-statistic'
 import type_to_priority from './data/type_to_priority'
 import { loadProtobuf } from './load_json'
+import { Universe } from './universe'
 import { DefaultMap } from './utils/DefaultMap'
 import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
 import { ISearchIndexMetadata } from './utils/protos'
@@ -9,7 +11,11 @@ import { isAllowedToBeShown, ShowGeographySettings } from './utils/restricted-ty
 
 export type SearchResult =
     | { type: 'article', longname: string, typeIndex: number }
-    | { type: 'other', longname: string, index: number }
+    | { type: 'statistic'
+        longname: string
+        statisticIndex: number
+        typeIndex: number
+        universeIndex: number }
 
 const debugSearch: boolean = false
 
@@ -40,15 +46,23 @@ export function normalize(a: string, handlePunctuation = true): string {
     return a
 }
 
-interface NormalizedSearchIndex {
-    entries: {
-        longname: string
-        tokens: Haystack[]
-        priority: number
-        signature: number
-        typeIndex: number
-        extraIndex?: number // If present, this is an extra string entry
-    }[]
+export type Entry = { tokens: Haystack[]
+    priority: number
+    signature: number
+    longname: string
+    typeIndex: number
+} & (
+            {
+                type: 'article'
+            } | {
+                type: 'statistic'
+                statisticIndex: number
+                universeIndex: number
+            }
+        )
+
+export interface NormalizedSearchIndex {
+    entries: Entry[]
     lengthOfLongestToken: number
     maxPriority: number
     mostTokens: number
@@ -107,16 +121,15 @@ export interface SearchParams {
     maxResults: number
     showSettings: ShowGeographySettings
     prioritizeTypeIndex?: number
-    extraStrings?: string[]
 }
 
-function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxResults, showSettings, prioritizeTypeIndex, extraStrings }: SearchParams): SearchResult[] {
-    const start = performance.now()
+export interface SearchIndexConfig {
+    cacheKey: Promise<string | undefined>
+    statsUniverse: Universe | AllUniverses | undefined
+}
 
-    // Add extra strings to index if provided (they're dynamic, so add them during search, not during index creation)
-    if (extraStrings !== undefined && extraStrings.length > 0) {
-        searchIndex = addExtraStringsToIndex(searchIndex, extraStrings)
-    }
+function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxResults, showSettings, prioritizeTypeIndex }: SearchParams): SearchResult[] {
+    const start = performance.now()
 
     const pattern = normalize(unnormalizedPattern)
 
@@ -266,33 +279,16 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
     debugPerformance(`Took ${performance.now() - start} ms to execute search`)
 
     // Convert results to SearchResult format, preserving order
-    const searchResults: SearchResult[] = []
-
-    for (const result of results) {
-        // Check if this is an extra string result
-        if (result.entry.extraIndex !== undefined) {
-            searchResults.push({
-                type: 'other',
-                longname: result.entry.longname,
-                index: result.entry.extraIndex,
-            })
-        }
-        else {
-            searchResults.push({
-                type: 'article',
-                longname: result.entry.longname,
-                typeIndex: result.entry.typeIndex,
-            })
-        }
-    }
-
-    return searchResults.slice(0, maxResults)
+    return results.slice(0, maxResults).map(r => r.entry)
 }
 
 // Potentially cached
-export async function createIndex(cacheKey: string | undefined): Promise<(params: SearchParams) => SearchResult[]> {
+export async function createIndex(config: SearchIndexConfig): Promise<(params: SearchParams) => SearchResult[]> {
+    const statsIndexPromise = config.statsUniverse && createStatsIndex(config.statsUniverse)
+
     let index: NormalizedSearchIndex | undefined
     try {
+        const cacheKey = await config.cacheKey
         if (cacheKey === undefined) {
             throw new Error('No cache key specified')
         }
@@ -335,7 +331,15 @@ export async function createIndex(cacheKey: string | undefined): Promise<(params
         console.warn('Getting cached search index failed', error)
         index = await createIndexNoCache()
     }
-    return params => search(index, params)
+
+    if (statsIndexPromise) {
+        // stats go first so they are prioritized if all other things are equal
+        index = concatIndices(await statsIndexPromise, index)
+    }
+
+    return (params) => {
+        return search(index, params)
+    }
 }
 
 async function createIndexNoCache(): Promise<NormalizedSearchIndex> {
@@ -343,70 +347,60 @@ async function createIndexNoCache(): Promise<NormalizedSearchIndex> {
     return processRawSearchIndex(rawIndex)
 }
 
-function addExtraStringsToIndex(index: NormalizedSearchIndex, extraStrings: string[]): NormalizedSearchIndex {
-    const haystackCache = new DefaultMap<string, Haystack>((token) => {
-        if (token.length > index.lengthOfLongestToken) {
-            index.lengthOfLongestToken = token.length
+function concatIndices(firstIndex: NormalizedSearchIndex, secondIndex: NormalizedSearchIndex): NormalizedSearchIndex {
+    return {
+        lengthOfLongestToken: Math.max(firstIndex.lengthOfLongestToken, secondIndex.lengthOfLongestToken),
+        mostTokens: Math.max(firstIndex.mostTokens, secondIndex.mostTokens),
+        maxPriority: Math.max(firstIndex.maxPriority, secondIndex.maxPriority),
+        entries: firstIndex.entries.concat(secondIndex.entries),
+    }
+}
+
+export class SearchIndexTokensBuilder {
+    private lengthOfLongestToken = 0
+    private mostTokens = 0
+
+    private haystackCache = new DefaultMap<string, Haystack>((token) => {
+        if (token.length > this.lengthOfLongestToken) {
+            this.lengthOfLongestToken = token.length
         }
         return toHaystack(token)
     })
 
-    const extraEntries = extraStrings.map((extraString, extraIndex) => {
-        const normalizedExtra = normalize(extraString)
-        const entryTokens = tokenize(normalizedExtra)
-        const tokens = entryTokens.map(token => haystackCache.get(token))
-        if (tokens.length > index.mostTokens) {
-            index.mostTokens = tokens.length
+    addEntry(longname: string): { tokens: Haystack[], signature: number } {
+        const normalizedLongname = normalize(longname)
+        const entryTokens = tokenize(normalizedLongname)
+        const tokens = entryTokens.map(token => this.haystackCache.get(token))
+        if (tokens.length > this.mostTokens) {
+            this.mostTokens = tokens.length
         }
-        return {
-            longname: extraString,
-            tokens,
-            priority: 0, // the highest priority is 0
-            signature: toSignature(normalizedExtra),
-            typeIndex: 0, // Not used for extra strings
-            extraIndex,
-        }
-    })
+        return { tokens, signature: toSignature(normalizedLongname) }
+    }
 
-    return {
-        ...index,
-        // extra entries go first so they are prioritized if all other things are equal
-        entries: [...extraEntries, ...index.entries],
+    result(): { lengthOfLongestToken: number, mostTokens: number } {
+        return { lengthOfLongestToken: this.lengthOfLongestToken, mostTokens: this.mostTokens }
     }
 }
 
 function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISearchIndexMetadata[] }): NormalizedSearchIndex {
     const start = performance.now()
-    let lengthOfLongestToken = 0
+    const tokensBuilder = new SearchIndexTokensBuilder()
     let maxPriority = 0
-    let mostTokens = 0
     const priorities = searchIndex.metadata.map(({ type }) => type_to_priority[type!])
-    const haystackCache = new DefaultMap<string, Haystack>((token) => {
-        if (token.length > lengthOfLongestToken) {
-            lengthOfLongestToken = token.length
-        }
-        return toHaystack(token)
-    })
     const entries = searchIndex.elements.map((longname, index) => {
-        const normalizedLongname = normalize(longname)
-        const entryTokens = tokenize(normalizedLongname)
-        const tokens = entryTokens.map(token => haystackCache.get(token))
         if (priorities[index] > maxPriority) {
             maxPriority = priorities[index]
         }
-        if (tokens.length > mostTokens) {
-            mostTokens = tokens.length
-        }
         return {
+            type: 'article' as const,
+            ...tokensBuilder.addEntry(longname),
             longname,
-            tokens,
             priority: priorities[index],
-            signature: toSignature(normalizedLongname),
             typeIndex: searchIndex.metadata[index].type!,
         }
     })
     debugPerformance(`Took ${performance.now() - start}ms to process search index`)
-    return { entries, lengthOfLongestToken, maxPriority, mostTokens }
+    return { entries, maxPriority, ...tokensBuilder.result() }
 }
 
 export async function getIndexCacheKey(): Promise<string | undefined> {

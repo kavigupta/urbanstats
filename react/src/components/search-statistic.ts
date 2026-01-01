@@ -1,61 +1,92 @@
 import used_geographies from '../data/mapper/used_geographies'
 import statistic_name_list from '../data/statistic_name_list'
+import type_ordering_idx from '../data/type_ordering_idx'
 import universes_ordered from '../data/universes_ordered'
-import { debugPerformance } from '../search'
+import { loadProtobuf } from '../load_json'
+import { Entry, NormalizedSearchIndex, SearchIndexTokensBuilder } from '../search'
 import { Universe } from '../universe'
+import { DefaultMap } from '../utils/DefaultMap'
+import { DefaultUniverseTable } from '../utils/protos'
+import { NormalizeProto } from '../utils/types'
 
-import { CountsByUT, forTypeByIndex, getCountsByArticleType } from './countsByArticleType'
+import { forTypeByIndex, getCountsByArticleType } from './countsByArticleType'
 
-export interface StatisticPage {
+interface StatisticPage {
     statisticIndex: number
-    articleType: string
-    universe: Universe
+    typeIndex: number
+    universeIndex: number
 }
 
-function findUniverse(counts: CountsByUT, statIdx: number, articleType: string, universes: readonly Universe[]): Universe | undefined {
-    // find the last universe in the list that ties with the maximum count
-    let bestUniverse = undefined
-    let bestCount = 1
-    for (const universe of universes) {
-        const count = forTypeByIndex(counts, universe, statIdx, articleType)
-        if (count >= bestCount) {
-            bestCount = count
-            bestUniverse = universe
-        }
-    }
-    return bestUniverse
-}
+export const allUniverses = Symbol('allUniverses')
 
-function generateStatisticStrings(counts: CountsByUT, universe: Universe | undefined): [string[], StatisticPage[]] {
-    // Generate strings like "Population by Judicial District" for the given universe. If universe is undefined, try all universes
-    const universes: readonly Universe[] = universe !== undefined ? [universe] : universes_ordered
-    const names: string[] = []
-    const pages: StatisticPage[] = []
-    for (let i = 0; i < statistic_name_list.length; i++) {
-        for (const articleType of used_geographies) {
-            const u = findUniverse(counts, i, articleType, universes)
-            if (u === undefined) {
-                continue
+export type AllUniverses = typeof allUniverses
+
+async function statsAllUniverses(): Promise<() => Generator<StatisticPage>> {
+    const defaultUniverseTable = await loadProtobuf('/default_universe_by_stat_geo.gz', 'DefaultUniverseTable') as NormalizeProto<DefaultUniverseTable>
+
+    return function* () {
+        const exceptionalTypeStats = new DefaultMap<number, Set<number>>(() => new Set())
+        for (const { typeIdx, statIdx, universeIdx } of defaultUniverseTable.exceptions) {
+            exceptionalTypeStats.get(typeIdx).add(statIdx)
+            yield {
+                statisticIndex: statIdx,
+                typeIndex: typeIdx,
+                universeIndex: universeIdx,
             }
-            const name = `${statistic_name_list[i]} by ${articleType}`
-            names.push(name)
-            pages.push({
-                statisticIndex: i,
-                articleType,
-                universe: u,
-            })
+        }
+
+        for (const geography of used_geographies) {
+            const typeIndex = type_ordering_idx[geography]
+            for (let statisticIndex = 0; statisticIndex < statistic_name_list.length; statisticIndex++) {
+                if (!exceptionalTypeStats.get(typeIndex).has(statisticIndex)) {
+                    yield {
+                        statisticIndex,
+                        typeIndex,
+                        universeIndex: defaultUniverseTable.mostCommonUniverseIdx,
+                    }
+                }
+            }
         }
     }
-    return [names, pages]
 }
 
-export async function computeStatisticsPages(shouldIncludeStatisticsPages: boolean, universe: Universe | undefined): Promise<[string[], StatisticPage[]] | undefined> {
-    const counts = shouldIncludeStatisticsPages ? await getCountsByArticleType() : undefined
-    if (counts === undefined) {
-        return undefined
+async function statsOneUniverse(universe: Universe): Promise<() => Generator<StatisticPage>> {
+    const counts = await getCountsByArticleType()
+    const universeIndex = universes_ordered.indexOf(universe)
+    return function* () {
+        for (const geography of used_geographies) {
+            for (let statisticIndex = 0; statisticIndex < statistic_name_list.length; statisticIndex++) {
+                if (forTypeByIndex(counts, universe, statisticIndex, geography) === 0) {
+                // No articles for this stat in this universe
+                    continue
+                }
+                yield {
+                    statisticIndex,
+                    typeIndex: type_ordering_idx[geography],
+                    universeIndex,
+                }
+            }
+        }
     }
-    const time = Date.now()
-    const res = generateStatisticStrings(counts, universe)
-    debugPerformance(`Generated statistic strings for universe ${universe} in ${Date.now() - time} ms`)
-    return res
+}
+
+function buildStatsSearchIndex(statsEntries: Generator<StatisticPage>): NormalizedSearchIndex {
+    const entries: Entry[] = []
+    const builder = new SearchIndexTokensBuilder()
+    for (const stat of statsEntries) {
+        const longname = `${statistic_name_list[stat.statisticIndex]} by ${used_geographies[stat.typeIndex]}`
+        entries.push({
+            type: 'statistic',
+            priority: 0,
+            longname,
+            ...stat,
+            ...builder.addEntry(longname),
+        })
+    }
+    return { ...builder.result(), entries, maxPriority: 0 }
+}
+
+export async function createStatsIndex(universe: Universe | AllUniverses): Promise<NormalizedSearchIndex> {
+    const stats = universe === allUniverses ? await statsAllUniverses() : await statsOneUniverse(universe)
+    return buildStatsSearchIndex(stats())
 }
