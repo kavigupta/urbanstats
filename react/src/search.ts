@@ -124,7 +124,7 @@ export interface SearchParams {
 }
 
 export interface SearchIndexConfig {
-    cacheKey: Promise<string | undefined>
+    cacheKey: string | undefined // Pre-specificed for performance reasons
     statsUniverse: Universe | AllUniverses | undefined
 }
 
@@ -288,7 +288,7 @@ export async function createIndex(config: SearchIndexConfig): Promise<(params: S
 
     let index: NormalizedSearchIndex | undefined
     try {
-        const cacheKey = await config.cacheKey
+        const cacheKey = config.cacheKey
         if (cacheKey === undefined) {
             throw new Error('No cache key specified')
         }

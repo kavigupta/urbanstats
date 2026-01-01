@@ -30,16 +30,16 @@ export function SearchBox(props: {
     const statsUniverse = props.statisticLink && (universe ?? allUniverses)
 
     // Keep these in sync
-    const cacheKey = useMemo(() => getIndexCacheKey(), [])
+    const cacheKeyPromise = useMemo(() => getIndexCacheKey(), [])
     const searchWorker = useRef<SearchWorker | undefined>()
-    const searchWorkerConfig = useRef<SearchIndexConfig | undefined>()
+    const searchWorkerConfig = useRef<AsyncConfig | undefined>()
 
     const createSearchWorkerIfNeeded = useCallback(() => {
-        if (searchWorker.current === undefined || searchWorkerConfig.current?.cacheKey !== cacheKey || searchWorkerConfig.current.statsUniverse !== statsUniverse) {
-            searchWorker.current = createSearchWorker({ cacheKey, statsUniverse })
-            searchWorkerConfig.current = { cacheKey, statsUniverse }
+        if (searchWorker.current === undefined || searchWorkerConfig.current?.cacheKeyPromise !== cacheKeyPromise || searchWorkerConfig.current.statsUniverse !== statsUniverse) {
+            searchWorker.current = createSearchWorker({ cacheKeyPromise, statsUniverse })
+            searchWorkerConfig.current = { cacheKeyPromise, statsUniverse }
         }
-    }, [cacheKey, statsUniverse])
+    }, [cacheKeyPromise, statsUniverse])
 
     const doSearch = useMemo(() => {
         return async (sq: string): Promise<SearchResult[]> => {
@@ -128,15 +128,18 @@ const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { 
 
 type SearchWorker = (params: SearchParams) => Promise<SearchResult[]>
 
-function createSearchWorker(config: SearchIndexConfig): SearchWorker {
+type AsyncConfig = Omit<SearchIndexConfig, 'cacheKey'> & { cacheKeyPromise: Promise<string | undefined> }
+
+function createSearchWorker(config: AsyncConfig): SearchWorker {
     const worker = new Worker(new URL('../searchWorker', import.meta.url))
-    worker.postMessage(config)
+    const configured = config.cacheKeyPromise.then((cacheKey) => { worker.postMessage({ ...config, cacheKeyPromise: undefined, cacheKey }) })
     debugPerformance(`Requested new search worker at timestamp ${Date.now()}`)
     const messageQueue: ((results: SearchResult[]) => void)[] = []
     worker.addEventListener('message', (message: MessageEvent<SearchResult[]>) => {
         messageQueue.shift()!(message.data)
     })
-    const result: SearchWorker = (params) => {
+    const result: SearchWorker = async (params) => {
+        await configured
         worker.postMessage(params)
         return new Promise((resolve) => {
             messageQueue.push(resolve)

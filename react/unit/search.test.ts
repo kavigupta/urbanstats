@@ -8,7 +8,7 @@ import { createIndex, SearchResult } from '../src/search'
 import { Universe } from '../src/universe'
 import { DefaultMap } from '../src/utils/DefaultMap'
 
-const search = new DefaultMap<Universe | AllUniverses | undefined, ReturnType<typeof createIndex>>(statsUniverse => createIndex({ cacheKey: Promise.resolve(undefined), statsUniverse }))
+const search = new DefaultMap<Universe | AllUniverses | undefined, ReturnType<typeof createIndex>>(statsUniverse => createIndex({ cacheKey: undefined, statsUniverse }))
 
 const computeNthResult = async (n: number, query: string, prioritizeType: string | undefined, statsUniverse: Universe | AllUniverses | undefined): Promise<SearchResult> => (await search.get(statsUniverse))({
     unnormalizedPattern: query,
