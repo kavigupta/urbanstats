@@ -17,9 +17,7 @@ interface StatisticPage {
     universeIndex: number
 }
 
-export const allUniverses = Symbol('allUniverses')
-
-export type AllUniverses = typeof allUniverses
+export type AllUniverses = 'allUniverses'
 
 async function statsAllUniverses(): Promise<() => Generator<StatisticPage>> {
     const defaultUniverseTable = await loadProtobuf('/default_universe_by_stat_geo.gz', 'DefaultUniverseTable') as NormalizeProto<DefaultUniverseTable>
@@ -57,7 +55,7 @@ async function statsOneUniverse(universe: Universe): Promise<() => Generator<Sta
         for (const geography of used_geographies) {
             for (let statisticIndex = 0; statisticIndex < statistic_name_list.length; statisticIndex++) {
                 if (forTypeByIndex(counts, universe, statisticIndex, geography) === 0) {
-                // No articles for this stat in this universe
+                    // No articles for this stat in this universe
                     continue
                 }
                 yield {
@@ -87,6 +85,6 @@ function buildStatsSearchIndex(statsEntries: Generator<StatisticPage>): Normaliz
 }
 
 export async function createStatsIndex(universe: Universe | AllUniverses): Promise<NormalizedSearchIndex> {
-    const stats = universe === allUniverses ? await statsAllUniverses() : await statsOneUniverse(universe)
+    const stats = universe === 'allUniverses' ? await statsAllUniverses() : await statsOneUniverse(universe)
     return buildStatsSearchIndex(stats())
 }

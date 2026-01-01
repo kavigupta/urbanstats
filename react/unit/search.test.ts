@@ -1,7 +1,7 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { allUniverses, AllUniverses } from '../src/components/search-statistic'
+import { AllUniverses } from '../src/components/search-statistic'
 import type_ordering_idx from '../src/data/type_ordering_idx'
 import './util/fetch'
 import { createIndex, SearchResult } from '../src/search'
@@ -66,8 +66,8 @@ nthResult(test)(1, 'berlin', 'Berlin Urban Center, Germany', 'Urban Center')
 nthResult(test)(1, 'virginia', 'Virginia, USA', 'City')
 
 nthResult(test)(0, 'white city', 'White Plains city, New York, USA')
-nthResult(test)(0, 'white city', 'White % by City', undefined, allUniverses)
+nthResult(test)(0, 'white city', 'White % by City', undefined, 'allUniverses')
 nthResult(test)(0, 'white city', 'White Plains city, New York, USA', undefined, 'Canada') // white % by city should not match anything in canada
 nthResult(test)(0, 'by population center', 'Thunder Bay Population Center, ON, Canada')
-nthResult(test)(0, 'by population center', 'Area by CA Population Center', undefined, allUniverses)
+nthResult(test)(0, 'by population center', 'Area by CA Population Center', undefined, 'allUniverses')
 nthResult(test)(0, 'by population center', 'Area by CA Population Center', undefined, 'Canada')

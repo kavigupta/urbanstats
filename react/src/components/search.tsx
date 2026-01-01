@@ -12,7 +12,6 @@ import { Universe, useUniverse } from '../universe'
 import { TestUtils } from '../utils/TestUtils'
 
 import { GenericSearchBox } from './search-generic'
-import { allUniverses } from './search-statistic'
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -27,7 +26,7 @@ export function SearchBox(props: {
     const colors = useColors()
     const showSettings = useSettings(['show_historical_cds', 'show_person_circles'])
     const universe = useUniverse()
-    const statsUniverse = props.statisticLink && (universe ?? allUniverses)
+    const statsUniverse = props.statisticLink && (universe ?? 'allUniverses')
 
     // Keep these in sync
     const cacheKeyPromise = useMemo(() => getIndexCacheKey(), [])
