@@ -198,3 +198,14 @@ message Symlinks {
     repeated string link_name = 1;
     repeated string target_name = 2;
 }
+
+message DefaultUniverseTriple {
+    optional int32 type_idx = 1;
+    optional int32 stat_idx = 2;
+    optional int32 universe_idx = 3;
+}
+
+message DefaultUniverseTable {
+    optional int32 most_common_universe_idx = 1;
+    repeated DefaultUniverseTriple exceptions = 2;
+}

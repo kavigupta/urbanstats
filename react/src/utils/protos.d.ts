@@ -3570,3 +3570,227 @@ export class Symlinks implements ISymlinks {
      */
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
+
+/** Properties of a DefaultUniverseTriple. */
+export interface IDefaultUniverseTriple {
+
+    /** DefaultUniverseTriple typeIdx */
+    typeIdx?: (number|null);
+
+    /** DefaultUniverseTriple statIdx */
+    statIdx?: (number|null);
+
+    /** DefaultUniverseTriple universeIdx */
+    universeIdx?: (number|null);
+}
+
+/** Represents a DefaultUniverseTriple. */
+export class DefaultUniverseTriple implements IDefaultUniverseTriple {
+
+    /**
+     * Constructs a new DefaultUniverseTriple.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IDefaultUniverseTriple);
+
+    /** DefaultUniverseTriple typeIdx. */
+    public typeIdx?: (number|null);
+
+    /** DefaultUniverseTriple statIdx. */
+    public statIdx?: (number|null);
+
+    /** DefaultUniverseTriple universeIdx. */
+    public universeIdx?: (number|null);
+
+    /** DefaultUniverseTriple _typeIdx. */
+    public _typeIdx?: "typeIdx";
+
+    /** DefaultUniverseTriple _statIdx. */
+    public _statIdx?: "statIdx";
+
+    /** DefaultUniverseTriple _universeIdx. */
+    public _universeIdx?: "universeIdx";
+
+    /**
+     * Creates a new DefaultUniverseTriple instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns DefaultUniverseTriple instance
+     */
+    public static create(properties?: IDefaultUniverseTriple): DefaultUniverseTriple;
+
+    /**
+     * Encodes the specified DefaultUniverseTriple message. Does not implicitly {@link DefaultUniverseTriple.verify|verify} messages.
+     * @param message DefaultUniverseTriple message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IDefaultUniverseTriple, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified DefaultUniverseTriple message, length delimited. Does not implicitly {@link DefaultUniverseTriple.verify|verify} messages.
+     * @param message DefaultUniverseTriple message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IDefaultUniverseTriple, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a DefaultUniverseTriple message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns DefaultUniverseTriple
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): DefaultUniverseTriple;
+
+    /**
+     * Decodes a DefaultUniverseTriple message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns DefaultUniverseTriple
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): DefaultUniverseTriple;
+
+    /**
+     * Verifies a DefaultUniverseTriple message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a DefaultUniverseTriple message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns DefaultUniverseTriple
+     */
+    public static fromObject(object: { [k: string]: any }): DefaultUniverseTriple;
+
+    /**
+     * Creates a plain object from a DefaultUniverseTriple message. Also converts values to other types if specified.
+     * @param message DefaultUniverseTriple
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: DefaultUniverseTriple, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this DefaultUniverseTriple to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for DefaultUniverseTriple
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a DefaultUniverseTable. */
+export interface IDefaultUniverseTable {
+
+    /** DefaultUniverseTable mostCommonUniverseIdx */
+    mostCommonUniverseIdx?: (number|null);
+
+    /** DefaultUniverseTable exceptions */
+    exceptions?: (IDefaultUniverseTriple[]|null);
+}
+
+/** Represents a DefaultUniverseTable. */
+export class DefaultUniverseTable implements IDefaultUniverseTable {
+
+    /**
+     * Constructs a new DefaultUniverseTable.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IDefaultUniverseTable);
+
+    /** DefaultUniverseTable mostCommonUniverseIdx. */
+    public mostCommonUniverseIdx?: (number|null);
+
+    /** DefaultUniverseTable exceptions. */
+    public exceptions: IDefaultUniverseTriple[];
+
+    /** DefaultUniverseTable _mostCommonUniverseIdx. */
+    public _mostCommonUniverseIdx?: "mostCommonUniverseIdx";
+
+    /**
+     * Creates a new DefaultUniverseTable instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns DefaultUniverseTable instance
+     */
+    public static create(properties?: IDefaultUniverseTable): DefaultUniverseTable;
+
+    /**
+     * Encodes the specified DefaultUniverseTable message. Does not implicitly {@link DefaultUniverseTable.verify|verify} messages.
+     * @param message DefaultUniverseTable message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IDefaultUniverseTable, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified DefaultUniverseTable message, length delimited. Does not implicitly {@link DefaultUniverseTable.verify|verify} messages.
+     * @param message DefaultUniverseTable message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IDefaultUniverseTable, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a DefaultUniverseTable message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns DefaultUniverseTable
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): DefaultUniverseTable;
+
+    /**
+     * Decodes a DefaultUniverseTable message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns DefaultUniverseTable
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): DefaultUniverseTable;
+
+    /**
+     * Verifies a DefaultUniverseTable message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a DefaultUniverseTable message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns DefaultUniverseTable
+     */
+    public static fromObject(object: { [k: string]: any }): DefaultUniverseTable;
+
+    /**
+     * Creates a plain object from a DefaultUniverseTable message. Also converts values to other types if specified.
+     * @param message DefaultUniverseTable
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: DefaultUniverseTable, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this DefaultUniverseTable to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for DefaultUniverseTable
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
