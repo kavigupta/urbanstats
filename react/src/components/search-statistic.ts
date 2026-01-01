@@ -3,6 +3,7 @@ import statistic_name_list from '../data/statistic_name_list'
 import type_ordering_idx from '../data/type_ordering_idx'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
+import { typesInOrder } from '../navigation/links'
 import { Entry, NormalizedSearchIndex, SearchIndexTokensBuilder } from '../search'
 import { Universe } from '../universe'
 import { DefaultMap } from '../utils/DefaultMap'
@@ -72,7 +73,7 @@ function buildStatsSearchIndex(statsEntries: Generator<StatisticPage>): Normaliz
     const entries: Entry[] = []
     const builder = new SearchIndexTokensBuilder()
     for (const stat of statsEntries) {
-        const longname = `${statistic_name_list[stat.statisticIndex]} by ${used_geographies[stat.typeIndex]}`
+        const longname = `${statistic_name_list[stat.statisticIndex]} by ${typesInOrder[stat.typeIndex]}`
         entries.push({
             type: 'statistic',
             priority: 0,
