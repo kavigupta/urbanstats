@@ -21,7 +21,10 @@ interface StatisticPage {
 export type AllUniverses = 'allUniverses'
 
 async function statsAllUniverses(): Promise<() => Generator<StatisticPage>> {
-    const defaultUniverseTable = await loadProtobuf('/default_universe_by_stat_geo.gz', 'DefaultUniverseTable') as NormalizeProto<DefaultUniverseTable>
+    const [defaultUniverseTable, counts] = await Promise.all([
+        loadProtobuf('/default_universe_by_stat_geo.gz', 'DefaultUniverseTable').then(p => p as NormalizeProto<DefaultUniverseTable>),
+        getCountsByArticleType(),
+    ])
 
     return function* () {
         const exceptionalTypeStats = new DefaultMap<number, Set<number>>(() => new Set())
@@ -37,7 +40,10 @@ async function statsAllUniverses(): Promise<() => Generator<StatisticPage>> {
         for (const geography of used_geographies) {
             const typeIndex = type_ordering_idx[geography]
             for (let statisticIndex = 0; statisticIndex < statistic_name_list.length; statisticIndex++) {
-                if (!exceptionalTypeStats.get(typeIndex).has(statisticIndex)) {
+                if (
+                    !exceptionalTypeStats.get(typeIndex).has(statisticIndex)
+                    && forTypeByIndex(counts, universes_ordered[defaultUniverseTable.mostCommonUniverseIdx], statisticIndex, geography) > 0
+                ) {
                     yield {
                         statisticIndex,
                         typeIndex,
