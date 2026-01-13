@@ -26,7 +26,6 @@ async function buildStatsUniverseMap(): Promise<Map<string, string>> {
         const universeName = universes_ordered[universeIndex]
 
         if (geoName) {
-            console.log(`Mapping statistic '${statName}' and geography '${geoName}' to universe '${universeName}'`)
             result.set(`${statName}__${geoName}`, universeName)
         }
     }

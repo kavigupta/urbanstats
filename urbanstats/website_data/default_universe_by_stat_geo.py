@@ -4,7 +4,7 @@ from collections import Counter
 import numpy as np
 import tqdm.auto as tqdm
 
-from urbanstats.geometry.relationship import type_to_type_category
+from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
@@ -14,7 +14,7 @@ from urbanstats.universe.universe_list import all_universes
 def default_universe_by_stat_geo(table):
     result = []
     universe_to_idx = {k: i for i, k in enumerate(all_universes())}
-    for tidx, typ in enumerate(tqdm.tqdm(type_to_type_category)):
+    for typ, tidx in tqdm.tqdm(type_ordering_idx.items()):
         subset_table_for_typ = table[(table.type == typ)]
         for sidx, stat in enumerate(internal_statistic_names()):
             subset_table_u = subset_table_for_typ.universes[
