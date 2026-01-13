@@ -19,6 +19,7 @@ import {
     Symlinks,
     PointSeries,
     ArticleUniverseList,
+    DefaultUniverseTable,
 } from './utils/protos'
 import { NormalizeProto } from './utils/types'
 
@@ -47,7 +48,8 @@ export async function loadProtobuf(filePath: string, name: 'CountsByArticleUnive
 export async function loadProtobuf(filePath: string, name: 'Symlinks'): Promise<Symlinks>
 export async function loadProtobuf(filePath: string, name: 'PointSeries'): Promise<PointSeries>
 export async function loadProtobuf(filePath: string, name: 'ArticleUniverseList'): Promise<ArticleUniverseList>
-export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | ArticleUniverseList | undefined> {
+export async function loadProtobuf(filePath: string, name: 'DefaultUniverseTable'): Promise<DefaultUniverseTable>
+export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | ArticleUniverseList | DefaultUniverseTable | undefined> {
     let perfCheckpoint = performance.now()
 
     const response = await fetch(filePath)
@@ -113,6 +115,9 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     }
     else if (name === 'ArticleUniverseList') {
         return ArticleUniverseList.decode(arr)
+    }
+    else if (name === 'DefaultUniverseTable') {
+        return DefaultUniverseTable.decode(arr)
     }
     else {
         throw new Error('protobuf type not recognized (see load_json.ts)')
