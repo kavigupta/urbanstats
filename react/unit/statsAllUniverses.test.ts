@@ -94,4 +94,20 @@ void describe('statsAllUniverses', () => {
         const map = await statsUniverseMap
         assert.equal(map.get('Employed in Agriculture, forestry, fishing and hunting % [StatCan]__CA Riding'), 'Canada')
     })
+    void test('canadian ag in metropolitan cluster has expected universe', async () => {
+        const map = await statsUniverseMap
+        assert.equal(map.get('Employed in Agriculture, forestry, fishing and hunting % [StatCan]__Metropolitan Cluster'), 'Canada')
+    })
+    void test('pollution in canadian ridings has expected universe', async () => {
+        const map = await statsUniverseMap
+        assert.equal(map.get('PW Mean PM2.5 Pollution__CA Riding'), 'Canada')
+    })
+    void test('pollution in metropolitan clusters has expected universe', async () => {
+        const map = await statsUniverseMap
+        assert.equal(map.get('PW Mean PM2.5 Pollution__Metropolitan Cluster'), 'world')
+    })
+    void test('pollution in counties has expected universe', async () => {
+        const map = await statsUniverseMap
+        assert.equal(map.get('PW Mean PM2.5 Pollution__County'), 'USA')
+    })
 })
