@@ -45,7 +45,8 @@ export function formatToSignificantFigures(value: number, sigFigs: number = 3): 
         const integerDigits = integerPart.toString().length
         const decimalPlaces = Math.max(0, sigFigs - integerDigits)
         return rounded.toFixed(decimalPlaces)
-    } else {
+    }
+    else {
         // For numbers < 1, we need sigFigs digits after the decimal point
         // The first non-zero digit is at position -magnitude
         const decimalPlaces = -magnitude + sigFigs - 1
