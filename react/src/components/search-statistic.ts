@@ -20,7 +20,7 @@ interface StatisticPage {
 
 export type AllUniverses = 'allUniverses'
 
-async function statsAllUniverses(): Promise<() => Generator<StatisticPage>> {
+export async function statsAllUniverses(): Promise<() => Generator<StatisticPage>> {
     const [defaultUniverseTable, counts] = await Promise.all([
         loadProtobuf('/default_universe_by_stat_geo.gz', 'DefaultUniverseTable').then(p => p as NormalizeProto<DefaultUniverseTable>),
         getCountsByArticleType(),
