@@ -71,7 +71,7 @@ export interface NormalizedSearchIndex {
     size: number
 
     tokenHaystacks: string[][]
-    tokenSignatures: Uint32Array[]
+    tokenSignatures: Uint32Array
 
     priorities: Uint8Array
     signatures: Uint32Array
@@ -88,15 +88,18 @@ export interface NormalizedSearchIndex {
     mostTokens: number
 }
 
-function entryFromSearchIndex(searchIndex: NormalizedSearchIndex, i: number): Entry {
-    assert(i < searchIndex.size, `Search index entry ${i} is out of range (${searchIndex.size})`)
-    return {
-        tokens: searchIndex.tokenHaystacks[i].map((haystack, j) => ({ haystack, signature: searchIndex.tokenSignatures[i][j] })),
-        priority: searchIndex.priorities[i],
-        signature: searchIndex.signatures[i],
-        longname: searchIndex.longnames[i],
-        typeIndex: searchIndex.typeIndicies[i],
-        ...(searchIndex.entryTypes[i] === 0 ? { type: 'article' } : { type: 'statistic', statisticIndex: searchIndex.statisticIndices[i], universeIndex: searchIndex.universeIndices[i] }),
+function* iterateSearchIndex(searchIndex: NormalizedSearchIndex): Generator<[number, Entry]> {
+    let tokenSignatureTotal = 0
+    for (let i = 0; i < searchIndex.size; i++) {
+        yield [i, {
+            tokens: searchIndex.tokenHaystacks[i].map((haystack, j) => ({ haystack, signature: searchIndex.tokenSignatures[tokenSignatureTotal + j] })),
+            priority: searchIndex.priorities[i],
+            signature: searchIndex.signatures[i],
+            longname: searchIndex.longnames[i],
+            typeIndex: searchIndex.typeIndicies[i],
+            ...(searchIndex.entryTypes[i] === 0 ? { type: 'article' } : { type: 'statistic', statisticIndex: searchIndex.statisticIndices[i], universeIndex: searchIndex.universeIndices[i] }),
+        }]
+        tokenSignatureTotal += searchIndex.tokenHaystacks[i].length
     }
 }
 
@@ -105,7 +108,7 @@ function concatIndices(firstIndex: NormalizedSearchIndex, secondIndex: Normalize
         size: firstIndex.size + secondIndex.size,
 
         tokenHaystacks: firstIndex.tokenHaystacks.concat(secondIndex.tokenHaystacks),
-        tokenSignatures: firstIndex.tokenSignatures.concat(secondIndex.tokenSignatures),
+        tokenSignatures: concatenate(Uint32Array, firstIndex.tokenSignatures, secondIndex.tokenSignatures),
 
         priorities: concatenate(Uint8Array, firstIndex.priorities, secondIndex.priorities),
         signatures: concatenate(Uint32Array, firstIndex.signatures, secondIndex.signatures),
@@ -124,11 +127,10 @@ function concatIndices(firstIndex: NormalizedSearchIndex, secondIndex: Normalize
 }
 
 export function buildSearchIndex(entries: RawEntry[]): NormalizedSearchIndex {
-    const result: NormalizedSearchIndex = {
+    const result: Omit<NormalizedSearchIndex, 'tokenSignatures'> = {
         size: entries.length,
 
         tokenHaystacks: [],
-        tokenSignatures: [],
 
         priorities: new Uint8Array(entries.length),
         signatures: new Uint32Array(entries.length),
@@ -152,6 +154,9 @@ export function buildSearchIndex(entries: RawEntry[]): NormalizedSearchIndex {
         return toHaystack(token)
     })
 
+    const tokenSignatures: number[][] = []
+    let sumTokenSignatures = 0
+
     for (const [i, entry] of entries.entries()) {
         const normalizedLongname = normalize(entry.longname)
         const entryTokens = tokenize(normalizedLongname)
@@ -161,10 +166,13 @@ export function buildSearchIndex(entries: RawEntry[]): NormalizedSearchIndex {
         }
 
         result.tokenHaystacks.push(tokens.map(({ haystack }) => haystack))
-        result.tokenSignatures.push(new Uint32Array(tokens.map(({ signature }) => {
+        tokenSignatures.push(tokens.map(({ signature }) => {
             assert(signature <= 4294967295, 'overflow')
             return signature
-        })))
+        }))
+
+        assert(tokens.length <= 255, 'overflow')
+        sumTokenSignatures += tokens.length
 
         assert(entry.priority <= 255, 'overflow')
         result.priorities[i] = entry.priority
@@ -191,7 +199,20 @@ export function buildSearchIndex(entries: RawEntry[]): NormalizedSearchIndex {
         }
     }
 
-    return result
+    const tokenSignaturesFlat = new Uint32Array(sumTokenSignatures)
+
+    let i = 0
+    for (const entry of tokenSignatures) {
+        for (const signature of entry) {
+            tokenSignaturesFlat[i] = signature
+            i++
+        }
+    }
+
+    return {
+        ...result,
+        tokenSignatures: tokenSignaturesFlat,
+    }
 }
 
 interface Result {
@@ -285,9 +306,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
     let entriesPatternSkips = 0
     let entriesPatternChecks = 0
 
-    entries: for (let populationRank = 0; populationRank < searchIndex.size; populationRank++) {
-        const entry = entryFromSearchIndex(searchIndex, populationRank)
-
+    entries: for (const [populationRank, entry] of iterateSearchIndex(searchIndex)) {
         if (!isAllowedToBeShown(entry.typeIndex, showSettings)) {
             continue
         }
