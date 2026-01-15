@@ -341,10 +341,13 @@ export async function createIndex(config: SearchIndexConfig): Promise<(params: S
         debugPerformance(`Waited ${performance.now() - checkpoint}ms for stats index`)
     }
 
-    index = undefined // Must do this to free up memory
+    return makeSearchFunction(modifiedIndex)
+}
 
+// We use a separate function here so a closure doesn't capture unnecessary objects
+function makeSearchFunction(searchIndex: NormalizedSearchIndex): (params: SearchParams) => SearchResult[] {
     return (params) => {
-        return search(modifiedIndex, params)
+        return search(searchIndex, params)
     }
 }
 
