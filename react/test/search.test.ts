@@ -124,3 +124,60 @@ test('search for a MPC', async (t) => {
     await checkTextboxes(t, ['Include Person Circles'])
     await screencap(t)
 })
+
+urbanstatsFixture('homepage', target)
+
+test('default universe world', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'pollution by metropolitan cluster')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=PW+Mean+PM2.5+Pollution&article_type=Metropolitan+Cluster&start=1&amount=20`)
+})
+
+test('default universe world - click on link', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'pollution by metropolitan cluster')
+    await waitForSelectedSearchResult(t)
+    await t.click(Selector('a').withText(/Pollution by Metropolitan Cluster/))
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=PW+Mean+PM2.5+Pollution&article_type=Metropolitan+Cluster&start=1&amount=20`)
+})
+
+test('default universe usa', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'area by city')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=Area&article_type=City&start=1&amount=20&universe=USA`)
+})
+
+test('default universe canada', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'agriculture by riding')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=Employed+in+Agriculture%2C+forestry%2C+fishing+and+hunting+__PCT__+%5BStatCan%5D&article_type=CA+Riding&start=1&amount=20&universe=Canada`)
+})
+
+test('rendering of options', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'white city')
+    await waitForSelectedSearchResult(t)
+    await screencap(t)
+})
+
+urbanstatsFixture('california universe page', `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA&universe=California%2C+USA`)
+
+test('search within california universe', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'parkland by city')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=PW+Mean+__PCT__+of+parkland+within+1km&article_type=City&start=1&amount=20&universe=California%2C+USA`)
+})

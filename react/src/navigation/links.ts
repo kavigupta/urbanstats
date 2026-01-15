@@ -4,7 +4,7 @@ import { Universe } from '../universe'
 
 import { PageDescriptor } from './PageDescriptor'
 
-const typesInOrder = Object.fromEntries(Object.entries(type_ordering_idx).map(([k, v]) => [v, k]))
+export const typesInOrder = Object.fromEntries(Object.entries(type_ordering_idx).map(([k, v]) => [v, k]))
 
 function shardBytes(longname: string): [string, string] {
     // as bytes, in utf-8
