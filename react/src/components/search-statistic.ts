@@ -4,7 +4,7 @@ import type_ordering_idx from '../data/type_ordering_idx'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
 import { typesInOrder } from '../navigation/links'
-import { Entry, NormalizedSearchIndex, SearchIndexTokensBuilder } from '../search'
+import { buildSearchIndex, NormalizedSearchIndex } from '../search'
 import { Universe } from '../universe'
 import { DefaultMap } from '../utils/DefaultMap'
 import { DefaultUniverseTable } from '../utils/protos'
@@ -76,19 +76,15 @@ async function statsOneUniverse(universe: Universe): Promise<() => Generator<Sta
 }
 
 function buildStatsSearchIndex(statsEntries: Generator<StatisticPage>): NormalizedSearchIndex {
-    const entries: Entry[] = []
-    const builder = new SearchIndexTokensBuilder()
-    for (const stat of statsEntries) {
+    return buildSearchIndex(Array.from(statsEntries).map((stat) => {
         const longname = `${statistic_name_list[stat.statisticIndex]} by ${typesInOrder[stat.typeIndex]}`
-        entries.push({
+        return {
             type: 'statistic',
             priority: 0,
             longname,
             ...stat,
-            ...builder.addEntry(longname),
-        })
-    }
-    return { ...builder.result(), entries, maxPriority: 0 }
+        }
+    }))
 }
 
 export async function createStatsIndex(universe: Universe | AllUniverses): Promise<NormalizedSearchIndex> {
