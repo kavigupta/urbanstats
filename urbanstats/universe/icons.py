@@ -131,6 +131,10 @@ def download_all_search_icons():
         if os.path.exists(path):
             continue
         compute_search_flag(s).save(path)
+    shutil.copy(
+        "icons/main/search-flag-table.png",
+        os.path.join(search_icons_folder, "table.png"),
+    )
 
 
 def place_icons_in_site_folder(site_folder):

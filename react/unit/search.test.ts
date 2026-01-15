@@ -1,13 +1,16 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
+import { AllUniverses } from '../src/components/search-statistic'
 import type_ordering_idx from '../src/data/type_ordering_idx'
 import './util/fetch'
 import { createIndex, SearchResult } from '../src/search'
+import { Universe } from '../src/universe'
+import { DefaultMap } from '../src/utils/DefaultMap'
 
-const search = await createIndex(undefined)
+const search = new DefaultMap<Universe | AllUniverses | undefined, ReturnType<typeof createIndex>>(statsUniverse => createIndex({ cacheKey: undefined, statsUniverse }))
 
-const computeNthResult = (n: number, query: string, prioritizeType: string | undefined): SearchResult => search({
+const computeNthResult = async (n: number, query: string, prioritizeType: string | undefined, statsUniverse: Universe | AllUniverses | undefined): Promise<SearchResult> => (await search.get(statsUniverse))({
     unnormalizedPattern: query,
     maxResults: 10,
     showSettings: {
@@ -18,9 +21,18 @@ const computeNthResult = (n: number, query: string, prioritizeType: string | und
 })[n]
 
 // We curry based on testFn so we can use test.only, test.skip, etc
-const nthResult = (testFn: (name: string, testBlock: () => void) => void) => (n: number, query: string, result: string, prioritizeType?: string): void => {
-    testFn(`result ${n} for '${query}' ${prioritizeType !== undefined ? `(Prioritizing ${prioritizeType}) ` : ''}is '${result}'`, () => {
-        assert.equal(computeNthResult(n, query, prioritizeType).longname, result)
+const nthResult = (testFn: (name: string, testBlock: () => void) => void) => (n: number, query: string, result: string, prioritizeType?: string, statsUniverse?: Universe | AllUniverses): void => {
+    const parentheticalElements = []
+    if (prioritizeType !== undefined) {
+        parentheticalElements.push(`Prioritizing ${prioritizeType}`)
+    }
+    if (statsUniverse !== undefined) {
+        parentheticalElements.push(`Stats universe key: ${String(statsUniverse)}`)
+    }
+    const parenthetical = parentheticalElements.length > 0 ? ` (${parentheticalElements.join(', ')})` : ''
+
+    testFn(`result ${n} for '${query}'${parenthetical} is '${result}'`, async () => {
+        assert.equal((await computeNthResult(n, query, prioritizeType, statsUniverse)).longname, result)
     })
 }
 
@@ -52,3 +64,11 @@ nthResult(test)(0, 'san jose', 'San Jose city, California, USA', 'City')
 nthResult(test)(0, 'london', 'London Population Center, ON, Canada', 'CA Population Center')
 nthResult(test)(1, 'berlin', 'Berlin Urban Center, Germany', 'Urban Center')
 nthResult(test)(1, 'virginia', 'Virginia, USA', 'City')
+
+nthResult(test)(0, 'white city', 'White Plains city, New York, USA')
+nthResult(test)(0, 'white city', 'White % by City', undefined, 'allUniverses')
+nthResult(test)(0, 'white city', 'White Plains city, New York, USA', undefined, 'Canada') // white % by city should not match anything in canada
+nthResult(test)(0, 'by population center', 'Thunder Bay Population Center, ON, Canada')
+nthResult(test)(0, 'by population center', 'Area by CA Population Center', undefined, 'allUniverses')
+nthResult(test)(0, 'by population center', 'Area by CA Population Center', undefined, 'Canada')
+nthResult(test)(0, 'agriculture by riding', 'Employed in Agriculture, forestry, fishing and hunting % [StatCan] by CA Riding', undefined, 'allUniverses')
