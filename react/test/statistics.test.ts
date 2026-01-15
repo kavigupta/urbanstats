@@ -332,8 +332,8 @@ test('universe/geography have no overlap', async (t) => {
 
 urbanstatsFixture('edit starting from a statname page', `${target}/statistic.html?statname=Population&article_type=County&start=1&amount=5&universe=California%2C+USA`)
 
-const densityRatio = ['3.035', '2.490', '2.282', '2.276', '2.100']
-const densityRatioPage2 = ['1.971', '1.956', '1.897', '1.888', '1.811']
+const densityRatio = ['3.03', '2.49', '2.28', '2.28', '2.10']
+const densityRatioPage2 = ['1.97', '1.96', '1.90', '1.89', '1.81']
 
 test('edit starting from a statname page works', async (t) => {
     await t.click(Selector('button[data-test-id="edit"]'))
@@ -464,7 +464,7 @@ test('add filter', async (t) => {
     await typeInEditor(t, 0, 'population>1m', true)
     await waitForLoading()
     await t.wait(1000)
-    await t.expect(await dataValues()).eql(['1.163', '1.141', '1.129', '1.127', '1.125'])
+    await t.expect(await dataValues()).eql(['1.16', '1.14', '1.13', '1.13', '1.13'])
     await screencap(t)
 })
 
@@ -473,7 +473,7 @@ test('add filter that kicks you to an earlier page', async (t) => {
     await typeInEditor(t, 0, 'population>6m', true) // only one county matches
     await waitForLoading()
     await t.expect(await getLocation()).contains('start=1')
-    await t.expect(await dataValues()).eql(['1.127'])
+    await t.expect(await dataValues()).eql(['1.13'])
     await screencap(t)
 })
 
