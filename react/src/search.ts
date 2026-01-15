@@ -431,7 +431,7 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
 
 // Potentially cached
 export async function createIndex(config: SearchIndexConfig): Promise<(params: SearchParams) => SearchResult[]> {
-    let statsIndexPromise = config.statsUniverse && createStatsIndex(config.statsUniverse)
+    const statsIndexPromise = config.statsUniverse && createStatsIndex(config.statsUniverse)
 
     let index: NormalizedSearchIndex | undefined
     try {
@@ -488,12 +488,13 @@ export async function createIndex(config: SearchIndexConfig): Promise<(params: S
         debugPerformance(`Waited ${performance.now() - checkpoint}ms for stats index`)
     }
 
-    // Must do this to free up memory
-    index = undefined
-    statsIndexPromise = undefined
+    return makeSearchFunction(modifiedIndex)
+}
 
+// We use a separate function here so a closure doesn't capture unnecessary objects
+function makeSearchFunction(searchIndex: NormalizedSearchIndex): (params: SearchParams) => SearchResult[] {
     return (params) => {
-        return search(modifiedIndex, params)
+        return search(searchIndex, params)
     }
 }
 
