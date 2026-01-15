@@ -31,8 +31,8 @@ class NationalOriginLanguageStatistics(ACSStatisticsColection):
             **QuizQuestionDescriptor.several(
                 LANGUAGE,
                 {
-                    "language_english_only": "higher % of people who only speak english at home",
-                    "language_spanish": "higher % of people who speak spanish at home",
+                    "language_english_only": "higher % of people who only speak English at home",
+                    "language_spanish": "higher % of people who speak Spanish at home",
                 },
             ),
             **QuizQuestionSkip.several("language_other"),
