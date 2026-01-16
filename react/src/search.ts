@@ -63,7 +63,8 @@ type RawEntry = {
         )
 
 export type Entry = RawEntry & {
-    tokens: Haystack[]
+    tokenHaystacks: string[]
+    tokenSignatures: Uint32Array
     signature: number
 }
 
@@ -89,27 +90,27 @@ export interface NormalizedSearchIndex {
     mostTokens: number
 }
 
-function* iterateSearchIndex(searchIndex: NormalizedSearchIndex): Generator<[number, Entry]> {
-    let tokenTotal = 0
-    for (let i = 0; i < searchIndex.size; i++) {
-        const tokens: Haystack[] = []
-        for (let j = 0; j < searchIndex.numTokens[i]; j++) {
-            tokens.push({
-                haystack: searchIndex.tokenHaystacks[tokenTotal + j],
-                signature: searchIndex.tokenSignatures[tokenTotal + j],
-            })
-        }
-        yield [i, {
-            tokens,
-            priority: searchIndex.priorities[i],
-            signature: searchIndex.signatures[i],
-            longname: searchIndex.longnames[i],
-            typeIndex: searchIndex.typeIndicies[i],
-            ...(searchIndex.entryTypes[i] === 0 ? { type: 'article' } : { type: 'statistic', statisticIndex: searchIndex.statisticIndices[i], universeIndex: searchIndex.universeIndices[i] }),
-        }]
-        tokenTotal += searchIndex.numTokens[i]
-    }
-}
+// function* iterateSearchIndex(searchIndex: NormalizedSearchIndex): Generator<[number, Entry]> {
+//     let timeTotal = 0
+//     let tokenTotal = 0
+//     for (let i = 0; i < searchIndex.size; i++) {
+//         const start = performance.now()
+//         const numTokens = searchIndex.numTokens[i]
+//         const result: [number, Entry] = [i, {
+//             tokenHaystacks: searchIndex.tokenHaystacks.slice(tokenTotal, tokenTotal + numTokens),
+//             tokenSignatures: searchIndex.tokenSignatures.slice(tokenTotal, tokenTotal + numTokens),
+//             priority: searchIndex.priorities[i],
+//             signature: searchIndex.signatures[i],
+//             longname: searchIndex.longnames[i],
+//             typeIndex: searchIndex.typeIndicies[i],
+//             ...(searchIndex.entryTypes[i] === 0 ? { type: 'article' } : { type: 'statistic', statisticIndex: searchIndex.statisticIndices[i], universeIndex: searchIndex.universeIndices[i] }),
+//         }]
+//         tokenTotal += numTokens
+//         timeTotal += performance.now() - start
+//         yield result
+//     }
+//     debugPerformance(`Spent ${timeTotal} ms iterating`)
+// }
 
 function concatIndices(firstIndex: NormalizedSearchIndex, secondIndex: NormalizedSearchIndex): NormalizedSearchIndex {
     return {
@@ -216,7 +217,7 @@ export function buildSearchIndex(entries: RawEntry[]): NormalizedSearchIndex {
 }
 
 interface Result {
-    entry: Entry
+    i: number
     normalizedMatchScore: number // Lower is better ([0,1], where 0 is perfect match, and 1 is no matches)
     normalizedPopulationRank: number // Lower is higher population (better) ([0,1], where 0 is highest population and 1 is lowest population)
     normalizedPriority: number // Lower is better ([0,1] where 1 is least prioritized)
@@ -306,30 +307,32 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
     let entriesPatternSkips = 0
     let entriesPatternChecks = 0
 
-    entries: for (const [populationRank, entry] of iterateSearchIndex(searchIndex)) {
-        if (!isAllowedToBeShown(entry.typeIndex, showSettings)) {
+    let tokenIndex = 0
+    entries: for (let i = 0; i < searchIndex.size; i++) {
+        tokenIndex += searchIndex.numTokens[i]
+        if (!isAllowedToBeShown(searchIndex.typeIndicies[i], showSettings)) {
             continue
         }
 
         entriesPatternChecks++
-        if (bitCount(patternSignature ^ (patternSignature & entry.signature)) > maxErrors) {
+        if (bitCount(patternSignature ^ (patternSignature & searchIndex.signatures[i])) > maxErrors) {
             // This element doesn't have the correct letters to match this pattern
             entriesPatternSkips++
             continue
         }
 
-        const normalizedPopulationRank = (populationRank / searchIndex.size)
+        const normalizedPopulationRank = (i / searchIndex.size)
 
         // If this entry wouldn't make it into the results even with a perfect match because of priority or population, continue
         if (results.length === maxResults && compareSearchResults({
-            entry,
+            i,
             normalizedMatchScore: 0,
             normalizedPositionScore: 0,
-            normalizedPriority: entry.priority / searchIndex.maxPriority,
+            normalizedPriority: searchIndex.priorities[i] / searchIndex.maxPriority,
             normalizedPopulationRank,
             normalizedTokensWithIncompleteMatch: 0,
             normalizedTokenSwapOrOverlap: 0,
-            normalizedPriorityType: entry.typeIndex === prioritizeTypeIndex ? 0 : 1,
+            normalizedPriorityType: searchIndex.typeIndicies[i] === prioritizeTypeIndex ? 0 : 1,
         }, results[results.length - 1]) > 0) {
             continue
         }
@@ -347,10 +350,12 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
             let tokenIncompleteMatch = true
             let tokenEntryTokenIndex: undefined | number
 
-            for (const [entryTokenIndex, entryToken] of entry.tokens.entries()) {
-                const searchResult = bitap(entryToken, needle, maxErrors, bitapBuffers)
+            for (let j = tokenIndex - searchIndex.numTokens[i]; j < tokenIndex; j++) {
+                const entryTokenIndex = j - (tokenIndex - searchIndex.numTokens[i])
+                const haystack = searchIndex.tokenHaystacks[j]
+                const searchResult = bitap({ haystack, signature: searchIndex.tokenSignatures[j] }, needle, maxErrors, bitapBuffers)
                 const positionResult = Math.abs(patternTokenIndex - entryTokenIndex)
-                const incompleteMatchResult = Math.abs(entryToken.haystack.length - needle.length) - searchResult !== 0
+                const incompleteMatchResult = Math.abs(haystack.length - needle.length) - searchResult !== 0
                 if (searchResult < tokenMatchScore || (searchResult <= tokenMatchScore && positionResult < tokenPositionScore) || (searchResult <= tokenMatchScore && positionResult <= tokenPositionScore && incompleteMatchResult < tokenIncompleteMatch)) {
                     tokenMatchScore = searchResult
                     tokenPositionScore = positionResult
@@ -369,14 +374,14 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
 
             // If our match score is so high that we would not make it into the results, we can move on to the next entry
             if (results.length === maxResults && compareSearchResults({
-                entry,
+                i,
                 normalizedMatchScore: matchScore / maxMatchScore,
                 normalizedPositionScore: positionScore / maxPositionScore,
-                normalizedPriority: entry.priority / searchIndex.maxPriority,
+                normalizedPriority: searchIndex.priorities[i] / searchIndex.maxPriority,
                 normalizedPopulationRank,
                 normalizedTokensWithIncompleteMatch: incompleteMatches / patternTokens.length,
                 normalizedTokenSwapOrOverlap: numSwapsOverlaps / patternTokens.length,
-                normalizedPriorityType: entry.typeIndex === prioritizeTypeIndex ? 0 : 1,
+                normalizedPriorityType: searchIndex.typeIndicies[i] === prioritizeTypeIndex ? 0 : 1,
             }, results[results.length - 1]) > 0) {
                 continue entries
             }
@@ -388,14 +393,14 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
         }
 
         const result: Result = {
-            entry,
+            i,
             normalizedMatchScore: matchScore / maxMatchScore,
             normalizedPositionScore: positionScore / maxPositionScore,
-            normalizedPriority: entry.priority / searchIndex.maxPriority,
+            normalizedPriority: searchIndex.priorities[i] / searchIndex.maxPriority,
             normalizedPopulationRank,
             normalizedTokensWithIncompleteMatch: incompleteMatches / patternTokens.length,
             normalizedTokenSwapOrOverlap: numSwapsOverlaps / patternTokens.length,
-            normalizedPriorityType: entry.typeIndex === prioritizeTypeIndex ? 0 : 1,
+            normalizedPriorityType: searchIndex.typeIndicies[i] === prioritizeTypeIndex ? 0 : 1,
         }
 
         let spliceIndex: number | undefined
@@ -426,7 +431,13 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
     debugPerformance(`Took ${performance.now() - start} ms to execute search`)
 
     // Convert results to SearchResult format, preserving order
-    return results.slice(0, maxResults).map(r => r.entry)
+    return results.slice(0, maxResults).map((r) => {
+        return {
+            longname: searchIndex.longnames[r.i],
+            typeIndex: searchIndex.typeIndicies[r.i],
+            ...(searchIndex.entryTypes[r.i] === 0 ? { type: 'article' } : { type: 'statistic', statisticIndex: searchIndex.statisticIndices[r.i], universeIndex: searchIndex.universeIndices[r.i] }),
+        }
+    })
 }
 
 // Potentially cached
