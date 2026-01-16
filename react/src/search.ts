@@ -90,28 +90,6 @@ export interface NormalizedSearchIndex {
     mostTokens: number
 }
 
-// function* iterateSearchIndex(searchIndex: NormalizedSearchIndex): Generator<[number, Entry]> {
-//     let timeTotal = 0
-//     let tokenTotal = 0
-//     for (let i = 0; i < searchIndex.size; i++) {
-//         const start = performance.now()
-//         const numTokens = searchIndex.numTokens[i]
-//         const result: [number, Entry] = [i, {
-//             tokenHaystacks: searchIndex.tokenHaystacks.slice(tokenTotal, tokenTotal + numTokens),
-//             tokenSignatures: searchIndex.tokenSignatures.slice(tokenTotal, tokenTotal + numTokens),
-//             priority: searchIndex.priorities[i],
-//             signature: searchIndex.signatures[i],
-//             longname: searchIndex.longnames[i],
-//             typeIndex: searchIndex.typeIndicies[i],
-//             ...(searchIndex.entryTypes[i] === 0 ? { type: 'article' } : { type: 'statistic', statisticIndex: searchIndex.statisticIndices[i], universeIndex: searchIndex.universeIndices[i] }),
-//         }]
-//         tokenTotal += numTokens
-//         timeTotal += performance.now() - start
-//         yield result
-//     }
-//     debugPerformance(`Spent ${timeTotal} ms iterating`)
-// }
-
 function concatIndices(firstIndex: NormalizedSearchIndex, secondIndex: NormalizedSearchIndex): NormalizedSearchIndex {
     return {
         size: firstIndex.size + secondIndex.size,
