@@ -70,7 +70,8 @@ export type Entry = RawEntry & {
 export interface NormalizedSearchIndex {
     size: number
 
-    tokenHaystacks: string[][]
+    numTokens: Uint8Array
+    tokenHaystacks: string[]
     tokenSignatures: Uint32Array
 
     priorities: Uint8Array
@@ -89,17 +90,24 @@ export interface NormalizedSearchIndex {
 }
 
 function* iterateSearchIndex(searchIndex: NormalizedSearchIndex): Generator<[number, Entry]> {
-    let tokenSignatureTotal = 0
+    let tokenTotal = 0
     for (let i = 0; i < searchIndex.size; i++) {
+        const tokens: Haystack[] = []
+        for (let j = 0; j < searchIndex.numTokens[i]; j++) {
+            tokens.push({
+                haystack: searchIndex.tokenHaystacks[tokenTotal + j],
+                signature: searchIndex.tokenSignatures[tokenTotal + j],
+            })
+        }
         yield [i, {
-            tokens: searchIndex.tokenHaystacks[i].map((haystack, j) => ({ haystack, signature: searchIndex.tokenSignatures[tokenSignatureTotal + j] })),
+            tokens,
             priority: searchIndex.priorities[i],
             signature: searchIndex.signatures[i],
             longname: searchIndex.longnames[i],
             typeIndex: searchIndex.typeIndicies[i],
             ...(searchIndex.entryTypes[i] === 0 ? { type: 'article' } : { type: 'statistic', statisticIndex: searchIndex.statisticIndices[i], universeIndex: searchIndex.universeIndices[i] }),
         }]
-        tokenSignatureTotal += searchIndex.tokenHaystacks[i].length
+        tokenTotal += searchIndex.numTokens[i]
     }
 }
 
@@ -107,6 +115,7 @@ function concatIndices(firstIndex: NormalizedSearchIndex, secondIndex: Normalize
     return {
         size: firstIndex.size + secondIndex.size,
 
+        numTokens: concatenate(Uint8Array, firstIndex.numTokens, secondIndex.numTokens),
         tokenHaystacks: firstIndex.tokenHaystacks.concat(secondIndex.tokenHaystacks),
         tokenSignatures: concatenate(Uint32Array, firstIndex.tokenSignatures, secondIndex.tokenSignatures),
 
@@ -130,6 +139,7 @@ export function buildSearchIndex(entries: RawEntry[]): NormalizedSearchIndex {
     const result: Omit<NormalizedSearchIndex, 'tokenSignatures'> = {
         size: entries.length,
 
+        numTokens: new Uint8Array(entries.length),
         tokenHaystacks: [],
 
         priorities: new Uint8Array(entries.length),
@@ -154,8 +164,7 @@ export function buildSearchIndex(entries: RawEntry[]): NormalizedSearchIndex {
         return toHaystack(token)
     })
 
-    const tokenSignatures: number[][] = []
-    let sumTokenSignatures = 0
+    const tokenSignatures: number[] = []
 
     for (const [i, entry] of entries.entries()) {
         const normalizedLongname = normalize(entry.longname)
@@ -165,14 +174,15 @@ export function buildSearchIndex(entries: RawEntry[]): NormalizedSearchIndex {
             result.mostTokens = tokens.length
         }
 
-        result.tokenHaystacks.push(tokens.map(({ haystack }) => haystack))
-        tokenSignatures.push(tokens.map(({ signature }) => {
-            assert(signature <= 4294967295, 'overflow')
-            return signature
-        }))
-
         assert(tokens.length <= 255, 'overflow')
-        sumTokenSignatures += tokens.length
+        result.numTokens[i] = tokens.length
+
+        for (const token of tokens) {
+            result.tokenHaystacks.push(token.haystack)
+
+            assert(token.signature <= 4294967295, 'overflow')
+            tokenSignatures.push(token.signature)
+        }
 
         assert(entry.priority <= 255, 'overflow')
         result.priorities[i] = entry.priority
@@ -199,19 +209,9 @@ export function buildSearchIndex(entries: RawEntry[]): NormalizedSearchIndex {
         }
     }
 
-    const tokenSignaturesFlat = new Uint32Array(sumTokenSignatures)
-
-    let i = 0
-    for (const entry of tokenSignatures) {
-        for (const signature of entry) {
-            tokenSignaturesFlat[i] = signature
-            i++
-        }
-    }
-
     return {
         ...result,
-        tokenSignatures: tokenSignaturesFlat,
+        tokenSignatures: new Uint32Array(tokenSignatures),
     }
 }
 
