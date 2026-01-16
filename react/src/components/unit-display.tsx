@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 
-import { separateNumber } from '../utils/text'
+import { formatToSignificantFigures, separateNumber } from '../utils/text'
 import { UnitType } from '../utils/unit'
 
 import { ElectionResult } from './display-stats'
@@ -266,7 +266,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
             return {
                 renderValue: (value: number) => {
                     return {
-                        value: <span>{value.toFixed(3)}</span>,
+                        value: <span>{formatToSignificantFigures(value, 3)}</span>,
                         unit: <span>&nbsp;</span>,
                     }
                 },

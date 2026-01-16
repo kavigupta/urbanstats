@@ -218,6 +218,10 @@ urbanstatsFixture('all stats test', `/article.html?longname=California%2C+USA`)
 test('california-all-stats', async (t) => {
     await t.resizeWindow(1400, 800)
     await checkAllCategoryBoxes(t)
+    // Verify life expectancy (81.407) is rendered as 81.4 (3 significant figures)
+    await t.expect(Selector('span').withExactText('81.4').exists).ok()
+    // Verify compactness (0.253) is still rendered as 0.253 (3 significant figures)
+    await t.expect(Selector('span').withExactText('0.253').exists).ok()
     await screencap(t)
 })
 
