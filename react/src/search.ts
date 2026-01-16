@@ -48,7 +48,7 @@ export function normalize(a: string, handlePunctuation = true): string {
     return a
 }
 
-type RawEntry = {
+type Entry = {
     priority: number
     longname: string
     typeIndex: number
@@ -61,12 +61,6 @@ type RawEntry = {
                 universeIndex: number
             }
         )
-
-export type Entry = RawEntry & {
-    tokenHaystacks: string[]
-    tokenSignatures: Uint32Array
-    signature: number
-}
 
 export interface NormalizedSearchIndex {
     size: number
@@ -114,7 +108,7 @@ function concatIndices(firstIndex: NormalizedSearchIndex, secondIndex: Normalize
     }
 }
 
-export function buildSearchIndex(entries: RawEntry[]): NormalizedSearchIndex {
+export function buildSearchIndex(entries: Entry[]): NormalizedSearchIndex {
     const result: Omit<NormalizedSearchIndex, 'tokenSignatures'> = {
         size: entries.length,
 
