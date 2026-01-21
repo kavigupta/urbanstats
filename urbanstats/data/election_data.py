@@ -1,5 +1,7 @@
 import glob
 from functools import lru_cache
+import os
+import subprocess
 
 import attr
 import geopandas as gpd
@@ -23,7 +25,10 @@ class VestElection:
     gop_column_filter = attr.ib()
 
     def read(self):
-        frame = read_full_vest_data(self.path)
+        if callable(self.path):
+            frame = self.path()
+        else:
+            frame = read_full_vest_data(self.path)
         presidential_columns = [
             c for c in frame.columns if self.presidential_column_filter(c)
         ]
@@ -46,9 +51,25 @@ class VestElection:
         )
 
 
+def load_2024():
+    root_path = "named_region_shapefiles/2024Precincts"
+    file_path = os.path.join(root_path, "output/all.shp")
+    if not os.path.exists(file_path):
+        subprocess.check_call(["python", "load_state_presidential.py"], cwd=root_path)
+    return gpd.read_file(file_path)
+
+
 data_cols = ["dem", "gop", "total"]
 
 vest_elections = [
+    VestElection(
+        key="vest_2024",
+        name="2024 Presidential Election",
+        path=load_2024,
+        presidential_column_filter=lambda x: x in ["dem", "rep", "oth"],
+        dem_column_filter=lambda x: x == "dem",
+        gop_column_filter=lambda x: x == "rep",
+    ),
     VestElection(
         key="vest_2020",
         name="2020 Presidential Election",
@@ -125,7 +146,7 @@ def disaggregate_to_blocks(election):
 
 
 @permacache_with_remapping_pickle(
-    "election_data/aggregated_election_results",
+    "election_data/aggregated_election_results_2",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def aggregated_election_results(shapefile):
