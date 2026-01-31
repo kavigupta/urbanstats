@@ -758,9 +758,9 @@ export function DataCreditPanel(): ReactNode {
                             precinct boundaries in the dataset are slightly inaccurate, or there are no results for
                             the precincts overlapping the geography.
                         </div>
-                        <NRef name="election" h="h2">2016 and 2020 Election Data</NRef>
+                        <NRef name="election" h="h2">2008 and 2012 Election Data</NRef>
                         <div>
-                            2016 and 2020 Election Data is aggregated from counties from
+                            2008 and 2012 Election Data is aggregated from counties from
                             {' '}
                             <FootnoteRef
                                 description={(
@@ -779,6 +779,49 @@ export function DataCreditPanel(): ReactNode {
                             data for geographies that are aggregations of counties (states, MSAs, etc). Some counties have changed over
                             time, in cases where modern counties disagree with 2008/2012 counties, we do not report results. Alaska is
                             aggregated into a single &quot;county&quot; for this purpose.
+                        </div>
+                        <NRef name="election_2024" h="h2">2024 Election Data</NRef>
+                        <div>
+                            2024 Election Data is from a fork of
+                            {' '}
+                            <FootnoteRef
+                                description={(
+                                    <span>
+                                        Metcalf, J. (2024):
+                                        {' '}
+                                        <i>2024 Election Precinct Data,</i>
+                                        {' '}
+                                        <a href="https://github.com/jmetcalf/2024-election-precinct-data">https://github.com/jmetcalf/2024-election-precinct-data</a>
+                                    </span>
+                                )}
+                            >
+                                J Metcalf&apos;s 2024 Election Precinct Data repository
+                            </FootnoteRef>
+                            {' '}
+                            that we have updated with several changes, including pulling in data from the
+                            {' '}
+                            <FootnoteRef
+                                description={(
+                                    <span>
+                                        New York Times (2024):
+                                        {' '}
+                                        <i>Presidential Precinct Map 2024,</i>
+                                        {' '}
+                                        <a href="https://github.com/nytimes/presidential-precinct-map-2024">https://github.com/nytimes/presidential-precinct-map-2024</a>
+                                    </span>
+                                )}
+                            >
+                                New York Times
+                            </FootnoteRef>
+                            {' '}
+                            for several states (California, Michigan, Pennsylvania, Massachusetts, New Jersey, Tennessee, and Utah).
+                            {' '}
+                            For details on how the data has been normalized and processed, see our
+                            {' '}
+                            <a href="https://github.com/kavigupta/2024Precincts">fork</a>
+                            {' '}
+                            of the Metcalf repository.
+                            .
                         </div>
                         <NRef name="park" h="h1">Parkland</NRef>
                         <div>
