@@ -63,7 +63,7 @@ data_cols = ["dem", "gop", "total"]
 
 vest_elections = [
     VestElection(
-        key="vest_2024",
+        key="vest_2024_v2",
         name="2024 Presidential Election",
         path=load_2024,
         presidential_column_filter=lambda x: x in ["dem", "rep", "oth"],
@@ -146,7 +146,7 @@ def disaggregate_to_blocks(election):
 
 
 @permacache_with_remapping_pickle(
-    "election_data/aggregated_election_results_2",
+    "election_data/aggregated_election_results_3",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
 def aggregated_election_results(shapefile):

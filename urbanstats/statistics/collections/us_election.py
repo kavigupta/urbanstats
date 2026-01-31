@@ -4,7 +4,7 @@ from urbanstats.statistics.statistic_collection import USAStatistics
 
 
 class USElectionStatistics(USAStatistics):
-    version = 2
+    version = 3
 
     def name_for_each_statistic(self):
         return {
