@@ -1,12 +1,14 @@
-import React, { CSSProperties, Fragment, ReactNode } from 'react'
+import React, { CSSProperties, Fragment, ReactNode, useMemo } from 'react'
 
+import { useColors } from '../page_template/colors'
 import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { Article } from '../utils/protos'
 
 import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
-import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeSizesForRow, CommonLayoutInformation } from './table'
+import { useScreenshotMode } from './screenshot'
+import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeDisclaimerFootnotes, computeSizesForRow, CommonLayoutInformation } from './table'
 
 export interface PlotSpec {
     statDescription: string
@@ -22,6 +24,11 @@ export interface SuperHeaderSpec {
 export interface LeftHeaderSpec {
     leftHeaderSpecs: CellSpec[]
     groupNames?: (string | undefined)[]
+}
+
+export interface DisclaimerFootnote {
+    symbol: string
+    text: string
 }
 
 export interface TableContentsProps {
@@ -40,7 +47,21 @@ export interface TableContentsProps {
 
 export function TableContents(props: TableContentsProps): ReactNode {
     const universe = useUniverse()
+    const colors = useColors()
+    const screenshotMode = useScreenshotMode()
     assert(universe !== undefined, 'no universe')
+
+    const rowsForFootnotes = useMemo(() => {
+        const fromLeft = props.leftHeaderSpec.leftHeaderSpecs.filter((s): s is CellSpec & { type: 'statistic-name', row: ArticleRow } =>
+            s.type === 'statistic-name' && s.row !== undefined,
+        ).map(s => s.row)
+        const fromSuper = (props.superHeaderSpec?.headerSpecs ?? []).filter((s): s is CellSpec & { type: 'statistic-name', row: ArticleRow } =>
+            s.type === 'statistic-name' && s.row !== undefined,
+        ).map(s => s.row)
+        return [...fromLeft, ...fromSuper]
+    }, [props.leftHeaderSpec.leftHeaderSpecs, props.superHeaderSpec?.headerSpecs])
+    const disclaimerFootnotes = useMemo(() => computeDisclaimerFootnotes(rowsForFootnotes), [rowsForFootnotes])
+
     const headerHeight = props.verticalPlotSpecs.flatMap(p => p === undefined ? [] : p.plotProps).map(p => extraHeaderSpaceForVertical(p)).reduce((a, b) => Math.max(a, b), 0)
     const contentHeight = '379.5px'
 
@@ -77,6 +98,12 @@ export function TableContents(props: TableContentsProps): ReactNode {
             {props.superHeaderSpec !== undefined && (
                 <SuperHeaderHorizontal
                     {...props.superHeaderSpec}
+                    headerSpecs={props.superHeaderSpec.headerSpecs.map((spec) => {
+                        if (screenshotMode && spec.type === 'statistic-name' && spec.row?.disclaimer !== undefined) {
+                            return { ...spec, footnoteSymbol: disclaimerFootnotes.getSymbol(spec.row.disclaimer) }
+                        }
+                        return spec
+                    })}
                     leftSpacerWidth={props.widthLeftHeader}
                     widthsEach={columnFullWidths}
                 />
@@ -112,7 +139,13 @@ export function TableContents(props: TableContentsProps): ReactNode {
                             })}
                             extraSpaceRight={extraSpaceRight}
                             plotSpec={plotSpec}
-                            leftHeaderSpec={props.leftHeaderSpec.leftHeaderSpecs[rowIndex]}
+                            leftHeaderSpec={(() => {
+                                const spec = props.leftHeaderSpec.leftHeaderSpecs[rowIndex]
+                                if (screenshotMode && spec.type === 'statistic-name' && spec.row?.disclaimer !== undefined) {
+                                    return { ...spec, footnoteSymbol: disclaimerFootnotes.getSymbol(spec.row.disclaimer) }
+                                }
+                                return spec
+                            })()}
                             widthLeftHeader={props.widthLeftHeader}
                             columnWidth={props.columnWidth}
                             groupName={props.leftHeaderSpec.groupNames?.[rowIndex]}
@@ -130,6 +163,17 @@ export function TableContents(props: TableContentsProps): ReactNode {
                     : null,
                 )}
             </div>
+            {screenshotMode && disclaimerFootnotes.footnotes.length > 0 && (
+                <div className="disclaimer-footnotes serif" style={{ fontSize: '0.85em', marginTop: '1em', color: colors.textMain }}>
+                    {disclaimerFootnotes.footnotes.map(({ symbol, text }) => (
+                        <div key={symbol} style={{ marginBottom: '0.35em' }}>
+                            <sup>{symbol}</sup>
+                            {' '}
+                            {text}
+                        </div>
+                    ))}
+                </div>
+            )}
         </>
     )
 }
@@ -226,6 +270,7 @@ export interface StatisticNameCellProps {
     transpose?: boolean
     isIndented?: boolean
     displayName?: string
+    footnoteSymbol?: string
     sortInfo?: {
         sortDirection: 'up' | 'down' | 'both'
         onSort: () => void
