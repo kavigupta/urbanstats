@@ -6,24 +6,6 @@ from urbanstats.geometry.historical_counties.historical_county_file import (
 )
 from urbanstats.geometry.historical_counties.suo_data_source import SUODataSource
 
-# def load_toncmg_raw_2024():
-#     frame = pd.read_csv(
-#         "election-data/tonmcg/2024_US_County_Level_Presidential_Results.csv",
-#         dtype={"county_fips": str},
-#     )
-#     frame = frame[
-#         ["county_name", "county_fips", "votes_dem", "votes_gop", "total_votes"]
-#     ].rename(
-#         columns={
-#             "county_name": "name",
-#             "county_fips": "fips",
-#             "votes_dem": "dem",
-#             "votes_gop": "gop",
-#             "total_votes": "total",
-#         }
-#     )
-#     return frame
-
 
 def load_toncmg_raw_2008_2012(year):
     frame = pd.read_csv(
@@ -156,14 +138,6 @@ def load_2012_suo():
     )
 
 
-# def load_2024_suo():
-#     return load_with_suos(
-#         2024,
-#         "2024-11-05",
-#         {"name": "Kalawao", "fips": "15005", "dem": 15, "gop": 3, "total": 18},
-#     )
-
-
 tonmcg_elections = {
     "2008 Presidential Election": SUODataSource(
         "tonmcg-2008_2", load_2008_suo, ["dem", "gop", "total"]
@@ -171,7 +145,4 @@ tonmcg_elections = {
     "2012 Presidential Election": SUODataSource(
         "tonmcg-2012_2", load_2012_suo, ["dem", "gop", "total"]
     ),
-    # "2024 Presidential Election": SUODataSource(
-    #     "tonmcg-2024_2", load_2024_suo, ["dem", "gop", "total"]
-    # ),
 }
