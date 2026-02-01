@@ -22,6 +22,7 @@ import { Modal } from './Modal'
 import { computeDisclaimerText, type Disclaimer } from './disclaimer-text'
 import { Percentile, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
+import { footnoteSymbol } from './footnote-symbol'
 import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
@@ -798,6 +799,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                         currentUniverse={props.currentUniverse}
                         center={props.center}
                         displayName={props.displayName ?? props.renderedStatname}
+                        footnoteSymbol={props.footnoteSymbol}
                     />
                     {props.sortInfo && (
                         <span
@@ -837,6 +839,7 @@ export function StatisticName(props: {
     currentUniverse: Universe
     center?: boolean
     displayName: string
+    footnoteSymbol?: string
 }): ReactNode {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
@@ -873,9 +876,18 @@ export function StatisticName(props: {
         )
     }
     if (props.row?.disclaimer !== undefined) {
-        elements.push(<StatisticNameDisclaimer disclaimer={props.row.disclaimer} />)
+        elements.push(<StatisticNameDisclaimer disclaimer={props.row.disclaimer} footnoteSymbol={props.footnoteSymbol} />)
     }
     if (elements.length > 1) {
+        const footnoteOnly = elements.length === 2 && props.footnoteSymbol !== undefined
+        if (footnoteOnly) {
+            return (
+                <span style={{ display: 'inline' }}>
+                    {link}
+                    {elements[1]}
+                </span>
+            )
+        }
         const paddedElements = [elements[0]]
         for (let i = 1; i < elements.length; i++) {
             paddedElements.push(<div key={i} style={{ marginLeft: '0.3em' }} />)
@@ -920,10 +932,32 @@ export function ComparisonColorBar({ highlightIndex }: { highlightIndex: number 
     )
 }
 
-function StatisticNameDisclaimer(props: { disclaimer: Disclaimer }): ReactNode {
-    // little disclaimer icon that pops up a tooltip when clicked
-    const [show, setShow] = useState(false)
+export function computeDisclaimerFootnotes(rows: { disclaimer?: Disclaimer }[]): { getSymbol: (d: Disclaimer) => string, footnotes: { symbol: string, text: string }[] } {
+    const uniqueMessages: string[] = []
+    for (const row of rows) {
+        if (row.disclaimer !== undefined) {
+            const msg = computeDisclaimerText(row.disclaimer)
+            if (!uniqueMessages.includes(msg)) {
+                uniqueMessages.push(msg)
+            }
+        }
+    }
+    const footnotes = uniqueMessages.map((text, i) => ({ symbol: footnoteSymbol(i), text }))
+    const getSymbol = (d: Disclaimer): string => footnoteSymbol(uniqueMessages.indexOf(computeDisclaimerText(d)))
+    return { getSymbol, footnotes }
+}
+
+function StatisticNameDisclaimer(props: { disclaimer: Disclaimer, footnoteSymbol?: string }): ReactNode {
     const colors = useColors()
+    const [show, setShow] = useState(false)
+    if (props.footnoteSymbol !== undefined) {
+        return (
+            <sup style={{ fontSize: '0.85em' }}>
+                {props.footnoteSymbol}
+            </sup>
+        )
+    }
+    // little disclaimer icon that pops up a tooltip when clicked
     const tooltipStyle: React.CSSProperties = {
         position: 'absolute',
         backgroundColor: colors.slightlyDifferentBackgroundFocused,
