@@ -43,7 +43,7 @@ class IMHELifeExpectancyStatistics(USAStatisticsCounties):
     def quiz_question_descriptors(self):
         return {
             "life_expectancy_2019": QuizQuestionDescriptor(
-                "higher life expectancy", HEALTH_IHME
+                "higher life expectancy", HEALTH_IHME, difficulty_multiplier_val=0.03
             ),
             "performance_score_adj_2019": QuizQuestionSkip(),
         }

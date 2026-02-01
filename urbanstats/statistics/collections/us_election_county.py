@@ -7,7 +7,7 @@ from urbanstats.statistics.statistic_collection import USAStatisticsCounties
 
 
 class USCountyLevelElectionsStatistics(USAStatisticsCounties):
-    version = 9
+    version = 10
 
     def compute_statistics_dictionary_usa(
         self, *, shapefile, existing_statistics, shapefile_table
@@ -27,10 +27,6 @@ class USCountyLevelElectionsStatistics(USAStatisticsCounties):
             existing_statistics[("2016 Presidential Election", "margin")]
             - results[("2012 Presidential Election", "margin")]
         )
-        results[("2020-2024 Swing", "margin")] = (
-            results[("2024 Presidential Election", "margin")]
-            - existing_statistics[("2020 Presidential Election", "margin")]
-        )
         return results
 
     def name_for_each_statistic(self):
@@ -38,13 +34,11 @@ class USCountyLevelElectionsStatistics(USAStatisticsCounties):
             **{(elect, "margin"): elect for elect in tonmcg_elections},
             ("2008-2012 Swing", "margin"): "2008-2012 Swing",
             ("2012-2016 Swing", "margin"): "2012-2016 Swing",
-            ("2020-2024 Swing", "margin"): "2020-2024 Swing",
         }
 
     def dependencies(self):
         return [
             ("2016 Presidential Election", "margin"),
-            ("2020 Presidential Election", "margin"),
         ]
 
     def explanation_page_for_each_statistic(self):
@@ -63,10 +57,6 @@ class USCountyLevelElectionsStatistics(USAStatisticsCounties):
                     "margin",
                 ): "!FULL Which voted more for Obama in the 2012 presidential election?",
                 (
-                    "2024 Presidential Election",
-                    "margin",
-                ): "!FULL Which voted more for Harris in the 2024 presidential election?",
-                (
                     "2008-2012 Swing",
                     "margin",
                 ): "!FULL Which swung less towards Republicans from 2008 to 2012?",
@@ -74,10 +64,6 @@ class USCountyLevelElectionsStatistics(USAStatisticsCounties):
                     "2012-2016 Swing",
                     "margin",
                 ): "!FULL Which swung less towards Republicans from 2012 to 2016?",
-                (
-                    "2020-2024 Swing",
-                    "margin",
-                ): "!FULL Which swung less towards Republicans from 2020 to 2024?",
             },
         )
 
@@ -91,5 +77,4 @@ class USCountyLevelElectionsStatistics(USAStatisticsCounties):
             },
             ("2008-2012 Swing", "margin"): "pres_swing_2008_2012",
             ("2012-2016 Swing", "margin"): "pres_swing_2012_2016",
-            ("2020-2024 Swing", "margin"): "pres_swing_2020_2024",
         }

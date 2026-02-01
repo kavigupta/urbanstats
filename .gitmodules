@@ -1,0 +1,3 @@
+[submodule "named_region_shapefiles/2024Precincts"]
+	path = named_region_shapefiles/2024Precincts
+	url = git@github.com:kavigupta/2024Precincts.git
