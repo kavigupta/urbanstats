@@ -932,8 +932,6 @@ export function ComparisonColorBar({ highlightIndex }: { highlightIndex: number 
     )
 }
 
-export { footnoteSymbol } from './footnote-symbol'
-
 export function computeDisclaimerFootnotes(rows: { disclaimer?: Disclaimer }[]): { getSymbol: (d: Disclaimer) => string, footnotes: { symbol: string, text: string }[] } {
     const uniqueMessages: string[] = []
     for (const row of rows) {
