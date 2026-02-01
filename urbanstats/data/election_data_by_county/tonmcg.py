@@ -6,7 +6,6 @@ from urbanstats.geometry.historical_counties.historical_county_file import (
 )
 from urbanstats.geometry.historical_counties.suo_data_source import SUODataSource
 
-
 # def load_toncmg_raw_2024():
 #     frame = pd.read_csv(
 #         "election-data/tonmcg/2024_US_County_Level_Presidential_Results.csv",
