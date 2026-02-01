@@ -19,9 +19,10 @@ import { zIndex } from '../utils/zIndex'
 
 import { Icon } from './Icon'
 import { Modal } from './Modal'
+import { computeDisclaimerText, type Disclaimer } from './disclaimer-text'
 import { Percentile, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
-import { ArticleRow, Disclaimer, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
+import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
@@ -917,13 +918,6 @@ export function ComparisonColorBar({ highlightIndex }: { highlightIndex: number 
             />
         </div>
     )
-}
-
-function computeDisclaimerText(disclaimer: Disclaimer): string {
-    switch (disclaimer) {
-        case 'heterogenous-sources':
-            return 'This statistic is based on data from multiple sources, which may not be consistent with each other.'
-    }
 }
 
 function StatisticNameDisclaimer(props: { disclaimer: Disclaimer }): ReactNode {

@@ -9,6 +9,7 @@ import { Article, IFirstOrLast } from '../utils/protos'
 import { UnitType } from '../utils/unit'
 
 import { CountsByUT, forType } from './countsByArticleType'
+import { electionDisclaimerForRow, type Disclaimer } from './disclaimer-text'
 
 export interface HistogramExtraStat {
     type: 'histogram'
@@ -28,8 +29,6 @@ export interface TimeSeriesExtraStat {
 export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat
 
 export type StatCol = (typeof stats)[number]
-
-export type Disclaimer = 'heterogenous-sources'
 
 export interface FirstLastStatus { isFirst: boolean, isLast: boolean }
 
@@ -88,6 +87,11 @@ export function loadSingleArticle(data: Article, counts: CountsByUT, universe: s
 
     const overallFirstOrLast = data.overallFirstOrLast.filter((x: IFirstOrLast) => x.articleUniversesIdx === universeIndex)
 
+    // Find population value if available
+    const populationIndex = paths.indexOf('population' as StatPath)
+    const populationRowIndex = populationIndex >= 0 ? indices.indexOf(populationIndex) : -1
+    const population = populationRowIndex >= 0 && data.rows[populationRowIndex]?.statval ? data.rows[populationRowIndex].statval : null
+
     return data.rows.map((rowOriginal, rowIndex) => {
         const i = indices[rowIndex]
         // fresh row object
@@ -109,6 +113,10 @@ export function loadSingleArticle(data: Article, counts: CountsByUT, universe: s
             }
         }
         const overallFirstLastThis = overallFirstOrLast.filter((x: IFirstOrLast) => x.articleRowIdx === rowIndex)
+
+        // Determine disclaimer for election statistics
+        const disclaimer = electionDisclaimerForRow(paths[i], population)
+
         return {
             statval: rowOriginal.statval!,
             ordinal: rowOriginal.ordinalByUniverse![universeIndex],
@@ -123,6 +131,7 @@ export function loadSingleArticle(data: Article, counts: CountsByUT, universe: s
             index: i,
             renderedStatname: names[i],
             extraStat,
+            disclaimer,
             overallFirstLast: {
                 isFirst: overallFirstLastThis.some((x: IFirstOrLast) => x.isFirst),
                 isLast: overallFirstLastThis.some((x: IFirstOrLast) => !x.isFirst),
