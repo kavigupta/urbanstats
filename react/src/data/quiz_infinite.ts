@@ -45248,311 +45248,319 @@ export default [
             [
                 {
                     "path": "quiz_sampling_info/14/q1/0.gz",
-                    "totalP": 0.17816771566867828
+                    "totalP": 0.19198152422904968
                 },
                 {
                     "path": "quiz_sampling_info/14/q1/1.gz",
-                    "totalP": 0.16010959446430206
+                    "totalP": 0.15039503574371338
                 },
                 {
                     "path": "quiz_sampling_info/14/q1/2.gz",
-                    "totalP": 0.1540321558713913
+                    "totalP": 0.14745132625102997
                 },
                 {
                     "path": "quiz_sampling_info/14/q1/3.gz",
-                    "totalP": 0.22739271819591522
+                    "totalP": 0.24622377753257751
                 },
                 {
                     "path": "quiz_sampling_info/14/q1/4.gz",
-                    "totalP": 0.1809205263853073
+                    "totalP": 0.18524864315986633
                 },
                 {
                     "path": "quiz_sampling_info/14/q1/5.gz",
-                    "totalP": 0.09937712550163269
+                    "totalP": 0.07869956642389297
                 }
             ],
             [
                 {
                     "path": "quiz_sampling_info/14/q2/0.gz",
-                    "totalP": 0.1689668893814087
+                    "totalP": 0.17271724343299866
                 },
                 {
                     "path": "quiz_sampling_info/14/q2/1.gz",
-                    "totalP": 0.14912419021129608
+                    "totalP": 0.15021635591983795
                 },
                 {
                     "path": "quiz_sampling_info/14/q2/2.gz",
-                    "totalP": 0.10523521155118942
+                    "totalP": 0.10118752717971802
                 },
                 {
                     "path": "quiz_sampling_info/14/q2/3.gz",
-                    "totalP": 0.13684451580047607
+                    "totalP": 0.14140842854976654
                 },
                 {
                     "path": "quiz_sampling_info/14/q2/4.gz",
-                    "totalP": 0.14068946242332458
+                    "totalP": 0.1484581083059311
                 },
                 {
                     "path": "quiz_sampling_info/14/q2/5.gz",
-                    "totalP": 0.19374510645866394
+                    "totalP": 0.19817490875720978
                 },
                 {
                     "path": "quiz_sampling_info/14/q2/6.gz",
-                    "totalP": 0.10539461672306061
+                    "totalP": 0.08783721923828125
                 }
             ],
             [
                 {
                     "path": "quiz_sampling_info/14/q3/0.gz",
-                    "totalP": 0.12329676002264023
+                    "totalP": 0.12472345679998398
                 },
                 {
                     "path": "quiz_sampling_info/14/q3/1.gz",
-                    "totalP": 0.12517578899860382
+                    "totalP": 0.11923610419034958
                 },
                 {
                     "path": "quiz_sampling_info/14/q3/2.gz",
-                    "totalP": 0.09463834762573242
+                    "totalP": 0.09058253467082977
                 },
                 {
                     "path": "quiz_sampling_info/14/q3/3.gz",
-                    "totalP": 0.10363880544900894
+                    "totalP": 0.11342041194438934
                 },
                 {
                     "path": "quiz_sampling_info/14/q3/4.gz",
-                    "totalP": 0.06809666752815247
+                    "totalP": 0.05377846956253052
                 },
                 {
                     "path": "quiz_sampling_info/14/q3/5.gz",
-                    "totalP": 0.11187039315700531
+                    "totalP": 0.1250743716955185
                 },
                 {
                     "path": "quiz_sampling_info/14/q3/6.gz",
-                    "totalP": 0.08022616803646088
+                    "totalP": 0.08807150274515152
                 },
                 {
                     "path": "quiz_sampling_info/14/q3/7.gz",
-                    "totalP": 0.06830784678459167
+                    "totalP": 0.04545631259679794
                 },
                 {
                     "path": "quiz_sampling_info/14/q3/8.gz",
-                    "totalP": 0.11943081766366959
+                    "totalP": 0.13424347341060638
                 },
                 {
                     "path": "quiz_sampling_info/14/q3/9.gz",
-                    "totalP": 0.10531830042600632
+                    "totalP": 0.10438592731952667
+                },
+                {
+                    "path": "quiz_sampling_info/14/q3/10.gz",
+                    "totalP": 0.0010274569503962994
                 }
             ],
             [
                 {
                     "path": "quiz_sampling_info/14/q4/0.gz",
-                    "totalP": 0.09787055104970932
+                    "totalP": 0.09323611110448837
                 },
                 {
                     "path": "quiz_sampling_info/14/q4/1.gz",
-                    "totalP": 0.13798683881759644
+                    "totalP": 0.1350906491279602
                 },
                 {
                     "path": "quiz_sampling_info/14/q4/2.gz",
-                    "totalP": 0.10798326879739761
+                    "totalP": 0.11028458923101425
                 },
                 {
                     "path": "quiz_sampling_info/14/q4/3.gz",
-                    "totalP": 0.09993533045053482
+                    "totalP": 0.08742737025022507
                 },
                 {
                     "path": "quiz_sampling_info/14/q4/4.gz",
-                    "totalP": 0.12003375589847565
+                    "totalP": 0.11903450638055801
                 },
                 {
                     "path": "quiz_sampling_info/14/q4/5.gz",
-                    "totalP": 0.036695778369903564
+                    "totalP": 0.031274814158678055
                 },
                 {
                     "path": "quiz_sampling_info/14/q4/6.gz",
-                    "totalP": 0.07184084504842758
+                    "totalP": 0.050626546144485474
                 },
                 {
                     "path": "quiz_sampling_info/14/q4/7.gz",
-                    "totalP": 0.11160068213939667
+                    "totalP": 0.12878592312335968
                 },
                 {
                     "path": "quiz_sampling_info/14/q4/8.gz",
-                    "totalP": 0.02790054865181446
+                    "totalP": 0.035064149647951126
                 },
                 {
                     "path": "quiz_sampling_info/14/q4/9.gz",
-                    "totalP": 0.04186822101473808
+                    "totalP": 0.025678887963294983
                 },
                 {
                     "path": "quiz_sampling_info/14/q4/10.gz",
-                    "totalP": 0.08447722345590591
+                    "totalP": 0.06570335477590561
                 },
                 {
                     "path": "quiz_sampling_info/14/q4/11.gz",
-                    "totalP": 0.06180671602487564
+                    "totalP": 0.06512919068336487
+                },
+                {
+                    "path": "quiz_sampling_info/14/q4/12.gz",
+                    "totalP": 0.052663616836071014
                 }
             ],
             [
                 {
                     "path": "quiz_sampling_info/14/q5/0.gz",
-                    "totalP": 0.013387124054133892
+                    "totalP": 0.014374746941030025
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/1.gz",
-                    "totalP": 0.021547967568039894
+                    "totalP": 0.0222104974091053
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/2.gz",
-                    "totalP": 0.024332189932465553
+                    "totalP": 0.023433806374669075
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/3.gz",
-                    "totalP": 0.021962972357869148
+                    "totalP": 0.02206096611917019
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/4.gz",
-                    "totalP": 0.021127859130501747
+                    "totalP": 0.020766358822584152
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/5.gz",
-                    "totalP": 0.031451500952243805
+                    "totalP": 0.03266739845275879
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/6.gz",
-                    "totalP": 0.01434081606566906
+                    "totalP": 0.01158053893595934
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/7.gz",
-                    "totalP": 0.01615900732576847
+                    "totalP": 0.013322153128683567
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/8.gz",
-                    "totalP": 0.01703830622136593
+                    "totalP": 0.01282359566539526
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/9.gz",
-                    "totalP": 0.01814897730946541
+                    "totalP": 0.017573487013578415
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/10.gz",
-                    "totalP": 0.015329359099268913
+                    "totalP": 0.016998831182718277
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/11.gz",
-                    "totalP": 0.027079876512289047
+                    "totalP": 0.014317921362817287
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/12.gz",
-                    "totalP": 0.016017166897654533
+                    "totalP": 0.02269744500517845
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/13.gz",
-                    "totalP": 0.023458072915673256
+                    "totalP": 0.01894165389239788
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/14.gz",
-                    "totalP": 0.02308383770287037
+                    "totalP": 0.01729939691722393
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/15.gz",
-                    "totalP": 0.016689132899045944
+                    "totalP": 0.031045040115714073
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/16.gz",
-                    "totalP": 0.02603563852608204
+                    "totalP": 0.01754533313214779
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/17.gz",
-                    "totalP": 0.052578311413526535
+                    "totalP": 0.02685903199017048
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/18.gz",
-                    "totalP": 0.014192042872309685
+                    "totalP": 0.024902990087866783
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/19.gz",
-                    "totalP": 0.015147414058446884
+                    "totalP": 0.05294185131788254
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/20.gz",
-                    "totalP": 0.023312298581004143
+                    "totalP": 0.017312105745077133
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/21.gz",
-                    "totalP": 0.01731729879975319
+                    "totalP": 0.022276634350419044
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/22.gz",
-                    "totalP": 0.014946897514164448
+                    "totalP": 0.01924564689397812
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/23.gz",
-                    "totalP": 0.027727017179131508
+                    "totalP": 0.018095700070261955
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/24.gz",
-                    "totalP": 0.05539526045322418
+                    "totalP": 0.009556419216096401
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/25.gz",
-                    "totalP": 0.005019348580390215
+                    "totalP": 0.035487912595272064
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/26.gz",
-                    "totalP": 0.006050345953553915
+                    "totalP": 0.05051562562584877
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/27.gz",
-                    "totalP": 0.00636629480868578
+                    "totalP": 0.007232579868286848
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/28.gz",
-                    "totalP": 0.0297995638102293
+                    "totalP": 0.008451798930764198
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/29.gz",
-                    "totalP": 0.1781442016363144
+                    "totalP": 0.03508185222744942
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/30.gz",
-                    "totalP": 0.004664399661123753
+                    "totalP": 0.10814310610294342
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/31.gz",
-                    "totalP": 0.004878592677414417
+                    "totalP": 0.006266541313380003
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/32.gz",
-                    "totalP": 0.004954108502715826
+                    "totalP": 0.007782416418194771
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/33.gz",
-                    "totalP": 0.00835374929010868
+                    "totalP": 0.00807115063071251
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/34.gz",
-                    "totalP": 0.006037176586687565
+                    "totalP": 0.008115904405713081
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/35.gz",
-                    "totalP": 0.012847556732594967
+                    "totalP": 0.029780374839901924
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/36.gz",
-                    "totalP": 0.026721367612481117
+                    "totalP": 0.017493318766355515
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/37.gz",
-                    "totalP": 0.014371942728757858
+                    "totalP": 0.04337254539132118
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/38.gz",
-                    "totalP": 0.05663606524467468
+                    "totalP": 0.08277542889118195
                 },
                 {
                     "path": "quiz_sampling_info/14/q5/39.gz",
-                    "totalP": 0.0673489198088646
+                    "totalP": 0.03058040514588356
                 }
             ]
         ],
