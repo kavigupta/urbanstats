@@ -9,6 +9,7 @@ import { Article, IFirstOrLast } from '../utils/protos'
 import { UnitType } from '../utils/unit'
 
 import { CountsByUT, forType } from './countsByArticleType'
+import { electionDisclaimerForRow, type Disclaimer } from './disclaimer-text'
 
 export interface HistogramExtraStat {
     type: 'histogram'
@@ -28,8 +29,6 @@ export interface TimeSeriesExtraStat {
 export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat
 
 export type StatCol = (typeof stats)[number]
-
-export { computeDisclaimerText, type Disclaimer } from './disclaimer-text'
 
 export interface FirstLastStatus { isFirst: boolean, isLast: boolean }
 
