@@ -363,14 +363,22 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     // Update URL when USS changes in edit mode
     useEffect(() => {
         if (!isFromStatName) {
-            navContext.unsafeUpdateCurrentDescriptor({
-                kind: 'statistic',
+            void navContext.navigate(statisticDescriptor({
                 universe: editUniverse,
-                uss: statDesc.uss,
-                article_type: editGeographyKind,
+                statDesc,
+                articleType: editGeographyKind,
+                start: props.start,
+                amount: props.amount,
+                order: props.order,
+                highlight: props.highlight,
+                edit: isEditMode,
+                sortColumn: props.sortColumn,
+            }), {
+                history: 'replace',
+                scroll: { kind: 'none' },
             })
         }
-    }, [statDesc, editUniverse, editGeographyKind, isFromStatName, navContext])
+    }, [statDesc, editUniverse, editGeographyKind, isFromStatName, navContext, props.start, props.amount, props.order, props.highlight, props.sortColumn, isEditMode])
 
     const handleApplyUSS = (): void => {
         void navContext.navigate(statisticDescriptor({
