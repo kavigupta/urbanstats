@@ -1,6 +1,6 @@
-import { ClientFunction, RequestHook, Selector } from 'testcafe'
+import { RequestHook, Selector } from 'testcafe'
 
-import { clickMapFeature, flaky, getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult } from './test_utils'
+import { clickMapFeature, flaky, getLocation, getScroll, goBack, goForward, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult } from './test_utils'
 
 urbanstatsFixture('navigation test', '/')
 
@@ -17,10 +17,6 @@ test('two randoms mobile', async (t) => {
     await waitForLoading()
     await t.expect(Selector('a').withExactText('Weighted by Population (US only)').exists).notOk()
 })
-
-const goBack = ClientFunction(() => { window.history.back() })
-const goForward = ClientFunction(() => { window.history.forward() })
-const getScroll = ClientFunction(() => window.scrollY)
 
 test('maintain and restore scroll position back-forward', async (t) => {
     await t.navigateTo('/article.html?longname=Texas%2C+USA')
