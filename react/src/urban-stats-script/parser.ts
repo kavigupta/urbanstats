@@ -837,7 +837,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
             return `autoUXNode(${unparse(node.expr, { ...opts, inline: true, expressionalContext: true })}, ${JSON.stringify(JSON.stringify(node.metadata))})`
         case 'customNode':
             if (!opts.simplify) {
-                return `customNode(${JSON.stringify(node.originalCode.trim())})`
+                return `customNode(${JSON.stringify(node.originalCode)})`
             }
             if (opts.expressionalContext && node.expr.type !== 'expression') {
                 return unparse({ type: 'do', statements: [node.expr], entireLoc: locationOf(node.expr) }, { ...opts, inline: true })
