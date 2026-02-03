@@ -1,5 +1,5 @@
 import { parse } from 'csv-parse/sync'
-import { ClientFunction, Selector } from 'testcafe'
+import { Selector } from 'testcafe'
 
 import { nthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
 import { getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
