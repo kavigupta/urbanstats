@@ -868,7 +868,7 @@ test('convert-table-to-map-and-back-preserves-fields', async (t) => {
 
 urbanstatsFixture('states', `${target}/statistic.html?statname=Area&article_type=Subnational+Region&start=21&amount=20&universe=USA`)
 
-test.only('forward back navigation works', async (t) => {
+test('forward back navigation works', async (t) => {
     async function assertStates(): Promise<void> {
         await t.expect(Selector('.headertext').textContent).eql('States')
         await t.expect(Selector('.subheadertext').textContent).eql('Area')

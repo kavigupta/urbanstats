@@ -289,20 +289,31 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const colors = useColors()
 
     const isEditMode = props.edit ?? false
-    const [editUniverse, setEditUniverse] = useState<Universe>(props.universe)
-    useEffect(() => {
-        setEditUniverse(props.universe)
-    }, [props.universe])
-    const [editGeographyKind, setEditGeographyKind] = useState<typeof validGeographies[number]>(props.articleType as typeof validGeographies[number])
+
+    const getEditUniverse = useCallback(() => props.universe, [props.universe])
+    const [editUniverse, setEditUniverse] = useState<Universe>(getEditUniverse)
+
+    const getEditGeographyKind = useCallback(() => props.articleType as typeof validGeographies[number], [props.articleType])
+    const [editGeographyKind, setEditGeographyKind] = useState<typeof validGeographies[number]>(getEditGeographyKind)
+
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(editUniverse), [editUniverse])
+
     const [editErrors, setEditErrors] = useState<EditorError[]>([])
 
-    const [[editUSS, isFromStatName], setEditUSS] = useState<[MapUSS, boolean]>(() => {
+    const getEditUSS = useCallback<() => [MapUSS, boolean]>(() => {
         const initialUSS = props.descriptor.type === 'uss-statistic'
             ? props.descriptor.uss
             : `customNode(""); condition (true); table(columns=[column(values=${varName(props.descriptor.statname)})])`
         return [parseUSSFromString(initialUSS, typeEnvironment, props.descriptor.type === 'uss-statistic'), props.descriptor.type === 'simple-statistic']
-    })
+    }, [props.descriptor, typeEnvironment])
+    const [[editUSS, isFromStatName], setEditUSS] = useState<[MapUSS, boolean]>(getEditUSS)
+
+    // If needed, load state from updated props
+    useEffect(() => {
+        setEditUniverse(getEditUniverse())
+        setEditGeographyKind(getEditGeographyKind)
+        setEditUSS(getEditUSS())
+    }, [getEditUniverse, getEditUSS, getEditGeographyKind])
 
     // Construct MapSettings from separate state for MapperSettings component
     const editMapSettings = useMemo((): MapSettings => ({
