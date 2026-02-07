@@ -1905,263 +1905,263 @@ export default {
             "index": 11
         },
         {
-            "varName": "canada_2015ge_con_voteshare",
-            "humanReadableName": "2015GE Con %",
-            "comesFromMultiSourceSet": false,
-            "order": 272,
-            "index": 9
-        },
-        {
-            "varName": "canada_2015ge_ndp_voteshare",
-            "humanReadableName": "2015GE NDP %",
-            "comesFromMultiSourceSet": false,
-            "order": 273,
-            "index": 12
-        },
-        {
-            "varName": "canada_2015ge_bq_voteshare",
-            "humanReadableName": "2015GE BQ %",
-            "comesFromMultiSourceSet": false,
-            "order": 274,
-            "index": 8
-        },
-        {
-            "varName": "canada_2015ge_grn_voteshare",
-            "humanReadableName": "2015GE Grn %",
-            "comesFromMultiSourceSet": false,
-            "order": 275,
-            "index": 10
-        },
-        {
-            "varName": "canada_2015ge_coalition_margin",
-            "humanReadableName": "2015GE 2-Coalition Margin",
-            "comesFromMultiSourceSet": false,
-            "order": 276,
-            "index": 13
-        },
-        {
             "varName": "canada_swing_2015_2019_lib",
             "humanReadableName": "2015-2019 Swing Lib %",
             "comesFromMultiSourceSet": false,
-            "order": 277,
+            "order": 272,
             "index": 5
-        },
-        {
-            "varName": "canada_swing_2015_2019_con",
-            "humanReadableName": "2015-2019 Swing Con %",
-            "comesFromMultiSourceSet": false,
-            "order": 278,
-            "index": 4
-        },
-        {
-            "varName": "canada_swing_2015_2019_ndp",
-            "humanReadableName": "2015-2019 Swing NDP %",
-            "comesFromMultiSourceSet": false,
-            "order": 279,
-            "index": 6
-        },
-        {
-            "varName": "canada_swing_2015_2019_coalition_margin",
-            "humanReadableName": "2015-2019 Swing 2-Coalition Margin",
-            "comesFromMultiSourceSet": false,
-            "order": 280,
-            "index": 7
         },
         {
             "varName": "canada_2019ge_lib_voteshare",
             "humanReadableName": "2019GE Lib %",
             "comesFromMultiSourceSet": false,
-            "order": 281,
+            "order": 273,
             "index": 23
-        },
-        {
-            "varName": "canada_2019ge_con_voteshare",
-            "humanReadableName": "2019GE Con %",
-            "comesFromMultiSourceSet": false,
-            "order": 282,
-            "index": 21
-        },
-        {
-            "varName": "canada_2019ge_ndp_voteshare",
-            "humanReadableName": "2019GE NDP %",
-            "comesFromMultiSourceSet": false,
-            "order": 283,
-            "index": 24
-        },
-        {
-            "varName": "canada_2019ge_bq_voteshare",
-            "humanReadableName": "2019GE BQ %",
-            "comesFromMultiSourceSet": false,
-            "order": 284,
-            "index": 20
-        },
-        {
-            "varName": "canada_2019ge_grn_voteshare",
-            "humanReadableName": "2019GE Grn %",
-            "comesFromMultiSourceSet": false,
-            "order": 285,
-            "index": 22
-        },
-        {
-            "varName": "canada_2019ge_ppc_voteshare",
-            "humanReadableName": "2019GE PPC %",
-            "comesFromMultiSourceSet": false,
-            "order": 286,
-            "index": 25
-        },
-        {
-            "varName": "canada_2019ge_coalition_margin",
-            "humanReadableName": "2019GE 2-Coalition Margin",
-            "comesFromMultiSourceSet": false,
-            "order": 287,
-            "index": 26
         },
         {
             "varName": "canada_swing_2019_2021_lib",
             "humanReadableName": "2019-2021 Swing Lib %",
             "comesFromMultiSourceSet": false,
-            "order": 288,
+            "order": 274,
             "index": 17
-        },
-        {
-            "varName": "canada_swing_2019_2021_con",
-            "humanReadableName": "2019-2021 Swing Con %",
-            "comesFromMultiSourceSet": false,
-            "order": 289,
-            "index": 16
-        },
-        {
-            "varName": "canada_swing_2019_2021_ndp",
-            "humanReadableName": "2019-2021 Swing NDP %",
-            "comesFromMultiSourceSet": false,
-            "order": 290,
-            "index": 18
-        },
-        {
-            "varName": "canada_swing_2019_2021_coalition_margin",
-            "humanReadableName": "2019-2021 Swing 2-Coalition Margin",
-            "comesFromMultiSourceSet": false,
-            "order": 291,
-            "index": 19
         },
         {
             "varName": "canada_2021ge_lib_voteshare",
             "humanReadableName": "2021GE Lib %",
             "comesFromMultiSourceSet": false,
-            "order": 292,
+            "order": 275,
             "index": 36
-        },
-        {
-            "varName": "canada_2021ge_con_voteshare",
-            "humanReadableName": "2021GE Con %",
-            "comesFromMultiSourceSet": false,
-            "order": 293,
-            "index": 34
-        },
-        {
-            "varName": "canada_2021ge_ndp_voteshare",
-            "humanReadableName": "2021GE NDP %",
-            "comesFromMultiSourceSet": false,
-            "order": 294,
-            "index": 37
-        },
-        {
-            "varName": "canada_2021ge_bq_voteshare",
-            "humanReadableName": "2021GE BQ %",
-            "comesFromMultiSourceSet": false,
-            "order": 295,
-            "index": 33
-        },
-        {
-            "varName": "canada_2021ge_grn_voteshare",
-            "humanReadableName": "2021GE Grn %",
-            "comesFromMultiSourceSet": false,
-            "order": 296,
-            "index": 35
-        },
-        {
-            "varName": "canada_2021ge_ppc_voteshare",
-            "humanReadableName": "2021GE PPC %",
-            "comesFromMultiSourceSet": false,
-            "order": 297,
-            "index": 38
-        },
-        {
-            "varName": "canada_2021ge_coalition_margin",
-            "humanReadableName": "2021GE 2-Coalition Margin",
-            "comesFromMultiSourceSet": false,
-            "order": 298,
-            "index": 39
         },
         {
             "varName": "canada_swing_2021_2025_lib",
             "humanReadableName": "2021-2025 Swing Lib %",
             "comesFromMultiSourceSet": false,
-            "order": 299,
+            "order": 276,
             "index": 30
-        },
-        {
-            "varName": "canada_swing_2021_2025_con",
-            "humanReadableName": "2021-2025 Swing Con %",
-            "comesFromMultiSourceSet": false,
-            "order": 300,
-            "index": 29
-        },
-        {
-            "varName": "canada_swing_2021_2025_ndp",
-            "humanReadableName": "2021-2025 Swing NDP %",
-            "comesFromMultiSourceSet": false,
-            "order": 301,
-            "index": 31
-        },
-        {
-            "varName": "canada_swing_2021_2025_coalition_margin",
-            "humanReadableName": "2021-2025 Swing 2-Coalition Margin",
-            "comesFromMultiSourceSet": false,
-            "order": 302,
-            "index": 32
         },
         {
             "varName": "canada_2025ge_lib_voteshare",
             "humanReadableName": "2025GE Lib %",
             "comesFromMultiSourceSet": false,
-            "order": 303,
+            "order": 277,
             "index": 44
+        },
+        {
+            "varName": "canada_2015ge_con_voteshare",
+            "humanReadableName": "2015GE Con %",
+            "comesFromMultiSourceSet": false,
+            "order": 278,
+            "index": 9
+        },
+        {
+            "varName": "canada_swing_2015_2019_con",
+            "humanReadableName": "2015-2019 Swing Con %",
+            "comesFromMultiSourceSet": false,
+            "order": 279,
+            "index": 4
+        },
+        {
+            "varName": "canada_2019ge_con_voteshare",
+            "humanReadableName": "2019GE Con %",
+            "comesFromMultiSourceSet": false,
+            "order": 280,
+            "index": 21
+        },
+        {
+            "varName": "canada_swing_2019_2021_con",
+            "humanReadableName": "2019-2021 Swing Con %",
+            "comesFromMultiSourceSet": false,
+            "order": 281,
+            "index": 16
+        },
+        {
+            "varName": "canada_2021ge_con_voteshare",
+            "humanReadableName": "2021GE Con %",
+            "comesFromMultiSourceSet": false,
+            "order": 282,
+            "index": 34
+        },
+        {
+            "varName": "canada_swing_2021_2025_con",
+            "humanReadableName": "2021-2025 Swing Con %",
+            "comesFromMultiSourceSet": false,
+            "order": 283,
+            "index": 29
         },
         {
             "varName": "canada_2025ge_con_voteshare",
             "humanReadableName": "2025GE Con %",
             "comesFromMultiSourceSet": false,
-            "order": 304,
+            "order": 284,
             "index": 42
+        },
+        {
+            "varName": "canada_2015ge_ndp_voteshare",
+            "humanReadableName": "2015GE NDP %",
+            "comesFromMultiSourceSet": false,
+            "order": 285,
+            "index": 12
+        },
+        {
+            "varName": "canada_swing_2015_2019_ndp",
+            "humanReadableName": "2015-2019 Swing NDP %",
+            "comesFromMultiSourceSet": false,
+            "order": 286,
+            "index": 6
+        },
+        {
+            "varName": "canada_2019ge_ndp_voteshare",
+            "humanReadableName": "2019GE NDP %",
+            "comesFromMultiSourceSet": false,
+            "order": 287,
+            "index": 24
+        },
+        {
+            "varName": "canada_swing_2019_2021_ndp",
+            "humanReadableName": "2019-2021 Swing NDP %",
+            "comesFromMultiSourceSet": false,
+            "order": 288,
+            "index": 18
+        },
+        {
+            "varName": "canada_2021ge_ndp_voteshare",
+            "humanReadableName": "2021GE NDP %",
+            "comesFromMultiSourceSet": false,
+            "order": 289,
+            "index": 37
+        },
+        {
+            "varName": "canada_swing_2021_2025_ndp",
+            "humanReadableName": "2021-2025 Swing NDP %",
+            "comesFromMultiSourceSet": false,
+            "order": 290,
+            "index": 31
         },
         {
             "varName": "canada_2025ge_ndp_voteshare",
             "humanReadableName": "2025GE NDP %",
             "comesFromMultiSourceSet": false,
-            "order": 305,
+            "order": 291,
             "index": 45
+        },
+        {
+            "varName": "canada_2015ge_bq_voteshare",
+            "humanReadableName": "2015GE BQ %",
+            "comesFromMultiSourceSet": false,
+            "order": 292,
+            "index": 8
+        },
+        {
+            "varName": "canada_2019ge_bq_voteshare",
+            "humanReadableName": "2019GE BQ %",
+            "comesFromMultiSourceSet": false,
+            "order": 293,
+            "index": 20
+        },
+        {
+            "varName": "canada_2021ge_bq_voteshare",
+            "humanReadableName": "2021GE BQ %",
+            "comesFromMultiSourceSet": false,
+            "order": 294,
+            "index": 33
         },
         {
             "varName": "canada_2025ge_bq_voteshare",
             "humanReadableName": "2025GE BQ %",
             "comesFromMultiSourceSet": false,
-            "order": 306,
+            "order": 295,
             "index": 41
+        },
+        {
+            "varName": "canada_2015ge_grn_voteshare",
+            "humanReadableName": "2015GE Grn %",
+            "comesFromMultiSourceSet": false,
+            "order": 296,
+            "index": 10
+        },
+        {
+            "varName": "canada_2019ge_grn_voteshare",
+            "humanReadableName": "2019GE Grn %",
+            "comesFromMultiSourceSet": false,
+            "order": 297,
+            "index": 22
+        },
+        {
+            "varName": "canada_2021ge_grn_voteshare",
+            "humanReadableName": "2021GE Grn %",
+            "comesFromMultiSourceSet": false,
+            "order": 298,
+            "index": 35
         },
         {
             "varName": "canada_2025ge_grn_voteshare",
             "humanReadableName": "2025GE Grn %",
             "comesFromMultiSourceSet": false,
-            "order": 307,
+            "order": 299,
             "index": 43
+        },
+        {
+            "varName": "canada_2019ge_ppc_voteshare",
+            "humanReadableName": "2019GE PPC %",
+            "comesFromMultiSourceSet": false,
+            "order": 300,
+            "index": 25
+        },
+        {
+            "varName": "canada_2021ge_ppc_voteshare",
+            "humanReadableName": "2021GE PPC %",
+            "comesFromMultiSourceSet": false,
+            "order": 301,
+            "index": 38
         },
         {
             "varName": "canada_2025ge_ppc_voteshare",
             "humanReadableName": "2025GE PPC %",
             "comesFromMultiSourceSet": false,
-            "order": 308,
+            "order": 302,
             "index": 46
+        },
+        {
+            "varName": "canada_2015ge_coalition_margin",
+            "humanReadableName": "2015GE 2-Coalition Margin",
+            "comesFromMultiSourceSet": false,
+            "order": 303,
+            "index": 13
+        },
+        {
+            "varName": "canada_swing_2015_2019_coalition_margin",
+            "humanReadableName": "2015-2019 Swing 2-Coalition Margin",
+            "comesFromMultiSourceSet": false,
+            "order": 304,
+            "index": 7
+        },
+        {
+            "varName": "canada_2019ge_coalition_margin",
+            "humanReadableName": "2019GE 2-Coalition Margin",
+            "comesFromMultiSourceSet": false,
+            "order": 305,
+            "index": 26
+        },
+        {
+            "varName": "canada_swing_2019_2021_coalition_margin",
+            "humanReadableName": "2019-2021 Swing 2-Coalition Margin",
+            "comesFromMultiSourceSet": false,
+            "order": 306,
+            "index": 19
+        },
+        {
+            "varName": "canada_2021ge_coalition_margin",
+            "humanReadableName": "2021GE 2-Coalition Margin",
+            "comesFromMultiSourceSet": false,
+            "order": 307,
+            "index": 39
+        },
+        {
+            "varName": "canada_swing_2021_2025_coalition_margin",
+            "humanReadableName": "2021-2025 Swing 2-Coalition Margin",
+            "comesFromMultiSourceSet": false,
+            "order": 308,
+            "index": 32
         },
         {
             "varName": "canada_2025ge_coalition_margin",

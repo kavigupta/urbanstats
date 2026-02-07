@@ -4977,8 +4977,8 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "canada_general_election",
-                "name": "Canadian General Election",
+                "id": "canada_general_election_lib",
+                "name": "Canadian GE: Liberal",
                 "contents": [
                     {
                         "year": 2020,
@@ -4991,57 +4991,7 @@ export const rawStatsTree = [
                                         "column": 11
                                     }
                                 ],
-                                "indentedName": "2015 Lib %"
-                            },
-                            {
-                                "name": "2015GE Con %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 9
-                                    }
-                                ],
-                                "indentedName": "2015 Con %"
-                            },
-                            {
-                                "name": "2015GE NDP %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 12
-                                    }
-                                ],
-                                "indentedName": "2015 NDP %"
-                            },
-                            {
-                                "name": "2015GE BQ %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 8
-                                    }
-                                ],
-                                "indentedName": "2015 BQ %"
-                            },
-                            {
-                                "name": "2015GE Grn %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 10
-                                    }
-                                ],
-                                "indentedName": "2015 Grn %"
-                            },
-                            {
-                                "name": "2015GE 2-Coalition Margin",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 13
-                                    }
-                                ],
-                                "indentedName": "2015 2-Coalition Margin"
+                                "indentedName": "2015"
                             },
                             {
                                 "name": "2015-2019 Swing Lib %",
@@ -5051,37 +5001,7 @@ export const rawStatsTree = [
                                         "column": 5
                                     }
                                 ],
-                                "indentedName": "2015-2019 Swing Lib %"
-                            },
-                            {
-                                "name": "2015-2019 Swing Con %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 4
-                                    }
-                                ],
-                                "indentedName": "2015-2019 Swing Con %"
-                            },
-                            {
-                                "name": "2015-2019 Swing NDP %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 6
-                                    }
-                                ],
-                                "indentedName": "2015-2019 Swing NDP %"
-                            },
-                            {
-                                "name": "2015-2019 Swing 2-Coalition Margin",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 7
-                                    }
-                                ],
-                                "indentedName": "2015-2019 Swing 2-Coalition Margin"
+                                "indentedName": "2015-2019 Swing"
                             },
                             {
                                 "name": "2019GE Lib %",
@@ -5091,67 +5011,7 @@ export const rawStatsTree = [
                                         "column": 23
                                     }
                                 ],
-                                "indentedName": "2019 Lib %"
-                            },
-                            {
-                                "name": "2019GE Con %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 21
-                                    }
-                                ],
-                                "indentedName": "2019 Con %"
-                            },
-                            {
-                                "name": "2019GE NDP %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 24
-                                    }
-                                ],
-                                "indentedName": "2019 NDP %"
-                            },
-                            {
-                                "name": "2019GE BQ %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 20
-                                    }
-                                ],
-                                "indentedName": "2019 BQ %"
-                            },
-                            {
-                                "name": "2019GE Grn %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 22
-                                    }
-                                ],
-                                "indentedName": "2019 Grn %"
-                            },
-                            {
-                                "name": "2019GE PPC %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 25
-                                    }
-                                ],
-                                "indentedName": "2019 PPC %"
-                            },
-                            {
-                                "name": "2019GE 2-Coalition Margin",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 26
-                                    }
-                                ],
-                                "indentedName": "2019 2-Coalition Margin"
+                                "indentedName": "2019"
                             },
                             {
                                 "name": "2019-2021 Swing Lib %",
@@ -5161,37 +5021,7 @@ export const rawStatsTree = [
                                         "column": 17
                                     }
                                 ],
-                                "indentedName": "2019-2021 Swing Lib %"
-                            },
-                            {
-                                "name": "2019-2021 Swing Con %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 16
-                                    }
-                                ],
-                                "indentedName": "2019-2021 Swing Con %"
-                            },
-                            {
-                                "name": "2019-2021 Swing NDP %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 18
-                                    }
-                                ],
-                                "indentedName": "2019-2021 Swing NDP %"
-                            },
-                            {
-                                "name": "2019-2021 Swing 2-Coalition Margin",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 19
-                                    }
-                                ],
-                                "indentedName": "2019-2021 Swing 2-Coalition Margin"
+                                "indentedName": "2019-2021 Swing"
                             },
                             {
                                 "name": "2021GE Lib %",
@@ -5201,67 +5031,7 @@ export const rawStatsTree = [
                                         "column": 36
                                     }
                                 ],
-                                "indentedName": "2021 Lib %"
-                            },
-                            {
-                                "name": "2021GE Con %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 34
-                                    }
-                                ],
-                                "indentedName": "2021 Con %"
-                            },
-                            {
-                                "name": "2021GE NDP %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 37
-                                    }
-                                ],
-                                "indentedName": "2021 NDP %"
-                            },
-                            {
-                                "name": "2021GE BQ %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 33
-                                    }
-                                ],
-                                "indentedName": "2021 BQ %"
-                            },
-                            {
-                                "name": "2021GE Grn %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 35
-                                    }
-                                ],
-                                "indentedName": "2021 Grn %"
-                            },
-                            {
-                                "name": "2021GE PPC %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 38
-                                    }
-                                ],
-                                "indentedName": "2021 PPC %"
-                            },
-                            {
-                                "name": "2021GE 2-Coalition Margin",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 39
-                                    }
-                                ],
-                                "indentedName": "2021 2-Coalition Margin"
+                                "indentedName": "2021"
                             },
                             {
                                 "name": "2021-2025 Swing Lib %",
@@ -5271,37 +5041,7 @@ export const rawStatsTree = [
                                         "column": 30
                                     }
                                 ],
-                                "indentedName": "2021-2025 Swing Lib %"
-                            },
-                            {
-                                "name": "2021-2025 Swing Con %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 29
-                                    }
-                                ],
-                                "indentedName": "2021-2025 Swing Con %"
-                            },
-                            {
-                                "name": "2021-2025 Swing NDP %",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 31
-                                    }
-                                ],
-                                "indentedName": "2021-2025 Swing NDP %"
-                            },
-                            {
-                                "name": "2021-2025 Swing 2-Coalition Margin",
-                                "stats": [
-                                    {
-                                        "source": null,
-                                        "column": 32
-                                    }
-                                ],
-                                "indentedName": "2021-2025 Swing 2-Coalition Margin"
+                                "indentedName": "2021-2025 Swing"
                             },
                             {
                                 "name": "2025GE Lib %",
@@ -5311,7 +5051,78 @@ export const rawStatsTree = [
                                         "column": 44
                                     }
                                 ],
-                                "indentedName": "2025 Lib %"
+                                "indentedName": "2025"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "canada_general_election_con",
+                "name": "Canadian GE: Conservative",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "2015GE Con %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 9
+                                    }
+                                ],
+                                "indentedName": "2015"
+                            },
+                            {
+                                "name": "2015-2019 Swing Con %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 4
+                                    }
+                                ],
+                                "indentedName": "2015-2019 Swing"
+                            },
+                            {
+                                "name": "2019GE Con %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 21
+                                    }
+                                ],
+                                "indentedName": "2019"
+                            },
+                            {
+                                "name": "2019-2021 Swing Con %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 16
+                                    }
+                                ],
+                                "indentedName": "2019-2021 Swing"
+                            },
+                            {
+                                "name": "2021GE Con %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 34
+                                    }
+                                ],
+                                "indentedName": "2021"
+                            },
+                            {
+                                "name": "2021-2025 Swing Con %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 29
+                                    }
+                                ],
+                                "indentedName": "2021-2025 Swing"
                             },
                             {
                                 "name": "2025GE Con %",
@@ -5321,7 +5132,78 @@ export const rawStatsTree = [
                                         "column": 42
                                     }
                                 ],
-                                "indentedName": "2025 Con %"
+                                "indentedName": "2025"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "canada_general_election_ndp",
+                "name": "Canadian GE: NDP",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "2015GE NDP %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 12
+                                    }
+                                ],
+                                "indentedName": "2015"
+                            },
+                            {
+                                "name": "2015-2019 Swing NDP %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 6
+                                    }
+                                ],
+                                "indentedName": "2015-2019 Swing"
+                            },
+                            {
+                                "name": "2019GE NDP %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 24
+                                    }
+                                ],
+                                "indentedName": "2019"
+                            },
+                            {
+                                "name": "2019-2021 Swing NDP %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 18
+                                    }
+                                ],
+                                "indentedName": "2019-2021 Swing"
+                            },
+                            {
+                                "name": "2021GE NDP %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 37
+                                    }
+                                ],
+                                "indentedName": "2021"
+                            },
+                            {
+                                "name": "2021-2025 Swing NDP %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 31
+                                    }
+                                ],
+                                "indentedName": "2021-2025 Swing"
                             },
                             {
                                 "name": "2025GE NDP %",
@@ -5331,7 +5213,48 @@ export const rawStatsTree = [
                                         "column": 45
                                     }
                                 ],
-                                "indentedName": "2025 NDP %"
+                                "indentedName": "2025"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "canada_general_election_bq",
+                "name": "Canadian GE: Bloc Qu\u00e9b\u00e9cois",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "2015GE BQ %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 8
+                                    }
+                                ],
+                                "indentedName": "2015"
+                            },
+                            {
+                                "name": "2019GE BQ %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 20
+                                    }
+                                ],
+                                "indentedName": "2019"
+                            },
+                            {
+                                "name": "2021GE BQ %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 33
+                                    }
+                                ],
+                                "indentedName": "2021"
                             },
                             {
                                 "name": "2025GE BQ %",
@@ -5341,7 +5264,48 @@ export const rawStatsTree = [
                                         "column": 41
                                     }
                                 ],
-                                "indentedName": "2025 BQ %"
+                                "indentedName": "2025"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "canada_general_election_grn",
+                "name": "Canadian GE: Green",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "2015GE Grn %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 10
+                                    }
+                                ],
+                                "indentedName": "2015"
+                            },
+                            {
+                                "name": "2019GE Grn %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 22
+                                    }
+                                ],
+                                "indentedName": "2019"
+                            },
+                            {
+                                "name": "2021GE Grn %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 35
+                                    }
+                                ],
+                                "indentedName": "2021"
                             },
                             {
                                 "name": "2025GE Grn %",
@@ -5351,7 +5315,38 @@ export const rawStatsTree = [
                                         "column": 43
                                     }
                                 ],
-                                "indentedName": "2025 Grn %"
+                                "indentedName": "2025"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "canada_general_election_ppc",
+                "name": "Canadian GE: PPC",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "2019GE PPC %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 25
+                                    }
+                                ],
+                                "indentedName": "2019"
+                            },
+                            {
+                                "name": "2021GE PPC %",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 38
+                                    }
+                                ],
+                                "indentedName": "2021"
                             },
                             {
                                 "name": "2025GE PPC %",
@@ -5361,7 +5356,78 @@ export const rawStatsTree = [
                                         "column": 46
                                     }
                                 ],
-                                "indentedName": "2025 PPC %"
+                                "indentedName": "2025"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "canada_general_election_coalition_margin",
+                "name": "Canadian GE: 2-Coalition Margin",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "2015GE 2-Coalition Margin",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 13
+                                    }
+                                ],
+                                "indentedName": "2015"
+                            },
+                            {
+                                "name": "2015-2019 Swing 2-Coalition Margin",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 7
+                                    }
+                                ],
+                                "indentedName": "2015-2019 Swing"
+                            },
+                            {
+                                "name": "2019GE 2-Coalition Margin",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 26
+                                    }
+                                ],
+                                "indentedName": "2019"
+                            },
+                            {
+                                "name": "2019-2021 Swing 2-Coalition Margin",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 19
+                                    }
+                                ],
+                                "indentedName": "2019-2021 Swing"
+                            },
+                            {
+                                "name": "2021GE 2-Coalition Margin",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 39
+                                    }
+                                ],
+                                "indentedName": "2021"
+                            },
+                            {
+                                "name": "2021-2025 Swing 2-Coalition Margin",
+                                "stats": [
+                                    {
+                                        "source": null,
+                                        "column": 32
+                                    }
+                                ],
+                                "indentedName": "2021-2025 Swing"
                             },
                             {
                                 "name": "2025GE 2-Coalition Margin",
@@ -5371,7 +5437,7 @@ export const rawStatsTree = [
                                         "column": 47
                                     }
                                 ],
-                                "indentedName": "2025 2-Coalition Margin"
+                                "indentedName": "2025"
                             }
                         ]
                     }
