@@ -441,7 +441,6 @@ export function classifyStatistic(statname: string): UnitType {
     if (statname.includes('Mean distance')) {
         return 'distanceInKm'
     }
-    // US election statistics
     if (statname.includes('Election') || statname.includes('Swing')) {
         return 'democraticMargin'
     }

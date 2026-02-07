@@ -698,8 +698,11 @@ statistics_tree = StatisticTree(
                             single_source(col_name, indented_name=indented_name)
                             for (col_name, indented_name) in [
                                 (("2015GE", "V_BQ"), "2015"),
+                                (("2015-2019 Swing", "V_BQ"), "2015-2019 Swing"),
                                 (("2019GE", "V_BQ"), "2019"),
+                                (("2019-2021 Swing", "V_BQ"), "2019-2021 Swing"),
                                 (("2021GE", "V_BQ"), "2021"),
+                                (("2021-2025 Swing", "V_BQ"), "2021-2025 Swing"),
                                 (("2025GE", "V_BQ"), "2025"),
                             ]
                         ],
@@ -712,8 +715,11 @@ statistics_tree = StatisticTree(
                             single_source(col_name, indented_name=indented_name)
                             for (col_name, indented_name) in [
                                 (("2015GE", "V_GRN"), "2015"),
+                                (("2015-2019 Swing", "V_GRN"), "2015-2019 Swing"),
                                 (("2019GE", "V_GRN"), "2019"),
+                                (("2019-2021 Swing", "V_GRN"), "2019-2021 Swing"),
                                 (("2021GE", "V_GRN"), "2021"),
+                                (("2021-2025 Swing", "V_GRN"), "2021-2025 Swing"),
                                 (("2025GE", "V_GRN"), "2025"),
                             ]
                         ],
@@ -726,7 +732,9 @@ statistics_tree = StatisticTree(
                             single_source(col_name, indented_name=indented_name)
                             for (col_name, indented_name) in [
                                 (("2019GE", "V_PPC"), "2019"),
+                                (("2019-2021 Swing", "V_PPC"), "2019-2021 Swing"),
                                 (("2021GE", "V_PPC"), "2021"),
+                                (("2021-2025 Swing", "V_PPC"), "2021-2025 Swing"),
                                 (("2025GE", "V_PPC"), "2025"),
                             ]
                         ],

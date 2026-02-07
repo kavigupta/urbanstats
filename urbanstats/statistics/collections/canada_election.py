@@ -41,6 +41,15 @@ class CanadaElectionStatistics(CanadaStatistics):
         result[("2015-2019 Swing", "V_NDP")] = "2015-2019 Swing NDP %"
         result[("2019-2021 Swing", "V_NDP")] = "2019-2021 Swing NDP %"
         result[("2021-2025 Swing", "V_NDP")] = "2021-2025 Swing NDP %"
+        result[("2015-2019 Swing", "V_BQ")] = "2015-2019 Swing BQ %"
+        result[("2019-2021 Swing", "V_BQ")] = "2019-2021 Swing BQ %"
+        result[("2021-2025 Swing", "V_BQ")] = "2021-2025 Swing BQ %"
+        result[("2015-2019 Swing", "V_GRN")] = "2015-2019 Swing Grn %"
+        result[("2019-2021 Swing", "V_GRN")] = "2019-2021 Swing Grn %"
+        result[("2021-2025 Swing", "V_GRN")] = "2021-2025 Swing Grn %"
+        # PPC didn't exist in 2015, so no 2015-2019 swing
+        result[("2019-2021 Swing", "V_PPC")] = "2019-2021 Swing PPC %"
+        result[("2021-2025 Swing", "V_PPC")] = "2021-2025 Swing PPC %"
         
         return result
 
@@ -71,6 +80,15 @@ class CanadaElectionStatistics(CanadaStatistics):
         result[("2015-2019 Swing", "V_NDP")] = "canada_swing_2015_2019_ndp"
         result[("2019-2021 Swing", "V_NDP")] = "canada_swing_2019_2021_ndp"
         result[("2021-2025 Swing", "V_NDP")] = "canada_swing_2021_2025_ndp"
+        result[("2015-2019 Swing", "V_BQ")] = "canada_swing_2015_2019_bq"
+        result[("2019-2021 Swing", "V_BQ")] = "canada_swing_2019_2021_bq"
+        result[("2021-2025 Swing", "V_BQ")] = "canada_swing_2021_2025_bq"
+        result[("2015-2019 Swing", "V_GRN")] = "canada_swing_2015_2019_grn"
+        result[("2019-2021 Swing", "V_GRN")] = "canada_swing_2019_2021_grn"
+        result[("2021-2025 Swing", "V_GRN")] = "canada_swing_2021_2025_grn"
+        # PPC didn't exist in 2015, so no 2015-2019 swing
+        result[("2019-2021 Swing", "V_PPC")] = "canada_swing_2019_2021_ppc"
+        result[("2021-2025 Swing", "V_PPC")] = "canada_swing_2021_2025_ppc"
         
         return result
 
@@ -88,28 +106,24 @@ class CanadaElectionStatistics(CanadaStatistics):
             "2015GE": "the 2015 Canadian general election",
         }
         
-        # Add questions for LIB, CON, and NDP vote shares
+        # Add questions only for 2-Coalition Margin
         for elect in canada_elections:
             full_name = full_names.get(elect.name, elect.name)
             descriptors[
-                (elect.name, "V_LIB")
-            ] = f"!FULL Which voted more for the Liberal Party in {full_name}?"
-            descriptors[
-                (elect.name, "V_CON")
-            ] = f"!FULL Which voted more for the Conservative Party in {full_name}?"
-            descriptors[
-                (elect.name, "V_NDP")
-            ] = f"!FULL Which voted more for the NDP in {full_name}?"
+                (elect.name, "coalition_margin")
+            ] = f"!FULL Which had a higher 2-Coalition Margin (Left - Right) in {full_name}?"
         
-        # Mark the rest as skips
+        # Mark all party vote shares and swings as skips
         skip_keys = []
         for elect in canada_elections:
+            skip_keys.append((elect.name, "V_LIB"))
+            skip_keys.append((elect.name, "V_CON"))
+            skip_keys.append((elect.name, "V_NDP"))
             skip_keys.append((elect.name, "V_BQ"))
             skip_keys.append((elect.name, "V_GRN"))
             # PPC didn't exist in 2015
             if elect.name != "2015GE":
                 skip_keys.append((elect.name, "V_PPC"))
-            skip_keys.append((elect.name, "coalition_margin"))
         
         # Mark all swings as skips
         skip_keys.extend([
@@ -125,6 +139,14 @@ class CanadaElectionStatistics(CanadaStatistics):
             ("2015-2019 Swing", "V_NDP"),
             ("2019-2021 Swing", "V_NDP"),
             ("2021-2025 Swing", "V_NDP"),
+            ("2015-2019 Swing", "V_BQ"),
+            ("2019-2021 Swing", "V_BQ"),
+            ("2021-2025 Swing", "V_BQ"),
+            ("2015-2019 Swing", "V_GRN"),
+            ("2019-2021 Swing", "V_GRN"),
+            ("2021-2025 Swing", "V_GRN"),
+            ("2019-2021 Swing", "V_PPC"),
+            ("2021-2025 Swing", "V_PPC"),
         ])
                 
         return {**QuizQuestionDescriptor.several(ELECTION, descriptors), **QuizQuestionSkip.several(*skip_keys)}
@@ -198,8 +220,8 @@ class CanadaElectionStatistics(CanadaStatistics):
                     result[("2025GE", "coalition_margin")] - result[("2021GE", "coalition_margin")]
                 )
         
-        # Party vote share swings (LIB, CON, NDP)
-        for party in ["V_LIB", "V_CON", "V_NDP"]:
+        # Party vote share swings (all parties)
+        for party in ["V_LIB", "V_CON", "V_NDP", "V_BQ", "V_GRN"]:
             if "2015GE" in elections_with_data and "2019GE" in elections_with_data:
                 if ("2015GE", party) in result and ("2019GE", party) in result:
                     result[("2015-2019 Swing", party)] = (
@@ -217,6 +239,19 @@ class CanadaElectionStatistics(CanadaStatistics):
                     result[("2021-2025 Swing", party)] = (
                         result[("2025GE", party)] - result[("2021GE", party)]
                     )
+        
+        # PPC swings (PPC didn't exist in 2015, so no 2015-2019 swing)
+        if "2019GE" in elections_with_data and "2021GE" in elections_with_data:
+            if ("2019GE", "V_PPC") in result and ("2021GE", "V_PPC") in result:
+                result[("2019-2021 Swing", "V_PPC")] = (
+                    result[("2021GE", "V_PPC")] - result[("2019GE", "V_PPC")]
+                )
+        
+        if "2021GE" in elections_with_data and "2025GE" in elections_with_data:
+            if ("2021GE", "V_PPC") in result and ("2025GE", "V_PPC") in result:
+                result[("2021-2025 Swing", "V_PPC")] = (
+                    result[("2025GE", "V_PPC")] - result[("2021GE", "V_PPC")]
+                )
 
         return result
 
