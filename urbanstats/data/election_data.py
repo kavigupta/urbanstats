@@ -14,6 +14,7 @@ import us
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.census_blocks import all_densities_gpd
 from urbanstats.geometry.census_aggregation import aggregate_by_census_block
+from urbanstats.geometry.disaggregate import disaggregate_by_area
 
 
 @attr.s
@@ -208,55 +209,20 @@ def disaggregate_to_blocks_for_state(state_abbr, election, block_year=2020):
     # Load blocks for this state (already a GeoDataFrame)
     blocks_gdf = load_block_shapefiles(state_abbr, block_year).copy()
     blocks_gdf = blocks_gdf.to_crs("epsg:4326")
-    blocks_gdf["block_index"] = blocks_gdf.index
 
+    # Filter election data to this state
     elect = elect[elect.state == state_abbr].reset_index(drop=True).copy()
-    elect["precinct_index"] = elect.index
 
-    # Use overlay to get intersections - this handles blocks split across precincts
-    intersections = gpd.overlay(
-        blocks_gdf[["geoid", "population", "geometry", "block_index"]].reset_index(),
-        elect[["precinct_index", "geometry"] + data_cols],
-        how="intersection",
-        keep_geom_type=False,
+    # Use general disaggregation function
+    disaggregated = disaggregate_by_area(
+        precincts_gdf=elect,
+        blocks_gdf=blocks_gdf,
+        data_columns=data_cols,
+        population_col="population",
     )
 
-    if len(intersections) == 0:
-        return {}
-
-    intersections["area"] = intersections.to_crs("+proj=cea").geometry.area
-
-    block_to_area = intersections.groupby("block_index")["area"].sum().to_dict()
-
-    # Allocate population[intersection] = population[block] * area[intersection] / area[precinct]
-    intersections["intersection_as_proportion_of_block"] = intersections["area"] / intersections[
-        "block_index"
-    ].map(block_to_area)
-    intersections["allocated_population"] = (
-        intersections["population"] * intersections["intersection_as_proportion_of_block"]
-    )
-
-    precinct_to_induced_population = intersections.groupby("precinct_index")[
-        "allocated_population"
-    ].sum()
-
-    # portion_precinct is the proportion of the precinct's population that comes from this intersection element
-    intersections["portion_precinct"] = intersections[
-        "allocated_population"
-    ] / intersections["precinct_index"].map(precinct_to_induced_population)
-
-    # Compute the votes for each intersection element
-    intersections[data_cols] = (
-        elect[data_cols].loc[intersections.precinct_index].reset_index(drop=True)
-    )
-    for col in data_cols:
-        intersections[col] *= intersections["portion_precinct"]
-
-    # aggregate by block to get the votes for each block
-    block_results = intersections.groupby("block_index")[data_cols].sum()
-
-    # return a dictionary mapping block index to the votes for that block
-    return {idx: row.values for idx, row in block_results.iterrows()}
+    # Return dictionary mapping block index to allocated votes array
+    return {idx: row.values for idx, row in disaggregated.iterrows()}
 
 
 @permacache_with_remapping_pickle(
