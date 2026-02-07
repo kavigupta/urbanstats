@@ -823,6 +823,46 @@ export function DataCreditPanel(): ReactNode {
                             of the Metcalf repository.
                             .
                         </div>
+                        <NRef name="canada_election" h="h2">Canadian General Election Data</NRef>
+                        <div>
+                            Canadian General Election data is from
+                            {' '}
+                            <FootnoteRef
+                                description={(
+                                    <span>
+                                        Elections Canada:
+                                        {' '}
+                                        <i>General Election Results,</i>
+                                        {' '}
+                                        <a href="https://www.elections.ca/content.aspx?section=res&dir=rep/off&document=index&lang=e">https://www.elections.ca/content.aspx?section=res&dir=rep/off&document=index&lang=e</a>
+                                    </span>
+                                )}
+                            >
+                                Elections Canada
+                            </FootnoteRef>
+                            {' '}
+                            and polling division boundaries from
+                            {' '}
+                            <FootnoteRef
+                                description={(
+                                    <span>
+                                        Geo.ca and Open Canada:
+                                        {' '}
+                                        <i>Polling Division Boundaries,</i>
+                                        {' '}
+                                        <a href="https://open.canada.ca/data/en/dataset/97a2a33c-54cc-4f2e-82c1-047ad8212f05">https://open.canada.ca/data/en/dataset/97a2a33c-54cc-4f2e-82c1-047ad8212f05</a>
+                                    </span>
+                                )}
+                            >
+                                Geo.ca and Open Canada
+                            </FootnoteRef>
+                            {' '}
+                            . We process data for the 2015 (42nd), 2019 (43rd), 2021 (44th), and 2025 (45th) Canadian General Elections.
+                            Data is at the polling division level, which we disaggregate to Canadian dissemination blocks using area-proportional allocation,
+                            and then aggregate to the geography of interest. We compute vote shares for major parties (Liberal, Conservative, NDP, Bloc Québécois, Green, People&apos;s Party)
+                            and a 2-Coalition Margin metric comparing (LIB + NDP + BQ + GRN) to (CON + PPC). Results might not match official results exactly
+                            due to the disaggregation process. N/A indicates that the statistic is not available for the given geography.
+                        </div>
                         <NRef name="park" h="h1">Parkland</NRef>
                         <div>
                             We compute the percentage of each 1km disc around each census block that is parkland.
