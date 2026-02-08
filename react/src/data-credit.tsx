@@ -857,11 +857,13 @@ export function DataCreditPanel(): ReactNode {
                                 Geo.ca and Open Canada
                             </FootnoteRef>
                             {' '}
-                            . We process data for the 2015 (42nd), 2019 (43rd), 2021 (44th), and 2025 (45th) Canadian General Elections.
-                            Data is at the polling division level, which we disaggregate to Canadian dissemination blocks using area-proportional allocation,
-                            and then aggregate to the geography of interest. We compute vote shares for major parties (Liberal, Conservative, NDP, Bloc Québécois, Green, People&apos;s Party)
-                            and a 2-Coalition Margin metric comparing (LIB + NDP + GRN) to (CON + PPC). Results might not match official results exactly
-                            due to the disaggregation process. N/A indicates that the statistic is not available for the given geography.
+                            . For details on how we process the data, see our
+                            {' '}
+                            <a href="https://github.com/kavigupta/CanadaGeneralElections">repository</a>
+                            {'. '}
+                            We then compute the 2-Coalition Margin metric comparing (LIB + NDP + GRN) to (CON + PPC).
+                            Results might not match official results exactly
+                            due to the disaggregation process.
                         </div>
                         <NRef name="park" h="h1">Parkland</NRef>
                         <div>
