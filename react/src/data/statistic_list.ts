@@ -17,7 +17,15 @@ export default [
     ],
     [
         "2015-2019 Swing",
+        "V_BQ"
+    ],
+    [
+        "2015-2019 Swing",
         "V_CON"
+    ],
+    [
+        "2015-2019 Swing",
+        "V_GRN"
     ],
     [
         "2015-2019 Swing",
@@ -65,7 +73,15 @@ export default [
     ],
     [
         "2019-2021 Swing",
+        "V_BQ"
+    ],
+    [
+        "2019-2021 Swing",
         "V_CON"
+    ],
+    [
+        "2019-2021 Swing",
+        "V_GRN"
     ],
     [
         "2019-2021 Swing",
@@ -74,6 +90,10 @@ export default [
     [
         "2019-2021 Swing",
         "V_NDP"
+    ],
+    [
+        "2019-2021 Swing",
+        "V_PPC"
     ],
     [
         "2019-2021 Swing",
@@ -117,7 +137,15 @@ export default [
     ],
     [
         "2021-2025 Swing",
+        "V_BQ"
+    ],
+    [
+        "2021-2025 Swing",
         "V_CON"
+    ],
+    [
+        "2021-2025 Swing",
+        "V_GRN"
     ],
     [
         "2021-2025 Swing",
@@ -126,6 +154,10 @@ export default [
     [
         "2021-2025 Swing",
         "V_NDP"
+    ],
+    [
+        "2021-2025 Swing",
+        "V_PPC"
     ],
     [
         "2021-2025 Swing",

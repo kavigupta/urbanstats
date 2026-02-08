@@ -11,7 +11,7 @@ from urbanstats.statistics.statistic_collection import CanadaStatistics
 
 
 class CanadaElectionStatistics(CanadaStatistics):
-    version = 4
+    version = 8
 
     def name_for_each_statistic(self):
         result = {}
@@ -179,8 +179,9 @@ class CanadaElectionStatistics(CanadaStatistics):
                 if party_key in table.columns:
                     result[party_key] = table[party_key] / total
             
-            # Calculate 2-Coalition Margin: (LIB + NDP + BQ + GRN) - (CON + PPC)
-            # Note: PPC didn't exist in 2015, so for 2015 it's just (LIB + NDP + BQ + GRN) - CON
+            # Calculate 2-Coalition Margin: (LIB + NDP + GRN) - (CON + PPC)
+            # Note: PPC didn't exist in 2015, so for 2015 it's just (LIB + NDP + GRN) - CON
+            # BQ is excluded from the coalition margin
             coalition_left = 0
             coalition_right = 0
             
@@ -188,8 +189,6 @@ class CanadaElectionStatistics(CanadaStatistics):
                 coalition_left += table[(elect_k.name, "V_LIB")]
             if (elect_k.name, "V_NDP") in table.columns:
                 coalition_left += table[(elect_k.name, "V_NDP")]
-            if (elect_k.name, "V_BQ") in table.columns:
-                coalition_left += table[(elect_k.name, "V_BQ")]
             if (elect_k.name, "V_GRN") in table.columns:
                 coalition_left += table[(elect_k.name, "V_GRN")]
             

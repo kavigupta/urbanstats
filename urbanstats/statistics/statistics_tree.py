@@ -641,6 +641,23 @@ statistics_tree = StatisticTree(
                     },
                     group_name="US Presidential Election",
                 ),
+                "canada_general_election_coalition_margin": StatisticGroup(
+                    {
+                        2020: [
+                            single_source(col_name, indented_name=indented_name)
+                            for (col_name, indented_name) in [
+                                (("2015GE", "coalition_margin"), "2015"),
+                                (("2015-2019 Swing", "coalition_margin"), "2015-2019 Swing"),
+                                (("2019GE", "coalition_margin"), "2019"),
+                                (("2019-2021 Swing", "coalition_margin"), "2019-2021 Swing"),
+                                (("2021GE", "coalition_margin"), "2021"),
+                                (("2021-2025 Swing", "coalition_margin"), "2021-2025 Swing"),
+                                (("2025GE", "coalition_margin"), "2025"),
+                            ]
+                        ],
+                    },
+                    group_name="Canadian GE: 2-Coalition Margin",
+                ),
                 "canada_general_election_lib": StatisticGroup(
                     {
                         2020: [
@@ -740,23 +757,6 @@ statistics_tree = StatisticTree(
                         ],
                     },
                     group_name="Canadian GE: PPC",
-                ),
-                "canada_general_election_coalition_margin": StatisticGroup(
-                    {
-                        2020: [
-                            single_source(col_name, indented_name=indented_name)
-                            for (col_name, indented_name) in [
-                                (("2015GE", "coalition_margin"), "2015"),
-                                (("2015-2019 Swing", "coalition_margin"), "2015-2019 Swing"),
-                                (("2019GE", "coalition_margin"), "2019"),
-                                (("2019-2021 Swing", "coalition_margin"), "2019-2021 Swing"),
-                                (("2021GE", "coalition_margin"), "2021"),
-                                (("2021-2025 Swing", "coalition_margin"), "2021-2025 Swing"),
-                                (("2025GE", "coalition_margin"), "2025"),
-                            ]
-                        ],
-                    },
-                    group_name="Canadian GE: 2-Coalition Margin",
                 )
             },
         ),
