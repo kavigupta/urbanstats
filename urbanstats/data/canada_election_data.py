@@ -1,9 +1,9 @@
+import subprocess
 from functools import lru_cache
 from pathlib import Path
 
 import attr
 import geopandas as gpd
-import numpy as np
 import pandas as pd
 import tqdm.auto as tqdm
 
@@ -45,8 +45,6 @@ class CanadaElection:
 
 def run_data_gathering_script(script_folder):
     """Run the data gathering script for Canadian elections if data is missing."""
-    import subprocess
-
     script_path = Path(script_folder) / "gather_election_data.py"
     if not script_path.exists():
         raise FileNotFoundError(f"Data gathering script not found at {script_path}")

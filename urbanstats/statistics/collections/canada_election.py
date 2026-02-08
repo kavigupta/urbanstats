@@ -121,7 +121,7 @@ class CanadaElectionStatistics(CanadaStatistics):
         for elect1, elect2 in zip(canada_elections, canada_elections[1:]):
             swing_name = f"{elect1.year}-{elect2.year} Swing"
             descriptors[(swing_name, "coalition_margin")] = (
-                f"!FULL Which swung less towards the right-of-center parties "
+                "!FULL Which swung less towards the right-of-center parties "
                 + f"between the {elect1.year} and {elect2.year} elections?"
                 + COALITION_TOOLTIP
             )
@@ -136,6 +136,7 @@ class CanadaElectionStatistics(CanadaStatistics):
     def compute_statistics_dictionary_canada(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
+        # pylint: disable=too-many-locals
         table = aggregated_election_results_canada(shapefile)
         result = {}
 

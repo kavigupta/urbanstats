@@ -33,6 +33,7 @@ def disaggregate_by_area(
         DataFrame with block indices as index and disaggregated data columns.
         Only includes blocks that intersect with precincts.
     """
+    # pylint: disable=too-many-locals
     # Internal column names for indices
     precinct_index_col = "_precinct_index"
     block_index_col = "_block_index"
