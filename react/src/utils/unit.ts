@@ -1,6 +1,9 @@
 export type UnitType = 'percentage' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
     | 'area' | 'distanceInKm' | 'distanceInM' | 'democraticMargin' | 'temperature' | 'time' | 'distancePerYear'
     | 'contaminantLevel' | 'number' | 'usd' | 'minutes'
+    | 'partyPctBlue' | 'partyPctRed' | 'partyPctOrange' | 'partyPctTeal' | 'partyPctGreen' | 'partyPctPurple'
+    | 'partyChangeBlue' | 'partyChangeRed' | 'partyChangeOrange' | 'partyChangeTeal' | 'partyChangeGreen' | 'partyChangePurple'
+    | 'leftMargin'
 
 // Validated list of all unit types - this ensures we have every value from UnitType
 export const allUnitTypes = [
@@ -20,6 +23,19 @@ export const allUnitTypes = [
     'number',
     'usd',
     'minutes',
+    'partyPctBlue',
+    'partyPctRed',
+    'partyPctOrange',
+    'partyPctTeal',
+    'partyPctGreen',
+    'partyPctPurple',
+    'partyChangeBlue',
+    'partyChangeRed',
+    'partyChangeOrange',
+    'partyChangeTeal',
+    'partyChangeGreen',
+    'partyChangePurple',
+    'leftMargin',
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- just to check that all unit types are covered
@@ -61,5 +77,31 @@ export function getUnitName(unitType: UnitType): string {
             return 'USD'
         case 'minutes':
             return 'Minutes'
+        case 'partyPctBlue':
+            return 'Party Percentage (Blue)'
+        case 'partyPctRed':
+            return 'Party Percentage (Red)'
+        case 'partyPctOrange':
+            return 'Party Percentage (Orange)'
+        case 'partyPctTeal':
+            return 'Party Percentage (Teal)'
+        case 'partyPctGreen':
+            return 'Party Percentage (Green)'
+        case 'partyPctPurple':
+            return 'Party Percentage (Purple)'
+        case 'partyChangeBlue':
+            return 'Party Change (Blue)'
+        case 'partyChangeRed':
+            return 'Party Change (Red)'
+        case 'partyChangeOrange':
+            return 'Party Change (Orange)'
+        case 'partyChangeTeal':
+            return 'Party Change (Teal)'
+        case 'partyChangeGreen':
+            return 'Party Change (Green)'
+        case 'partyChangePurple':
+            return 'Party Change (Purple)'
+        case 'leftMargin':
+            return 'Left Margin'
     }
 }

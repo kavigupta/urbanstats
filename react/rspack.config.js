@@ -75,8 +75,8 @@ export default env => ({
     },
     performance: {
         hints: isProduction ? 'error' : false,
-        maxAssetSize: 1_500_000,
-        maxEntrypointSize: 1_500_000
+        maxAssetSize: 1_700_000,
+        maxEntrypointSize: 1_700_000
     },
     optimization: {
         splitChunks: {

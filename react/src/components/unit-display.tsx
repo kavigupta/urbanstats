@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react'
 import { formatToSignificantFigures, separateNumber } from '../utils/text'
 import { UnitType } from '../utils/unit'
 
-import { ElectionResult } from './display-stats'
+import { ElectionResult, GenericPartyChange, GenericPartyPercentage, LeftMargin } from './display-stats'
 
 export interface UnitDisplay {
     renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
@@ -196,6 +196,47 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                     }
                 },
             }
+        case 'partyPctBlue':
+        case 'partyPctRed':
+        case 'partyPctOrange':
+        case 'partyPctTeal':
+        case 'partyPctGreen':
+        case 'partyPctPurple': {
+            const capturedUnitType = unitType
+            return {
+                renderValue: (value: number) => {
+                    return {
+                        value: <GenericPartyPercentage value={value} unitType={capturedUnitType} />,
+                        unit: <span>%</span>,
+                    }
+                },
+            }
+        }
+        case 'partyChangeBlue':
+        case 'partyChangeRed':
+        case 'partyChangeOrange':
+        case 'partyChangeTeal':
+        case 'partyChangeGreen':
+        case 'partyChangePurple': {
+            const capturedUnitType = unitType
+            return {
+                renderValue: (value: number) => {
+                    return {
+                        value: <GenericPartyChange value={value} unitType={capturedUnitType} />,
+                        unit: <span>%</span>,
+                    }
+                },
+            }
+        }
+        case 'leftMargin':
+            return {
+                renderValue: (value: number) => {
+                    return {
+                        value: <LeftMargin value={value} />,
+                        unit: <span>%</span>,
+                    }
+                },
+            }
         case 'temperature':
             return {
                 renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
@@ -350,6 +391,31 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
 }
 
 export function classifyStatistic(statname: string): UnitType {
+    if (/20\d{2}GE/.test(statname) || /20\d{2}-20\d{2} Swing/.test(statname)) {
+        // Canadian election statistics
+        const isSwing = statname.includes('Swing')
+        if (statname.includes('Lib %')) {
+            return isSwing ? 'partyChangeRed' : 'partyPctRed'
+        }
+        if (statname.includes('Con %')) {
+            return isSwing ? 'partyChangeBlue' : 'partyPctBlue'
+        }
+        if (statname.includes('NDP %')) {
+            return isSwing ? 'partyChangeOrange' : 'partyPctOrange'
+        }
+        if (statname.includes('BQ %')) {
+            return isSwing ? 'partyChangeTeal' : 'partyPctTeal'
+        }
+        if (statname.includes('Grn %')) {
+            return isSwing ? 'partyChangeGreen' : 'partyPctGreen'
+        }
+        if (statname.includes('PPC %')) {
+            return isSwing ? 'partyChangePurple' : 'partyPctPurple'
+        }
+    }
+    if (statname.includes('2-Coalition Margin')) {
+        return 'leftMargin'
+    }
     if (statname.includes('%') || statname.includes('Change') || statname.includes('(Grade)')) {
         return 'percentage'
     }
