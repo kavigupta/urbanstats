@@ -113,9 +113,18 @@ class CanadaElectionStatistics(CanadaStatistics):
         for elect in canada_elections:
             name = f"{elect.year}GE"
             full_name = f"the {elect.year} Canadian general election"
-            descriptors[
-                (name, "coalition_margin")
-            ] = f"!FULL Which voted more for the left-wing parties in {full_name}?" + COALITION_TOOLTIP
+            descriptors[(name, "coalition_margin")] = (
+                f"!FULL Which voted more for the left-of-center parties in {full_name}?"
+                + COALITION_TOOLTIP
+            )
+
+        for elect1, elect2 in zip(canada_elections, canada_elections[1:]):
+            swing_name = f"{elect1.year}-{elect2.year} Swing"
+            descriptors[(swing_name, "coalition_margin")] = (
+                f"!FULL Which swung less towards the right-of-center parties "
+                + f"between the {elect1.year} and {elect2.year} elections?"
+                + COALITION_TOOLTIP
+            )
 
         skip_keys = sorted(set(self.name_for_each_statistic()) - set(descriptors))
 
