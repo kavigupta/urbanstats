@@ -1,6 +1,5 @@
 import React, { ReactNode } from 'react'
 
-import { useColors } from '../page_template/colors'
 import { formatToSignificantFigures, separateNumber } from '../utils/text'
 import { UnitType } from '../utils/unit'
 
