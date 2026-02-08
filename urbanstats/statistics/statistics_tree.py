@@ -647,11 +647,20 @@ statistics_tree = StatisticTree(
                             single_source(col_name, indented_name=indented_name)
                             for (col_name, indented_name) in [
                                 (("2015GE", "coalition_margin"), "2015"),
-                                (("2015-2019 Swing", "coalition_margin"), "2015-2019 Swing"),
+                                (
+                                    ("2015-2019 Swing", "coalition_margin"),
+                                    "2015-2019 Swing",
+                                ),
                                 (("2019GE", "coalition_margin"), "2019"),
-                                (("2019-2021 Swing", "coalition_margin"), "2019-2021 Swing"),
+                                (
+                                    ("2019-2021 Swing", "coalition_margin"),
+                                    "2019-2021 Swing",
+                                ),
                                 (("2021GE", "coalition_margin"), "2021"),
-                                (("2021-2025 Swing", "coalition_margin"), "2021-2025 Swing"),
+                                (
+                                    ("2021-2025 Swing", "coalition_margin"),
+                                    "2021-2025 Swing",
+                                ),
                                 (("2025GE", "coalition_margin"), "2025"),
                             ]
                         ],
@@ -757,7 +766,7 @@ statistics_tree = StatisticTree(
                         ],
                     },
                     group_name="Canadian GE: PPC",
-                )
+                ),
             },
         ),
         **just_2020_category(

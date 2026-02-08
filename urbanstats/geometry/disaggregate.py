@@ -73,11 +73,12 @@ def disaggregate_by_area(
 
     # Allocate population proportionally based on area
     # population[intersection] = population[block] * area[intersection] / area[block]
-    intersections["intersection_as_proportion_of_block"] = intersections["area"] / intersections[
-        block_index_col
-    ].map(block_to_area)
+    intersections["intersection_as_proportion_of_block"] = intersections[
+        "area"
+    ] / intersections[block_index_col].map(block_to_area)
     intersections["allocated_population"] = (
-        intersections[population_col] * intersections["intersection_as_proportion_of_block"]
+        intersections[population_col]
+        * intersections["intersection_as_proportion_of_block"]
     )
 
     # Aggregate by precinct to get total allocated population per precinct
@@ -86,13 +87,15 @@ def disaggregate_by_area(
     ].sum()
 
     # portion_precinct is the proportion of the precinct's population that comes from this intersection
-    intersections["portion_precinct"] = intersections["allocated_population"] / intersections[
-        precinct_index_col
-    ].map(precinct_to_induced_population)
+    intersections["portion_precinct"] = intersections[
+        "allocated_population"
+    ] / intersections[precinct_index_col].map(precinct_to_induced_population)
 
     # Compute the data for each intersection element
     intersections[data_columns] = (
-        precincts[data_columns].loc[intersections[precinct_index_col]].reset_index(drop=True)
+        precincts[data_columns]
+        .loc[intersections[precinct_index_col]]
+        .reset_index(drop=True)
     )
     for col in data_columns:
         intersections[col] *= intersections["portion_precinct"]
@@ -105,4 +108,3 @@ def disaggregate_by_area(
     result.loc[block_results.index, data_columns] = block_results[data_columns]
 
     return result
-

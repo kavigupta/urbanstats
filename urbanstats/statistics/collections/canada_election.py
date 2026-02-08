@@ -186,7 +186,7 @@ class CanadaElectionStatistics(CanadaStatistics):
             for party in ["V_LIB", "V_CON", "V_NDP", "V_BQ", "V_GRN", "V_PPC"]:
                 if party == "V_PPC" and (elect1.year == 2015 or elect2.year == 2015):
                     # Skip PPC swing if either election is 2015 (PPC didn't exist)
-                    continue 
+                    continue
                 if (name1, party) in result and (name2, party) in result:
                     result[(swing_name, party)] = (
                         result[(name2, party)] - result[(name1, party)]

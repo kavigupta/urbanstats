@@ -1,3 +1,4 @@
+from urbanstats.statistics.collections.canada_election import CanadaElectionStatistics
 from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
 from urbanstats.statistics.collections.census import (
     Census2000,
@@ -6,7 +7,6 @@ from urbanstats.statistics.collections.census import (
     CensusChange2000,
     CensusChange2010,
 )
-from urbanstats.statistics.collections.canada_election import CanadaElectionStatistics
 from urbanstats.statistics.collections.census_canada import CensusCanada
 from urbanstats.statistics.collections.census_canada_same_as_us import (
     census_canada_same_as_us,

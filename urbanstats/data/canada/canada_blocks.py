@@ -58,7 +58,8 @@ def load_canada_data_da(year):
 
 
 @permacache_with_remapping_pickle(
-    "urbanstats/data/canada/canada_blocks/load_canada_db_shapefile_4", key_function=dict(pointify=drop_if_equal(True))
+    "urbanstats/data/canada/canada_blocks/load_canada_db_shapefile_4",
+    key_function=dict(pointify=drop_if_equal(True)),
 )
 def load_canada_db_shapefile(year, pointify=True):
     assert year == 2021
