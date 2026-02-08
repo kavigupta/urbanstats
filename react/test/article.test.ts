@@ -234,6 +234,14 @@ test('charlotte-all-stats', async (t) => {
     await screencap(t)
 })
 
+urbanstatsFixture('all stats test', `/article.html?longname=Toronto+CDR%2C+Ontario%2C+Canada`)
+
+test('toronto-cdr-all-stats', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await checkAllCategoryBoxes(t)
+    await screencap(t)
+})
+
 urbanstatsFixture('weather F', '/article.html?longname=California%2C+USA&s=jV3GG2h8Vfb')
 
 test('is F', async (t) => {

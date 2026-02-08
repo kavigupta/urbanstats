@@ -9,6 +9,11 @@ from urbanstats.games.quiz_question_metadata import (
 )
 from urbanstats.statistics.statistic_collection import CanadaStatistics
 
+COALITION_TOOLTIP = (
+    "!TOOLTIP By 2-Coalition Margin, which is calculated as "
+    + "(Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation."
+)
+
 
 class CanadaElectionStatistics(CanadaStatistics):
     version = 9
@@ -108,11 +113,9 @@ class CanadaElectionStatistics(CanadaStatistics):
         for elect in canada_elections:
             name = f"{elect.year}GE"
             full_name = f"the {elect.year} Canadian general election"
-            descriptors[(name, "coalition_margin")] = (
-                f"!FULL Which had a higher 2-Coalition Margin (Left - Right) in {full_name}?"
-                + "!INFO The 2-Coalition Margin is calculated as "
-                + "(Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation."
-            )
+            descriptors[
+                (name, "coalition_margin")
+            ] = f"!FULL Which voted more for the left-wing parties in {full_name}?" + COALITION_TOOLTIP
 
         skip_keys = sorted(set(self.name_for_each_statistic()) - set(descriptors))
 
