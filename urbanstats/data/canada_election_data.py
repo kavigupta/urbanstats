@@ -16,7 +16,7 @@ from urbanstats.geometry.disaggregate import disaggregate_by_area
 @attr.s
 class CanadaElection:
     key = attr.ib()
-    name = attr.ib()
+    year = attr.ib()  # e.g., 2015, 2019, 2021, 2025
     folder_key = attr.ib()  # e.g., "45GE", "44GE", etc.
 
     def read(self):
@@ -49,24 +49,24 @@ def run_data_gathering_script(script_folder):
 
 canada_elections = [
     CanadaElection(
-        key="canada_2025",
-        name="2025GE",
-        folder_key="45GE",
-    ),
-    CanadaElection(
-        key="canada_2021",
-        name="2021GE",
-        folder_key="44GE",
+        key="canada_2015",
+        year=2015,
+        folder_key="42GE",
     ),
     CanadaElection(
         key="canada_2019",
-        name="2019GE",
+        year=2019,
         folder_key="43GE",
     ),
     CanadaElection(
-        key="canada_2015",
-        name="2015GE",
-        folder_key="42GE",
+        key="canada_2021",
+        year=2021,
+        folder_key="44GE",
+    ),
+    CanadaElection(
+        key="canada_2025",
+        year=2025,
+        folder_key="45GE",
     ),
 ]
 
@@ -84,7 +84,7 @@ def disaggregate_to_blocks_canada(election, block_year=2021):
     """
     elect = election.read()
     
-    print(f"Processing {election.name}...")
+    print(f"Processing {election.year}GE...")
     
     # Load Canadian dissemination blocks
     blocks_gdf = load_canada_db_shapefile(block_year, pointify=False).copy()
@@ -120,7 +120,7 @@ def election_results_by_block_canada():
         disaggregated = disaggregate_to_blocks_canada(election)
         # Include all party columns and total
         for col in disaggregated.columns:
-            blocks_edited[(election.name, col)] = disaggregated[col]
+            blocks_edited[(f"{election.year}GE", col)] = disaggregated[col]
     if not blocks_edited:
         raise RuntimeError(
             "No Canadian election data found. "
