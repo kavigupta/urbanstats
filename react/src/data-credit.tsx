@@ -727,9 +727,9 @@ export function DataCreditPanel(): ReactNode {
                             for each geography.
                         </div>
 
-                        <h1>Elections</h1>
+                        <NRef name="election" h="h1">Elections</NRef>
 
-                        <NRef name="election" h="h2">2016 and 2020 Election Data</NRef>
+                        <h2>2016 and 2020 Election Data</h2>
                         <div>
                             Election Data is from
                             {' '}
@@ -758,7 +758,7 @@ export function DataCreditPanel(): ReactNode {
                             precinct boundaries in the dataset are slightly inaccurate, or there are no results for
                             the precincts overlapping the geography.
                         </div>
-                        <NRef name="election" h="h2">2008 and 2012 Election Data</NRef>
+                        <h2>2008 and 2012 Election Data</h2>
                         <div>
                             2008 and 2012 Election Data is aggregated from counties from
                             {' '}
