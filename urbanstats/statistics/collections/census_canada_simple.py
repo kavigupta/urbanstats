@@ -5,6 +5,7 @@ from urbanstats.games.quiz_question_metadata import (
     EDUCATION_LEVEL,
     INCOME,
     POVERTY,
+    RACE,
     QuizQuestionDescriptor,
     QuizQuestionSkip,
 )

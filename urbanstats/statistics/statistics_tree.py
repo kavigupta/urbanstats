@@ -348,6 +348,21 @@ def census_basics_with_ghs_and_canada(col_name, gpw_name, canada_name, *, change
     return result
 
 
+def census_basics_with_canada(col_name, canada_name=None, *, change):
+    if canada_name is None:
+        canada_name = f"{col_name}_canada"
+    result = census_basics(col_name, change=change)
+    by_source = {
+        population_census: col_name,
+        population_canada: canada_name,
+    }
+    result[col_name].by_year[2020] = [
+        MultiSource(by_source, col_name, indented_name="2020")
+    ]
+    result[col_name].group_name_statcol = col_name
+    return result
+
+
 statistics_tree = StatisticTree(
     {
         "main": StatisticCategory(
@@ -378,13 +393,13 @@ statistics_tree = StatisticTree(
         "race": StatisticCategory(
             name="Race",
             contents={
-                **census_basics("white", change=False),
-                **census_basics("hispanic", change=False),
-                **census_basics("black", change=False),
-                **census_basics("asian", change=False),
-                **census_basics("native", change=False),
-                **census_basics("hawaiian_pi", change=False),
-                **census_basics("other / mixed", change=False),
+                **census_basics_with_canada("white", change=False),
+                **census_basics_with_canada("hispanic", change=False),
+                **census_basics_with_canada("black", change=False),
+                **census_basics_with_canada("asian", change=False),
+                **census_basics_with_canada("native", change=False),
+                **census_basics_with_canada("hawaiian_pi", change=False),
+                **census_basics_with_canada("other / mixed", change=False),
                 **census_segregation("homogeneity_250"),
                 **census_segregation("segregation_250"),
                 **census_segregation("segregation_250_10"),
