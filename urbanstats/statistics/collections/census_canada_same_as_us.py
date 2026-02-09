@@ -317,14 +317,13 @@ class CensusCanadaIndustry(CensusCanadaSameAsUS):
 
 
 class CensusCanadaRace(CensusCanadaSameAsUS):
-    version = 4
+    version = 5
 
     def us_equivalent_fields(self):
         return list(race_names)
 
     def census_tables(self) -> CensusTables:
         table_name = "Total - Ethnic or cultural origin for the population in private households - 25% sample data (121)"
-        total_key = "_ethnic_origin_total_canada"
 
         unambiguously_native = [
             "  First Nations (North American Indian), n.o.s. (125)",
@@ -593,24 +592,28 @@ class CensusCanadaRace(CensusCanadaSameAsUS):
             "  Slavic, n.o.s. (148)",
         ]
 
-        return CensusTables([table_name], {
-            total_key: [table_name],
-            "white_canada": [
-                *unambiguously_white,
-                *middle_east,
-                "  North American, n.o.s. (151)",
-                "  South African",
-            ],
-            "black_canada": [
-                *unambiguously_black,
-                "  Caribbean, n.o.s. (142)",
-                "  West Indian, n.o.s. (143)",
-            ],
-            "asian_canada": unambiguously_asian,
-            "hispanic_canada": unambiguously_hispanic,
-            "native_canada": unambiguously_native,
-            "other / mixed_canada": other_mixed,
-        }, "population")
+        return CensusTables(
+            [table_name],
+            {
+                None: [table_name],
+                "white_canada": [
+                    *unambiguously_white,
+                    *middle_east,
+                    "  North American, n.o.s. (151)",
+                    "  South African",
+                ],
+                "black_canada": [
+                    *unambiguously_black,
+                    "  Caribbean, n.o.s. (142)",
+                    "  West Indian, n.o.s. (143)",
+                ],
+                "asian_canada": unambiguously_asian,
+                "hispanic_canada": unambiguously_hispanic,
+                "native_canada": unambiguously_native,
+                "other / mixed_canada": other_mixed,
+            },
+            "population",
+        )
 
     def us_equivalent(self):
         return Census2020()
