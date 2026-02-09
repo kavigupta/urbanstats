@@ -1,3 +1,4 @@
+from urbanstats.statistics.collections.canada_election import CanadaElectionStatistics
 from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
 from urbanstats.statistics.collections.census import (
     Census2000,
@@ -80,6 +81,7 @@ statistic_collections = (
     Census2000(),
     CensusChange2000(),
     CensusCanada(),
+    CanadaElectionStatistics(),
     GPWStatistics(),
     SegregationStatistics(),
     NationalOriginCitizenshipStatistics(),

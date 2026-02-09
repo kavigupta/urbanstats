@@ -430,6 +430,13 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_performance_score_adj_2019', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_transportation_commute_time_median', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_person_circles', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_canada_general_election_lib', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_canada_general_election_con', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_canada_general_election_ndp', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_canada_general_election_bq', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_canada_general_election_grn', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_canada_general_election_ppc', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_canada_general_election_coalition_margin', coder: booleanSettingCoder }),
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 

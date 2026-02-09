@@ -16,12 +16,116 @@ export default [
         "margin"
     ],
     [
+        "2015-2019 Swing",
+        "V_BQ"
+    ],
+    [
+        "2015-2019 Swing",
+        "V_CON"
+    ],
+    [
+        "2015-2019 Swing",
+        "V_GRN"
+    ],
+    [
+        "2015-2019 Swing",
+        "V_LIB"
+    ],
+    [
+        "2015-2019 Swing",
+        "V_NDP"
+    ],
+    [
+        "2015-2019 Swing",
+        "coalition_margin"
+    ],
+    [
+        "2015GE",
+        "V_BQ"
+    ],
+    [
+        "2015GE",
+        "V_CON"
+    ],
+    [
+        "2015GE",
+        "V_GRN"
+    ],
+    [
+        "2015GE",
+        "V_LIB"
+    ],
+    [
+        "2015GE",
+        "V_NDP"
+    ],
+    [
+        "2015GE",
+        "coalition_margin"
+    ],
+    [
         "2016 Presidential Election",
         "margin"
     ],
     [
         "2016-2020 Swing",
         "margin"
+    ],
+    [
+        "2019-2021 Swing",
+        "V_BQ"
+    ],
+    [
+        "2019-2021 Swing",
+        "V_CON"
+    ],
+    [
+        "2019-2021 Swing",
+        "V_GRN"
+    ],
+    [
+        "2019-2021 Swing",
+        "V_LIB"
+    ],
+    [
+        "2019-2021 Swing",
+        "V_NDP"
+    ],
+    [
+        "2019-2021 Swing",
+        "V_PPC"
+    ],
+    [
+        "2019-2021 Swing",
+        "coalition_margin"
+    ],
+    [
+        "2019GE",
+        "V_BQ"
+    ],
+    [
+        "2019GE",
+        "V_CON"
+    ],
+    [
+        "2019GE",
+        "V_GRN"
+    ],
+    [
+        "2019GE",
+        "V_LIB"
+    ],
+    [
+        "2019GE",
+        "V_NDP"
+    ],
+    [
+        "2019GE",
+        "V_PPC"
+    ],
+    [
+        "2019GE",
+        "coalition_margin"
     ],
     [
         "2020 Presidential Election",
@@ -32,8 +136,92 @@ export default [
         "margin"
     ],
     [
+        "2021-2025 Swing",
+        "V_BQ"
+    ],
+    [
+        "2021-2025 Swing",
+        "V_CON"
+    ],
+    [
+        "2021-2025 Swing",
+        "V_GRN"
+    ],
+    [
+        "2021-2025 Swing",
+        "V_LIB"
+    ],
+    [
+        "2021-2025 Swing",
+        "V_NDP"
+    ],
+    [
+        "2021-2025 Swing",
+        "V_PPC"
+    ],
+    [
+        "2021-2025 Swing",
+        "coalition_margin"
+    ],
+    [
+        "2021GE",
+        "V_BQ"
+    ],
+    [
+        "2021GE",
+        "V_CON"
+    ],
+    [
+        "2021GE",
+        "V_GRN"
+    ],
+    [
+        "2021GE",
+        "V_LIB"
+    ],
+    [
+        "2021GE",
+        "V_NDP"
+    ],
+    [
+        "2021GE",
+        "V_PPC"
+    ],
+    [
+        "2021GE",
+        "coalition_margin"
+    ],
+    [
         "2024 Presidential Election",
         "margin"
+    ],
+    [
+        "2025GE",
+        "V_BQ"
+    ],
+    [
+        "2025GE",
+        "V_CON"
+    ],
+    [
+        "2025GE",
+        "V_GRN"
+    ],
+    [
+        "2025GE",
+        "V_LIB"
+    ],
+    [
+        "2025GE",
+        "V_NDP"
+    ],
+    [
+        "2025GE",
+        "V_PPC"
+    ],
+    [
+        "2025GE",
+        "coalition_margin"
     ],
     "ARTHRITIS_cdc_2",
     "BINGE_cdc_2",

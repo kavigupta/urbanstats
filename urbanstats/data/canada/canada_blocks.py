@@ -3,7 +3,7 @@ import os
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-from permacache import permacache
+from permacache import drop_if_equal, permacache
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 
@@ -58,9 +58,10 @@ def load_canada_data_da(year):
 
 
 @permacache_with_remapping_pickle(
-    "urbanstats/data/canada/canada_blocks/load_canada_db_shapefile_4"
+    "urbanstats/data/canada/canada_blocks/load_canada_db_shapefile_4",
+    key_function=dict(pointify=drop_if_equal(True)),
 )
-def load_canada_db_shapefile(year):
+def load_canada_db_shapefile(year, pointify=True):
     assert year == 2021
     table_by_block = pd.read_csv(
         "named_region_shapefiles/canada/2021_92-150-X_eng/DB.csv"
@@ -80,8 +81,9 @@ def load_canada_db_shapefile(year):
         gdf.set_index("DBUID")
         .loc[data_db.DBuid.apply(str)]
         .geometry.to_crs("epsg:4326")
-        .representative_point()
     )
+    if pointify:
+        geometries = geometries.representative_point()
     data_db = gpd.GeoDataFrame(data_db, geometry=list(geometries))
     data_db = data_db.rename(
         columns={"DBtdwell_2021": "total_dwellings", "DBpop_2021": "population"}

@@ -640,7 +640,133 @@ statistics_tree = StatisticTree(
                         ],
                     },
                     group_name="US Presidential Election",
-                )
+                ),
+                "canada_general_election_coalition_margin": StatisticGroup(
+                    {
+                        2020: [
+                            single_source(col_name, indented_name=indented_name)
+                            for (col_name, indented_name) in [
+                                (("2015GE", "coalition_margin"), "2015"),
+                                (
+                                    ("2015-2019 Swing", "coalition_margin"),
+                                    "2015-2019 Swing",
+                                ),
+                                (("2019GE", "coalition_margin"), "2019"),
+                                (
+                                    ("2019-2021 Swing", "coalition_margin"),
+                                    "2019-2021 Swing",
+                                ),
+                                (("2021GE", "coalition_margin"), "2021"),
+                                (
+                                    ("2021-2025 Swing", "coalition_margin"),
+                                    "2021-2025 Swing",
+                                ),
+                                (("2025GE", "coalition_margin"), "2025"),
+                            ]
+                        ],
+                    },
+                    group_name="Canadian GE: 2-Coalition Margin",
+                ),
+                "canada_general_election_lib": StatisticGroup(
+                    {
+                        2020: [
+                            single_source(col_name, indented_name=indented_name)
+                            for (col_name, indented_name) in [
+                                (("2015GE", "V_LIB"), "2015"),
+                                (("2015-2019 Swing", "V_LIB"), "2015-2019 Swing"),
+                                (("2019GE", "V_LIB"), "2019"),
+                                (("2019-2021 Swing", "V_LIB"), "2019-2021 Swing"),
+                                (("2021GE", "V_LIB"), "2021"),
+                                (("2021-2025 Swing", "V_LIB"), "2021-2025 Swing"),
+                                (("2025GE", "V_LIB"), "2025"),
+                            ]
+                        ],
+                    },
+                    group_name="Canadian GE: Liberal",
+                ),
+                "canada_general_election_con": StatisticGroup(
+                    {
+                        2020: [
+                            single_source(col_name, indented_name=indented_name)
+                            for (col_name, indented_name) in [
+                                (("2015GE", "V_CON"), "2015"),
+                                (("2015-2019 Swing", "V_CON"), "2015-2019 Swing"),
+                                (("2019GE", "V_CON"), "2019"),
+                                (("2019-2021 Swing", "V_CON"), "2019-2021 Swing"),
+                                (("2021GE", "V_CON"), "2021"),
+                                (("2021-2025 Swing", "V_CON"), "2021-2025 Swing"),
+                                (("2025GE", "V_CON"), "2025"),
+                            ]
+                        ],
+                    },
+                    group_name="Canadian GE: Conservative",
+                ),
+                "canada_general_election_ndp": StatisticGroup(
+                    {
+                        2020: [
+                            single_source(col_name, indented_name=indented_name)
+                            for (col_name, indented_name) in [
+                                (("2015GE", "V_NDP"), "2015"),
+                                (("2015-2019 Swing", "V_NDP"), "2015-2019 Swing"),
+                                (("2019GE", "V_NDP"), "2019"),
+                                (("2019-2021 Swing", "V_NDP"), "2019-2021 Swing"),
+                                (("2021GE", "V_NDP"), "2021"),
+                                (("2021-2025 Swing", "V_NDP"), "2021-2025 Swing"),
+                                (("2025GE", "V_NDP"), "2025"),
+                            ]
+                        ],
+                    },
+                    group_name="Canadian GE: NDP",
+                ),
+                "canada_general_election_bq": StatisticGroup(
+                    {
+                        2020: [
+                            single_source(col_name, indented_name=indented_name)
+                            for (col_name, indented_name) in [
+                                (("2015GE", "V_BQ"), "2015"),
+                                (("2015-2019 Swing", "V_BQ"), "2015-2019 Swing"),
+                                (("2019GE", "V_BQ"), "2019"),
+                                (("2019-2021 Swing", "V_BQ"), "2019-2021 Swing"),
+                                (("2021GE", "V_BQ"), "2021"),
+                                (("2021-2025 Swing", "V_BQ"), "2021-2025 Swing"),
+                                (("2025GE", "V_BQ"), "2025"),
+                            ]
+                        ],
+                    },
+                    group_name="Canadian GE: Bloc Québécois",
+                ),
+                "canada_general_election_grn": StatisticGroup(
+                    {
+                        2020: [
+                            single_source(col_name, indented_name=indented_name)
+                            for (col_name, indented_name) in [
+                                (("2015GE", "V_GRN"), "2015"),
+                                (("2015-2019 Swing", "V_GRN"), "2015-2019 Swing"),
+                                (("2019GE", "V_GRN"), "2019"),
+                                (("2019-2021 Swing", "V_GRN"), "2019-2021 Swing"),
+                                (("2021GE", "V_GRN"), "2021"),
+                                (("2021-2025 Swing", "V_GRN"), "2021-2025 Swing"),
+                                (("2025GE", "V_GRN"), "2025"),
+                            ]
+                        ],
+                    },
+                    group_name="Canadian GE: Green",
+                ),
+                "canada_general_election_ppc": StatisticGroup(
+                    {
+                        2020: [
+                            single_source(col_name, indented_name=indented_name)
+                            for (col_name, indented_name) in [
+                                (("2019GE", "V_PPC"), "2019"),
+                                (("2019-2021 Swing", "V_PPC"), "2019-2021 Swing"),
+                                (("2021GE", "V_PPC"), "2021"),
+                                (("2021-2025 Swing", "V_PPC"), "2021-2025 Swing"),
+                                (("2025GE", "V_PPC"), "2025"),
+                            ]
+                        ],
+                    },
+                    group_name="Canadian GE: PPC",
+                ),
             },
         ),
         **just_2020_category(
