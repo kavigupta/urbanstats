@@ -405,18 +405,23 @@ statistics_tree = StatisticTree(
                 **census_segregation("segregation_250_10"),
             },
         ),
-        **just_2020_category(
-            "national_origin",
-            "National Origin",
-            "citizenship_citizen_by_birth",
-            "citizenship_citizen_by_naturalization",
-            "citizenship_not_citizen",
-            "birthplace_non_us",
-            "birthplace_us_not_state",
-            "birthplace_us_state",
-            "language_english_only",
-            "language_spanish",
-            "language_other",
+        "national_origin": StatisticCategory(
+            name="National Origin",
+            contents={
+                **just_2020_with_canada(
+                    "citizenship_citizen_by_birth",
+                    "citizenship_citizen_by_naturalization",
+                    "citizenship_not_citizen",
+                ),
+                **just_2020(
+                    "birthplace_non_us",
+                    "birthplace_us_not_state",
+                    "birthplace_us_state",
+                    "language_english_only",
+                    "language_spanish",
+                    "language_other",
+                ),
+            },
         ),
         **just_2020_category(
             "education",

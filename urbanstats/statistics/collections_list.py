@@ -8,10 +8,13 @@ from urbanstats.statistics.collections.census import (
     CensusChange2010,
 )
 from urbanstats.statistics.collections.census_canada import CensusCanada
+from urbanstats.statistics.collections.census_canada_citizenship import (
+    CensusCanadaCitizenship,
+)
 from urbanstats.statistics.collections.census_canada_same_as_us import (
     census_canada_same_as_us,
 )
-from urbanstats.statistics.collections.census_canada_race import census_canada_race
+from urbanstats.statistics.collections.census_canada_race import CensusCanadaRace
 from urbanstats.statistics.collections.census_canada_simple import census_canada_simple
 from urbanstats.statistics.collections.education_gender_gap import (
     EducationGenderGapStatistics,
@@ -118,7 +121,8 @@ statistic_collections = (
     MarriageStatistics(),
     ElevationHillinessStatistics(),
     *census_canada_same_as_us,
-    *census_canada_race,
+    CensusCanadaRace(),
+    CensusCanadaCitizenship(),
     *census_canada_simple,
     PollutionStatistics(),
     IMHELifeExpectancyStatistics(),

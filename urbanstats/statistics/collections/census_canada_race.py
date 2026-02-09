@@ -107,8 +107,3 @@ class CensusCanadaRace(CensusCanadaSameAsUS):
             statistic_table[column] = statistic_table.iloc[:, 0] * 0.0
         fractionalize(statistic_table, *self.internal_statistic_names_list())
         return statistic_table
-
-
-census_canada_race = [
-    CensusCanadaRace(),
-]
