@@ -455,3 +455,12 @@ add median income, life expectancy, median commute time
 1307	shape
 1723	data
 4036	total
+
+added 2024 US general election data, as well as 2015-2025 Canadian general election data
+
+125	consolidated
+157	quiz_sampling_info
+694	order
+1307	shape
+1732	data
+4144	total
