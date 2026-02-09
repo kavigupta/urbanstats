@@ -75,16 +75,21 @@ export default env => ({
     },
     performance: {
         hints: isProduction ? 'error' : false,
-        maxAssetSize: 1_700_000,
-        maxEntrypointSize: 1_700_000
+        maxAssetSize: 1_200_000,
+        maxEntrypointSize: 1_100_000,
+        assetFilter: asset => asset !== 'quiz_infinite.js' && !asset.endsWith('.map')
     },
     optimization: {
         splitChunks: {
             cacheGroups: {
-                someLib: {
+                maplibre: {
                     test: /maplibre/,
                     name: 'maplibre',
                 },
+                quiz_infinite: {
+                    test: /data\/quiz_infinite\.ts$/,
+                    name: 'quiz_infinite'
+                }
             },
         },
         minimizer: [
