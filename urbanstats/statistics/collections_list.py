@@ -11,6 +11,7 @@ from urbanstats.statistics.collections.census_canada import CensusCanada
 from urbanstats.statistics.collections.census_canada_same_as_us import (
     census_canada_same_as_us,
 )
+from urbanstats.statistics.collections.census_canada_race import census_canada_race
 from urbanstats.statistics.collections.census_canada_simple import census_canada_simple
 from urbanstats.statistics.collections.education_gender_gap import (
     EducationGenderGapStatistics,
@@ -117,6 +118,7 @@ statistic_collections = (
     MarriageStatistics(),
     ElevationHillinessStatistics(),
     *census_canada_same_as_us,
+    *census_canada_race,
     *census_canada_simple,
     PollutionStatistics(),
     IMHELifeExpectancyStatistics(),
