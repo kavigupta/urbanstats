@@ -300,6 +300,25 @@ def just_2020_with_canada(*col_names, year=2020):
     }
 
 
+def just_2020_canada_only(*col_names, year=2020):
+    return {
+        col_name: StatisticGroup(
+            {
+                year: [
+                    MultiSource(
+                        {
+                            population_canada: f"{col_name}_canada",
+                        },
+                        indented_name="2020",
+                    )
+                ]
+            },
+            group_name_statcol=f"{col_name}_canada",
+        )
+        for col_name in col_names
+    }
+
+
 def just_2020_category(cat_key, cat_name, *col_names, year=2020):
     return {
         cat_key: StatisticCategory(
@@ -417,8 +436,16 @@ statistics_tree = StatisticTree(
                     "birthplace_non_us",
                     "birthplace_us_not_state",
                     "birthplace_us_state",
+                ),
+                **just_2020_with_canada(
                     "language_english_only",
                     "language_spanish",
+                ),
+                **just_2020_canada_only(
+                    "language_french",
+                    "language_other_non_french",
+                ),
+                **just_2020(
                     "language_other",
                 ),
             },
