@@ -516,7 +516,13 @@ statistics_tree = StatisticTree(
                     "year_built_1990_to_1999",
                     "year_built_2000_to_2009",
                     "year_built_2010_or_later",
+                ),
+                **just_2020_with_canada(
                     "rent_or_own_rent",
+                ),
+                **just_2020_canada_only(
+                    "rent_burden_under_30",
+                    "rent_burden_over_30",
                 ),
             },
         ),

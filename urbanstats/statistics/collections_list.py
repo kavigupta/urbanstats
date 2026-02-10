@@ -11,6 +11,9 @@ from urbanstats.statistics.collections.census_canada import CensusCanada
 from urbanstats.statistics.collections.census_canada_citizenship import (
     CensusCanadaCitizenship,
 )
+from urbanstats.statistics.collections.census_canada_housing_rent import (
+    CensusCanadaHousingRent,
+)
 from urbanstats.statistics.collections.census_canada_language import (
     CensusCanadaLanguage,
 )
@@ -127,6 +130,7 @@ statistic_collections = (
     CensusCanadaRace(),
     CensusCanadaCitizenship(),
     CensusCanadaLanguage(),
+    CensusCanadaHousingRent(),
     *census_canada_simple,
     PollutionStatistics(),
     IMHELifeExpectancyStatistics(),
