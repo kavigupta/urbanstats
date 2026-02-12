@@ -71,6 +71,7 @@ class CensusForPreviousYear(USAStatistics):
                 "sd": "AW Density",
                 **race_names,
                 "housing_per_pop": "Housing Units per Adult",
+                "housing_per_person": "Housing Units per Person",
                 "vacancy": "Vacancy %",
             }
         )
@@ -91,6 +92,7 @@ class CensusForPreviousYear(USAStatistics):
                 "hawaiian_pi": "hawaiian_pi",
                 "other / mixed": "other_mixed",
                 "housing_per_pop": "housing_per_adult",
+                "housing_per_person": "housing_per_person",
                 "vacancy": "vacancy_rate",
             }
         )
@@ -134,6 +136,10 @@ class CensusForPreviousYear(USAStatistics):
         statistics_table[self.ysk("housing_per_pop")] = (
             statistics_table[self.ysk("total")]
             / statistics_table[self.ysk("population_18")]
+        )
+        statistics_table[self.ysk("housing_per_person")] = (
+            statistics_table[self.ysk("total")]
+            / statistics_table[self.ysk("population")]
         )
         statistics_table[self.ysk("vacancy")] = (
             statistics_table[self.ysk("vacant")] / statistics_table[self.ysk("total")]
@@ -245,7 +251,7 @@ class CensusChange(USAStatistics):
 class Census2020(CensusForPreviousYear):
     # This isn't actually used for 2020, but it is used to just quickly source the 2020 data
     # for computing other statistics
-    version = 1
+    version = 2
 
     def year(self):
         return 2020
@@ -261,7 +267,7 @@ class Census2020(CensusForPreviousYear):
             return "population"
         if k == "sd" or k.startswith("ad_"):
             return "density"
-        if k in ["housing_per_pop", "vacancy"]:
+        if k in ["housing_per_pop", "vacancy", "housing_per_person"]:
             return "housing-census"
         if k in race_names:
             return "race"
@@ -298,6 +304,7 @@ class Census2020(CensusForPreviousYear):
                 "higher number of housing units per adult",
                 HOUSING,
             ),
+            "housing_per_person": QuizQuestionSkip(),
             "vacancy": QuizQuestionDescriptor(
                 "higher % of units that are vacant"
                 "!TOOLTIP Vacancy is the % of housing units that were not occupied on April 1, 2020 (census night)."
@@ -309,14 +316,14 @@ class Census2020(CensusForPreviousYear):
 
 
 class Census2010(CensusForPreviousYear):
-    version = 7
+    version = 8
 
     def year(self):
         return 2010
 
 
 class Census2000(CensusForPreviousYear):
-    version = 8
+    version = 9
 
     def year(self):
         return 2000

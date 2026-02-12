@@ -499,6 +499,7 @@ statistics_tree = StatisticTree(
             name="Housing",
             contents={
                 **census_basics("housing_per_pop", change=False),
+                **census_basics_with_canada("housing_per_person", change=False),
                 **census_basics("vacancy", change=False),
                 **just_2020(
                     "rent_burden_under_20",
@@ -521,7 +522,7 @@ statistics_tree = StatisticTree(
                     "rent_or_own_rent",
                 ),
                 **just_2020_canada_only(
-                    "rent_burden_under_30",
+                    "housing_per_adult",
                     "rent_burden_over_30",
                 ),
             },
