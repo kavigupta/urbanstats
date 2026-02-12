@@ -18,6 +18,9 @@ from urbanstats.statistics.collections.census_canada_housing_rent import (
 from urbanstats.statistics.collections.census_canada_language import (
     CensusCanadaLanguage,
 )
+from urbanstats.statistics.collections.census_canada_religion import (
+    CensusCanadaReligion,
+)
 from urbanstats.statistics.collections.census_canada_same_as_us import (
     census_canada_same_as_us,
 )
@@ -133,6 +136,7 @@ statistic_collections = (
     CensusCanadaLanguage(),
     CensusCanadaHousingRent(),
     CensusCanadaHousingPerPerson(),
+    CensusCanadaReligion(),
     *census_canada_simple,
     PollutionStatistics(),
     IMHELifeExpectancyStatistics(),

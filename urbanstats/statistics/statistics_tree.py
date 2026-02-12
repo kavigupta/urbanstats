@@ -450,6 +450,22 @@ statistics_tree = StatisticTree(
                 ),
             },
         ),
+        "religion": StatisticCategory(
+            name="Religion",
+            contents={
+                **just_2020_canada_only(
+                    "religion_no_religion",
+                    "religion_catholic",
+                    "religion_protestant",
+                    "religion_hindu",
+                    "religion_jewish",
+                    "religion_muslim",
+                    "religion_sikh",
+                    "religion_buddhist",
+                    "religion_other",
+                ),
+            },
+        ),
         **just_2020_category(
             "education",
             "Education",
