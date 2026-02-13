@@ -11,6 +11,9 @@ from urbanstats.statistics.collections.census_canada import CensusCanada
 from urbanstats.statistics.collections.census_canada_citizenship import (
     CensusCanadaCitizenship,
 )
+from urbanstats.statistics.collections.census_canada_education_field import (
+    CensusCanadaEducationField,
+)
 from urbanstats.statistics.collections.census_canada_housing_rent import (
     CensusCanadaHousingPerPerson,
     CensusCanadaHousingRent,
@@ -134,14 +137,15 @@ statistic_collections = (
     MarriageStatistics(),
     ElevationHillinessStatistics(),
     *census_canada_same_as_us,
+    *census_canada_simple,
     CensusCanadaRace(),
     CensusCanadaCitizenship(),
     CensusCanadaLanguage(),
+    CensusCanadaEducationField(),
     CensusCanadaHousingRent(),
     CensusCanadaHousingPerPerson(),
     CensusCanadaReligion(),
     CensusCanadaOccupation(),
-    *census_canada_simple,
     PollutionStatistics(),
     IMHELifeExpectancyStatistics(),
 )
