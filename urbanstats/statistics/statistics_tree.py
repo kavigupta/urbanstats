@@ -546,12 +546,11 @@ statistics_tree = StatisticTree(
         "transportation": StatisticCategory(
             name="Transportation",
             contents={
-                **just_2020(
-                    "transportation_means_car",
-                    "transportation_means_bike",
-                    "transportation_means_walk",
-                    "transportation_means_transit",
-                    "transportation_means_worked_at_home",
+                **just_2020_with_canada(
+                    "transportation_means_car_no_wfh",
+                    "transportation_means_bike_no_wfh",
+                    "transportation_means_walk_no_wfh",
+                    "transportation_means_transit_no_wfh",
                 ),
                 **just_2020_with_canada(
                     "transportation_commute_time_median",
@@ -914,6 +913,11 @@ statistics_tree = StatisticTree(
             "mean_high_temp_winter_4",
             "mean_high_temp_fall_4",
             "mean_high_temp_spring_4",
+            "transportation_means_car",
+            "transportation_means_bike",
+            "transportation_means_walk",
+            "transportation_means_transit",
+            "transportation_means_worked_at_home",
         ),
     }
 )

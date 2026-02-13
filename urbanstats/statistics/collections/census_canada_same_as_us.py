@@ -9,6 +9,9 @@ from urbanstats.statistics.collections.marriage import MarriageStatistics
 from urbanstats.statistics.collections.transportation_commute_time import (
     TransportationCommuteTimeStatistics,
 )
+from urbanstats.statistics.collections.transportation_mode import (
+    TransportationModeStatistics,
+)
 from urbanstats.statistics.statistic_collection import CanadaStatistics
 from urbanstats.statistics.utils import fractionalize
 from urbanstats.utils import approximate_quantile
@@ -231,6 +234,67 @@ class CensusCanadaCommuteTime(CensusCanadaSameAsUS):
         return statistic_table
 
 
+class CensusCanadaTransportationMode(CensusCanadaSameAsUS):
+    version: int = 4
+
+    def us_equivalent_fields(self):
+        return [
+            "transportation_means_car_no_wfh",
+            "transportation_means_bike_no_wfh",
+            "transportation_means_walk_no_wfh",
+            "transportation_means_transit_no_wfh",
+        ]
+
+    def census_tables(self) -> CensusTables:
+        # pylint: disable=line-too-long
+        main_mode_table = (
+            "Total - Main mode of commuting for the employed labour force aged 15 years and over with a usual place of work or no fixed workplace address - 25% sample data (200)"
+        )
+        return CensusTables(
+            [main_mode_table],
+            {
+                "transportation_means_car_no_wfh_canada": [
+                    "  Car, truck or van",
+                ],
+                "transportation_means_transit_no_wfh_canada": [
+                    "  Public transit",
+                ],
+                "transportation_means_walk_no_wfh_canada": [
+                    "  Walked",
+                ],
+                "transportation_means_bike_no_wfh_canada": [
+                    "  Bicycle",
+                ],
+                "transportation_means_other_no_wfh_canada": [
+                    "  Other method",
+                ],
+                None: [
+                    main_mode_table,
+                    "    Car, truck or van - as a driver",
+                    "    Car, truck or van - as a passenger",
+                ],
+            },
+            "population",
+        )
+
+    def us_equivalent(self):
+        return TransportationModeStatistics()
+
+    def post_process(self, statistic_table):
+        statistic_table = statistic_table.copy()
+        fractionalize(
+            statistic_table,
+            "transportation_means_car_no_wfh_canada",
+            "transportation_means_bike_no_wfh_canada",
+            "transportation_means_walk_no_wfh_canada",
+            "transportation_means_transit_no_wfh_canada",
+            "transportation_means_other_no_wfh_canada",
+        )
+        del statistic_table["transportation_means_other_no_wfh_canada"]
+        assert set(statistic_table) == set(self.internal_statistic_names_list())
+        return statistic_table
+
+
 class CensusCanadaIndustry(CensusCanadaSameAsUS):
     version = 3
 
@@ -317,6 +381,7 @@ class CensusCanadaIndustry(CensusCanadaSameAsUS):
 
 census_canada_same_as_us = [
     CensusCanadaCommuteTime(),
+    CensusCanadaTransportationMode(),
     CensusCanadaGeneration(),
     CensusCanadaMarriage(),
     CensusCanadaIndustry(),
