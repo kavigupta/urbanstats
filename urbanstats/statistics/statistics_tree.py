@@ -501,6 +501,7 @@ statistics_tree = StatisticTree(
             "median_household_income",
             "poverty_below_line",
             "lico_at_canada",
+            "lim_at_canada",
             "household_income_under_50k",
             "household_income_50k_to_100k",
             "household_income_over_100k",

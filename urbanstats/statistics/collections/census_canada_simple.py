@@ -247,6 +247,76 @@ class CensusCanadaLICOAT(CensusCanadaSimple):
         return statistic_table
 
 
+class CensusCanadaLIMAT(CensusCanadaSimple):
+    version = 1
+
+    def dependencies(self):
+        return []
+
+    def census_tables(self) -> CensusTables:
+        # pylint: disable=line-too-long
+        return CensusTables(
+            [
+                "In low income based on the Low-income measure, after tax (LIM-AT)",
+                (
+                    "Total - LIM low-income status in 2020 for the population in private households - 100% data (33)",
+                    "universe: ",
+                ),
+            ],
+            {
+                None: [
+                    "  0 to 17 years",
+                    "    0 to 5 years",
+                    "  18 to 64 years",
+                    "  65 years and over",
+                    "universe:   0 to 17 years",
+                    "universe:     0 to 5 years",
+                    "universe:   18 to 64 years",
+                    "universe:   65 years and over",
+                ],
+                "lim_at_canada": [
+                    "In low income based on the Low-income measure, after tax (LIM-AT)",
+                ],
+                "lim_at_universe": [
+                    "universe: Total - LIM low-income status in 2020 for the population in private households - 100% data (33)",
+                ],
+            },
+            "population",
+        )
+
+    def name_for_each_statistic(self):
+        return {
+            "lim_at_canada": "LIM-AT %",
+        }
+
+    def varname_for_each_statistic(self):
+        return {
+            "lim_at_canada": "low_income_lim",
+        }
+
+    def explanation_page_for_each_statistic(self):
+        return self.same_for_each_name("canadian-census-disaggregated")
+
+    def quiz_question_descriptors(self):
+        return {
+            **QuizQuestionDescriptor.several(
+                POVERTY,
+                {
+                    "lim_at_canada": "higher % of people who are low income based on the Low-income measure, after tax (LIM-AT)",
+                },
+            ),
+        }
+
+    def post_process(self, statistic_table, existing_statistics):
+        del existing_statistics
+        statistic_table = statistic_table.copy()
+        statistic_table.lim_at_canada = (
+            statistic_table.lim_at_canada / statistic_table.lim_at_universe
+        )
+        del statistic_table["lim_at_universe"]
+        return statistic_table
+
+
 class CensusCanadaEducation(CensusCanadaSimple):
     version = 1
 
@@ -346,5 +416,6 @@ census_canada_simple = [
     CensusCanadaIncomeIndividual(),
     CensusCanadaIncomeHousehold(),
     CensusCanadaLICOAT(),
+    CensusCanadaLIMAT(),
     CensusCanadaEducation(),
 ]
