@@ -666,6 +666,23 @@ statistics_tree = StatisticTree(
             "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors",
             "occupation_law_enforcement_workers_including_supervisors",
         ),
+        "occupation_canada": StatisticCategory(
+            name="Occupation (Canada)",
+            contents={
+                **just_2020_canada_only(
+                    "occupation_legislative_and_senior_management",
+                    "occupation_business_finance_and_administration",
+                    "occupation_natural_and_applied_sciences",
+                    "occupation_health",
+                    "occupation_education_law_social_community_government",
+                    "occupation_art_culture_recreation_sport",
+                    "occupation_sales_and_service",
+                    "occupation_trades_transport_equipment",
+                    "occupation_natural_resources_agriculture",
+                    "occupation_manufacturing_utilities",
+                ),
+            },
+        ),
         "relationships": StatisticCategory(
             name="Relationships",
             contents={
