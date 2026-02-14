@@ -394,16 +394,34 @@ statistics_tree = StatisticTree(
                     change=True,
                 ),
                 "population_2016_canada": StatisticGroup(
-                    {2020: [single_source("population_2016_canada", indented_name="2016")]}
+                    {
+                        2020: [
+                            single_source(
+                                "population_2016_canada", indented_name="2016"
+                            )
+                        ]
+                    }
                 ),
                 "population_2011_canada": StatisticGroup(
-                    {2020: [single_source("population_2011_canada", indented_name="2011")]}
+                    {
+                        2020: [
+                            single_source(
+                                "population_2011_canada", indented_name="2011"
+                            )
+                        ]
+                    }
                 ),
                 **census_basics_with_ghs_and_canada(
                     "ad_1", "gpw_pw_density_1", "density_2021_pw_1_canada", change=True
                 ),
                 "density_2016_pw_1_canada": StatisticGroup(
-                    {2020: [single_source("density_2016_pw_1_canada", indented_name="2016")]}
+                    {
+                        2020: [
+                            single_source(
+                                "density_2016_pw_1_canada", indented_name="2016"
+                            )
+                        ]
+                    }
                 ),
                 **{
                     f"density_2016_pw_{r}_canada": StatisticGroup(
@@ -420,7 +438,13 @@ statistics_tree = StatisticTree(
                     if r not in (1,)
                 },
                 "density_2011_pw_1_canada": StatisticGroup(
-                    {2020: [single_source("density_2011_pw_1_canada", indented_name="2011")]}
+                    {
+                        2020: [
+                            single_source(
+                                "density_2011_pw_1_canada", indented_name="2011"
+                            )
+                        ]
+                    }
                 ),
                 **{
                     f"density_2011_pw_{r}_canada": StatisticGroup(

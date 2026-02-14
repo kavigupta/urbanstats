@@ -63,9 +63,11 @@ class CensusCanadaCitizenship(CensusCanadaSameAsUS):
         assert (
             negative_naturalized.sum() > -100
         ), f"Negative naturalized citizen sum is {negative_naturalized.sum()}, which is too high. Check the underlying data for issues."
-        statistic_table["citizenship_citizen_by_naturalization_canada"] = statistic_table[
+        statistic_table[
             "citizenship_citizen_by_naturalization_canada"
-        ].clip(lower=0)
+        ] = statistic_table["citizenship_citizen_by_naturalization_canada"].clip(
+            lower=0
+        )
         statistic_table["citizenship_not_citizen_canada"] = statistic_table[
             "not_canadian_citizens"
         ]

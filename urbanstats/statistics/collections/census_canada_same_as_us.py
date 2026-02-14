@@ -247,9 +247,7 @@ class CensusCanadaTransportationMode(CensusCanadaSameAsUS):
 
     def census_tables(self) -> CensusTables:
         # pylint: disable=line-too-long
-        main_mode_table = (
-            "Total - Main mode of commuting for the employed labour force aged 15 years and over with a usual place of work or no fixed workplace address - 25% sample data (200)"
-        )
+        main_mode_table = "Total - Main mode of commuting for the employed labour force aged 15 years and over with a usual place of work or no fixed workplace address - 25% sample data (200)"
         return CensusTables(
             [main_mode_table],
             {

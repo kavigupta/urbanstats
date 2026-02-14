@@ -51,9 +51,7 @@ class CensusCanada(CanadaStatistics):
                 sd_name = f"density_aw_{year}"
             result[f"population_{year}_canada"] = population_name
             result.update(
-                {
-                    f"density_{year}_pw_{r}_canada": density_name(r) for r in RADII
-                }
+                {f"density_{year}_pw_{r}_canada": density_name(r) for r in RADII}
             )
             result[f"sd_{year}_canada"] = sd_name
         return result

@@ -123,9 +123,7 @@ def load_canada_db_shapefile(year, pointify=True):
         # not sure why these are missing but they have a total population of 10
         # so who cares
         missing_geographies = [10020079053, 59430125042]
-        assert list(
-            data_db.set_index("DBuid").loc[missing_geographies][pop_col]
-        ) == [
+        assert list(data_db.set_index("DBuid").loc[missing_geographies][pop_col]) == [
             5,
             5,
         ]

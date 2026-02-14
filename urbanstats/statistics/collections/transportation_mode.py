@@ -13,6 +13,7 @@ from urbanstats.statistics.utils import fractionalize
 
 class TransportationModeStatistics(ACSStatisticsColection):
     version = 3
+
     def name_for_each_statistic(self):
         return {
             "transportation_means_car": "Commute Car % (incl WFH)",

@@ -24,13 +24,13 @@ from urbanstats.statistics.collections.census_canada_language import (
 from urbanstats.statistics.collections.census_canada_occupation import (
     CensusCanadaOccupation,
 )
+from urbanstats.statistics.collections.census_canada_race import CensusCanadaRace
 from urbanstats.statistics.collections.census_canada_religion import (
     CensusCanadaReligion,
 )
 from urbanstats.statistics.collections.census_canada_same_as_us import (
     census_canada_same_as_us,
 )
-from urbanstats.statistics.collections.census_canada_race import CensusCanadaRace
 from urbanstats.statistics.collections.census_canada_simple import census_canada_simple
 from urbanstats.statistics.collections.education_gender_gap import (
     EducationGenderGapStatistics,

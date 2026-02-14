@@ -1,8 +1,8 @@
 from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import (
+    RACE,
     QuizQuestionDescriptor,
     QuizQuestionSkip,
-    RACE,
 )
 from urbanstats.statistics.statistic_collection import CanadaStatistics
 
