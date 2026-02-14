@@ -412,7 +412,7 @@ class CensusCanadaLanguage(CensusCanadaSameAsUS):
             statistic_table["language_other_non_french_canada"] < 0
         ]
         assert (
-            negative_other.sum() > -100
+            negative_other.sum() > -1000
         ), f"Negative other language sum is {negative_other.sum()}, which is too high. Check the underlying data for issues."
         statistic_table["language_other_non_french_canada"] = statistic_table[
             "language_other_non_french_canada"

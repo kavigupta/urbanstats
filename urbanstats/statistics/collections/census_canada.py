@@ -17,47 +17,71 @@ from urbanstats.statistics.statistic_collection import CanadaStatistics
 
 
 class CensusCanada(CanadaStatistics):
-    version = 3
+    version = 4
+
+    canada_years = (2021, 2016, 2011)
+
+    def _year_label(self, year):
+        return "" if year == 2021 else f" ({year})"
 
     def name_for_each_statistic(self):
-        return {
-            "population_2021_canada": "Population [StatCan]",
-            **{
-                f"density_2021_pw_{r}_canada": f"PW Density ({format_radius(r)}) [StatCan]"
-                for r in RADII
-            },
-            "sd_2021_canada": "Area-weighted Density [StatCan]",
-        }
+        result = {}
+        for year in self.canada_years:
+            label = self._year_label(year)
+            result[f"population_{year}_canada"] = f"Population{label} [StatCan]"
+            result.update(
+                {
+                    f"density_{year}_pw_{r}_canada": f"PW Density ({format_radius(r)}){label} [StatCan]"
+                    for r in RADII
+                }
+            )
+            result[f"sd_{year}_canada"] = f"Area-weighted Density{label} [StatCan]"
+        return result
 
     def varname_for_each_statistic(self):
-        return {
-            "population_2021_canada": "population",
-            **{
-                f"density_2021_pw_{r}_canada": f"density_pw_{format_radius(r)}"
-                for r in RADII
-            },
-            "sd_2021_canada": "density_aw",
-        }
+        result = {}
+        for year in self.canada_years:
+            if year == 2021:
+                population_name = "population"
+                density_name = lambda r: f"density_pw_{format_radius(r)}"
+                sd_name = "density_aw"
+            else:
+                population_name = f"population_{year}"
+                density_name = lambda r: f"density_pw_{format_radius(r)}_{year}"
+                sd_name = f"density_aw_{year}"
+            result[f"population_{year}_canada"] = population_name
+            result.update(
+                {
+                    f"density_{year}_pw_{r}_canada": density_name(r) for r in RADII
+                }
+            )
+            result[f"sd_{year}_canada"] = sd_name
+        return result
 
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("canadian-census")
 
     def quiz_question_descriptors(self):
-        return {
-            "population_2021_canada": QuizQuestionDescriptor(
+        result = {}
+        for year in self.canada_years:
+            population_key = f"population_{year}_canada"
+            density_key = f"density_{year}_pw_1_canada"
+            result[population_key] = QuizQuestionDescriptor(
                 "higher population", POPULATION
-            ),
-            "density_2021_pw_1_canada": QuizQuestionDescriptor(
+            )
+            result[density_key] = QuizQuestionDescriptor(
                 "higher population-weighted density (r=1km)" + DENSITY_EXPLANATION_PW,
                 POPULATION_DENSITY,
-            ),
-            **{
-                f"density_2021_pw_{r}_canada": QuizQuestionSkip()
-                for r in RADII
-                if r not in (1,)
-            },
-            "sd_2021_canada": QuizQuestionSkip(),
-        }
+            )
+            result.update(
+                {
+                    f"density_{year}_pw_{r}_canada": QuizQuestionSkip()
+                    for r in RADII
+                    if r not in (1,)
+                }
+            )
+            result[f"sd_{year}_canada"] = QuizQuestionSkip()
+        return result
 
     def dependencies(self):
         return ["area"]
@@ -65,20 +89,27 @@ class CensusCanada(CanadaStatistics):
     def compute_statistics_dictionary_canada(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
-        st = compute_census_stats(2021, shapefile)
         results = {}
-        results["population_2021_canada"] = st["population"]
-        results["sd_2021_canada"] = st["population"] / existing_statistics["area"]
-        for r in RADII:
-            results[f"density_2021_pw_{r}_canada"] = (
-                st[f"canada_density_2021_{r}"] / st["population"]
+        st_2021 = None
+        for year in self.canada_years:
+            st = compute_census_stats(year, shapefile)
+            if year == 2021:
+                st_2021 = st
+            results[f"population_{year}_canada"] = st["population"]
+            results[f"sd_{year}_canada"] = (
+                st["population"] / existing_statistics["area"]
             )
+            for r in RADII:
+                results[f"density_{year}_pw_{r}_canada"] = (
+                    st[f"canada_density_{year}_{r}"] / st["population"]
+                )
+        assert st_2021 is not None
         histos = census_histogram_canada(shapefile, 2021)
         results.update({f"pw_density_histogram_{r}_canada": [] for r in RADII})
         for idx, longname in enumerate(shapefile_table.longname):
             for r in RADII:
                 if longname not in histos:
-                    assert st["population"][idx] == 0
+                    assert st_2021["population"][idx] == 0
                     results[f"pw_density_histogram_{r}_canada"].append(np.nan)
                 else:
                     results[f"pw_density_histogram_{r}_canada"].append(

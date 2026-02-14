@@ -393,11 +393,57 @@ statistics_tree = StatisticTree(
                     "population_2021_canada",
                     change=True,
                 ),
+                "population_2016_canada": StatisticGroup(
+                    {2020: [single_source("population_2016_canada", indented_name="2016")]}
+                ),
+                "population_2011_canada": StatisticGroup(
+                    {2020: [single_source("population_2011_canada", indented_name="2011")]}
+                ),
                 **census_basics_with_ghs_and_canada(
                     "ad_1", "gpw_pw_density_1", "density_2021_pw_1_canada", change=True
                 ),
+                "density_2016_pw_1_canada": StatisticGroup(
+                    {2020: [single_source("density_2016_pw_1_canada", indented_name="2016")]}
+                ),
+                **{
+                    f"density_2016_pw_{r}_canada": StatisticGroup(
+                        {
+                            2020: [
+                                single_source(
+                                    f"density_2016_pw_{r}_canada",
+                                    indented_name="2016",
+                                )
+                            ]
+                        }
+                    )
+                    for r in RADII
+                    if r not in (1,)
+                },
+                "density_2011_pw_1_canada": StatisticGroup(
+                    {2020: [single_source("density_2011_pw_1_canada", indented_name="2011")]}
+                ),
+                **{
+                    f"density_2011_pw_{r}_canada": StatisticGroup(
+                        {
+                            2020: [
+                                single_source(
+                                    f"density_2011_pw_{r}_canada",
+                                    indented_name="2011",
+                                )
+                            ]
+                        }
+                    )
+                    for r in RADII
+                    if r not in (1,)
+                },
                 **census_basics_with_ghs_and_canada(
                     "sd", "gpw_aw_density", "sd_2021_canada", change=False
+                ),
+                "sd_2016_canada": StatisticGroup(
+                    {2020: [single_source("sd_2016_canada", indented_name="2016")]}
+                ),
+                "sd_2011_canada": StatisticGroup(
+                    {2020: [single_source("sd_2011_canada", indented_name="2011")]}
                 ),
                 "area": StatisticGroup({None: [single_source("area")]}),
                 "compactness": StatisticGroup({None: [single_source("compactness")]}),
