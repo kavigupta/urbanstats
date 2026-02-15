@@ -3,340 +3,340 @@ export default [
         82,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         83,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         84,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         87,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         88,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         89,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         92,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         93,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         94,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         95,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         98,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         99,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         100,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         103,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         104,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         107,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         108,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         109,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         112,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         113,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         114,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         117,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         118,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         119,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         122,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         123,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         124,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         127,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         128,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
         129,
         {
             "type": "histogram",
-            "universe_total_idx": 397
+            "universe_total_idx": 387
         }
     ],
     [
-        177,
+        167,
         {
             "type": "histogram",
-            "universe_total_idx": 402
+            "universe_total_idx": 391
         }
     ],
     [
-        178,
+        168,
         {
             "type": "histogram",
-            "universe_total_idx": 402
+            "universe_total_idx": 391
         }
     ],
     [
-        179,
+        169,
         {
             "type": "histogram",
-            "universe_total_idx": 402
+            "universe_total_idx": 391
         }
     ],
     [
-        180,
+        170,
         {
             "type": "histogram",
-            "universe_total_idx": 402
+            "universe_total_idx": 391
         }
     ],
     [
-        181,
+        171,
         {
             "type": "histogram",
-            "universe_total_idx": 402
+            "universe_total_idx": 391
         }
     ],
     [
-        182,
+        172,
         {
             "type": "histogram",
-            "universe_total_idx": 402
+            "universe_total_idx": 391
         }
     ],
     [
-        183,
+        173,
         {
             "type": "histogram",
-            "universe_total_idx": 402
+            "universe_total_idx": 391
         }
     ],
     [
-        184,
+        174,
         {
             "type": "histogram",
-            "universe_total_idx": 402
+            "universe_total_idx": 391
         }
     ],
     [
-        185,
+        175,
         {
             "type": "histogram",
-            "universe_total_idx": 402
+            "universe_total_idx": 391
         }
     ],
     [
-        186,
+        176,
         {
             "type": "histogram",
-            "universe_total_idx": 402
+            "universe_total_idx": 391
         }
     ],
     [
-        216,
+        206,
         {
             "type": "histogram",
-            "universe_total_idx": 215
+            "universe_total_idx": 205
         }
     ],
     [
-        217,
+        207,
         {
             "type": "histogram",
-            "universe_total_idx": 215
+            "universe_total_idx": 205
         }
     ],
     [
-        218,
+        208,
         {
             "type": "histogram",
-            "universe_total_idx": 215
+            "universe_total_idx": 205
         }
     ],
     [
-        219,
+        209,
         {
             "type": "histogram",
-            "universe_total_idx": 215
+            "universe_total_idx": 205
         }
     ],
     [
-        220,
+        210,
         {
             "type": "histogram",
-            "universe_total_idx": 215
+            "universe_total_idx": 205
         }
     ],
     [
-        221,
+        211,
         {
             "type": "histogram",
-            "universe_total_idx": 215
+            "universe_total_idx": 205
         }
     ],
     [
-        222,
+        212,
         {
             "type": "histogram",
-            "universe_total_idx": 215
+            "universe_total_idx": 205
         }
     ],
     [
-        223,
+        213,
         {
             "type": "histogram",
-            "universe_total_idx": 215
+            "universe_total_idx": 205
         }
     ],
     [
-        336,
+        326,
         {
             "type": "temperature_histogram",
             "min_value": -40,
@@ -345,7 +345,7 @@ export default [
         }
     ],
     [
-        345,
+        335,
         {
             "type": "temperature_histogram",
             "min_value": -40,
@@ -354,14 +354,14 @@ export default [
         }
     ],
     [
-        406,
+        395,
         {
             "type": "monthly_time_series",
             "name": "Rainfall by month"
         }
     ],
     [
-        444,
+        432,
         {
             "type": "monthly_time_series",
             "name": "Snowfall by month"
