@@ -377,8 +377,16 @@ def census_basics_with_ghs_and_canada(col_name, gpw_name, canada_name, *, change
         )
     ]
     if change:
+        # Add both US and Canadian change statistics
         result[col_name].by_year[2010].append(
-            single_source(f"{col_name}_change_2010", indented_name="2010-2020 Change")
+            MultiSource(
+                {
+                    population_census: f"{col_name}_change_2010",
+                    population_canada: canada_2011_name.replace("_2011_", "_change_2011_"),
+                },
+                f"{col_name}_change_2010",
+                indented_name="2010-2020 Change",
+            )
         )
     result[col_name].group_name_statcol = col_name
     return result

@@ -7,7 +7,10 @@ from urbanstats.statistics.collections.census import (
     CensusChange2000,
     CensusChange2010,
 )
-from urbanstats.statistics.collections.census_canada import CensusCanada
+from urbanstats.statistics.collections.census_canada import (
+    CensusCanada,
+    CensusChangeCanada2011,
+)
 from urbanstats.statistics.collections.census_canada_citizenship import (
     CensusCanadaCitizenship,
 )
@@ -101,6 +104,7 @@ statistic_collections = (
     Census2000(),
     CensusChange2000(),
     CensusCanada(),
+    CensusChangeCanada2011(),
     CanadaElectionStatistics(),
     GPWStatistics(),
     SegregationStatistics(),
