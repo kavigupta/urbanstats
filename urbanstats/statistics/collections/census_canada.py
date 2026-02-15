@@ -51,16 +51,18 @@ class CensusCanada(CanadaStatistics):
                 var_year_suffix = "_2010"
             else:
                 var_year_suffix = f"_{year}"
-            
+
             if var_year_suffix:
                 population_name = f"population{var_year_suffix}"
-                density_name = lambda r, suffix=var_year_suffix: f"density_pw_{format_radius(r)}{suffix}"
+                density_name = (
+                    lambda r, suffix=var_year_suffix: f"density_pw_{format_radius(r)}{suffix}"
+                )
                 sd_name = f"density_aw{var_year_suffix}"
             else:
                 population_name = "population"
                 density_name = lambda r: f"density_pw_{format_radius(r)}"
                 sd_name = "density_aw"
-            
+
             result[f"population_{year}_canada"] = population_name
             result.update(
                 {f"density_{year}_pw_{r}_canada": density_name(r) for r in RADII}

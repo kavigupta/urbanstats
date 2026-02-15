@@ -13,7 +13,7 @@ from urbanstats.statistics.utils import fractionalize
 
 class TransportationModeStatistics(ACSStatisticsColection):
     version = 3
-    
+
     def legacy_statistic_names(self):
         # Old quiz data used these names for the (incl WFH) stats
         return {
@@ -23,7 +23,7 @@ class TransportationModeStatistics(ACSStatisticsColection):
             "Commute Transit %": "Commute Transit % (incl WFH)",
             "Commute Work From Home %": "Commute Work From Home % (incl WFH)",
         }
-    
+
     def name_for_each_statistic(self):
         return {
             "transportation_means_car": "Commute Car % (incl WFH)",
