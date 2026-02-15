@@ -310,7 +310,7 @@ export default [
     "!FULL Which has more access to grocery stores (higher % of people within 1mi of a grocery store)?!TOOLTIP The USDA defines a grocery store as a 'supermarket, supercenter, or large grocery store.'",
     null,
     null,
-    "higher % of people who are low income based on the Low-income cut-offs, after tax (LICO-AT)",
+    null,
     "higher life expectancy",
     "higher % of people who are low income based on the Low-income measure, after tax (LIM-AT)",
     "higher % of people who are divorced",

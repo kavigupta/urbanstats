@@ -228,14 +228,7 @@ class CensusCanadaLICOAT(CensusCanadaSimple):
         return self.same_for_each_name("canadian-census-disaggregated")
 
     def quiz_question_descriptors(self):
-        return {
-            **QuizQuestionDescriptor.several(
-                POVERTY,
-                {
-                    "lico_at_canada": "higher % of people who are low income based on the Low-income cut-offs, after tax (LICO-AT)",
-                },
-            ),
-        }
+        return QuizQuestionSkip.several("lico_at_canada")
 
     def post_process(self, statistic_table, existing_statistics):
         del existing_statistics
