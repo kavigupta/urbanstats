@@ -17,9 +17,9 @@ from urbanstats.statistics.statistic_collection import CanadaStatistics
 
 
 class CensusCanada(CanadaStatistics):
-    version = 4
+    version = 5
 
-    canada_years = (2021, 2016, 2011)
+    canada_years = (2021, 2011)
 
     def _year_label(self, year):
         return "" if year == 2021 else f" ({year})"
@@ -41,14 +41,26 @@ class CensusCanada(CanadaStatistics):
     def varname_for_each_statistic(self):
         result = {}
         for year in self.canada_years:
+            # Map Canadian census years to variable names
+            # 2021 -> no suffix (matches current US census pattern)
+            # 2011 -> _2010 suffix (matches US Census 2010 for MultiSource compatibility)
+            # 2016 -> _2016 suffix (standalone)
             if year == 2021:
+                var_year_suffix = ""
+            elif year == 2011:
+                var_year_suffix = "_2010"
+            else:
+                var_year_suffix = f"_{year}"
+            
+            if var_year_suffix:
+                population_name = f"population{var_year_suffix}"
+                density_name = lambda r, suffix=var_year_suffix: f"density_pw_{format_radius(r)}{suffix}"
+                sd_name = f"density_aw{var_year_suffix}"
+            else:
                 population_name = "population"
                 density_name = lambda r: f"density_pw_{format_radius(r)}"
                 sd_name = "density_aw"
-            else:
-                population_name = f"population_{year}"
-                density_name = lambda r: f"density_pw_{format_radius(r)}_{year}"
-                sd_name = f"density_aw_{year}"
+            
             result[f"population_{year}_canada"] = population_name
             result.update(
                 {f"density_{year}_pw_{r}_canada": density_name(r) for r in RADII}

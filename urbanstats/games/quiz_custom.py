@@ -39,6 +39,9 @@ def custom_quiz_question(stat_column_name, longname_a, longname_b):
 
 
 def extract(row, column):
+    deprecated_columns = ["transportation_means_car"]
+    if column in deprecated_columns:
+        return float(row[column])
     [cols] = [z for x, _, z in get_quiz_stats() if x == column]
     vals = [row[col] for col in cols]
     # get the one non-nan value

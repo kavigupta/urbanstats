@@ -363,6 +363,25 @@ def census_basics_with_ghs_and_canada(col_name, gpw_name, canada_name, *, change
     result[col_name].by_year[2020] = [
         MultiSource(by_source, col_name, indented_name="2020")
     ]
+    # Also add Canadian 2011 data directly associated with 2010 US census
+    assert "_2021_" in canada_name, f"{canada_name!r}"
+    canada_2011_name = canada_name.replace("_2021_", "_2011_")
+    result[col_name].by_year[2010] = [
+        MultiSource(
+            {
+                population_census: f"{col_name}_2010",
+                population_canada: canada_2011_name,
+            },
+            f"{col_name}_2010",
+            indented_name="2010",
+        )
+    ]
+    if change:
+        result[col_name].by_year[2010].append(
+            single_source(
+                f"{col_name}_change_2010", indented_name="2010-2020 Change"
+            )
+        )
     result[col_name].group_name_statcol = col_name
     return result
 
@@ -393,81 +412,11 @@ statistics_tree = StatisticTree(
                     "population_2021_canada",
                     change=True,
                 ),
-                "population_2016_canada": StatisticGroup(
-                    {
-                        2020: [
-                            single_source(
-                                "population_2016_canada", indented_name="2016"
-                            )
-                        ]
-                    }
-                ),
-                "population_2011_canada": StatisticGroup(
-                    {
-                        2020: [
-                            single_source(
-                                "population_2011_canada", indented_name="2011"
-                            )
-                        ]
-                    }
-                ),
                 **census_basics_with_ghs_and_canada(
                     "ad_1", "gpw_pw_density_1", "density_2021_pw_1_canada", change=True
                 ),
-                "density_2016_pw_1_canada": StatisticGroup(
-                    {
-                        2020: [
-                            single_source(
-                                "density_2016_pw_1_canada", indented_name="2016"
-                            )
-                        ]
-                    }
-                ),
-                **{
-                    f"density_2016_pw_{r}_canada": StatisticGroup(
-                        {
-                            2020: [
-                                single_source(
-                                    f"density_2016_pw_{r}_canada",
-                                    indented_name="2016",
-                                )
-                            ]
-                        }
-                    )
-                    for r in RADII
-                    if r not in (1,)
-                },
-                "density_2011_pw_1_canada": StatisticGroup(
-                    {
-                        2020: [
-                            single_source(
-                                "density_2011_pw_1_canada", indented_name="2011"
-                            )
-                        ]
-                    }
-                ),
-                **{
-                    f"density_2011_pw_{r}_canada": StatisticGroup(
-                        {
-                            2020: [
-                                single_source(
-                                    f"density_2011_pw_{r}_canada",
-                                    indented_name="2011",
-                                )
-                            ]
-                        }
-                    )
-                    for r in RADII
-                    if r not in (1,)
-                },
                 **census_basics_with_ghs_and_canada(
                     "sd", "gpw_aw_density", "sd_2021_canada", change=False
-                ),
-                "sd_2016_canada": StatisticGroup(
-                    {2020: [single_source("sd_2016_canada", indented_name="2016")]}
-                ),
-                "sd_2011_canada": StatisticGroup(
-                    {2020: [single_source("sd_2011_canada", indented_name="2011")]}
                 ),
                 "area": StatisticGroup({None: [single_source("area")]}),
                 "compactness": StatisticGroup({None: [single_source("compactness")]}),
