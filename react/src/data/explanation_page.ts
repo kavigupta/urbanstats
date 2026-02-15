@@ -475,6 +475,7 @@ export default [
     "transportation",
     "canadian-census-disaggregated",
     "deprecated",
+    "housing-acs",
     "housing-census",
     "2000",
     "2010",

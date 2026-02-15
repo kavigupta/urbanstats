@@ -564,6 +564,9 @@ statistics_tree = StatisticTree(
                     "year_built_2010_or_later",
                 ),
                 **just_2020_with_canada(
+                    "household_size_pw",
+                ),
+                **just_2020_with_canada(
                     "rent_or_own_rent",
                 ),
                 **just_2020_canada_only(

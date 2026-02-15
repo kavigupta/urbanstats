@@ -475,6 +475,7 @@ export default [
     "Commute Walk %",
     "Commute Walk % [StatCan]",
     "Commute Work From Home % (incl WFH)",
+    "Units per Structure (population-weighted)",
     "Vacancy %",
     "Vacancy % (2000)",
     "Vacancy % (2010)",

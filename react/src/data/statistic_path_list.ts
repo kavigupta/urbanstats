@@ -475,6 +475,7 @@ export default [
     "transportation_means_walk_no_wfh",
     "transportation_means_walk_no_wfh_canada",
     "transportation_means_worked_at_home",
+    "units_per_structure_pw",
     "vacancy",
     "vacancy_2000",
     "vacancy_2010",

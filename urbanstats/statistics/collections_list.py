@@ -50,6 +50,9 @@ from urbanstats.statistics.collections.heating import HouseHeating
 from urbanstats.statistics.collections.housing_rent import HousingRent
 from urbanstats.statistics.collections.housing_rent_burden import HousingRentBurden
 from urbanstats.statistics.collections.housing_rent_or_own import HousingRentOrOwn
+from urbanstats.statistics.collections.household_size import (
+    HouseholdSizeStatistics,
+)
 from urbanstats.statistics.collections.housing_year_built import (
     HousingYearBuiltStatistics,
 )
@@ -122,6 +125,7 @@ statistic_collections = (
     HousingRentBurden(),
     HousingRent(),
     HousingYearBuiltStatistics(),
+    HouseholdSizeStatistics(),
     TransportationModeStatistics(),
     TransportationCommuteTimeStatistics(),
     TransportationVehicleOwnershipStatistics(),

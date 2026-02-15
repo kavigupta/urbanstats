@@ -4,6 +4,10 @@ import numpy as np
 
 from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.statistics.collections.generation import GenerationStatistics
+from urbanstats.statistics.collections.household_size import (
+    HouseholdSizeStatistics,
+    compute_population_weighted_household_size,
+)
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.marriage import MarriageStatistics
 from urbanstats.statistics.collections.transportation_commute_time import (
@@ -377,10 +381,54 @@ class CensusCanadaIndustry(CensusCanadaSameAsUS):
         return IndustryStatistics()
 
 
+class CensusCanadaHouseholdSize(CensusCanadaSameAsUS):
+    version = 4
+
+    def census_tables(self) -> CensusTables:
+        return CensusTables(
+            ["Total - Private households by household size - 100% data"],
+            {
+                None: [
+                    "Total - Private households by household size - 100% data",
+                ],
+                "household_size_canada_1": [
+                    "  1 person",
+                ],
+                "household_size_canada_2": [
+                    "  2 persons",
+                ],
+                "household_size_canada_3": [
+                    "  3 persons",
+                ],
+                "household_size_canada_4": [
+                    "  4 persons",
+                ],
+                "household_size_canada_5_plus": [
+                    "  5 or more persons",
+                ],
+            },
+            "population",
+        )
+
+    def post_process(self, statistic_table):
+        # Compute population-weighted household size before fractionalize
+        compute_population_weighted_household_size(
+            statistic_table,
+            prefix="household_size_canada_",
+            output_name="household_size_pw_canada",
+            max_size=5,
+        )
+        return statistic_table
+
+    def us_equivalent(self):
+        return HouseholdSizeStatistics()
+
+
 census_canada_same_as_us = [
     CensusCanadaCommuteTime(),
     CensusCanadaTransportationMode(),
     CensusCanadaGeneration(),
     CensusCanadaMarriage(),
     CensusCanadaIndustry(),
+    CensusCanadaHouseholdSize(),
 ]
