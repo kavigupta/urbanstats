@@ -1157,7 +1157,7 @@ export default {
         },
         {
             "varName": "housing_cost_30_percent_or_more",
-            "humanReadableName": "Housing Cost/Income >= 30% [StatCan]",
+            "humanReadableName": "Housing Cost/Income > 30% [StatCan]",
             "comesFromMultiSourceSet": false,
             "order": 165,
             "index": 412

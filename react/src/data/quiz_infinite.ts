@@ -51391,7 +51391,7 @@ export default [
             "1BR Rent < $750 %",
             "2BR Rent > $1500 %",
             "2BR Rent < $750 %",
-            "Housing Cost/Income >= 30% [StatCan]",
+            "Housing Cost/Income > 30% [StatCan]",
             "Rent/Income > 40%",
             "Rent/Income < 20%",
             "Renter %",

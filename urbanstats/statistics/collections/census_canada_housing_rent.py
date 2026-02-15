@@ -57,7 +57,7 @@ class CensusCanadaHousingRent(CensusCanadaSameAsUS):
         names = super().name_for_each_statistic()
         names.update(
             {
-                "rent_burden_over_30_canada": "Housing Cost/Income >= 30% [StatCan]",
+                "rent_burden_over_30_canada": "Housing Cost/Income > 30% [StatCan]",
             }
         )
         return names

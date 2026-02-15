@@ -2944,13 +2944,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "rent_burden_over_30",
-                "name": "Housing Cost/Income >= 30% [StatCan]",
+                "name": "Housing Cost/Income > 30% [StatCan]",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Housing Cost/Income >= 30% [StatCan]",
+                                "name": "Housing Cost/Income > 30% [StatCan]",
                                 "stats": [
                                     {
                                         "source": {
@@ -5301,13 +5301,7 @@ export const rawStatsTree = [
                         ]
                     }
                 ]
-            }
-        ]
-    },
-    {
-        "id": "occupation_canada",
-        "name": "Occupation (Canada)",
-        "contents": [
+            },
             {
                 "id": "occupation_legislative_and_senior_management",
                 "name": "Legislative and senior management occupations % [StatCan]",
