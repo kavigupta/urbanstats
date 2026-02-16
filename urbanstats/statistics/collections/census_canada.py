@@ -74,13 +74,17 @@ class CensusCanada(CanadaStatistics):
         for year in self.canada_years:
             population_key = f"population_{year}_canada"
             density_key = f"density_{year}_pw_1_canada"
-            result[population_key] = QuizQuestionDescriptor(
-                "higher population", POPULATION
-            )
-            result[density_key] = QuizQuestionDescriptor(
-                "higher population-weighted density (r=1km)" + DENSITY_EXPLANATION_PW,
-                POPULATION_DENSITY,
-            )
+            if year == 2021:
+                result[population_key] = QuizQuestionDescriptor(
+                    "higher population", POPULATION
+                )
+                result[density_key] = QuizQuestionDescriptor(
+                    "higher population-weighted density (r=1km)" + DENSITY_EXPLANATION_PW,
+                    POPULATION_DENSITY,
+                )
+            else:
+                result[population_key] = QuizQuestionSkip()
+                result[density_key] = QuizQuestionSkip()
             result.update(
                 {
                     f"density_{year}_pw_{r}_canada": QuizQuestionSkip()
