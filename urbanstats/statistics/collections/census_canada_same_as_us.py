@@ -390,7 +390,7 @@ class CensusCanadaIndustry(CensusCanadaSameAsUS):
 
 
 class CensusCanadaHouseholdSize(CensusCanadaSameAsUS):
-    version = 4
+    version = 5
 
     def census_tables(self) -> CensusTables:
         return CensusTables(

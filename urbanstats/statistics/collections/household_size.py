@@ -20,12 +20,6 @@ def compute_population_weighted_household_size(
 
     Formula: sum(households * size^2) / sum(households * size).
 
-    Args:
-        statistics_table: DataFrame with household size columns
-        prefix: Column prefix (e.g., "household_size_" for US, "household_size_*_canada" for Canada)
-        output_name: Output column name
-        max_size: Maximum household size. Generates categories 1 through max_size-1,
-                 plus a "{max_size}_plus" category with value max_size + 0.5.
     """
     # Build household_sizes dict based on max_size
     household_sizes = {str(i): i for i in range(1, max_size)}
@@ -42,6 +36,8 @@ def compute_population_weighted_household_size(
         denominator += households * size
         del statistics_table[col_name]
 
+    assert not list(statistics_table)
+
     statistics_table[output_name] = np.where(
         denominator > 0,
         numerator / denominator,
@@ -50,6 +46,8 @@ def compute_population_weighted_household_size(
 
 
 class HouseholdSizeStatistics(ACSStatisticsColection):
+    version = 2
+
     def name_for_each_statistic(self):
         return {
             "household_size_pw": "Household Size (population-weighted)",
