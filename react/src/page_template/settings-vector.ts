@@ -440,7 +440,6 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_education_field_business_canada', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_education_field_stem_canada', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_education_field_humanities_canada', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_group_housing_per_adult', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_housing_per_person', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_lim_at_canada', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_language_french', coder: booleanSettingCoder }),
