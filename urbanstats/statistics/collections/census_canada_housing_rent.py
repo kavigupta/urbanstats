@@ -112,10 +112,10 @@ class CensusCanadaHousingRent(CensusCanadaSameAsUS):
 
 
 class CensusCanadaHousingPerPerson(CensusCanadaSameAsUS):
-    version = 3
+    version = 5
 
     def us_equivalent_fields(self):
-        return ["housing_per_person"]
+        return ["housing_per_person", "housing_per_pop"]
 
     def census_tables(self) -> CensusTables:
         return CensusTables(
@@ -129,36 +129,6 @@ class CensusCanadaHousingPerPerson(CensusCanadaSameAsUS):
     def us_equivalent(self):
         return Census2020()
 
-    def name_for_each_statistic(self):
-        names = super().name_for_each_statistic()
-        names.update(
-            {
-                "housing_per_adult_canada": "Housing Units per Adult (20+) [StatCan]",
-            }
-        )
-        return names
-
-    def varname_for_each_statistic(self):
-        varnames = super().varname_for_each_statistic()
-        varnames.update(
-            {
-                "housing_per_adult_canada": "housing_per_adult_20plus",
-            }
-        )
-        return varnames
-
-    def quiz_question_descriptors(self):
-        descriptors = super().quiz_question_descriptors()
-        descriptors.update(
-            {
-                "housing_per_adult_canada": QuizQuestionDescriptor(
-                    "higher number of housing units per adult (20+)",
-                    HOUSING,
-                ),
-            }
-        )
-        return descriptors
-
     def housing_population_tables(self) -> CensusTables:
         return CensusTables(
             ["Total - Age groups of the population - 100% data"],
@@ -168,7 +138,6 @@ class CensusCanadaHousingPerPerson(CensusCanadaSameAsUS):
                     "    0 to 4 years",
                     "    5 to 9 years",
                     "    10 to 14 years",
-                    "    15 to 19 years",
                     "  15 to 64 years",
                     "  65 years and over",
                     "      85 to 89 years",
@@ -178,6 +147,9 @@ class CensusCanadaHousingPerPerson(CensusCanadaSameAsUS):
                 ],
                 "population_total_canada": [
                     "Total - Age groups of the population - 100% data",
+                ],
+                "population_15_to_19_canada": [
+                    "    15 to 19 years",
                 ],
                 "population_20_plus_canada": [
                     "    20 to 24 years",
@@ -205,13 +177,15 @@ class CensusCanadaHousingPerPerson(CensusCanadaSameAsUS):
         del existing_statistics, shapefile_table
         dwellings_table = self.census_tables().compute(2021, shapefile)
         population_table = self.housing_population_tables().compute(2021, shapefile)
+        population_18_plus = population_table[
+            "population_20_plus_canada"
+        ] + population_table["population_15_to_19_canada"] * (2 / 5)
         return {
             "housing_per_person_canada": (
                 dwellings_table["total_dwellings_canada"]
                 / population_table["population_total_canada"]
             ),
-            "housing_per_adult_canada": (
-                dwellings_table["total_dwellings_canada"]
-                / population_table["population_20_plus_canada"]
+            "housing_per_pop_canada": (
+                dwellings_table["total_dwellings_canada"] / population_18_plus
             ),
         }
