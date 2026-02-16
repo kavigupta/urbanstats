@@ -38,14 +38,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 397
+                                        "column": 399
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 401
+                                        "column": 403
                                     },
                                     {
                                         "source": {
@@ -70,14 +70,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 399
+                                        "column": 401
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 400
+                                        "column": 402
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -90,14 +90,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 403
+                                        "column": 405
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 404
+                                        "column": 406
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -112,7 +112,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 398
+                                        "column": 400
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -122,7 +122,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 402
+                                        "column": 404
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -254,14 +254,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 428
+                                        "column": 430
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 432
+                                        "column": 434
                                     },
                                     {
                                         "source": {
@@ -286,14 +286,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 430
+                                        "column": 432
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 431
+                                        "column": 433
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -308,7 +308,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 429
+                                        "column": 431
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -428,14 +428,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 483
+                                        "column": 484
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 486
+                                        "column": 487
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -450,7 +450,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 485
+                                        "column": 486
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -465,7 +465,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 484
+                                        "column": 485
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -672,14 +672,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 351
+                                        "column": 353
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 354
+                                        "column": 356
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -694,7 +694,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 353
+                                        "column": 355
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -709,7 +709,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 352
+                                        "column": 354
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -794,14 +794,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 390
+                                        "column": 392
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 393
+                                        "column": 395
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -816,7 +816,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 392
+                                        "column": 394
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -831,7 +831,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 391
+                                        "column": 393
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -923,7 +923,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 438
+                                        "column": 440
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -933,7 +933,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 441
+                                        "column": 443
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -948,7 +948,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 439
+                                        "column": 441
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -958,7 +958,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 442
+                                        "column": 444
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -973,7 +973,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 440
+                                        "column": 442
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -994,7 +994,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 433
+                                        "column": 435
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -1004,7 +1004,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 436
+                                        "column": 438
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -1019,7 +1019,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 434
+                                        "column": 436
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -1029,7 +1029,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 437
+                                        "column": 439
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -1044,7 +1044,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 435
+                                        "column": 437
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1230,14 +1230,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 310
+                                        "column": 312
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 311
+                                        "column": 313
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1261,14 +1261,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 315
+                                        "column": 317
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 316
+                                        "column": 318
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1292,7 +1292,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 312
+                                        "column": 314
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1316,7 +1316,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 314
+                                        "column": 316
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1337,7 +1337,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 313
+                                        "column": 315
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1367,7 +1367,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 412
+                                        "column": 414
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1391,7 +1391,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 408
+                                        "column": 410
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1415,7 +1415,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 414
+                                        "column": 416
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1439,7 +1439,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 409
+                                        "column": 411
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1463,7 +1463,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 410
+                                        "column": 412
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1487,7 +1487,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 411
+                                        "column": 413
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1511,7 +1511,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 415
+                                        "column": 417
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1535,7 +1535,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 407
+                                        "column": 409
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1559,7 +1559,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 413
+                                        "column": 415
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2099,7 +2099,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 350
+                                        "column": 352
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2120,7 +2120,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 405
+                                        "column": 407
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2141,7 +2141,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 321
+                                        "column": 323
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2162,7 +2162,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 323
+                                        "column": 325
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2309,7 +2309,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 265
+                                        "column": 267
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2330,7 +2330,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 261
+                                        "column": 263
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2351,7 +2351,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 263
+                                        "column": 265
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2372,7 +2372,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 264
+                                        "column": 266
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2393,7 +2393,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 260
+                                        "column": 262
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2414,7 +2414,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 262
+                                        "column": 264
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2441,7 +2441,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 257
+                                        "column": 259
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2456,7 +2456,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 259
+                                        "column": 261
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -2471,7 +2471,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 258
+                                        "column": 260
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -2495,14 +2495,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 253
+                                        "column": 255
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 256
+                                        "column": 258
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2517,7 +2517,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 255
+                                        "column": 257
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -2532,7 +2532,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 254
+                                        "column": 256
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -2553,7 +2553,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 477
+                                        "column": 478
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2568,7 +2568,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 479
+                                        "column": 480
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -2583,7 +2583,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 478
+                                        "column": 479
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -2604,7 +2604,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 425
+                                        "column": 427
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2625,7 +2625,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 422
+                                        "column": 424
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2646,7 +2646,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 424
+                                        "column": 426
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2667,7 +2667,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 418
+                                        "column": 420
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2688,7 +2688,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 416
+                                        "column": 418
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2709,7 +2709,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 417
+                                        "column": 419
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2730,7 +2730,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 421
+                                        "column": 423
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2751,7 +2751,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 419
+                                        "column": 421
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2772,7 +2772,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 420
+                                        "column": 422
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2793,7 +2793,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 492
+                                        "column": 493
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2814,7 +2814,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 493
+                                        "column": 494
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2835,7 +2835,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 494
+                                        "column": 495
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2856,7 +2856,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 495
+                                        "column": 496
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2877,7 +2877,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 496
+                                        "column": 497
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2898,7 +2898,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 497
+                                        "column": 498
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2908,18 +2908,28 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "units_per_structure_pw",
-                "name": "Units per Structure (population-weighted)",
+                "id": "household_size_pw",
+                "name": "Household Size (population-weighted)",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Units per Structure (population-weighted)",
+                                "name": "Household Size (population-weighted)",
                                 "stats": [
                                     {
-                                        "source": null,
-                                        "column": 476
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
+                                        "column": 252
+                                    },
+                                    {
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
+                                        "column": 253
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2943,14 +2953,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 426
+                                        "column": 428
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 427
+                                        "column": 429
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2974,7 +2984,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 252
+                                        "column": 254
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2998,7 +3008,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 423
+                                        "column": 425
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3028,14 +3038,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 467
+                                        "column": 469
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 468
+                                        "column": 470
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3059,14 +3069,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 464
+                                        "column": 466
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 465
+                                        "column": 467
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3090,14 +3100,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 473
+                                        "column": 475
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 474
+                                        "column": 476
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3121,14 +3131,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 470
+                                        "column": 472
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 471
+                                        "column": 473
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3152,14 +3162,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 457
+                                        "column": 459
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 458
+                                        "column": 460
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3183,14 +3193,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 461
+                                        "column": 463
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 462
+                                        "column": 464
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3214,14 +3224,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 453
+                                        "column": 455
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 454
+                                        "column": 456
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3245,14 +3255,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 455
+                                        "column": 457
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 456
+                                        "column": 458
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3276,14 +3286,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 459
+                                        "column": 461
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 460
+                                        "column": 462
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3304,7 +3314,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 482
+                                        "column": 483
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3325,7 +3335,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 480
+                                        "column": 481
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3346,7 +3356,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 481
+                                        "column": 482
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3367,7 +3377,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 450
+                                        "column": 452
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3388,7 +3398,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 452
+                                        "column": 454
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3409,7 +3419,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 449
+                                        "column": 451
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3430,7 +3440,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 451
+                                        "column": 453
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4003,7 +4013,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 322
+                                        "column": 324
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4024,7 +4034,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 395
+                                        "column": 397
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4051,7 +4061,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 396
+                                        "column": 398
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4207,14 +4217,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 270
+                                        "column": 272
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 271
+                                        "column": 273
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4238,14 +4248,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 288
+                                        "column": 290
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 289
+                                        "column": 291
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4269,14 +4279,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 266
+                                        "column": 268
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 267
+                                        "column": 269
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4300,14 +4310,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 272
+                                        "column": 274
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 273
+                                        "column": 275
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4331,14 +4341,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 274
+                                        "column": 276
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 275
+                                        "column": 277
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4362,14 +4372,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 276
+                                        "column": 278
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 277
+                                        "column": 279
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4393,14 +4403,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 280
+                                        "column": 282
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 281
+                                        "column": 283
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4424,14 +4434,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 278
+                                        "column": 280
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 279
+                                        "column": 281
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4455,14 +4465,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 296
+                                        "column": 298
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 297
+                                        "column": 299
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4486,14 +4496,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 282
+                                        "column": 284
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 283
+                                        "column": 285
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4517,14 +4527,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 286
+                                        "column": 288
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 287
+                                        "column": 289
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4548,14 +4558,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 290
+                                        "column": 292
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 291
+                                        "column": 293
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4579,14 +4589,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 268
+                                        "column": 270
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 269
+                                        "column": 271
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4610,14 +4620,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 284
+                                        "column": 286
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 285
+                                        "column": 287
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4641,14 +4651,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 292
+                                        "column": 294
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 293
+                                        "column": 295
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4672,14 +4682,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 294
+                                        "column": 296
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 295
+                                        "column": 297
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4703,14 +4713,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 298
+                                        "column": 300
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 299
+                                        "column": 301
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4734,14 +4744,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 300
+                                        "column": 302
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 301
+                                        "column": 303
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4765,14 +4775,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 302
+                                        "column": 304
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 303
+                                        "column": 305
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4796,14 +4806,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 304
+                                        "column": 306
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 305
+                                        "column": 307
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4830,7 +4840,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 355
+                                        "column": 357
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4851,7 +4861,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 362
+                                        "column": 364
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4872,7 +4882,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 377
+                                        "column": 379
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4893,7 +4903,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 357
+                                        "column": 359
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4914,7 +4924,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 361
+                                        "column": 363
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4935,7 +4945,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 365
+                                        "column": 367
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4956,7 +4966,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 375
+                                        "column": 377
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4977,7 +4987,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 370
+                                        "column": 372
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4998,7 +5008,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 371
+                                        "column": 373
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5019,7 +5029,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 359
+                                        "column": 361
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5040,7 +5050,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 378
+                                        "column": 380
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5061,7 +5071,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 363
+                                        "column": 365
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5082,7 +5092,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 366
+                                        "column": 368
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5103,7 +5113,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 373
+                                        "column": 375
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5124,7 +5134,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 380
+                                        "column": 382
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5145,7 +5155,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 385
+                                        "column": 387
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5166,7 +5176,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 389
+                                        "column": 391
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5187,7 +5197,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 383
+                                        "column": 385
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5208,7 +5218,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 386
+                                        "column": 388
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5229,7 +5239,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 358
+                                        "column": 360
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5250,7 +5260,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 368
+                                        "column": 370
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5271,7 +5281,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 372
+                                        "column": 374
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5292,7 +5302,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 384
+                                        "column": 386
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5313,7 +5323,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 367
+                                        "column": 369
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5334,7 +5344,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 374
+                                        "column": 376
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5358,7 +5368,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 376
+                                        "column": 378
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5382,7 +5392,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 360
+                                        "column": 362
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5406,7 +5416,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 381
+                                        "column": 383
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5430,7 +5440,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 369
+                                        "column": 371
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5454,7 +5464,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 364
+                                        "column": 366
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5478,7 +5488,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 356
+                                        "column": 358
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5502,7 +5512,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 387
+                                        "column": 389
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5526,7 +5536,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 388
+                                        "column": 390
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5550,7 +5560,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 382
+                                        "column": 384
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5574,7 +5584,7 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 379
+                                        "column": 381
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5601,7 +5611,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 448
+                                        "column": 450
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5622,7 +5632,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 445
+                                        "column": 447
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5643,7 +5653,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 446
+                                        "column": 448
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5664,7 +5674,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 444
+                                        "column": 446
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5685,7 +5695,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 447
+                                        "column": 449
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5709,14 +5719,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 328
+                                        "column": 330
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 329
+                                        "column": 331
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5740,14 +5750,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 326
+                                        "column": 328
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 327
+                                        "column": 329
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5771,14 +5781,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 324
+                                        "column": 326
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 325
+                                        "column": 327
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6464,7 +6474,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 394
+                                        "column": 396
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6485,7 +6495,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 490
+                                        "column": 491
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6506,7 +6516,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 332
+                                        "column": 334
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6527,7 +6537,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 491
+                                        "column": 492
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6548,7 +6558,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 333
+                                        "column": 335
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6569,7 +6579,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 489
+                                        "column": 490
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6590,7 +6600,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 331
+                                        "column": 333
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6611,7 +6621,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 488
+                                        "column": 489
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6632,7 +6642,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 330
+                                        "column": 332
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6653,7 +6663,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 320
+                                        "column": 322
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6674,7 +6684,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 318
+                                        "column": 320
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6695,7 +6705,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 317
+                                        "column": 319
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6716,7 +6726,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 319
+                                        "column": 321
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6743,7 +6753,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 336
+                                        "column": 338
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6764,7 +6774,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 345
+                                        "column": 347
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6785,7 +6795,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 335
+                                        "column": 337
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6806,7 +6816,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 334
+                                        "column": 336
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6974,7 +6984,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 406
+                                        "column": 408
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6995,7 +7005,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 443
+                                        "column": 445
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7016,7 +7026,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 487
+                                        "column": 488
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7037,7 +7047,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 337
+                                        "column": 339
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7058,7 +7068,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 340
+                                        "column": 342
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7079,7 +7089,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 339
+                                        "column": 341
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7100,7 +7110,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 341
+                                        "column": 343
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7121,7 +7131,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 346
+                                        "column": 348
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7142,7 +7152,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 348
+                                        "column": 350
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7163,7 +7173,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 347
+                                        "column": 349
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7184,7 +7194,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 349
+                                        "column": 351
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7211,7 +7221,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 309
+                                        "column": 311
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7232,7 +7242,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 307
+                                        "column": 309
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7253,7 +7263,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 306
+                                        "column": 308
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7274,7 +7284,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 308
+                                        "column": 310
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8265,7 +8275,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 343
+                                        "column": 345
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8286,7 +8296,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 344
+                                        "column": 346
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8307,7 +8317,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 338
+                                        "column": 340
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8328,7 +8338,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 342
+                                        "column": 344
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8349,7 +8359,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 466
+                                        "column": 468
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8370,7 +8380,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 463
+                                        "column": 465
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8391,7 +8401,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 472
+                                        "column": 474
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8412,7 +8422,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 469
+                                        "column": 471
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8433,7 +8443,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 475
+                                        "column": 477
                                     }
                                 ],
                                 "indentedName": "2020"

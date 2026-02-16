@@ -1,8 +1,13 @@
 from abc import abstractmethod
+import re
 
 import numpy as np
 
 from urbanstats.data.canada.canadian_da_data import CensusTables
+from urbanstats.data.census_blocks import RADII
+from urbanstats.statistics.collections.census import (
+    CensusChange2010,
+)
 from urbanstats.statistics.collections.generation import GenerationStatistics
 from urbanstats.statistics.collections.household_size import (
     HouseholdSizeStatistics,
@@ -34,26 +39,29 @@ class CensusCanadaSameAsUS(CanadaStatistics):
     def us_equivalent(self):
         pass
 
+    def remap_name(self, us_internal_name):
+        return f"{us_internal_name}_canada"
+
     def us_equivalent_fields(self):
         return list(self.us_equivalent().internal_statistic_names_list())
 
     def name_for_each_statistic(self):
         return {
-            f"{k}_canada": f"{v} [StatCan]"
+            self.remap_name(k): f"{v} [StatCan]"
             for k, v in self.us_equivalent().name_for_each_statistic().items()
             if k in self.us_equivalent_fields()
         }
 
     def varname_for_each_statistic(self):
         return {
-            f"{k}_canada": v
+            self.remap_name(k): v
             for k, v in self.us_equivalent().varname_for_each_statistic().items()
             if k in self.us_equivalent_fields()
         }
 
     def quiz_question_descriptors(self):
         return {
-            f"{k}_canada": self.us_equivalent().quiz_question_descriptors()[k]
+            self.remap_name(k): self.us_equivalent().quiz_question_descriptors()[k]
             for k in self.us_equivalent_fields()
         }
 
@@ -424,6 +432,51 @@ class CensusCanadaHouseholdSize(CensusCanadaSameAsUS):
         return HouseholdSizeStatistics()
 
 
+class CensusCanadaChange2011(CensusCanadaSameAsUS):
+    """Computes 2011-2021 census changes for Canada, aligned with US 2010-2020 changes."""
+
+    version = 2
+
+    def remap_name(self, us_internal_name):
+        if us_internal_name.startswith("population"):
+            return f"{us_internal_name.replace('2010', '2011')}_canada"
+        match = re.match(r"ad_(.*)_change_2010", us_internal_name)
+        assert match, f"Unexpected statistic name: {us_internal_name}"
+        return f"density_change_2011_pw_{match.group(1)}_canada"
+
+    def census_tables(self):
+        raise NotImplementedError
+
+    def us_equivalent(self):
+        return CensusChange2010()
+
+    def explanation_page_for_each_statistic(self):
+        return self.same_for_each_name("canadian-census")
+
+    def dependencies(self):
+        dependencies = []
+        for year in [2011, 2021]:
+            dependencies.append(f"population_{year}_canada")
+            for r in RADII:
+                dependencies.append(f"density_{year}_pw_{r}_canada")
+        return dependencies
+
+    def compute_statistics_dictionary_canada(
+        self, *, shapefile, existing_statistics, shapefile_table
+    ):
+        results = {}
+        results["population_change_2011_canada"] = (
+            existing_statistics["population_2021_canada"]
+            - existing_statistics["population_2011_canada"]
+        ) / existing_statistics["population_2011_canada"]
+        for r in RADII:
+            results[f"density_change_2011_pw_{r}_canada"] = (
+                existing_statistics[f"density_2021_pw_{r}_canada"]
+                - existing_statistics[f"density_2011_pw_{r}_canada"]
+            )
+        return results
+
+
 census_canada_same_as_us = [
     CensusCanadaCommuteTime(),
     CensusCanadaTransportationMode(),
@@ -431,4 +484,5 @@ census_canada_same_as_us = [
     CensusCanadaMarriage(),
     CensusCanadaIndustry(),
     CensusCanadaHouseholdSize(),
+    CensusCanadaChange2011(),
 ]

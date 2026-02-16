@@ -242,18 +242,25 @@ const value: Record<string, number[]> = {
         2,
         2,
         2,
-        2
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1
     ],
     "5M Person Circle": [
         316,
-        170
+        183
     ],
     "CA Census Subdivision": [
         106,
         106,
         106,
         106,
-        62
+        75
     ],
     "CCD": [
         11,
@@ -300,9 +307,11 @@ const value: Record<string, number[]> = {
         11,
         11,
         11,
-        2
+        11,
+        4
     ],
     "City": [
+        13,
         13,
         13,
         13,
@@ -346,19 +355,19 @@ const value: Record<string, number[]> = {
         159,
         159,
         159,
-        9
+        22
     ],
     "County Cross CD": [
         137,
         137,
         137,
-        75
+        88
     ],
     "Hospital Service Area": [
         149,
         149,
         149,
-        39
+        52
     ],
     "Metropolitan Cluster": [
         11,
@@ -405,7 +414,8 @@ const value: Record<string, number[]> = {
         11,
         11,
         11,
-        2
+        11,
+        4
     ],
     "Neighborhood": [
         31,
@@ -423,7 +433,8 @@ const value: Record<string, number[]> = {
         31,
         31,
         31,
-        21
+        31,
+        3
     ],
     "School District": [
         38,
@@ -438,29 +449,30 @@ const value: Record<string, number[]> = {
         38,
         38,
         38,
-        30
+        38,
+        5
     ],
     "State House District": [
         105,
         105,
         105,
         105,
-        66
+        79
     ],
     "State Senate District": [
         267,
-        219
+        232
     ],
     "Subnational Region": [
         140,
         140,
         140,
-        66
+        79
     ],
     "Urban Area": [
         195,
         195,
-        96
+        109
     ],
     "Urban Center": [
         50,
@@ -472,9 +484,10 @@ const value: Record<string, number[]> = {
         50,
         50,
         50,
-        36
+        49
     ],
     "ZIP": [
+        13,
         13,
         13,
         13,

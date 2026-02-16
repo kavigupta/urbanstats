@@ -22,13 +22,17 @@ def statistic_internal_to_display_name():
 
     all_stats = set(internal_to_display.keys())
     extra_in_this_list = all_stats - set(internal_statistic_names())
-    if extra_in_this_list:
-        raise ValueError(f"Missing stats in tree: {extra_in_this_list}")
     extra_in_tree = set(internal_statistic_names()) - all_stats
-    if extra_in_tree:
-        raise ValueError(
-            f"Extra stats in tree: {[x for x in internal_statistic_names() if x in extra_in_tree]}"
-        )
+    if extra_in_this_list or extra_in_tree:
+        if extra_in_this_list:
+            print("Statistics in collections but not in tree:")
+            for stat in extra_in_this_list:
+                print(f"  {stat}")
+        if extra_in_tree:
+            print("Statistics in tree but not in collections:")
+            for stat in extra_in_tree:
+                print(f"  {stat}")
+        raise ValueError("Mismatch between statistics in collections and tree")
     return {k: internal_to_display[k] for k in internal_statistic_names()}
 
 

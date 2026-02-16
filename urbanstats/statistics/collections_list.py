@@ -9,7 +9,6 @@ from urbanstats.statistics.collections.census import (
 )
 from urbanstats.statistics.collections.census_canada import (
     CensusCanada,
-    CensusChangeCanada2011,
 )
 from urbanstats.statistics.collections.census_canada_citizenship import (
     CensusCanadaCitizenship,
@@ -107,7 +106,6 @@ statistic_collections = (
     Census2000(),
     CensusChange2000(),
     CensusCanada(),
-    CensusChangeCanada2011(),
     CanadaElectionStatistics(),
     GPWStatistics(),
     SegregationStatistics(),
@@ -144,8 +142,8 @@ statistic_collections = (
     InsuranceTypeStatistics(),
     MarriageStatistics(),
     ElevationHillinessStatistics(),
-    *census_canada_same_as_us,
     *census_canada_simple,
+    *census_canada_same_as_us,
     CensusCanadaRace(),
     CensusCanadaCitizenship(),
     CensusCanadaLanguage(),
