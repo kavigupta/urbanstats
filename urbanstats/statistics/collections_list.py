@@ -7,9 +7,7 @@ from urbanstats.statistics.collections.census import (
     CensusChange2000,
     CensusChange2010,
 )
-from urbanstats.statistics.collections.census_canada import (
-    CensusCanada,
-)
+from urbanstats.statistics.collections.census_canada import CensusCanada
 from urbanstats.statistics.collections.census_canada_citizenship import (
     CensusCanadaCitizenship,
 )
@@ -46,12 +44,10 @@ from urbanstats.statistics.collections.generation import GenerationStatistics
 from urbanstats.statistics.collections.geographic import AreaAndCompactnessStatistics
 from urbanstats.statistics.collections.gpw import GPWStatistics
 from urbanstats.statistics.collections.heating import HouseHeating
+from urbanstats.statistics.collections.household_size import HouseholdSizeStatistics
 from urbanstats.statistics.collections.housing_rent import HousingRent
 from urbanstats.statistics.collections.housing_rent_burden import HousingRentBurden
 from urbanstats.statistics.collections.housing_rent_or_own import HousingRentOrOwn
-from urbanstats.statistics.collections.household_size import (
-    HouseholdSizeStatistics,
-)
 from urbanstats.statistics.collections.housing_year_built import (
     HousingYearBuiltStatistics,
 )

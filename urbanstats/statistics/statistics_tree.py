@@ -382,7 +382,9 @@ def census_basics_with_ghs_and_canada(col_name, gpw_name, canada_name, *, change
             MultiSource(
                 {
                     population_census: f"{col_name}_change_2010",
-                    population_canada: canada_2011_name.replace("_2011_", "_change_2011_"),
+                    population_canada: canada_2011_name.replace(
+                        "_2011_", "_change_2011_"
+                    ),
                 },
                 f"{col_name}_change_2010",
                 indented_name="2010-2020 Change",

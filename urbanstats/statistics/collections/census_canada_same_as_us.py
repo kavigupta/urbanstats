@@ -1,13 +1,11 @@
-from abc import abstractmethod
 import re
+from abc import abstractmethod
 
 import numpy as np
 
 from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.data.census_blocks import RADII
-from urbanstats.statistics.collections.census import (
-    CensusChange2010,
-)
+from urbanstats.statistics.collections.census import CensusChange2010
 from urbanstats.statistics.collections.generation import GenerationStatistics
 from urbanstats.statistics.collections.household_size import (
     HouseholdSizeStatistics,
