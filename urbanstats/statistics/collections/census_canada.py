@@ -61,30 +61,18 @@ class CensusCanada(CanadaStatistics):
         return self.same_for_each_name("canadian-census")
 
     def quiz_question_descriptors(self):
-        result = {}
-        for year in self.canada_years:
-            population_key = f"population_{year}_canada"
-            density_key = f"density_{year}_pw_1_canada"
-            if year == 2021:
-                result[population_key] = QuizQuestionDescriptor(
-                    "higher population", POPULATION
-                )
-                result[density_key] = QuizQuestionDescriptor(
-                    "higher population-weighted density (r=1km)"
-                    + DENSITY_EXPLANATION_PW,
-                    POPULATION_DENSITY,
-                )
-            else:
-                result[population_key] = QuizQuestionSkip()
-                result[density_key] = QuizQuestionSkip()
-            result.update(
-                {
-                    f"density_{year}_pw_{r}_canada": QuizQuestionSkip()
-                    for r in RADII
-                    if r not in (1,)
-                }
+        result = {
+            "population_2021_canada": QuizQuestionDescriptor(
+                "higher population", POPULATION
+            ),
+            "density_2021_pw_1_canada": QuizQuestionDescriptor(
+                "higher population-weighted density (r=1km)" + DENSITY_EXPLANATION_PW,
+                POPULATION_DENSITY,
             )
-            result[f"sd_{year}_canada"] = QuizQuestionSkip()
+        }
+        for k in self.name_for_each_statistic():
+            if k not in result:
+                result[k] = QuizQuestionSkip()
         return result
 
     def dependencies(self):
