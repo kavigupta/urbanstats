@@ -210,6 +210,76 @@ export default [
         }
     ],
     [
+        157,
+        {
+            "type": "histogram",
+            "universe_total_idx": 402
+        }
+    ],
+    [
+        158,
+        {
+            "type": "histogram",
+            "universe_total_idx": 402
+        }
+    ],
+    [
+        159,
+        {
+            "type": "histogram",
+            "universe_total_idx": 402
+        }
+    ],
+    [
+        160,
+        {
+            "type": "histogram",
+            "universe_total_idx": 402
+        }
+    ],
+    [
+        161,
+        {
+            "type": "histogram",
+            "universe_total_idx": 402
+        }
+    ],
+    [
+        162,
+        {
+            "type": "histogram",
+            "universe_total_idx": 402
+        }
+    ],
+    [
+        163,
+        {
+            "type": "histogram",
+            "universe_total_idx": 402
+        }
+    ],
+    [
+        164,
+        {
+            "type": "histogram",
+            "universe_total_idx": 402
+        }
+    ],
+    [
+        165,
+        {
+            "type": "histogram",
+            "universe_total_idx": 402
+        }
+    ],
+    [
+        166,
+        {
+            "type": "histogram",
+            "universe_total_idx": 402
+        }
+    ],
+    [
         167,
         {
             "type": "histogram",

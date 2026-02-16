@@ -470,6 +470,16 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_occupation_natural_resources_agriculture', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_occupation_manufacturing_utilities', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_household_size_pw', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2011_pw_0.25_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2011_pw_0.5_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2011_pw_1_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2011_pw_2_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2011_pw_4_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2011_pw_1.609344_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2011_pw_8_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2011_pw_16_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2011_pw_32_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'expanded__density_2011_pw_64_canada', coder: booleanSettingCoder }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 

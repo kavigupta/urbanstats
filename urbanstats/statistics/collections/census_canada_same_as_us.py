@@ -435,7 +435,7 @@ class CensusCanadaHouseholdSize(CensusCanadaSameAsUS):
 class CensusCanadaChange2011(CensusCanadaSameAsUS):
     """Computes 2011-2021 census changes for Canada, aligned with US 2010-2020 changes."""
 
-    version = 2
+    version = 3
 
     def remap_name(self, us_internal_name):
         if us_internal_name.startswith("population"):
@@ -473,7 +473,7 @@ class CensusCanadaChange2011(CensusCanadaSameAsUS):
             results[f"density_change_2011_pw_{r}_canada"] = (
                 existing_statistics[f"density_2021_pw_{r}_canada"]
                 - existing_statistics[f"density_2011_pw_{r}_canada"]
-            )
+            ) / existing_statistics[f"density_2011_pw_{r}_canada"]
         return results
 
 
