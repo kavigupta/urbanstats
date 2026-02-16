@@ -974,214 +974,214 @@ export default {
             "index": 264
         },
         {
-            "varName": "housing_per_adult",
-            "humanReadableName": "Housing Units per Adult",
-            "comesFromMultiSourceSet": false,
+            "varName": "housing_per_adult_us_census",
+            "humanReadableName": "Housing Units per Adult [US Census]",
+            "comesFromMultiSourceSet": true,
             "order": 139,
-            "index": 259
+            "index": 258
+        },
+        {
+            "varName": "housing_per_adult_statcan",
+            "humanReadableName": "Housing Units per Adult [StatCan]",
+            "comesFromMultiSourceSet": true,
+            "order": 140,
+            "index": 261
         },
         {
             "varName": "housing_per_adult_2010",
             "humanReadableName": "Housing Units per Adult (2010)",
             "comesFromMultiSourceSet": false,
-            "order": 140,
-            "index": 261
+            "order": 141,
+            "index": 260
         },
         {
             "varName": "housing_per_adult_2000",
             "humanReadableName": "Housing Units per Adult (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 141,
-            "index": 260
+            "order": 142,
+            "index": 259
         },
         {
             "varName": "housing_per_person_us_census",
             "humanReadableName": "Housing Units per Person [US Census]",
             "comesFromMultiSourceSet": true,
-            "order": 142,
-            "index": 255
+            "order": 143,
+            "index": 254
         },
         {
             "varName": "housing_per_person_statcan",
             "humanReadableName": "Housing Units per Person [StatCan]",
             "comesFromMultiSourceSet": true,
-            "order": 143,
-            "index": 258
+            "order": 144,
+            "index": 257
         },
         {
             "varName": "housing_per_person_2010",
             "humanReadableName": "Housing Units per Person (2010)",
             "comesFromMultiSourceSet": false,
-            "order": 144,
-            "index": 257
+            "order": 145,
+            "index": 256
         },
         {
             "varName": "housing_per_person_2000",
             "humanReadableName": "Housing Units per Person (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 145,
-            "index": 256
+            "order": 146,
+            "index": 255
         },
         {
             "varName": "vacancy_rate",
             "humanReadableName": "Vacancy %",
             "comesFromMultiSourceSet": false,
-            "order": 146,
+            "order": 147,
             "index": 478
         },
         {
             "varName": "vacancy_rate_2010",
             "humanReadableName": "Vacancy % (2010)",
             "comesFromMultiSourceSet": false,
-            "order": 147,
+            "order": 148,
             "index": 480
         },
         {
             "varName": "vacancy_rate_2000",
             "humanReadableName": "Vacancy % (2000)",
             "comesFromMultiSourceSet": false,
-            "order": 148,
+            "order": 149,
             "index": 479
         },
         {
             "varName": "rent_under_20_percent",
             "humanReadableName": "Rent/Income < 20%",
             "comesFromMultiSourceSet": false,
-            "order": 149,
+            "order": 150,
             "index": 427
         },
         {
             "varName": "rent_20_to_40_percent",
             "humanReadableName": "Rent/Income 20%-40%",
             "comesFromMultiSourceSet": false,
-            "order": 150,
+            "order": 151,
             "index": 424
         },
         {
             "varName": "rent_over_40_percent",
             "humanReadableName": "Rent/Income > 40%",
             "comesFromMultiSourceSet": false,
-            "order": 151,
+            "order": 152,
             "index": 426
         },
         {
             "varName": "one_br_under_750",
             "humanReadableName": "1BR Rent < $750 %",
             "comesFromMultiSourceSet": false,
-            "order": 152,
+            "order": 153,
             "index": 420
         },
         {
             "varName": "one_br_750_to_1500",
             "humanReadableName": "1BR Rent $750 - $1500 %",
             "comesFromMultiSourceSet": false,
-            "order": 153,
+            "order": 154,
             "index": 418
         },
         {
             "varName": "one_br_over_1500",
             "humanReadableName": "1BR Rent > $1500 %",
             "comesFromMultiSourceSet": false,
-            "order": 154,
+            "order": 155,
             "index": 419
         },
         {
             "varName": "two_br_under_750",
             "humanReadableName": "2BR Rent < $750 %",
             "comesFromMultiSourceSet": false,
-            "order": 155,
+            "order": 156,
             "index": 423
         },
         {
             "varName": "two_br_750_to_1500",
             "humanReadableName": "2BR Rent $750 - $1500 %",
             "comesFromMultiSourceSet": false,
-            "order": 156,
+            "order": 157,
             "index": 421
         },
         {
             "varName": "two_br_over_1500",
             "humanReadableName": "2BR Rent > $1500 %",
             "comesFromMultiSourceSet": false,
-            "order": 157,
+            "order": 158,
             "index": 422
         },
         {
             "varName": "built_pre_1970",
             "humanReadableName": "% units built pre-1970",
             "comesFromMultiSourceSet": false,
-            "order": 158,
+            "order": 159,
             "index": 493
         },
         {
             "varName": "built_1970s",
             "humanReadableName": "% units built in 1970s",
             "comesFromMultiSourceSet": false,
-            "order": 159,
+            "order": 160,
             "index": 494
         },
         {
             "varName": "built_1980s",
             "humanReadableName": "% units built in 1980s",
             "comesFromMultiSourceSet": false,
-            "order": 160,
+            "order": 161,
             "index": 495
         },
         {
             "varName": "built_1990s",
             "humanReadableName": "% units built in 1990s",
             "comesFromMultiSourceSet": false,
-            "order": 161,
+            "order": 162,
             "index": 496
         },
         {
             "varName": "built_2000s",
             "humanReadableName": "% units built in 2000s",
             "comesFromMultiSourceSet": false,
-            "order": 162,
+            "order": 163,
             "index": 497
         },
         {
             "varName": "built_2010_plus",
             "humanReadableName": "% units built in 2010s+",
             "comesFromMultiSourceSet": false,
-            "order": 163,
+            "order": 164,
             "index": 498
         },
         {
             "varName": "household_size_pw_us_census",
             "humanReadableName": "Household Size (population-weighted) [US Census]",
             "comesFromMultiSourceSet": true,
-            "order": 164,
+            "order": 165,
             "index": 252
         },
         {
             "varName": "household_size_pw_statcan",
             "humanReadableName": "Household Size (population-weighted) [StatCan]",
             "comesFromMultiSourceSet": true,
-            "order": 165,
+            "order": 166,
             "index": 253
         },
         {
             "varName": "renter_us_census",
             "humanReadableName": "Renter % [US Census]",
             "comesFromMultiSourceSet": true,
-            "order": 166,
+            "order": 167,
             "index": 428
         },
         {
             "varName": "renter_statcan",
             "humanReadableName": "Renter % [StatCan]",
             "comesFromMultiSourceSet": true,
-            "order": 167,
-            "index": 429
-        },
-        {
-            "varName": "housing_per_adult_20plus",
-            "humanReadableName": "Housing Units per Adult (20+) [StatCan]",
-            "comesFromMultiSourceSet": false,
             "order": 168,
-            "index": 254
+            "index": 429
         },
         {
             "varName": "housing_cost_30_percent_or_more",
@@ -3756,6 +3756,16 @@ export default {
                     "gen_alpha_statcan"
                 ],
                 "humanReadableName": "Gen Alpha %"
+            }
+        ],
+        [
+            "housing_per_adult",
+            {
+                "individualVariables": [
+                    "housing_per_adult_us_census",
+                    "housing_per_adult_statcan"
+                ],
+                "humanReadableName": "Housing Units per Adult"
             }
         ],
         [

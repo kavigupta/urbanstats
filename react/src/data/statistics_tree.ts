@@ -2440,8 +2440,18 @@ export const rawStatsTree = [
                                 "name": "Housing Units per Adult",
                                 "stats": [
                                     {
-                                        "source": null,
-                                        "column": 259
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
+                                        "column": 258
+                                    },
+                                    {
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
+                                        "column": 261
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2456,7 +2466,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 261
+                                        "column": 260
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -2471,7 +2481,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 260
+                                        "column": 259
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -2495,14 +2505,14 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 255
+                                        "column": 254
                                     },
                                     {
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 258
+                                        "column": 257
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2517,7 +2527,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 257
+                                        "column": 256
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -2532,7 +2542,7 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "source": null,
-                                        "column": 256
+                                        "column": 255
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -2961,30 +2971,6 @@ export const rawStatsTree = [
                                             "name": "Canadian Census"
                                         },
                                         "column": 429
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "housing_per_adult",
-                "name": "Housing Units per Adult (20+) [StatCan]",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Housing Units per Adult (20+) [StatCan]",
-                                "stats": [
-                                    {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
-                                        "column": 254
                                     }
                                 ],
                                 "indentedName": "2020"
