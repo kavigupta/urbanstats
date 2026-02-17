@@ -65,8 +65,8 @@ class HouseholdSizeStatistics(ACSStatisticsColection):
                 "!TOOLTIP The average household size a person is in;"
                 " i.e., the average over all people of the number of"
                 " people in their household. This is population-weighted,"
-                " meaning that a person in a 4-person household counts 4"
-                " times as much as a person in a 1-person household.",
+                " meaning that if there is one household of 3 and three households"
+                " of 1, the average household size is 2, not 1.5.",
                 HOUSING,
             ),
         }
