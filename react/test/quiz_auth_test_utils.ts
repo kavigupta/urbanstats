@@ -36,7 +36,7 @@ async function popTOTP(t: TestController): Promise<string> {
         await t.wait(wait)
     }
     console.warn(`Using TOTP for ${useAfter}`)
-    const { otp } = TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP))
+    const { otp } = await TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP))
     return otp
 }
 
