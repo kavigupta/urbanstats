@@ -300,25 +300,6 @@ def just_2020_with_canada(*col_names, year=2020):
     }
 
 
-def just_2020_canada_only(*col_names, year=2020):
-    return {
-        col_name: StatisticGroup(
-            {
-                year: [
-                    MultiSource(
-                        {
-                            population_canada: f"{col_name}_canada",
-                        },
-                        indented_name="2020",
-                    )
-                ]
-            },
-            group_name_statcol=f"{col_name}_canada",
-        )
-        for col_name in col_names
-    }
-
-
 def just_2020_category(cat_key, cat_name, *col_names, year=2020):
     return {
         cat_key: StatisticCategory(
@@ -468,9 +449,9 @@ statistics_tree = StatisticTree(
                     "language_english_only",
                     "language_spanish",
                 ),
-                **just_2020_canada_only(
-                    "language_french",
-                    "language_other_non_french",
+                **just_2020(
+                    "language_french_canada",
+                    "language_other_non_french_canada",
                 ),
                 **just_2020(
                     "language_other",
@@ -480,16 +461,16 @@ statistics_tree = StatisticTree(
         "religion": StatisticCategory(
             name="Religion",
             contents={
-                **just_2020_canada_only(
-                    "religion_no_religion",
-                    "religion_catholic",
-                    "religion_protestant",
-                    "religion_hindu",
-                    "religion_jewish",
-                    "religion_muslim",
-                    "religion_sikh",
-                    "religion_buddhist",
-                    "religion_other",
+                **just_2020(
+                    "religion_no_religion_canada",
+                    "religion_catholic_canada",
+                    "religion_protestant_canada",
+                    "religion_hindu_canada",
+                    "religion_jewish_canada",
+                    "religion_muslim_canada",
+                    "religion_sikh_canada",
+                    "religion_buddhist_canada",
+                    "religion_other_canada",
                 ),
             },
         ),
@@ -571,8 +552,8 @@ statistics_tree = StatisticTree(
                 **just_2020_with_canada(
                     "rent_or_own_rent",
                 ),
-                **just_2020_canada_only(
-                    "rent_burden_over_30",
+                **just_2020(
+                    "rent_burden_over_30_canada",
                 ),
             },
         ),
@@ -700,17 +681,17 @@ statistics_tree = StatisticTree(
                     "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors",
                     "occupation_law_enforcement_workers_including_supervisors",
                 ),
-                **just_2020_canada_only(
-                    "occupation_legislative_and_senior_management",
-                    "occupation_business_finance_and_administration",
-                    "occupation_natural_and_applied_sciences",
-                    "occupation_health",
-                    "occupation_education_law_social_community_government",
-                    "occupation_art_culture_recreation_sport",
-                    "occupation_sales_and_service",
-                    "occupation_trades_transport_equipment",
-                    "occupation_natural_resources_agriculture",
-                    "occupation_manufacturing_utilities",
+                **just_2020(
+                    "occupation_legislative_and_senior_management_canada",
+                    "occupation_business_finance_and_administration_canada",
+                    "occupation_natural_and_applied_sciences_canada",
+                    "occupation_health_canada",
+                    "occupation_education_law_social_community_government_canada",
+                    "occupation_art_culture_recreation_sport_canada",
+                    "occupation_sales_and_service_canada",
+                    "occupation_trades_transport_equipment_canada",
+                    "occupation_natural_resources_agriculture_canada",
+                    "occupation_manufacturing_utilities_canada",
                 ),
             },
         ),

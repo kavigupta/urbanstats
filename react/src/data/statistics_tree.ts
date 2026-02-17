@@ -1278,7 +1278,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "language_french",
+                "id": "language_french_canada",
                 "name": "French at Home % [StatCan]",
                 "contents": [
                     {
@@ -1288,10 +1288,7 @@ export const rawStatsTree = [
                                 "name": "French at Home % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 314
                                     }
                                 ],
@@ -1302,7 +1299,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "language_other_non_french",
+                "id": "language_other_non_french_canada",
                 "name": "Other (non-French) at Home % [StatCan]",
                 "contents": [
                     {
@@ -1312,10 +1309,7 @@ export const rawStatsTree = [
                                 "name": "Other (non-French) at Home % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 316
                                     }
                                 ],
@@ -1353,7 +1347,7 @@ export const rawStatsTree = [
         "name": "Religion",
         "contents": [
             {
-                "id": "religion_no_religion",
+                "id": "religion_no_religion_canada",
                 "name": "No religion % [StatCan]",
                 "contents": [
                     {
@@ -1363,10 +1357,7 @@ export const rawStatsTree = [
                                 "name": "No religion % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 414
                                     }
                                 ],
@@ -1377,7 +1368,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "religion_catholic",
+                "id": "religion_catholic_canada",
                 "name": "Catholic % [StatCan]",
                 "contents": [
                     {
@@ -1387,10 +1378,7 @@ export const rawStatsTree = [
                                 "name": "Catholic % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 410
                                     }
                                 ],
@@ -1401,7 +1389,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "religion_protestant",
+                "id": "religion_protestant_canada",
                 "name": "Protestant (non-Catholic Christian) % [StatCan]",
                 "contents": [
                     {
@@ -1411,10 +1399,7 @@ export const rawStatsTree = [
                                 "name": "Protestant (non-Catholic Christian) % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 416
                                     }
                                 ],
@@ -1425,7 +1410,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "religion_hindu",
+                "id": "religion_hindu_canada",
                 "name": "Hindu % [StatCan]",
                 "contents": [
                     {
@@ -1435,10 +1420,7 @@ export const rawStatsTree = [
                                 "name": "Hindu % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 411
                                     }
                                 ],
@@ -1449,7 +1431,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "religion_jewish",
+                "id": "religion_jewish_canada",
                 "name": "Jewish % [StatCan]",
                 "contents": [
                     {
@@ -1459,10 +1441,7 @@ export const rawStatsTree = [
                                 "name": "Jewish % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 412
                                     }
                                 ],
@@ -1473,7 +1452,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "religion_muslim",
+                "id": "religion_muslim_canada",
                 "name": "Muslim % [StatCan]",
                 "contents": [
                     {
@@ -1483,10 +1462,7 @@ export const rawStatsTree = [
                                 "name": "Muslim % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 413
                                     }
                                 ],
@@ -1497,7 +1473,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "religion_sikh",
+                "id": "religion_sikh_canada",
                 "name": "Sikh % [StatCan]",
                 "contents": [
                     {
@@ -1507,10 +1483,7 @@ export const rawStatsTree = [
                                 "name": "Sikh % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 417
                                     }
                                 ],
@@ -1521,7 +1494,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "religion_buddhist",
+                "id": "religion_buddhist_canada",
                 "name": "Buddhist % [StatCan]",
                 "contents": [
                     {
@@ -1531,10 +1504,7 @@ export const rawStatsTree = [
                                 "name": "Buddhist % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 409
                                     }
                                 ],
@@ -1545,7 +1515,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "religion_other",
+                "id": "religion_other_canada",
                 "name": "Other religion % [StatCan]",
                 "contents": [
                     {
@@ -1555,10 +1525,7 @@ export const rawStatsTree = [
                                 "name": "Other religion % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 415
                                     }
                                 ],
@@ -2980,7 +2947,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "rent_burden_over_30",
+                "id": "rent_burden_over_30_canada",
                 "name": "Housing Cost/Income > 30% [StatCan]",
                 "contents": [
                     {
@@ -2990,10 +2957,7 @@ export const rawStatsTree = [
                                 "name": "Housing Cost/Income > 30% [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 425
                                     }
                                 ],
@@ -5340,7 +5304,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "occupation_legislative_and_senior_management",
+                "id": "occupation_legislative_and_senior_management_canada",
                 "name": "Legislative and senior management occupations % [StatCan]",
                 "contents": [
                     {
@@ -5350,10 +5314,7 @@ export const rawStatsTree = [
                                 "name": "Legislative and senior management occupations % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 378
                                     }
                                 ],
@@ -5364,7 +5325,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "occupation_business_finance_and_administration",
+                "id": "occupation_business_finance_and_administration_canada",
                 "name": "Business, finance and administration occupations % [StatCan]",
                 "contents": [
                     {
@@ -5374,10 +5335,7 @@ export const rawStatsTree = [
                                 "name": "Business, finance and administration occupations % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 362
                                     }
                                 ],
@@ -5388,7 +5346,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "occupation_natural_and_applied_sciences",
+                "id": "occupation_natural_and_applied_sciences_canada",
                 "name": "Natural and applied sciences occupations % [StatCan]",
                 "contents": [
                     {
@@ -5398,10 +5356,7 @@ export const rawStatsTree = [
                                 "name": "Natural and applied sciences occupations % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 383
                                     }
                                 ],
@@ -5412,7 +5367,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "occupation_health",
+                "id": "occupation_health_canada",
                 "name": "Health occupations % [StatCan]",
                 "contents": [
                     {
@@ -5422,10 +5377,7 @@ export const rawStatsTree = [
                                 "name": "Health occupations % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 371
                                     }
                                 ],
@@ -5436,7 +5388,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "occupation_education_law_social_community_government",
+                "id": "occupation_education_law_social_community_government_canada",
                 "name": "Education, law, social, community and government occupations % [StatCan]",
                 "contents": [
                     {
@@ -5446,10 +5398,7 @@ export const rawStatsTree = [
                                 "name": "Education, law, social, community and government occupations % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 366
                                     }
                                 ],
@@ -5460,7 +5409,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "occupation_art_culture_recreation_sport",
+                "id": "occupation_art_culture_recreation_sport_canada",
                 "name": "Art, culture, recreation and sport occupations % [StatCan]",
                 "contents": [
                     {
@@ -5470,10 +5419,7 @@ export const rawStatsTree = [
                                 "name": "Art, culture, recreation and sport occupations % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 358
                                     }
                                 ],
@@ -5484,7 +5430,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "occupation_sales_and_service",
+                "id": "occupation_sales_and_service_canada",
                 "name": "Sales and service occupations % [StatCan]",
                 "contents": [
                     {
@@ -5494,10 +5440,7 @@ export const rawStatsTree = [
                                 "name": "Sales and service occupations % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 389
                                     }
                                 ],
@@ -5508,7 +5451,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "occupation_trades_transport_equipment",
+                "id": "occupation_trades_transport_equipment_canada",
                 "name": "Trades, transport and equipment operators occupations % [StatCan]",
                 "contents": [
                     {
@@ -5518,10 +5461,7 @@ export const rawStatsTree = [
                                 "name": "Trades, transport and equipment operators occupations % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 390
                                     }
                                 ],
@@ -5532,7 +5472,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "occupation_natural_resources_agriculture",
+                "id": "occupation_natural_resources_agriculture_canada",
                 "name": "Natural resources and agriculture occupations % [StatCan]",
                 "contents": [
                     {
@@ -5542,10 +5482,7 @@ export const rawStatsTree = [
                                 "name": "Natural resources and agriculture occupations % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 384
                                     }
                                 ],
@@ -5556,7 +5493,7 @@ export const rawStatsTree = [
                 ]
             },
             {
-                "id": "occupation_manufacturing_utilities",
+                "id": "occupation_manufacturing_utilities_canada",
                 "name": "Manufacturing and utilities occupations % [StatCan]",
                 "contents": [
                     {
@@ -5566,10 +5503,7 @@ export const rawStatsTree = [
                                 "name": "Manufacturing and utilities occupations % [StatCan]",
                                 "stats": [
                                     {
-                                        "source": {
-                                            "category": "Population",
-                                            "name": "Canadian Census"
-                                        },
+                                        "source": null,
                                         "column": 381
                                     }
                                 ],
