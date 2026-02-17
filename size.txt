@@ -464,3 +464,12 @@ added 2024 US general election data, as well as 2015-2025 Canadian general elect
 1307	shape
 1732	data
 4144	total
+
+add a bunch of canadian stats (#1736)
+
+125     consolidated
+167     quiz_sampling_info
+775     order
+1307    shape
+1780    data
+4284    total
