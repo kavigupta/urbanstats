@@ -1,9 +1,7 @@
 from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import (
-    HOUSING,
     RENT_BURDEN,
     QuizQuestionDescriptor,
-    QuizQuestionSkip,
 )
 from urbanstats.statistics.collections.census import Census2020
 from urbanstats.statistics.collections.census_canada_same_as_us import (

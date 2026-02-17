@@ -1,5 +1,3 @@
-import numpy as np
-
 from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import (
     EDUCATION_FIELD,
@@ -118,9 +116,18 @@ class CensusCanadaEducationField(CanadaStatistics):
             **QuizQuestionDescriptor.several(
                 EDUCATION_FIELD,
                 {
-                    "education_field_stem_canada": "higher % of people between 25 and 64 who have a STEM degree, as a percentage of the overall population",
-                    "education_field_humanities_canada": "higher % of people between 25 and 64 who have a humanities degree, as a percentage of the overall population",
-                    "education_field_business_canada": "higher % of people between 25 and 64 who have a business degree, as a percentage of the overall population",
+                    "education_field_stem_canada": (
+                        "higher % of people between 25 and 64 who have a STEM degree, "
+                        "as a percentage of the overall population"
+                    ),
+                    "education_field_humanities_canada": (
+                        "higher % of people between 25 and 64 who have a humanities degree, "
+                        "as a percentage of the overall population"
+                    ),
+                    "education_field_business_canada": (
+                        "higher % of people between 25 and 64 who have a business degree, "
+                        "as a percentage of the overall population"
+                    ),
                 },
             ),
         }

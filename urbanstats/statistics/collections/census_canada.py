@@ -1,5 +1,3 @@
-from abc import abstractmethod
-
 import numpy as np
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
@@ -68,7 +66,7 @@ class CensusCanada(CanadaStatistics):
             "density_2021_pw_1_canada": QuizQuestionDescriptor(
                 "higher population-weighted density (r=1km)" + DENSITY_EXPLANATION_PW,
                 POPULATION_DENSITY,
-            )
+            ),
         }
         for k in self.name_for_each_statistic():
             if k not in result:

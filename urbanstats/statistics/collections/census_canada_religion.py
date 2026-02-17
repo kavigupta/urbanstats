@@ -8,7 +8,7 @@ from urbanstats.statistics.statistic_collection import CanadaStatistics
 
 
 class CensusCanadaReligion(CanadaStatistics):
-    version = 3
+    version = 4
 
     def census_tables(self) -> CensusTables:
         religion_table = "Total - Religion for the population in private households - 25% sample data (161)"
@@ -104,27 +104,16 @@ class CensusCanadaReligion(CanadaStatistics):
     ):
         del existing_statistics, shapefile_table
         table = self.census_tables().compute(2021, shapefile)
-        total = table["religion_total_canada"]
-        christian = table["religion_christian_canada"]
-        catholic = table["religion_catholic_canada"]
-        hindu = table["religion_hindu_canada"]
-        jewish = table["religion_jewish_canada"]
-        muslim = table["religion_muslim_canada"]
-        sikh = table["religion_sikh_canada"]
-        buddhist = table["religion_buddhist_canada"]
-        no_religion = table["religion_no_religion_canada"]
-        protestant = christian - catholic
-        other = total - (
-            christian + hindu + jewish + muslim + sikh + buddhist + no_religion
+        table["religion_protestant_canada"] = (
+            table["religion_christian_canada"] - table["religion_catholic_canada"]
         )
-        return {
-            "religion_catholic_canada": catholic / total,
-            "religion_protestant_canada": protestant / total,
-            "religion_hindu_canada": hindu / total,
-            "religion_jewish_canada": jewish / total,
-            "religion_muslim_canada": muslim / total,
-            "religion_sikh_canada": sikh / total,
-            "religion_buddhist_canada": buddhist / total,
-            "religion_no_religion_canada": no_religion / total,
-            "religion_other_canada": other / total,
-        }
+        del table["religion_christian_canada"]
+        total = table["religion_total_canada"]
+        del table["religion_total_canada"]
+        assert {"religion_other_canada", *table.columns} == set(
+            self.internal_statistic_names_list()
+        )
+        for col in table.columns:
+            table[col] = table[col] / total
+        table["religion_other_canada"] = 1 - table.sum(axis=1)
+        return table

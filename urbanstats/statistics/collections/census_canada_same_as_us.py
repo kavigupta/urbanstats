@@ -1,13 +1,23 @@
+import re
 from abc import abstractmethod
 
 import numpy as np
 
 from urbanstats.data.canada.canadian_da_data import CensusTables
+from urbanstats.data.census_blocks import RADII
+from urbanstats.statistics.collections.census import CensusChange2010
 from urbanstats.statistics.collections.generation import GenerationStatistics
+from urbanstats.statistics.collections.household_size import (
+    HouseholdSizeStatistics,
+    compute_population_weighted_household_size,
+)
 from urbanstats.statistics.collections.industry import IndustryStatistics
 from urbanstats.statistics.collections.marriage import MarriageStatistics
 from urbanstats.statistics.collections.transportation_commute_time import (
     TransportationCommuteTimeStatistics,
+)
+from urbanstats.statistics.collections.transportation_mode import (
+    TransportationModeStatistics,
 )
 from urbanstats.statistics.statistic_collection import CanadaStatistics
 from urbanstats.statistics.utils import fractionalize

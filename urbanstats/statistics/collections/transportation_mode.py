@@ -1,6 +1,4 @@
 # pylint: disable=duplicate-code
-import numpy as np
-
 from urbanstats.acs.load import ACSDataEntity
 from urbanstats.games.quiz_question_metadata import (
     COMMUTE_MODE,
