@@ -1157,14 +1157,14 @@ export default {
         },
         {
             "varName": "household_size_pw_us_census",
-            "humanReadableName": "Household Size (population-weighted) [US Census]",
+            "humanReadableName": "PW Household Size [US Census]",
             "comesFromMultiSourceSet": true,
             "order": 165,
             "index": 252
         },
         {
             "varName": "household_size_pw_statcan",
-            "humanReadableName": "Household Size (population-weighted) [StatCan]",
+            "humanReadableName": "PW Household Size [StatCan]",
             "comesFromMultiSourceSet": true,
             "order": 166,
             "index": 253
@@ -3785,7 +3785,7 @@ export default {
                     "household_size_pw_us_census",
                     "household_size_pw_statcan"
                 ],
-                "humanReadableName": "Household Size (population-weighted)"
+                "humanReadableName": "PW Household Size"
             }
         ],
         [

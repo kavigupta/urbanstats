@@ -2886,13 +2886,13 @@ export const rawStatsTree = [
             },
             {
                 "id": "household_size_pw",
-                "name": "Household Size (population-weighted)",
+                "name": "PW Household Size",
                 "contents": [
                     {
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Household Size (population-weighted)",
+                                "name": "PW Household Size",
                                 "stats": [
                                     {
                                         "source": {

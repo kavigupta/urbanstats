@@ -47,7 +47,7 @@ class HouseholdSizeStatistics(ACSStatisticsColection):
 
     def name_for_each_statistic(self):
         return {
-            "household_size_pw": "Household Size (population-weighted)",
+            "household_size_pw": "PW Household Size",
         }
 
     def varname_for_each_statistic(self):
@@ -61,7 +61,7 @@ class HouseholdSizeStatistics(ACSStatisticsColection):
     def quiz_question_descriptors(self):
         return {
             "household_size_pw": QuizQuestionDescriptor(
-                "higher average household size (population-weighted) "
+                "higher average population weighted household size"
                 "!TOOLTIP The average household size a person is in;"
                 " i.e., the average over all people of the number of"
                 " people in their household. This is population-weighted,"

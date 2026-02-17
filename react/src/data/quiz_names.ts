@@ -251,7 +251,7 @@ export default [
     "higher % of households who have household income over $100k",
     "higher % of households that have household income under C$50k",
     "higher % of households who have household income under $50k",
-    "higher average household size (population-weighted) !TOOLTIP The average household size a person is in; i.e., the average over all people of the number of people in their household. This is population-weighted, meaning that a person in a 4-person household counts 4 times as much as a person in a 1-person household.",
+    "higher average population weighted household size!TOOLTIP The average household size a person is in; i.e., the average over all people of the number of people in their household. This is population-weighted, meaning that a person in a 4-person household counts 4 times as much as a person in a 1-person household.",
     null,
     null,
     null,
