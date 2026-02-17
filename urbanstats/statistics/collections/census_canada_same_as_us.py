@@ -27,22 +27,30 @@ class CensusCanadaSameAsUS(CanadaStatistics):
     def us_equivalent(self):
         pass
 
+    def remap_name(self, us_internal_name):
+        return f"{us_internal_name}_canada"
+
+    def us_equivalent_fields(self):
+        return list(self.us_equivalent().internal_statistic_names_list())
+
     def name_for_each_statistic(self):
         return {
-            f"{k}_canada": f"{v} [StatCan]"
+            self.remap_name(k): f"{v} [StatCan]"
             for k, v in self.us_equivalent().name_for_each_statistic().items()
+            if k in self.us_equivalent_fields()
         }
 
     def varname_for_each_statistic(self):
         return {
-            f"{k}_canada": v
+            self.remap_name(k): v
             for k, v in self.us_equivalent().varname_for_each_statistic().items()
+            if k in self.us_equivalent_fields()
         }
 
     def quiz_question_descriptors(self):
         return {
-            f"{k}_canada": self.us_equivalent().quiz_question_descriptors()[k]
-            for k in self.us_equivalent().quiz_question_descriptors()
+            self.remap_name(k): self.us_equivalent().quiz_question_descriptors()[k]
+            for k in self.us_equivalent_fields()
         }
 
     def compute_statistics_dictionary_canada(
