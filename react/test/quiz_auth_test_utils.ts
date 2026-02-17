@@ -1,10 +1,12 @@
 import { ClientFunction, Selector } from 'testcafe'
+import { TOTP } from 'totp-generator'
 import { z } from 'zod'
 
 import { TestWindow } from '../src/utils/TestUtils'
 
 import { quizFixture } from './quiz_test_utils'
-import { flaky, safeReload, target, waitForLoading } from './test_utils'
+import { getTOTPWait, setTOTPWait } from './scripts/util'
+import { flaky, getCurrentTest, safeReload, target, waitForLoading } from './test_utils'
 
 export const email = 'urban.stats.test@pavonine.co'
 
@@ -18,9 +20,39 @@ export const signInButton = Selector('Button').withExactText('Sign In')
 
 const continueButton = Selector('button').withExactText('Continue')
 
+const totpInput = Selector('input[type=tel]')
+
 const nextButton = Selector('button').withExactText('Next')
 const emailInput = Selector('input[type=email]:not([aria-hidden="true"])')
 const passwordInput = Selector('input[type=password]')
+
+async function popTOTP(t: TestController): Promise<string> {
+    // https://script.google.com/u/2/home/projects/1CWDP4eezFo8fMhQb327VfSm3DnThl-8xg1fmg4cl9gHnK0NGB8XSz094/edit
+    const { useAfter } = z.object({ useAfter: z.number() }).parse(await (await fetch('https://script.google.com/macros/s/AKfycbxLMtid0yZ_JiX5Ymm02FXfbRXYrpF1AE9nUaDM8P9dhP7uOWJpMRH8SpG5TbCQCRc/exec')).json())
+    const wait = useAfter - Date.now()
+    if (wait > 0) {
+        console.warn(`TOTP waiting ${wait} ms...`)
+        await setTOTPWait(getCurrentTest(t), await getTOTPWait(getCurrentTest(t)) + wait)
+        await t.wait(wait)
+    }
+    console.warn(`Using TOTP for ${useAfter}`)
+    const { otp } = TOTP.generate(z.string().parse(process.env.URBAN_STATS_TEST_TOTP))
+    return otp
+}
+
+async function fillTOTP(t: TestController): Promise<void> {
+    await t.expect(totpInput.exists).ok()
+    await t.typeText(totpInput, await popTOTP(t), { replace: true })
+    await t.click(nextButton)
+    try {
+        await t.expect(totpInput.exists).notOk()
+        console.warn('TOTP Success')
+    }
+    catch (error) {
+        console.warn(`TOTP Failure!`)
+        throw error
+    }
+}
 
 let googleCookies: CookieOptions[] | undefined
 async function googleSignIn(t: TestController): Promise<void> {
@@ -43,6 +75,9 @@ async function googleSignIn(t: TestController): Promise<void> {
             else if (await passwordInput.exists) {
                 await t.typeText(passwordInput, z.string().parse(process.env.URBAN_STATS_TEST_PASSWORD))
                 await t.click(nextButton)
+            }
+            else if (await totpInput.exists) {
+                await fillTOTP(t)
             }
             else {
                 await t.expect(Selector('h1').withExactText('Urban Stats').exists).ok()
@@ -94,6 +129,9 @@ export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = 
     await t.wait(1000) // wait for loading
     await t.click(chooseEmail)
     await flaky(t, async () => {
+        if (await totpInput.exists) {
+            await fillTOTP(t)
+        }
         await t.expect(continueButton.exists).ok()
     })
     await t.click(continueButton)
