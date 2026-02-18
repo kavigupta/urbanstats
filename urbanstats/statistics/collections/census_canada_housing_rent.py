@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 from urbanstats.data.canada.canadian_da_data import CensusTables
 from urbanstats.games.quiz_question_metadata import RENT_BURDEN, QuizQuestionDescriptor
 from urbanstats.statistics.collections.census import Census2020
