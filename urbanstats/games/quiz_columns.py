@@ -40,7 +40,7 @@ def get_quiz_stats():
 @lru_cache(maxsize=None)
 def stat_to_quiz_name():
     existing_stats = {k: d.name for k, d, _ in get_quiz_stats()}
-    old_stats = {}
+    old_stats = {"transportation_means_car": "higher % of people who commute by car"}
     assert set(existing_stats.keys()).isdisjoint(old_stats.keys())
     return {**existing_stats, **old_stats}
 
