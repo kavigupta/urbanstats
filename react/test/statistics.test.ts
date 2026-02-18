@@ -815,7 +815,7 @@ test('convert-table-to-map-button-hidden-for-non-table', async (t) => {
     await t.expect(convertToMapButtonSelector.exists).notOk()
 })
 
-const tableWithLabelAndUnit = `customNode("");\ncondition (true)\ntable(\n    columns=[\n        column(\n            values=density_pw_1km,\n            name="Population Density",\n            unit=unitDensity\n        )\n    ]\n)`
+const tableWithLabelAndUnit = `customNode("");\ncondition (true)\ntable(\n    columns=[column(values=density_pw_1km, name="Population Density", unit=unitDensity)]\n)`
 
 urbanstatsFixture('convert table to map with label and unit', createUSSStatisticsPage(tableWithLabelAndUnit, 1, 20, 'California, USA', 'County'))
 
@@ -863,6 +863,7 @@ test('convert-table-to-map-and-back-preserves-fields', async (t) => {
 )
 `
     await t.expect(code).eql(expectedCode)
+    await t.expect(new URL(finalUrl).searchParams.get('uss')).eql(new URL(url).searchParams.get('uss'))
     await t.expect(finalUrl).eql(url)
 })
 
