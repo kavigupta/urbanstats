@@ -49,6 +49,7 @@ void test('constant listing', (): void => {
             ],
             'Unit': [
                 'unitPercentage',
+                'unitPercentageChange',
                 'unitFatalities',
                 'unitFatalitiesPerCapita',
                 'unitDensity',
