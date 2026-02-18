@@ -160,7 +160,7 @@ test('default universe canada', async (t) => {
         .typeText(searchField, 'agriculture by riding')
     await waitForSelectedSearchResult(t)
     await t.pressKey('enter')
-    await t.expect(getLocation()).eql(`${target}/statname=Natural+resources+and+agriculture+occupations+__PCT__+%5BStatCan%5D&article_type=CA+Riding&start=1&amount=20&universe=Canada`)
+    await t.expect(getLocation()).eql(`${target}/statistic.html?statname=Natural+resources+and+agriculture+occupations+__PCT__+%5BStatCan%5D&article_type=CA+Riding&start=1&amount=20&universe=Canada`)
 })
 
 test('rendering of options', async (t) => {
