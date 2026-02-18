@@ -332,7 +332,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     }, [props.universe, props.articleType, editUSS])
 
     const handleEditSettingsClick = (): void => {
-        const ussString = unparse(editUSS, { simplify: true })
+        const ussString = unparse(editUSS, { simplify: false })
         const newDescriptor: StatisticDescriptor = props.descriptor.type === 'uss-statistic'
             ? props.descriptor
             : { type: 'uss-statistic', uss: ussString }
