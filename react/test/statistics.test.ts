@@ -1015,3 +1015,11 @@ test('forward back navigation works', async (t) => {
 
     await assertCounties()
 })
+
+urbanstatsFixture('filter', `${target}/statistic.html?uss=customNode%28%22%22%29%3B%0Acondition+%28customNode%28%22true%22%29%29%0Atable%28columns%3D%5Bcolumn%28values%3Darea%29%5D%29&article_type=Subnational+Region&start=1&amount=20&universe=USA&edit=true`)
+
+test('type in filter should preserve spaces', async (t) => {
+    await checkTextboxesDirect(t, ['Filter?'])
+    await typeInEditor(t, 0, 'population > 10m', true)
+    await t.expect(nthEditor(0).textContent).eql('population > 10m\n')
+})

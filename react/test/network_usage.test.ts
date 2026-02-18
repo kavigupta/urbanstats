@@ -9,7 +9,7 @@ test('under network limit home page navigate to california', async (t) => {
     await t.expect(await flushNetworkUsage('home')).lt(600_000)
     await t.typeText(searchField, 'california')
     await waitForSelectedSearchResult(t)
-    await t.expect(await flushNetworkUsage('search')).lt(2_700_000)
+    await t.expect(await flushNetworkUsage('search')).lt(2_800_000)
     await t.pressKey('enter')
     await t.expect(await flushNetworkUsage('article')).lt(2_200_000)
 })

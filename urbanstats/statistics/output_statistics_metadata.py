@@ -15,20 +15,31 @@ def statistic_internal_to_display_name():
     An ordered dictionary mapping internal statistic names to display names. The order used here is the order in which
     the statistics are stored in each row of the database.
     """
+    internal_to_source = {}
     internal_to_display = {}
 
     for statistic_collection in statistic_collections:
         internal_to_display.update(statistic_collection.name_for_each_statistic())
+        internal_to_source.update(
+            {
+                k: statistic_collection
+                for k in statistic_collection.name_for_each_statistic()
+            }
+        )
 
     all_stats = set(internal_to_display.keys())
     extra_in_this_list = all_stats - set(internal_statistic_names())
-    if extra_in_this_list:
-        raise ValueError(f"Missing stats in tree: {extra_in_this_list}")
     extra_in_tree = set(internal_statistic_names()) - all_stats
-    if extra_in_tree:
-        raise ValueError(
-            f"Extra stats in tree: {[x for x in internal_statistic_names() if x in extra_in_tree]}"
-        )
+    if extra_in_this_list or extra_in_tree:
+        if extra_in_this_list:
+            print("Statistics in collections but not in tree:")
+            for stat in extra_in_this_list:
+                print(f"  {stat} [from {internal_to_source[stat].__class__.__name__}]")
+        if extra_in_tree:
+            print("Statistics in tree but not in collections:")
+            for stat in extra_in_tree:
+                print(f"  {stat}")
+        raise ValueError("Mismatch between statistics in collections and tree")
     return {k: internal_to_display[k] for k in internal_statistic_names()}
 
 

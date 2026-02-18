@@ -181,6 +181,19 @@ export function DataCreditPanel(): ReactNode {
                                     We compute vacancy as the percentage of housing units that are vacant. We compute
                                     units per adult as the number of housing units divided by the number of adults.
                                 </p>
+                                <p>
+                                    Population weighted household size is the average household size by person. In essence,
+                                    if a region has 1 household witht 3 people and 1 with 1 person, the population weighted
+                                    mean household size is
+                                </p>
+                                <MathJax style={{ height: '60px', overflow: 'hidden' }}>
+                                    {`\\[\\frac{3 + 3 + 3 + 1}{1 + 1 + 1 + 1} = 2.5\\]`}
+                                </MathJax>
+                                <p>
+                                    which is different from the unweighted mean household size of 2.0. This
+                                    is more useful because it measures the average size of a household that
+                                    each person is in.
+                                </p>
                             </div>
 
                             <NRef name="segregation">Segregation</NRef>
@@ -446,6 +459,10 @@ export function DataCreditPanel(): ReactNode {
                                     All transportation data is computed using disaggregation from the block group level
                                     to the block level, weighted by adult population. We consider taxi to be a form of
                                     car transportation, and consider motorcycle to be a form of bike transportation.
+                                </p>
+                                <p>
+                                    Commute mode previously included worked-at-home as its own category; we now exclude
+                                    work-from-home from the mode shares to align with in-person commuting modes only.
                                 </p>
                                 <p>
                                     To compute median commute time, we take the most detailed data available, which is
@@ -727,9 +744,9 @@ export function DataCreditPanel(): ReactNode {
                             for each geography.
                         </div>
 
-                        <h1>Elections</h1>
+                        <NRef name="election" h="h1">Elections</NRef>
 
-                        <NRef name="election" h="h2">2016 and 2020 Election Data</NRef>
+                        <h2>2016 and 2020 Election Data</h2>
                         <div>
                             Election Data is from
                             {' '}
@@ -758,7 +775,7 @@ export function DataCreditPanel(): ReactNode {
                             precinct boundaries in the dataset are slightly inaccurate, or there are no results for
                             the precincts overlapping the geography.
                         </div>
-                        <NRef name="election" h="h2">2008 and 2012 Election Data</NRef>
+                        <h2>2008 and 2012 Election Data</h2>
                         <div>
                             2008 and 2012 Election Data is aggregated from counties from
                             {' '}
@@ -822,6 +839,48 @@ export function DataCreditPanel(): ReactNode {
                             {' '}
                             of the Metcalf repository.
                             .
+                        </div>
+                        <NRef name="canada_election" h="h2">Canadian General Election Data</NRef>
+                        <div>
+                            Canadian General Election data is from
+                            {' '}
+                            <FootnoteRef
+                                description={(
+                                    <span>
+                                        Elections Canada:
+                                        {' '}
+                                        <i>General Election Results,</i>
+                                        {' '}
+                                        <a href="https://www.elections.ca/content.aspx?section=res&dir=rep/off&document=index&lang=e">https://www.elections.ca/content.aspx?section=res&dir=rep/off&document=index&lang=e</a>
+                                    </span>
+                                )}
+                            >
+                                Elections Canada
+                            </FootnoteRef>
+                            {' '}
+                            and polling division boundaries from
+                            {' '}
+                            <FootnoteRef
+                                description={(
+                                    <span>
+                                        Geo.ca and Open Canada:
+                                        {' '}
+                                        <i>Polling Division Boundaries,</i>
+                                        {' '}
+                                        <a href="https://open.canada.ca/data/en/dataset/97a2a33c-54cc-4f2e-82c1-047ad8212f05">https://open.canada.ca/data/en/dataset/97a2a33c-54cc-4f2e-82c1-047ad8212f05</a>
+                                    </span>
+                                )}
+                            >
+                                Geo.ca and Open Canada
+                            </FootnoteRef>
+                            {' '}
+                            . For details on how we process the data, see our
+                            {' '}
+                            <a href="https://github.com/kavigupta/CanadaGeneralElections">repository</a>
+                            {'. '}
+                            We then compute the 2-Coalition Margin metric comparing (LIB + NDP + GRN) to (CON + PPC).
+                            Results might not match official results exactly
+                            due to the disaggregation process.
                         </div>
                         <NRef name="park" h="h1">Parkland</NRef>
                         <div>
@@ -942,6 +1001,8 @@ export function DataCreditPanel(): ReactNode {
                                 . We use the same metrics as for the US Census to compute population
                                 and population density statistics, except using dissemination blocks instead
                                 of census blocks. We use this for population and density statistics.
+                                We also use the 2011 Census for 2011 and decade change statistics, aligning the 2011
+                                dissemination block data with the 2021 geography.
                             </div>
                             <NRef name="canadian-census-disaggregated" h="h2">Census Dissemination Block Data</NRef>
                             <div>
@@ -959,6 +1020,29 @@ export function DataCreditPanel(): ReactNode {
                                     For Income, LICO-AT, and ..., we use similar definitions to the US data, but with Canadian-specific
                                     thresholds (e.g., the income thresholds are in CAD, not USD, and we use LICO-AT rather than US Census&apos;s
                                     poverty thresholds).
+                                </p>
+                                <p>
+                                    For Race, we use the visible-minority tables and build US-aligned categories. We treat
+                                    non-visible minority as the base for White + Indigenous, use a separate Indigenous table
+                                    to compute Native %, subtracting this from non-viible minority to get a White %, and then add
+                                    Arab and West Asian back into White to match the US census grouping. The remaining
+                                    visible-minority groups are mapped to Black, Asian, Hispanic, and Other/Mixed.
+                                </p>
+                                <p>
+                                    For Education Field, we mirror the US definitions by grouping Canadian fields into STEM, humanities,
+                                    and business. STEM includes physical and life sciences and technologies, mathematics/computer and
+                                    information sciences, architecture/engineering and related trades, agriculture/natural resources
+                                    and conservation, and health and related fields. Humanities includes education, visual and
+                                    performing arts and communications technologies, humanities, social and behavioural sciences and law,
+                                    personal/protective/transportation services, and other fields. Business is business, management,
+                                    and public administration. We renormalize these numbers to add up to the total educated % between
+                                    25 and 64.
+                                </p>
+                                <p>
+                                    For Language, we do not want to exclude French, which is not present in the US statistics. We treat English and
+                                    English and non-official language(s) as English-only, and group all French-inclusive responses
+                                    (French, English and French, French and non-official language(s), English, French and non-official
+                                    language(s)) as French. Spanish is kept as its own category.
                                 </p>
                             </div>
                         </div>
