@@ -186,6 +186,11 @@ export interface Documentation {
      * should also be serializable to JSON.
      */
     includedInOutputContext?: boolean
+    /**
+     * If present, indicates that this variable/function is deprecated.
+     * The string should explain why it's deprecated and what alternatives to use.
+     */
+    deprecated?: string
 }
 
 export interface USSDocumentedType {
