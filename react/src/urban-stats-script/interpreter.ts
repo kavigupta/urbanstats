@@ -43,6 +43,13 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
             const varName = expr.name.node
             const res = env.getVariable(varName)
             if (res !== undefined) {
+                if (res.documentation?.deprecated) {
+                    env.effect({
+                        type: 'warning',
+                        message: `Deprecated: ${res.documentation.deprecated}`,
+                        location: expr.name.location,
+                    })
+                }
                 return res
             }
             throw env.error(`Undefined variable: ${varName}`, expr.name.location)
