@@ -165,7 +165,16 @@ def statistic_variables_info():
         internal_to_actual_variable, multi_source_variable_names, multi_source_stats
     )
 
-    # Build a map of variable names to deprecation messages for quick lookup
+    _verify_no_deprecated_multi_source(multi_source, variable_objects)
+
+    result = {
+        "variableNames": variable_objects,
+        "multiSourceVariables": list(multi_source.items()),
+    }
+    return result
+
+
+def _verify_no_deprecated_multi_source(multi_source, variable_objects):
     deprecation_map = {
         var_obj["varName"]: var_obj["deprecated"]
         for var_obj in variable_objects
@@ -178,12 +187,6 @@ def statistic_variables_info():
                 f"Multi-source variable {ms_name} includes deprecated individual variables: "
                 f"{[var for var in ms_info['individualVariables'] if var in deprecation_map]}"
             )
-
-    result = {
-        "variableNames": variable_objects,
-        "multiSourceVariables": list(multi_source.items()),
-    }
-    return result
 
 
 def construct_variable_objects(
