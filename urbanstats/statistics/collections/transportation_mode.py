@@ -75,9 +75,9 @@ class TransportationModeStatistics(ACSStatisticsColection):
                 f"Use {vname[new_key]} ({nname[new_key]}) instead,"
                 " which excludes work-from-home from the denominator and is more accurate for comparisons"
             )
-        result["transportation_means_worked_at_home"] = (
-            "This statistic is deprecated because it is highly inconsistent across time"
-        )
+        result[
+            "transportation_means_worked_at_home"
+        ] = "This statistic is deprecated because it is highly inconsistent across time"
         return result
 
     def quiz_question_descriptors(self):
