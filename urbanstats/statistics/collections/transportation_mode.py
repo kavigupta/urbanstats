@@ -73,10 +73,10 @@ class TransportationModeStatistics(ACSStatisticsColection):
         for old_key, new_key in replace.items():
             result[old_key] = (
                 f"Use {vname[new_key]} ({nname[new_key]}) instead,"
-                " which excludes work-from-home from the denominator and is more accurate for comparisons."
+                " which excludes work-from-home from the denominator and is more accurate for comparisons"
             )
         result["transportation_means_worked_at_home"] = (
-            "This statistic is deprecated because it is highly inconsistent across time."
+            "This statistic is deprecated because it is highly inconsistent across time"
         )
         return result
 

@@ -3958,7 +3958,7 @@ export default {
             "comesFromMultiSourceSet": false,
             "order": 494,
             "index": 468,
-            "deprecated": "Use commute_car (Commute Car %) instead, which excludes work-from-home from the denominator and is more accurate for comparisons."
+            "deprecated": "Use commute_car (Commute Car %) instead, which excludes work-from-home from the denominator and is more accurate for comparisons"
         },
         {
             "varName": "commute_bike_incl_wfh",
@@ -3966,7 +3966,7 @@ export default {
             "comesFromMultiSourceSet": false,
             "order": 495,
             "index": 465,
-            "deprecated": "Use commute_bike (Commute Bike %) instead, which excludes work-from-home from the denominator and is more accurate for comparisons."
+            "deprecated": "Use commute_bike (Commute Bike %) instead, which excludes work-from-home from the denominator and is more accurate for comparisons"
         },
         {
             "varName": "commute_walk_incl_wfh",
@@ -3974,7 +3974,7 @@ export default {
             "comesFromMultiSourceSet": false,
             "order": 496,
             "index": 474,
-            "deprecated": "Use commute_walk (Commute Walk %) instead, which excludes work-from-home from the denominator and is more accurate for comparisons."
+            "deprecated": "Use commute_walk (Commute Walk %) instead, which excludes work-from-home from the denominator and is more accurate for comparisons"
         },
         {
             "varName": "commute_transit_incl_wfh",
@@ -3982,7 +3982,7 @@ export default {
             "comesFromMultiSourceSet": false,
             "order": 497,
             "index": 471,
-            "deprecated": "Use commute_transit (Commute Transit %) instead, which excludes work-from-home from the denominator and is more accurate for comparisons."
+            "deprecated": "Use commute_transit (Commute Transit %) instead, which excludes work-from-home from the denominator and is more accurate for comparisons"
         },
         {
             "varName": "commute_work_from_home_incl_wfh",
@@ -3990,7 +3990,7 @@ export default {
             "comesFromMultiSourceSet": false,
             "order": 498,
             "index": 477,
-            "deprecated": "This statistic is deprecated because it is highly inconsistent across time."
+            "deprecated": "This statistic is deprecated because it is highly inconsistent across time"
         }
     ],
     "multiSourceVariables": [
