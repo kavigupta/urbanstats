@@ -149,10 +149,10 @@ async function loadFromDirBlob(blobUrl: string, longname: string, decodeProto: (
     if (!(key in index)) return undefined
     const entry = index[key]
     const [offset, size] = entry
-    console.log('entry', offset, size)
     const res = await fetch(blobUrl, { headers: { Range: `bytes=${offset}-${offset + size - 1}` } })
     if (!res.ok) return undefined
     const gzipBytes = new Uint8Array(await res.arrayBuffer())
+    assert(gzipBytes.length === size, `Expected to fetch ${size} bytes for ${longname} from ${blobUrl}, but got ${gzipBytes.length} bytes`)
     const decompressed = gunzipSync(Buffer.from(gzipBytes))
     return decodeProto(new Uint8Array(decompressed))
 }
