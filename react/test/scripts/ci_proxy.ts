@@ -37,12 +37,9 @@ export async function startProxy(): Promise<void> {
 
     const app = express()
 
-    // Only run compression for non-binary routes. /data/ and /shape/ serve protobuf; compressing them
-    // adds a 4-byte prefix and corrupts the response (e.g. California article crashes).
+    // simply do not compress in the proxy, since the files are already compressed and this seems to mess with the Range header.
     app.use((req, res, next) => {
-        const path = (req.originalUrl).split('?')[0]
-        if (/^\/(data|shape)\//.test(path)) { next(); return }
-        compression({ enforceEncoding: 'gzip' })(req, res, next)
+        next(); return
     })
 
     app.use(
