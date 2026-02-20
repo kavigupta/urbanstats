@@ -128,22 +128,43 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     }
 }
 
-/** Load one article from a consolidated shard file (lookup by longname). */
-export async function loadArticleFromConsolidatedShard(shardUrl: string, longname: string): Promise<Article | undefined> {
-    const consolidated = await loadProtobuf(shardUrl, 'ConsolidatedArticles')
-    const key = sanitize(longname)
-    const idx = consolidated.longnames.indexOf(key)
-    if (idx === -1) return undefined
-    return consolidated.articles[idx] as Article
+// Consolidated shard: .dir (JSON index) + .blob (concatenated gzip bytes). Cache dir by blob URL.
+const dirCache = new Map<string, Record<string, [number, number]>>()
+
+async function getDirForBlob(blobUrl: string): Promise<Record<string, [number, number]>> {
+    const cached = dirCache.get(blobUrl)
+    if (cached) return cached
+    const dirUrl = blobUrl.replaceAll(/\.blob$/g, '.dir')
+    const res = await fetch(dirUrl)
+    if (!res.ok) return {}
+    const index = (await res.json()) as Record<string, [number, number]>
+    dirCache.set(blobUrl, index)
+    return index
 }
 
-/** Load one shape from a consolidated shard file (lookup by longname). */
-export async function loadFeatureFromConsolidatedShard(shardUrl: string, longname: string): Promise<Feature | undefined> {
-    const consolidated = await loadProtobuf(shardUrl, 'ConsolidatedShapes')
+/** Load one item from a consolidated shard (fetch .dir, then Range on .blob, gunzip, decode). */
+async function loadFromDirBlob(blobUrl: string, longname: string, decodeProto: (arr: Uint8Array) => Feature | Article): Promise<Feature | Article | undefined> {
     const key = sanitize(longname)
-    const idx = consolidated.longnames.indexOf(key)
-    if (idx === -1) return undefined
-    return consolidated.shapes[idx] as Feature
+    const index = await getDirForBlob(blobUrl)
+    if (!(key in index)) return undefined
+    const entry = index[key]
+    const [offset, size] = entry
+    console.log('entry', offset, size)
+    const res = await fetch(blobUrl, { headers: { Range: `bytes=${offset}-${offset + size - 1}` } })
+    if (!res.ok) return undefined
+    const gzipBytes = new Uint8Array(await res.arrayBuffer())
+    const decompressed = gunzipSync(Buffer.from(gzipBytes))
+    return decodeProto(new Uint8Array(decompressed))
+}
+
+/** Load one article from a consolidated (.dir + .blob) shard. */
+export async function loadArticleFromConsolidatedShard(blobUrl: string, longname: string): Promise<Article | undefined> {
+    return loadFromDirBlob(blobUrl, longname, arr => Article.decode(arr)) as Promise<Article | undefined>
+}
+
+/** Load one shape from a consolidated (.dir + .blob) shard. */
+export async function loadFeatureFromConsolidatedShard(blobUrl: string, longname: string): Promise<Feature | undefined> {
+    return loadFromDirBlob(blobUrl, longname, arr => Feature.decode(arr)) as Promise<Feature | undefined>
 }
 
 function pullKey(arr: number[], key: string): number {

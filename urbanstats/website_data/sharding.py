@@ -1,9 +1,10 @@
 import json
 import os
 
-from urbanstats.protobuf.utils import write_gzip
-
 SHARD_SIZE_LIMIT_BYTES = 512 * 1024
+
+# Consolidated shard format: .dir (JSON index: longname -> [offset, size]) + .blob (concatenated gzipped items)
+# Client fetches .dir then Range request on .blob for the one item.
 
 
 def shard_bytes(longname):
@@ -39,22 +40,25 @@ def all_foldernames():
     return [f"{a0}{a1}/{b}" for a0 in hexes for a1 in hexes for b in hexes]
 
 
-def consolidate_shards(folder, *, build_consolidated):
+def consolidate_shards(folder):
     """
     For each shard folder under folder whose total size is below the limit,
-    merge all .gz files using build_consolidated(gz_files), write to shard.gz,
-    remove per-item files. Symlinks stay separate.
+    write a .dir file (JSON: longname -> [offset, size]) and a .blob file
+    (concatenated gzipped proto bytes). Client fetches .dir then Range on .blob.
+    Remove per-item .gz files. Symlinks stay separate.
 
-    build_consolidated receives a list of (longname, filepath) and returns a
-    protobuf message to write.
     Returns list of shard folder strings that were consolidated.
     """
     out = []
     for shard_folder in all_foldernames():
         shard_path = os.path.join(folder, shard_folder)
+        if not os.path.isdir(shard_path):
+            continue
         total_size = 0
         gz_files = []
         for name in os.listdir(shard_path):
+            if not name.endswith(".gz"):
+                continue
             fp = os.path.join(shard_path, name)
             total_size += os.path.getsize(fp)
             gz_files.append((name[:-3], fp))
@@ -62,12 +66,24 @@ def consolidate_shards(folder, *, build_consolidated):
             continue
         if total_size >= SHARD_SIZE_LIMIT_BYTES:
             continue
-        consolidated = build_consolidated(gz_files)
-        out_path = os.path.join(folder, f"{shard_folder}.gz")
-        write_gzip(consolidated, out_path)
+        base_path = os.path.join(folder, shard_folder)
+        index = {}
+        offset = 0
+        with open(f"{base_path}.blob", "wb") as blob_f:
+            for longname, fp in gz_files:
+                with open(fp, "rb") as f:
+                    data = f.read()
+                blob_f.write(data)
+                index[longname] = [offset, len(data)]
+                offset += len(data)
+        with open(f"{base_path}.dir", "w") as dir_f:
+            json.dump(index, dir_f, separators=(",", ":"))
         for _, fp in gz_files:
             os.remove(fp)
-        os.rmdir(shard_path)
+        try:
+            os.rmdir(shard_path)
+        except OSError:
+            pass
         out.append(shard_folder)
     return out
 

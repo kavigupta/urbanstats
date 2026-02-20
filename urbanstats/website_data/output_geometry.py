@@ -7,10 +7,7 @@ from urbanstats.geometry.classify_coordinate_zone import classify_coordinate_zon
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
-from urbanstats.website_data.sharding import (
-    consolidate_shards,
-    create_filename,
-)
+from urbanstats.website_data.sharding import consolidate_shards, create_filename
 
 
 def produce_shape_gzip(folder, r):
@@ -34,18 +31,6 @@ def produce_shape_gzip_cached(r, path):
     write_gzip(res, path)
 
 
-def _build_shape_consolidated(gz_files):
-    consolidated = data_files_pb2.ConsolidatedShapes()
-    for longname, fp in gz_files:
-        with gzip.GzipFile(fp, "rb") as f:
-            feature = data_files_pb2.Feature()
-            feature.ParseFromString(f.read())
-        consolidated.longnames.append(longname)
-        consolidated.universes.add()
-        consolidated.shapes.append(feature)
-    return consolidated
-
-
 def produce_all_geometry_json(path, valid_names):
     for k, sf_k in shapefiles.items():
         print(k)
@@ -54,7 +39,7 @@ def produce_all_geometry_json(path, valid_names):
             if table.iloc[i].longname in valid_names:
                 produce_shape_gzip(path, table.iloc[i])
 
-    return consolidate_shards(path, build_consolidated=_build_shape_consolidated)
+    return consolidate_shards(path)
 
 
 def to_protobuf_polygon(f_python):

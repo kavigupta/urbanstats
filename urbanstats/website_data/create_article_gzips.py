@@ -1,4 +1,3 @@
-import gzip
 import itertools
 import os
 from functools import lru_cache
@@ -149,17 +148,6 @@ def create_symlink_gzips(site_folder, symlinks):
         write_gzip(data, f"{site_folder}/data/{name}")
 
 
-def _build_article_consolidated(gz_files):
-    consolidated = data_files_pb2.ConsolidatedArticles()
-    for longname, fp in gz_files:
-        with gzip.GzipFile(fp, "rb") as f:
-            article = data_files_pb2.Article()
-            article.ParseFromString(f.read())
-        consolidated.longnames.append(longname)
-        consolidated.articles.append(article)
-    return consolidated
-
-
 def create_article_gzips(site_folder, full, ordering):
     def get_write_path_local(folder, longname, ext):
         return f"{folder}/{create_filename(longname, ext)}"
@@ -207,10 +195,7 @@ def create_article_gzips(site_folder, full, ordering):
             ),
         )
 
-    return consolidate_shards(
-        f"{site_folder}/data",
-        build_consolidated=_build_article_consolidated,
-    )
+    return consolidate_shards(f"{site_folder}/data")
 
 
 @lru_cache(maxsize=None)

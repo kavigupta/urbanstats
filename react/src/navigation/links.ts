@@ -50,8 +50,8 @@ export function shardedName(longname: string): string {
 export function shapeLink(longname: string): string {
     const shardFolder = shardedFolderName(longname)
     if (getIsUnsharded(shardFolder, 'shape')) {
-        // Consolidated: whole shard in one file
-        return `/shape/${encodeURIComponent(shardFolder)}.gz`
+        // Consolidated: .dir + .blob (fetch dir, then Range on blob)
+        return `/shape/${encodeURIComponent(shardFolder)}.blob`
     }
     return `/shape/${encodeURIComponent(shardedName(longname))}.gz`
 }
@@ -59,8 +59,8 @@ export function shapeLink(longname: string): string {
 export function dataLink(longname: string): string {
     const shardFolder = shardedFolderName(longname)
     if (getIsUnsharded(shardFolder, 'data')) {
-        // Consolidated: whole shard in one file
-        return `/data/${encodeURIComponent(shardFolder)}.gz`
+        // Consolidated: .dir + .blob (fetch dir, then Range on blob)
+        return `/data/${encodeURIComponent(shardFolder)}.blob`
     }
     return `/data/${encodeURIComponent(shardedName(longname))}.gz`
 }
