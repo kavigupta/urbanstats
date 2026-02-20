@@ -2909,6 +2909,270 @@ export const Article = $root.Article = (() => {
     return Article;
 })();
 
+export const ConsolidatedArticles = $root.ConsolidatedArticles = (() => {
+
+    /**
+     * Properties of a ConsolidatedArticles.
+     * @exports IConsolidatedArticles
+     * @interface IConsolidatedArticles
+     * @property {Array.<string>|null} [longnames] ConsolidatedArticles longnames
+     * @property {Array.<IArticle>|null} [articles] ConsolidatedArticles articles
+     */
+
+    /**
+     * Constructs a new ConsolidatedArticles.
+     * @exports ConsolidatedArticles
+     * @classdesc Represents a ConsolidatedArticles.
+     * @implements IConsolidatedArticles
+     * @constructor
+     * @param {IConsolidatedArticles=} [properties] Properties to set
+     */
+    function ConsolidatedArticles(properties) {
+        this.longnames = [];
+        this.articles = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * ConsolidatedArticles longnames.
+     * @member {Array.<string>} longnames
+     * @memberof ConsolidatedArticles
+     * @instance
+     */
+    ConsolidatedArticles.prototype.longnames = $util.emptyArray;
+
+    /**
+     * ConsolidatedArticles articles.
+     * @member {Array.<IArticle>} articles
+     * @memberof ConsolidatedArticles
+     * @instance
+     */
+    ConsolidatedArticles.prototype.articles = $util.emptyArray;
+
+    /**
+     * Creates a new ConsolidatedArticles instance using the specified properties.
+     * @function create
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {IConsolidatedArticles=} [properties] Properties to set
+     * @returns {ConsolidatedArticles} ConsolidatedArticles instance
+     */
+    ConsolidatedArticles.create = function create(properties) {
+        return new ConsolidatedArticles(properties);
+    };
+
+    /**
+     * Encodes the specified ConsolidatedArticles message. Does not implicitly {@link ConsolidatedArticles.verify|verify} messages.
+     * @function encode
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {IConsolidatedArticles} message ConsolidatedArticles message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ConsolidatedArticles.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.longnames != null && message.longnames.length)
+            for (let i = 0; i < message.longnames.length; ++i)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.longnames[i]);
+        if (message.articles != null && message.articles.length)
+            for (let i = 0; i < message.articles.length; ++i)
+                $root.Article.encode(message.articles[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified ConsolidatedArticles message, length delimited. Does not implicitly {@link ConsolidatedArticles.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {IConsolidatedArticles} message ConsolidatedArticles message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ConsolidatedArticles.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a ConsolidatedArticles message from the specified reader or buffer.
+     * @function decode
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {ConsolidatedArticles} ConsolidatedArticles
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ConsolidatedArticles.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.ConsolidatedArticles();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.longnames && message.longnames.length))
+                        message.longnames = [];
+                    message.longnames.push(reader.string());
+                    break;
+                }
+            case 2: {
+                    if (!(message.articles && message.articles.length))
+                        message.articles = [];
+                    message.articles.push($root.Article.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a ConsolidatedArticles message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {ConsolidatedArticles} ConsolidatedArticles
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ConsolidatedArticles.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a ConsolidatedArticles message.
+     * @function verify
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    ConsolidatedArticles.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.longnames != null && message.hasOwnProperty("longnames")) {
+            if (!Array.isArray(message.longnames))
+                return "longnames: array expected";
+            for (let i = 0; i < message.longnames.length; ++i)
+                if (!$util.isString(message.longnames[i]))
+                    return "longnames: string[] expected";
+        }
+        if (message.articles != null && message.hasOwnProperty("articles")) {
+            if (!Array.isArray(message.articles))
+                return "articles: array expected";
+            for (let i = 0; i < message.articles.length; ++i) {
+                let error = $root.Article.verify(message.articles[i]);
+                if (error)
+                    return "articles." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a ConsolidatedArticles message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {ConsolidatedArticles} ConsolidatedArticles
+     */
+    ConsolidatedArticles.fromObject = function fromObject(object) {
+        if (object instanceof $root.ConsolidatedArticles)
+            return object;
+        let message = new $root.ConsolidatedArticles();
+        if (object.longnames) {
+            if (!Array.isArray(object.longnames))
+                throw TypeError(".ConsolidatedArticles.longnames: array expected");
+            message.longnames = [];
+            for (let i = 0; i < object.longnames.length; ++i)
+                message.longnames[i] = String(object.longnames[i]);
+        }
+        if (object.articles) {
+            if (!Array.isArray(object.articles))
+                throw TypeError(".ConsolidatedArticles.articles: array expected");
+            message.articles = [];
+            for (let i = 0; i < object.articles.length; ++i) {
+                if (typeof object.articles[i] !== "object")
+                    throw TypeError(".ConsolidatedArticles.articles: object expected");
+                message.articles[i] = $root.Article.fromObject(object.articles[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a ConsolidatedArticles message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {ConsolidatedArticles} message ConsolidatedArticles
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    ConsolidatedArticles.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults) {
+            object.longnames = [];
+            object.articles = [];
+        }
+        if (message.longnames && message.longnames.length) {
+            object.longnames = [];
+            for (let j = 0; j < message.longnames.length; ++j)
+                object.longnames[j] = message.longnames[j];
+        }
+        if (message.articles && message.articles.length) {
+            object.articles = [];
+            for (let j = 0; j < message.articles.length; ++j)
+                object.articles[j] = $root.Article.toObject(message.articles[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this ConsolidatedArticles to JSON.
+     * @function toJSON
+     * @memberof ConsolidatedArticles
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    ConsolidatedArticles.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ConsolidatedArticles
+     * @function getTypeUrl
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ConsolidatedArticles.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/ConsolidatedArticles";
+    };
+
+    return ConsolidatedArticles;
+})();
+
 export const Coordinate = $root.Coordinate = (() => {
 
     /**

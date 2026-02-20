@@ -45,6 +45,7 @@ from urbanstats.website_data.create_article_gzips import (
 from urbanstats.website_data.default_universe_by_stat_geo import (
     output_default_universe_by_stat_geo,
 )
+from urbanstats.website_data.sharding import output_unshard_config
 from urbanstats.website_data.index import export_index, type_to_priority_list
 from urbanstats.website_data.ordinals import all_ordinals
 from urbanstats.website_data.output_geometry import produce_all_geometry_json
@@ -229,15 +230,17 @@ def build_urbanstats(
             pass
 
     if not no_geo:
-        produce_all_geometry_json(
+        unshard_from_geo = produce_all_geometry_json(
             f"{site_folder}/shape", set(shapefile_without_ordinals().longname)
         )
+        output_unshard_config("react/src/data", unshard_from_geo, "shape")
 
     if not no_data:
         if not no_data_jsons:
-            create_article_gzips(
+            unshard_from_data = create_article_gzips(
                 site_folder, shapefile_without_ordinals(), all_ordinals()
             )
+            output_unshard_config("react/src/data", unshard_from_data, "data")
             create_symlink_gzips(site_folder, compute_symlinks())
 
         if not no_index:

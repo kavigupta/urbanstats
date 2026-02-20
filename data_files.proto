@@ -68,6 +68,11 @@ message Article {
     repeated Metadata metadata = 11;
 }
 
+message ConsolidatedArticles {
+    repeated string longnames = 1;
+    repeated Article articles = 2;
+}
+
 
 // geojson
 

@@ -1,5 +1,9 @@
-import { loadProtobuf } from '../load_json'
-import { dataLink, shapeLink, symlinksLink } from '../navigation/links'
+import {
+    loadArticleFromConsolidatedShard,
+    loadFeatureFromConsolidatedShard,
+    loadProtobuf,
+} from '../load_json'
+import { dataLink, getIsUnsharded, shapeLink, shardedFolderName, symlinksLink } from '../navigation/links'
 
 import { Article, Feature } from './protos'
 
@@ -24,11 +28,23 @@ async function loadProtobufFromPossibleSymlink<T>(longname: string, doLoad: (lin
 }
 
 export async function loadArticleFromPossibleSymlink(longname: string): Promise<Article> {
-    return loadProtobufFromPossibleSymlink(longname, link => (loadProtobuf(dataLink(link), 'Article', false)))
+    return loadProtobufFromPossibleSymlink(longname, (link) => {
+        const shardFolder = shardedFolderName(link)
+        if (getIsUnsharded(shardFolder, 'data')) {
+            return loadArticleFromConsolidatedShard(dataLink(link), link)
+        }
+        return loadProtobuf(dataLink(link), 'Article', false)
+    })
 }
 
 export async function loadFeatureFromPossibleSymlink(longname: string): Promise<Feature> {
-    return loadProtobufFromPossibleSymlink(longname, link => (loadProtobuf(shapeLink(link), 'Feature', false)))
+    return loadProtobufFromPossibleSymlink(longname, (link) => {
+        const shardFolder = shardedFolderName(link)
+        if (getIsUnsharded(shardFolder, 'shape')) {
+            return loadFeatureFromConsolidatedShard(shapeLink(link), link)
+        }
+        return loadProtobuf(shapeLink(link), 'Feature', false)
+    })
 }
 
 export function loadArticlesFromPossibleSymlink(longnames: string[]): Promise<Article[]> {

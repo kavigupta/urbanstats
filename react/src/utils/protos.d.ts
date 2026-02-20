@@ -1114,6 +1114,109 @@ export class Article implements IArticle {
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
+/** Properties of a ConsolidatedArticles. */
+export interface IConsolidatedArticles {
+
+    /** ConsolidatedArticles longnames */
+    longnames?: (string[]|null);
+
+    /** ConsolidatedArticles articles */
+    articles?: (IArticle[]|null);
+}
+
+/** Represents a ConsolidatedArticles. */
+export class ConsolidatedArticles implements IConsolidatedArticles {
+
+    /**
+     * Constructs a new ConsolidatedArticles.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IConsolidatedArticles);
+
+    /** ConsolidatedArticles longnames. */
+    public longnames: string[];
+
+    /** ConsolidatedArticles articles. */
+    public articles: IArticle[];
+
+    /**
+     * Creates a new ConsolidatedArticles instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns ConsolidatedArticles instance
+     */
+    public static create(properties?: IConsolidatedArticles): ConsolidatedArticles;
+
+    /**
+     * Encodes the specified ConsolidatedArticles message. Does not implicitly {@link ConsolidatedArticles.verify|verify} messages.
+     * @param message ConsolidatedArticles message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IConsolidatedArticles, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified ConsolidatedArticles message, length delimited. Does not implicitly {@link ConsolidatedArticles.verify|verify} messages.
+     * @param message ConsolidatedArticles message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IConsolidatedArticles, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a ConsolidatedArticles message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns ConsolidatedArticles
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ConsolidatedArticles;
+
+    /**
+     * Decodes a ConsolidatedArticles message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns ConsolidatedArticles
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ConsolidatedArticles;
+
+    /**
+     * Verifies a ConsolidatedArticles message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a ConsolidatedArticles message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns ConsolidatedArticles
+     */
+    public static fromObject(object: { [k: string]: any }): ConsolidatedArticles;
+
+    /**
+     * Creates a plain object from a ConsolidatedArticles message. Also converts values to other types if specified.
+     * @param message ConsolidatedArticles
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: ConsolidatedArticles, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this ConsolidatedArticles to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ConsolidatedArticles
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
 /** Properties of a Coordinate. */
 export interface ICoordinate {
 

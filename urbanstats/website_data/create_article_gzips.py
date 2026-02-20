@@ -1,4 +1,6 @@
+import gzip
 import itertools
+import os
 from functools import lru_cache
 
 import numpy as np
@@ -15,6 +17,7 @@ from urbanstats.universe.universe_constants import ZERO_POPULATION_UNIVERSES
 from urbanstats.universe.universe_list import all_universes
 from urbanstats.website_data.sharding import (
     all_foldernames,
+    consolidate_shards,
     create_filename,
     create_foldername,
 )
@@ -46,6 +49,7 @@ def create_article_gzip(
     long_to_idx,
     flat_ords,
     counts_overall,
+    get_write_path_fn,
 ):
     # pylint: disable=too-many-locals,too-many-arguments
     statistic_names = internal_statistic_names()
@@ -121,9 +125,14 @@ def create_article_gzip(
             # vulture: ignore -- not actually creating a field. this is from protobuf
             related_button.row_type = long_to_type[x]
 
-    name = create_filename(row.longname, "gz")
-    write_gzip(data, f"{folder}/{name}")
-    return name
+    # Determine write path based on shard size
+    write_path = get_write_path_fn(row.longname, "gz")
+    # Create parent directory if needed
+    parent_dir = os.path.dirname(write_path)
+    os.makedirs(parent_dir, exist_ok=True)
+    write_gzip(data, write_path)
+    # Return relative path for tracking
+    return os.path.relpath(write_path, folder)
 
 
 def create_symlink_gzips(site_folder, symlinks):
@@ -140,7 +149,21 @@ def create_symlink_gzips(site_folder, symlinks):
         write_gzip(data, f"{site_folder}/data/{name}")
 
 
+def _build_article_consolidated(gz_files):
+    consolidated = data_files_pb2.ConsolidatedArticles()
+    for longname, fp in gz_files:
+        with gzip.GzipFile(fp, "rb") as f:
+            article = data_files_pb2.Article()
+            article.ParseFromString(f.read())
+        consolidated.longnames.append(longname)
+        consolidated.articles.append(article)
+    return consolidated
+
+
 def create_article_gzips(site_folder, full, ordering):
+    def get_write_path_local(folder, longname, ext):
+        return f"{folder}/{create_filename(longname, ext)}"
+
     long_to_short = dict(zip(full.longname, full.shortname))
     long_to_pop = dict(zip(full.longname, full.population))
     long_to_type = dict(zip(full.longname, full.type))
@@ -179,7 +202,15 @@ def create_article_gzips(site_folder, full, ordering):
             long_to_idx=long_to_idx,
             flat_ords=flat_ords,
             counts_overall=counts_overall,
+            get_write_path_fn=lambda longname, ext: get_write_path_local(
+                f"{site_folder}/data", longname, ext
+            ),
         )
+
+    return consolidate_shards(
+        f"{site_folder}/data",
+        build_consolidated=_build_article_consolidated,
+    )
 
 
 @lru_cache(maxsize=None)

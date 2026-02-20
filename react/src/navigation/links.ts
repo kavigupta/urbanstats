@@ -1,8 +1,18 @@
 import type { StatisticDescriptor } from '../components/statistic-panel'
 import type_ordering_idx from '../data/type_ordering_idx'
+import unshardData from '../data/unshard_data.json'
+import unshardShape from '../data/unshard_shape.json'
 import { Universe } from '../universe'
 
 import { PageDescriptor } from './PageDescriptor'
+
+// Consolidated-shard config: shards below size limit are stored as one file (e.g. ab/c.gz)
+const unshardedShapes = new Set(unshardShape as string[])
+const unshardedData = new Set(unshardData as string[])
+
+export function getIsUnsharded(shardFolder: string, type: 'shape' | 'data'): boolean {
+    return type === 'shape' ? unshardedShapes.has(shardFolder) : unshardedData.has(shardFolder)
+}
 
 export const typesInOrder = Object.fromEntries(Object.entries(type_ordering_idx).map(([k, v]) => [v, k]))
 
@@ -26,7 +36,7 @@ function shardBytes(longname: string): [string, string] {
     ]
 }
 
-function shardedFolderName(longname: string): string {
+export function shardedFolderName(longname: string): string {
     const sanitizedName = sanitize(longname)
     const [a, b] = shardBytes(sanitizedName)
     return `${a}/${b}`
@@ -38,10 +48,20 @@ export function shardedName(longname: string): string {
 }
 
 export function shapeLink(longname: string): string {
+    const shardFolder = shardedFolderName(longname)
+    if (getIsUnsharded(shardFolder, 'shape')) {
+        // Consolidated: whole shard in one file
+        return `/shape/${encodeURIComponent(shardFolder)}.gz`
+    }
     return `/shape/${encodeURIComponent(shardedName(longname))}.gz`
 }
 
 export function dataLink(longname: string): string {
+    const shardFolder = shardedFolderName(longname)
+    if (getIsUnsharded(shardFolder, 'data')) {
+        // Consolidated: whole shard in one file
+        return `/data/${encodeURIComponent(shardFolder)}.gz`
+    }
     return `/data/${encodeURIComponent(shardedName(longname))}.gz`
 }
 
