@@ -138,6 +138,7 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvi
                 documentationTable: 'mapper-data-variables',
                 includedInOutputContext: true,
                 fromStatisticColumn: true,
+                deprecated: (variableInfo as { deprecated: string | null }).deprecated ?? undefined,
             },
         })
     }

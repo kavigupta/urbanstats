@@ -23,6 +23,22 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                     }
                 },
             }
+        case 'percentageChange':
+            return {
+                renderValue: (value: number) => {
+                    const displayValue = (value * 100).toFixed(2)
+                    const sign = value >= 0 ? '+' : ''
+                    return {
+                        value: (
+                            <span>
+                                {sign}
+                                {displayValue}
+                            </span>
+                        ),
+                        unit: <span>%</span>,
+                    }
+                },
+            }
         case 'fatalities':
             return {
                 renderValue: (value: number) => {
@@ -415,6 +431,9 @@ export function classifyStatistic(statname: string): UnitType {
     }
     if (statname.includes('2-Coalition Margin')) {
         return 'leftMargin'
+    }
+    if (statname.includes('Change') && (statname.includes('Population') || statname.includes('Density'))) {
+        return 'percentageChange'
     }
     if (statname.includes('%') || statname.includes('Change') || statname.includes('(Grade)')) {
         return 'percentage'

@@ -60,6 +60,26 @@ class TransportationModeStatistics(ACSStatisticsColection):
             result[key] = "deprecated"
         return result
 
+    def deprecation_for_each_statistic(self):
+        result = self.same_for_each_name(None)
+        vname = self.varname_for_each_statistic()
+        nname = self.name_for_each_statistic()
+        replace = {
+            "transportation_means_car": "transportation_means_car_no_wfh",
+            "transportation_means_bike": "transportation_means_bike_no_wfh",
+            "transportation_means_walk": "transportation_means_walk_no_wfh",
+            "transportation_means_transit": "transportation_means_transit_no_wfh",
+        }
+        for old_key, new_key in replace.items():
+            result[old_key] = (
+                f"Use {vname[new_key]} ({nname[new_key]}) instead,"
+                " which excludes work-from-home from the denominator and is more accurate for comparisons"
+            )
+        result[
+            "transportation_means_worked_at_home"
+        ] = "This statistic is deprecated because it is highly inconsistent across time"
+        return result
+
     def quiz_question_descriptors(self):
         return {
             **QuizQuestionDescriptor.several(
