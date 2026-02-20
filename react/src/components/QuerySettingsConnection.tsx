@@ -7,6 +7,7 @@ import { Settings, SettingsDictionary, sourceEnabledKey, statPathsWithExtra } fr
 import { useVector, VectorSettingKey, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { getAvailableGroups, getAvailableYears, getDataSourceCheckboxes, groupYearKeys, statIsEnabled, useStatPathsAll } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, StatPath } from '../page_template/statistic-tree'
+import { assert } from '../utils/defensive'
 
 import { isSinglePointerCell } from './pointer-cell'
 
@@ -34,7 +35,9 @@ export function QuerySettingsConnection(): null {
     const settingsVector = useVector()
 
     useEffect(() => {
-        navContext.setSettingsVector(settingsVector)
+        const kind = navContext.currentDescriptor.kind
+        assert(kind === 'article' || kind === 'comparison', 'query settings connection may not be used on this page type')
+        navContext.unsafeUpdateCurrentDescriptor({ s: settingsVector, kind })
     }, [settingsVector, navContext])
 
     useEffect(() => {

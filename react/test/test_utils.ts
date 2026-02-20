@@ -482,3 +482,7 @@ export const mapper = (testFn: () => TestFn) => (
     urbanstatsFixture(`quick-${code}`, urlFromCode(geo, universe, code))
     testFn()(name, testBlock)
 }
+
+export const goBack = ClientFunction(() => { window.history.back() })
+export const goForward = ClientFunction(() => { window.history.forward() })
+export const getScroll = ClientFunction(() => window.scrollY)

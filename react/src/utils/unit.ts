@@ -1,4 +1,4 @@
-export type UnitType = 'percentage' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
+export type UnitType = 'percentage' | 'percentageChange' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
     | 'area' | 'distanceInKm' | 'distanceInM' | 'democraticMargin' | 'temperature' | 'time' | 'distancePerYear'
     | 'contaminantLevel' | 'number' | 'usd' | 'minutes'
     | 'partyPctBlue' | 'partyPctRed' | 'partyPctOrange' | 'partyPctTeal' | 'partyPctGreen' | 'partyPctPurple'
@@ -8,6 +8,7 @@ export type UnitType = 'percentage' | 'fatalities' | 'fatalitiesPerCapita' | 'de
 // Validated list of all unit types - this ensures we have every value from UnitType
 export const allUnitTypes = [
     'percentage',
+    'percentageChange',
     'fatalities',
     'fatalitiesPerCapita',
     'density',
@@ -47,6 +48,8 @@ export function getUnitName(unitType: UnitType): string {
     switch (unitType) {
         case 'percentage':
             return 'Percentage'
+        case 'percentageChange':
+            return 'Percentage Change'
         case 'fatalities':
             return 'Fatalities'
         case 'fatalitiesPerCapita':

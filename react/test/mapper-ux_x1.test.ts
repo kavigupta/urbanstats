@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { nthEditor, typeInEditor } from './editor_test_utils'
-import { getCodeFromMainField, getInput, replaceInput, toggleCustomScript, urlFromCode } from './mapper-utils'
+import { getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { checkTextboxesDirect, downloadImage, getLocation, mapper, screencap, target, urbanstatsFixture, waitForLoading, withHamburgerMenu } from './test_utils'
 
 urbanstatsFixture('mapper default', `${target}/mapper.html`)
@@ -270,4 +270,19 @@ mapper(() => test)('convert mapper to table and back preserves fields', { code: 
 )
 `
     await t.expect(code).eql(expectedCode)
+})
+
+mapper(() => test)('deprecation warning for deprecated transportation statistic', { code: 'pMap(data=commute_walk_incl_wfh, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    const warning = 'Deprecated: Use commute_walk (Commute Walk %) instead, which excludes work-from-home from the denominator and is more accurate for comparisons'
+    await waitForLoading()
+    await t.expect(getErrors()).eql([`${warning} at 1:11-31`])
+    await toggleCustomScript(t)
+    await waitForLoading()
+    await t.expect(getErrors()).eql([warning])
+})
+
+mapper(() => test)('deprecation warning for deprecated weather statistic', { code: 'pMap(data=high_temp_fall, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    const warning = 'Deprecated: Use high_temp_son (Mean high temperature in Sep/Oct/Nov) instead, which uses month-based seasons instead and is valid in the southern hemisphere'
+    await toggleCustomScript(t)
+    await t.expect(getErrors()).eql([warning])
 })
