@@ -10,7 +10,7 @@ REPO = "git@github.com:densitydb/densitydb.github.io.git"
 
 def synchronize():
     # pull the latest changes from the remote repo
-    subprocess.run(["git", "pull", "origin", "master"], cwd=LOCAL_REPO, check=True)
+    subprocess.run(["git", "pull", "origin", "main"], cwd=LOCAL_REPO, check=True)
     # copy the files from the local repo to the site folder, using rsync
     subprocess.run(
         [
@@ -66,27 +66,27 @@ def get_current_branch(path=PATH):
 def update_all():
     temp_branch = "temp"
     push_to_new_branch(temp_branch)
-    push_to_master(temp_branch)
+    push_to_main(temp_branch)
 
 
-def push_to_master(new_branch):
+def push_to_main(new_branch):
     current_branch = get_current_branch()
-    assert current_branch == new_branch != "master", (current_branch, new_branch)
-    # check if master branch exists
+    assert current_branch == new_branch != "main", (current_branch, new_branch)
+    # check if main branch exists
     branches = subprocess.run(
         ["git", "branch"], cwd=PATH, capture_output=True, text=True, check=True
     ).stdout.split("\n")
     branches = [x.strip().strip("*").strip() for x in branches]
-    if "master" in branches:
-        # checkout to master branch
-        subprocess.run(["git", "checkout", "master"], cwd=PATH, check=True)
+    if "main" in branches:
+        # checkout to main branch
+        subprocess.run(["git", "checkout", "main"], cwd=PATH, check=True)
         # merge in the branch we were on
         subprocess.run(["git", "merge", new_branch], cwd=PATH, check=True)
     else:
-        # add master branch
-        subprocess.run(["git", "checkout", "-b", "master"], cwd=PATH, check=True)
-    # force push to master
-    subprocess.run(["git", "push", "-f", "origin", "master"], cwd=PATH, check=True)
+        # add main branch
+        subprocess.run(["git", "checkout", "-b", "main"], cwd=PATH, check=True)
+    # force push to main
+    subprocess.run(["git", "push", "-f", "origin", "main"], cwd=PATH, check=True)
     # remove temp branch
     subprocess.run(["git", "branch", "-D", new_branch], cwd=PATH, check=True)
     # push removal of temp branch
@@ -106,7 +106,7 @@ def push_to_new_branch(new_branch):
     subprocess.run(["git", "checkout", "-b", new_branch], cwd=PATH, check=True)
     # add remote origin
     subprocess.run(["git", "remote", "add", "origin", REPO], cwd=PATH, check=True)
-    # add several folders and push to master
+    # add several folders and push to main
     for folder, message in [
         ("shape", "shape"),
         ("order", "order"),
@@ -122,13 +122,13 @@ def push_to_new_branch(new_branch):
 
 def merge(new_branch):
     current_branch = get_current_branch()
-    assert current_branch == new_branch != "master", (current_branch, new_branch)
-    # switch to master
-    subprocess.run(["git", "checkout", "master"], cwd=PATH, check=True)
+    assert current_branch == new_branch != "main", (current_branch, new_branch)
+    # switch to main
+    subprocess.run(["git", "checkout", "main"], cwd=PATH, check=True)
     # merge in the branch we were on
     subprocess.run(["git", "merge", new_branch], cwd=PATH, check=True)
-    # push to master (no need to force push)
-    subprocess.run(["git", "push", "origin", "master"], cwd=PATH, check=True)
+    # push to main (no need to force push)
+    subprocess.run(["git", "push", "origin", "main"], cwd=PATH, check=True)
     # remove temp branch
     subprocess.run(["git", "branch", "-D", new_branch], cwd=PATH, check=True)
     # push removal of temp branch
@@ -139,8 +139,8 @@ def merge(new_branch):
 
 def rm_branch(branch):
     current_branch = get_current_branch()
-    assert current_branch == branch != "master", (current_branch, branch)
-    subprocess.run(["git", "checkout", "master"], cwd=PATH, check=True)
+    assert current_branch == branch != "main", (current_branch, branch)
+    subprocess.run(["git", "checkout", "main"], cwd=PATH, check=True)
     subprocess.run(["git", "branch", "-D", branch], cwd=PATH, check=True)
     subprocess.run(["git", "push", "origin", "--delete", branch], cwd=PATH, check=True)
 
@@ -155,8 +155,8 @@ def main():
     # command push to new branch
     p_push_nb = s.add_parser("push-to-new-branch")
     p_push_nb.add_argument("branch", type=str)
-    # command push to master
-    p_push_m = s.add_parser("push-to-master")
+    # command push to main
+    p_push_m = s.add_parser("push-to-main")
     p_push_m.add_argument("branch", type=str)
     p_merge = s.add_parser("merge")
     p_merge.add_argument("branch", type=str)
@@ -167,12 +167,12 @@ def main():
         if args.target == "scripts":
             update_scripts(args.branch)
         elif args.target == "all":
-            assert args.branch == "master"
+            assert args.branch == "main"
             update_all()
     elif args.command == "push-to-new-branch":
         push_to_new_branch(args.branch)
-    elif args.command == "push-to-master":
-        push_to_master(args.branch)
+    elif args.command == "push-to-main":
+        push_to_main(args.branch)
     elif args.command == "merge":
         merge(args.branch)
     elif args.command == "rm-branch":

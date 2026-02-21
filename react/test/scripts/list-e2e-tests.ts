@@ -11,7 +11,7 @@ import { DefaultMap } from '../../src/utils/DefaultMap'
 /**
  * Urban Stats contains a large number of end-to-end (e2e) tests with varying execution times, which are run in parallel within the CI pipeline.
  * Each test incurs a significant startup overhead, and available CI resources (e.g., GitHub free tier) are limited.
- * We record the last successful pipeline run on master to get estimates for the duration of each e2e test.
+ * We record the last successful pipeline run on main to get estimates for the duration of each e2e test.
  * To optimize resource usage, shorter tests can be grouped to run sequentially on the same runner, as the overall pipeline duration is determined by the longest-running jobs.
  * This scenario is an instance of the bin packing problem.
  * While a simple heuristic using nested loops can provide a near-optimal solution, a provably optimal solution can be obtained using linear programming (LP).
