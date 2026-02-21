@@ -84,6 +84,29 @@ def get_explanation_page():
     return result
 
 
+def get_deprecation_messages():
+    result = {}
+
+    for statistic_collection in statistic_collections:
+        result.update(statistic_collection.deprecation_for_each_statistic())
+
+    with_deprecation_message = {k for k, v in result.items() if v is not None}
+    from_deprecation_category = {
+        k for k, v in get_statistic_categories().items() if v == "deprecated"
+    }
+    if with_deprecation_message != from_deprecation_category:
+        print("Statistics with deprecation messages but not in deprecated category:")
+        for stat in with_deprecation_message - from_deprecation_category:
+            print(f"  {stat}")
+        print("Statistics in deprecated category but without deprecation messages:")
+        for stat in from_deprecation_category - with_deprecation_message:
+            print(f"  {stat}")
+        raise ValueError(
+            "Mismatch between statistics with deprecation messages and deprecated category"
+        )
+    return result
+
+
 def get_human_readable_name_for_variable(
     stat, internal_to_actual_variable, multi_source_variable_names, multi_source_stats
 ):
@@ -142,6 +165,8 @@ def statistic_variables_info():
         internal_to_actual_variable, multi_source_variable_names, multi_source_stats
     )
 
+    _verify_no_deprecated_multi_source(multi_source, variable_objects)
+
     result = {
         "variableNames": variable_objects,
         "multiSourceVariables": list(multi_source.items()),
@@ -149,9 +174,25 @@ def statistic_variables_info():
     return result
 
 
+def _verify_no_deprecated_multi_source(multi_source, variable_objects):
+    deprecation_map = {
+        var_obj["varName"]: var_obj["deprecated"]
+        for var_obj in variable_objects
+        if var_obj["deprecated"] is not None
+    }
+
+    for ms_name, ms_info in multi_source.items():
+        if any(var in deprecation_map for var in ms_info["individualVariables"]):
+            raise ValueError(
+                f"Multi-source variable {ms_name} includes deprecated individual variables: "
+                f"{[var for var in ms_info['individualVariables'] if var in deprecation_map]}"
+            )
+
+
 def construct_variable_objects(
     internal_to_actual_variable, multi_source_variable_names, multi_source_stats
 ):
+    deprecation_messages = get_deprecation_messages()
     variable_objects = []
     for i, stat in enumerate(internal_statistic_names_in_tree_order()):
         lexicographic_index = internal_statistic_names().index(stat)
@@ -168,6 +209,7 @@ def construct_variable_objects(
                 in multi_source_variable_names,
                 "order": i,
                 "index": lexicographic_index,
+                "deprecated": deprecation_messages[stat],
             }
         )
 

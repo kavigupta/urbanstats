@@ -3,7 +3,7 @@ import { Selector } from 'testcafe'
 
 import { nthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
 import { getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
-import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, dataValues, checkTextboxes, checkTextboxesDirect, downloadCSV, downloadImage } from './test_utils'
+import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, dataValues, checkTextboxes, checkTextboxesDirect, downloadCSV, downloadImage, searchField, waitForSelectedSearchResult, goBack, goForward } from './test_utils'
 
 urbanstatsFixture('statistic.html default page', `${target}/statistic.html`)
 
@@ -815,7 +815,7 @@ test('convert-table-to-map-button-hidden-for-non-table', async (t) => {
     await t.expect(convertToMapButtonSelector.exists).notOk()
 })
 
-const tableWithLabelAndUnit = `customNode("");\ncondition (true)\ntable(\n    columns=[\n        column(\n            values=density_pw_1km,\n            name="Population Density",\n            unit=unitDensity\n        )\n    ]\n)`
+const tableWithLabelAndUnit = `customNode("");\ncondition (true)\ntable(\n    columns=[column(values=density_pw_1km, name="Population Density", unit=unitDensity)]\n)`
 
 urbanstatsFixture('convert table to map with label and unit', createUSSStatisticsPage(tableWithLabelAndUnit, 1, 20, 'California, USA', 'County'))
 
@@ -863,7 +863,158 @@ test('convert-table-to-map-and-back-preserves-fields', async (t) => {
 )
 `
     await t.expect(code).eql(expectedCode)
+    await t.expect(new URL(finalUrl).searchParams.get('uss')).eql(new URL(url).searchParams.get('uss'))
     await t.expect(finalUrl).eql(url)
+})
+
+urbanstatsFixture('states', `${target}/statistic.html?statname=Area&article_type=Subnational+Region&start=21&amount=20&universe=USA`)
+
+test('forward back navigation works', async (t) => {
+    async function assertStates(): Promise<void> {
+        await t.expect(Selector('.headertext').textContent).eql('States')
+        await t.expect(Selector('.subheadertext').textContent).eql('Area')
+        await t.expect(await getElements()).eql([
+            'Georgia, USA',
+            'Michigan, USA',
+            'Florida, USA',
+            'Illinois, USA',
+            'Iowa, USA',
+            'Wisconsin, USA',
+            'Arkansas, USA',
+            'Alabama, USA',
+            'North Carolina, USA',
+            'New York, USA',
+            'Mississippi, USA',
+            'Louisiana, USA',
+            'Pennsylvania, USA',
+            'Tennessee, USA',
+            'Ohio, USA',
+            'Virginia, USA',
+            'Kentucky, USA',
+            'Indiana, USA',
+            'Maine, USA',
+            'South Carolina, USA',
+            'West Virginia, USA',
+            'Maryland, USA',
+            'Vermont, USA',
+            'New Hampshire, USA',
+            'Massachusetts, USA',
+            'New Jersey, USA',
+            'Hawaii, USA',
+            'Connecticut, USA',
+            'Puerto Rico, USA',
+            'Delaware, USA',
+            'Rhode Island, USA',
+            'Guam, USA',
+            'Northern Mariana Islands, USA',
+            'US Virgin Islands, USA',
+            'American Samoa, USA',
+            'District of Columbia, USA',
+        ])
+        await t.expect(await dataValues()).eql([
+            '152 571',
+            '150 911',
+            '150 866',
+            '145 916',
+            '145 745',
+            '145 337',
+            '137 782',
+            '133 893',
+            '128 544',
+            '126 944',
+            '123 472',
+            '122 007',
+            '117 340',
+            '109 112',
+            '106 858',
+            '104 803',
+            '104 652',
+            '93 724',
+            '84 886',
+            '80 575',
+            '62 756',
+            '26 646',
+            '24 903',
+            '24 038',
+            '21 209',
+            '20 114',
+            '16 728',
+            '12 924',
+            '8 928',
+            '5 207',
+            '2 843',
+            '559',
+            '469',
+            '347',
+            '202',
+            '177',
+        ])
+    }
+
+    async function assertCounties(): Promise<void> {
+        await t.expect(Selector('.headertext').textContent).eql('Counties')
+        await t.expect(Selector('.subheadertext').textContent).eql('Population')
+        await t.expect(await getElements()).eql([
+            'Los Angeles County, California, USA',
+            'Cook County, Illinois, USA',
+            'Harris County, Texas, USA',
+            'Maricopa County, Arizona, USA',
+            'San Diego County, California, USA',
+            'Orange County, California, USA',
+            'Kings County, New York, USA',
+            'Miami-Dade County, Florida, USA',
+            'Dallas County, Texas, USA',
+            'Riverside County, California, USA',
+            'Queens County, New York, USA',
+            'King County, Washington, USA',
+            'Clark County, Nevada, USA',
+            'San Bernardino County, California, USA',
+            'Tarrant County, Texas, USA',
+            'Bexar County, Texas, USA',
+            'Broward County, Florida, USA',
+            'Santa Clara County, California, USA',
+            'Wayne County, Michigan, USA',
+            'New York County, New York, USA',
+        ])
+        await t.expect(await dataValues()).eql([
+            '10.0',
+            '5.27',
+            '4.73',
+            '4.42',
+            '3.30',
+            '3.19',
+            '2.74',
+            '2.70',
+            '2.61',
+            '2.42',
+            '2.41',
+            '2.27',
+            '2.27',
+            '2.18',
+            '2.11',
+            '2.01',
+            '1.94',
+            '1.94',
+            '1.79',
+            '1.69',
+        ])
+    }
+
+    await assertStates()
+
+    await t.click(searchField).typeText(searchField, 'county population')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+
+    await assertCounties()
+
+    await goBack()
+
+    await assertStates()
+
+    await goForward()
+
+    await assertCounties()
 })
 
 urbanstatsFixture('filter', `${target}/statistic.html?uss=customNode%28%22%22%29%3B%0Acondition+%28customNode%28%22true%22%29%29%0Atable%28columns%3D%5Bcolumn%28values%3Darea%29%5D%29&article_type=Subnational+Region&start=1&amount=20&universe=USA&edit=true`)

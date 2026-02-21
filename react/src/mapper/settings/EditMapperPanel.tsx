@@ -108,7 +108,7 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
         if (props.mapSettings !== mapSettings) {
             // gzip then base64 encode
             const encodedSettings = gzipSync(jsonedSettings).toString('base64')
-            navContext.setMapperSettings(encodedSettings)
+            navContext.unsafeUpdateCurrentDescriptor({ settings: encodedSettings, kind: 'mapper' })
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- props.view won't be set except from the navigator
     }, [jsonedSettings, navContext])

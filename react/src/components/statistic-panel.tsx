@@ -281,7 +281,8 @@ function parseUSSFromString(ussString: string, typeEnvironment: TypeEnvironment,
     return res
 }
 
-export function StatisticPanel(props: StatisticPanelProps): ReactNode {
+// You probavly want to use `editUniverse` and `editGeographyKind` instead
+export function StatisticPanel({ articleType: articleTypeDontUse, universe: universeDontUse, ...props }: StatisticPanelProps): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
     const [loadedData, setLoadedData] = useState<StatisticData | undefined>(undefined)
@@ -289,20 +290,31 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     const colors = useColors()
 
     const isEditMode = props.edit ?? false
-    const [editUniverse, setEditUniverse] = useState<Universe>(props.universe)
-    useEffect(() => {
-        setEditUniverse(props.universe)
-    }, [props.universe])
-    const [editGeographyKind, setEditGeographyKind] = useState<typeof validGeographies[number]>(props.articleType as typeof validGeographies[number])
+
+    const getEditUniverse = useCallback(() => universeDontUse, [universeDontUse])
+    const [editUniverse, setEditUniverse] = useState<Universe>(getEditUniverse)
+
+    const getEditGeographyKind = useCallback(() => articleTypeDontUse as typeof validGeographies[number], [articleTypeDontUse])
+    const [editGeographyKind, setEditGeographyKind] = useState<typeof validGeographies[number]>(getEditGeographyKind)
+
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(editUniverse), [editUniverse])
+
     const [editErrors, setEditErrors] = useState<EditorError[]>([])
 
-    const [[editUSS, isFromStatName], setEditUSS] = useState<[MapUSS, boolean]>(() => {
+    const getEditUSS = useCallback<() => [MapUSS, boolean]>(() => {
         const initialUSS = props.descriptor.type === 'uss-statistic'
             ? props.descriptor.uss
             : `customNode(""); condition (true); table(columns=[column(values=${varName(props.descriptor.statname)})])`
         return [parseUSSFromString(initialUSS, typeEnvironment, props.descriptor.type === 'uss-statistic'), props.descriptor.type === 'simple-statistic']
-    })
+    }, [props.descriptor, typeEnvironment])
+    const [[editUSS, isFromStatName], setEditUSS] = useState<[MapUSS, boolean]>(getEditUSS)
+
+    // If needed, load state from updated props
+    useEffect(() => {
+        setEditUniverse(getEditUniverse())
+        setEditGeographyKind(getEditGeographyKind)
+        setEditUSS(getEditUSS())
+    }, [getEditUniverse, getEditUSS, getEditGeographyKind])
 
     // Construct MapSettings from separate state for MapperSettings component
     const editMapSettings = useMemo((): MapSettings => ({
@@ -313,15 +325,15 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     // Handle MapSettings changes from MapperSettings component
     const handleMapSettingsChange = useCallback((newMapSettings: MapSettings): void => {
-        setEditUniverse(newMapSettings.universe ?? props.universe)
-        setEditGeographyKind(newMapSettings.geographyKind ?? props.articleType as typeof validGeographies[number])
+        setEditUniverse(newMapSettings.universe ?? editUniverse)
+        setEditGeographyKind(newMapSettings.geographyKind ?? editGeographyKind)
         if (unparse(newMapSettings.script.uss) !== unparse(editUSS)) {
             setEditUSS([newMapSettings.script.uss, false])
         }
-    }, [props.universe, props.articleType, editUSS])
+    }, [editUniverse, editGeographyKind, editUSS])
 
     const handleEditSettingsClick = (): void => {
-        const ussString = unparse(editUSS, { simplify: true })
+        const ussString = unparse(editUSS, { simplify: false })
         const newDescriptor: StatisticDescriptor = props.descriptor.type === 'uss-statistic'
             ? props.descriptor
             : { type: 'uss-statistic', uss: ussString }
@@ -352,22 +364,14 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
     // Update URL when USS changes in edit mode
     useEffect(() => {
         if (!isFromStatName) {
-            void navContext.navigate(statisticDescriptor({
+            navContext.unsafeUpdateCurrentDescriptor({
+                kind: 'statistic',
                 universe: editUniverse,
-                statDesc,
-                articleType: editGeographyKind,
-                start: props.start,
-                amount: props.amount,
-                order: props.order,
-                highlight: props.highlight,
-                edit: isEditMode,
-                sortColumn: props.sortColumn,
-            }), {
-                history: 'replace',
-                scroll: { kind: 'none' },
+                uss: statDesc.uss,
+                article_type: editGeographyKind,
             })
         }
-    }, [statDesc, editUniverse, editGeographyKind, isFromStatName, navContext, props.start, props.amount, props.order, props.highlight, props.sortColumn, isEditMode])
+    }, [statDesc, editUniverse, editGeographyKind, isFromStatName, navContext])
 
     const handleApplyUSS = (): void => {
         void navContext.navigate(statisticDescriptor({
@@ -391,9 +395,9 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             return universes_ordered
         }
         return universes_ordered.filter(
-            universe => forType(props.counts, universe, loadedData.statcol!, props.articleType) > 0,
+            universe => forType(props.counts, universe, loadedData.statcol!, editGeographyKind) > 0,
         )
-    }, [loadedData?.statcol, props.counts, props.articleType])
+    }, [loadedData?.statcol, props.counts, editGeographyKind])
 
     const csvExportCallback = useMemo <CSVExportData | undefined>(() => {
         if (loadedData === undefined) {
@@ -503,12 +507,12 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
 
     return (
         <universeContext.Provider value={{
-            universe: props.universe,
+            universe: editUniverse,
             universes: universesFiltered,
             setUniverse(newUniverse) {
                 void navigator.navigate({
                     kind: 'statistic',
-                    article_type: props.articleType,
+                    article_type: editGeographyKind,
                     statname: props.descriptor.type === 'simple-statistic' ? props.descriptor.statname : undefined,
                     uss: props.descriptor.type === 'uss-statistic' ? props.descriptor.uss : undefined,
                     start: props.start,
@@ -531,7 +535,7 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
             >
                 <div ref={headersRef} style={{ position: 'relative' }}>
                     <StatisticPanelHead
-                        articleType={props.articleType}
+                        articleType={editGeographyKind}
                         renderedOther={props.order}
                     />
                     <div className={subHeaderTextClass}>{loadedData?.renderedStatname ?? 'Table'}</div>
@@ -541,7 +545,23 @@ export function StatisticPanel(props: StatisticPanelProps): ReactNode {
                                 <div style={{ flexGrow: 1, minWidth: '300px' }}>
                                     <AddColumnSearchBox
                                         editUSS={editUSS}
-                                        setEditUSS={(newUSS) => { setEditUSS([newUSS, false]) }}
+                                        setEditUSS={(newUSS) => {
+                                            void navigator.navigate({
+                                                kind: 'statistic',
+                                                article_type: editGeographyKind,
+                                                uss: unparse(newUSS, { simplify: false }),
+                                                start: props.start,
+                                                amount: props.amount,
+                                                order: props.order,
+                                                highlight: props.highlight,
+                                                universe: editUniverse,
+                                                sort_column: props.sortColumn,
+                                                edit: isEditMode,
+                                            }, {
+                                                history: 'push',
+                                                scroll: { kind: 'none' },
+                                            })
+                                        }}
                                         typeEnvironment={typeEnvironment}
                                         colAdder={colAdder}
                                     />

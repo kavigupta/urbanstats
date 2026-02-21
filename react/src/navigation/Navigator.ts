@@ -5,6 +5,7 @@ import { discordFix } from '../discord-fix'
 import { Settings } from '../page_template/settings'
 import { StatPath } from '../page_template/statistic-tree'
 import { TestUtils } from '../utils/TestUtils'
+import { assert } from '../utils/defensive'
 
 import { ExceptionalPageDescriptor, loadPageDescriptor, PageData, PageDescriptor, pageDescriptorFromURL, pageDescriptorSchema, urlFromPageDescriptor } from './PageDescriptor'
 
@@ -342,27 +343,12 @@ export class Navigator {
         return useSyncExternalStore(this.subscribeToPageState, () => this.statPaths)
     }
 
-    setSettingsVector(newVector: string): void {
-        switch (this.pageState.current.descriptor.kind) {
-            case 'article':
-            case 'comparison':
-                this.pageState.current.descriptor.s = newVector
-                history.replaceState({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(this.pageState.current.descriptor))
-                break
-            default:
-                throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have a settings vector`)
+    unsafeUpdateCurrentDescriptor(newDescriptor: Partial<PageDescriptor> & { kind: PageDescriptor['kind'] }): void {
+        assert(this.pageState.current.descriptor.kind === newDescriptor.kind, 'heterogenous unsafe update')
+        for (const key of Object.keys(newDescriptor)) {
+            this.pageState.current.descriptor[key] = newDescriptor[key]
         }
-    }
-
-    setMapperSettings(newSettings: string): void {
-        switch (this.pageState.current.descriptor.kind) {
-            case 'mapper':
-                this.pageState.current.descriptor.settings = newSettings
-                history.replaceState({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(this.pageState.current.descriptor))
-                break
-            default:
-                throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have mapper settings`)
-        }
+        history.replaceState({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(this.pageState.current.descriptor))
     }
 
     useSubsequentLoading(): SubsequentLoadingState['kind'] {
