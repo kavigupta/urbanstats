@@ -7,8 +7,8 @@
  * and then any files not generated, we'll proxy the request to a CI proxy that has a copy of densitydb.
  */
 
-import compression from 'compression'
 import express from 'express'
+import https from 'https'
 import proxy from 'express-http-proxy'
 import { Octokit } from 'octokit'
 import { z } from 'zod'
@@ -35,20 +35,59 @@ export async function startProxy(): Promise<void> {
     // This is useful for debugging in case the proxy isn't working
     console.warn(`Proxy is using branch ${branch.name} (${branch.commit.sha})`)
 
+    const proxyPath = (req: express.Request) =>
+        `/gh/densitydb/densitydb.github.io@${branch.commit.sha}${req.path}`
+
     const app = express()
 
-    // simply do not compress in the proxy, since the files are already compressed and this seems to mess with the Range header.
+    // Do not compress in the proxy; files are already compressed and that can break Range responses.
     app.use((req, res, next) => {
         next(); return
     })
 
-    app.use(
-        express.static('test/density-db'),
-        proxy(`https://cdn.jsdelivr.net`, {
-            proxyReqPathResolver(req) {
-                // We must get by SHA, since if we used branch name jsdelvir would cache the result for 12 hours and we couldn't get new changes from the branch
-                return `/gh/densitydb/densitydb.github.io@${branch.commit.sha}${req.path}`
+    app.use(express.static('test/density-db'))
+
+    // Range requests: proxy with a raw pipe so the 206 body is byte-identical. express-http-proxy
+    // buffers when userResHeaderDecorator is set and can corrupt the body; even without the
+    // decorator we saw corruption, so use a minimal manual proxy for Range only.
+    app.use((req, res, next) => {
+        const range = req.headers.range
+        if (!range || typeof range !== 'string') {
+            return next()
+        }
+        const path = proxyPath(req)
+        const proxyReq = https.request(
+            {
+                hostname: 'cdn.jsdelivr.net',
+                path,
+                method: req.method,
+                headers: {
+                    ...req.headers,
+                    host: 'cdn.jsdelivr.net',
+                    connection: 'close',
+                },
             },
+            (proxyRes) => {
+                res.status(proxyRes.statusCode ?? 200)
+                const skipHeaders = new Set(['transfer-encoding', 'connection'])
+                for (const [name, value] of Object.entries(proxyRes.headers)) {
+                    if (value !== undefined && !skipHeaders.has(name.toLowerCase())) {
+                        res.setHeader(name, value)
+                    }
+                }
+                proxyRes.pipe(res)
+            },
+        )
+        proxyReq.on('error', (err) => {
+            next(err)
+        })
+        // Range is always GET; no body to send.
+        proxyReq.end()
+    })
+
+    app.use(
+        proxy('https://cdn.jsdelivr.net', {
+            proxyReqPathResolver: proxyPath,
             userResHeaderDecorator(headers, userReq) {
                 const fileExtension = (/\.(.+)$/.exec(userReq.path))?.[1]
                 const mimeType = fileExtension ? { html: 'text/html', js: 'text/javascript' }[fileExtension] : undefined
