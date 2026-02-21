@@ -40,17 +40,15 @@ def main():
         metavar="STEP",
         nargs="+",
         default=[],
+        choices=BUILD_STEPS,
         help=f"With --target scripts: steps to add. Valid: {steps_help}",
     )
 
     args = parser.parse_args()
 
-    # Set of enabled steps (full BUILD_STEPS for all, set() or --and for scripts)
     steps = {"all": set(BUILD_STEPS), "scripts": set()}[args.target]
     steps.update(_resolve_steps(args.and_steps))
-    invalid = steps - BUILD_STEPS
-    if invalid:
-        parser.error(f"Invalid step(s): {invalid}. Choose from: {steps_help}")
+    assert steps.issubset(BUILD_STEPS), f"Invalid steps: {steps - BUILD_STEPS}"
 
     build_urbanstats(args.site_folder, mode=args.mode, steps=steps)
 
