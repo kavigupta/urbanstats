@@ -1,3 +1,4 @@
+import argparse
 import itertools
 import os
 
@@ -36,6 +37,7 @@ def main(path):
 
 
 if __name__ == "__main__":
-    import fire
-
-    fire.Fire(main)
+    parser = argparse.ArgumentParser(description="Update retrostat data.")
+    parser.add_argument("path", help="Site folder path (e.g. site or react/test/density-db)")
+    args = parser.parse_args()
+    main(args.path)

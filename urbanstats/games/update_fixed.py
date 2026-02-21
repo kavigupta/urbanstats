@@ -1,3 +1,4 @@
+import argparse
 import ast
 import json
 import os
@@ -71,6 +72,21 @@ def copy_up_to(key, new_up_to, folder=None):
 
 
 if __name__ == "__main__":
-    import fire
-
-    fire.Fire(copy_up_to)
+    parser = argparse.ArgumentParser(description="Copy juxtastat/retrostat data up to a given week/day.")
+    parser.add_argument(
+        "key",
+        choices=("juxtastat", "retrostat"),
+        help="Which fixed data to update",
+    )
+    parser.add_argument(
+        "new_up_to",
+        type=int,
+        help="New upper bound (week for retrostat, day for juxtastat)",
+    )
+    parser.add_argument(
+        "--folder",
+        default=None,
+        help="Local site folder if remote fetch fails",
+    )
+    args = parser.parse_args()
+    copy_up_to(args.key, args.new_up_to, folder=args.folder)
