@@ -179,7 +179,6 @@ def build_react_site(site_folder, mode):
     link_scripts_folder(site_folder, mode)
 
 
-# Canonical build steps (set-based)
 BUILD_STEPS = frozenset({"shapes", "articles", "index", "ordering", "sitemap", "juxta"})
 
 
