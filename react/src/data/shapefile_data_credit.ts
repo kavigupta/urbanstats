@@ -422,7 +422,7 @@ const value: {names: string[], dataCredits: {text: string | null, linkText: stri
             {
                 "text": "The population circles were defined using the GHS-POP dataset, using an algorithm hand-coded for the purpose of this website",
                 "linkText": "Detailed maps and JSON files",
-                "link": "https://github.com/kavigupta/urbanstats/tree/master/outputs/population_circles"
+                "link": "https://github.com/kavigupta/urbanstats/tree/main/outputs/population_circles"
             }
         ]
     }
