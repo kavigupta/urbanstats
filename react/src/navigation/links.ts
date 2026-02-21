@@ -53,6 +53,14 @@ function findShardIndex(hash: string, index: string[]): number {
     return index[lo] <= hash ? lo : 0
 }
 
+/** Nested path for shard index: A/B (second-last and last hex digit). 256 -> 0/0. Must match Python shard_subfolder. */
+function shardPathPrefix(shardIdx: number): string {
+    const s = shardIdx.toString(16)
+    const a = s.length >= 2 ? s[s.length - 2] : '0'
+    const b = s[s.length - 1]
+    return `${a}/${b}`
+}
+
 export function shardedFolderName(longname: string): string {
     const sanitizedName = sanitize(longname)
     const [a, b] = shardBytes(sanitizedName)
@@ -67,13 +75,13 @@ export function shardedName(longname: string): string {
 export function shapeLink(longname: string): string {
     const hash = shardBytesFull(sanitize(longname))
     const shardIdx = findShardIndex(hash, shardIndexShapeArr)
-    return `/shape/shard_${shardIdx}.gz`
+    return `/shape/${shardPathPrefix(shardIdx)}/shard_${shardIdx}.gz`
 }
 
 export function dataLink(longname: string): string {
     const hash = shardBytesFull(sanitize(longname))
     const shardIdx = findShardIndex(hash, shardIndexDataArr)
-    return `/data/shard_${shardIdx}.gz`
+    return `/data/${shardPathPrefix(shardIdx)}/shard_${shardIdx}.gz`
 }
 
 export function symlinksLink(longname: string): string {

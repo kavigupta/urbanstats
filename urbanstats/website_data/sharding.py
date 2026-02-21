@@ -6,7 +6,9 @@ import tqdm.auto as tqdm
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 
-SHARD_SIZE_LIMIT_BYTES = 512 * 1024
+# Per-type shard size limits (bytes). Shape shards smaller for faster loads.
+SHARD_SIZE_LIMIT_SHAPE_BYTES = 8 * 1024   # 8K
+SHARD_SIZE_LIMIT_DATA_BYTES = 64 * 1024   # 64K
 
 # Size-based sharding: sort items by full 8-char hash, pack by byte limit as we go, write each shard when full.
 # Each shard: one gzipped proto (ConsolidatedArticles or ConsolidatedShapes). No per-item disk I/O.
@@ -55,6 +57,14 @@ def all_foldernames():
     return [f"{a0}{a1}/{b}" for a0 in hexes for a1 in hexes for b in hexes]
 
 
+def shard_subfolder(shard_idx):
+    """Nested path for shard index: A/B where A is second-last hex digit, B is last hex digit. 256 -> 0/0."""
+    s = format(shard_idx, "x")
+    a = s[-2] if len(s) >= 2 else "0"
+    b = s[-1]
+    return f"{a}/{b}"
+
+
 def build_shards_from_callback(folder, type_label, longnames, get_proto_fn):
     """
     Build size-based shards by requesting each proto from a callback. No full list of protos in memory.
@@ -78,8 +88,10 @@ def build_shards_from_callback(folder, type_label, longnames, get_proto_fn):
 
     if type_label == "data":
         consolidated_class = data_files_pb2.ConsolidatedArticles
+        size_limit = SHARD_SIZE_LIMIT_DATA_BYTES
     else:
         consolidated_class = data_files_pb2.ConsolidatedShapes
+        size_limit = SHARD_SIZE_LIMIT_SHAPE_BYTES
 
     os.makedirs(folder, exist_ok=True)
     index_hashes = []
@@ -94,15 +106,17 @@ def build_shards_from_callback(folder, type_label, longnames, get_proto_fn):
             proto = proto[0]
         size = len(proto.SerializeToString())
 
-        if current_size + size > SHARD_SIZE_LIMIT_BYTES and current_longnames:
-            # Write current shard
+        if current_size + size > size_limit and current_longnames:
+            # Write current shard under nested A/B/ (hex bytes of index)
             consolidated = consolidated_class()
             consolidated.longnames.extend(current_longnames)
             if type_label == "data":
                 consolidated.articles.extend(current_protos)
             else:
                 consolidated.shapes.extend(current_protos)
-            write_gzip(consolidated, os.path.join(folder, f"shard_{shard_idx}.gz"))
+            subfolder = os.path.join(folder, shard_subfolder(shard_idx))
+            os.makedirs(subfolder, exist_ok=True)
+            write_gzip(consolidated, os.path.join(subfolder, f"shard_{shard_idx}.gz"))
             index_hashes.append(shard_bytes_full(sanitize(current_longnames[0])))
             shard_idx += 1
             current_longnames = []
@@ -120,7 +134,9 @@ def build_shards_from_callback(folder, type_label, longnames, get_proto_fn):
             consolidated.articles.extend(current_protos)
         else:
             consolidated.shapes.extend(current_protos)
-        write_gzip(consolidated, os.path.join(folder, f"shard_{shard_idx}.gz"))
+        subfolder = os.path.join(folder, shard_subfolder(shard_idx))
+        os.makedirs(subfolder, exist_ok=True)
+        write_gzip(consolidated, os.path.join(subfolder, f"shard_{shard_idx}.gz"))
         index_hashes.append(shard_bytes_full(sanitize(current_longnames[0])))
 
     with open(os.path.join(folder, "shard_index.json"), "w") as f:
