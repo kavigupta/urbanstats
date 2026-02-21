@@ -7,8 +7,8 @@ import { Universe } from '../universe'
 import { PageDescriptor } from './PageDescriptor'
 
 // Consolidated-shard config: shards below size limit are stored as one file (e.g. ab/c.gz)
-const unshardedShapes = new Set(unshardShape as string[])
-const unshardedData = new Set(unshardData as string[])
+const unshardedShapes = new Set(unshardShape)
+const unshardedData = new Set(unshardData)
 
 export function getIsUnsharded(shardFolder: string, type: 'shape' | 'data'): boolean {
     return type === 'shape' ? unshardedShapes.has(shardFolder) : unshardedData.has(shardFolder)

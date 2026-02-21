@@ -73,6 +73,9 @@ export default env => ({
             '.local'
         ],
     },
+    watchOptions: {
+        ignored: env.directory
+    },
     performance: {
         hints: isProduction ? 'error' : false,
         maxAssetSize: 1_200_000,
