@@ -37,13 +37,7 @@ export async function startProxy(): Promise<void> {
 
     const app = express()
 
-    // Skip compression for binary/protobuf responses (.blob, .gz, .dir) so Range response bodies are not modified
-    const shouldCompress: compression.CompressionFilter = (req, res) => {
-        const path = req.path
-        if (/\.(blob|gz|dir|symlinks\.gz)$/i.test(path)) return false
-        return compression.filter(req, res)
-    }
-    app.use(compression({ filter: shouldCompress, enforceEncoding: 'gzip' }))
+    app.use(compression({ enforceEncoding: 'gzip' }))
 
     app.use(
         express.static('test/density-db'),
