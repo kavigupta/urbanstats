@@ -1,23 +1,35 @@
 import json
 import os
 
+import tqdm.auto as tqdm
+
+from urbanstats.protobuf import data_files_pb2
+from urbanstats.protobuf.utils import write_gzip
+
 SHARD_SIZE_LIMIT_BYTES = 512 * 1024
 
-# Consolidated shard format: .dir (JSON index: longname -> [offset, size]) + .blob (concatenated gzipped items)
-# Client fetches .dir then Range request on .blob for the one item.
+# Size-based sharding: sort items by full 8-char hash, pack by byte limit as we go, write each shard when full.
+# Each shard: one gzipped proto (ConsolidatedArticles or ConsolidatedShapes). No per-item disk I/O.
 
 
-def shard_bytes(longname):
-    """translation of links.ts::shardBytes"""
+def shard_bytes_full(longname):
+    """Full 8-char hex hash for ordering; must match links.ts shardBytesFull."""
     bytes_ = longname.encode("utf-8")
     hash_ = 0
     for b in bytes_:
         hash_ = (hash_ * 31 + b) & 0xFFFFFFFF
     string = ""
-    for _ in range(4):
+    for _ in range(8):
         string += hex(hash_ & 0xF)[2:]
         hash_ >>= 4
-    return string[0:2], string[2:3]
+    assert not hash_
+    return string
+
+
+def shard_bytes(longname):
+    """First 2 + 1 hex chars; used only for symlinks folder names (create_foldername)."""
+    full = shard_bytes_full(longname)
+    return full[0:2], full[2:3]
 
 
 def sanitize(x):
@@ -25,83 +37,106 @@ def sanitize(x):
 
 
 def create_foldername(x):
+    """Used for symlinks: one .symlinks.gz per (2+1) hash folder."""
     x = sanitize(x)
     a, b = shard_bytes(x)
     return f"{a}/{b}"
 
 
 def create_filename(x, ext):
+    """Path for writing a single .gz during build (before size-based sharding)."""
     x = sanitize(x)
     return f"{create_foldername(x)}/{x}." + ext
 
 
 def all_foldernames():
+    """All (2+1) hash folder names; used for symlinks."""
     hexes = "0123456789abcdef"
     return [f"{a0}{a1}/{b}" for a0 in hexes for a1 in hexes for b in hexes]
 
 
-def consolidate_shards(folder):
+def build_shards_from_callback(folder, type_label, longnames, get_proto_fn):
     """
-    For each shard folder under folder whose total size is below the limit,
-    write a .dir file (JSON: longname -> [offset, size]) and a .blob file
-    (concatenated gzipped proto bytes). Client fetches .dir then Range on .blob.
-    Remove per-item .gz files. Symlinks stay separate.
+    Build size-based shards by requesting each proto from a callback. No full list of protos in memory.
 
-    Returns list of shard folder strings that were consolidated.
+    longnames: list of longname strings.
+    get_proto_fn: callable(longname) -> Article or Feature. Called once per longname in sorted order.
+
+    Sort longnames by full 8-char hash, then for each longname call get_proto_fn(longname), get size,
+    pack into current shard; when size would exceed limit, write current shard and start next.
+    Write shard_0.gz, shard_1.gz, ... and shard_index.json.
+
+    type_label: "shape" or "data".
+
+    Returns list of hash strings that start each shard (for frontend index).
     """
-    out = []
-    for shard_folder in all_foldernames():
-        shard_path = os.path.join(folder, shard_folder)
-        if not os.path.isdir(shard_path):
-            continue
-        total_size = 0
-        gz_files = []
-        for name in os.listdir(shard_path):
-            if not name.endswith(".gz"):
-                continue
-            fp = os.path.join(shard_path, name)
-            total_size += os.path.getsize(fp)
-            gz_files.append((name[:-3], fp))
-        if total_size == 0:
-            continue
-        if total_size >= SHARD_SIZE_LIMIT_BYTES:
-            continue
-        base_path = os.path.join(folder, shard_folder)
-        index = {}
-        offset = 0
-        with open(f"{base_path}.blob", "wb") as blob_f:
-            for longname, fp in gz_files:
-                with open(fp, "rb") as f:
-                    data = f.read()
-                blob_f.write(data)
-                index[longname] = [offset, len(data)]
-                offset += len(data)
-        with open(f"{base_path}.dir", "w") as dir_f:
-            json.dump(index, dir_f, separators=(",", ":"))
-        for _, fp in gz_files:
-            os.remove(fp)
-        try:
-            os.rmdir(shard_path)
-        except OSError:
-            pass
-        out.append(shard_folder)
-    return out
+    if not longnames:
+        return []
+
+    # Sort by full hash (bytes order)
+    longnames = sorted(longnames, key=lambda ln: shard_bytes_full(sanitize(ln)))
+
+    if type_label == "data":
+        consolidated_class = data_files_pb2.ConsolidatedArticles
+    else:
+        consolidated_class = data_files_pb2.ConsolidatedShapes
+
+    os.makedirs(folder, exist_ok=True)
+    index_hashes = []
+    shard_idx = 0
+    current_longnames = []
+    current_protos = []
+    current_size = 0
+
+    for longname in tqdm.tqdm(longnames, desc=f"building {type_label} shards", unit="item"):
+        proto = get_proto_fn(longname)
+        if isinstance(proto, (list, tuple)):
+            proto = proto[0]
+        size = len(proto.SerializeToString())
+
+        if current_size + size > SHARD_SIZE_LIMIT_BYTES and current_longnames:
+            # Write current shard
+            consolidated = consolidated_class()
+            consolidated.longnames.extend(current_longnames)
+            if type_label == "data":
+                consolidated.articles.extend(current_protos)
+            else:
+                consolidated.shapes.extend(current_protos)
+            write_gzip(consolidated, os.path.join(folder, f"shard_{shard_idx}.gz"))
+            index_hashes.append(shard_bytes_full(sanitize(current_longnames[0])))
+            shard_idx += 1
+            current_longnames = []
+            current_protos = []
+            current_size = 0
+
+        current_longnames.append(longname)
+        current_protos.append(proto)
+        current_size += size
+
+    if current_longnames:
+        consolidated = consolidated_class()
+        consolidated.longnames.extend(current_longnames)
+        if type_label == "data":
+            consolidated.articles.extend(current_protos)
+        else:
+            consolidated.shapes.extend(current_protos)
+        write_gzip(consolidated, os.path.join(folder, f"shard_{shard_idx}.gz"))
+        index_hashes.append(shard_bytes_full(sanitize(current_longnames[0])))
+
+    with open(os.path.join(folder, "shard_index.json"), "w") as f:
+        json.dump(index_hashes, f, separators=(",", ":"))
+
+    return index_hashes
 
 
-def output_unshard_config(data_dir, shard_folders, type_label):
-    """Write consolidated shard list for one type to react/src/data.
+def output_shard_index(data_dir, index_hashes, type_label):
+    """Write shard index (array of starting hashes) for one type to react/src/data.
 
-    Called right after producing geometry or data. The frontend imports
-    these JSON files from react/src/data.
-
-    Args:
-        data_dir: Path to react/src/data (e.g. "react/src/data")
-        shard_folders: List of shard folder strings (e.g. ["0a/1", "2b/3"])
-        type_label: "shape" or "data" (determines output filename)
+    The frontend loads this and binary-searches to find which shard contains a longname.
     """
     if type_label not in ("shape", "data"):
         raise ValueError("type_label must be 'shape' or 'data'")
     os.makedirs(data_dir, exist_ok=True)
-    path = os.path.join(data_dir, f"unshard_{type_label}.json")
+    path = os.path.join(data_dir, f"shard_index_{type_label}.json")
     with open(path, "w") as f:
-        json.dump(sorted(shard_folders), f, indent=0)
+        json.dump(index_hashes, f, separators=(",", ":"))

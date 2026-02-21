@@ -4,7 +4,7 @@ import data_links from './data/data_links'
 import order_links from './data/order_links'
 import statistic_path_list from './data/statistic_path_list'
 import universes_ordered from './data/universes_ordered'
-import { indexLink, orderingDataLink, orderingLink, sanitize } from './navigation/links'
+import { indexLink, orderingDataLink, orderingLink } from './navigation/links'
 import { debugPerformance } from './search'
 import { Universe } from './universe'
 import { assert } from './utils/defensive'
@@ -41,7 +41,9 @@ export async function loadProtobuf(filePath: string, name: 'ArticleOrderingList'
 export async function loadProtobuf(filePath: string, name: 'OrderLists'): Promise<OrderLists>
 export async function loadProtobuf(filePath: string, name: 'DataLists'): Promise<DataLists>
 export async function loadProtobuf(filePath: string, name: 'ConsolidatedShapes'): Promise<ConsolidatedShapes>
+export async function loadProtobuf(filePath: string, name: 'ConsolidatedShapes', errorOnMissing: boolean): Promise<ConsolidatedShapes | undefined>
 export async function loadProtobuf(filePath: string, name: 'ConsolidatedArticles'): Promise<ConsolidatedArticles>
+export async function loadProtobuf(filePath: string, name: 'ConsolidatedArticles', errorOnMissing: boolean): Promise<ConsolidatedArticles | undefined>
 export async function loadProtobuf(filePath: string, name: 'SearchIndex'): Promise<SearchIndex>
 export async function loadProtobuf(filePath: string, name: 'QuizQuestionTronche'): Promise<QuizQuestionTronche>
 export async function loadProtobuf(filePath: string, name: 'QuizFullData'): Promise<QuizFullData>
@@ -128,47 +130,41 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     }
 }
 
-// Consolidated shard: .dir (JSON index) + .blob (concatenated gzip bytes). Cache dir by blob URL.
-const dirCache = new Map<string, Record<string, [number, number]>>()
+// Consolidated shard: one gzipped proto (ConsolidatedArticles or ConsolidatedShapes). Cache decoded shard by URL.
+const shardCache = new Map<string, ConsolidatedArticles | ConsolidatedShapes>()
 
-async function getDirForBlob(blobUrl: string): Promise<Record<string, [number, number]>> {
-    const cached = dirCache.get(blobUrl)
-    if (cached) return cached
-    const dirUrl = blobUrl.replaceAll(/\.blob$/g, '.dir')
-    const res = await fetch(dirUrl)
-    if (!res.ok) return {}
-    const index = (await res.json()) as Record<string, [number, number]>
-    dirCache.set(blobUrl, index)
-    return index
+async function getConsolidatedArticlesShard(shardUrl: string): Promise<ConsolidatedArticles | undefined> {
+    const cached = shardCache.get(shardUrl)
+    if (cached && 'articles' in cached) return cached
+    const shard = await loadProtobuf(shardUrl, 'ConsolidatedArticles', false)
+    if (shard === undefined) return undefined
+    shardCache.set(shardUrl, shard)
+    return shard
 }
 
-/** Load one item from a consolidated shard (fetch .dir, then Range on .blob, gunzip, decode). */
-async function loadFromDirBlob(blobUrl: string, longname: string, decodeProto: (arr: Uint8Array) => Feature | Article): Promise<Feature | Article | undefined> {
-    const key = sanitize(longname)
-    const index = await getDirForBlob(blobUrl)
-    if (!(key in index)) return undefined
-    console.log('key', key, 'index', index)
-    const entry = index[key]
-    const [offset, size] = entry
-    const rangeHeader = `bytes=${offset}-${offset + size - 1}`
-    console.log('rangeHeader', rangeHeader)
-    const res = await fetch(blobUrl, { headers: { Range: rangeHeader } })
-    if (!res.ok) return undefined
-    const gzipBytes = new Uint8Array(await res.arrayBuffer())
-    console.log('gzipBytes', gzipBytes.length)
-    assert(gzipBytes.length === size, `Expected to fetch ${size} bytes for ${longname} from ${blobUrl}, but got ${gzipBytes.length} bytes`)
-    const decompressed = gunzipSync(Buffer.from(gzipBytes))
-    return decodeProto(new Uint8Array(decompressed))
+async function getConsolidatedShapesShard(shardUrl: string): Promise<ConsolidatedShapes | undefined> {
+    const cached = shardCache.get(shardUrl)
+    if (cached && 'shapes' in cached) return cached
+    const shard = await loadProtobuf(shardUrl, 'ConsolidatedShapes', false)
+    if (shard === undefined) return undefined
+    shardCache.set(shardUrl, shard)
+    return shard
 }
 
-/** Load one article from a consolidated (.dir + .blob) shard. */
-export async function loadArticleFromConsolidatedShard(blobUrl: string, longname: string): Promise<Article | undefined> {
-    return loadFromDirBlob(blobUrl, longname, arr => Article.decode(arr)) as Promise<Article | undefined>
+/** Load one article from a consolidated shard (fetch whole .gz via loadProtobuf, find by longname). */
+export async function loadArticleFromConsolidatedShard(shardUrl: string, longname: string): Promise<Article | undefined> {
+    const shard = await getConsolidatedArticlesShard(shardUrl)
+    if (!shard) return undefined
+    const idx = shard.longnames.indexOf(longname)
+    return idx >= 0 ? (shard.articles[idx] as Article) : undefined
 }
 
-/** Load one shape from a consolidated (.dir + .blob) shard. */
-export async function loadFeatureFromConsolidatedShard(blobUrl: string, longname: string): Promise<Feature | undefined> {
-    return loadFromDirBlob(blobUrl, longname, arr => Feature.decode(arr)) as Promise<Feature | undefined>
+/** Load one shape from a consolidated shard (fetch whole .gz via loadProtobuf, find by longname). */
+export async function loadFeatureFromConsolidatedShard(shardUrl: string, longname: string): Promise<Feature | undefined> {
+    const shard = await getConsolidatedShapesShard(shardUrl)
+    if (!shard) return undefined
+    const idx = shard.longnames.indexOf(longname)
+    return idx >= 0 ? (shard.shapes[idx] as Feature) : undefined
 }
 
 function pullKey(arr: number[], key: string): number {

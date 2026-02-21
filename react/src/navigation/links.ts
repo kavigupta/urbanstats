@@ -1,39 +1,56 @@
 import type { StatisticDescriptor } from '../components/statistic-panel'
+import shardIndexData from '../data/shard_index_data.json'
+import shardIndexShape from '../data/shard_index_shape.json'
 import type_ordering_idx from '../data/type_ordering_idx'
-import unshardData from '../data/unshard_data.json'
-import unshardShape from '../data/unshard_shape.json'
-import { Universe } from '../universe'
+import type { Universe } from '../universe'
 
-import { PageDescriptor } from './PageDescriptor'
+import type { PageDescriptor } from './PageDescriptor'
 
-// Consolidated-shard config: shards below size limit are stored as one file (e.g. ab/c.gz)
-const unshardedShapes = new Set(unshardShape)
-const unshardedData = new Set(unshardData)
-
-export function getIsUnsharded(shardFolder: string, type: 'shape' | 'data'): boolean {
-    return type === 'shape' ? unshardedShapes.has(shardFolder) : unshardedData.has(shardFolder)
+// Size-based sharding: index is sorted array of hash strings that start each shard.
+function asStringArray(x: unknown): string[] {
+    return Array.isArray(x) && x.every((e): e is string => typeof e === 'string') ? x : []
 }
+const shardIndexShapeArr: string[] = asStringArray(shardIndexShape)
+const shardIndexDataArr: string[] = asStringArray(shardIndexData)
 
 export const typesInOrder = Object.fromEntries(Object.entries(type_ordering_idx).map(([k, v]) => [v, k]))
 
-function shardBytes(longname: string): [string, string] {
-    // as bytes, in utf-8
+/** Full 8-char hex hash for ordering; must match Python shard_bytes_full. */
+function shardBytesFull(longname: string): string {
     const bytes = new TextEncoder().encode(longname)
-    const hash = new Uint32Array([0])
+    let hash = 0
     for (const byte of bytes) {
-        hash[0] = (hash[0] * 31 + byte) & 0xffffffff
+        hash = (hash * 31 + byte) & 0xffffffff
     }
-    // last 4 hex digits
-    let string = ''
-    for (let i = 0; i < 4; i++) {
-        string += (hash[0] & 0xf).toString(16)
-        hash[0] = hash[0] >> 4
+    let s = ''
+    for (let i = 0; i < 8; i++) {
+        s += (hash & 0xf).toString(16)
+        hash = hash >>> 4
     }
-    // get first two and last two
-    return [
-        string.slice(0, 2),
-        string.slice(2, 3),
-    ]
+    return s
+}
+
+/** First 2 + 1 hex chars; used only for symlinks folder names. */
+function shardBytes(longname: string): [string, string] {
+    const full = shardBytesFull(longname)
+    return [full.slice(0, 2), full.slice(2, 3)]
+}
+
+/** Binary search: largest i such that index[i] <= hash. Index is sorted. */
+function findShardIndex(hash: string, index: string[]): number {
+    if (index.length === 0) return 0
+    let lo = 0
+    let hi = index.length - 1
+    while (lo < hi) {
+        const mid = (lo + hi + 1) >> 1
+        if (index[mid] <= hash) {
+            lo = mid
+        }
+        else {
+            hi = mid - 1
+        }
+    }
+    return index[lo] <= hash ? lo : 0
 }
 
 export function shardedFolderName(longname: string): string {
@@ -48,21 +65,15 @@ export function shardedName(longname: string): string {
 }
 
 export function shapeLink(longname: string): string {
-    const shardFolder = shardedFolderName(longname)
-    if (getIsUnsharded(shardFolder, 'shape')) {
-        // Consolidated: .dir + .blob (fetch dir, then Range on blob)
-        return `/shape/${encodeURIComponent(shardFolder)}.blob`
-    }
-    return `/shape/${encodeURIComponent(shardedName(longname))}.gz`
+    const hash = shardBytesFull(sanitize(longname))
+    const shardIdx = findShardIndex(hash, shardIndexShapeArr)
+    return `/shape/shard_${shardIdx}.gz`
 }
 
 export function dataLink(longname: string): string {
-    const shardFolder = shardedFolderName(longname)
-    if (getIsUnsharded(shardFolder, 'data')) {
-        // Consolidated: .dir + .blob (fetch dir, then Range on blob)
-        return `/data/${encodeURIComponent(shardFolder)}.blob`
-    }
-    return `/data/${encodeURIComponent(shardedName(longname))}.gz`
+    const hash = shardBytesFull(sanitize(longname))
+    const shardIdx = findShardIndex(hash, shardIndexDataArr)
+    return `/data/shard_${shardIdx}.gz`
 }
 
 export function symlinksLink(longname: string): string {
@@ -81,16 +92,12 @@ export function orderingDataLink(type: string, idx: number): string {
     return `/order/${encodeURIComponent(sanitize(type, false))}_${idx}_data.gz`
 }
 
-export function consolidatedShapeLink(typ: string): string {
-    return `/consolidated/shapes__${encodeURIComponent(sanitize(typ))}.gz`
-}
-
-export function consolidatedStatsLink(typ: string): string {
-    return `/consolidated/stats__${encodeURIComponent(sanitize(typ))}.gz`
-}
-
 export function searchIconLink(typeIdx: number): string {
     return `/icons/search_icons/${typesInOrder[typeIdx]}.png`
+}
+
+export function consolidatedShapeLink(typ: string): string {
+    return `/consolidated/shapes__${encodeURIComponent(sanitize(typ))}.gz`
 }
 
 export function centroidsPath(universe: string, typ: string): string {
@@ -109,7 +116,6 @@ export function statisticDescriptor(props: {
     sortColumn: number
 }): PageDescriptor & { kind: 'statistic' } {
     let start = props.start
-    // make start % amount == 0
     if (props.amount !== 'All') {
         start = start - 1
         start = start - (start % props.amount)

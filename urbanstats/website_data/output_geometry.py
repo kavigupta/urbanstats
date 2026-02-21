@@ -1,4 +1,3 @@
-import gzip
 import shapely
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
@@ -6,40 +5,41 @@ from permacache import permacache, stable_hash
 from urbanstats.geometry.classify_coordinate_zone import classify_coordinate_zone
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.protobuf import data_files_pb2
-from urbanstats.protobuf.utils import write_gzip
-from urbanstats.website_data.sharding import consolidate_shards, create_filename
+from urbanstats.website_data.sharding import build_shards_from_callback
 
 
-def produce_shape_gzip(folder, r):
-    fname = create_filename(r.longname, "gz")
-    path = f"{folder}/{fname}"
-    produce_shape_gzip_cached(r, path)
-
-
-@permacache(
-    "urbanstats/output_geometry/produce_geometry_json_cached_3",
-    key_function=dict(
-        r=lambda row: stable_hash(
-            [row[x] for x in row.index if x != "geometry"]
-            + [shapely.geometry.mapping(row.geometry)]
-        )
-    ),
-    out_file=["path"],
-)
-def produce_shape_gzip_cached(r, path):
-    res = convert_to_protobuf(r.geometry)
-    write_gzip(res, path)
+# @permacache(
+#     "urbanstats/output_geometry/produce_geometry_json_cached_4",
+#     key_function=dict(
+#         r=lambda row: stable_hash(
+#             [row[x] for x in row.index if x != "geometry"]
+#             + [shapely.geometry.mapping(row.geometry)]
+#         )
+#     ),
+# )
+def produce_shape_gzip_cached(r):
+    """Return Feature proto for row; no disk write."""
+    return convert_to_protobuf(r.geometry)
 
 
 def produce_all_geometry_json(path, valid_names):
+    longnames = []
+    longname_to_loc = {}  # longname -> (shapefile_key, iloc_idx)
     for k, sf_k in shapefiles.items():
         print(k)
         table = sf_k.load_file()
         for i in tqdm.trange(table.shape[0]):
-            if table.iloc[i].longname in valid_names:
-                produce_shape_gzip(path, table.iloc[i])
+            row = table.iloc[i]
+            if row.longname in valid_names:
+                longnames.append(row.longname)
+                longname_to_loc[row.longname] = (k, i)
 
-    return consolidate_shards(path)
+    def get_feature(longname):
+        k, i = longname_to_loc[longname]
+        table = shapefiles[k].load_file()
+        return produce_shape_gzip_cached(table.iloc[i])
+
+    return build_shards_from_callback(path, "shape", longnames, get_feature)
 
 
 def to_protobuf_polygon(f_python):
