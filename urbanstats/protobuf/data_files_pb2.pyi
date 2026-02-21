@@ -177,6 +177,18 @@ class Article(_message.Message):
         metadata: _Optional[_Iterable[_Union[Metadata, _Mapping]]] = ...,
     ) -> None: ...
 
+class ConsolidatedArticles(_message.Message):
+    __slots__ = ("longnames", "articles")
+    LONGNAMES_FIELD_NUMBER: _ClassVar[int]
+    ARTICLES_FIELD_NUMBER: _ClassVar[int]
+    longnames: _containers.RepeatedScalarFieldContainer[str]
+    articles: _containers.RepeatedCompositeFieldContainer[Article]
+    def __init__(
+        self,
+        longnames: _Optional[_Iterable[str]] = ...,
+        articles: _Optional[_Iterable[_Union[Article, _Mapping]]] = ...,
+    ) -> None: ...
+
 class Coordinate(_message.Message):
     __slots__ = ("lon", "lat")
     LON_FIELD_NUMBER: _ClassVar[int]

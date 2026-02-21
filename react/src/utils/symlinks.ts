@@ -1,4 +1,8 @@
-import { loadProtobuf } from '../load_json'
+import {
+    loadArticleFromConsolidatedShard,
+    loadFeatureFromConsolidatedShard,
+    loadProtobuf,
+} from '../load_json'
 import { dataLink, shapeLink, symlinksLink } from '../navigation/links'
 
 import { Article, Feature } from './protos'
@@ -24,11 +28,13 @@ async function loadProtobufFromPossibleSymlink<T>(longname: string, doLoad: (lin
 }
 
 export async function loadArticleFromPossibleSymlink(longname: string): Promise<Article> {
-    return loadProtobufFromPossibleSymlink(longname, link => (loadProtobuf(dataLink(link), 'Article', false)))
+    return loadProtobufFromPossibleSymlink(longname, link =>
+        loadArticleFromConsolidatedShard(dataLink(link), link))
 }
 
 export async function loadFeatureFromPossibleSymlink(longname: string): Promise<Feature> {
-    return loadProtobufFromPossibleSymlink(longname, link => (loadProtobuf(shapeLink(link), 'Feature', false)))
+    return loadProtobufFromPossibleSymlink(longname, link =>
+        loadFeatureFromConsolidatedShard(shapeLink(link), link))
 }
 
 export function loadArticlesFromPossibleSymlink(longnames: string[]): Promise<Article[]> {

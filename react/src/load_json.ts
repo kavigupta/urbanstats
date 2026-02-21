@@ -9,7 +9,7 @@ import { debugPerformance } from './search'
 import { Universe } from './universe'
 import { assert } from './utils/defensive'
 import {
-    Article, ConsolidatedShapes, CountsByArticleUniverseAndType, DataLists,
+    Article, ConsolidatedArticles, ConsolidatedShapes, CountsByArticleUniverseAndType, DataLists,
     Feature, IOrderList, OrderList,
     OrderLists,
     QuizFullData,
@@ -41,6 +41,9 @@ export async function loadProtobuf(filePath: string, name: 'ArticleOrderingList'
 export async function loadProtobuf(filePath: string, name: 'OrderLists'): Promise<OrderLists>
 export async function loadProtobuf(filePath: string, name: 'DataLists'): Promise<DataLists>
 export async function loadProtobuf(filePath: string, name: 'ConsolidatedShapes'): Promise<ConsolidatedShapes>
+export async function loadProtobuf(filePath: string, name: 'ConsolidatedShapes', errorOnMissing: boolean): Promise<ConsolidatedShapes | undefined>
+export async function loadProtobuf(filePath: string, name: 'ConsolidatedArticles'): Promise<ConsolidatedArticles>
+export async function loadProtobuf(filePath: string, name: 'ConsolidatedArticles', errorOnMissing: boolean): Promise<ConsolidatedArticles | undefined>
 export async function loadProtobuf(filePath: string, name: 'SearchIndex'): Promise<SearchIndex>
 export async function loadProtobuf(filePath: string, name: 'QuizQuestionTronche'): Promise<QuizQuestionTronche>
 export async function loadProtobuf(filePath: string, name: 'QuizFullData'): Promise<QuizFullData>
@@ -49,7 +52,7 @@ export async function loadProtobuf(filePath: string, name: 'Symlinks'): Promise<
 export async function loadProtobuf(filePath: string, name: 'PointSeries'): Promise<PointSeries>
 export async function loadProtobuf(filePath: string, name: 'ArticleUniverseList'): Promise<ArticleUniverseList>
 export async function loadProtobuf(filePath: string, name: 'DefaultUniverseTable'): Promise<DefaultUniverseTable>
-export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | ArticleUniverseList | DefaultUniverseTable | undefined> {
+export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedArticles | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | ArticleUniverseList | DefaultUniverseTable | undefined> {
     let perfCheckpoint = performance.now()
 
     const response = await fetch(filePath)
@@ -93,6 +96,9 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     else if (name === 'ConsolidatedShapes') {
         return ConsolidatedShapes.decode(arr)
     }
+    else if (name === 'ConsolidatedArticles') {
+        return ConsolidatedArticles.decode(arr)
+    }
     else if (name === 'SearchIndex') {
         const result = SearchIndex.decode(arr)
         debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to decode search index`)
@@ -122,6 +128,43 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     else {
         throw new Error('protobuf type not recognized (see load_json.ts)')
     }
+}
+
+// Consolidated shard: one gzipped proto (ConsolidatedArticles or ConsolidatedShapes). Cache decoded shard by URL.
+const shardCache = new Map<string, ConsolidatedArticles | ConsolidatedShapes>()
+
+async function getConsolidatedArticlesShard(shardUrl: string): Promise<ConsolidatedArticles | undefined> {
+    const cached = shardCache.get(shardUrl)
+    if (cached && 'articles' in cached) return cached
+    const shard = await loadProtobuf(shardUrl, 'ConsolidatedArticles', false)
+    if (shard === undefined) return undefined
+    shardCache.set(shardUrl, shard)
+    return shard
+}
+
+async function getConsolidatedShapesShard(shardUrl: string): Promise<ConsolidatedShapes | undefined> {
+    const cached = shardCache.get(shardUrl)
+    if (cached && 'shapes' in cached) return cached
+    const shard = await loadProtobuf(shardUrl, 'ConsolidatedShapes', false)
+    if (shard === undefined) return undefined
+    shardCache.set(shardUrl, shard)
+    return shard
+}
+
+/** Load one article from a consolidated shard (fetch whole .gz via loadProtobuf, find by longname). */
+export async function loadArticleFromConsolidatedShard(shardUrl: string, longname: string): Promise<Article | undefined> {
+    const shard = await getConsolidatedArticlesShard(shardUrl)
+    if (!shard) return undefined
+    const idx = shard.longnames.indexOf(longname)
+    return idx >= 0 ? (shard.articles[idx] as Article) : undefined
+}
+
+/** Load one shape from a consolidated shard (fetch whole .gz via loadProtobuf, find by longname). */
+export async function loadFeatureFromConsolidatedShard(shardUrl: string, longname: string): Promise<Feature | undefined> {
+    const shard = await getConsolidatedShapesShard(shardUrl)
+    if (!shard) return undefined
+    const idx = shard.longnames.indexOf(longname)
+    return idx >= 0 ? (shard.shapes[idx] as Feature) : undefined
 }
 
 function pullKey(arr: number[], key: string): number {

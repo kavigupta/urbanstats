@@ -1,8 +1,8 @@
 import itertools
+import os
 from functools import lru_cache
 
 import numpy as np
-import tqdm.auto as tqdm
 
 from urbanstats.geometry.relationship import full_relationships, ordering_idx
 from urbanstats.metadata import metadata_types
@@ -15,7 +15,7 @@ from urbanstats.universe.universe_constants import ZERO_POPULATION_UNIVERSES
 from urbanstats.universe.universe_list import all_universes
 from urbanstats.website_data.sharding import (
     all_foldernames,
-    create_filename,
+    build_shards_from_callback,
     create_foldername,
 )
 
@@ -121,9 +121,7 @@ def create_article_gzip(
             # vulture: ignore -- not actually creating a field. this is from protobuf
             related_button.row_type = long_to_type[x]
 
-    name = create_filename(row.longname, "gz")
-    write_gzip(data, f"{folder}/{name}")
-    return name
+    return data
 
 
 def create_symlink_gzips(site_folder, symlinks):
@@ -167,9 +165,11 @@ def create_article_gzips(site_folder, full, ordering):
         ]
     )
 
-    for i in tqdm.trange(full.shape[0], desc="creating pages"):
-        row = full.iloc[i]
-        create_article_gzip(
+    longnames = full.longname.tolist()
+
+    def get_article(longname):
+        row = full.iloc[long_to_idx[longname]]
+        return create_article_gzip(
             f"{site_folder}/data",
             row,
             relationships=relationships,
@@ -180,6 +180,8 @@ def create_article_gzips(site_folder, full, ordering):
             flat_ords=flat_ords,
             counts_overall=counts_overall,
         )
+
+    return build_shards_from_callback(f"{site_folder}/data", "data", longnames, get_article)
 
 
 @lru_cache(maxsize=None)
