@@ -179,38 +179,16 @@ def build_react_site(site_folder, mode):
     link_scripts_folder(site_folder, mode)
 
 
-# pylint: disable-next=too-many-branches,too-many-arguments,too-many-statements
-def build_urbanstats(
-    site_folder,
-    *,
-    no_geo=False,
-    no_data=False,
-    no_juxta=False,
-    no_data_jsons=False,
-    no_index=False,
-    no_sitemap=False,
-    no_ordering=False,
-    mode=None,
-):
-    if not mode:
-        print("Must pass --mode=dev,prod,ci")
-        return
+# Canonical build steps (set-based)
+BUILD_STEPS = frozenset({"shapes", "articles", "index", "ordering", "sitemap", "juxta"})
+
+
+# pylint: disable-next=too-many-branches,too-many-statements
+def build_urbanstats(site_folder, *, steps, mode):
 
     check_proto_hash()
-    if not no_geo:
-        print("Producing geometry jsons")
-    if not no_data_jsons and not no_data:
-        print("Producing data for each article")
-    if not no_index and not no_data:
-        print("Producing index")
-    if not no_ordering and not no_data:
-        print("Producing ordering")
-    if not no_sitemap and not no_data:
-        print("Producing sitemap")
-    if not no_data:
-        print("Producing summary data")
-    if not no_juxta:
-        print("Producing juxta quizzes")
+    print("Steps to run:", *steps)
+
     for sub in [
         "index",
         "r",
@@ -228,39 +206,35 @@ def build_urbanstats(
         except FileExistsError:
             pass
 
-    if not no_geo:
+    if "shapes" in steps:
         produce_all_geometry_json(
             f"{site_folder}/shape", set(shapefile_without_ordinals().longname)
         )
 
-    if not no_data:
-        if not no_data_jsons:
-            create_article_gzips(
-                site_folder, shapefile_without_ordinals(), all_ordinals()
-            )
-            create_symlink_gzips(site_folder, compute_symlinks())
+    if "articles" in steps:
+        create_article_gzips(
+            site_folder, shapefile_without_ordinals(), all_ordinals()
+        )
+        create_symlink_gzips(site_folder, compute_symlinks())
 
-        if not no_index:
-            export_index(shapefile_without_ordinals(), site_folder)
+    if "index" in steps:
+        export_index(shapefile_without_ordinals(), site_folder)
 
-        if not no_ordering:
-            table = shapefile_without_ordinals()
-            save_universes_list_all(
-                table,
-                all_ordinals(),
-                site_folder,
-            )
-            output_ordering(
-                site_folder,
-                all_ordinals(),
-                longname_to_type=dict(zip(table.longname, table.type)),
-            )
+    if "ordering" in steps:
+        table = shapefile_without_ordinals()
+        save_universes_list_all(
+            table,
+            all_ordinals(),
+            site_folder,
+        )
+        output_ordering(
+            site_folder,
+            all_ordinals(),
+            longname_to_type=dict(zip(table.longname, table.type)),
+        )
 
         full_consolidated_data(site_folder)
         export_centroids(site_folder, shapefiles, all_ordinals())
-
-        if not no_sitemap:
-            output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
 
         with open("react/src/data/syau_suffixes.ts", "w") as f:
             output_typescript(
@@ -273,7 +247,10 @@ def build_urbanstats(
 
         output_default_universe_by_stat_geo(shapefile_without_ordinals(), site_folder)
 
-    if not no_juxta:
+    if "sitemap" in steps:
+        output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
+
+    if "juxta" in steps:
         output_quiz_sampling_info(site_folder, "quiz_sampling_info")
         generate_quizzes(f"{site_folder}/quiz/")
 
