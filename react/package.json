@@ -9,7 +9,6 @@
     "watch": "./watch.sh",
     "lint": "eslint . --fix --ignore-pattern=src/data --cache --max-warnings=0",
     "lint:ci": "eslint . --ignore-pattern=src/data --max-warnings=0",
-    "proxy": "tsx test/scripts/run-proxy.ts",
     "test:e2e": "tsx test/scripts/run-e2e-tests.ts",
     "test:unit": "c8 --reporter=text --reporter=clover tsx --experimental-test-module-mocks unit/scripts/run-unit-tests.ts",
     "test:unit:ci": "tsx --experimental-test-module-mocks unit/scripts/run-unit-tests.ts"
