@@ -39,6 +39,7 @@ def main():
         dest="and_steps",
         metavar="STEP",
         nargs="+",
+        default=[],
         help=f"With --target scripts: steps to add. Valid: {steps_help}",
     )
 

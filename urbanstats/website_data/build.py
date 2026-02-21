@@ -187,7 +187,7 @@ BUILD_STEPS = frozenset({"shapes", "articles", "index", "ordering", "sitemap", "
 def build_urbanstats(site_folder, *, steps, mode):
 
     check_proto_hash()
-    print("Steps to run:", *steps)
+    print("Steps to run:", *steps, 'scripts')
 
     for sub in [
         "index",
