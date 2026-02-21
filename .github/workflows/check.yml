@@ -112,7 +112,7 @@ jobs:
       - *checkout
       - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
-      - run: python3 create_website.py react/test/density-db --no-data --no-geo --no-juxta --mode=ci
+      - run: python3 create_website.py --mode ci --target scripts --site-folder react/test/density-db
       - uses: actions/upload-artifact@v4
         with:
           name: frontend-build

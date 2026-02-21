@@ -3,7 +3,7 @@
 set -e
 
 cd ..
-python create_website.py $1 --mode=dev --no-data --no-geo --no-juxta
+python create_website.py --mode dev --target scripts --site-folder $1
 cd react
 
 while true; do
