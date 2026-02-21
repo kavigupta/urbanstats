@@ -94,9 +94,9 @@ interface StatisticData {
 }
 
 type StatisticDataOutcome = (
-    { type: 'success' } & StatisticData & { errors: EditorError[] }
+    { type: 'success', data: StatisticData, errors: EditorError[] }
     | { type: 'error', errors: EditorError[] }
-    | { type: 'loading', errors: EditorError[] }
+    | { type: 'loading', data?: StatisticData, errors: EditorError[] }
 )
 
 function uuid(): string {
@@ -231,11 +231,11 @@ function useUSSStatisticPanelData(uss: UrbanStatsASTStatement, geographyKind: (t
     }, [successData])
 
     if (loading) {
-        return { type: 'loading', errors, uuid: 'loading' }
+        return { type: 'loading', errors, data: successDataSorted, uuid: 'loading' }
     }
     assert(errors.length > 0 || successDataSorted !== undefined, 'errors and successDataSorted cannot both be empty/undefined')
     if (successDataSorted !== undefined) {
-        return { type: 'success', ...successDataSorted, errors }
+        return { type: 'success', data: successDataSorted, errors, uuid: 'loading' }
     }
     return { type: 'error', errors, uuid: objectHash(errors) }
 }
@@ -254,20 +254,22 @@ async function loadStatisticsData(universe: Universe, statname: StatName, articl
     const totalCountOverall = forType(counts, universe, stats[statIndex], 'overall')
     return {
         type: 'success',
-        data: [{
-            value: data.value,
-            populationPercentile: data.populationPercentile,
-            ordinal: computeOrdinals(data.value),
-            name: statname,
-            unit: undefined,
-        }],
-        articleNames,
-        renderedStatname: statname,
-        statcol: stats[statIndex],
-        explanationPage: explanation_pages[statIndex],
-        totalCountInClass,
-        totalCountOverall,
-        hideOrdinalsPercentiles: false, // Statistics pages show ordinals/percentiles by default (false = show)
+        data: {
+            data: [{
+                value: data.value,
+                populationPercentile: data.populationPercentile,
+                ordinal: computeOrdinals(data.value),
+                name: statname,
+                unit: undefined,
+            }],
+            articleNames,
+            renderedStatname: statname,
+            statcol: stats[statIndex],
+            explanationPage: explanation_pages[statIndex],
+            totalCountInClass,
+            totalCountOverall,
+            hideOrdinalsPercentiles: false, // Statistics pages show ordinals/percentiles by default (false = show)
+        },
         errors: [],
     }
 }
@@ -621,31 +623,35 @@ function SimpleStatisticPanel(props: SimpleStatisticPanelProps): ReactNode {
         () => loadStatisticsData(restProps.universe, restProps.descriptor.statname, restProps.articleType, restProps.counts),
         [restProps.universe, restProps.descriptor.statname, restProps.articleType, restProps.counts],
     )
-    const data = useOrderedResolve(promise)
+    const loading = useOrderedResolve(promise)
 
     useEffect(() => {
-        if (data.result?.type === 'success') {
-            onDataLoaded(data.result)
+        if (loading.result?.type === 'success') {
+            onDataLoaded(loading.result.data)
         }
-    }, [data.result, onDataLoaded])
+    }, [loading.result, onDataLoaded])
 
-    if (data.result === undefined || data.result.type === 'loading') {
+    if (loading.result === undefined || loading.result.type === 'loading') {
+        if (loading.result?.data !== undefined) {
+            <StatisticPanelOnceLoaded {...restProps} {...loading.result.data} statDesc={restProps.descriptor} tableRef={tableRef} loading={true} />
+        }
+
         return (
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative', height: '100px' }}>
                 <RelativeLoader loading={true} />
             </div>
         )
     }
 
-    if (data.result.type === 'error') {
+    if (loading.result.type === 'error') {
         return (
             <div>
-                <DisplayResults results={data.result.errors} editor={false} />
+                <DisplayResults results={loading.result.errors} editor={false} />
             </div>
         )
     }
 
-    return <StatisticPanelOnceLoaded {...restProps} {...data.result} statDesc={restProps.descriptor} tableRef={tableRef} />
+    return <StatisticPanelOnceLoaded {...restProps} {...loading.result.data} statDesc={restProps.descriptor} tableRef={tableRef} loading={false} />
 }
 
 interface USSStatisticPanelProps extends StatisticCommonProps {
@@ -658,7 +664,7 @@ interface USSStatisticPanelProps extends StatisticCommonProps {
 
 function USSStatisticPanel(props: USSStatisticPanelProps): ReactNode {
     const { onDataLoaded, tableRef, setErrors, ...restProps } = props
-    const data = useUSSStatisticPanelData(
+    const loadResult = useUSSStatisticPanelData(
         restProps.ussAST,
         restProps.articleType as (typeof validGeographies)[number],
         restProps.universe,
@@ -667,40 +673,44 @@ function USSStatisticPanel(props: USSStatisticPanelProps): ReactNode {
 
     const lastDataUUID = useRef<string | undefined>(undefined)
     useEffect(() => {
-        if (data.type === 'success') {
+        if (loadResult.type === 'success') {
             // Only call onDataLoaded if the data has actually changed
-            if (lastDataUUID.current !== data.uuid) {
-                lastDataUUID.current = data.uuid
-                onDataLoaded(data)
+            if (lastDataUUID.current !== loadResult.uuid) {
+                lastDataUUID.current = loadResult.uuid
+                onDataLoaded(loadResult.data)
             }
         }
-    }, [data, onDataLoaded])
+    }, [loadResult, onDataLoaded])
 
     // Update parent errors in useEffect to avoid setState during render
     useEffect(() => {
-        setErrors(data.errors)
-    }, [data.errors, setErrors])
+        setErrors(loadResult.errors)
+    }, [loadResult.errors, setErrors])
 
-    if (data.type === 'loading') {
-        return (
-            <div style={{ position: 'relative' }}>
-                <RelativeLoader loading={true} />
-            </div>
-        )
+    if (loadResult.type === 'loading') {
+        if (loadResult.data === undefined) {
+            return (
+                <div style={{ position: 'relative', height: '100px' }}>
+                    <RelativeLoader loading={true} />
+                </div>
+            )
+        }
+
+        return <StatisticPanelOnceLoaded {...restProps} {...loadResult.data} statDesc={restProps.descriptor} tableRef={tableRef} loading={true} />
     }
 
-    if (data.type === 'error') {
+    if (loadResult.type === 'error') {
         return (
             <div>
-                <DisplayResults results={data.errors} editor={false} />
+                <DisplayResults results={loadResult.errors} editor={false} />
             </div>
         )
     }
 
-    return <StatisticPanelOnceLoaded {...restProps} {...data} statDesc={restProps.descriptor} tableRef={tableRef} />
+    return <StatisticPanelOnceLoaded {...restProps} {...loadResult.data} statDesc={restProps.descriptor} tableRef={tableRef} loading={false} />
 }
 
-type StatisticPanelLoadedProps = StatisticCommonProps & StatisticData & { statDesc: StatisticDescriptor, tableRef: React.RefObject<HTMLDivElement> }
+type StatisticPanelLoadedProps = StatisticCommonProps & StatisticData & { statDesc: StatisticDescriptor, tableRef: React.RefObject<HTMLDivElement>, loading: boolean }
 
 function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
     const colors = useColors()
@@ -802,7 +812,7 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
     return (
         <div>
             <MaybeScroll widthColumns={computeComparisonWidthColumns(ncols, true)}>
-                <div className="serif" ref={props.tableRef}>
+                <div className="serif" ref={props.tableRef} style={{ position: 'relative' }}>
                     <StatisticPanelTable
                         indexRange={indexRange}
                         sortedIndices={sortedIndices}
@@ -819,6 +829,7 @@ function StatisticPanelOnceLoaded(props: StatisticPanelLoadedProps): ReactNode {
                         disclaimer={props.statDesc.type === 'uss-statistic'}
                         hideOrdinalsPercentiles={props.hideOrdinalsPercentiles}
                     />
+                    { props.loading && <RelativeLoader loading={true} />}
                 </div>
             </MaybeScroll>
             <div style={{ marginBlockEnd: '1em' }}></div>
