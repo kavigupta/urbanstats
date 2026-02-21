@@ -185,9 +185,8 @@ BUILD_STEPS = frozenset({"shapes", "articles", "index", "ordering", "sitemap", "
 
 # pylint: disable-next=too-many-branches,too-many-statements
 def build_urbanstats(site_folder, *, steps, mode):
-
     check_proto_hash()
-    print("Steps to run:", *steps, 'scripts')
+    print("Steps to run:", *steps, "scripts")
 
     for sub in [
         "index",
@@ -212,9 +211,7 @@ def build_urbanstats(site_folder, *, steps, mode):
         )
 
     if "articles" in steps:
-        create_article_gzips(
-            site_folder, shapefile_without_ordinals(), all_ordinals()
-        )
+        create_article_gzips(site_folder, shapefile_without_ordinals(), all_ordinals())
         create_symlink_gzips(site_folder, compute_symlinks())
 
     if "index" in steps:

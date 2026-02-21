@@ -31,7 +31,7 @@ def main():
         "--target",
         required=True,
         choices=("all", "scripts"),
-        help=f"all: full build (steps: {steps_help}). scripts: scripts-only; use --and to add steps."
+        help=f"all: full build (steps: {steps_help}). scripts: scripts-only; use --and to add steps.",
     )
 
     parser.add_argument(

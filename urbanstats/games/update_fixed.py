@@ -72,7 +72,9 @@ def copy_up_to(key, new_up_to, folder=None):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Copy juxtastat/retrostat data up to a given week/day.")
+    parser = argparse.ArgumentParser(
+        description="Copy juxtastat/retrostat data up to a given week/day."
+    )
     parser.add_argument(
         "key",
         choices=("juxtastat", "retrostat"),

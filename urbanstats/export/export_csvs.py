@@ -1,4 +1,5 @@
 import argparse
+
 import numpy as np
 import tqdm.auto as tqdm
 
@@ -39,7 +40,9 @@ def export_all_csvs(folder):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Export all shape/statistic CSVs to a folder.")
+    parser = argparse.ArgumentParser(
+        description="Export all shape/statistic CSVs to a folder."
+    )
     parser.add_argument("folder", help="Output folder for CSV files")
     args = parser.parse_args()
     export_all_csvs(args.folder)
