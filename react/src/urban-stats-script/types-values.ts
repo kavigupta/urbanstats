@@ -243,6 +243,10 @@ export function createConstantExpression(value: number | string | boolean | null
 
 export function unifyFunctionType(param: USSFunctionArgType, arg: USSType): boolean {
     if (param.type === 'concrete') {
+        if (param.value.type === 'vector' && arg.type === 'vector' && arg.elementType.type === 'elementOfEmptyVector') {
+            // Empty vector is valid for any vector params
+            return true
+        }
         return renderType(param.value) === renderType(arg)
     }
     return arg.type === 'number' || arg.type === 'string' || arg.type === 'boolean' || arg.type === 'null'
