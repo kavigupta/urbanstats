@@ -178,15 +178,21 @@ class Article(_message.Message):
     ) -> None: ...
 
 class ConsolidatedArticles(_message.Message):
-    __slots__ = ("longnames", "articles")
+    __slots__ = ("longnames", "articles", "symlink_link_names", "symlink_target_names")
     LONGNAMES_FIELD_NUMBER: _ClassVar[int]
     ARTICLES_FIELD_NUMBER: _ClassVar[int]
+    SYMLINK_LINK_NAMES_FIELD_NUMBER: _ClassVar[int]
+    SYMLINK_TARGET_NAMES_FIELD_NUMBER: _ClassVar[int]
     longnames: _containers.RepeatedScalarFieldContainer[str]
     articles: _containers.RepeatedCompositeFieldContainer[Article]
+    symlink_link_names: _containers.RepeatedScalarFieldContainer[str]
+    symlink_target_names: _containers.RepeatedScalarFieldContainer[str]
     def __init__(
         self,
         longnames: _Optional[_Iterable[str]] = ...,
         articles: _Optional[_Iterable[_Union[Article, _Mapping]]] = ...,
+        symlink_link_names: _Optional[_Iterable[str]] = ...,
+        symlink_target_names: _Optional[_Iterable[str]] = ...,
     ) -> None: ...
 
 class Coordinate(_message.Message):

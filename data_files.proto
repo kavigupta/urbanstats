@@ -71,6 +71,8 @@ message Article {
 message ConsolidatedArticles {
     repeated string longnames = 1;
     repeated Article articles = 2;
+    repeated string symlink_link_names = 3;
+    repeated string symlink_target_names = 4;
 }
 
 

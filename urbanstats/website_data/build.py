@@ -37,11 +37,7 @@ from urbanstats.universe.icons import (
 )
 from urbanstats.universe.universe_list import all_universes, default_universes
 from urbanstats.website_data.centroids import export_centroids
-from urbanstats.website_data.create_article_gzips import (
-    create_article_gzips,
-    create_symlink_gzips,
-    extra_stats,
-)
+from urbanstats.website_data.create_article_gzips import create_article_gzips, extra_stats
 from urbanstats.website_data.default_universe_by_stat_geo import (
     output_default_universe_by_stat_geo,
 )
@@ -213,10 +209,12 @@ def build_urbanstats(site_folder, *, steps, mode):
 
     if "articles" in steps:
         shard_index_data = create_article_gzips(
-            site_folder, shapefile_without_ordinals(), all_ordinals()
+            site_folder,
+            shapefile_without_ordinals(),
+            all_ordinals(),
+            symlinks=compute_symlinks(),
         )
         output_shard_index("react/src/data", shard_index_data, "data")
-        create_symlink_gzips(site_folder, compute_symlinks())
 
     if "index" in steps:
         export_index(shapefile_without_ordinals(), site_folder)

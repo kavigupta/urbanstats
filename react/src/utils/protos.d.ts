@@ -1122,6 +1122,12 @@ export interface IConsolidatedArticles {
 
     /** ConsolidatedArticles articles */
     articles?: (IArticle[]|null);
+
+    /** ConsolidatedArticles symlinkLinkNames */
+    symlinkLinkNames?: (string[]|null);
+
+    /** ConsolidatedArticles symlinkTargetNames */
+    symlinkTargetNames?: (string[]|null);
 }
 
 /** Represents a ConsolidatedArticles. */
@@ -1138,6 +1144,12 @@ export class ConsolidatedArticles implements IConsolidatedArticles {
 
     /** ConsolidatedArticles articles. */
     public articles: IArticle[];
+
+    /** ConsolidatedArticles symlinkLinkNames. */
+    public symlinkLinkNames: string[];
+
+    /** ConsolidatedArticles symlinkTargetNames. */
+    public symlinkTargetNames: string[];
 
     /**
      * Creates a new ConsolidatedArticles instance using the specified properties.

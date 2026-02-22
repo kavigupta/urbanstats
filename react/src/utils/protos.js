@@ -2917,6 +2917,8 @@ export const ConsolidatedArticles = $root.ConsolidatedArticles = (() => {
      * @interface IConsolidatedArticles
      * @property {Array.<string>|null} [longnames] ConsolidatedArticles longnames
      * @property {Array.<IArticle>|null} [articles] ConsolidatedArticles articles
+     * @property {Array.<string>|null} [symlinkLinkNames] ConsolidatedArticles symlinkLinkNames
+     * @property {Array.<string>|null} [symlinkTargetNames] ConsolidatedArticles symlinkTargetNames
      */
 
     /**
@@ -2930,6 +2932,8 @@ export const ConsolidatedArticles = $root.ConsolidatedArticles = (() => {
     function ConsolidatedArticles(properties) {
         this.longnames = [];
         this.articles = [];
+        this.symlinkLinkNames = [];
+        this.symlinkTargetNames = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -2951,6 +2955,22 @@ export const ConsolidatedArticles = $root.ConsolidatedArticles = (() => {
      * @instance
      */
     ConsolidatedArticles.prototype.articles = $util.emptyArray;
+
+    /**
+     * ConsolidatedArticles symlinkLinkNames.
+     * @member {Array.<string>} symlinkLinkNames
+     * @memberof ConsolidatedArticles
+     * @instance
+     */
+    ConsolidatedArticles.prototype.symlinkLinkNames = $util.emptyArray;
+
+    /**
+     * ConsolidatedArticles symlinkTargetNames.
+     * @member {Array.<string>} symlinkTargetNames
+     * @memberof ConsolidatedArticles
+     * @instance
+     */
+    ConsolidatedArticles.prototype.symlinkTargetNames = $util.emptyArray;
 
     /**
      * Creates a new ConsolidatedArticles instance using the specified properties.
@@ -2982,6 +3002,12 @@ export const ConsolidatedArticles = $root.ConsolidatedArticles = (() => {
         if (message.articles != null && message.articles.length)
             for (let i = 0; i < message.articles.length; ++i)
                 $root.Article.encode(message.articles[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        if (message.symlinkLinkNames != null && message.symlinkLinkNames.length)
+            for (let i = 0; i < message.symlinkLinkNames.length; ++i)
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.symlinkLinkNames[i]);
+        if (message.symlinkTargetNames != null && message.symlinkTargetNames.length)
+            for (let i = 0; i < message.symlinkTargetNames.length; ++i)
+                writer.uint32(/* id 4, wireType 2 =*/34).string(message.symlinkTargetNames[i]);
         return writer;
     };
 
@@ -3026,6 +3052,18 @@ export const ConsolidatedArticles = $root.ConsolidatedArticles = (() => {
                     if (!(message.articles && message.articles.length))
                         message.articles = [];
                     message.articles.push($root.Article.decode(reader, reader.uint32()));
+                    break;
+                }
+            case 3: {
+                    if (!(message.symlinkLinkNames && message.symlinkLinkNames.length))
+                        message.symlinkLinkNames = [];
+                    message.symlinkLinkNames.push(reader.string());
+                    break;
+                }
+            case 4: {
+                    if (!(message.symlinkTargetNames && message.symlinkTargetNames.length))
+                        message.symlinkTargetNames = [];
+                    message.symlinkTargetNames.push(reader.string());
                     break;
                 }
             default:
@@ -3079,6 +3117,20 @@ export const ConsolidatedArticles = $root.ConsolidatedArticles = (() => {
                     return "articles." + error;
             }
         }
+        if (message.symlinkLinkNames != null && message.hasOwnProperty("symlinkLinkNames")) {
+            if (!Array.isArray(message.symlinkLinkNames))
+                return "symlinkLinkNames: array expected";
+            for (let i = 0; i < message.symlinkLinkNames.length; ++i)
+                if (!$util.isString(message.symlinkLinkNames[i]))
+                    return "symlinkLinkNames: string[] expected";
+        }
+        if (message.symlinkTargetNames != null && message.hasOwnProperty("symlinkTargetNames")) {
+            if (!Array.isArray(message.symlinkTargetNames))
+                return "symlinkTargetNames: array expected";
+            for (let i = 0; i < message.symlinkTargetNames.length; ++i)
+                if (!$util.isString(message.symlinkTargetNames[i]))
+                    return "symlinkTargetNames: string[] expected";
+        }
         return null;
     };
 
@@ -3111,6 +3163,20 @@ export const ConsolidatedArticles = $root.ConsolidatedArticles = (() => {
                 message.articles[i] = $root.Article.fromObject(object.articles[i]);
             }
         }
+        if (object.symlinkLinkNames) {
+            if (!Array.isArray(object.symlinkLinkNames))
+                throw TypeError(".ConsolidatedArticles.symlinkLinkNames: array expected");
+            message.symlinkLinkNames = [];
+            for (let i = 0; i < object.symlinkLinkNames.length; ++i)
+                message.symlinkLinkNames[i] = String(object.symlinkLinkNames[i]);
+        }
+        if (object.symlinkTargetNames) {
+            if (!Array.isArray(object.symlinkTargetNames))
+                throw TypeError(".ConsolidatedArticles.symlinkTargetNames: array expected");
+            message.symlinkTargetNames = [];
+            for (let i = 0; i < object.symlinkTargetNames.length; ++i)
+                message.symlinkTargetNames[i] = String(object.symlinkTargetNames[i]);
+        }
         return message;
     };
 
@@ -3130,6 +3196,8 @@ export const ConsolidatedArticles = $root.ConsolidatedArticles = (() => {
         if (options.arrays || options.defaults) {
             object.longnames = [];
             object.articles = [];
+            object.symlinkLinkNames = [];
+            object.symlinkTargetNames = [];
         }
         if (message.longnames && message.longnames.length) {
             object.longnames = [];
@@ -3140,6 +3208,16 @@ export const ConsolidatedArticles = $root.ConsolidatedArticles = (() => {
             object.articles = [];
             for (let j = 0; j < message.articles.length; ++j)
                 object.articles[j] = $root.Article.toObject(message.articles[j], options);
+        }
+        if (message.symlinkLinkNames && message.symlinkLinkNames.length) {
+            object.symlinkLinkNames = [];
+            for (let j = 0; j < message.symlinkLinkNames.length; ++j)
+                object.symlinkLinkNames[j] = message.symlinkLinkNames[j];
+        }
+        if (message.symlinkTargetNames && message.symlinkTargetNames.length) {
+            object.symlinkTargetNames = [];
+            for (let j = 0; j < message.symlinkTargetNames.length; ++j)
+                object.symlinkTargetNames[j] = message.symlinkTargetNames[j];
         }
         return object;
     };

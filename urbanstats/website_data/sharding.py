@@ -1,3 +1,4 @@
+import gzip
 import json
 import os
 
@@ -65,18 +66,28 @@ def shard_subfolder(shard_idx):
     return f"{a}/{b}"
 
 
-def build_shards_from_callback(folder, type_label, longnames, get_proto_fn):
+def _symlinks_in_range(symlinks, range_start_hash, range_end_hash):
+    """Return (link_names, target_names) for symlinks whose link_name hash is in (range_start, range_end]."""
+    link_names = []
+    target_names = []
+    for link_name, target_name in symlinks.items():
+        h = shard_bytes_full(sanitize(link_name))
+        if (range_start_hash is None or h > range_start_hash) and h <= range_end_hash:
+            link_names.append(link_name)
+            target_names.append(target_name)
+    return link_names, target_names
+
+
+def build_shards_from_callback(folder, type_label, longnames, get_proto_fn, symlinks=None):
     """
     Build size-based shards by requesting each proto from a callback. No full list of protos in memory.
 
-    longnames: list of longname strings.
+    longnames: list of longname strings (real articles only; no symlink names).
     get_proto_fn: callable(longname) -> Article or Feature. Called once per longname in sorted order.
+    symlinks: optional dict link_name -> target_name for data shards; stored as symlinks in shard, not duplicated.
 
-    Sort longnames by full 8-char hash, then for each longname call get_proto_fn(longname), get size,
-    pack into current shard; when size would exceed limit, write current shard and start next.
-    Write shard_0.gz, shard_1.gz, ... and shard_index.json.
-
-    type_label: "shape" or "data".
+    Sort longnames by full 8-char hash, pack by size, write each shard. For data, add symlinks whose
+    link_name hashes into each shard's range to that shard's symlink_link_names / symlink_target_names.
 
     Returns list of hash strings that start each shard (for frontend index).
     """
@@ -99,25 +110,37 @@ def build_shards_from_callback(folder, type_label, longnames, get_proto_fn):
     current_longnames = []
     current_protos = []
     current_size = 0
+    range_start_hash = None  # exclusive lower bound for current shard
+
+    def write_shard(longnames_chunk, protos_chunk):
+        consolidated = consolidated_class()
+        consolidated.longnames.extend(longnames_chunk)
+        if type_label == "data":
+            consolidated.articles.extend(protos_chunk)
+            end_hash = shard_bytes_full(sanitize(longnames_chunk[-1]))
+            if symlinks:
+                link_names, target_names = _symlinks_in_range(
+                    symlinks, range_start_hash, end_hash
+                )
+                consolidated.symlink_link_names.extend(link_names)
+                consolidated.symlink_target_names.extend(target_names)
+        else:
+            consolidated.shapes.extend(protos_chunk)
+        subfolder = os.path.join(folder, shard_subfolder(shard_idx))
+        os.makedirs(subfolder, exist_ok=True)
+        write_gzip(consolidated, os.path.join(subfolder, f"shard_{shard_idx}.gz"))
 
     for longname in tqdm.tqdm(longnames, desc=f"building {type_label} shards", unit="item"):
         proto = get_proto_fn(longname)
         if isinstance(proto, (list, tuple)):
             proto = proto[0]
-        size = len(proto.SerializeToString())
+        raw = proto.SerializeToString()
+        size = len(gzip.compress(raw, mtime=0))
 
         if current_size + size > size_limit and current_longnames:
-            # Write current shard under nested A/B/ (hex bytes of index)
-            consolidated = consolidated_class()
-            consolidated.longnames.extend(current_longnames)
-            if type_label == "data":
-                consolidated.articles.extend(current_protos)
-            else:
-                consolidated.shapes.extend(current_protos)
-            subfolder = os.path.join(folder, shard_subfolder(shard_idx))
-            os.makedirs(subfolder, exist_ok=True)
-            write_gzip(consolidated, os.path.join(subfolder, f"shard_{shard_idx}.gz"))
+            write_shard(current_longnames, current_protos)
             index_hashes.append(shard_bytes_full(sanitize(current_longnames[0])))
+            range_start_hash = shard_bytes_full(sanitize(current_longnames[-1]))
             shard_idx += 1
             current_longnames = []
             current_protos = []
@@ -128,15 +151,7 @@ def build_shards_from_callback(folder, type_label, longnames, get_proto_fn):
         current_size += size
 
     if current_longnames:
-        consolidated = consolidated_class()
-        consolidated.longnames.extend(current_longnames)
-        if type_label == "data":
-            consolidated.articles.extend(current_protos)
-        else:
-            consolidated.shapes.extend(current_protos)
-        subfolder = os.path.join(folder, shard_subfolder(shard_idx))
-        os.makedirs(subfolder, exist_ok=True)
-        write_gzip(consolidated, os.path.join(subfolder, f"shard_{shard_idx}.gz"))
+        write_shard(current_longnames, current_protos)
         index_hashes.append(shard_bytes_full(sanitize(current_longnames[0])))
 
     with open(os.path.join(folder, "shard_index.json"), "w") as f:

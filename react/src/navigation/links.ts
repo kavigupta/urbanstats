@@ -84,10 +84,6 @@ export function dataLink(longname: string): string {
     return `/data/${shardPathPrefix(shardIdx)}/shard_${shardIdx}.gz`
 }
 
-export function symlinksLink(longname: string): string {
-    return `/data/${shardedFolderName(longname)}.symlinks.gz`
-}
-
 export function indexLink(universe: string, typ: string): string {
     return `/index/${universe}/${encodeURIComponent(sanitize(typ, false))}.gz`
 }

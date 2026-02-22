@@ -4,7 +4,7 @@ import data_links from './data/data_links'
 import order_links from './data/order_links'
 import statistic_path_list from './data/statistic_path_list'
 import universes_ordered from './data/universes_ordered'
-import { indexLink, orderingDataLink, orderingLink } from './navigation/links'
+import { dataLink, indexLink, orderingDataLink, orderingLink } from './navigation/links'
 import { debugPerformance } from './search'
 import { Universe } from './universe'
 import { assert } from './utils/defensive'
@@ -151,12 +151,18 @@ async function getConsolidatedShapesShard(shardUrl: string): Promise<Consolidate
     return shard
 }
 
-/** Load one article from a consolidated shard (fetch whole .gz via loadProtobuf, find by longname). */
+/** Load one article from a consolidated shard (fetch whole .gz via loadProtobuf, find by longname). Resolves symlinks to target. */
 export async function loadArticleFromConsolidatedShard(shardUrl: string, longname: string): Promise<Article | undefined> {
     const shard = await getConsolidatedArticlesShard(shardUrl)
     if (!shard) return undefined
     const idx = shard.longnames.indexOf(longname)
-    return idx >= 0 ? (shard.articles[idx] as Article) : undefined
+    if (idx >= 0) return shard.articles[idx] as Article
+    const symIdx = shard.symlinkLinkNames?.indexOf(longname) ?? -1
+    if (symIdx >= 0 && shard.symlinkTargetNames) {
+        const target = shard.symlinkTargetNames[symIdx]
+        return loadArticleFromConsolidatedShard(dataLink(target), target)
+    }
+    return undefined
 }
 
 /** Load one shape from a consolidated shard (fetch whole .gz via loadProtobuf, find by longname). */

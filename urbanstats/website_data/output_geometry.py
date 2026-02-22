@@ -23,23 +23,19 @@ def produce_shape_gzip_cached(r):
 
 
 def produce_all_geometry_json(path, valid_names):
-    longnames = []
-    longname_to_loc = {}  # longname -> (shapefile_key, iloc_idx)
-    for k, sf_k in shapefiles.items():
-        print(k)
+    geos = {}
+    for sf_k in tqdm.tqdm(shapefiles.values(), desc="Loading shapefiles"):
         table = sf_k.load_file()
-        for i in tqdm.trange(table.shape[0]):
-            row = table.iloc[i]
-            if row.longname in valid_names:
-                longnames.append(row.longname)
-                longname_to_loc[row.longname] = (k, i)
+        geos.update(dict(zip(table.longname, table.geometry)))
 
     def get_feature(longname):
-        k, i = longname_to_loc[longname]
-        table = shapefiles[k].load_file()
-        return produce_shape_gzip_cached(table.iloc[i])
+        return convert_to_protobuf(geos[longname])
 
-    return build_shards_from_callback(path, "shape", longnames, get_feature)
+    missing = set(valid_names) - set(geos.keys())
+    if missing:
+        raise ValueError(f"Missing geometries for {missing}")
+
+    return build_shards_from_callback(path, "shape", list(valid_names), get_feature)
 
 
 def to_protobuf_polygon(f_python):
