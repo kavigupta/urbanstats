@@ -1,3 +1,4 @@
+import bisect
 import gzip
 import os
 
@@ -72,15 +73,22 @@ def shard_subfolder(shard_idx):
     return f"{a}/{b}"
 
 
-def _symlinks_in_range(symlinks, range_start_hash, range_end_hash):
-    """Return (link_names, target_names) for symlinks whose link_name hash is in (range_start, range_end]."""
-    link_names = []
-    target_names = []
-    for link_name, target_name in symlinks.items():
-        h = shard_bytes_full(sanitize(link_name))
-        if (range_start_hash is None or h > range_start_hash) and h <= range_end_hash:
-            link_names.append(link_name)
-            target_names.append(target_name)
+def _symlinks_sorted_by_hash(symlinks):
+    """Precompute symlinks as a list of (hash_str, link_name, target_name) sorted by hash_str."""
+    return sorted(
+        (shard_bytes_full(sanitize(ln)), ln, tn) for ln, tn in symlinks.items()
+    )
+
+
+def _symlinks_in_range_sorted(symlinks_sorted, range_start_hash, range_end_hash):
+    """Return (link_names, target_names) for symlinks whose hash is in (range_start, range_end].
+    symlinks_sorted: list of (hash_str, link_name, target_name) from _symlinks_sorted_by_hash.
+    """
+    hashes = [t[0] for t in symlinks_sorted]
+    left = 0 if range_start_hash is None else bisect.bisect_right(hashes, range_start_hash)
+    right = bisect.bisect_right(hashes, range_end_hash)
+    link_names = [symlinks_sorted[i][1] for i in range(left, right)]
+    target_names = [symlinks_sorted[i][2] for i in range(left, right)]
     return link_names, target_names
 
 
@@ -105,6 +113,8 @@ def build_shards_from_callback(
     # Sort by full hash (bytes order)
     longnames = sorted(longnames, key=lambda ln: shard_bytes_full(sanitize(ln)))
 
+    symlinks_sorted = _symlinks_sorted_by_hash(symlinks) if symlinks else None
+
     if type_label == "data":
         consolidated_class = data_files_pb2.ConsolidatedArticles
         size_limit = SHARD_SIZE_LIMIT_DATA_BYTES
@@ -126,9 +136,9 @@ def build_shards_from_callback(
         if type_label == "data":
             consolidated.articles.extend(protos_chunk)
             end_hash = shard_bytes_full(sanitize(longnames_chunk[-1]))
-            if symlinks:
-                link_names, target_names = _symlinks_in_range(
-                    symlinks, range_start_hash, end_hash
+            if symlinks_sorted is not None:
+                link_names, target_names = _symlinks_in_range_sorted(
+                    symlinks_sorted, range_start_hash, end_hash
                 )
                 consolidated.symlink_link_names.extend(link_names)
                 consolidated.symlink_target_names.extend(target_names)
