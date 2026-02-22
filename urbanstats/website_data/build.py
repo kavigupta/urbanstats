@@ -206,7 +206,8 @@ def build_urbanstats(site_folder, *, steps, mode):
     if "shapes" in steps:
         produce_all_geometry_json(
             f"{site_folder}/shape",
-            set(shapefile_without_ordinals().longname, symlinks=compute_symlinks()),
+            set(shapefile_without_ordinals().longname),
+            symlinks=compute_symlinks(),
         )
 
     if "articles" in steps:
