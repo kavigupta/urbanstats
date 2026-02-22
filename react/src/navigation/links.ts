@@ -15,7 +15,7 @@ function toUnsigned(x: number): number {
 
 async function getShardIndexShape(): Promise<number[]> {
     if (shardIndexShapePromise === null) {
-        shardIndexShapePromise = loadProtobuf('/data/shard_index_shape.gz', 'ShardIndex').then(
+        shardIndexShapePromise = loadProtobuf('/shape/shard_index_shape.gz', 'ShardIndex').then(
             idx => idx.startingHashes.map(toUnsigned),
         )
     }

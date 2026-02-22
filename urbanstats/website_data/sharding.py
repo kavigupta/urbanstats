@@ -5,6 +5,7 @@ import tqdm.auto as tqdm
 
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
+from urbanstats.website_data.shard_index_rounding import round_shard_index_hashes
 
 # Per-type shard size limits (bytes). Shape shards smaller for faster loads.
 SHARD_SIZE_LIMIT_SHAPE_BYTES = 8 * 1024   # 8K
@@ -160,22 +161,10 @@ def build_shards_from_callback(folder, type_label, longnames, get_proto_fn, syml
         write_shard(current_longnames, current_protos)
         index_hashes.append(shard_bytes_full(sanitize(current_longnames[0])))
 
+    starts_int = [int(h, 16) for h in index_hashes]
+    rounded = round_shard_index_hashes(starts_int)
     index_proto = data_files_pb2.ShardIndex()
-    index_proto.starting_hashes.extend(int(h, 16) for h in index_hashes)
+    index_proto.starting_hashes.extend(rounded)
     write_gzip(index_proto, os.path.join(folder, f"shard_index_{type_label}.gz"))
 
     return index_hashes
-
-
-def output_shard_index(data_dir, index_hashes, type_label):
-    """Write shard index (array of starting hashes) for one type to react/src/data as proto gzip.
-
-    The frontend loads this and binary-searches to find which shard contains a longname.
-    """
-    if type_label not in ("shape", "data"):
-        raise ValueError("type_label must be 'shape' or 'data'")
-    os.makedirs(data_dir, exist_ok=True)
-    path = os.path.join(data_dir, f"shard_index_{type_label}.gz")
-    index_proto = data_files_pb2.ShardIndex()
-    index_proto.starting_hashes.extend(int(h, 16) for h in index_hashes)
-    write_gzip(index_proto, path)
