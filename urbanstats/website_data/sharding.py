@@ -81,15 +81,17 @@ def _symlinks_sorted_by_hash(symlinks):
 
 
 def _symlinks_in_range_sorted(symlinks_sorted, range_start_hash, range_end_hash):
-    """Return (link_names, target_names) for symlinks whose hash is in (range_start, range_end].
+    """Return (link_names, target_names, last_hash) for symlinks whose hash is in (range_start, range_end].
     symlinks_sorted: list of (hash_str, link_name, target_name) from _symlinks_sorted_by_hash.
+    last_hash: hash of the last symlink in range, or None if none.
     """
     hashes = [t[0] for t in symlinks_sorted]
     left = 0 if range_start_hash is None else bisect.bisect_right(hashes, range_start_hash)
     right = bisect.bisect_right(hashes, range_end_hash)
     link_names = [symlinks_sorted[i][1] for i in range(left, right)]
     target_names = [symlinks_sorted[i][2] for i in range(left, right)]
-    return link_names, target_names
+    last_hash = hashes[right - 1] if right > left else None
+    return link_names, target_names, last_hash
 
 
 def build_shards_from_callback(
@@ -130,13 +132,14 @@ def build_shards_from_callback(
     current_size = 0
     range_start_hash = None  # exclusive lower bound for current shard
 
-    def write_shard(longnames_chunk, protos_chunk):
+    def write_shard(longnames_chunk, protos_chunk, symlink_end_hash):
+        """symlink_end_hash: include symlinks with link_hash <= this (use next shard's first hash when available)."""
         consolidated = consolidated_class()
         consolidated.longnames.extend(longnames_chunk)
-        end_hash = shard_bytes_full(sanitize(longnames_chunk[-1]))
+        last_symlink_hash = None
         if symlinks_sorted is not None:
-            link_names, target_names = _symlinks_in_range_sorted(
-                symlinks_sorted, range_start_hash, end_hash
+            link_names, target_names, last_symlink_hash = _symlinks_in_range_sorted(
+                symlinks_sorted, range_start_hash, symlink_end_hash
             )
             consolidated.symlink_link_names.extend(link_names)
             consolidated.symlink_target_names.extend(target_names)
@@ -147,6 +150,7 @@ def build_shards_from_callback(
         subfolder = os.path.join(folder, shard_subfolder(shard_idx))
         os.makedirs(subfolder, exist_ok=True)
         write_gzip(consolidated, os.path.join(subfolder, f"shard_{shard_idx}.gz"))
+        return max(symlink_end_hash, last_symlink_hash) if last_symlink_hash is not None else symlink_end_hash
 
     for longname in tqdm.tqdm(
         longnames, desc=f"building {type_label} shards", unit="item"
@@ -169,11 +173,13 @@ def build_shards_from_callback(
             and current_longnames
             and (last_hash is None or current_hash != last_hash)
         ):
-            write_shard(current_longnames, current_protos)
-            start_h = shard_bytes_full(sanitize(current_longnames[0]))
+            # Use current_hash (first hash of next shard) as symlink end so this shard gets all symlinks up to the next.
             end_h = shard_bytes_full(sanitize(current_longnames[-1]))
+            last_symlink_hash = write_shard(current_longnames, current_protos, current_hash)
+            # Next shard's symlink range starts after the last symlink we included (or after end_h if none).
+            range_start_hash = last_symlink_hash if last_symlink_hash is not None else end_h
+            start_h = shard_bytes_full(sanitize(current_longnames[0]))
             index_ranges.append((start_h, end_h))
-            range_start_hash = end_h
             shard_idx += 1
             current_longnames = []
             current_protos = []
@@ -184,9 +190,10 @@ def build_shards_from_callback(
         current_size += size
 
     if current_longnames:
-        write_shard(current_longnames, current_protos)
-        start_h = shard_bytes_full(sanitize(current_longnames[0]))
+        # Last shard: no next hash, use max so all remaining symlinks are included.
         end_h = shard_bytes_full(sanitize(current_longnames[-1]))
+        write_shard(current_longnames, current_protos, "ffffffff")
+        start_h = shard_bytes_full(sanitize(current_longnames[0]))
         index_ranges.append((start_h, end_h))
 
     buckets_int = [(int(s, 16), int(e, 16)) for s, e in index_ranges]
