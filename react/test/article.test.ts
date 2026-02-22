@@ -402,7 +402,7 @@ test('loading indicator', async (t) => {
 
     await cdp.Network.enable({})
     await cdp.Network.setBlockedURLs({
-        urls: ['*shape*Roscoe'],
+        urls: ['*shape*shard_630'],
     })
 
     await t.click(Selector('button[data-test-id="1"]'))
