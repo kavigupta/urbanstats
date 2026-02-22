@@ -79,6 +79,7 @@ export class AuthenticationStateMachine {
     useState(): State {
         const [, setCounter] = useState(0)
         useEffect(() => {
+            setCounter(counter => counter + 1)
             const observer = (): void => {
                 setCounter(counter => counter + 1)
             }

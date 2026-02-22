@@ -23,6 +23,7 @@ export class Property<T> {
     use(): T {
         const [, setCounter] = useState(0)
         useEffect(() => {
+            setCounter(counter => counter + 1) // Effect can be delayed, trigger counter again to cover if we missed sets
             const observer = (): void => {
                 setCounter(counter => counter + 1)
             }
