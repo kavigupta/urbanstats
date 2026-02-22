@@ -363,18 +363,30 @@ class Universes(_message.Message):
     def __init__(self, universe_idxs: _Optional[_Iterable[int]] = ...) -> None: ...
 
 class ConsolidatedShapes(_message.Message):
-    __slots__ = ("longnames", "universes", "shapes")
+    __slots__ = (
+        "longnames",
+        "universes",
+        "shapes",
+        "symlink_link_names",
+        "symlink_target_names",
+    )
     LONGNAMES_FIELD_NUMBER: _ClassVar[int]
     UNIVERSES_FIELD_NUMBER: _ClassVar[int]
     SHAPES_FIELD_NUMBER: _ClassVar[int]
+    SYMLINK_LINK_NAMES_FIELD_NUMBER: _ClassVar[int]
+    SYMLINK_TARGET_NAMES_FIELD_NUMBER: _ClassVar[int]
     longnames: _containers.RepeatedScalarFieldContainer[str]
     universes: _containers.RepeatedCompositeFieldContainer[Universes]
     shapes: _containers.RepeatedCompositeFieldContainer[Feature]
+    symlink_link_names: _containers.RepeatedScalarFieldContainer[str]
+    symlink_target_names: _containers.RepeatedScalarFieldContainer[str]
     def __init__(
         self,
         longnames: _Optional[_Iterable[str]] = ...,
         universes: _Optional[_Iterable[_Union[Universes, _Mapping]]] = ...,
         shapes: _Optional[_Iterable[_Union[Feature, _Mapping]]] = ...,
+        symlink_link_names: _Optional[_Iterable[str]] = ...,
+        symlink_target_names: _Optional[_Iterable[str]] = ...,
     ) -> None: ...
 
 class QuizDataForStat(_message.Message):

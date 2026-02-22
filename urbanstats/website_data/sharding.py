@@ -133,15 +133,15 @@ def build_shards_from_callback(
     def write_shard(longnames_chunk, protos_chunk):
         consolidated = consolidated_class()
         consolidated.longnames.extend(longnames_chunk)
+        end_hash = shard_bytes_full(sanitize(longnames_chunk[-1]))
+        if symlinks_sorted is not None:
+            link_names, target_names = _symlinks_in_range_sorted(
+                symlinks_sorted, range_start_hash, end_hash
+            )
+            consolidated.symlink_link_names.extend(link_names)
+            consolidated.symlink_target_names.extend(target_names)
         if type_label == "data":
             consolidated.articles.extend(protos_chunk)
-            end_hash = shard_bytes_full(sanitize(longnames_chunk[-1]))
-            if symlinks_sorted is not None:
-                link_names, target_names = _symlinks_in_range_sorted(
-                    symlinks_sorted, range_start_hash, end_hash
-                )
-                consolidated.symlink_link_names.extend(link_names)
-                consolidated.symlink_target_names.extend(target_names)
         else:
             consolidated.shapes.extend(protos_chunk)
         subfolder = os.path.join(folder, shard_subfolder(shard_idx))

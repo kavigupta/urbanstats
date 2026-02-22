@@ -165,6 +165,8 @@ message ConsolidatedShapes {
     repeated string longnames = 1;
     repeated Universes universes = 3;
     repeated Feature shapes = 2;
+    repeated string symlink_link_names = 4;
+    repeated string symlink_target_names = 5;
 }
 
 // quiz sampling data

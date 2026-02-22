@@ -9,7 +9,6 @@ import { Article, Feature } from './protos'
 /** Load article by longname. Symlinks are resolved in sharded data; no separate symlink fetch. */
 export async function loadArticleFromPossibleSymlink(longname: string): Promise<Article> {
     const dlink = await dataLink(longname)
-    console.log('Data link for', longname, 'is', dlink)
     const article = await loadArticleFromConsolidatedShard(dlink, longname)
     if (article === undefined) {
         throw new Error(`Could not find article ${longname}`)
@@ -19,9 +18,11 @@ export async function loadArticleFromPossibleSymlink(longname: string): Promise<
 
 /** Load shape/feature by longname. Symlinks are resolved in sharded data; no separate symlink fetch. */
 export async function loadFeatureFromPossibleSymlink(longname: string): Promise<Feature> {
-    const feature = await loadFeatureFromConsolidatedShard(await shapeLink(longname), longname)
+    const link = await shapeLink(longname)
+    console.log('Shape link for', longname, 'is', link)
+    const feature = await loadFeatureFromConsolidatedShard(link, longname)
     if (feature === undefined) {
-        throw new Error(`Could not find feature ${longname}`)
+        throw new Error(`Could not find feature ${longname} in shard ${link}`)
     }
     return feature
 }

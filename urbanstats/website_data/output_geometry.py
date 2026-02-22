@@ -22,7 +22,7 @@ def produce_shape_gzip_cached(r):
     return convert_to_protobuf(r.geometry)
 
 
-def produce_all_geometry_json(path, valid_names):
+def produce_all_geometry_json(path, valid_names, symlinks):
     geos = {}
     for sf_k in tqdm.tqdm(shapefiles.values(), desc="Loading shapefiles"):
         table = sf_k.load_file()
@@ -35,7 +35,9 @@ def produce_all_geometry_json(path, valid_names):
     if missing:
         raise ValueError(f"Missing geometries for {missing}")
 
-    return build_shards_from_callback(path, "shape", list(valid_names), get_feature)
+    return build_shards_from_callback(
+        path, "shape", list(valid_names), get_feature, symlinks=symlinks
+    )
 
 
 def to_protobuf_polygon(f_python):

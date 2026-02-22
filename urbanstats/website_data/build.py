@@ -37,7 +37,10 @@ from urbanstats.universe.icons import (
 )
 from urbanstats.universe.universe_list import all_universes, default_universes
 from urbanstats.website_data.centroids import export_centroids
-from urbanstats.website_data.create_article_gzips import create_article_gzips, extra_stats
+from urbanstats.website_data.create_article_gzips import (
+    create_article_gzips,
+    extra_stats,
+)
 from urbanstats.website_data.default_universe_by_stat_geo import (
     output_default_universe_by_stat_geo,
 )
@@ -202,7 +205,8 @@ def build_urbanstats(site_folder, *, steps, mode):
 
     if "shapes" in steps:
         produce_all_geometry_json(
-            f"{site_folder}/shape", set(shapefile_without_ordinals().longname)
+            f"{site_folder}/shape",
+            set(shapefile_without_ordinals().longname, symlinks=compute_symlinks()),
         )
 
     if "articles" in steps:

@@ -2861,6 +2861,12 @@ export interface IConsolidatedShapes {
 
     /** ConsolidatedShapes shapes */
     shapes?: (IFeature[]|null);
+
+    /** ConsolidatedShapes symlinkLinkNames */
+    symlinkLinkNames?: (string[]|null);
+
+    /** ConsolidatedShapes symlinkTargetNames */
+    symlinkTargetNames?: (string[]|null);
 }
 
 /** Represents a ConsolidatedShapes. */
@@ -2880,6 +2886,12 @@ export class ConsolidatedShapes implements IConsolidatedShapes {
 
     /** ConsolidatedShapes shapes. */
     public shapes: IFeature[];
+
+    /** ConsolidatedShapes symlinkLinkNames. */
+    public symlinkLinkNames: string[];
+
+    /** ConsolidatedShapes symlinkTargetNames. */
+    public symlinkTargetNames: string[];
 
     /**
      * Creates a new ConsolidatedShapes instance using the specified properties.

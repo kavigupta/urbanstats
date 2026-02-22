@@ -1,1 +1,1 @@
-proto_hash = "1b1a7dbcf8e58c4de399c72db543fa4efc17e14f945bbdd744918799ad9de6e7"
+proto_hash = "6489130574a8d3c0e50b09a6d8887769c5fd42ad73f0dfec693c4729e8bf1ba8"

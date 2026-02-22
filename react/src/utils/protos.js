@@ -7203,6 +7203,8 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
      * @property {Array.<string>|null} [longnames] ConsolidatedShapes longnames
      * @property {Array.<IUniverses>|null} [universes] ConsolidatedShapes universes
      * @property {Array.<IFeature>|null} [shapes] ConsolidatedShapes shapes
+     * @property {Array.<string>|null} [symlinkLinkNames] ConsolidatedShapes symlinkLinkNames
+     * @property {Array.<string>|null} [symlinkTargetNames] ConsolidatedShapes symlinkTargetNames
      */
 
     /**
@@ -7217,6 +7219,8 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
         this.longnames = [];
         this.universes = [];
         this.shapes = [];
+        this.symlinkLinkNames = [];
+        this.symlinkTargetNames = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -7246,6 +7250,22 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
      * @instance
      */
     ConsolidatedShapes.prototype.shapes = $util.emptyArray;
+
+    /**
+     * ConsolidatedShapes symlinkLinkNames.
+     * @member {Array.<string>} symlinkLinkNames
+     * @memberof ConsolidatedShapes
+     * @instance
+     */
+    ConsolidatedShapes.prototype.symlinkLinkNames = $util.emptyArray;
+
+    /**
+     * ConsolidatedShapes symlinkTargetNames.
+     * @member {Array.<string>} symlinkTargetNames
+     * @memberof ConsolidatedShapes
+     * @instance
+     */
+    ConsolidatedShapes.prototype.symlinkTargetNames = $util.emptyArray;
 
     /**
      * Creates a new ConsolidatedShapes instance using the specified properties.
@@ -7280,6 +7300,12 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
         if (message.universes != null && message.universes.length)
             for (let i = 0; i < message.universes.length; ++i)
                 $root.Universes.encode(message.universes[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+        if (message.symlinkLinkNames != null && message.symlinkLinkNames.length)
+            for (let i = 0; i < message.symlinkLinkNames.length; ++i)
+                writer.uint32(/* id 4, wireType 2 =*/34).string(message.symlinkLinkNames[i]);
+        if (message.symlinkTargetNames != null && message.symlinkTargetNames.length)
+            for (let i = 0; i < message.symlinkTargetNames.length; ++i)
+                writer.uint32(/* id 5, wireType 2 =*/42).string(message.symlinkTargetNames[i]);
         return writer;
     };
 
@@ -7330,6 +7356,18 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
                     if (!(message.shapes && message.shapes.length))
                         message.shapes = [];
                     message.shapes.push($root.Feature.decode(reader, reader.uint32()));
+                    break;
+                }
+            case 4: {
+                    if (!(message.symlinkLinkNames && message.symlinkLinkNames.length))
+                        message.symlinkLinkNames = [];
+                    message.symlinkLinkNames.push(reader.string());
+                    break;
+                }
+            case 5: {
+                    if (!(message.symlinkTargetNames && message.symlinkTargetNames.length))
+                        message.symlinkTargetNames = [];
+                    message.symlinkTargetNames.push(reader.string());
                     break;
                 }
             default:
@@ -7392,6 +7430,20 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
                     return "shapes." + error;
             }
         }
+        if (message.symlinkLinkNames != null && message.hasOwnProperty("symlinkLinkNames")) {
+            if (!Array.isArray(message.symlinkLinkNames))
+                return "symlinkLinkNames: array expected";
+            for (let i = 0; i < message.symlinkLinkNames.length; ++i)
+                if (!$util.isString(message.symlinkLinkNames[i]))
+                    return "symlinkLinkNames: string[] expected";
+        }
+        if (message.symlinkTargetNames != null && message.hasOwnProperty("symlinkTargetNames")) {
+            if (!Array.isArray(message.symlinkTargetNames))
+                return "symlinkTargetNames: array expected";
+            for (let i = 0; i < message.symlinkTargetNames.length; ++i)
+                if (!$util.isString(message.symlinkTargetNames[i]))
+                    return "symlinkTargetNames: string[] expected";
+        }
         return null;
     };
 
@@ -7434,6 +7486,20 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
                 message.shapes[i] = $root.Feature.fromObject(object.shapes[i]);
             }
         }
+        if (object.symlinkLinkNames) {
+            if (!Array.isArray(object.symlinkLinkNames))
+                throw TypeError(".ConsolidatedShapes.symlinkLinkNames: array expected");
+            message.symlinkLinkNames = [];
+            for (let i = 0; i < object.symlinkLinkNames.length; ++i)
+                message.symlinkLinkNames[i] = String(object.symlinkLinkNames[i]);
+        }
+        if (object.symlinkTargetNames) {
+            if (!Array.isArray(object.symlinkTargetNames))
+                throw TypeError(".ConsolidatedShapes.symlinkTargetNames: array expected");
+            message.symlinkTargetNames = [];
+            for (let i = 0; i < object.symlinkTargetNames.length; ++i)
+                message.symlinkTargetNames[i] = String(object.symlinkTargetNames[i]);
+        }
         return message;
     };
 
@@ -7454,6 +7520,8 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
             object.longnames = [];
             object.shapes = [];
             object.universes = [];
+            object.symlinkLinkNames = [];
+            object.symlinkTargetNames = [];
         }
         if (message.longnames && message.longnames.length) {
             object.longnames = [];
@@ -7469,6 +7537,16 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
             object.universes = [];
             for (let j = 0; j < message.universes.length; ++j)
                 object.universes[j] = $root.Universes.toObject(message.universes[j], options);
+        }
+        if (message.symlinkLinkNames && message.symlinkLinkNames.length) {
+            object.symlinkLinkNames = [];
+            for (let j = 0; j < message.symlinkLinkNames.length; ++j)
+                object.symlinkLinkNames[j] = message.symlinkLinkNames[j];
+        }
+        if (message.symlinkTargetNames && message.symlinkTargetNames.length) {
+            object.symlinkTargetNames = [];
+            for (let j = 0; j < message.symlinkTargetNames.length; ++j)
+                object.symlinkTargetNames[j] = message.symlinkTargetNames[j];
         }
         return object;
     };
