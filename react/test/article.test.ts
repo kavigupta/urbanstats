@@ -1,5 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 
+import { sanitize, shardBytesFull } from '../src/utils/shardHash'
+
 import {
     target, checkAllCategoryBoxes, checkTextboxes, comparisonPage, downloadImage,
     getLocationWithoutSettings, safeReload, screencap,
@@ -11,6 +13,10 @@ import {
     waitForLoading,
     downloadCSV,
 } from './test_utils'
+
+function articleUrl(longname: string): string {
+    return `/article.html?longname=${encodeURIComponent(longname).replace(/%20/g, '+')}`
+}
 
 urbanstatsFixture('longer article test', '/article.html?longname=California%2C+USA')
 
@@ -403,4 +409,37 @@ test('loading indicator', async (t) => {
     await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
 
     await screencap(t, { wait: false })
+})
+
+// Hash collisions: different longnames that share the same 8-char shard hash (same data shard).
+// One test verifies hashes collide and that all four articles load with correct compactness.
+const hashCollisionPairs: [string, [string, string]][] = [
+    ['f4fbd73f', ['NC-02 (1899), USA', 'East Earl township [CCD], Lancaster County, Pennsylvania, USA']],
+    ['b0c41bff', ['Hilltop Neighborhood, Denver City, Colorado, USA', 'Walland CDP, Tennessee, USA']],
+]
+
+const hashCollisionCompactness: Record<string, string> = {
+    'East Earl township [CCD], Lancaster County, Pennsylvania, USA': '0.460',
+    'NC-02 (1899), USA': '0.151',
+    'Hilltop Neighborhood, Denver City, Colorado, USA': '0.408',
+    'Walland CDP, Tennessee, USA': '0.455',
+}
+
+const hashCollisionLongnames = hashCollisionPairs.flatMap(([, [a, b]]) => [a, b])
+
+urbanstatsFixture('hash collision', articleUrl(hashCollisionLongnames[0]))
+
+test('hash collisions: hashes match and all four pages load with correct compactness', async (t) => {
+    for (const [expectedHash, [a, b]] of hashCollisionPairs) {
+        const hashA = shardBytesFull(sanitize(a))
+        const hashB = shardBytesFull(sanitize(b))
+        await t.expect(hashA).eql(expectedHash, `hash("${a}")`)
+        await t.expect(hashB).eql(expectedHash, `hash("${b}")`)
+        await t.expect(hashA).eql(hashB, `collision pair should share hash`)
+    }
+    for (const longname of hashCollisionLongnames) {
+        await t.navigateTo(articleUrl(longname))
+        await checkAllCategoryBoxes(t)
+        await t.expect(Selector('span').withExactText(hashCollisionCompactness[longname]).exists).ok()
+    }
 })
