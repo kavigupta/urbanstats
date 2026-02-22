@@ -217,7 +217,7 @@ function Diff({ test, file, hash, delta, changed, index, total, navigator, artif
 }
 
 function LazyNode({ node }: { node: Promise<ReactNode> }): ReactNode {
-    const { result, loading } = useOrderedResolve(node)
+    const { result, loading } = useOrderedResolve(node, 'LazyNode')
 
     if (result === undefined || loading) {
         return <LongLoad />

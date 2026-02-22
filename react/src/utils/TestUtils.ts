@@ -49,8 +49,9 @@ export class TestUtils {
     private loadingCounter = 0
     private loadingCallbacks: (() => void)[] = []
 
-    startLoading(): void {
+    startLoading(label: string): void {
         this.loadingCounter++
+        debugWait(`startLoading ${this.loadingCounter} ${label}`)
     }
 
     private async eventLoopIters(iters: number): Promise<void> {
@@ -59,17 +60,19 @@ export class TestUtils {
         }
     }
 
-    async finishLoading(): Promise<void> {
+    async finishLoading(label: string): Promise<void> {
         await this.eventLoopIters(10)
         this.loadingCounter--
+        debugWait(`stopLoading ${this.loadingCounter} ${label}`)
         if (this.loadingCounter === 0) {
             this.loadingCallbacks.forEach((callback) => { callback() })
             this.loadingCallbacks = []
         }
     }
 
-    async waitForLoading(): Promise<void> {
+    async waitForLoading(label: string): Promise<void> {
         await this.eventLoopIters(10)
+        debugWait(`waitForLoading ${this.loadingCounter} ${label}`)
         if (this.loadingCounter === 0) {
             return Promise.resolve()
         }
@@ -87,3 +90,12 @@ export interface TestWindow {
 }
 
 (window as unknown as TestWindow).testUtils = TestUtils.shared
+
+const debugWaitForLoading: boolean = false
+
+function debugWait(msg: string): void {
+    if (debugWaitForLoading) {
+        // eslint-disable-next-line no-console -- Debug
+        console.log(msg)
+    }
+}

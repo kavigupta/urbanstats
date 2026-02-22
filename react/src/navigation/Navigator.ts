@@ -185,7 +185,7 @@ export class Navigator {
         this.pageState = { kind: 'loading', loading: { descriptor: newDescriptor }, current: this.pageState.current, loadStartTime: Date.now() }
         this.pageStateObservers.forEach((observer) => { observer() })
         try {
-            TestUtils.shared.startLoading()
+            TestUtils.shared.startLoading('navigate')
 
             const { pageData, newPageDescriptor, effects } = await loadPageDescriptor(newDescriptor, Settings.shared)
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Async function, pageState can change during await
@@ -242,7 +242,7 @@ export class Navigator {
             this.pageStateObservers.forEach((observer) => { observer() })
         }
         finally {
-            void TestUtils.shared.finishLoading()
+            void TestUtils.shared.finishLoading('navigate')
         }
     }
 

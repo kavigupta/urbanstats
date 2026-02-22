@@ -98,7 +98,7 @@ function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
 export function PolygonFeatureCollection({ features, clickable }: { features: GeoJSON.Feature[], clickable: boolean }): ReactNode {
     const { current: map } = useMap()
 
-    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map])).result
+    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]), 'PolygonFeatureCollection.firstLabel').result
 
     const collection: GeoJSON.FeatureCollection = useMemo(() => ({
         type: 'FeatureCollection',
@@ -146,7 +146,8 @@ async function polygonGeojson(polygon: Polygon): Promise<GeoJSON.Feature> {
 }
 
 export function polygonFeatureCollection(polygons: Polygon[]): { use: () => (GeoJSON.Feature | typeof waiting)[] } {
-    return promiseStream(polygons.map(polygonGeojson))
+    const result = promiseStream(polygons.map(polygonGeojson), 'polygonFeatureCollection')
+    return result
 }
 
 async function waitForMapLoadedOrRemoved(map: MapRef): Promise<void> {
@@ -200,7 +201,7 @@ export function PointFeatureCollection({ features, clickable }: { features: GeoJ
     const { current: map } = useMap()
     const id = useId()
 
-    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map])).result
+    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]), 'PointFeatureCollection').result
 
     const collection: GeoJSON.FeatureCollection = useMemo(() => ({
         type: 'FeatureCollection',
@@ -287,7 +288,7 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
     const mapLoaded = useOrderedResolve(useMemo(async () => {
         await waitForMapLoadedOrRemoved(map)
         return true
-    }, [map])).result ?? false
+    }, [map]), 'BaseMap.mapLoaded').result ?? false
 
     useEffect(() => {
         if (mapLoaded) {
@@ -303,7 +304,7 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
         }
     }, [map, basemap, mapLoaded])
 
-    const labelId = useOrderedResolve(useMemo(() => firstLabelId(map), [map])).result
+    const labelId = useOrderedResolve(useMemo(() => firstLabelId(map), [map]), 'Basemap.firstLabel').result
 
     if (basemap.type === 'osm' && basemap.subnationalOutlines !== undefined) {
         return (

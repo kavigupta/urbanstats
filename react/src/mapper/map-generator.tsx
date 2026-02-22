@@ -65,7 +65,7 @@ export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
         }
     }, [mapSettings]) // Do not change this effect list!!
 
-    const { result, loading } = useOrderedResolve(currentGenerator)
+    const { result, loading } = useOrderedResolve(currentGenerator, 'useMapGenerator')
 
     return result !== undefined
         ? {

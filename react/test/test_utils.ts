@@ -87,7 +87,7 @@ export async function waitForQuizLoading(t: TestController): Promise<void> {
 }
 
 export async function waitForLoading(): Promise<void> {
-    return ClientFunction(() => (window as unknown as TestWindow).testUtils.waitForLoading())()
+    return ClientFunction(() => (window as unknown as TestWindow).testUtils.waitForLoading('test_utils'))()
 }
 
 async function prepForImage(t: TestController, options: { hover: boolean }): Promise<void> {
