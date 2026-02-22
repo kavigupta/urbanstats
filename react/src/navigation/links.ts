@@ -5,18 +5,19 @@ import type { Universe } from '../universe'
 
 import type { PageDescriptor } from './PageDescriptor'
 
-// Shard indices (gzipped proto, int32): loaded on first use and cached as unsigned.
+// Shard indices (gzipped proto, int32): proto stores signed int32; unwrap to unsigned 32-bit and cache.
 let shardIndexShapePromise: Promise<number[]> | null = null
 let shardIndexDataPromise: Promise<number[]> | null = null
 
-function toUnsigned(x: number): number {
+/** Unwrap signed int32 from proto back to unsigned 32-bit hash. */
+function unwrapSignedInt32(x: number): number {
     return x >>> 0
 }
 
 async function getShardIndexShape(): Promise<number[]> {
     if (shardIndexShapePromise === null) {
         shardIndexShapePromise = loadProtobuf('/shape/shard_index_shape.gz', 'ShardIndex').then(
-            idx => idx.startingHashes.map(toUnsigned),
+            idx => idx.startingHashes.map(unwrapSignedInt32),
         )
     }
     return shardIndexShapePromise
@@ -25,7 +26,7 @@ async function getShardIndexShape(): Promise<number[]> {
 async function getShardIndexData(): Promise<number[]> {
     if (shardIndexDataPromise === null) {
         shardIndexDataPromise = loadProtobuf('/data/shard_index_data.gz', 'ShardIndex').then(
-            idx => idx.startingHashes.map(toUnsigned),
+            idx => idx.startingHashes.map(unwrapSignedInt32),
         )
     }
     return shardIndexDataPromise

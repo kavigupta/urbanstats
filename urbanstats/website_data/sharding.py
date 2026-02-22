@@ -7,9 +7,15 @@ from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.website_data.shard_index_rounding import round_shard_index_hashes
 
+
+# Proto int32 is signed; wrap unsigned 32-bit hash to signed for encoding.
+def _unsigned_to_signed_int32(u):
+    return u if u < 2**31 else u - 2**32
+
+
 # Per-type shard size limits (bytes). Shape shards smaller for faster loads.
-SHARD_SIZE_LIMIT_SHAPE_BYTES = 8 * 1024   # 8K
-SHARD_SIZE_LIMIT_DATA_BYTES = 64 * 1024   # 64K
+SHARD_SIZE_LIMIT_SHAPE_BYTES = 8 * 1024  # 8K
+SHARD_SIZE_LIMIT_DATA_BYTES = 64 * 1024  # 64K
 
 # Size-based sharding: sort items by full 8-char hash, pack by byte limit as we go, write each shard when full.
 # Each shard: one gzipped proto (ConsolidatedArticles or ConsolidatedShapes). No per-item disk I/O.
@@ -78,7 +84,9 @@ def _symlinks_in_range(symlinks, range_start_hash, range_end_hash):
     return link_names, target_names
 
 
-def build_shards_from_callback(folder, type_label, longnames, get_proto_fn, symlinks=None):
+def build_shards_from_callback(
+    folder, type_label, longnames, get_proto_fn, symlinks=None
+):
     """
     Build size-based shards by requesting each proto from a callback. No full list of protos in memory.
 
@@ -105,7 +113,7 @@ def build_shards_from_callback(folder, type_label, longnames, get_proto_fn, syml
         size_limit = SHARD_SIZE_LIMIT_SHAPE_BYTES
 
     os.makedirs(folder, exist_ok=True)
-    index_hashes = []
+    index_ranges = []  # (start_hash, end_hash) per shard, for rounding
     shard_idx = 0
     current_longnames = []
     current_protos = []
@@ -130,7 +138,9 @@ def build_shards_from_callback(folder, type_label, longnames, get_proto_fn, syml
         os.makedirs(subfolder, exist_ok=True)
         write_gzip(consolidated, os.path.join(subfolder, f"shard_{shard_idx}.gz"))
 
-    for longname in tqdm.tqdm(longnames, desc=f"building {type_label} shards", unit="item"):
+    for longname in tqdm.tqdm(
+        longnames, desc=f"building {type_label} shards", unit="item"
+    ):
         proto = get_proto_fn(longname)
         if isinstance(proto, (list, tuple)):
             proto = proto[0]
@@ -138,7 +148,11 @@ def build_shards_from_callback(folder, type_label, longnames, get_proto_fn, syml
         size = len(gzip.compress(raw, mtime=0))
 
         current_hash = shard_bytes_full(sanitize(longname))
-        last_hash = shard_bytes_full(sanitize(current_longnames[-1])) if current_longnames else None
+        last_hash = (
+            shard_bytes_full(sanitize(current_longnames[-1]))
+            if current_longnames
+            else None
+        )
         # Flush only when over limit and (shard empty or next item has different hash — keep hash collisions in same shard).
         if (
             current_size + size > size_limit
@@ -146,8 +160,10 @@ def build_shards_from_callback(folder, type_label, longnames, get_proto_fn, syml
             and (last_hash is None or current_hash != last_hash)
         ):
             write_shard(current_longnames, current_protos)
-            index_hashes.append(shard_bytes_full(sanitize(current_longnames[0])))
-            range_start_hash = shard_bytes_full(sanitize(current_longnames[-1]))
+            start_h = shard_bytes_full(sanitize(current_longnames[0]))
+            end_h = shard_bytes_full(sanitize(current_longnames[-1]))
+            index_ranges.append((start_h, end_h))
+            range_start_hash = end_h
             shard_idx += 1
             current_longnames = []
             current_protos = []
@@ -159,12 +175,12 @@ def build_shards_from_callback(folder, type_label, longnames, get_proto_fn, syml
 
     if current_longnames:
         write_shard(current_longnames, current_protos)
-        index_hashes.append(shard_bytes_full(sanitize(current_longnames[0])))
+        start_h = shard_bytes_full(sanitize(current_longnames[0]))
+        end_h = shard_bytes_full(sanitize(current_longnames[-1]))
+        index_ranges.append((start_h, end_h))
 
-    starts_int = [int(h, 16) for h in index_hashes]
-    rounded = round_shard_index_hashes(starts_int)
+    buckets_int = [(int(s, 16), int(e, 16)) for s, e in index_ranges]
+    rounded = round_shard_index_hashes(buckets_int)
     index_proto = data_files_pb2.ShardIndex()
-    index_proto.starting_hashes.extend(rounded)
+    index_proto.starting_hashes.extend(_unsigned_to_signed_int32(r) for r in rounded)
     write_gzip(index_proto, os.path.join(folder, f"shard_index_{type_label}.gz"))
-
-    return index_hashes
