@@ -2,6 +2,7 @@ import type { StatisticDescriptor } from '../components/statistic-panel'
 import type_ordering_idx from '../data/type_ordering_idx'
 import { loadProtobuf } from '../load_json'
 import type { Universe } from '../universe'
+import { sanitize as sanitizeForShard, shardBytes, shardBytesFullNum } from '../utils/shardHash'
 
 import type { PageDescriptor } from './PageDescriptor'
 
@@ -32,44 +33,11 @@ async function getShardIndexData(): Promise<number[]> {
     return shardIndexDataPromise
 }
 
+export function sanitize(longname: string, spaces_around_slash = true): string {
+    return sanitizeForShard(longname, spaces_around_slash)
+}
+
 export const typesInOrder = Object.fromEntries(Object.entries(type_ordering_idx).map(([k, v]) => [v, k]))
-
-/** Full 8-char hex hash for ordering; must match Python shard_bytes_full. */
-function shardBytesFull(longname: string): string {
-    const bytes = new TextEncoder().encode(longname)
-    let hash = 0
-    for (const byte of bytes) {
-        hash = (hash * 31 + byte) & 0xffffffff
-    }
-    let s = ''
-    for (let i = 0; i < 8; i++) {
-        s += (hash & 0xf).toString(16)
-        hash = hash >>> 4
-    }
-    return s
-}
-
-/** Hash value used in the shard index (must match Python: int(hex_string, 16) where hex_string is LSB-first). */
-function shardBytesFullNum(longname: string): number {
-    const bytes = new TextEncoder().encode(longname)
-    let hash = 0
-    for (const byte of bytes) {
-        hash = (hash * 31 + byte) & 0xffffffff
-    }
-    // Index stores int(hex_string, 16) with hex_string built LSB-first (same as shardBytesFull).
-    let s = ''
-    for (let i = 0; i < 8; i++) {
-        s += (hash & 0xf).toString(16)
-        hash = hash >>> 4
-    }
-    return parseInt(s, 16) >>> 0
-}
-
-/** First 2 + 1 hex chars; used only for symlinks folder names. */
-function shardBytes(longname: string): [string, string] {
-    const full = shardBytesFull(longname)
-    return [full.slice(0, 2), full.slice(2, 3)]
-}
 
 /** Binary search: largest i such that index[i] <= hash (unsigned). Index is sorted. */
 function findShardIndex(hash: number, index: number[]): number {
@@ -98,41 +66,40 @@ function shardPathPrefix(shardIdx: number): string {
 }
 
 export function shardedFolderName(longname: string): string {
-    const sanitizedName = sanitize(longname)
+    const sanitizedName = sanitizeForShard(longname, true)
     const [a, b] = shardBytes(sanitizedName)
     return `${a}/${b}`
 }
 
 export function shardedName(longname: string): string {
-    const sanitizedName = sanitize(longname)
+    const sanitizedName = sanitizeForShard(longname, true)
     return `${shardedFolderName(longname)}/${sanitizedName}`
 }
 
 export async function shapeLink(longname: string): Promise<string> {
     const index = await getShardIndexShape()
-    const hash = shardBytesFullNum(sanitize(longname))
+    const hash = shardBytesFullNum(sanitizeForShard(longname, true))
     const shardIdx = findShardIndex(hash, index)
     return `/shape/${shardPathPrefix(shardIdx)}/shard_${shardIdx}.gz`
 }
 
 export async function dataLink(longname: string): Promise<string> {
     const index = await getShardIndexData()
-    const hash = shardBytesFullNum(sanitize(longname))
-    console.log('Hash for', longname, 'is', hash.toString(16))
+    const hash = shardBytesFullNum(sanitizeForShard(longname, true))
     const shardIdx = findShardIndex(hash, index)
     return `/data/${shardPathPrefix(shardIdx)}/shard_${shardIdx}.gz`
 }
 
 export function indexLink(universe: string, typ: string): string {
-    return `/index/${universe}/${encodeURIComponent(sanitize(typ, false))}.gz`
+    return `/index/${universe}/${encodeURIComponent(sanitizeForShard(typ, false))}.gz`
 }
 
 export function orderingLink(type: string, idx: number): string {
-    return `/order/${encodeURIComponent(sanitize(type, false))}_${idx}.gz`
+    return `/order/${encodeURIComponent(sanitizeForShard(type, false))}_${idx}.gz`
 }
 
 export function orderingDataLink(type: string, idx: number): string {
-    return `/order/${encodeURIComponent(sanitize(type, false))}_${idx}_data.gz`
+    return `/order/${encodeURIComponent(sanitizeForShard(type, false))}_${idx}_data.gz`
 }
 
 export function searchIconLink(typeIdx: number): string {
@@ -140,11 +107,11 @@ export function searchIconLink(typeIdx: number): string {
 }
 
 export function consolidatedShapeLink(typ: string): string {
-    return `/consolidated/shapes__${encodeURIComponent(sanitize(typ))}.gz`
+    return `/consolidated/shapes__${encodeURIComponent(sanitizeForShard(typ))}.gz`
 }
 
 export function centroidsPath(universe: string, typ: string): string {
-    return `/centroids/${encodeURIComponent(universe)}_${encodeURIComponent(sanitize(typ))}.gz`
+    return `/centroids/${encodeURIComponent(universe)}_${encodeURIComponent(sanitizeForShard(typ))}.gz`
 }
 
 export function statisticDescriptor(props: {
@@ -176,18 +143,6 @@ export function statisticDescriptor(props: {
         edit: props.edit,
         sort_column: props.sortColumn,
     }
-}
-
-export function sanitize(longname: string, spaces_around_slash = true): string {
-    let x = longname
-    if (spaces_around_slash) {
-        x = x.replaceAll('/', ' slash ')
-    }
-    else {
-        x = x.replaceAll('/', 'slash')
-    }
-    x = x.replaceAll('%', '%25')
-    return x
 }
 
 export function universePath(universe: string): string {
