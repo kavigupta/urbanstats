@@ -494,3 +494,9 @@ class DefaultUniverseTable(_message.Message):
         most_common_universe_idx: _Optional[int] = ...,
         exceptions: _Optional[_Iterable[_Union[DefaultUniverseTriple, _Mapping]]] = ...,
     ) -> None: ...
+
+class ShardIndex(_message.Message):
+    __slots__ = ("starting_hashes",)
+    STARTING_HASHES_FIELD_NUMBER: _ClassVar[int]
+    starting_hashes: _containers.RepeatedScalarFieldContainer[int]
+    def __init__(self, starting_hashes: _Optional[_Iterable[int]] = ...) -> None: ...

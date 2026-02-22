@@ -10,7 +10,7 @@
 import http from 'http'
 import https from 'https'
 
-import CacheableLookup, { LookupOptions } from 'cacheable-lookup'
+import CacheableLookup from 'cacheable-lookup'
 import compression from 'compression'
 import express from 'express'
 import proxy from 'express-http-proxy'

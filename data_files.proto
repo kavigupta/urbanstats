@@ -216,3 +216,8 @@ message DefaultUniverseTable {
     optional int32 most_common_universe_idx = 1;
     repeated DefaultUniverseTriple exceptions = 2;
 }
+
+// Shard index: sorted array of hash values (int32, same as 8-char hex hash) that start each shard (for binary search).
+message ShardIndex {
+    repeated int32 starting_hashes = 1;
+}

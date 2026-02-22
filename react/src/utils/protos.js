@@ -9971,4 +9971,231 @@ export const DefaultUniverseTable = $root.DefaultUniverseTable = (() => {
     return DefaultUniverseTable;
 })();
 
+export const ShardIndex = $root.ShardIndex = (() => {
+
+    /**
+     * Properties of a ShardIndex.
+     * @exports IShardIndex
+     * @interface IShardIndex
+     * @property {Array.<number>|null} [startingHashes] ShardIndex startingHashes
+     */
+
+    /**
+     * Constructs a new ShardIndex.
+     * @exports ShardIndex
+     * @classdesc Represents a ShardIndex.
+     * @implements IShardIndex
+     * @constructor
+     * @param {IShardIndex=} [properties] Properties to set
+     */
+    function ShardIndex(properties) {
+        this.startingHashes = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * ShardIndex startingHashes.
+     * @member {Array.<number>} startingHashes
+     * @memberof ShardIndex
+     * @instance
+     */
+    ShardIndex.prototype.startingHashes = $util.emptyArray;
+
+    /**
+     * Creates a new ShardIndex instance using the specified properties.
+     * @function create
+     * @memberof ShardIndex
+     * @static
+     * @param {IShardIndex=} [properties] Properties to set
+     * @returns {ShardIndex} ShardIndex instance
+     */
+    ShardIndex.create = function create(properties) {
+        return new ShardIndex(properties);
+    };
+
+    /**
+     * Encodes the specified ShardIndex message. Does not implicitly {@link ShardIndex.verify|verify} messages.
+     * @function encode
+     * @memberof ShardIndex
+     * @static
+     * @param {IShardIndex} message ShardIndex message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ShardIndex.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.startingHashes != null && message.startingHashes.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
+            for (let i = 0; i < message.startingHashes.length; ++i)
+                writer.int32(message.startingHashes[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified ShardIndex message, length delimited. Does not implicitly {@link ShardIndex.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof ShardIndex
+     * @static
+     * @param {IShardIndex} message ShardIndex message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ShardIndex.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a ShardIndex message from the specified reader or buffer.
+     * @function decode
+     * @memberof ShardIndex
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {ShardIndex} ShardIndex
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ShardIndex.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.ShardIndex();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.startingHashes && message.startingHashes.length))
+                        message.startingHashes = [];
+                    if ((tag & 7) === 2) {
+                        let end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.startingHashes.push(reader.int32());
+                    } else
+                        message.startingHashes.push(reader.int32());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a ShardIndex message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof ShardIndex
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {ShardIndex} ShardIndex
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ShardIndex.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a ShardIndex message.
+     * @function verify
+     * @memberof ShardIndex
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    ShardIndex.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.startingHashes != null && message.hasOwnProperty("startingHashes")) {
+            if (!Array.isArray(message.startingHashes))
+                return "startingHashes: array expected";
+            for (let i = 0; i < message.startingHashes.length; ++i)
+                if (!$util.isInteger(message.startingHashes[i]))
+                    return "startingHashes: integer[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a ShardIndex message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof ShardIndex
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {ShardIndex} ShardIndex
+     */
+    ShardIndex.fromObject = function fromObject(object) {
+        if (object instanceof $root.ShardIndex)
+            return object;
+        let message = new $root.ShardIndex();
+        if (object.startingHashes) {
+            if (!Array.isArray(object.startingHashes))
+                throw TypeError(".ShardIndex.startingHashes: array expected");
+            message.startingHashes = [];
+            for (let i = 0; i < object.startingHashes.length; ++i)
+                message.startingHashes[i] = object.startingHashes[i] | 0;
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a ShardIndex message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof ShardIndex
+     * @static
+     * @param {ShardIndex} message ShardIndex
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    ShardIndex.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults)
+            object.startingHashes = [];
+        if (message.startingHashes && message.startingHashes.length) {
+            object.startingHashes = [];
+            for (let j = 0; j < message.startingHashes.length; ++j)
+                object.startingHashes[j] = message.startingHashes[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this ShardIndex to JSON.
+     * @function toJSON
+     * @memberof ShardIndex
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    ShardIndex.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ShardIndex
+     * @function getTypeUrl
+     * @memberof ShardIndex
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ShardIndex.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/ShardIndex";
+    };
+
+    return ShardIndex;
+})();
+
 export { $root as default };

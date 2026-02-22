@@ -1,5 +1,4 @@
 import gzip
-import json
 import os
 
 import tqdm.auto as tqdm
@@ -137,7 +136,14 @@ def build_shards_from_callback(folder, type_label, longnames, get_proto_fn, syml
         raw = proto.SerializeToString()
         size = len(gzip.compress(raw, mtime=0))
 
-        if current_size + size > size_limit and current_longnames:
+        current_hash = shard_bytes_full(sanitize(longname))
+        last_hash = shard_bytes_full(sanitize(current_longnames[-1])) if current_longnames else None
+        # Flush only when over limit and (shard empty or next item has different hash — keep hash collisions in same shard).
+        if (
+            current_size + size > size_limit
+            and current_longnames
+            and (last_hash is None or current_hash != last_hash)
+        ):
             write_shard(current_longnames, current_protos)
             index_hashes.append(shard_bytes_full(sanitize(current_longnames[0])))
             range_start_hash = shard_bytes_full(sanitize(current_longnames[-1]))
@@ -154,20 +160,22 @@ def build_shards_from_callback(folder, type_label, longnames, get_proto_fn, syml
         write_shard(current_longnames, current_protos)
         index_hashes.append(shard_bytes_full(sanitize(current_longnames[0])))
 
-    with open(os.path.join(folder, "shard_index.json"), "w") as f:
-        json.dump(index_hashes, f, separators=(",", ":"))
+    index_proto = data_files_pb2.ShardIndex()
+    index_proto.starting_hashes.extend(int(h, 16) for h in index_hashes)
+    write_gzip(index_proto, os.path.join(folder, f"shard_index_{type_label}.gz"))
 
     return index_hashes
 
 
 def output_shard_index(data_dir, index_hashes, type_label):
-    """Write shard index (array of starting hashes) for one type to react/src/data.
+    """Write shard index (array of starting hashes) for one type to react/src/data as proto gzip.
 
     The frontend loads this and binary-searches to find which shard contains a longname.
     """
     if type_label not in ("shape", "data"):
         raise ValueError("type_label must be 'shape' or 'data'")
     os.makedirs(data_dir, exist_ok=True)
-    path = os.path.join(data_dir, f"shard_index_{type_label}.json")
-    with open(path, "w") as f:
-        json.dump(index_hashes, f, separators=(",", ":"))
+    path = os.path.join(data_dir, f"shard_index_{type_label}.gz")
+    index_proto = data_files_pb2.ShardIndex()
+    index_proto.starting_hashes.extend(int(h, 16) for h in index_hashes)
+    write_gzip(index_proto, path)

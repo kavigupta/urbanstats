@@ -3909,3 +3909,100 @@ export class DefaultUniverseTable implements IDefaultUniverseTable {
      */
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
+
+/** Properties of a ShardIndex. */
+export interface IShardIndex {
+
+    /** ShardIndex startingHashes */
+    startingHashes?: (number[]|null);
+}
+
+/** Represents a ShardIndex. */
+export class ShardIndex implements IShardIndex {
+
+    /**
+     * Constructs a new ShardIndex.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IShardIndex);
+
+    /** ShardIndex startingHashes. */
+    public startingHashes: number[];
+
+    /**
+     * Creates a new ShardIndex instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns ShardIndex instance
+     */
+    public static create(properties?: IShardIndex): ShardIndex;
+
+    /**
+     * Encodes the specified ShardIndex message. Does not implicitly {@link ShardIndex.verify|verify} messages.
+     * @param message ShardIndex message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IShardIndex, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified ShardIndex message, length delimited. Does not implicitly {@link ShardIndex.verify|verify} messages.
+     * @param message ShardIndex message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IShardIndex, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a ShardIndex message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns ShardIndex
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ShardIndex;
+
+    /**
+     * Decodes a ShardIndex message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns ShardIndex
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ShardIndex;
+
+    /**
+     * Verifies a ShardIndex message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a ShardIndex message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns ShardIndex
+     */
+    public static fromObject(object: { [k: string]: any }): ShardIndex;
+
+    /**
+     * Creates a plain object from a ShardIndex message. Also converts values to other types if specified.
+     * @param message ShardIndex
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: ShardIndex, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this ShardIndex to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ShardIndex
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}

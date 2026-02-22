@@ -16,6 +16,7 @@ import {
     QuizQuestionTronche,
     SearchIndex,
     ArticleOrderingList,
+    ShardIndex,
     Symlinks,
     PointSeries,
     ArticleUniverseList,
@@ -52,7 +53,8 @@ export async function loadProtobuf(filePath: string, name: 'Symlinks'): Promise<
 export async function loadProtobuf(filePath: string, name: 'PointSeries'): Promise<PointSeries>
 export async function loadProtobuf(filePath: string, name: 'ArticleUniverseList'): Promise<ArticleUniverseList>
 export async function loadProtobuf(filePath: string, name: 'DefaultUniverseTable'): Promise<DefaultUniverseTable>
-export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedArticles | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | ArticleUniverseList | DefaultUniverseTable | undefined> {
+export async function loadProtobuf(filePath: string, name: 'ShardIndex'): Promise<ShardIndex>
+export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedArticles | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | ArticleUniverseList | DefaultUniverseTable | ShardIndex | undefined> {
     let perfCheckpoint = performance.now()
 
     const response = await fetch(filePath)
@@ -125,6 +127,9 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     else if (name === 'DefaultUniverseTable') {
         return DefaultUniverseTable.decode(arr)
     }
+    else if (name === 'ShardIndex') {
+        return ShardIndex.decode(arr)
+    }
     else {
         throw new Error('protobuf type not recognized (see load_json.ts)')
     }
@@ -157,10 +162,10 @@ export async function loadArticleFromConsolidatedShard(shardUrl: string, longnam
     if (!shard) return undefined
     const idx = shard.longnames.indexOf(longname)
     if (idx >= 0) return shard.articles[idx] as Article
-    const symIdx = shard.symlinkLinkNames?.indexOf(longname) ?? -1
-    if (symIdx >= 0 && shard.symlinkTargetNames) {
+    const symIdx = shard.symlinkLinkNames.indexOf(longname)
+    if (symIdx >= 0) {
         const target = shard.symlinkTargetNames[symIdx]
-        return loadArticleFromConsolidatedShard(dataLink(target), target)
+        return loadArticleFromConsolidatedShard(await dataLink(target), target)
     }
     return undefined
 }

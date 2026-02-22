@@ -1,17 +1,35 @@
 import type { StatisticDescriptor } from '../components/statistic-panel'
-import shardIndexData from '../data/shard_index_data.json'
-import shardIndexShape from '../data/shard_index_shape.json'
 import type_ordering_idx from '../data/type_ordering_idx'
+import { loadProtobuf } from '../load_json'
 import type { Universe } from '../universe'
 
 import type { PageDescriptor } from './PageDescriptor'
 
-// Size-based sharding: index is sorted array of hash strings that start each shard.
-function asStringArray(x: unknown): string[] {
-    return Array.isArray(x) && x.every((e): e is string => typeof e === 'string') ? x : []
+// Shard indices (gzipped proto, int32): loaded on first use and cached as unsigned.
+let shardIndexShapePromise: Promise<number[]> | null = null
+let shardIndexDataPromise: Promise<number[]> | null = null
+
+function toUnsigned(x: number): number {
+    return x >>> 0
 }
-const shardIndexShapeArr: string[] = asStringArray(shardIndexShape)
-const shardIndexDataArr: string[] = asStringArray(shardIndexData)
+
+async function getShardIndexShape(): Promise<number[]> {
+    if (shardIndexShapePromise === null) {
+        shardIndexShapePromise = loadProtobuf('/data/shard_index_shape.gz', 'ShardIndex').then(
+            idx => idx.startingHashes.map(toUnsigned),
+        )
+    }
+    return shardIndexShapePromise
+}
+
+async function getShardIndexData(): Promise<number[]> {
+    if (shardIndexDataPromise === null) {
+        shardIndexDataPromise = loadProtobuf('/data/shard_index_data.gz', 'ShardIndex').then(
+            idx => idx.startingHashes.map(toUnsigned),
+        )
+    }
+    return shardIndexDataPromise
+}
 
 export const typesInOrder = Object.fromEntries(Object.entries(type_ordering_idx).map(([k, v]) => [v, k]))
 
@@ -30,27 +48,38 @@ function shardBytesFull(longname: string): string {
     return s
 }
 
+/** Hash as int32 (unsigned 32-bit); for shard index binary search. */
+function shardBytesFullNum(longname: string): number {
+    const bytes = new TextEncoder().encode(longname)
+    let hash = 0
+    for (const byte of bytes) {
+        hash = (hash * 31 + byte) & 0xffffffff
+    }
+    return hash >>> 0
+}
+
 /** First 2 + 1 hex chars; used only for symlinks folder names. */
 function shardBytes(longname: string): [string, string] {
     const full = shardBytesFull(longname)
     return [full.slice(0, 2), full.slice(2, 3)]
 }
 
-/** Binary search: largest i such that index[i] <= hash. Index is sorted. */
-function findShardIndex(hash: string, index: string[]): number {
+/** Binary search: largest i such that index[i] <= hash (unsigned). Index is sorted. */
+function findShardIndex(hash: number, index: number[]): number {
     if (index.length === 0) return 0
+    const h = hash >>> 0
     let lo = 0
     let hi = index.length - 1
     while (lo < hi) {
         const mid = (lo + hi + 1) >> 1
-        if (index[mid] <= hash) {
+        if (index[mid] <= h) {
             lo = mid
         }
         else {
             hi = mid - 1
         }
     }
-    return index[lo] <= hash ? lo : 0
+    return index[lo] <= h ? lo : 0
 }
 
 /** Nested path for shard index: A/B (second-last and last hex digit). 256 -> 0/0. Must match Python shard_subfolder. */
@@ -72,15 +101,17 @@ export function shardedName(longname: string): string {
     return `${shardedFolderName(longname)}/${sanitizedName}`
 }
 
-export function shapeLink(longname: string): string {
-    const hash = shardBytesFull(sanitize(longname))
-    const shardIdx = findShardIndex(hash, shardIndexShapeArr)
+export async function shapeLink(longname: string): Promise<string> {
+    const index = await getShardIndexShape()
+    const hash = shardBytesFullNum(sanitize(longname))
+    const shardIdx = findShardIndex(hash, index)
     return `/shape/${shardPathPrefix(shardIdx)}/shard_${shardIdx}.gz`
 }
 
-export function dataLink(longname: string): string {
-    const hash = shardBytesFull(sanitize(longname))
-    const shardIdx = findShardIndex(hash, shardIndexDataArr)
+export async function dataLink(longname: string): Promise<string> {
+    const index = await getShardIndexData()
+    const hash = shardBytesFullNum(sanitize(longname))
+    const shardIdx = findShardIndex(hash, index)
     return `/data/${shardPathPrefix(shardIdx)}/shard_${shardIdx}.gz`
 }
 
