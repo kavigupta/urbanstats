@@ -49,14 +49,20 @@ function shardBytesFull(longname: string): string {
     return s
 }
 
-/** Hash as int32 (unsigned 32-bit); for shard index binary search. */
+/** Hash value used in the shard index (must match Python: int(hex_string, 16) where hex_string is LSB-first). */
 function shardBytesFullNum(longname: string): number {
     const bytes = new TextEncoder().encode(longname)
     let hash = 0
     for (const byte of bytes) {
         hash = (hash * 31 + byte) & 0xffffffff
     }
-    return hash >>> 0
+    // Index stores int(hex_string, 16) with hex_string built LSB-first (same as shardBytesFull).
+    let s = ''
+    for (let i = 0; i < 8; i++) {
+        s += (hash & 0xf).toString(16)
+        hash = hash >>> 4
+    }
+    return parseInt(s, 16) >>> 0
 }
 
 /** First 2 + 1 hex chars; used only for symlinks folder names. */
@@ -112,6 +118,7 @@ export async function shapeLink(longname: string): Promise<string> {
 export async function dataLink(longname: string): Promise<string> {
     const index = await getShardIndexData()
     const hash = shardBytesFullNum(sanitize(longname))
+    console.log('Hash for', longname, 'is', hash.toString(16))
     const shardIdx = findShardIndex(hash, index)
     return `/data/${shardPathPrefix(shardIdx)}/shard_${shardIdx}.gz`
 }

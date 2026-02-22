@@ -8,7 +8,9 @@ import { Article, Feature } from './protos'
 
 /** Load article by longname. Symlinks are resolved in sharded data; no separate symlink fetch. */
 export async function loadArticleFromPossibleSymlink(longname: string): Promise<Article> {
-    const article = await loadArticleFromConsolidatedShard(await dataLink(longname), longname)
+    const dlink = await dataLink(longname)
+    console.log('Data link for', longname, 'is', dlink)
+    const article = await loadArticleFromConsolidatedShard(dlink, longname)
     if (article === undefined) {
         throw new Error(`Could not find article ${longname}`)
     }
