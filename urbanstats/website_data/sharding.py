@@ -35,33 +35,8 @@ def shard_bytes_full(longname):
     return string
 
 
-def shard_bytes(longname):
-    """First 2 + 1 hex chars; used only for symlinks folder names (create_foldername)."""
-    full = shard_bytes_full(longname)
-    return full[0:2], full[2:3]
-
-
 def sanitize(x):
     return x.replace("/", " slash ")
-
-
-def create_foldername(x):
-    """Used for symlinks: one .symlinks.gz per (2+1) hash folder."""
-    x = sanitize(x)
-    a, b = shard_bytes(x)
-    return f"{a}/{b}"
-
-
-def create_filename(x, ext):
-    """Path for writing a single .gz during build (before size-based sharding)."""
-    x = sanitize(x)
-    return f"{create_foldername(x)}/{x}." + ext
-
-
-def all_foldernames():
-    """All (2+1) hash folder names; used for symlinks."""
-    hexes = "0123456789abcdef"
-    return [f"{a0}{a1}/{b}" for a0 in hexes for a1 in hexes for b in hexes]
 
 
 def shard_subfolder(shard_idx):

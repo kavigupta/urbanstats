@@ -8,20 +8,6 @@ from urbanstats.protobuf import data_files_pb2
 from urbanstats.website_data.sharding import build_shards_from_callback
 
 
-# @permacache(
-#     "urbanstats/output_geometry/produce_geometry_json_cached_4",
-#     key_function=dict(
-#         r=lambda row: stable_hash(
-#             [row[x] for x in row.index if x != "geometry"]
-#             + [shapely.geometry.mapping(row.geometry)]
-#         )
-#     ),
-# )
-def produce_shape_gzip_cached(r):
-    """Return Feature proto for row; no disk write."""
-    return convert_to_protobuf(r.geometry)
-
-
 def produce_all_geometry_json(path, valid_names, symlinks):
     geos = {}
     for sf_k in tqdm.tqdm(shapefiles.values(), desc="Loading shapefiles"):
