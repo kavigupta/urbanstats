@@ -7,51 +7,35 @@ import { shardBytesFullNum } from '../utils/shardHash'
 
 import type { PageDescriptor } from './PageDescriptor'
 
-// Shard indices (gzipped proto, int32): proto stores signed int32; unwrap to unsigned 32-bit and cache.
-let shardIndexShapePromise: Promise<number[]> | null = null
-let shardIndexDataPromise: Promise<number[]> | null = null
-
-/** Unwrap signed int32 from proto back to unsigned 32-bit hash. */
-function unwrapSignedInt32(x: number): number {
-    return x >>> 0
+// Shard indices (gzipped proto, int32): store as Int32Array; interpret as unsigned when comparing. Not cached.
+async function getShardIndexShape(): Promise<Int32Array> {
+    const idx = await loadProtobuf('/shape/shard_index_shape.gz', 'ShardIndex')
+    return new Int32Array(idx.startingHashes)
 }
 
-async function getShardIndexShape(): Promise<number[]> {
-    if (shardIndexShapePromise === null) {
-        shardIndexShapePromise = loadProtobuf('/shape/shard_index_shape.gz', 'ShardIndex').then(
-            idx => idx.startingHashes.map(unwrapSignedInt32),
-        )
-    }
-    return shardIndexShapePromise
-}
-
-async function getShardIndexData(): Promise<number[]> {
-    if (shardIndexDataPromise === null) {
-        shardIndexDataPromise = loadProtobuf('/data/shard_index_data.gz', 'ShardIndex').then(
-            idx => idx.startingHashes.map(unwrapSignedInt32),
-        )
-    }
-    return shardIndexDataPromise
+async function getShardIndexData(): Promise<Int32Array> {
+    const idx = await loadProtobuf('/data/shard_index_data.gz', 'ShardIndex')
+    return new Int32Array(idx.startingHashes)
 }
 
 export const typesInOrder = Object.fromEntries(Object.entries(type_ordering_idx).map(([k, v]) => [v, k]))
 
-/** Binary search: largest i such that index[i] <= hash (unsigned). Index is sorted. */
-function findShardIndex(hash: number, index: number[]): number {
+/** Binary search: largest i such that (index[i] >>> 0) <= hash. Index stores signed int32; compare as unsigned. */
+function findShardIndex(hash: number, index: Int32Array): number {
     if (index.length === 0) return 0
     const h = hash >>> 0
     let lo = 0
     let hi = index.length - 1
     while (lo < hi) {
         const mid = (lo + hi + 1) >> 1
-        if (index[mid] <= h) {
+        if ((index[mid] >>> 0) <= h) {
             lo = mid
         }
         else {
             hi = mid - 1
         }
     }
-    return index[lo] <= h ? lo : 0
+    return (index[lo] >>> 0) <= h ? lo : 0
 }
 
 /** Nested path for shard index: A/B (second-last and last hex digit). 256 -> 0/0. Must match Python shard_subfolder. */

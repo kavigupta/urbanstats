@@ -135,25 +135,13 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     }
 }
 
-// Consolidated shard: one gzipped proto (ConsolidatedArticles or ConsolidatedShapes). Cache decoded shard by URL.
-const shardCache = new Map<string, ConsolidatedArticles | ConsolidatedShapes>()
-
+// Consolidated shard: one gzipped proto (ConsolidatedArticles or ConsolidatedShapes). Not cached.
 async function getConsolidatedArticlesShard(shardUrl: string): Promise<ConsolidatedArticles | undefined> {
-    const cached = shardCache.get(shardUrl)
-    if (cached && 'articles' in cached) return cached
-    const shard = await loadProtobuf(shardUrl, 'ConsolidatedArticles', false)
-    if (shard === undefined) return undefined
-    shardCache.set(shardUrl, shard)
-    return shard
+    return loadProtobuf(shardUrl, 'ConsolidatedArticles', false)
 }
 
 async function getConsolidatedShapesShard(shardUrl: string): Promise<ConsolidatedShapes | undefined> {
-    const cached = shardCache.get(shardUrl)
-    if (cached && 'shapes' in cached) return cached
-    const shard = await loadProtobuf(shardUrl, 'ConsolidatedShapes', false)
-    if (shard === undefined) return undefined
-    shardCache.set(shardUrl, shard)
-    return shard
+    return loadProtobuf(shardUrl, 'ConsolidatedShapes', false)
 }
 
 /** Load one article from a consolidated shard (fetch whole .gz via loadProtobuf, find by longname). Resolves symlinks to target. */
