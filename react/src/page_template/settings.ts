@@ -6,6 +6,7 @@ import stat_path_list from '../data/statistic_path_list'
 import { dataSources } from '../data/statistics_tree'
 import article_types_other from '../data/type_to_type_category'
 import { DefaultMap } from '../utils/DefaultMap'
+import { useObserverSets } from '../utils/useObserverSets'
 
 import { Theme } from './color-themes'
 import { allGroups, allYears, CategoryIdentifier, DataSource, GroupIdentifier, SourceCategoryIdentifier, SourceIdentifier, StatPath, statsTree, Year } from './statistic-tree'
@@ -238,17 +239,7 @@ export class Settings {
     private readonly stagedKeysObservers = new Set<() => void>()
 
     useStagedKeys(): (keyof SettingsDictionary)[] | undefined {
-        const [, setCounter] = useState(0)
-        useEffect(() => {
-            setCounter(counter => counter + 1)
-            const observer = (): void => {
-                setCounter(counter => counter + 1)
-            }
-            this.stagedKeysObservers.add(observer)
-            return () => {
-                this.stagedKeysObservers.delete(observer)
-            }
-        }, [])
+        useObserverSets([this.stagedKeysObservers])
         return this.getStagedKeys()
     }
 
@@ -272,18 +263,7 @@ export class Settings {
     }
 
     useSettingsInfo<K extends keyof SettingsDictionary>(keys: K[]): { [T in K]: SettingInfo<T> } {
-        const [, setCounter] = useState(0)
-        useEffect(() => {
-            setCounter(counter => counter + 1)
-            const observer = (): void => { setCounter(counter => counter + 1) }
-            keys.forEach(key => this.settingValueObservers.get(key).add(observer))
-            this.stagedKeysObservers.add(observer)
-            return () => {
-                keys.forEach(key => this.settingValueObservers.get(key).delete(observer))
-                this.stagedKeysObservers.delete(observer)
-            }
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- Our dependencies are the keys
-        }, [JSON.stringify(keys)])
+        useObserverSets(keys.map(key => this.settingValueObservers.get(key)))
         return this.getSettingsInfo(keys)
     }
     /* eslint-enable react-hooks/rules-of-hooks */
