@@ -66,10 +66,6 @@ export function consolidatedShapeLink(typ: string): string {
     return `/consolidated/shapes__${encodeURIComponent(sanitize(typ))}.gz`
 }
 
-export function consolidatedStatsLink(typ: string): string {
-    return `/consolidated/stats__${encodeURIComponent(sanitize(typ))}.gz`
-}
-
 export function searchIconLink(typeIdx: number): string {
     return `/icons/search_icons/${typesInOrder[typeIdx]}.png`
 }
