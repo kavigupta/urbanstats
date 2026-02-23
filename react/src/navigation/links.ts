@@ -3,7 +3,7 @@ import type_ordering_idx from '../data/type_ordering_idx'
 import { loadProtobuf } from '../load_json'
 import type { Universe } from '../universe'
 import { sanitize } from '../utils/paths'
-import { shardBytes, shardBytesFullNum } from '../utils/shardHash'
+import { shardBytesFullNum } from '../utils/shardHash'
 
 import type { PageDescriptor } from './PageDescriptor'
 
@@ -60,17 +60,6 @@ function shardPathPrefix(shardIdx: number): string {
     const a = s.length >= 2 ? s[s.length - 2] : '0'
     const b = s[s.length - 1]
     return `${a}/${b}`
-}
-
-export function shardedFolderName(longname: string): string {
-    const sanitizedName = sanitize(longname, true)
-    const [a, b] = shardBytes(sanitizedName)
-    return `${a}/${b}`
-}
-
-export function shardedName(longname: string): string {
-    const sanitizedName = sanitize(longname, true)
-    return `${shardedFolderName(longname)}/${sanitizedName}`
 }
 
 export async function shapeLink(longname: string): Promise<string> {

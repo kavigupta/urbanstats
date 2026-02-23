@@ -7,22 +7,17 @@ from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip, write_gzip_bytes
 from urbanstats.website_data.shard_index_rounding import round_shard_index_hashes
 
+# shape shards should be smaller because you load many per page.
+SHARD_SIZE_LIMIT_SHAPE_BYTES = 8 * 1024
+SHARD_SIZE_LIMIT_DATA_BYTES = 64 * 1024
 
-# Proto int32 is signed; wrap unsigned 32-bit hash to signed for encoding.
+
 def _unsigned_to_signed_int32(u):
     return u if u < 2**31 else u - 2**32
 
 
-# Per-type shard size limits (bytes). Shape shards smaller for faster loads.
-SHARD_SIZE_LIMIT_SHAPE_BYTES = 8 * 1024  # 8K
-SHARD_SIZE_LIMIT_DATA_BYTES = 64 * 1024  # 64K
-
-# Size-based sharding: sort items by full 8-char hash, pack by byte limit as we go, write each shard when full.
-# Each shard: one gzipped proto (ConsolidatedArticles or ConsolidatedShapes). No per-item disk I/O.
-
-
 def shard_bytes_full(longname):
-    """Full 8-char hex hash for ordering; must match links.ts shardBytesFull."""
+    """Full 8-char hex hash for ordering; must match shardHash.ts"""
     bytes_ = longname.encode("utf-8")
     hash_ = 0
     for b in bytes_:

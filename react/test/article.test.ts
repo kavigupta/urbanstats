@@ -1,7 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 
 import { sanitize } from '../src/utils/paths'
-import { shardBytesFull } from '../src/utils/shardHash'
+import { shardBytesFullNum } from '../src/utils/shardHash'
 
 import {
     target, checkAllCategoryBoxes, checkTextboxes, comparisonPage, downloadImage,
@@ -414,9 +414,9 @@ test('loading indicator', async (t) => {
 
 // Hash collisions: different longnames that share the same 8-char shard hash (same data shard).
 // One test verifies hashes collide and that all four articles load with correct compactness.
-const hashCollisionPairs: [string, [string, string]][] = [
-    ['f4fbd73f', ['NC-02 (1899), USA', 'East Earl township [CCD], Lancaster County, Pennsylvania, USA']],
-    ['b0c41bff', ['Hilltop Neighborhood, Denver City, Colorado, USA', 'Walland CDP, Tennessee, USA']],
+const hashCollisionPairs: [number, [string, string]][] = [
+    [0xf4fbd73f, ['NC-02 (1899), USA', 'East Earl township [CCD], Lancaster County, Pennsylvania, USA']],
+    [0xb0c41bff, ['Hilltop Neighborhood, Denver City, Colorado, USA', 'Walland CDP, Tennessee, USA']],
 ]
 
 const hashCollisionCompactness: Record<string, string> = {
@@ -432,8 +432,8 @@ urbanstatsFixture('hash collision', articleUrl(hashCollisionLongnames[0]))
 
 test('hash collisions: hashes match and all four pages load with correct compactness', async (t) => {
     for (const [expectedHash, [a, b]] of hashCollisionPairs) {
-        const hashA = shardBytesFull(sanitize(a))
-        const hashB = shardBytesFull(sanitize(b))
+        const hashA = shardBytesFullNum(sanitize(a))
+        const hashB = shardBytesFullNum(sanitize(b))
         await t.expect(hashA).eql(expectedHash, `hash("${a}")`)
         await t.expect(hashB).eql(expectedHash, `hash("${b}")`)
         await t.expect(hashA).eql(hashB, `collision pair should share hash`)
