@@ -37,7 +37,7 @@ export async function startProxy(): Promise<void> {
     /**
      * If the user is using a branch that also exists on densitydb, we should use it as well.
      *
-     * Otherwise, use `master`
+     * Otherwise, use `main`
      */
     const targetBranch = z.string().parse(process.env.URBANSTATS_BRANCH_NAME)
 
@@ -47,8 +47,8 @@ export async function startProxy(): Promise<void> {
     })
 
     const branch = remoteBranches.find(({ name }) => name === targetBranch)
-        ?? remoteBranches.find(({ name }) => name === 'master')
-        ?? (() => { throw new Error('No master branch') })()
+        ?? remoteBranches.find(({ name }) => name === 'main')
+        ?? (() => { throw new Error('No main branch') })()
 
     // This is useful for debugging in case the proxy isn't working
     console.warn(`Proxy is using branch ${branch.name} (${branch.commit.sha})`)

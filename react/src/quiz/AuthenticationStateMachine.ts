@@ -6,6 +6,7 @@ import { PageDescriptor, urlFromPageDescriptor } from '../navigation/PageDescrip
 import { TestUtils } from '../utils/TestUtils'
 import { retry } from '../utils/retry'
 import { persistentClient } from '../utils/urbanstats-persistent-client'
+import { useObserverSets } from '../utils/useObserverSets'
 
 import { QuizModel } from './quiz'
 import { AuthenticationError, syncWithGoogleDrive } from './sync'
@@ -77,17 +78,7 @@ export class AuthenticationStateMachine {
 
     /* eslint-disable react-hooks/rules-of-hooks -- Custom hook method */
     useState(): State {
-        const [, setCounter] = useState(0)
-        useEffect(() => {
-            setCounter(counter => counter + 1)
-            const observer = (): void => {
-                setCounter(counter => counter + 1)
-            }
-            this.stateObservers.add(observer)
-            return () => {
-                this.stateObservers.delete(observer)
-            }
-        }, [])
+        useObserverSets([this.stateObservers])
         return this._state
     }
     /* eslint-enable react-hooks/rules-of-hooks */

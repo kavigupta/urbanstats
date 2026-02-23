@@ -2,7 +2,7 @@ name: check
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 env:
   # This is used in ci_proxy, do not remove. It is necessary so that
