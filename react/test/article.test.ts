@@ -418,6 +418,12 @@ const edgeCaseHashes: { longname: string, expectedHash: number, expectedCompactn
     { longname: 'East Earl township [CCD], Lancaster County, Pennsylvania, USA', expectedHash: 0xf4fbd73f, expectedCompactness: '0.460' },
     { longname: 'Hilltop Neighborhood, Denver City, Colorado, USA', expectedHash: 0xb0c41bff, expectedCompactness: '0.408' },
     { longname: 'Walland CDP, Tennessee, USA', expectedHash: 0xb0c41bff, expectedCompactness: '0.455' },
+    // early hashes
+    { longname: 'MO-03 (1973), USA', expectedHash: 0x0000a4ba, expectedCompactness: '0.395' },
+    { longname: 'Hpakant Metropolitan Cluster, Myanmar', expectedHash: 0x0000a758, expectedCompactness: '0.0309' },
+    // late hashes
+    { longname: 'Tilhar Metropolitan Cluster, India', expectedHash: 0xffffce8b, expectedCompactness: '0.0281' },
+    { longname: 'Patchogue-Medford Union Free School District, New York, USA', expectedHash: 0xfffff4b0, expectedCompactness: '0.428' },
 ]
 
 urbanstatsFixture('edge case hashes', articleUrl(edgeCaseHashes[0].longname))
