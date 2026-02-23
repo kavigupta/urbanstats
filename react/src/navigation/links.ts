@@ -64,14 +64,14 @@ function shardPathPrefix(shardIdx: number): string {
 
 export async function shapeLink(longname: string): Promise<string> {
     const index = await getShardIndexShape()
-    const hash = shardBytesFullNum(sanitize(longname, true))
+    const hash = shardBytesFullNum(sanitize(longname))
     const shardIdx = findShardIndex(hash, index)
     return `/shape/${shardPathPrefix(shardIdx)}/shard_${shardIdx}.gz`
 }
 
 export async function dataLink(longname: string): Promise<string> {
     const index = await getShardIndexData()
-    const hash = shardBytesFullNum(sanitize(longname, true))
+    const hash = shardBytesFullNum(sanitize(longname))
     const shardIdx = findShardIndex(hash, index)
     return `/data/${shardPathPrefix(shardIdx)}/shard_${shardIdx}.gz`
 }
