@@ -77,23 +77,23 @@ export async function dataLink(longname: string): Promise<string> {
 }
 
 export function indexLink(universe: string, typ: string): string {
-    return `/index/${universe}/${encodeURIComponent(sanitize(typ, false))}.gz`
+    return `/index/${universe}/${encodeURIComponent(typ)}.gz`
 }
 
 export function orderingLink(type: string, idx: number): string {
-    return `/order/${encodeURIComponent(sanitize(type, false))}_${idx}.gz`
+    return `/order/${encodeURIComponent(type)}_${idx}.gz`
 }
 
 export function orderingDataLink(type: string, idx: number): string {
-    return `/order/${encodeURIComponent(sanitize(type, false))}_${idx}_data.gz`
-}
-
-export function searchIconLink(typeIdx: number): string {
-    return `/icons/search_icons/${typesInOrder[typeIdx]}.png`
+    return `/order/${encodeURIComponent(type)}_${idx}_data.gz`
 }
 
 export function consolidatedShapeLink(typ: string): string {
     return `/consolidated/shapes__${encodeURIComponent(sanitize(typ))}.gz`
+}
+
+export function searchIconLink(typeIdx: number): string {
+    return `/icons/search_icons/${typesInOrder[typeIdx]}.png`
 }
 
 export function centroidsPath(universe: string, typ: string): string {
