@@ -1114,6 +1114,121 @@ export class Article implements IArticle {
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
+/** Properties of a ConsolidatedArticles. */
+export interface IConsolidatedArticles {
+
+    /** ConsolidatedArticles longnames */
+    longnames?: (string[]|null);
+
+    /** ConsolidatedArticles articles */
+    articles?: (IArticle[]|null);
+
+    /** ConsolidatedArticles symlinkLinkNames */
+    symlinkLinkNames?: (string[]|null);
+
+    /** ConsolidatedArticles symlinkTargetNames */
+    symlinkTargetNames?: (string[]|null);
+}
+
+/** Represents a ConsolidatedArticles. */
+export class ConsolidatedArticles implements IConsolidatedArticles {
+
+    /**
+     * Constructs a new ConsolidatedArticles.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IConsolidatedArticles);
+
+    /** ConsolidatedArticles longnames. */
+    public longnames: string[];
+
+    /** ConsolidatedArticles articles. */
+    public articles: IArticle[];
+
+    /** ConsolidatedArticles symlinkLinkNames. */
+    public symlinkLinkNames: string[];
+
+    /** ConsolidatedArticles symlinkTargetNames. */
+    public symlinkTargetNames: string[];
+
+    /**
+     * Creates a new ConsolidatedArticles instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns ConsolidatedArticles instance
+     */
+    public static create(properties?: IConsolidatedArticles): ConsolidatedArticles;
+
+    /**
+     * Encodes the specified ConsolidatedArticles message. Does not implicitly {@link ConsolidatedArticles.verify|verify} messages.
+     * @param message ConsolidatedArticles message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IConsolidatedArticles, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified ConsolidatedArticles message, length delimited. Does not implicitly {@link ConsolidatedArticles.verify|verify} messages.
+     * @param message ConsolidatedArticles message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IConsolidatedArticles, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a ConsolidatedArticles message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns ConsolidatedArticles
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ConsolidatedArticles;
+
+    /**
+     * Decodes a ConsolidatedArticles message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns ConsolidatedArticles
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ConsolidatedArticles;
+
+    /**
+     * Verifies a ConsolidatedArticles message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a ConsolidatedArticles message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns ConsolidatedArticles
+     */
+    public static fromObject(object: { [k: string]: any }): ConsolidatedArticles;
+
+    /**
+     * Creates a plain object from a ConsolidatedArticles message. Also converts values to other types if specified.
+     * @param message ConsolidatedArticles
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: ConsolidatedArticles, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this ConsolidatedArticles to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ConsolidatedArticles
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
 /** Properties of a Coordinate. */
 export interface ICoordinate {
 
@@ -2746,6 +2861,12 @@ export interface IConsolidatedShapes {
 
     /** ConsolidatedShapes shapes */
     shapes?: (IFeature[]|null);
+
+    /** ConsolidatedShapes symlinkLinkNames */
+    symlinkLinkNames?: (string[]|null);
+
+    /** ConsolidatedShapes symlinkTargetNames */
+    symlinkTargetNames?: (string[]|null);
 }
 
 /** Represents a ConsolidatedShapes. */
@@ -2765,6 +2886,12 @@ export class ConsolidatedShapes implements IConsolidatedShapes {
 
     /** ConsolidatedShapes shapes. */
     public shapes: IFeature[];
+
+    /** ConsolidatedShapes symlinkLinkNames. */
+    public symlinkLinkNames: string[];
+
+    /** ConsolidatedShapes symlinkTargetNames. */
+    public symlinkTargetNames: string[];
 
     /**
      * Creates a new ConsolidatedShapes instance using the specified properties.
@@ -3789,6 +3916,103 @@ export class DefaultUniverseTable implements IDefaultUniverseTable {
 
     /**
      * Gets the default type url for DefaultUniverseTable
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a ShardIndex. */
+export interface IShardIndex {
+
+    /** ShardIndex startingHashes */
+    startingHashes?: (number[]|null);
+}
+
+/** Represents a ShardIndex. */
+export class ShardIndex implements IShardIndex {
+
+    /**
+     * Constructs a new ShardIndex.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IShardIndex);
+
+    /** ShardIndex startingHashes. */
+    public startingHashes: number[];
+
+    /**
+     * Creates a new ShardIndex instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns ShardIndex instance
+     */
+    public static create(properties?: IShardIndex): ShardIndex;
+
+    /**
+     * Encodes the specified ShardIndex message. Does not implicitly {@link ShardIndex.verify|verify} messages.
+     * @param message ShardIndex message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IShardIndex, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified ShardIndex message, length delimited. Does not implicitly {@link ShardIndex.verify|verify} messages.
+     * @param message ShardIndex message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IShardIndex, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a ShardIndex message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns ShardIndex
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ShardIndex;
+
+    /**
+     * Decodes a ShardIndex message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns ShardIndex
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ShardIndex;
+
+    /**
+     * Verifies a ShardIndex message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a ShardIndex message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns ShardIndex
+     */
+    public static fromObject(object: { [k: string]: any }): ShardIndex;
+
+    /**
+     * Creates a plain object from a ShardIndex message. Also converts values to other types if specified.
+     * @param message ShardIndex
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: ShardIndex, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this ShardIndex to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ShardIndex
      * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
      * @returns The default type url
      */
