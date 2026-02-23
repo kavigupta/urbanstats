@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react'
 
+/**
+ * A React hook that subscribes to multiple observer sets and triggers a re-render
+ * whenever any observer in any of the provided sets is called.
+ */
 export function useObserverSets(observerSets: Set<() => void>[]): void {
     const [, setCounter] = useState(0)
     useEffect(() => {
