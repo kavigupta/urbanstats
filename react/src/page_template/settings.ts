@@ -263,7 +263,7 @@ export class Settings {
     }
 
     useSettingsInfo<K extends keyof SettingsDictionary>(keys: K[]): { [T in K]: SettingInfo<T> } {
-        useObserverSets(keys.map(key => this.settingValueObservers.get(key)))
+        useObserverSets([this.stagedKeysObservers].concat(keys.map(key => this.settingValueObservers.get(key))))
         return this.getSettingsInfo(keys)
     }
     /* eslint-enable react-hooks/rules-of-hooks */
