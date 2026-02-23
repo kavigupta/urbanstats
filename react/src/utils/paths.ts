@@ -1,10 +1,6 @@
-/**
- * Sanitize longnames for use in paths (shard names, filenames, etc.).
- */
-
-export function sanitize(longname: string, spacesAroundSlash = true): string {
+export function sanitize(longname: string, spaces_around_slash = true): string {
     let x = longname
-    if (spacesAroundSlash) {
+    if (spaces_around_slash) {
         x = x.replaceAll('/', ' slash ')
     }
     else {
