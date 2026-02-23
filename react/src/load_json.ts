@@ -176,9 +176,9 @@ export async function loadFeatureFromConsolidatedShard(shardUrl: string, longnam
     if (!shard) return undefined
     const idx = shard.longnames.indexOf(longname)
     if (idx >= 0) return shard.shapes[idx] as Feature
-    const symIdx = shard.symlinkLinkNames?.indexOf(longname) ?? -1
+    const symIdx = shard.symlinkLinkNames.indexOf(longname)
     if (symIdx >= 0) {
-        const target = shard.symlinkTargetNames![symIdx]
+        const target = shard.symlinkTargetNames[symIdx]
         return loadFeatureFromConsolidatedShard(await shapeLink(target), target)
     }
     return undefined
