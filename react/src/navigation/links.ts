@@ -2,7 +2,7 @@ import type { StatisticDescriptor } from '../components/statistic-panel'
 import type_ordering_idx from '../data/type_ordering_idx'
 import { loadProtobuf } from '../load_json'
 import type { Universe } from '../universe'
-import { sanitize as sanitizeForShard } from '../utils/paths'
+import { sanitize } from '../utils/paths'
 import { shardBytes, shardBytesFullNum } from '../utils/shardHash'
 
 import type { PageDescriptor } from './PageDescriptor'
@@ -63,40 +63,40 @@ function shardPathPrefix(shardIdx: number): string {
 }
 
 export function shardedFolderName(longname: string): string {
-    const sanitizedName = sanitizeForShard(longname, true)
+    const sanitizedName = sanitize(longname, true)
     const [a, b] = shardBytes(sanitizedName)
     return `${a}/${b}`
 }
 
 export function shardedName(longname: string): string {
-    const sanitizedName = sanitizeForShard(longname, true)
+    const sanitizedName = sanitize(longname, true)
     return `${shardedFolderName(longname)}/${sanitizedName}`
 }
 
 export async function shapeLink(longname: string): Promise<string> {
     const index = await getShardIndexShape()
-    const hash = shardBytesFullNum(sanitizeForShard(longname, true))
+    const hash = shardBytesFullNum(sanitize(longname, true))
     const shardIdx = findShardIndex(hash, index)
     return `/shape/${shardPathPrefix(shardIdx)}/shard_${shardIdx}.gz`
 }
 
 export async function dataLink(longname: string): Promise<string> {
     const index = await getShardIndexData()
-    const hash = shardBytesFullNum(sanitizeForShard(longname, true))
+    const hash = shardBytesFullNum(sanitize(longname, true))
     const shardIdx = findShardIndex(hash, index)
     return `/data/${shardPathPrefix(shardIdx)}/shard_${shardIdx}.gz`
 }
 
 export function indexLink(universe: string, typ: string): string {
-    return `/index/${universe}/${encodeURIComponent(sanitizeForShard(typ, false))}.gz`
+    return `/index/${universe}/${encodeURIComponent(sanitize(typ, false))}.gz`
 }
 
 export function orderingLink(type: string, idx: number): string {
-    return `/order/${encodeURIComponent(sanitizeForShard(type, false))}_${idx}.gz`
+    return `/order/${encodeURIComponent(sanitize(type, false))}_${idx}.gz`
 }
 
 export function orderingDataLink(type: string, idx: number): string {
-    return `/order/${encodeURIComponent(sanitizeForShard(type, false))}_${idx}_data.gz`
+    return `/order/${encodeURIComponent(sanitize(type, false))}_${idx}_data.gz`
 }
 
 export function searchIconLink(typeIdx: number): string {
@@ -104,11 +104,11 @@ export function searchIconLink(typeIdx: number): string {
 }
 
 export function consolidatedShapeLink(typ: string): string {
-    return `/consolidated/shapes__${encodeURIComponent(sanitizeForShard(typ))}.gz`
+    return `/consolidated/shapes__${encodeURIComponent(sanitize(typ))}.gz`
 }
 
 export function centroidsPath(universe: string, typ: string): string {
-    return `/centroids/${encodeURIComponent(universe)}_${encodeURIComponent(sanitizeForShard(typ))}.gz`
+    return `/centroids/${encodeURIComponent(universe)}_${encodeURIComponent(sanitize(typ))}.gz`
 }
 
 export function statisticDescriptor(props: {
