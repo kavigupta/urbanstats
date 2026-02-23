@@ -46,14 +46,14 @@ export function SearchBox(props: {
                 return []
             }
             createSearchWorkerIfNeeded()
-            TestUtils.shared.startLoading()
+            TestUtils.shared.startLoading('doSearch')
             const result = await searchWorker.current!({
                 unnormalizedPattern: sq,
                 maxResults: 10,
                 showSettings,
                 prioritizeTypeIndex: props.prioritizeArticleType !== undefined ? type_ordering_idx[props.prioritizeArticleType] : undefined,
             })
-            void TestUtils.shared.finishLoading()
+            void TestUtils.shared.finishLoading('doSearch')
             return result
         }
     }, [searchWorker, showSettings, props.prioritizeArticleType, createSearchWorkerIfNeeded])

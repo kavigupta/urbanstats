@@ -621,7 +621,7 @@ function SimpleStatisticPanel(props: SimpleStatisticPanelProps): ReactNode {
         () => loadStatisticsData(restProps.universe, restProps.descriptor.statname, restProps.articleType, restProps.counts),
         [restProps.universe, restProps.descriptor.statname, restProps.articleType, restProps.counts],
     )
-    const data = useOrderedResolve(promise)
+    const data = useOrderedResolve(promise, 'SimpleStatisticPanel')
 
     useEffect(() => {
         if (data.result?.type === 'success') {
