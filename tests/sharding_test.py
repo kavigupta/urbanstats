@@ -69,7 +69,7 @@ class TestRoundShardIndexHashes(unittest.TestCase):
         for i in range(1, len(out)):
             self.assertLess(out[i - 1], out[i])
         # Each out[i] must be <= starts[i].
-        for i in range(len(out)): # pylint: disable=consider-using-enumerate
+        for i in range(len(out)):  # pylint: disable=consider-using-enumerate
             self.assertLessEqual(out[i], starts[i])
         # Each out[i] must be > end[i-1] (except i=0).
         for i in range(1, len(out)):

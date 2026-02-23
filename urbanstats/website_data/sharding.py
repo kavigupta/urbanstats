@@ -1,7 +1,6 @@
-from abc import ABC, abstractmethod
-
 import gzip
 import os
+from abc import ABC, abstractmethod
 
 import tqdm.auto as tqdm
 
