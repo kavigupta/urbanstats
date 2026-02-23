@@ -7,29 +7,11 @@
  * and then any files not generated, we'll proxy the request to a CI proxy that has a copy of densitydb.
  */
 
-import http from 'http'
-import https from 'https'
-
-import CacheableLookup from 'cacheable-lookup'
 import compression from 'compression'
 import express from 'express'
 import proxy from 'express-http-proxy'
 import { Octokit } from 'octokit'
 import { z } from 'zod'
-
-const cacheable = new CacheableLookup()
-
-const originalLookup = cacheable.lookup.bind(cacheable)
-
-cacheable.lookup = ((...args) => {
-    if (args[0] === 'cdn.jsdelivr.net') {
-        args[0] = 'jsdelivr.map.fastly.net' // Cloudflare doesn't handle range requests correctly
-    }
-    originalLookup(...(args as Parameters<typeof originalLookup>))
-}) as typeof cacheable.lookup
-
-cacheable.install(http.globalAgent)
-cacheable.install(https.globalAgent)
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
 
