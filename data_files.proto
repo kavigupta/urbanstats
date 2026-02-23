@@ -68,6 +68,7 @@ message Article {
     repeated Metadata metadata = 11;
 }
 
+// used exclusively for shards
 message ConsolidatedArticles {
     repeated string longnames = 1;
     repeated Article articles = 2;
@@ -165,6 +166,8 @@ message ConsolidatedShapes {
     repeated string longnames = 1;
     repeated Universes universes = 3;
     repeated Feature shapes = 2;
+    // these are not used in the consolidated/ folder mapping shapes, but are used
+    // in the shards.
     repeated string symlink_link_names = 4;
     repeated string symlink_target_names = 5;
 }
