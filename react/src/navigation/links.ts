@@ -1,6 +1,7 @@
 import type { StatisticDescriptor } from '../components/statistic-panel'
 import type_ordering_idx from '../data/type_ordering_idx'
 import { Universe } from '../universe'
+import { sanitize } from '../utils/paths'
 
 import { PageDescriptor } from './PageDescriptor'
 
@@ -107,18 +108,6 @@ export function statisticDescriptor(props: {
         edit: props.edit,
         sort_column: props.sortColumn,
     }
-}
-
-export function sanitize(longname: string, spaces_around_slash = true): string {
-    let x = longname
-    if (spaces_around_slash) {
-        x = x.replaceAll('/', ' slash ')
-    }
-    else {
-        x = x.replaceAll('/', 'slash')
-    }
-    x = x.replaceAll('%', '%25')
-    return x
 }
 
 export function universePath(universe: string): string {
