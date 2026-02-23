@@ -195,7 +195,7 @@ def build_shards_from_callback(
         (shard_bytes_full(sanitize(ln)), "symlink", ln, tn)
         for ln, tn in (symlinks or {}).items()
     ]
-    combined = sorted(primary_entries + symlink_entries, key=lambda x: x[0])
+    combined = sorted(primary_entries + symlink_entries)
 
     creator = ShardBuilder(
         folder, type_label, ArticleData() if type_label == "data" else ShapeData()
