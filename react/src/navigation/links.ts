@@ -51,15 +51,15 @@ export function symlinksLink(longname: string): string {
 }
 
 export function indexLink(universe: string, typ: string): string {
-    return `/index/${universe}/${encodeURIComponent(sanitize(typ, false))}.gz`
+    return `/index/${universe}/${encodeURIComponent(typ)}.gz`
 }
 
 export function orderingLink(type: string, idx: number): string {
-    return `/order/${encodeURIComponent(sanitize(type, false))}_${idx}.gz`
+    return `/order/${encodeURIComponent(type)}_${idx}.gz`
 }
 
 export function orderingDataLink(type: string, idx: number): string {
-    return `/order/${encodeURIComponent(sanitize(type, false))}_${idx}_data.gz`
+    return `/order/${encodeURIComponent(type)}_${idx}_data.gz`
 }
 
 export function consolidatedShapeLink(typ: string): string {
