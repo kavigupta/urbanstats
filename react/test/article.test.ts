@@ -1,6 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 
-import { sanitize, shardBytesFull } from '../src/utils/shardHash'
+import { sanitize } from '../src/utils/paths'
+import { shardBytesFull } from '../src/utils/shardHash'
 
 import {
     target, checkAllCategoryBoxes, checkTextboxes, comparisonPage, downloadImage,

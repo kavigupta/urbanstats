@@ -2,7 +2,8 @@ import type { StatisticDescriptor } from '../components/statistic-panel'
 import type_ordering_idx from '../data/type_ordering_idx'
 import { loadProtobuf } from '../load_json'
 import type { Universe } from '../universe'
-import { sanitize as sanitizeForShard, shardBytes, shardBytesFullNum } from '../utils/shardHash'
+import { sanitize as sanitizeForShard } from '../utils/paths'
+import { shardBytes, shardBytesFullNum } from '../utils/shardHash'
 
 import type { PageDescriptor } from './PageDescriptor'
 
@@ -31,10 +32,6 @@ async function getShardIndexData(): Promise<number[]> {
         )
     }
     return shardIndexDataPromise
-}
-
-export function sanitize(longname: string, spaces_around_slash = true): string {
-    return sanitizeForShard(longname, spaces_around_slash)
 }
 
 export const typesInOrder = Object.fromEntries(Object.entries(type_ordering_idx).map(([k, v]) => [v, k]))

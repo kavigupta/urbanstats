@@ -1,19 +1,7 @@
 /**
- * Shard hashing and longname sanitization for shard paths.
+ * Shard hashing for shard paths. Callers should pass sanitized longnames (see paths.ts).
  * No app dependencies so tests can import only this for hash collision checks.
  */
-
-export function sanitize(longname: string, spacesAroundSlash = true): string {
-    let x = longname
-    if (spacesAroundSlash) {
-        x = x.replaceAll('/', ' slash ')
-    }
-    else {
-        x = x.replaceAll('/', 'slash')
-    }
-    x = x.replaceAll('%', '%25')
-    return x
-}
 
 /** Full 8-char hex hash for ordering; must match Python shard_bytes_full. */
 export function shardBytesFull(sanitizedLongname: string): string {
