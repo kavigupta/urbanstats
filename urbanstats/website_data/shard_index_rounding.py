@@ -17,16 +17,12 @@ def round_shard_index_hashes(buckets):
     if not buckets:
         return []
     out = []
-    for i, (start, end) in enumerate(buckets):
-        if i == 0:
-            lo = -1
-        else:
-            lo = buckets[i - 1][1]  # end of previous bucket
-        # Largest k such that _round_down(start, k) > lo
+    for (start, _), (_, prev_end) in zip(buckets, [(-1, -1), *buckets]):
+        # Largest k such that _round_down(start, k) > prev_end
         r = start
         for k in range(31, -1, -1):
             r = _round_down(start, k)
-            if r > lo:
+            if r > prev_end:
                 break
         out.append(r)
     return out

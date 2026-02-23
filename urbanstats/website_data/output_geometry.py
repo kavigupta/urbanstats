@@ -1,6 +1,5 @@
 import shapely
 import tqdm.auto as tqdm
-from permacache import permacache, stable_hash
 
 from urbanstats.geometry.classify_coordinate_zone import classify_coordinate_zone
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles

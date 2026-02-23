@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+
 import gzip
 import os
 
@@ -40,9 +42,6 @@ def shard_subfolder(shard_idx):
     a = s[-2] if len(s) >= 2 else "0"
     b = s[-1]
     return f"{a}/{b}"
-
-
-from abc import ABC, abstractmethod
 
 
 class DataOrShape(ABC):
@@ -190,10 +189,6 @@ def build_shards_from_callback(
 
     Returns list of hash strings that start each shard (for frontend index).
     """
-    # if not longnames:
-    #     return []
-
-    # Combined list of (hash, kind, name, target_or_none) with kind 'primary' or 'symlink', sorted by hash.
     primary_entries = [
         (shard_bytes_full(sanitize(ln)), "primary", ln, None) for ln in longnames
     ]
@@ -213,10 +208,7 @@ def build_shards_from_callback(
         if kind == "symlink":
             creator.add_symlink(name, target)
         else:
-            proto = get_proto_fn(name)
-            if isinstance(proto, (list, tuple)):
-                proto = proto[0]
-            creator.add_proto(name, proto)
+            creator.add_proto(name, get_proto_fn(name))
 
     creator.write_current_shard()
 

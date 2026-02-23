@@ -1,5 +1,4 @@
 import itertools
-import os
 from functools import lru_cache
 
 import numpy as np
@@ -8,7 +7,6 @@ from urbanstats.geometry.relationship import full_relationships, ordering_idx
 from urbanstats.metadata import metadata_types
 from urbanstats.ordinals.flat_ordinals import compute_flat_ordinals
 from urbanstats.protobuf import data_files_pb2
-from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.universe.universe_constants import ZERO_POPULATION_UNIVERSES
@@ -32,7 +30,6 @@ def metadata_for_article(row):
 
 
 def create_article_gzip(
-    folder,
     row,
     *,
     relationships,
@@ -152,7 +149,6 @@ def create_article_gzips(site_folder, full, ordering, symlinks):
     def get_article(longname):
         row = full.iloc[long_to_idx[longname]]
         return create_article_gzip(
-            f"{site_folder}/data",
             row,
             relationships=relationships,
             long_to_short=long_to_short,

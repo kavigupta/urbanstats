@@ -78,7 +78,7 @@ def write_gzip(proto, path):
         f.write(proto.SerializeToString())
 
 
-def write_gzip_bytes(bytes, path):
+def write_gzip_bytes(bytestring, path):
     ensure_writeable(path)
     with gzip.GzipFile(path, "wb", mtime=0) as f:
-        f.write(bytes)
+        f.write(bytestring)
