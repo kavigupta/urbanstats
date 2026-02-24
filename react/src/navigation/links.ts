@@ -46,18 +46,20 @@ function shardPathPrefix(shardIdx: number): string {
     return `${a}/${b}`
 }
 
-export async function shapeLink(longname: string): Promise<string> {
-    const index = await getShardIndexShape()
-    const hash = shardBytesFullNum(sanitize(longname))
-    const shardIdx = findShardIndex(hash, index)
-    return `/shape/${shardPathPrefix(shardIdx)}/shard_${shardIdx}.gz`
+async function dataOrShapeLink(longname: string, dataOrShape: 'data' | 'shape'): Promise<string> {
+    const sanitized = sanitize(longname)
+    const hash = shardBytesFullNum(sanitized)
+    const index = dataOrShape === 'shape' ? getShardIndexShape() : getShardIndexData()
+    const shardIdx = findShardIndex(hash, await index)
+    return `/${dataOrShape}/${shardPathPrefix(shardIdx)}/shard_${shardIdx}.gz`
 }
 
-export async function dataLink(longname: string): Promise<string> {
-    const index = await getShardIndexData()
-    const hash = shardBytesFullNum(sanitize(longname))
-    const shardIdx = findShardIndex(hash, index)
-    return `/data/${shardPathPrefix(shardIdx)}/shard_${shardIdx}.gz`
+export function shapeLink(longname: string): Promise<string> {
+    return dataOrShapeLink(longname, 'shape')
+}
+
+export function dataLink(longname: string): Promise<string> {
+    return dataOrShapeLink(longname, 'data')
 }
 
 export function indexLink(universe: string, typ: string): string {
