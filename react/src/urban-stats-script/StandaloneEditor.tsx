@@ -5,9 +5,11 @@
 
 import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
+import { UndoRedoOptions, useUndoRedo } from '../utils/useUndoRedo'
+
 import { Editor } from './Editor'
 import { defaultConstants } from './constants/constants'
-import { EditorResult, Range, UndoRedoOptions, useUndoRedo } from './editor-utils'
+import { EditorResult, Range } from './editor-utils'
 import { parse } from './parser'
 import { TypeEnvironment } from './types-values'
 import { executeAsync } from './workerManager'
