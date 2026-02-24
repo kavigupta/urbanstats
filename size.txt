@@ -474,3 +474,12 @@ add a bunch of canadian stats (#1736)
 1780    data
 4284    total
 
+
+Consolidate data and shape into a file (#1750)
+
+125     consolidated
+167     quiz_sampling_info
+685     shape
+775     order
+1308    data
+3191    total
