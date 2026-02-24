@@ -1,6 +1,7 @@
 import { UrbanStatsASTExpression, UrbanStatsASTStatement, locationOf, unify } from '../../urban-stats-script/ast'
+import { longMessage } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
-import { parseNoErrorAsCustomNode, unparse } from '../../urban-stats-script/parser'
+import { parse, parseNoErrorAsCustomNode, unparse } from '../../urban-stats-script/parser'
 import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 
 import { parseExpr } from './parseExpr'
@@ -53,6 +54,14 @@ export function convertToMapUss(uss: UrbanStatsASTStatement): MapUSS {
     }
     // Support arbitrary scripts
     return parseNoErrorAsCustomNode(unparse(uss), rootBlockIdent)
+}
+
+export function mapUSSFromString(rawString: string): MapUSS {
+    const uss = parse(rawString)
+    if (uss.type === 'error') {
+        throw new Error(uss.errors.map(error => longMessage({ kind: 'error', ...error }, true)).join(', '))
+    }
+    return convertToMapUss(uss)
 }
 
 export function makeStatements<const T extends UrbanStatsASTStatement[]>(elements: T, identFallback?: string): UrbanStatsASTStatement & { type: 'statements', result: T } {
