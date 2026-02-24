@@ -126,8 +126,7 @@ class ShardBuilder:
         if self.current_proto_size_estimate < 0.99 * self.data_or_shape.size_limit():
             return False
         return (
-            len(gzip.compress(byte_string, mtime=0))
-            > self.data_or_shape.size_limit()
+            len(gzip.compress(byte_string, mtime=0)) > self.data_or_shape.size_limit()
         )
 
     def with_synchronization(self, func, item_name):
@@ -141,7 +140,7 @@ class ShardBuilder:
         func()
         new_bytes = self.current_proto.SerializeToString()
         # you can only split up if the hash changes otherwise the same hash is split
-            # across shards so won't be findable.
+        # across shards so won't be findable.
         if item_hash != self.hash_end and self.is_oversize(new_bytes):
             self.write_current_shard()
             func()
