@@ -128,7 +128,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
 
         await cdp.Network.enable({})
         await cdp.Network.setBlockedURLs({
-            urls: ['*Arizona*'],
+            urls: ['*shape*'],
         })
 
         await clickButtons(t, ['a'])
