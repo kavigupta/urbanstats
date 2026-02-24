@@ -7,6 +7,7 @@ import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { loadImage } from '../utils/Image'
 import { TestUtils } from '../utils/TestUtils'
+import { totalOffset } from '../utils/layout'
 import { zIndex } from '../utils/zIndex'
 
 export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
@@ -71,14 +72,6 @@ export interface ScreencapElements {
     overallWidth: number
     elementsToRender: HTMLElement[]
     heightMultiplier?: number
-}
-
-export function totalOffset(element: Element | null): { top: number, left: number } {
-    if (!(element instanceof HTMLElement)) {
-        return { top: 0, left: 0 }
-    }
-    const parentOffset = totalOffset(element.offsetParent)
-    return { top: element.offsetTop + parentOffset.top, left: element.offsetLeft + parentOffset.left }
 }
 
 function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number, image: CanvasImageSource, x: number, y: number, w: number, h: number, testing: boolean): void {

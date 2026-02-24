@@ -6,11 +6,10 @@ import valid_geographies from '../../data/mapper/used_geographies'
 import universes_ordered from '../../data/universes_ordered'
 import { Universe } from '../../universe'
 import { toStatement, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
-import { longMessage } from '../../urban-stats-script/editor-utils'
-import { parse, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
+import { parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
 import { defaultTypeEnvironment } from '../context'
 
-import { attemptParseAsTopLevel, convertToMapUss, MapUSS, rootBlockIdent, validMapperOutputs } from './map-uss'
+import { attemptParseAsTopLevel, MapUSS, mapUSSFromString, rootBlockIdent, validMapperOutputs } from './map-uss'
 
 export type StatisticsForGeography = { stats: number[] }[]
 
@@ -88,13 +87,9 @@ export function mapSettingsFromURLParam(encodedSettings: string | undefined): Ma
             script: z.object({
                 uss: z.string(),
             }) }).parse(JSON.parse(jsonedSettings))
-        const uss = parse(rawSettings.script.uss)
-        if (uss.type === 'error') {
-            throw new Error(uss.errors.map(error => longMessage({ kind: 'error', ...error }, true)).join(', '))
-        }
         settings = {
             ...rawSettings,
-            script: { uss: convertToMapUss(uss) },
+            script: { uss: mapUSSFromString(rawSettings.script.uss) },
         }
     }
     return defaultSettings(settings)
