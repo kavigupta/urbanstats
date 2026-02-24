@@ -1,5 +1,5 @@
 import Color from 'color'
-import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
@@ -30,7 +30,7 @@ import { furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { ConsolidatedShapes, Feature, ICoordinate } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
-import { useOrderedResolve } from '../utils/useOrderedResolve'
+import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
 import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar'
 import { InsetMap } from './components/InsetMap'
@@ -43,39 +43,23 @@ const mapUpdateInterval = 500
 
 export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): MapGenerator {
     const cache = useRef<MapCache>({})
-    const updateTime = useRef(Date.now())
 
-    const [currentGenerator, setCurrentGenerator] = useState<Promise<MapGenerator<{ loading: boolean }>>>(() => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator: undefined }))
+    const compute = useCallback((previousGenerator: Promise<MapGenerator<{ loading: boolean }>> | undefined) => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator }), [mapSettings])
 
-    useEffect(() => {
-        const timeSinceMapUpdate = Date.now() - updateTime.current
-        if (timeSinceMapUpdate > mapUpdateInterval) {
-            updateTime.current = Date.now()
-            setCurrentGenerator(previousGenerator => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator }))
-            return
-        }
-        else {
-            updateTime.current = Date.now()
-            const timeout = setTimeout(() => {
-                setCurrentGenerator(previousGenerator => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator }))
-            }, mapUpdateInterval - timeSinceMapUpdate)
-            return () => {
-                clearTimeout(timeout)
-            }
-        }
-    }, [mapSettings]) // Do not change this effect list!!
-
-    const { result, loading } = useOrderedResolve(currentGenerator, 'useMapGenerator')
-
-    return result !== undefined
-        ? {
-                ...result,
-                ui: props => result.ui({ ...props, loading }),
-            }
-        : {
-                ui: () => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
+    return useDebouncedResolve(
+        compute,
+        {
+            interval: mapUpdateInterval,
+            initial: {
+                ui: ({ loading }) => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
                 errors: [],
-            }
+            },
+            ui: (generator, loading) => ({
+                ...generator,
+                ui: props => generator.ui({ ...props, loading }),
+            }),
+        },
+    )
 }
 
 type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditSeq<Inset> } | { mode: 'textBoxes', editTextBoxes: EditSeq<TextBox> })
