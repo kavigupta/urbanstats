@@ -68,6 +68,14 @@ message Article {
     repeated Metadata metadata = 11;
 }
 
+// used exclusively for shards
+message ConsolidatedArticles {
+    repeated string longnames = 1;
+    repeated Article articles = 2;
+    repeated string symlink_link_names = 3;
+    repeated string symlink_target_names = 4;
+}
+
 
 // geojson
 
@@ -158,6 +166,10 @@ message ConsolidatedShapes {
     repeated string longnames = 1;
     repeated Universes universes = 3;
     repeated Feature shapes = 2;
+    // these are not used in the consolidated/ folder mapping shapes, but are used
+    // in the shards.
+    repeated string symlink_link_names = 4;
+    repeated string symlink_target_names = 5;
 }
 
 // quiz sampling data
@@ -208,4 +220,9 @@ message DefaultUniverseTriple {
 message DefaultUniverseTable {
     optional int32 most_common_universe_idx = 1;
     repeated DefaultUniverseTriple exceptions = 2;
+}
+
+// Shard index: sorted array of hash values (int32, same as 8-char hex hash) that start each shard (for binary search).
+message ShardIndex {
+    repeated int32 starting_hashes = 1;
 }
