@@ -3,6 +3,8 @@ import os
 import shutil
 import subprocess
 
+from .test_utils import get_current_branch
+
 PATH = "/home/kavi/temp/site"
 LOCAL_REPO = "/home/kavi/urbanstats-site-backup/densitydb.github.io"
 REPO = "git@github.com:densitydb/densitydb.github.io.git"
@@ -33,7 +35,7 @@ def update_scripts(branch):
     """
     synchronize()
     # if the branch isn't the same as the current branch, checkout to the branch
-    current_branch = get_current_branch()
+    current_branch = get_current_branch(".")
     if current_branch != branch:
         # create a new branch if it doesn't exist
         subprocess.run(["git", "checkout", "-b", branch], cwd=PATH, check=True)
@@ -51,18 +53,6 @@ def update_scripts(branch):
     subprocess.run(["git", "push", "origin", branch], cwd=PATH, check=True)
 
 
-def get_current_branch(path=PATH):
-    current_branch = subprocess.run(
-        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-        cwd=path,
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout.strip()
-
-    return current_branch
-
-
 def update_all():
     temp_branch = "temp"
     push_to_new_branch(temp_branch)
@@ -70,7 +60,7 @@ def update_all():
 
 
 def push_to_main(new_branch):
-    current_branch = get_current_branch()
+    current_branch = get_current_branch(PATH)
     assert current_branch == new_branch != "main", (current_branch, new_branch)
     # check if main branch exists
     branches = subprocess.run(
@@ -121,7 +111,7 @@ def push_to_new_branch(new_branch):
 
 
 def merge(new_branch):
-    current_branch = get_current_branch()
+    current_branch = get_current_branch(".")
     assert current_branch == new_branch != "main", (current_branch, new_branch)
     # switch to main
     subprocess.run(["git", "checkout", "main"], cwd=PATH, check=True)
@@ -138,7 +128,7 @@ def merge(new_branch):
 
 
 def rm_branch(branch):
-    current_branch = get_current_branch()
+    current_branch = get_current_branch(".")
     assert current_branch == branch != "main", (current_branch, branch)
     subprocess.run(["git", "checkout", "main"], cwd=PATH, check=True)
     subprocess.run(["git", "branch", "-D", branch], cwd=PATH, check=True)
