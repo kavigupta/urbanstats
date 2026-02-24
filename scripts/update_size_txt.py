@@ -1,17 +1,12 @@
 import argparse
 import os
 import subprocess
-import sys
 from typing import Dict, List, Tuple
 
-import requests
+from .test_utils import get_current_pr_label
 
-DEFAULT_ROOT = "/home/kavi/urbanstats-site-backup/densitydb.github.io"
-REPO_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
-DEFAULT_SIZE_FILE = os.path.join(REPO_ROOT, "size.txt")
+SIZE_FILE = os.path.join(os.path.dirname(__file__), "../size.txt")
 MIN_MB = 50
-GITHUB_REPO = "kavigupta/urbanstats"
-GITHUB_TOKEN_PATH = os.path.expanduser("~/.github-token")
 
 
 def measure_sizes(root: str, min_mb: int = MIN_MB) -> Dict[str, int]:
@@ -104,56 +99,6 @@ def parse_last_snapshot(size_file: str) -> Tuple[str, Dict[str, int]]:
     return blocks[-1]
 
 
-def load_github_token() -> str:
-    if not os.path.exists(GITHUB_TOKEN_PATH):
-        raise SystemExit(f"GitHub token file not found at {GITHUB_TOKEN_PATH!r}")
-    with open(GITHUB_TOKEN_PATH, "r", encoding="utf-8") as token_file:
-        return token_file.read().strip()
-
-
-def pull_requests() -> List[dict]:
-    token = load_github_token()
-    response = requests.get(
-        f"https://api.github.com/repos/{GITHUB_REPO}/pulls",
-        headers={
-            "Authorization": f"token {token}",
-            "Accept": "application/vnd.github.v3+json",
-        },
-    )
-    response.raise_for_status()
-    return response.json()
-
-
-def current_pr() -> dict | None:
-    """
-    Get the pull request for the current branch of the urbanstats repo.
-    """
-    sys.path.insert(0, ".")
-    from scripts.deploy_site import (
-        get_current_branch,
-    )  # pylint: disable=import-error,import-outside-toplevel
-
-    current_branch = get_current_branch(path=REPO_ROOT)
-    for pr in pull_requests():
-        if pr["head"]["ref"] == current_branch:
-            return pr
-    return None
-
-
-def get_current_pr_label() -> str:
-    """
-    Build a label like 'PR title (#1234)' for the current pull request.
-    """
-    pr = current_pr()
-    if pr is None:
-        raise SystemExit("No open pull request found for the current branch.")
-    title = pr.get("title", "").strip()
-    number = pr.get("number")
-    if not title or number is None:
-        raise SystemExit("Could not determine PR title/number from GitHub.")
-    return f"{title} (#{number})"
-
-
 def format_snapshot(label: str, sizes: Dict[str, int]) -> str:
     lines: List[str] = []
     lines.append(label)
@@ -171,7 +116,7 @@ def format_snapshot(label: str, sizes: Dict[str, int]) -> str:
 def update_size_file(
     label: str,
     sizes: Dict[str, int],
-    size_file: str = DEFAULT_SIZE_FILE,
+    size_file: str = SIZE_FILE,
 ) -> Tuple[Dict[str, int], str]:
     snapshot = format_snapshot(label, sizes)
     with open(size_file, "a", encoding="utf-8") as f:
@@ -199,10 +144,10 @@ def main() -> None:
     if not os.path.isdir(args.root):
         raise SystemExit(f"Root directory {args.root!r} does not exist.")
 
-    _prev_label, prev_sizes = parse_last_snapshot(DEFAULT_SIZE_FILE)
+    _, prev_sizes = parse_last_snapshot(SIZE_FILE)
     label = get_current_pr_label()
     sizes = measure_sizes(args.root, MIN_MB)
-    sizes, _ = update_size_file(label, sizes, DEFAULT_SIZE_FILE)
+    sizes, _ = update_size_file(label, sizes, SIZE_FILE)
 
     def percent_change(before: int, after: int) -> str:
         if before <= 0 or before == after:
