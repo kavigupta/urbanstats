@@ -52,20 +52,6 @@ def pull_request_for_current_branch():
     return None
 
 
-def get_current_pr_label() -> str:
-    """
-    Build a label like 'PR title (#1234)' for the current pull request.
-    """
-    pr = pull_request_for_current_branch()
-    if pr is None:
-        raise SystemExit("No open pull request found for the current branch.")
-    title = pr.get("title", "").strip()
-    number = pr.get("number")
-    if not title or number is None:
-        raise SystemExit("Could not determine PR title/number from GitHub.")
-    return f"{title} (#{number})"
-
-
 def get_action(pr):
     """
     Get the actions on the repository
