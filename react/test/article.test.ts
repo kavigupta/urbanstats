@@ -1,5 +1,8 @@
 import { ClientFunction, Selector } from 'testcafe'
 
+import { sanitize } from '../src/utils/paths'
+import { shardBytesFullNum } from '../src/utils/shardHash'
+
 import {
     target, checkAllCategoryBoxes, checkTextboxes, comparisonPage, downloadImage,
     getLocationWithoutSettings, safeReload, screencap,
@@ -11,6 +14,10 @@ import {
     waitForLoading,
     downloadCSV,
 } from './test_utils'
+
+function articleUrl(longname: string): string {
+    return `/article.html?longname=${encodeURIComponent(longname).replace(/%20/g, '+')}`
+}
 
 urbanstatsFixture('longer article test', '/article.html?longname=California%2C+USA')
 
@@ -403,4 +410,32 @@ test('loading indicator', async (t) => {
     await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
 
     await screencap(t, { wait: false })
+})
+
+const edgeCaseHashes: { longname: string, expectedHash: number, expectedCompactness: string }[] = [
+    // hash collisions
+    { longname: 'NC-02 (1899), USA', expectedHash: 0xf4fbd73f, expectedCompactness: '0.151' },
+    { longname: 'East Earl township [CCD], Lancaster County, Pennsylvania, USA', expectedHash: 0xf4fbd73f, expectedCompactness: '0.460' },
+    { longname: 'Hilltop Neighborhood, Denver City, Colorado, USA', expectedHash: 0xb0c41bff, expectedCompactness: '0.408' },
+    { longname: 'Walland CDP, Tennessee, USA', expectedHash: 0xb0c41bff, expectedCompactness: '0.455' },
+    // early hashes
+    { longname: 'MO-03 (1973), USA', expectedHash: 0x0000a4ba, expectedCompactness: '0.395' },
+    { longname: 'Hpakant Metropolitan Cluster, Myanmar', expectedHash: 0x0000a758, expectedCompactness: '0.0309' },
+    // late hashes
+    { longname: 'Tilhar Metropolitan Cluster, India', expectedHash: 0xffffce8b, expectedCompactness: '0.0281' },
+    { longname: 'Patchogue-Medford Union Free School District, New York, USA', expectedHash: 0xfffff4b0, expectedCompactness: '0.428' },
+]
+
+urbanstatsFixture('edge case hashes', articleUrl(edgeCaseHashes[0].longname))
+
+test('hash collisions: hashes match and all pages load with correct compactness', async (t) => {
+    for (const entry of edgeCaseHashes) {
+        const h = shardBytesFullNum(sanitize(entry.longname))
+        await t.expect(h).eql(entry.expectedHash, `hash("${entry.longname}")`)
+    }
+    for (const entry of edgeCaseHashes) {
+        await t.navigateTo(articleUrl(entry.longname))
+        await checkAllCategoryBoxes(t)
+        await t.expect(Selector('span').withExactText(entry.expectedCompactness).exists).ok()
+    }
 })

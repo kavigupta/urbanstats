@@ -2,22 +2,16 @@ import itertools
 from functools import lru_cache
 
 import numpy as np
-import tqdm.auto as tqdm
 
 from urbanstats.geometry.relationship import full_relationships, ordering_idx
 from urbanstats.metadata import metadata_types
 from urbanstats.ordinals.flat_ordinals import compute_flat_ordinals
 from urbanstats.protobuf import data_files_pb2
-from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.universe.universe_constants import ZERO_POPULATION_UNIVERSES
 from urbanstats.universe.universe_list import all_universes
-from urbanstats.website_data.sharding import (
-    all_foldernames,
-    create_filename,
-    create_foldername,
-)
+from urbanstats.website_data.sharding import build_shards_from_callback
 
 
 def isnan(x):
@@ -36,7 +30,6 @@ def metadata_for_article(row):
 
 
 def create_article_gzip(
-    folder,
     row,
     *,
     relationships,
@@ -121,26 +114,10 @@ def create_article_gzip(
             # vulture: ignore -- not actually creating a field. this is from protobuf
             related_button.row_type = long_to_type[x]
 
-    name = create_filename(row.longname, "gz")
-    write_gzip(data, f"{folder}/{name}")
-    return name
+    return data
 
 
-def create_symlink_gzips(site_folder, symlinks):
-    results_by_folder = {k: [] for k in all_foldernames()}
-    for link_name, target_name in symlinks.items():
-        folder = create_foldername(link_name)
-        results_by_folder[folder].append((link_name, target_name))
-    for folder, links in results_by_folder.items():
-        data = data_files_pb2.Symlinks()
-        for link_name, target_name in links:
-            data.link_name.append(link_name)
-            data.target_name.append(target_name)
-        name = folder + ".symlinks.gz"
-        write_gzip(data, f"{site_folder}/data/{name}")
-
-
-def create_article_gzips(site_folder, full, ordering):
+def create_article_gzips(site_folder, full, ordering, symlinks):
     long_to_short = dict(zip(full.longname, full.shortname))
     long_to_pop = dict(zip(full.longname, full.population))
     long_to_type = dict(zip(full.longname, full.type))
@@ -167,10 +144,11 @@ def create_article_gzips(site_folder, full, ordering):
         ]
     )
 
-    for i in tqdm.trange(full.shape[0], desc="creating pages"):
-        row = full.iloc[i]
-        create_article_gzip(
-            f"{site_folder}/data",
+    longnames = list(full.longname)
+
+    def get_article(longname):
+        row = full.iloc[long_to_idx[longname]]
+        return create_article_gzip(
             row,
             relationships=relationships,
             long_to_short=long_to_short,
@@ -180,6 +158,10 @@ def create_article_gzips(site_folder, full, ordering):
             flat_ords=flat_ords,
             counts_overall=counts_overall,
         )
+
+    return build_shards_from_callback(
+        f"{site_folder}/data", "data", longnames, get_article, symlinks=symlinks
+    )
 
 
 @lru_cache(maxsize=None)
