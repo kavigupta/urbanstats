@@ -1,42 +1,28 @@
 import shapely
 import tqdm.auto as tqdm
-from permacache import permacache, stable_hash
 
 from urbanstats.geometry.classify_coordinate_zone import classify_coordinate_zone
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.protobuf import data_files_pb2
-from urbanstats.protobuf.utils import write_gzip
-from urbanstats.website_data.sharding import create_filename
+from urbanstats.website_data.sharding import build_shards_from_callback
 
 
-def produce_shape_gzip(folder, r):
-    fname = create_filename(r.longname, "gz")
-    path = f"{folder}/{fname}"
-    produce_shape_gzip_cached(r, path)
-
-
-@permacache(
-    "urbanstats/output_geometry/produce_geometry_json_cached_3",
-    key_function=dict(
-        r=lambda row: stable_hash(
-            [row[x] for x in row.index if x != "geometry"]
-            + [shapely.geometry.mapping(row.geometry)]
-        )
-    ),
-    out_file=["path"],
-)
-def produce_shape_gzip_cached(r, path):
-    res = convert_to_protobuf(r.geometry)
-    write_gzip(res, path)
-
-
-def produce_all_geometry_json(path, valid_names):
-    for k, sf_k in shapefiles.items():
-        print(k)
+def produce_all_geometry_json(path, valid_names, symlinks):
+    geos = {}
+    for sf_k in tqdm.tqdm(shapefiles.values(), desc="Loading shapefiles"):
         table = sf_k.load_file()
-        for i in tqdm.trange(table.shape[0]):
-            if table.iloc[i].longname in valid_names:
-                produce_shape_gzip(path, table.iloc[i])
+        geos.update(dict(zip(table.longname, table.geometry)))
+
+    def get_feature(longname):
+        return convert_to_protobuf(geos[longname])
+
+    missing = set(valid_names) - set(geos.keys())
+    if missing:
+        raise ValueError(f"Missing geometries for {missing}")
+
+    return build_shards_from_callback(
+        path, "shape", list(valid_names), get_feature, symlinks=symlinks
+    )
 
 
 def to_protobuf_polygon(f_python):

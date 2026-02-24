@@ -180,8 +180,8 @@ test('quick load', async (t) => {
     await t.pressKey('enter')
     await t.expect(Selector('[data-test-id=quickLoad]').exists).ok()
     await screencap(t, { fullPage: false, wait: false })
-    // one request for the article, one for the symlinks
-    await t.expect(delayRequests.removeFilter()).eql(2)
+    // there are no longer symlinks in separate files, so it's just one request
+    await t.expect(delayRequests.removeFilter()).eql(1)
     await t.expect(Selector('[data-test-id=quickLoad]').exists).notOk()
 })
 
