@@ -20,6 +20,7 @@ def main():
     parser.add_argument("old", help="Old protobuf file/directory")
     parser.add_argument("new", help="New protobuf file/directory")
     parser.add_argument("file", help="File to diff")
+    parser.add_argument("--extra-args", nargs="*", help="Extra args to pass to git diff", default=[])
     args = parser.parse_args()
     if args.file:
         args.old = os.path.join(args.old, args.file)
@@ -45,7 +46,8 @@ def main():
             f.write(str(new))
 
         # run diff
-        subprocess.run(["git", "diff", "--no-index", old_path, new_path], check=True)
+        args = ["-" + x for x in args.extra_args]
+        subprocess.run(["git", "diff", *args, "--no-index", old_path, new_path], check=False)
 
 
 if __name__ == "__main__":
