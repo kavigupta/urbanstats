@@ -17,6 +17,7 @@ class OrdinalInfoForColumn:
     ordinal: csc_matrix
     percentile: csc_matrix
     values: csc_matrix
+    counts: np.ndarray  # number of non-NaN values per universe-type, length len(universe_type)
 
 
 @dataclass
@@ -61,16 +62,7 @@ class OrdinalInfo:
         return values_selected[reordering]
 
     def counts_by_typ_universe(self, col):
-        self.universe_type_masks.eliminate_zeros()
-        count_overall = (
-            self.universe_type_masks.indptr[1:] - self.universe_type_masks.indptr[:-1]
-        )
-        is_nan = self.by_column[col].values != self.by_column[col].values
-        is_nan.eliminate_zeros()
-        nan_count = is_nan.indptr[1:] - is_nan.indptr[:-1]
-        count_no_nan = count_overall - nan_count
-        assert len(count_overall) == len(self.universe_type)
-        return dict(zip(self.universe_type, count_no_nan))
+        return dict(zip(self.universe_type, self.by_column[col].counts))
 
     def counts_by_type_universe_col(self):
         return {
@@ -168,7 +160,7 @@ def compute_universe_type_masks(table, universe_type):
 
 
 @permacache(
-    "urbanstats/ordinals/ordinal_info/compute_ordinal_info_11",
+    "urbanstats/ordinals/ordinal_info/compute_ordinal_info_13",
     key_function=dict(
         universe_type_masks=lambda universe_type_masks: stable_hash(
             (universe_type_masks.indices, universe_type_masks.shape)
@@ -181,22 +173,24 @@ def compute_universe_type_masks(table, universe_type):
 def compute_ordinal_info(universe_type_masks, universe_typ, table, stat_col):
     table = sort_by_column(table, stat_col)
     ordinal, percentile, values = [[] for _ in range(3)]
+    counts_per_ut = []
     universe_type_masks_permuted = universe_type_masks[table.index]
     for ut_idx in range(len(universe_typ)):
         mask = universe_type_masks_permuted[:, ut_idx].indices
         mask.sort()
         filt_table = table.iloc[mask]
 
-        ut_idx = np.zeros(len(filt_table), dtype=np.int64) + ut_idx
-        ordinal.append((filt_table.index, ut_idx, np.arange(len(filt_table))))
+        ut_idx_arr = np.zeros(len(filt_table), dtype=np.int64) + ut_idx
+        values.append((filt_table.index, ut_idx_arr, filt_table[stat_col]))
+        ordinal.append((filt_table.index, ut_idx_arr, np.arange(len(filt_table))))
 
         # Remove NaN values from the filtered table to compute percentiles
         # We do not do this for other values, to preserve stability of sorting etc
         non_nan = ~np.isnan(filt_table[stat_col].array)
+        counts_per_ut.append(np.sum(non_nan))
         mask = mask[non_nan]
         filt_table = filt_table.iloc[non_nan]
-        ut_idx = ut_idx[non_nan]
-        values.append((filt_table.index, ut_idx, filt_table[stat_col]))
+        ut_idx_arr = ut_idx_arr[non_nan]
 
         cum_pop = np.cumsum(filt_table.best_population_estimate.array[::-1])[::-1]
         if cum_pop.size > 0:
@@ -205,14 +199,15 @@ def compute_ordinal_info(universe_type_masks, universe_typ, table, stat_col):
         cum_pop *= 100
         cum_pop = cum_pop.astype(np.uint8)
 
-        percentile.append((filt_table.index[:-1], ut_idx[1:], cum_pop[1:]))
+        percentile.append((filt_table.index[:-1], ut_idx_arr[1:], cum_pop[1:]))
     ordinal, percentile, values = [
         to_csc_matrix(arr, dtype=dtype, shape=(table.shape[0], len(universe_typ)))
         for arr, dtype in zip(
             [ordinal, percentile, values], [np.int32, np.uint8, np.float32]
         )
     ]
-    return OrdinalInfoForColumn(ordinal, percentile, values)
+    counts = np.array(counts_per_ut, dtype=np.int64)
+    return OrdinalInfoForColumn(ordinal, percentile, values, counts)
 
 
 def fully_complete_ordinals(sorted_by_name, universe_typ):
