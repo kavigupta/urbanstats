@@ -171,6 +171,7 @@ def compute_universe_type_masks(table, universe_type):
     ),
 )
 def compute_ordinal_info(universe_type_masks, universe_typ, table, stat_col):
+    # pylint: disable=too-many-locals
     table = sort_by_column(table, stat_col)
     ordinal, percentile, values = [[] for _ in range(3)]
     counts_per_ut = []

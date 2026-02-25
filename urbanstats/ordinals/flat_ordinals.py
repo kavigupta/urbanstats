@@ -44,13 +44,17 @@ def compute_flat_ordinals(full, ordering):
     ordinals_flat = np.array(
         [
             np.array(ordering.by_column[k].ordinal[idx_in_sorted, ut_idxs])[0]
-            for k in tqdm.tqdm(internal_statistic_names(), desc="Computing flat ordinals")
+            for k in tqdm.tqdm(
+                internal_statistic_names(), desc="Computing flat ordinals"
+            )
         ]
     )
     percentiles_flat = np.array(
         [
             np.array(ordering.by_column[k].percentile[idx_in_sorted, ut_idxs])[0]
-            for k in tqdm.tqdm(internal_statistic_names(), desc="Computing flat percentiles")
+            for k in tqdm.tqdm(
+                internal_statistic_names(), desc="Computing flat percentiles"
+            )
         ]
     )
     return FlatOrdinals(
