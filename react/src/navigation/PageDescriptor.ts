@@ -74,7 +74,7 @@ const statisticSchema = z.object({
     amount: z.union([z.literal('All'), z.number().int()]),
     order: z.union([z.literal('descending'), z.literal('ascending')]),
     highlight: z.optional(z.string()),
-    universe: z.optional(universeSchema).catch(undefined),
+    universe: z.optional(universeSchema),
     edit: z.optional(z.boolean()),
     sort_column: z.optional(z.number().int()),
 }).and(
@@ -517,6 +517,14 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             const statUniverse = newDescriptor.universe ?? 'world'
             const displayStatUniverse = statUniverse !== 'world' ? statUniverse : undefined
 
+            // Pin the start position correctly to the beginning of the page
+            let start = newDescriptor.start
+            if (newDescriptor.amount !== 'All') {
+                start = start - 1
+                start = start - (start % newDescriptor.amount)
+                start = start + 1
+            }
+
             return {
                 pageData: {
                     kind: 'statistic',
@@ -535,7 +543,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                                 }),
                     },
                     view: {
-                        start: newDescriptor.start,
+                        start,
                         amount: newDescriptor.amount,
                         order: newDescriptor.order,
                         highlight: newDescriptor.highlight,
@@ -545,6 +553,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 },
                 newPageDescriptor: {
                     ...newDescriptor,
+                    start,
                     universe: displayStatUniverse,
                     highlight: undefined,
                 },
