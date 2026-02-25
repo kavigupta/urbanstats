@@ -2909,6 +2909,348 @@ export const Article = $root.Article = (() => {
     return Article;
 })();
 
+export const ConsolidatedArticles = $root.ConsolidatedArticles = (() => {
+
+    /**
+     * Properties of a ConsolidatedArticles.
+     * @exports IConsolidatedArticles
+     * @interface IConsolidatedArticles
+     * @property {Array.<string>|null} [longnames] ConsolidatedArticles longnames
+     * @property {Array.<IArticle>|null} [articles] ConsolidatedArticles articles
+     * @property {Array.<string>|null} [symlinkLinkNames] ConsolidatedArticles symlinkLinkNames
+     * @property {Array.<string>|null} [symlinkTargetNames] ConsolidatedArticles symlinkTargetNames
+     */
+
+    /**
+     * Constructs a new ConsolidatedArticles.
+     * @exports ConsolidatedArticles
+     * @classdesc Represents a ConsolidatedArticles.
+     * @implements IConsolidatedArticles
+     * @constructor
+     * @param {IConsolidatedArticles=} [properties] Properties to set
+     */
+    function ConsolidatedArticles(properties) {
+        this.longnames = [];
+        this.articles = [];
+        this.symlinkLinkNames = [];
+        this.symlinkTargetNames = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * ConsolidatedArticles longnames.
+     * @member {Array.<string>} longnames
+     * @memberof ConsolidatedArticles
+     * @instance
+     */
+    ConsolidatedArticles.prototype.longnames = $util.emptyArray;
+
+    /**
+     * ConsolidatedArticles articles.
+     * @member {Array.<IArticle>} articles
+     * @memberof ConsolidatedArticles
+     * @instance
+     */
+    ConsolidatedArticles.prototype.articles = $util.emptyArray;
+
+    /**
+     * ConsolidatedArticles symlinkLinkNames.
+     * @member {Array.<string>} symlinkLinkNames
+     * @memberof ConsolidatedArticles
+     * @instance
+     */
+    ConsolidatedArticles.prototype.symlinkLinkNames = $util.emptyArray;
+
+    /**
+     * ConsolidatedArticles symlinkTargetNames.
+     * @member {Array.<string>} symlinkTargetNames
+     * @memberof ConsolidatedArticles
+     * @instance
+     */
+    ConsolidatedArticles.prototype.symlinkTargetNames = $util.emptyArray;
+
+    /**
+     * Creates a new ConsolidatedArticles instance using the specified properties.
+     * @function create
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {IConsolidatedArticles=} [properties] Properties to set
+     * @returns {ConsolidatedArticles} ConsolidatedArticles instance
+     */
+    ConsolidatedArticles.create = function create(properties) {
+        return new ConsolidatedArticles(properties);
+    };
+
+    /**
+     * Encodes the specified ConsolidatedArticles message. Does not implicitly {@link ConsolidatedArticles.verify|verify} messages.
+     * @function encode
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {IConsolidatedArticles} message ConsolidatedArticles message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ConsolidatedArticles.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.longnames != null && message.longnames.length)
+            for (let i = 0; i < message.longnames.length; ++i)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.longnames[i]);
+        if (message.articles != null && message.articles.length)
+            for (let i = 0; i < message.articles.length; ++i)
+                $root.Article.encode(message.articles[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        if (message.symlinkLinkNames != null && message.symlinkLinkNames.length)
+            for (let i = 0; i < message.symlinkLinkNames.length; ++i)
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.symlinkLinkNames[i]);
+        if (message.symlinkTargetNames != null && message.symlinkTargetNames.length)
+            for (let i = 0; i < message.symlinkTargetNames.length; ++i)
+                writer.uint32(/* id 4, wireType 2 =*/34).string(message.symlinkTargetNames[i]);
+        return writer;
+    };
+
+    /**
+     * Encodes the specified ConsolidatedArticles message, length delimited. Does not implicitly {@link ConsolidatedArticles.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {IConsolidatedArticles} message ConsolidatedArticles message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ConsolidatedArticles.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a ConsolidatedArticles message from the specified reader or buffer.
+     * @function decode
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {ConsolidatedArticles} ConsolidatedArticles
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ConsolidatedArticles.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.ConsolidatedArticles();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.longnames && message.longnames.length))
+                        message.longnames = [];
+                    message.longnames.push(reader.string());
+                    break;
+                }
+            case 2: {
+                    if (!(message.articles && message.articles.length))
+                        message.articles = [];
+                    message.articles.push($root.Article.decode(reader, reader.uint32()));
+                    break;
+                }
+            case 3: {
+                    if (!(message.symlinkLinkNames && message.symlinkLinkNames.length))
+                        message.symlinkLinkNames = [];
+                    message.symlinkLinkNames.push(reader.string());
+                    break;
+                }
+            case 4: {
+                    if (!(message.symlinkTargetNames && message.symlinkTargetNames.length))
+                        message.symlinkTargetNames = [];
+                    message.symlinkTargetNames.push(reader.string());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a ConsolidatedArticles message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {ConsolidatedArticles} ConsolidatedArticles
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ConsolidatedArticles.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a ConsolidatedArticles message.
+     * @function verify
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    ConsolidatedArticles.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.longnames != null && message.hasOwnProperty("longnames")) {
+            if (!Array.isArray(message.longnames))
+                return "longnames: array expected";
+            for (let i = 0; i < message.longnames.length; ++i)
+                if (!$util.isString(message.longnames[i]))
+                    return "longnames: string[] expected";
+        }
+        if (message.articles != null && message.hasOwnProperty("articles")) {
+            if (!Array.isArray(message.articles))
+                return "articles: array expected";
+            for (let i = 0; i < message.articles.length; ++i) {
+                let error = $root.Article.verify(message.articles[i]);
+                if (error)
+                    return "articles." + error;
+            }
+        }
+        if (message.symlinkLinkNames != null && message.hasOwnProperty("symlinkLinkNames")) {
+            if (!Array.isArray(message.symlinkLinkNames))
+                return "symlinkLinkNames: array expected";
+            for (let i = 0; i < message.symlinkLinkNames.length; ++i)
+                if (!$util.isString(message.symlinkLinkNames[i]))
+                    return "symlinkLinkNames: string[] expected";
+        }
+        if (message.symlinkTargetNames != null && message.hasOwnProperty("symlinkTargetNames")) {
+            if (!Array.isArray(message.symlinkTargetNames))
+                return "symlinkTargetNames: array expected";
+            for (let i = 0; i < message.symlinkTargetNames.length; ++i)
+                if (!$util.isString(message.symlinkTargetNames[i]))
+                    return "symlinkTargetNames: string[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a ConsolidatedArticles message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {ConsolidatedArticles} ConsolidatedArticles
+     */
+    ConsolidatedArticles.fromObject = function fromObject(object) {
+        if (object instanceof $root.ConsolidatedArticles)
+            return object;
+        let message = new $root.ConsolidatedArticles();
+        if (object.longnames) {
+            if (!Array.isArray(object.longnames))
+                throw TypeError(".ConsolidatedArticles.longnames: array expected");
+            message.longnames = [];
+            for (let i = 0; i < object.longnames.length; ++i)
+                message.longnames[i] = String(object.longnames[i]);
+        }
+        if (object.articles) {
+            if (!Array.isArray(object.articles))
+                throw TypeError(".ConsolidatedArticles.articles: array expected");
+            message.articles = [];
+            for (let i = 0; i < object.articles.length; ++i) {
+                if (typeof object.articles[i] !== "object")
+                    throw TypeError(".ConsolidatedArticles.articles: object expected");
+                message.articles[i] = $root.Article.fromObject(object.articles[i]);
+            }
+        }
+        if (object.symlinkLinkNames) {
+            if (!Array.isArray(object.symlinkLinkNames))
+                throw TypeError(".ConsolidatedArticles.symlinkLinkNames: array expected");
+            message.symlinkLinkNames = [];
+            for (let i = 0; i < object.symlinkLinkNames.length; ++i)
+                message.symlinkLinkNames[i] = String(object.symlinkLinkNames[i]);
+        }
+        if (object.symlinkTargetNames) {
+            if (!Array.isArray(object.symlinkTargetNames))
+                throw TypeError(".ConsolidatedArticles.symlinkTargetNames: array expected");
+            message.symlinkTargetNames = [];
+            for (let i = 0; i < object.symlinkTargetNames.length; ++i)
+                message.symlinkTargetNames[i] = String(object.symlinkTargetNames[i]);
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a ConsolidatedArticles message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {ConsolidatedArticles} message ConsolidatedArticles
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    ConsolidatedArticles.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults) {
+            object.longnames = [];
+            object.articles = [];
+            object.symlinkLinkNames = [];
+            object.symlinkTargetNames = [];
+        }
+        if (message.longnames && message.longnames.length) {
+            object.longnames = [];
+            for (let j = 0; j < message.longnames.length; ++j)
+                object.longnames[j] = message.longnames[j];
+        }
+        if (message.articles && message.articles.length) {
+            object.articles = [];
+            for (let j = 0; j < message.articles.length; ++j)
+                object.articles[j] = $root.Article.toObject(message.articles[j], options);
+        }
+        if (message.symlinkLinkNames && message.symlinkLinkNames.length) {
+            object.symlinkLinkNames = [];
+            for (let j = 0; j < message.symlinkLinkNames.length; ++j)
+                object.symlinkLinkNames[j] = message.symlinkLinkNames[j];
+        }
+        if (message.symlinkTargetNames && message.symlinkTargetNames.length) {
+            object.symlinkTargetNames = [];
+            for (let j = 0; j < message.symlinkTargetNames.length; ++j)
+                object.symlinkTargetNames[j] = message.symlinkTargetNames[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this ConsolidatedArticles to JSON.
+     * @function toJSON
+     * @memberof ConsolidatedArticles
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    ConsolidatedArticles.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ConsolidatedArticles
+     * @function getTypeUrl
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ConsolidatedArticles.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/ConsolidatedArticles";
+    };
+
+    return ConsolidatedArticles;
+})();
+
 export const Coordinate = $root.Coordinate = (() => {
 
     /**
@@ -6861,6 +7203,8 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
      * @property {Array.<string>|null} [longnames] ConsolidatedShapes longnames
      * @property {Array.<IUniverses>|null} [universes] ConsolidatedShapes universes
      * @property {Array.<IFeature>|null} [shapes] ConsolidatedShapes shapes
+     * @property {Array.<string>|null} [symlinkLinkNames] ConsolidatedShapes symlinkLinkNames
+     * @property {Array.<string>|null} [symlinkTargetNames] ConsolidatedShapes symlinkTargetNames
      */
 
     /**
@@ -6875,6 +7219,8 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
         this.longnames = [];
         this.universes = [];
         this.shapes = [];
+        this.symlinkLinkNames = [];
+        this.symlinkTargetNames = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -6904,6 +7250,22 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
      * @instance
      */
     ConsolidatedShapes.prototype.shapes = $util.emptyArray;
+
+    /**
+     * ConsolidatedShapes symlinkLinkNames.
+     * @member {Array.<string>} symlinkLinkNames
+     * @memberof ConsolidatedShapes
+     * @instance
+     */
+    ConsolidatedShapes.prototype.symlinkLinkNames = $util.emptyArray;
+
+    /**
+     * ConsolidatedShapes symlinkTargetNames.
+     * @member {Array.<string>} symlinkTargetNames
+     * @memberof ConsolidatedShapes
+     * @instance
+     */
+    ConsolidatedShapes.prototype.symlinkTargetNames = $util.emptyArray;
 
     /**
      * Creates a new ConsolidatedShapes instance using the specified properties.
@@ -6938,6 +7300,12 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
         if (message.universes != null && message.universes.length)
             for (let i = 0; i < message.universes.length; ++i)
                 $root.Universes.encode(message.universes[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+        if (message.symlinkLinkNames != null && message.symlinkLinkNames.length)
+            for (let i = 0; i < message.symlinkLinkNames.length; ++i)
+                writer.uint32(/* id 4, wireType 2 =*/34).string(message.symlinkLinkNames[i]);
+        if (message.symlinkTargetNames != null && message.symlinkTargetNames.length)
+            for (let i = 0; i < message.symlinkTargetNames.length; ++i)
+                writer.uint32(/* id 5, wireType 2 =*/42).string(message.symlinkTargetNames[i]);
         return writer;
     };
 
@@ -6988,6 +7356,18 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
                     if (!(message.shapes && message.shapes.length))
                         message.shapes = [];
                     message.shapes.push($root.Feature.decode(reader, reader.uint32()));
+                    break;
+                }
+            case 4: {
+                    if (!(message.symlinkLinkNames && message.symlinkLinkNames.length))
+                        message.symlinkLinkNames = [];
+                    message.symlinkLinkNames.push(reader.string());
+                    break;
+                }
+            case 5: {
+                    if (!(message.symlinkTargetNames && message.symlinkTargetNames.length))
+                        message.symlinkTargetNames = [];
+                    message.symlinkTargetNames.push(reader.string());
                     break;
                 }
             default:
@@ -7050,6 +7430,20 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
                     return "shapes." + error;
             }
         }
+        if (message.symlinkLinkNames != null && message.hasOwnProperty("symlinkLinkNames")) {
+            if (!Array.isArray(message.symlinkLinkNames))
+                return "symlinkLinkNames: array expected";
+            for (let i = 0; i < message.symlinkLinkNames.length; ++i)
+                if (!$util.isString(message.symlinkLinkNames[i]))
+                    return "symlinkLinkNames: string[] expected";
+        }
+        if (message.symlinkTargetNames != null && message.hasOwnProperty("symlinkTargetNames")) {
+            if (!Array.isArray(message.symlinkTargetNames))
+                return "symlinkTargetNames: array expected";
+            for (let i = 0; i < message.symlinkTargetNames.length; ++i)
+                if (!$util.isString(message.symlinkTargetNames[i]))
+                    return "symlinkTargetNames: string[] expected";
+        }
         return null;
     };
 
@@ -7092,6 +7486,20 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
                 message.shapes[i] = $root.Feature.fromObject(object.shapes[i]);
             }
         }
+        if (object.symlinkLinkNames) {
+            if (!Array.isArray(object.symlinkLinkNames))
+                throw TypeError(".ConsolidatedShapes.symlinkLinkNames: array expected");
+            message.symlinkLinkNames = [];
+            for (let i = 0; i < object.symlinkLinkNames.length; ++i)
+                message.symlinkLinkNames[i] = String(object.symlinkLinkNames[i]);
+        }
+        if (object.symlinkTargetNames) {
+            if (!Array.isArray(object.symlinkTargetNames))
+                throw TypeError(".ConsolidatedShapes.symlinkTargetNames: array expected");
+            message.symlinkTargetNames = [];
+            for (let i = 0; i < object.symlinkTargetNames.length; ++i)
+                message.symlinkTargetNames[i] = String(object.symlinkTargetNames[i]);
+        }
         return message;
     };
 
@@ -7112,6 +7520,8 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
             object.longnames = [];
             object.shapes = [];
             object.universes = [];
+            object.symlinkLinkNames = [];
+            object.symlinkTargetNames = [];
         }
         if (message.longnames && message.longnames.length) {
             object.longnames = [];
@@ -7127,6 +7537,16 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
             object.universes = [];
             for (let j = 0; j < message.universes.length; ++j)
                 object.universes[j] = $root.Universes.toObject(message.universes[j], options);
+        }
+        if (message.symlinkLinkNames && message.symlinkLinkNames.length) {
+            object.symlinkLinkNames = [];
+            for (let j = 0; j < message.symlinkLinkNames.length; ++j)
+                object.symlinkLinkNames[j] = message.symlinkLinkNames[j];
+        }
+        if (message.symlinkTargetNames && message.symlinkTargetNames.length) {
+            object.symlinkTargetNames = [];
+            for (let j = 0; j < message.symlinkTargetNames.length; ++j)
+                object.symlinkTargetNames[j] = message.symlinkTargetNames[j];
         }
         return object;
     };
@@ -9627,6 +10047,233 @@ export const DefaultUniverseTable = $root.DefaultUniverseTable = (() => {
     };
 
     return DefaultUniverseTable;
+})();
+
+export const ShardIndex = $root.ShardIndex = (() => {
+
+    /**
+     * Properties of a ShardIndex.
+     * @exports IShardIndex
+     * @interface IShardIndex
+     * @property {Array.<number>|null} [startingHashes] ShardIndex startingHashes
+     */
+
+    /**
+     * Constructs a new ShardIndex.
+     * @exports ShardIndex
+     * @classdesc Represents a ShardIndex.
+     * @implements IShardIndex
+     * @constructor
+     * @param {IShardIndex=} [properties] Properties to set
+     */
+    function ShardIndex(properties) {
+        this.startingHashes = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * ShardIndex startingHashes.
+     * @member {Array.<number>} startingHashes
+     * @memberof ShardIndex
+     * @instance
+     */
+    ShardIndex.prototype.startingHashes = $util.emptyArray;
+
+    /**
+     * Creates a new ShardIndex instance using the specified properties.
+     * @function create
+     * @memberof ShardIndex
+     * @static
+     * @param {IShardIndex=} [properties] Properties to set
+     * @returns {ShardIndex} ShardIndex instance
+     */
+    ShardIndex.create = function create(properties) {
+        return new ShardIndex(properties);
+    };
+
+    /**
+     * Encodes the specified ShardIndex message. Does not implicitly {@link ShardIndex.verify|verify} messages.
+     * @function encode
+     * @memberof ShardIndex
+     * @static
+     * @param {IShardIndex} message ShardIndex message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ShardIndex.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.startingHashes != null && message.startingHashes.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
+            for (let i = 0; i < message.startingHashes.length; ++i)
+                writer.int32(message.startingHashes[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified ShardIndex message, length delimited. Does not implicitly {@link ShardIndex.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof ShardIndex
+     * @static
+     * @param {IShardIndex} message ShardIndex message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ShardIndex.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a ShardIndex message from the specified reader or buffer.
+     * @function decode
+     * @memberof ShardIndex
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {ShardIndex} ShardIndex
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ShardIndex.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.ShardIndex();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.startingHashes && message.startingHashes.length))
+                        message.startingHashes = [];
+                    if ((tag & 7) === 2) {
+                        let end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.startingHashes.push(reader.int32());
+                    } else
+                        message.startingHashes.push(reader.int32());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a ShardIndex message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof ShardIndex
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {ShardIndex} ShardIndex
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ShardIndex.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a ShardIndex message.
+     * @function verify
+     * @memberof ShardIndex
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    ShardIndex.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.startingHashes != null && message.hasOwnProperty("startingHashes")) {
+            if (!Array.isArray(message.startingHashes))
+                return "startingHashes: array expected";
+            for (let i = 0; i < message.startingHashes.length; ++i)
+                if (!$util.isInteger(message.startingHashes[i]))
+                    return "startingHashes: integer[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a ShardIndex message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof ShardIndex
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {ShardIndex} ShardIndex
+     */
+    ShardIndex.fromObject = function fromObject(object) {
+        if (object instanceof $root.ShardIndex)
+            return object;
+        let message = new $root.ShardIndex();
+        if (object.startingHashes) {
+            if (!Array.isArray(object.startingHashes))
+                throw TypeError(".ShardIndex.startingHashes: array expected");
+            message.startingHashes = [];
+            for (let i = 0; i < object.startingHashes.length; ++i)
+                message.startingHashes[i] = object.startingHashes[i] | 0;
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a ShardIndex message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof ShardIndex
+     * @static
+     * @param {ShardIndex} message ShardIndex
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    ShardIndex.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults)
+            object.startingHashes = [];
+        if (message.startingHashes && message.startingHashes.length) {
+            object.startingHashes = [];
+            for (let j = 0; j < message.startingHashes.length; ++j)
+                object.startingHashes[j] = message.startingHashes[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this ShardIndex to JSON.
+     * @function toJSON
+     * @memberof ShardIndex
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    ShardIndex.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ShardIndex
+     * @function getTypeUrl
+     * @memberof ShardIndex
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ShardIndex.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/ShardIndex";
+    };
+
+    return ShardIndex;
 })();
 
 export { $root as default };
