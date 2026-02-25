@@ -82,7 +82,7 @@ def output_data_files(order_info, site_folder, typ):
         for pbu in percs_by_u:
             percentile_proto = data_list.population_percentile_by_universe.add()
             for p in pbu:
-                percentile_proto.population_percentile.append(int(p * 100))
+                percentile_proto.population_percentile.append(p)
         outputter.notify(data_list.ByteSize())
         outputter.flush()
     outputter.flush(force=True)
