@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 
-import { Statistic, View } from './types'
+import { StatSettings } from './types'
 
-export function StatisticPanel({ stat, view }: { stat: Statistic, view: View }): ReactNode {
+export function StatisticPanel(settings: StatSettings): ReactNode {
     return
 }

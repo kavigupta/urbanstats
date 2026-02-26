@@ -24,7 +24,7 @@ import type {
     QuizDescriptor, RetroQuestionJSON, QuizHistory,
 } from '../quiz/quiz'
 import { StatisticPanel } from '../stat/StatisticPanel'
-import { Statistic, View } from '../stat/types'
+import { Statistic, StatSettings, View } from '../stat/types'
 import { loadSYAUData, SYAUData } from '../syau/load'
 import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse, Universe, universeSchema } from '../universe'
@@ -219,7 +219,7 @@ export type PageData =
         mapPartitions: number[][]
         comparisonPanel: typeof ComparisonPanel
     }
-    | { kind: 'statistic', stat: Statistic, view: View, statisticPanel: typeof StatisticPanel }
+    | { kind: 'statistic', settings: StatSettings, statisticPanel: typeof StatisticPanel }
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit', dataCreditPanel: typeof DataCreditPanel }
@@ -529,26 +529,28 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 pageData: {
                     kind: 'statistic',
                     statisticPanel: (await import('../stat/StatisticPanel')).StatisticPanel,
-                    stat: {
-                        universe: statUniverse,
-                        articleType: newDescriptor.article_type,
-                        ...('uss' in newDescriptor
-                            ? {
-                                    type: 'uss',
-                                    uss: mapUSSFromString(newDescriptor.uss),
-                                }
-                            : {
-                                    type: 'simple',
-                                    statName: newDescriptor.statname,
-                                }),
-                    },
-                    view: {
-                        start,
-                        amount: newDescriptor.amount,
-                        order: newDescriptor.order,
-                        highlight: newDescriptor.highlight,
-                        edit: newDescriptor.edit ?? false,
-                        sortColumn: newDescriptor.sort_column ?? 0,
+                    settings: {
+                        stat: {
+                            universe: statUniverse,
+                            articleType: newDescriptor.article_type,
+                            ...('uss' in newDescriptor
+                                ? {
+                                        type: 'uss',
+                                        uss: mapUSSFromString(newDescriptor.uss),
+                                    }
+                                : {
+                                        type: 'simple',
+                                        statName: newDescriptor.statname,
+                                    }),
+                        },
+                        view: {
+                            start,
+                            amount: newDescriptor.amount,
+                            order: newDescriptor.order,
+                            highlight: newDescriptor.highlight,
+                            edit: newDescriptor.edit ?? false,
+                            sortColumn: newDescriptor.sort_column ?? 0,
+                        },
                     },
                 },
                 newPageDescriptor: {
@@ -805,7 +807,7 @@ export function pageTitle(pageData: PageData): string {
         case 'article':
             return pageData.article.shortname
         case 'statistic':
-            return pageData.stat.type === 'simple' ? pageData.stat.statName : 'Urban Stats: Custom Table'
+            return pageData.settings.stat.type === 'simple' ? pageData.settings.stat.statName : 'Urban Stats: Custom Table'
         case 'comparison':
             return pageData.articles.map(x => x.shortname).join(' vs ')
         case 'editor':
