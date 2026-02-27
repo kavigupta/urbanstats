@@ -2,19 +2,27 @@ import React, { ReactNode, useCallback } from 'react'
 
 import { CountsByUT, forType, getCountsByArticleType } from '../components/countsByArticleType'
 import { CSVExportData, generateStatisticsPanelCSVData } from '../components/csv-export'
+import explanation_pages from '../data/explanation_page'
+import validGeographies from '../data/mapper/used_geographies'
 import stats from '../data/statistic_list'
 import statistic_name_list from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import { loadStatisticsPage } from '../load_json'
 import { RelativeLoader } from '../navigation/loading'
 import { Universe } from '../universe'
+import { toStatement } from '../urban-stats-script/ast'
+import { orderNonNan, TableColumnWithPopulationPercentiles } from '../urban-stats-script/constants/table'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
+import { renderType } from '../urban-stats-script/types-values'
 import { executeAsync } from '../urban-stats-script/workerManager'
+import { assert } from '../utils/defensive'
+import { sanitize } from '../utils/paths'
+import { pluralize } from '../utils/text'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
-import { Statistic } from './types'
-import { sanitize } from "../utils/paths"
+import { StatisticPanelTable } from './StatisticPanelTable'
+import { StatData, Statistic } from './types'
 
 /**
  * For next time:
@@ -24,7 +32,7 @@ import { sanitize } from "../utils/paths"
 
 const statUpdateInterval = 500
 
-const emptyStat = ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyLayout loading={loading} /> })
+const emptyStat = ({ loading }: { loading: boolean }): ReactNode => <EmptyLayout loading={loading} />
 
 export function useStatGenerator({ stat }: { stat: Statistic }): StatGenerator {
     const compute = useCallback((previousGenerator: Promise<StatGenerator<{ loading: boolean }>> | undefined) => makeStatGenerator({ stat, previousGenerator }), [stat])
@@ -46,7 +54,7 @@ export function useStatGenerator({ stat }: { stat: Statistic }): StatGenerator {
 }
 
 export interface StatGenerator<T = unknown> {
-    ui: (props: T) => { node: ReactNode, exportImage?: () => Promise<HTMLCanvasElement> }
+    ui: (props: T & Omit<Parameters<typeof StatisticPanelTable>[0], 'stat' | 'data'>) => ReactNode
     exportCSV?: CSVExportData
     errors: EditorError[]
 }
@@ -76,39 +84,37 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
         const totalCountOverall = forType(counts, stat.universe, stats[statIndex], 'overall')
 
         const table = [{
-                value: data.value,
-                populationPercentile: data.populationPercentile,
-                ordinal: computeOrdinals(data.value),
-                name: stat.statName,
-                unit: undefined,
-            }]
+            value: data.value,
+            populationPercentile: data.populationPercentile,
+            ordinal: computeOrdinals(data.value),
+            name: stat.statName,
+            unit: undefined,
+        }]
 
-        const exportCSV: CSVExportData = () => ({
-            // Statistics pages show ordinals/percentiles by default (false = show)
-            csvData: generateStatisticsPanelCSVData(articleNames, table, false),
-            csvFilename: `${sanitize(stat.statName)}.csv`,
-        })
-
-        return {
-            exportCSV, 
-
-        }
-        return {
-            type: 'success',
-            data: ,
+        const statData: StatData = {
+            table,
             articleNames,
-            renderedStatname: statname,
+            renderedStatname: stat.statName,
             statcol: stats[statIndex],
             explanationPage: explanation_pages[statIndex],
             totalCountInClass,
             totalCountOverall,
             hideOrdinalsPercentiles: false, // Statistics pages show ordinals/percentiles by default (false = show)
+        }
+
+        return {
+            exportCSV: exportCSV(statData),
             errors: [],
+            ui: props => <StatisticPanelTable {...props} stat={stat} data={statData} />,
         }
     }
 
     try {
-        const exec = await executeAsync({ descriptor: { kind: 'statistics', geographyKind: stat.articleType, universe: stat.universe }, stmts: stat })
+        const exec = await executeAsync({ descriptor: {
+            kind: 'statistics',
+            geographyKind: stat.articleType as (typeof validGeographies)[number], // Verified above in `checkArticleCount`
+            universe: stat.universe,
+        }, stmts: toStatement(stat.uss) })
 
         const execErrors = exec.error
 
@@ -126,9 +132,7 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
         if (table.columns.length === 0) {
             const error: EditorError = { type: 'error', value: 'Table has no columns', location: noLocation, kind: 'error' }
             const allErrors = [...execErrors, error]
-            setErrors(allErrors)
-            setLoading(false)
-            return
+            return await errorResult(allErrors)
         }
 
         // Convert all columns to the data format
@@ -143,29 +147,31 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
             unit: col.unit,
         }))
 
-        setSuccessData({
-            data: dataColumns,
+        const statData: StatData = {
+            table: dataColumns,
             articleNames: geonames,
             renderedStatname: table.title ?? table.columns.map(col => col.name).join(', '),
             totalCountInClass: firstColumn.values.length,
             totalCountOverall: firstColumn.values.length,
             hideOrdinalsPercentiles: table.hideOrdinalsPercentiles,
-            uuid: uuid(),
-        })
-        setErrors(execErrors)
-        setLoading(false)
+        }
+
+        return {
+            exportCSV: exportCSV(statData),
+            errors: execErrors,
+            ui: props => <StatisticPanelTable {...props} stat={stat} data={statData} />,
+        }
     }
     catch (e) {
         const error: EditorError = { type: 'error', value: e instanceof Error ? e.message : 'Unknown error', location: noLocation, kind: 'error' }
-        setErrors([error])
-        setLoading(false)
+        return errorResult([error])
     }
 }
 
 function EmptyLayout({ loading }: { loading: boolean }): ReactNode {
     return (
         <div style={{ position: 'relative' }}>
-            <RelativeLoader loading={true} />
+            <RelativeLoader loading={loading} />
         </div>
     )
 }
@@ -192,4 +198,11 @@ function computeOrdinals(values: number[]): number[] {
         ordinals[rowIdx] = rank + 1
     })
     return ordinals
+}
+
+function exportCSV(data: StatData): CSVExportData {
+    return () => ({
+        csvData: generateStatisticsPanelCSVData(data.articleNames, data.table, data.hideOrdinalsPercentiles),
+        csvFilename: `${sanitize(data.renderedStatname)}.csv`,
+    })
 }

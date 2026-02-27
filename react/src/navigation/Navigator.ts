@@ -343,12 +343,12 @@ export class Navigator {
         return useSyncExternalStore(this.subscribeToPageState, () => this.statPaths)
     }
 
-    unsafeUpdateCurrentDescriptor(newDescriptor: Partial<PageDescriptor> & { kind: PageDescriptor['kind'] }): void {
+    unsafeUpdateCurrentDescriptor(newDescriptor: Partial<PageDescriptor> & { kind: PageDescriptor['kind'] }, options: { history: 'replaceState' | 'pushState' }): void {
         assert(this.pageState.current.descriptor.kind === newDescriptor.kind, 'heterogenous unsafe update')
         for (const key of Object.keys(newDescriptor)) {
             this.pageState.current.descriptor[key] = newDescriptor[key]
         }
-        history.replaceState({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(this.pageState.current.descriptor))
+        history[options.history]({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(this.pageState.current.descriptor))
     }
 
     useSubsequentLoading(): SubsequentLoadingState['kind'] {
