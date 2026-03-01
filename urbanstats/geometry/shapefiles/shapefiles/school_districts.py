@@ -24,7 +24,7 @@ def school_district_shapefiles() -> gpd.GeoDataFrame:
     duplicated = {x for x in u if u[x] > 1}
     duplicated_mask = full_names.apply(lambda x: x in duplicated)
     duplicated_districts = frame[duplicated_mask]
-    counties = COUNTIES.load_file()  # type: ignore[no-untyped-call]
+    counties = COUNTIES.load_file()
     joined = gpd.overlay(counties, duplicated_districts.to_crs("epsg:4326"))
     areas = joined.area
     geoid_to_county = {}
