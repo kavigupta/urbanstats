@@ -5,14 +5,14 @@ from http.cookiejar import CookieJar
 
 
 @lru_cache(None)
-def get_username_password():
+def get_username_password() -> tuple[str, str]:
     with open(os.path.expanduser("~/.nasapassword"), "r") as f:
         username = f.readline().strip()
         password = f.readline().strip()
     return username, password
 
 
-def get_nasa_data(url):
+def get_nasa_data(url: str) -> bytes:
     username, password = get_username_password()
     password_manager = urllib.request.HTTPPasswordMgrWithDefaultRealm()
     password_manager.add_password(
@@ -26,4 +26,4 @@ def get_nasa_data(url):
     urllib.request.install_opener(opener)
     request = urllib.request.Request(url)
     with urllib.request.urlopen(request) as response:
-        return response.read()
+        return response.read()  # type: ignore[no-any-return]

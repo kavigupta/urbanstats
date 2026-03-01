@@ -2,7 +2,7 @@
 Helper functions for handling ACS datasets where every subcategory is a separate column.
 """
 
-from typing import Any
+from typing import Any, cast
 
 
 def produce_subcategories(
@@ -33,7 +33,7 @@ def produce_subcategories(
 
     def display_dict() -> dict[str, str]:
         return {
-            normalize_name(k): k + " %" for k in subcategory_dict() if k is not None
+            cast(str, normalize_name(k)): k + " %" for k in subcategory_dict() if k is not None
         }
 
     return subcategory_dict(), normalize_name, display_dict()

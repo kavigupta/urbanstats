@@ -31,7 +31,7 @@ class QuizRegion:
     regions: List[str]
     internal_weighting_function: Callable[[pd.Series], float] = lambda _: 1.0
 
-    def load_quiz_table(self, filtered_for_pop):
+    def load_quiz_table(self, filtered_for_pop: pd.DataFrame) -> QuizTable:
         result = filtered_for_pop[filtered_for_pop.type.isin(self.regions)].set_index(
             "longname"
         )

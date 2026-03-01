@@ -5,7 +5,7 @@ from .all_counties import get_all_counties
 from .compute_suos import current_suos
 
 
-@permacache(  # type: ignore[misc]
+@permacache(
     "urbanstats/geometry/historical_counties/historical_county_file/historical_counties_5"
 )
 def historical_counties() -> pd.DataFrame:

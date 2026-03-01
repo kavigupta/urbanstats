@@ -3,9 +3,11 @@ Sadly, this class is necessary because certain module upgrades break pickles.
 """
 
 import pickle
-from typing import cast
+from typing import Any, Callable, TypeVar, cast
 
 from permacache import permacache, swap_unpickler_context_manager
+
+_F = TypeVar("_F", bound=Callable[..., Any])
 
 MODULE_RENAME_MAP: dict[str, str] = {
     "pandas.core.indexes.numeric": "urbanstats.compatibility.pandas_numeric_stub",
@@ -50,7 +52,7 @@ class remapping_pickle:
         return hasattr(pickle, name)
 
 
-def permacache_with_remapping_pickle(*args: object, **kwargs: object) -> object:
+def permacache_with_remapping_pickle(*args: object, **kwargs: object) -> Callable[[_F], _F]:
     """
     Behaves like permacache.permacache, but re-maps modules on load.
     """
@@ -58,6 +60,6 @@ def permacache_with_remapping_pickle(*args: object, **kwargs: object) -> object:
         *args,
         **kwargs,
         read_from_shelf_context_manager=swap_unpickler_context_manager(
-            remapping_pickle().Unpickler
+            cast(type, remapping_pickle().Unpickler)
         ),
     )

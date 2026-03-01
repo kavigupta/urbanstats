@@ -50,7 +50,7 @@ PROVINCE_PROVIDER = ContainedWithinUniverseProvider(
 )
 
 
-@permacache_with_remapping_pickle(  # type: ignore[operator]
+@permacache_with_remapping_pickle(
     "urbanstats/universe/universe_provider/contained_within/compute_contained_in",
     key_function=dict(
         shapefile=lambda a: a.hash_key,
