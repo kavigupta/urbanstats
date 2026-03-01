@@ -5,7 +5,7 @@ from pandas.core.indexes.base import Index
 # Disabling abstract-method because these classes are stubs and do not implement any methods.
 
 
-class NumericIndex(Index):
+class NumericIndex(Index):  # type: ignore[misc]
     pass
 
 

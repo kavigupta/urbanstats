@@ -9,7 +9,7 @@ class MetadataRow:
 
 
 @lru_cache(None)
-def canadian_metadata_columns():
+def canadian_metadata_columns() -> list[MetadataRow]:
     with open(
         "named_region_shapefiles/canada/98-401-X2021006_English_meta.txt",
         encoding="latin-1",
@@ -23,12 +23,13 @@ def canadian_metadata_columns():
     return [MetadataRow(i, text) for i, text in enumerate(metadata, 1)]
 
 
-def metadata_by_table():
+def metadata_by_table() -> dict[str, list[MetadataRow]]:
     metadata = canadian_metadata_columns()
-    tables = {}
-    current_row = None
+    tables: dict[str, list[MetadataRow]] = {}
+    current_row: list[MetadataRow] | None = None
     for row in metadata:
         if row.text.startswith(" "):
+            assert current_row is not None
             current_row.append(row)
         else:
             current_row = [row]

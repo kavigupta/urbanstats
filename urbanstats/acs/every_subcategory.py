@@ -2,10 +2,14 @@
 Helper functions for handling ACS datasets where every subcategory is a separate column.
 """
 
+from typing import Any
 
-def produce_subcategories(prefix, list_of_columns, *, remove_gender):
-    def subcategory_dict():
-        subcategory = {None: []}
+
+def produce_subcategories(
+    prefix: str, list_of_columns: list[str], *, remove_gender: bool
+) -> tuple[dict[str | None, list[str]], Any, dict[str, str]]:
+    def subcategory_dict() -> dict[str | None, list[str]]:
+        subcategory: dict[str | None, list[str]] = {None: []}
         for x in list_of_columns:
             if x.endswith(":"):
                 subcategory[None].append(x)
@@ -22,12 +26,12 @@ def produce_subcategories(prefix, list_of_columns, *, remove_gender):
                 ]
         return subcategory
 
-    def normalize_name(k):
+    def normalize_name(k: str | None) -> str | None:
         if k is None:
             return k
         return prefix + "_" + k.lower().replace(" ", "_")
 
-    def display_dict():
+    def display_dict() -> dict[str, str]:
         return {
             normalize_name(k): k + " %" for k in subcategory_dict() if k is not None
         }
