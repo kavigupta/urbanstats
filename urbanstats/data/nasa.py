@@ -2,6 +2,7 @@ import os
 import urllib
 from functools import lru_cache
 from http.cookiejar import CookieJar
+from typing import cast
 
 
 @lru_cache(None)
@@ -26,4 +27,4 @@ def get_nasa_data(url: str) -> bytes:
     urllib.request.install_opener(opener)
     request = urllib.request.Request(url)
     with urllib.request.urlopen(request) as response:
-        return response.read()  # type: ignore[no-any-return]
+        return cast(bytes, response.read())

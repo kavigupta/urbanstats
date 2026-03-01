@@ -32,7 +32,12 @@ def overlays(a, b, a_size, b_size, **kwargs):
     return pd.concat(results).reset_index(drop=True)
 
 
-def compute_contained_in_direct(a_df, b_df, a_chunk_size, b_chunk_size):
+def compute_contained_in_direct(
+    a_df: gpd.GeoDataFrame,
+    b_df: gpd.GeoDataFrame,
+    a_chunk_size: int | None,
+    b_chunk_size: int | None,
+) -> dict[str, list[str]]:
     a_df = a_df.copy()
     a_df["idx"] = np.arange(a_df.shape[0])
     over = overlays(

@@ -2,6 +2,7 @@
 strict = true
 python_version = "3.10"
 warn_unused_ignores = true
+mypy_path = "stubs"
 
 # Third-party packages without stubs or py.typed
 [[tool.mypy.overrides]]
@@ -10,8 +11,6 @@ module = [
     "geopandas",
     "overpy.*",
     "overpy",
-    "permacache.*",
-    "permacache",
     "us.*",
     "us",
     "shapely.*",

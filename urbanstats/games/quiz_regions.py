@@ -15,7 +15,7 @@ class QuizTable:
     local_region_mask: pd.Series
     weight_internal: pd.Series
 
-    def __permacache_hash__(self):
+    def __permacache_hash__(self) -> str:
         return stable_hash(
             dict(
                 data=[list(self.data.columns), list(self.data.index), self.data.values],

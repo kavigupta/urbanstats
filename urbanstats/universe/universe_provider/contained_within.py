@@ -68,15 +68,15 @@ def compute_contained_in(
     a universe U if the area of the intersection of S and U is at least 5% of the area of S.
     """
     print("contained_in", shapefile.hash_key, universe_shapefile.hash_key)
-    universe_df = universe_shapefile.load_file()  # type: ignore[no-untyped-call]
+    universe_df = universe_shapefile.load_file()
     if longname_filter is not None:
         universe_df_longnames = set(universe_df.longname)
         missing = set(longname_filter) - universe_df_longnames
         if missing:
             raise ValueError(f"Missing longnames in universe shapefile: {missing}")
         universe_df = universe_df[universe_df.longname.isin(longname_filter)]
-    return compute_contained_in_direct(  # type: ignore[no-untyped-call, no-any-return]
-        shapefile.load_file(),  # type: ignore[no-untyped-call]
+    return compute_contained_in_direct(
+        shapefile.load_file(),
         universe_df,
         universe_shapefile.chunk_size,
         shapefile.chunk_size,
