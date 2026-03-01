@@ -9,15 +9,21 @@ mypy_path = "stubs"
 module = [
     "geopandas.*",
     "geopandas",
+    "matplotlib.*",
+    "matplotlib",
     "overpy.*",
     "overpy",
-    "us.*",
-    "us",
+    "pandas.*",
+    "pandas",
     "shapely.*",
     "shapely",
     "shapely.geometry.*",
-    "pandas.*",
-    "pandas",
+    "tqdm.*",
+    "tqdm",
+    "us.*",
+    "us",
+    "zarr.*",
+    "zarr",
 ]
 ignore_missing_imports = true
 

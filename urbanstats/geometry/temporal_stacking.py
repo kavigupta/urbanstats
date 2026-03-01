@@ -26,7 +26,12 @@ def collapse_unchanged(table, identity_columns, *, overlap_threshold=1e-4):
     return table_updated
 
 
-def _collapse_unchanged_chunk(table, indices, *, overlap_threshold):
+def _collapse_unchanged_chunk(
+    table: pd.DataFrame,
+    indices: list[int],
+    *,
+    overlap_threshold: float,
+) -> pd.DataFrame:
     rows = [table.iloc[indices[0]].copy()]
     for new_idx in indices[1:]:
         prev_row = rows[-1]
@@ -39,7 +44,11 @@ def _collapse_unchanged_chunk(table, indices, *, overlap_threshold):
     return rows
 
 
-def mergable(current_row, prev_row, overlap_threshold):
+def mergable(
+    current_row: pd.Series,
+    prev_row: pd.Series,
+    overlap_threshold: float,
+) -> bool:
     assert current_row.start_date > prev_row.end_date
     if current_row.start_date > 1 + prev_row.end_date:
         return False

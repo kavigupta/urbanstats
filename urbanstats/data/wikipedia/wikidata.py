@@ -43,7 +43,7 @@ def wikidata_to_wikipage(wikidata_id: str) -> Optional[str]:
 
 
 @permacache("urbanstats/data/wikipedia/wikidata/query_sparlql")
-def query_sparlql(column, value):
+def query_sparlql(column: str, value: str) -> str | None:
     query = f"""
     SELECT ?item WHERE {{
       ?item {column} "{value}" .

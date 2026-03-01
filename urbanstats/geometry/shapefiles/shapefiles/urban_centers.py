@@ -1,3 +1,5 @@
+from typing import TypedDict
+
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import valid_state
@@ -11,7 +13,22 @@ from urbanstats.universe.universe_provider.universe_provider import (
 )
 
 
-def create_urban_center_like_shapefile(**kwargs: object) -> Shapefile:
+class _UrbanCenterMeta(TypedDict, total=False):
+    type: str
+
+
+class _UrbanCenterShapefileKwargs(TypedDict, total=False):
+    meta: _UrbanCenterMeta
+    path: object
+    hash_key: str
+    abbreviation: str
+    data_credit: object
+    wikidata_sourcer: object
+
+
+def create_urban_center_like_shapefile(
+    **kwargs: _UrbanCenterShapefileKwargs,
+) -> Shapefile:
     return Shapefile(
         shortname_extractor=lambda x: x["shortname"],
         longname_extractor=lambda x: x["longname"],

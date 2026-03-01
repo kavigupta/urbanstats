@@ -1,3 +1,6 @@
+from typing import Protocol
+
+import geopandas as gpd
 from permacache import permacache
 
 from urbanstats.data.wikipedia.wikidata_sourcer import CANADA_WIKIDATA_SOURCER
@@ -87,7 +90,7 @@ cdtype = {
 @permacache(
     "urbanstats/geometry/shapefiles/shapefiles/canadian_census_subdivisions/load_csd_shapefile",
 )
-def load_csd_shapefile():
+def load_csd_shapefile() -> gpd.GeoDataFrame:
     data = load_canadian_shapefile(
         "named_region_shapefiles/canada/lcsd000b21a_e.zip",
         COUNTRIES,
@@ -99,9 +102,13 @@ def load_csd_shapefile():
     return data
 
 
-def census_subdivision_name(row):
-    name = row.CSDNAME
-    name = name.replace("  ", " ")
+class _CSDRow(Protocol):
+    CSDNAME: str
+    CSDTYPE: str
+
+
+def census_subdivision_name(row: _CSDRow) -> str:
+    name = row.CSDNAME.replace("  ", " ")
     if not name.startswith("Division"):
         name += " " + cdtype[row.CSDTYPE]
     return name

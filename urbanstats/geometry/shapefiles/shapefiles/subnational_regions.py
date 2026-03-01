@@ -21,12 +21,21 @@ class _HasISO_CC(Protocol):
     ISO_CC: str
 
 
+class _RowWithNameAndISO(Protocol):
+    NAME: str
+    ISO_CC: str
+
+
+class _StateLike(Protocol):
+    fips: str
+
+
 def extract_country_longname(x: _HasISO_CC) -> str | None:
     # print(x)
     return iso_to_country(x.ISO_CC)
 
 
-def extract_state(x: str):
+def extract_state(x: str) -> _StateLike | None:
     s = us.states.lookup(x)
     if s is None:
         return None
@@ -41,7 +50,7 @@ def valid_state(x: str) -> bool:
     return extract_state(x) is not None
 
 
-def compute_geoid(row: object) -> str | None:
+def compute_geoid(row: _RowWithNameAndISO) -> str | None:
     if extract_country_longname(row) != "USA":
         return None
     st = extract_state(row.NAME)

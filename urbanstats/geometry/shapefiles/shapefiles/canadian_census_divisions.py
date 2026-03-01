@@ -1,3 +1,5 @@
+from typing import Protocol
+
 from urbanstats.data.wikipedia.wikidata_sourcer import CANADA_WIKIDATA_SOURCER
 from urbanstats.geometry.shapefiles.load_canada_shapefile import (
     load_canadian_shapefile,
@@ -27,16 +29,21 @@ cdtype = {
 }
 
 
-def subdivision_name(row):
-    name = row.CDNAME
-    name = name.replace("  ", " ")
+class _DivisionRow(Protocol):
+    CDNAME: str
+    CDTYPE: str
+    PRUID: str
+
+
+def subdivision_name(row: _DivisionRow) -> str:
+    name = row.CDNAME.replace("  ", " ")
     if not name.startswith("Division"):
         name += " " + cdtype[row.CDTYPE]
     return name
 
 
-def subdivision_longname(row):
-    return subdivision_name(row) + ", " + pruid_to_province[row["PRUID"]]
+def subdivision_longname(row: _DivisionRow) -> str:
+    return subdivision_name(row) + ", " + pruid_to_province[row.PRUID]
 
 
 CANADIAN_CENSUS_DIVISIONS = Shapefile(

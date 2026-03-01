@@ -1,7 +1,9 @@
 from collections import defaultdict
 
 
-def consistent_district_padding(states, districts, *, minimum_length=0):
+def consistent_district_padding(
+    states: list[str], districts: list[str], *, minimum_length: int = 0
+) -> list[str]:
     """
     Produce consistent padding for names of districts within a state. Padding is only ever 0s added to the left, and is
     consistent if the length of the numerical portion on the left is the same for all districts in the state. E.g.,
@@ -14,7 +16,7 @@ def consistent_district_padding(states, districts, *, minimum_length=0):
     :return: A list of district names with consistent padding.
     """
     districts = list(districts)
-    state_to_indices = defaultdict(list)
+    state_to_indices: defaultdict[str, list[int]] = defaultdict(list)
     for i, state in enumerate(states):
         state_to_indices[state].append(i)
     for state, indices in state_to_indices.items():
@@ -27,7 +29,9 @@ def consistent_district_padding(states, districts, *, minimum_length=0):
     return districts
 
 
-def make_consistent_padding(districts, *, minimum_length):
+def make_consistent_padding(
+    districts: list[str], *, minimum_length: int
+) -> list[str]:
     """
     Make the padding of the numerical portion of the district names consistent by adding 0s to the left.
 
@@ -44,7 +48,7 @@ def make_consistent_padding(districts, *, minimum_length):
     ]
 
 
-def compute_numeric_length(district):
+def compute_numeric_length(district: str) -> int:
     """
     Compute the length of the numerical portion of a district name, i.e., the 02 in "02a".
     """

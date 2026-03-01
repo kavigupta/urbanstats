@@ -37,7 +37,9 @@ def get_all_counties() -> gpd.GeoDataFrame:
     return data
 
 
-def use_latest_shapefile(data, county_2022):
+def use_latest_shapefile(
+    data: gpd.GeoDataFrame, county_2022: gpd.GeoDataFrame
+) -> None:
     recents = data[data.END_DATE == end_of_time]
     counties_shapefile = county_2022.copy()
     counties_shapefile["geoid"] = (
@@ -55,19 +57,28 @@ def use_latest_shapefile(data, county_2022):
     data.loc[recents.index, "geometry"] = geometries
 
 
-def date_minus_one(date):
+def date_minus_one(date: str) -> str:
     dt = datetime.strptime(date, "%Y-%m-%d")
     dt = dt - timedelta(days=1)
     return dt.strftime("%Y-%m-%d")
 
 
-def terminate(frame, date, fips):
+def terminate(
+    frame: gpd.GeoDataFrame, date: str, fips: str
+) -> None:
     mask = (frame.FIPS == fips) & (frame.END_DATE == end_of_time)
     assert mask.sum() == 1, f"expected exactly one match for {fips}, got {mask.sum()}"
     frame.loc[mask, "END_DATE"] = date
 
 
-def introduce(frame, date, fips, county_source, *, alter=False):
+def introduce(
+    frame: gpd.GeoDataFrame,
+    date: str,
+    fips: str,
+    county_source: gpd.GeoDataFrame,
+    *,
+    alter: bool = False,
+) -> gpd.GeoDataFrame:
     if alter:
         # just terminate the old one
         terminate(frame, date_minus_one(date), fips)
@@ -104,7 +115,12 @@ def introduce(frame, date, fips, county_source, *, alter=False):
     return frame
 
 
-def handle_recent_changes(frame, *, county_2010, county_2022):
+def handle_recent_changes(
+    frame: gpd.GeoDataFrame,
+    *,
+    county_2010: gpd.GeoDataFrame,
+    county_2022: gpd.GeoDataFrame,
+) -> gpd.GeoDataFrame:
     """
     handle recent changes as listed in https://www.census.gov/programs-surveys/geography/technical-documentation/county-changes.html
     """
