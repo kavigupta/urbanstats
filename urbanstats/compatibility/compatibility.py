@@ -52,7 +52,9 @@ class remapping_pickle:
         return hasattr(pickle, name)
 
 
-def permacache_with_remapping_pickle(*args: object, **kwargs: object) -> Callable[[_F], _F]:
+def permacache_with_remapping_pickle(
+    *args: object, **kwargs: object
+) -> Callable[[_F], _F]:
     """
     Behaves like permacache.permacache, but re-maps modules on load.
     """

@@ -33,7 +33,9 @@ def produce_subcategories(
 
     def display_dict() -> dict[str, str]:
         return {
-            cast(str, normalize_name(k)): k + " %" for k in subcategory_dict() if k is not None
+            cast(str, normalize_name(k)): k + " %"
+            for k in subcategory_dict()
+            if k is not None
         }
 
     return subcategory_dict(), normalize_name, display_dict()

@@ -10,7 +10,9 @@ from .all_counties import get_all_counties
 
 
 @permacache("urbanstats/geometry/historical_counties/compute_suos/current_suos_7")
-def current_suos() -> tuple[list[list[int]], np.ndarray, np.ndarray, list[tuple[int, ...]]]:
+def current_suos() -> (
+    tuple[list[list[int]], np.ndarray, np.ndarray, list[tuple[int, ...]]]
+):
     data = get_all_counties()
     return compute_suos(data)
 

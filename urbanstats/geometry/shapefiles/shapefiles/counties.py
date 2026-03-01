@@ -1,3 +1,5 @@
+from typing import Protocol
+
 import us
 
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
@@ -6,14 +8,21 @@ from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
-def county_name(row):
+class _CountyRow(Protocol):
+    def __getitem__(self, key: str) -> object: ...
+
+    STATEFP: str
+    COUNTYFP: str
+
+
+def county_name(row: _CountyRow) -> str:
     f = row["NAMELSAD"]
-    if f.lower().endswith("city"):
-        f = f + "-County"
-    return f
+    if str(f).lower().endswith("city"):
+        f = str(f) + "-County"
+    return str(f)
 
 
-def compute_geoid(row):
+def compute_geoid(row: _CountyRow) -> str:
     return row.STATEFP + row.COUNTYFP
 
 

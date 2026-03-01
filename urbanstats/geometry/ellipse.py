@@ -10,7 +10,7 @@ from urbanstats.geometry.categorize_coordinates import categorize
 
 
 class Ellipse:
-    def __init__(self, radius_in_km, latitude, longitude):
+    def __init__(self, radius_in_km: float, latitude: float, longitude: float) -> None:
         """
         dy = r_earth * dtheta = r_earth * pi/180 dlat
         dlat = dy/r_earth * 180/pi
@@ -29,7 +29,7 @@ class Ellipse:
         self.latitude = latitude
         self.longitude = longitude
 
-    def relevant_blocks(self):
+    def relevant_blocks(self) -> list[tuple[int, int]]:
         bounding_box = np.array(
             [
                 self.latitude - self.lat_radius,
@@ -46,15 +46,17 @@ class Ellipse:
             for lo in range(mi_lon, ma_lon + 1)
         ]
 
-    def apply_to_coordinates(self, items):
+    def apply_to_coordinates(self, items: dict[str, Any]) -> np.ndarray[Any, Any]:
         indices = items["indices"]
         la, lo = items["coordinates"].T
         mask = ((la - self.latitude) / self.lat_radius) ** 2 + (
             (lo - self.longitude) / self.lon_radius
         ) ** 2 < 1
-        return indices[mask]
+        return np.asarray(indices[mask])
 
-    def find_neighbors(self, categorization):
+    def find_neighbors(
+        self, categorization: dict[tuple[int, int], dict[str, Any]]
+    ) -> np.ndarray[Any, Any]:
         return np.concatenate(
             [
                 self.apply_to_coordinates(categorization[block])
@@ -72,25 +74,31 @@ class Ellipse:
     ),
     multiprocess_safe=True,
 )
-def locate_blocks(*, coordinates, population, radius=1):
+def locate_blocks(
+    *,
+    coordinates: NDArray[Any],
+    population: NDArray[Any],
+    radius: float = 1,
+) -> NDArray[Any]:
     categories = categorize(coordinates)
-    result = defaultdict(list)
+    result_list: defaultdict[tuple[int, ...], list[int]] = defaultdict(list)
     for i in tqdm.trange(coordinates.shape[0], desc=f"Categorizing {radius}km"):
-        result[tuple(categories[i])].append(i)
-    result = {
+        result_list[tuple(categories[i])].append(i)
+    result_dict: dict[tuple[int, int], dict[str, Any]] = {
         cat: dict(indices=np.array(res), coordinates=coordinates[np.array(res)])
         for cat, res in tqdm.tqdm(
-            result.items(), desc=f"Reorganizing categories {radius}km"
+            result_list.items(), desc=f"Reorganizing categories {radius}km"
         )
     }
-    return np.array(
+    out: NDArray[Any] = np.array(
         [
-            population[Ellipse(radius, *coord).find_neighbors(result)].sum(0)
+            population[Ellipse(radius, *coord).find_neighbors(result_dict)].sum(0)
             for coord in tqdm.tqdm(
                 coordinates, desc=f"Computing population of neighbors {radius}km"
             )
         ]
     )
+    return out
 
 
 def compute_density_for_radius(

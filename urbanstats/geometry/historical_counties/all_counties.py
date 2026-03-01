@@ -37,9 +37,7 @@ def get_all_counties() -> gpd.GeoDataFrame:
     return data
 
 
-def use_latest_shapefile(
-    data: gpd.GeoDataFrame, county_2022: gpd.GeoDataFrame
-) -> None:
+def use_latest_shapefile(data: gpd.GeoDataFrame, county_2022: gpd.GeoDataFrame) -> None:
     recents = data[data.END_DATE == end_of_time]
     counties_shapefile = county_2022.copy()
     counties_shapefile["geoid"] = (
@@ -63,9 +61,7 @@ def date_minus_one(date: str) -> str:
     return dt.strftime("%Y-%m-%d")
 
 
-def terminate(
-    frame: gpd.GeoDataFrame, date: str, fips: str
-) -> None:
+def terminate(frame: gpd.GeoDataFrame, date: str, fips: str) -> None:
     mask = (frame.FIPS == fips) & (frame.END_DATE == end_of_time)
     assert mask.sum() == 1, f"expected exactly one match for {fips}, got {mask.sum()}"
     frame.loc[mask, "END_DATE"] = date

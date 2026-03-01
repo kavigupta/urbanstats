@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from types import NoneType
+from typing import Any
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.data.gpw import GPW_RADII
@@ -19,7 +20,7 @@ class Source:
     priority: int
     variable_suffix: str
 
-    def json(self):
+    def json(self) -> dict[str, str]:
         return {"category": self.category, "name": self.name}
 
 
@@ -33,20 +34,20 @@ class MultiSource:
     multi_source_colname: str = None
     indented_name: str = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if None in self.by_source:
             assert len(self.by_source) == 1
         for source, col in self.by_source.items():
             assert isinstance(source, Source) or source is None
             assert isinstance(col, (str, tuple))
 
-    def internal_statistics(self):
+    def internal_statistics(self) -> list[str]:
         return list(self.by_source.values())
 
-    def name_to_category(self, category_id):
+    def name_to_category(self, category_id: str) -> dict[str, str]:
         return {col: category_id for col in self.by_source.values()}
 
-    def flatten(self, name_map, names):
+    def flatten(self, name_map: list[str], names: list[str]) -> dict[str, Any]:
         result = []
         for source, col in self.by_source.items():
             result.append(
@@ -59,14 +60,14 @@ class MultiSource:
         output["indentedName"] = self.indented_name
         return output
 
-    def canonical_column(self):
+    def canonical_column(self) -> str:
         if self.multi_source_colname is not None:
             return self.multi_source_colname
         assert len(self.by_source) == 1
         col = next(iter(self.by_source.values()))
         return col
 
-    def compute_name(self, name_map):
+    def compute_name(self, name_map: dict[str, str]) -> str:
         return name_map[self.canonical_column()]
 
 
@@ -228,7 +229,9 @@ class StatisticTree:
         return deduplicated_sources
 
 
-def single_source(col_name, indented_name=None):
+def single_source(
+    col_name: str, indented_name: str | None = None
+) -> MultiSource:
     return MultiSource({None: col_name}, indented_name=indented_name)
 
 

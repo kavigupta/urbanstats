@@ -4,16 +4,16 @@ from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
-def urban_area(name, *, is_shortname):
+def urban_area(name: str, *, is_shortname: bool) -> str:
     name = name.replace("--", "-")
     assert name.endswith("Urban Area")
     name = name[: -len(" Urban Area")]
-    *name, state = name.split(",")
-    name = ", ".join(name)
+    parts = name.split(",")
+    state = parts[-1]
+    name_part = ", ".join(parts[:-1])
     if is_shortname:
-        return name + " Urban Area"
-    name = name + " [Urban Area]," + state + ", USA"
-    return name
+        return name_part + " Urban Area"
+    return name_part + " [Urban Area]," + state + ", USA"
 
 
 URBAN_AREAS = Shapefile(

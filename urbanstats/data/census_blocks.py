@@ -1,6 +1,7 @@
 import os
 import subprocess
 from functools import lru_cache
+from typing import Any
 
 import geopandas as gpd
 import numpy as np
@@ -13,7 +14,7 @@ ONE_MILE = 1.609344
 RADII = (0.25, 0.5, 1, ONE_MILE, 2, 4, 8, 16, 32, 64)
 
 
-def format_radius(x):
+def format_radius(x: float) -> str:
     if x in (0.25, 0.5):
         return f"{x * 1000:.0f}m"
     if x == ONE_MILE:
@@ -41,7 +42,13 @@ housing_units = {
 
 
 @lru_cache(None)
-def load_raw_census(year=2020, filter_zero_pop=True):
+def load_raw_census(year: int = 2020, filter_zero_pop: bool = True) -> tuple[
+    np.ndarray[Any, Any],
+    np.ndarray[Any, Any],
+    np.ndarray[Any, Any],
+    dict[str, np.ndarray[Any, Any]],
+    np.ndarray[Any, Any],
+]:
     census_blocks = f"outputs/census_blocks/raw_census_{year}.csv"
 
     if not os.path.exists(census_blocks):
@@ -78,17 +85,17 @@ def load_raw_census(year=2020, filter_zero_pop=True):
     return geoid, population, pop_18, stats, coordinates
 
 
-def density_in_radius(radius, year):
+def density_in_radius(radius: float, year: int) -> np.ndarray[Any, Any]:
     _, population, _, _, coordinates = load_raw_census(year)
     return compute_density_for_radius(radius, population, coordinates)
 
 
-def all_densities(year):
+def all_densities(year: int) -> dict[float, np.ndarray[Any, Any]]:
     return {radius: density_in_radius(radius, year)[:, 0] for radius in RADII}
 
 
 @lru_cache(None)
-def all_densities_gpd(year=2020):
+def all_densities_gpd(year: int = 2020) -> gpd.GeoDataFrame:
     geoid, population, pop_18, stats, coordinates = load_raw_census(year)
     densities = all_densities(year)
     density_metrics = {f"ad_{k}": densities[k] * population[:, 0] for k in densities}

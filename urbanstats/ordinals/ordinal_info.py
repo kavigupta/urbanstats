@@ -17,7 +17,9 @@ class OrdinalInfoForColumn:
     ordinal: csc_matrix
     percentile: csc_matrix
     values: csc_matrix
-    counts: np.ndarray  # number of non-NaN values per universe-type, length len(universe_type)
+    counts: (
+        np.ndarray
+    )  # number of non-NaN values per universe-type, length len(universe_type)
 
 
 @dataclass

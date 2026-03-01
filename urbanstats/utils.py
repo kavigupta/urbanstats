@@ -2,26 +2,39 @@ import itertools
 import json
 import os
 from dataclasses import dataclass
+from typing import Any, cast
 
 import numpy as np
 import zarr
 
 
-def compute_bins_slow(data, weight, *, bin_size=0.1):
-    max_value = data.max() if len(data) > 0 else 0
+def compute_bins_slow(
+    data: np.ndarray[Any, Any],
+    weight: np.ndarray[Any, Any],
+    *,
+    bin_size: float = 0.1,
+) -> list[Any]:
+    max_value = float(data.max()) if len(data) > 0 else 0.0
     if max_value < 0:
-        return [sum(weight)]
+        return [float(sum(weight))]
     idxs = np.arange(int(np.ceil(max_value / bin_size)) + 1)
     bins = idxs * bin_size
+
+    def key_fn(idx: int, x: float) -> float:
+        return cast(float, abs(bins[idx] - x))
+
     return [
-        weight[
-            [idx == min(idxs, key=lambda idx, x=x: abs(bins[idx] - x)) for x in data]
-        ].sum()
+        weight[[idx == min(idxs, key=lambda i: key_fn(i, x)) for x in data]].sum()
         for idx in range(len(bins))
     ]
 
 
-def compute_bins(data, weight, *, bin_size=0.1):
+def compute_bins(
+    data: np.ndarray[Any, Any],
+    weight: np.ndarray[Any, Any],
+    *,
+    bin_size: float = 0.1,
+) -> np.ndarray[Any, Any]:
     """
     Compute a weighted histogram for a dataset.
 
@@ -30,15 +43,17 @@ def compute_bins(data, weight, *, bin_size=0.1):
     """
     max_value = data.max() if len(data) > 0 else 0
     if max_value < 0:
-        return np.sum(weight)[None]
-    values = np.zeros(int(np.ceil(max_value / bin_size)) + 1, dtype=weight.dtype)
+        return cast(np.ndarray[Any, Any], np.sum(weight)[None])
+    values: np.ndarray[Any, Any] = np.zeros(
+        int(np.ceil(max_value / bin_size)) + 1, dtype=weight.dtype
+    )
     idx = (data / bin_size + 0.5).astype(np.int32)
     idx = np.clip(idx, 0, len(values) - 1)
     np.add.at(values, idx, weight)
     return values
 
 
-def output_typescript(data, file, data_type="const"):
+def output_typescript(data: object, file: Any, data_type: str = "const") -> None:
     content = json.dumps(data, indent=4)
     if data_type == "const":
         file.write(f"export default {content} as const")
@@ -48,23 +63,26 @@ def output_typescript(data, file, data_type="const"):
 
 @dataclass
 class DiscreteDistribution:
-    cumulative_dist: np.ndarray
+    cumulative_dist: np.ndarray[Any, Any]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         assert np.allclose(self.cumulative_dist[-1], 1)
 
     @classmethod
-    def of(cls, weights):
+    def of(cls, weights: np.ndarray[Any, Any]) -> "DiscreteDistribution":
         pcumu = np.cumsum(weights)
         pcumu = pcumu / pcumu[-1]
         return cls(pcumu)
 
-    def sample(self, rng, *args):
+    def sample(self, rng: Any, *args: Any) -> np.ndarray[Any, Any]:
         r = rng.random(*args)
-        return np.searchsorted(self.cumulative_dist, r, side="left")
+        result: np.ndarray[Any, Any] = np.searchsorted(
+            self.cumulative_dist, r, side="left"
+        )
+        return result
 
 
-def cached_zarr_array(path, create_fn):
+def cached_zarr_array(path: str, create_fn: Any) -> Any:
     if not os.path.exists(path):
         result = create_fn()
         with zarr.open(path, mode="w") as z:
@@ -72,7 +90,7 @@ def cached_zarr_array(path, create_fn):
     return zarr.open(path, mode="r")["data"]
 
 
-def to_cardinal_direction(angle_revolutions):
+def to_cardinal_direction(angle_revolutions: float) -> str:
     return {
         0: "East",
         0.25: "North",
@@ -93,7 +111,7 @@ def to_cardinal_direction(angle_revolutions):
     }[angle_revolutions]
 
 
-def name_points_around_center(centroids):
+def name_points_around_center(centroids: Any) -> list[str]:
     centroids = np.array([centroids.x.values, centroids.y.values]).T
     centroids = centroids - centroids.mean(axis=0)
     angles = np.arctan2(centroids[:, 1], centroids[:, 0])
@@ -108,7 +126,11 @@ def name_points_around_center(centroids):
     raise RuntimeError("unreachable")
 
 
-def approximate_quantile(bins, weights, q):
+def approximate_quantile(
+    bins: np.ndarray[Any, Any],
+    weights: np.ndarray[Any, Any],
+    q: float,
+) -> float:
     """
     Approximate the qth quantile of a distribution given by bins and weights.
     In essence, weights[i] applies to the bin bins[i] to bins[i+1], and is treated
@@ -120,10 +142,10 @@ def approximate_quantile(bins, weights, q):
     cumulative = np.cumsum(weights)
     idx = np.searchsorted(cumulative, q, side="right")
     if idx == len(weights):
-        return bins[-1]
+        return float(bins[-1])
     prev_cumu = cumulative[idx - 1] if idx > 0 else 0
     next_cumu = cumulative[idx]
     prev_bin = bins[idx]
     next_bin = bins[idx + 1]
     frac = (q - prev_cumu) / (next_cumu - prev_cumu)
-    return prev_bin + frac * (next_bin - prev_bin)
+    return float(prev_bin + frac * (next_bin - prev_bin))

@@ -8,10 +8,12 @@ from permacache import stable_hash
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.wikipedia.wikidata_sourcer import compute_wikidata_and_wikipedia
+from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles as shapefiles_list
 from urbanstats.statistics.collections_list import (
     statistic_collections as statistic_collections_list,
 )
+from urbanstats.statistics.statistic_collection import StatisticCollection
 from urbanstats.universe.universe_provider.compute_universes import (
     compute_universes_for_shapefile,
 )
@@ -29,8 +31,10 @@ from urbanstats.universe.universe_provider.compute_universes import (
     multiprocess_safe=True,
 )
 def compute_statistics_for_shapefile(
-    sf, shapefiles, statistic_collections=statistic_collections_list
-):
+    sf: Shapefile,
+    shapefiles: dict[str, Shapefile],
+    statistic_collections: tuple[StatisticCollection, ...] = statistic_collections_list,
+) -> pd.DataFrame:
     print("Computing statistics for", sf.hash_key)
     sf_fr = sf.load_file()
     result = sf_fr[
@@ -51,7 +55,7 @@ def compute_statistics_for_shapefile(
     for k in sf.meta:
         result[k] = sf.meta[k]
 
-    statistics = {}
+    statistics: dict[str, object] = {}
 
     for collection in statistic_collections:
         statistics.update(
@@ -64,28 +68,30 @@ def compute_statistics_for_shapefile(
             )
         )
 
-    statistics = pd.DataFrame(statistics)
-    result = pd.concat([result, statistics], axis=1)
+    statistics_df = pd.DataFrame(statistics)
+    result = pd.concat([result, statistics_df], axis=1)
     return result
 
 
-def combined_shapefile():
-    full = []
+def combined_shapefile() -> pd.DataFrame:
+    full: list[pd.DataFrame] = []
     for k in tqdm.tqdm(shapefiles_list, desc="computing statistics"):
         t = compute_statistics_for_shapefile(shapefiles_list[k], shapefiles_list)
 
         full.append(t)
 
-    full = pd.concat(full)
-    full = full.reset_index(drop=True)
+    result_df = pd.concat(full)
+    result_df = result_df.reset_index(drop=True)
     # Simply abolish local government tbh. How is this a thing.
     # https://www.openstreetmap.org/user/Minh%20Nguyen/diary/398893#:~:text=An%20administrative%20area%E2%80%99s%20name%20is%20unique%20within%20its%20immediate%20containing%20area%20%E2%80%93%20false
     # Ban both of these from the database
-    full = full[full.longname != "Washington township [CCD], Union County, Ohio, USA"]
-    # duplicates = {k: v for k, v in Counter(full.longname).items() if v > 1}
+    result_df = result_df[
+        result_df.longname != "Washington township [CCD], Union County, Ohio, USA"
+    ]
+    # duplicates = {k: v for k, v in Counter(result_df.longname).items() if v > 1}
     # assert not duplicates, str(duplicates)
-    del full["type_category"]
-    return full
+    del result_df["type_category"]
+    return result_df
 
 
 def merge_population_estimates(full):

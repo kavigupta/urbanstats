@@ -1,11 +1,11 @@
-from typing import Optional
+from typing import Any, Iterator, Optional
 
 import requests
 from permacache import permacache
 
 
 @permacache("election_data_by_county/historic_wiki/wikidata_to_wikipage")
-def wikidata_to_wikipage(wikidata_id: str) -> Optional[str]:
+def wikidata_to_wikipage(wikidata_id: Optional[str]) -> Optional[str]:
     """
     Convert a Wikidata Q-identifier to the corresponding enwiki page.
 
@@ -36,8 +36,10 @@ def wikidata_to_wikipage(wikidata_id: str) -> Optional[str]:
     sitelinks = entity.get("sitelinks", {})
 
     enwiki_sitelink = sitelinks.get("enwiki")
-    if enwiki_sitelink:
-        return enwiki_sitelink.get("title")
+    if enwiki_sitelink and isinstance(enwiki_sitelink, dict):
+        title = enwiki_sitelink.get("title")
+        if isinstance(title, str):
+            return title
 
     return None
 
@@ -50,14 +52,14 @@ def query_sparlql(column: str, value: str) -> str | None:
     }}
     LIMIT 1
     """
-    for result in fetch_sparql(query):
-        print(f"Found entity {result} for query {value}")
-        return result
+    for entity_id in fetch_sparql(query):
+        print(f"Found entity {entity_id} for query {value}")
+        return entity_id
 
     return None
 
 
-def fetch_sparql(query):
+def fetch_sparql(query: str) -> Iterator[str]:
     sparql_url = "https://query.wikidata.org/sparql"
     headers = {
         "User-Agent": "urbanstats (https://github.com/kavigupta/urbanstats; contact@urbanstats.org)",
@@ -68,9 +70,9 @@ def fetch_sparql(query):
 
     response = requests.get(sparql_url, params=params, headers=headers, timeout=10)
     response.raise_for_status()
-    data = response.json()
+    data: dict[str, Any] = response.json()
 
-    bindings = data.get("results", {}).get("bindings", [])
+    bindings: list[dict[str, Any]] = data.get("results", {}).get("bindings", [])
     for binding in bindings:
         entity_uri = binding.get("item", {}).get("value", "")
         if "/entity/" in entity_uri:
@@ -79,5 +81,5 @@ def fetch_sparql(query):
 
 
 @permacache("urbanstats/data/wikipedia/wikidata/fetch_sparql_as_list")
-def fetch_sparql_as_list(query):
+def fetch_sparql_as_list(query: str) -> list[str]:
     return list(fetch_sparql(query))

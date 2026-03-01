@@ -29,9 +29,7 @@ def consistent_district_padding(
     return districts
 
 
-def make_consistent_padding(
-    districts: list[str], *, minimum_length: int
-) -> list[str]:
+def make_consistent_padding(districts: list[str], *, minimum_length: int) -> list[str]:
     """
     Make the padding of the numerical portion of the district names consistent by adding 0s to the left.
 

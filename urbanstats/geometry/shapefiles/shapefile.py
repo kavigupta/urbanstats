@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from urbanstats.universe.universe_provider.universe_provider import (
         UniverseProvider,
     )
+
 import geopandas as gpd
 import pandas as pd
 

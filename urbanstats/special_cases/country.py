@@ -78,9 +78,7 @@ def bounds_overlap(
     return lon_does_overlap and lat_does_overlap
 
 
-def buffer_geometry(
-    data: gpd.GeoDataFrame, idx: int, buffer: float
-) -> BaseGeometry:
+def buffer_geometry(data: gpd.GeoDataFrame, idx: int, buffer: float) -> BaseGeometry:
     geom = data.iloc[idx].geometry
     buffered_geom = geom.buffer(buffer).simplify(buffer / 2)
     idxs = []
