@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+    <!-- <title>OpenFreeMap Quick Start Guide</title> -->
+    <!-- <meta name="description"
+        content="OpenFreeMap – Open-Source Map Hosting lets you display custom maps on your website and apps for free."> -->
+    <!-- <meta name="generator" content="Astro v5.4.0"> -->
+    <!-- <link rel="icon" href="/favicon.ico" sizes="any"> -->
+    <!--    <meta property="og:title" content="" />--><!--    <meta property="og:type" content="" />--><!--    <meta property="og:url" content="" />--><!--    <meta property="og:image" content="" />-->
+    <!-- <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet"> -->
+    <!-- <link rel="sitemap" href="/sitemap-index.xml"> -->
+    <!-- <link rel="canonical" href="https://openfreemap.org/quick_start/"> -->
+    <style>
+        *,
+        .container {
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0 20px
+        }
+
+
+        #map-container {
+            width: 100%;
+            height: 500px;
+            margin-bottom: 24px;
+            position: relative
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="map-container">
+    </div>
+    <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+    <script>
+        const london3d = {
+            center: [-0.114, 51.506],
+            zoom: 14.2,
+            bearing: 55.2,
+            pitch: 60,
+        }
+
+        const berlin = {
+            center: [13.388, 52.517],
+            zoom: 9.5,
+            bearing: 0,
+            pitch: 0,
+        }
+
+        const nyc = {
+            center: [-74.006, 40.7128],
+            zoom: 10,
+            bearing: 0,
+            pitch: 0,
+        }
+
+        function initMap() {
+            if (window.map) return
+
+            const map = new maplibregl.Map({
+                style: '/style.json',
+                center: nyc.center,
+                zoom: nyc.zoom,
+                bearing: nyc.bearing,
+                pitch: nyc.pitch,
+                container: 'map-container',
+                // boxZoom: false,
+                // doubleClickZoom: false,
+                scrollZoom: true,
+                attributionControl: false,
+                cooperativeGestures: false,
+                dragRotate: false,
+            })
+            // map.on('styledata', function () {
+            //     console.log(map.style.stylesheet)
+            //     map.style.stylesheet.layers.forEach(function (layer) {
+            //         console.log(layer)
+            //         if (layer.type === 'symbol' && map.getLayer(layer.id)) {
+            //             map.removeLayer(layer.id);
+            //         }
+            //     });
+            // })
+
+            window.map = map
+        }
+        initMap()
+
+    </script>
+</body>
+
+</html>
