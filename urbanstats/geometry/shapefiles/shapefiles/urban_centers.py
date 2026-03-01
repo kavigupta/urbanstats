@@ -11,7 +11,7 @@ from urbanstats.universe.universe_provider.universe_provider import (
 )
 
 
-def create_urban_center_like_shapefile(**kwargs):
+def create_urban_center_like_shapefile(**kwargs: object) -> Shapefile:
     return Shapefile(
         shortname_extractor=lambda x: x["shortname"],
         longname_extractor=lambda x: x["longname"],

@@ -1,3 +1,5 @@
+from typing import Any
+
 import geopandas as gpd
 import overpy
 from shapely import difference, unary_union
@@ -70,7 +72,7 @@ def polygon_for_relation(relation):
     return difference(members["outer"], members["inner"])
 
 
-def frame_for_result(result, *, keep_tags):
+def frame_for_result(result: Any, *, keep_tags: bool) -> gpd.GeoDataFrame:
     with_tags_nodes = [w for w in result.get_nodes() if "name" in w.tags]
     with_tags_ways = [
         w

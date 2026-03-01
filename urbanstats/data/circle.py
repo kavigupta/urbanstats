@@ -604,7 +604,9 @@ def produce_image(population):
     print("Done with population", name)
 
 
-def circle_shapefile_object(country_shapefile, population):
+def circle_shapefile_object(
+    country_shapefile: Shapefile, population: int | float
+) -> Shapefile:
     name = named_populations[population] + " Person Circle"
     version = 27
     return Shapefile(

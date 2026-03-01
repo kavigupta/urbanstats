@@ -1,7 +1,9 @@
 from collections import defaultdict
+from typing import Any
 
 import numpy as np
 import tqdm.auto as tqdm
+from numpy.typing import NDArray
 from permacache import permacache, stable_hash
 
 from urbanstats.geometry.categorize_coordinates import categorize
@@ -91,7 +93,11 @@ def locate_blocks(*, coordinates, population, radius=1):
     )
 
 
-def compute_density_for_radius(radius, population, coordinates):
+def compute_density_for_radius(
+    radius: float,
+    population: NDArray[Any],
+    coordinates: NDArray[Any],
+) -> NDArray[Any]:
     return locate_blocks(
         coordinates=coordinates, population=population, radius=radius
     ) / (np.pi * radius**2)

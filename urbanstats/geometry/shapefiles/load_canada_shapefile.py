@@ -1,6 +1,11 @@
+from typing import TYPE_CHECKING
+
 import geopandas as gpd
 import shapely
 from permacache import permacache, stable_hash
+
+if TYPE_CHECKING:
+    from urbanstats.geometry.shapefiles.shapefile import Shapefile
 
 pruid_to_province = {
     "48": "Alberta, Canada",
@@ -70,8 +75,10 @@ def compute_qconmt(subnationals_shapefile):
     ),
 )
 def load_canadian_shapefile_with_canada_shape(
-    shapefile_path, canada_shape, qconmt_shape
-):
+    shapefile_path: str,
+    canada_shape: shapely.Geometry,
+    qconmt_shape: shapely.Geometry,
+) -> gpd.GeoDataFrame:
     data = gpd.read_file(shapefile_path)
     data = data.to_crs(epsg=4326)
     data["geometry"] = data["geometry"].intersection(canada_shape)
@@ -85,8 +92,10 @@ def load_canadian_shapefile_with_canada_shape(
 
 
 def load_canadian_shapefile(
-    shapefile_path, countries_shapefile, subnationals_shapefile
-):
+    shapefile_path: str,
+    countries_shapefile: "Shapefile",
+    subnationals_shapefile: "Shapefile",
+) -> gpd.GeoDataFrame:
     canada_shape = compute_canada_shape(countries_shapefile)
     qtconmt_shape = compute_qconmt(subnationals_shapefile)
     return load_canadian_shapefile_with_canada_shape(

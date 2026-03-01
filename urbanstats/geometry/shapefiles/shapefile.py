@@ -52,7 +52,7 @@ class Shapefile:
         assert set(self.metadata_columns) <= set(self.available_columns)
         assert set(self.metadata_columns) <= set(metadata_types)
 
-    def load_file(self):
+    def load_file(self) -> gpd.GeoDataFrame:
         """
         Load the shapefile and apply the filters and extractors.
 
@@ -179,8 +179,10 @@ class EmptyShapefileError(Exception):
     pass
 
 
-def multiple_localized_type_names(shapefiles):
-    localized = defaultdict(dict)
+def multiple_localized_type_names(
+    shapefiles: dict[str, Shapefile],
+) -> defaultdict[str, dict]:
+    localized: defaultdict[str, dict] = defaultdict(dict)
     for sf in shapefiles.values():
         for subset_name, subset_localized in sf.localized_type_names().items():
             localized[subset_name].update(subset_localized)

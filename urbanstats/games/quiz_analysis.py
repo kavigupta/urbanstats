@@ -93,14 +93,14 @@ def open_connection():
     return c
 
 
-def get_secure_id_for_user(user):
+def get_secure_id_for_user(user: int) -> int:
     assert isinstance(user, int), user
     c = open_connection()
     c = c.execute(f"SELECT secure_id from JuxtaStatUserSecureID where user={user}")
     return int(c.fetchone()[0])
 
 
-def get_full_statistics(*, after_problem, debug=False):
+def get_full_statistics(*, after_problem: int, debug: bool = False) -> pd.DataFrame:
     _, result = get_full_statistics_table()
     result = result.copy()
     time_problem = result[["time", "problem"]]

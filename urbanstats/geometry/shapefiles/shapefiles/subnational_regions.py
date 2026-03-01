@@ -1,3 +1,5 @@
+from typing import Protocol
+
 import us
 
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
@@ -15,7 +17,11 @@ from urbanstats.universe.universe_provider.contained_within import (
 )
 
 
-def extract_country_longname(x):
+class _HasISO_CC(Protocol):
+    ISO_CC: str
+
+
+def extract_country_longname(x: _HasISO_CC) -> str | None:
     # print(x)
     return iso_to_country(x.ISO_CC)
 

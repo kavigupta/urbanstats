@@ -9,7 +9,7 @@ end_of_time = "9999-12-31"
 
 
 @permacache("urbanstats/geometry/historical_counties/all_counties/get_all_counties_2")
-def get_all_counties():
+def get_all_counties() -> gpd.GeoDataFrame:
     data = gpd.read_file(
         "named_region_shapefiles/historical-counties/US_AtlasHCB_Counties/US_HistCounties_Shapefile/US_HistCounties.shp"
     )

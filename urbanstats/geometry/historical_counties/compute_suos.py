@@ -10,7 +10,7 @@ from .all_counties import get_all_counties
 
 
 @permacache("urbanstats/geometry/historical_counties/compute_suos/current_suos_7")
-def current_suos():
+def current_suos() -> tuple[list[list[int]], np.ndarray, np.ndarray, list[tuple[int, ...]]]:
     data = get_all_counties()
     return compute_suos(data)
 
@@ -40,7 +40,9 @@ def join_blocks_to_data(blocks, data):
     return idx_data, idx_blocks
 
 
-def compute_suos(data):
+def compute_suos(
+    data: gpd.GeoDataFrame,
+) -> tuple[list[list[int]], np.ndarray, np.ndarray, list[tuple[int, ...]]]:
     coordinates, blocks, set_per_block = aggregate_blocks(data)
     suo_idx_to_subset = sorted(set(set_per_block))
     representative_point, populations = compute_suo_representative(

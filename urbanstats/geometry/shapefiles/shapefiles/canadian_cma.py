@@ -53,7 +53,7 @@ def longname_extractor(row):
     return f"{sh}, {provinces_render}, Canada"
 
 
-def canadian_census_kwargs(typ, category):
+def canadian_census_kwargs(typ: str, category: str) -> dict:
     return dict(
         filter=lambda x: True,
         meta=dict(
