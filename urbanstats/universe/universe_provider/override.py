@@ -1,7 +1,10 @@
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import TYPE_CHECKING, Dict, List
 
 from urbanstats.universe.universe_provider.universe_provider import UniverseProvider
+
+if TYPE_CHECKING:
+    from urbanstats.geometry.shapefiles.shapefile import Shapefile, ShapefileTable
 
 
 @dataclass
@@ -9,17 +12,22 @@ class OverrideUniverseProvider(UniverseProvider):
     overrides: Dict[str, List[str]]
     underlying: UniverseProvider
 
-    def hash_key_details(self):
+    def hash_key_details(self) -> tuple[object, ...]:
         return (
             tuple(self.overrides.items()),
             self.underlying.hash_key(),
             dict(version=2),
         )
 
-    def relevant_shapefiles(self):
+    def relevant_shapefiles(self) -> list[str]:
         return self.underlying.relevant_shapefiles()
 
-    def universes_for_shapefile(self, shapefiles, shapefile, shapefile_table):
+    def universes_for_shapefile(
+        self,
+        shapefiles: dict[str, "Shapefile"],
+        shapefile: "Shapefile",
+        shapefile_table: "ShapefileTable",
+    ) -> dict[str, list[str]]:
         result = self.underlying.universes_for_shapefile(
             shapefiles, shapefile, shapefile_table
         )

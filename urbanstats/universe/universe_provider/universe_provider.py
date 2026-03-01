@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 import us
 
@@ -18,14 +18,14 @@ class UniverseProvider(ABC):
     Represents a provider of universe data.
     """
 
-    def hash_key(self) -> tuple[str, Tuple[str, ...]]:
+    def hash_key(self) -> tuple[str, Tuple[object, ...]]:
         """
         Returns a hash key for this provider
         """
         return (self.__class__.__name__, self.hash_key_details())
 
     @abstractmethod
-    def hash_key_details(self) -> Tuple[str, ...]:
+    def hash_key_details(self) -> Tuple[object, ...]:
         """
         Returns a hash key for this provider. Does not include the class name.
         """
@@ -83,7 +83,7 @@ class UrbanCenterlikeStateUniverseProvider(UniverseProvider):
         for longname, codes in zip(
             shapefile_table.longname, shapefile_table.subnationals_ISO_CODE
         ):
-            codes = [self.process_code(code) for code in codes]
-            codes = [code for code in codes if code is not None]
+            codes: List[Optional[str]] = [self.process_code(code) for code in codes]
+            codes: List[str] = [code for code in codes if code is not None]
             result[longname] = codes
         return result

@@ -10,8 +10,8 @@ from urbanstats.geometry.shapefiles.shapefiles.counties import COUNTIES
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
-@permacache("population_density/shapefiles/school_district_shapefiles")
-def school_district_shapefiles():
+@permacache("population_density/shapefiles/school_district_shapefiles")  # type: ignore[misc]
+def school_district_shapefiles() -> gpd.GeoDataFrame:
     paths = [
         f"named_region_shapefiles/cb_2022_us_{ident}_500k.zip"
         for ident in ["elsd", "scsd", "unsd"]
@@ -24,7 +24,7 @@ def school_district_shapefiles():
     duplicated = {x for x in u if u[x] > 1}
     duplicated_mask = full_names.apply(lambda x: x in duplicated)
     duplicated_districts = frame[duplicated_mask]
-    counties = COUNTIES.load_file()
+    counties = COUNTIES.load_file()  # type: ignore[no-untyped-call]
     joined = gpd.overlay(counties, duplicated_districts.to_crs("epsg:4326"))
     areas = joined.area
     geoid_to_county = {}

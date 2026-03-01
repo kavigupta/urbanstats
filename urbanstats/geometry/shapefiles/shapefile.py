@@ -1,8 +1,13 @@
 import pickle
 from collections import defaultdict
-from typing import Iterable, Protocol
+from typing import TYPE_CHECKING, Iterable, Protocol
 
 import attr
+
+if TYPE_CHECKING:
+    from urbanstats.universe.universe_provider.universe_provider import (
+        UniverseProvider,
+    )
 import geopandas as gpd
 import pandas as pd
 
@@ -30,7 +35,7 @@ class Shapefile:
     drop_dup = attr.ib(default=False)
     chunk_size = attr.ib(default=None)
     special_data_sources = attr.ib(default=attr.Factory(dict))
-    universe_provider = attr.ib(kw_only=True)
+    universe_provider: "UniverseProvider" = attr.ib(kw_only=True)
     subset_masks = attr.ib(default=attr.Factory(dict))
     abbreviation = attr.ib(kw_only=True)
     data_credit = attr.ib(kw_only=True)

@@ -7,8 +7,8 @@ from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
 from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
-@permacache("population_density/shapefiles/usda_county_type")
-def usda_county_type():
+@permacache("population_density/shapefiles/usda_county_type")  # type: ignore[misc]
+def usda_county_type() -> gpd.GeoDataFrame:
     counties = gpd.read_file("named_region_shapefiles/cb_2015_us_county_500k.zip")
     counties = counties[
         counties.apply(

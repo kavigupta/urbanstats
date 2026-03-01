@@ -1,5 +1,7 @@
 # these are all the names Wikipedia uses for countries
 # the one exception is "United States" which we consistently render "USA"
+from typing import cast
+
 import pycountry
 
 from urbanstats.universe.universe_constants import COUNTRIES, ZERO_POPULATION_UNIVERSES
@@ -35,10 +37,12 @@ pycountry_name_to_short_name = {
 }
 
 
-def iso_to_country(iso):
+def iso_to_country(iso: str) -> str:
     if iso == "US":
         return "USA"
-    name = pycountry.countries.get(alpha_2=iso).name
+    country = pycountry.countries.get(alpha_2=iso)
+    assert country is not None
+    name = cast(str, country.name)
     name = pycountry_name_to_short_name.get(name, name)
     assert name in COUNTRIES or name in ZERO_POPULATION_UNIVERSES
     return name

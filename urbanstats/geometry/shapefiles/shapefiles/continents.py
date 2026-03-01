@@ -14,11 +14,11 @@ from urbanstats.universe.universe_provider.self_provider import SelfUniverseProv
 
 @dataclass
 class ContinentsWikidataSourcer:
-    def columns(self):
+    def columns(self) -> list[str]:
         return ["longname"]
 
     # pylint: disable=arguments-differ
-    def compute_wikidata(self, iso):
+    def compute_wikidata(self, iso: str) -> str:
         mapping = {
             "Africa": "Q15",
             "Antarctica": "Q51",
