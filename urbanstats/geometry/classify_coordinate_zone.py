@@ -10,7 +10,7 @@ boxes = [
     "urbanstats/geometry/classify_coordinate_zone/classify_coordinate_zone",
     key_function=dict(geo=lambda x: stable_hash(shapely.to_geojson(x))),
 )
-def classify_coordinate_zone(geo):
+def classify_coordinate_zone(geo: shapely.Geometry) -> tuple[list[int], shapely.Geometry]:
     # pylint: disable=too-many-return-statements
     xmin, _, xmax, _ = geo.bounds
     # adding 0.1 to avoid floating point errors

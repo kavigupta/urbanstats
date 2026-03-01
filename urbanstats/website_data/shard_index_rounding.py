@@ -1,11 +1,13 @@
 """Round shard index hashes to multiples of 2^k. No protobuf dependency (for easy unit testing)."""
 
 
-def _round_down(x, k):
+def _round_down(x: int, k: int) -> int:
     return ((x >> k) << k) & 0xFFFFFFFF
 
 
-def round_shard_index_hashes(buckets):
+def round_shard_index_hashes(
+    buckets: list[tuple[int, int]],
+) -> list[int]:
     """Round the start of each bucket down to a multiple of 2^k as much as possible.
 
     buckets: list of (start, end) for each shard; start/end are 32-bit unsigned hashes.

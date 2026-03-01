@@ -1,11 +1,19 @@
 import pickle
 from collections import defaultdict
+from typing import Iterable, Protocol
 
 import attr
 import geopandas as gpd
 import pandas as pd
 
 from urbanstats.metadata import metadata_types
+
+
+class ShapefileTable(Protocol):
+    """Table returned by Shapefile.load_file(), with longname and subnational codes."""
+
+    longname: Iterable[str]
+    subnationals_ISO_CODE: Iterable[Iterable[str]]
 
 
 @attr.s

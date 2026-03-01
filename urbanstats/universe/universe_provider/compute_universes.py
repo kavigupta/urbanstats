@@ -1,7 +1,15 @@
+from typing import TYPE_CHECKING
+
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 
+if TYPE_CHECKING:
+    from urbanstats.geometry.shapefiles.shapefile import Shapefile
+    from urbanstats.universe.universe_provider.universe_provider import UniverseProvider
 
-def compute_universes_for_shapefile(shapefiles, shapefile):
+
+def compute_universes_for_shapefile(
+    shapefiles: dict[str, "Shapefile"], shapefile: "Shapefile"
+) -> dict[str, list[str]]:
     """
     Computes universes for a given shapefile using a universe provider
 
@@ -25,7 +33,11 @@ def compute_universes_for_shapefile(shapefiles, shapefile):
         shapefile=lambda shapefile: shapefile.hash_key,
     ),
 )
-def _compute_universes_for_shapefile_cached(provider, shapefiles, shapefile):
+def _compute_universes_for_shapefile_cached(
+    provider: "UniverseProvider",
+    shapefiles: dict[str, "Shapefile"],
+    shapefile: "Shapefile",
+) -> dict[str, list[str]]:
     """
     Computes universes for a given shapefile using a universe provider
 

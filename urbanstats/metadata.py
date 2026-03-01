@@ -1,22 +1,22 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Type
+from typing import TypedDict
 
 from urbanstats.protobuf import data_files_pb2
 
 
 class MetadataColumn(ABC):
     @abstractmethod
-    def create(self, idx, value):
+    def create(self, idx: int, value: str) -> data_files_pb2.Metadata:
         pass
 
 
 @dataclass
 class DisplayedMetadata(MetadataColumn):
-    typ: Type
+    typ: type[str]
     name: str
 
-    def create(self, idx, value):
+    def create(self, idx: int, value: str) -> data_files_pb2.Metadata:
         assert isinstance(
             value, self.typ
         ), f"Expected {self.typ}, got {type(value)} for value {value}"
@@ -28,9 +28,9 @@ class DisplayedMetadata(MetadataColumn):
 class ExternalLinkMetadata(MetadataColumn):
     site: str
     link_prefix: str
-    normalizer: str = None
+    normalizer: str | None = None
 
-    def create(self, idx, value):
+    def create(self, idx: int, value: str) -> data_files_pb2.Metadata:
         return data_files_pb2.Metadata(metadata_index=idx, string_value=value)
 
 
@@ -45,9 +45,23 @@ metadata_types = {
 }
 
 
-def export_metadata_types():
-    displayed_metadata = []
-    external_link_metadata = []
+class _DisplayedMetadataEntry(TypedDict):
+    index: int
+    name: str
+
+
+class _ExternalLinkMetadataEntry(TypedDict):
+    index: int
+    site: str
+    link_prefix: str
+    normalizer: str | None
+
+
+def export_metadata_types() -> (
+    dict[str, list[_DisplayedMetadataEntry] | list[_ExternalLinkMetadataEntry]]
+):
+    displayed_metadata: list[_DisplayedMetadataEntry] = []
+    external_link_metadata: list[_ExternalLinkMetadataEntry] = []
     for i, v in enumerate(metadata_types.values()):
         if isinstance(v, DisplayedMetadata):
             displayed_metadata.append(

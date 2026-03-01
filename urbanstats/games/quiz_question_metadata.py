@@ -15,7 +15,12 @@ class QuizQuestionDescriptor:
     difficulty_multiplier_val: float | None = None
 
     @classmethod
-    def several(cls, collection, key_to_name, difficulty_multipliers=None):
+    def several(
+        cls,
+        collection: QuizQuestionCollection,
+        key_to_name: dict[str, str],
+        difficulty_multipliers: dict[str, float] | None = None,
+    ) -> dict[str, "QuizQuestionDescriptor"]:
         if difficulty_multipliers is None:
             difficulty_multipliers = {}
         return {
@@ -23,7 +28,7 @@ class QuizQuestionDescriptor:
             for key, name in key_to_name.items()
         }
 
-    def difficulty_multiplier(self):
+    def difficulty_multiplier(self) -> float:
         return (
             self.difficulty_multiplier_val
             if self.difficulty_multiplier_val is not None
@@ -34,7 +39,7 @@ class QuizQuestionDescriptor:
 @dataclass(frozen=True)
 class QuizQuestionSkip:
     @classmethod
-    def several(cls, *keys):
+    def several(cls, *keys: str) -> dict[str, "QuizQuestionSkip"]:
         return {key: cls() for key in keys}
 
 
