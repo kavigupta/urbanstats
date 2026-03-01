@@ -103,7 +103,7 @@ def buffer_all(data, buffer, unmanipulated_indices):
     return data
 
 
-def subnational_regions():
+def subnational_regions() -> gpd.GeoDataFrame:
     path = "named_region_shapefiles/World_Administrative_Divisions_processed"
     if not os.path.exists(path):
         snr = subnational_regions_direct()

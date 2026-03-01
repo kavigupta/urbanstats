@@ -211,7 +211,9 @@ def compute_ordinal_info(universe_type_masks, universe_typ, table, stat_col):
     return OrdinalInfoForColumn(ordinal, percentile, values, counts)
 
 
-def fully_complete_ordinals(sorted_by_name, universe_typ):
+def fully_complete_ordinals(
+    sorted_by_name: pd.DataFrame, universe_typ: list[tuple[str, str]]
+) -> OrdinalInfo:
     universe_type_masks = compute_universe_type_masks(sorted_by_name, universe_typ)
     return OrdinalInfo(
         universe_typ,

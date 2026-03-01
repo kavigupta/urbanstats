@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, Tuple
 
 import us
 
@@ -79,11 +79,10 @@ class UrbanCenterlikeStateUniverseProvider(UniverseProvider):
         shapefile_table: "ShapefileTable",
     ) -> dict[str, list[str]]:
         assert self.countries == ("US", "CA"), f"Unexpected countries: {self.countries}"
-        result = {}
+        result: dict[str, list[str]] = {}
         for longname, codes in zip(
             shapefile_table.longname, shapefile_table.subnationals_ISO_CODE
         ):
-            codes: List[Optional[str]] = [self.process_code(code) for code in codes]
-            codes: List[str] = [code for code in codes if code is not None]
-            result[longname] = codes
+            processed = [self.process_code(code) for code in codes]
+            result[longname] = [c for c in processed if c is not None]
         return result

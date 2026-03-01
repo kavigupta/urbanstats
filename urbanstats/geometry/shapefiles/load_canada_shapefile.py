@@ -48,7 +48,7 @@ province_abbr_to_province = {
     "urbanstats/geometry/shapefiles/load_canada_shapefile/canada_shape",
     key_function=dict(countries_shapefile=lambda x: x.hash_key),
 )
-def compute_canada_shape(countries_shapefile):
+def compute_canada_shape(countries_shapefile: "Shapefile") -> shapely.Geometry:
     sh = countries_shapefile.load_file()
     sh = sh[sh.longname == "Canada"]
     return sh.iloc[0].geometry
@@ -58,7 +58,7 @@ def compute_canada_shape(countries_shapefile):
     "urbanstats/geometry/shapefiles/load_canada_shapefile/compute_qconmt",
     key_function=dict(subnationals_shapefile=lambda x: x.hash_key),
 )
-def compute_qconmt(subnationals_shapefile):
+def compute_qconmt(subnationals_shapefile: "Shapefile") -> shapely.Geometry:
     sh = subnationals_shapefile.load_file()
     geos = [
         sh[sh.longname == province].geometry.iloc[0]
