@@ -9,6 +9,7 @@ import statistic_name_list from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import { loadStatisticsPage } from '../load_json'
 import { RelativeLoader } from '../navigation/loading'
+import { PageTemplate } from '../page_template/template'
 import { Universe } from '../universe'
 import { toStatement } from '../urban-stats-script/ast'
 import { orderNonNan, TableColumnWithPopulationPercentiles } from '../urban-stats-script/constants/table'
@@ -57,6 +58,8 @@ export interface StatGenerator<T = unknown> {
     ui: (props: T & Omit<Parameters<typeof StatisticPanelTable>[0], 'stat' | 'data'>) => ReactNode
     exportCSV?: CSVExportData
     errors: EditorError[]
+    universesFiltered: Universe[]
+    screencap: (headers: React.RefObject<HTMLDivElement>) => Parameters<typeof PageTemplate>[0]['screencap']
 }
 
 async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic, previousGenerator: Promise<StatGenerator<{ loading: boolean }>> | undefined }): Promise<StatGenerator<{ loading: boolean }>> {

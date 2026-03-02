@@ -120,7 +120,7 @@ function ArgumentEditor(props: {
                                     : a) },
                             {
                                 undoable: false,
-                                updateMap: false,
+                                update: false,
                             },
                         )
                     }}
