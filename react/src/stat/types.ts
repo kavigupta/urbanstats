@@ -38,6 +38,6 @@ export interface StatData {
     hideOrdinalsPercentiles: boolean
 }
 
-export interface ActionOptions { undoable?: boolean, history: 'replace' | 'push' }
+export interface ActionOptions { undoable?: boolean, history: 'replaceState' | 'pushState' }
 
 export type StatSetter = (newSettings: Partial<StatSettings>, actionOptions: ActionOptions) => void
