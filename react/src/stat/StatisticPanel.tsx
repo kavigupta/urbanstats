@@ -7,7 +7,7 @@ import { universeContext, useUniverse } from '../universe'
 import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
 import { assert } from '../utils/defensive'
-import { useHeaderTextClass } from '../utils/responsive'
+import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { displayType } from '../utils/text'
 import { useUndoRedo } from '../utils/useUndoRedo'
 
@@ -105,6 +105,8 @@ export function StatisticPanel({ settings }: { settings: StatSettings }): ReactN
 
     const headersRef = useRef<HTMLDivElement>(null)
 
+    const subHeaderTextClass = useSubHeaderTextClass()
+
     return (
         <SelectionContext.Provider value={selectionContext}>
             <universeContext.Provider value={{
@@ -115,84 +117,9 @@ export function StatisticPanel({ settings }: { settings: StatSettings }): ReactN
                 },
             }}
             >
-                <PageTemplate
-                    screencap={generator.screencap(headersRef)}
-                    csvExportCallback={generator.exportCSV}
-                >
-                    <div ref={headersRef} style={{ position: 'relative' }}>
-                        <StatisticPanelHead
-                            articleType={stat.articleType}
-                            renderedOther={view.order}
-                        />
-                        <div className={subHeaderTextClass}>{loadedData?.renderedStatname ?? 'Table'}</div>
-                        {!view.edit && (
-                            <div style={{ marginLeft: 'auto', marginTop: '8px', display: 'flex', gap: '8px', width: 'fit-content' }}>
-                                {colAdder && (
-                                    <div style={{ flexGrow: 1, minWidth: '300px' }}>
-                                        <AddColumnSearchBox
-                                            editUSS={editUSS}
-                                            setEditUSS={(newUSS) => {
-                                                void navigator.navigate({
-                                                    kind: 'statistic',
-                                                    article_type: editGeographyKind,
-                                                    uss: unparse(newUSS, { simplify: false }),
-                                                    start: props.start,
-                                                    amount: props.amount,
-                                                    order: props.order,
-                                                    highlight: props.highlight,
-                                                    universe: editUniverse,
-                                                    sort_column: props.sortColumn,
-                                                    edit: isEditMode,
-                                                }, {
-                                                    history: 'push',
-                                                    scroll: { kind: 'none' },
-                                                })
-                                            }}
-                                            typeEnvironment={typeEnvironment}
-                                            colAdder={colAdder}
-                                        />
-                                    </div>
-                                )}
-                                <button
-                                    data-test-id="edit"
-                                    onClick={handleEditSettingsClick}
-                                    style={{
-                                        padding: '0.25em 0.5em',
-                                        backgroundColor: colors.unselectedButton,
-                                        color: colors.textMain,
-                                        border: `1px solid ${colors.textMain}`,
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        fontSize: '12px',
-                                    }}
-                                >
-                                    Filter / Edit Table
-                                </button>
-                                <ConvertToMapButton
-                                    editUSS={editUSS}
-                                    editGeographyKind={editGeographyKind}
-                                    editUniverse={editUniverse}
-                                />
-                            </div>
-                        )}
-                    </div>
-                    <div style={{ marginBlockEnd: '16px' }}></div>
-                    {preamble}
-                    {content}
-                </PageTemplate>
+                {generator.ui({ view, set: setSettingsStateWrapper })}
             </universeContext.Provider>
             {settingsState.view.edit && undoRedo.ui}
         </SelectionContext.Provider>
-    )
-}
-
-function StatisticPanelHead(props: { articleType: string, renderedOther: string }): ReactNode {
-    const currentUniverse = useUniverse()
-    assert(currentUniverse !== undefined, 'no universe')
-    const headerTextClass = useHeaderTextClass()
-    return (
-        <div className={headerTextClass}>
-            {displayType(currentUniverse, props.articleType)}
-        </div>
     )
 }

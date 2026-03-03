@@ -39,7 +39,7 @@ import { useOrderedResolve } from './useOrderedResolve'
  * ```
  */
 export function useDebouncedResolve<T, U>(
-    compute: (prev?: Promise<T>) => Promise<T>,
+    compute: (prev: Promise<T>) => Promise<T>,
     options: { initial: T, interval: number, ui: (t: T, loading: boolean) => U },
 ): U {
     const updateTime = useRef(Date.now())

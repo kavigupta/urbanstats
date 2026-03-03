@@ -2,11 +2,13 @@ import React, { ReactNode, useCallback } from 'react'
 
 import { CountsByUT, forType, getCountsByArticleType } from '../components/countsByArticleType'
 import { CSVExportData, generateStatisticsPanelCSVData } from '../components/csv-export'
+import { createScreenshot } from '../components/screenshot'
 import explanation_pages from '../data/explanation_page'
 import validGeographies from '../data/mapper/used_geographies'
 import stats from '../data/statistic_list'
 import statistic_name_list from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
+import universes_ordered from '../data/universes_ordered'
 import { loadStatisticsPage } from '../load_json'
 import { RelativeLoader } from '../navigation/loading'
 import { PageTemplate } from '../page_template/template'
@@ -23,7 +25,7 @@ import { pluralize } from '../utils/text'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
 import { StatisticPanelTable } from './StatisticPanelTable'
-import { StatData, Statistic } from './types'
+import { StatData, Statistic, StatSetter, View } from './types'
 
 /**
  * For next time:
@@ -36,7 +38,7 @@ const statUpdateInterval = 500
 const emptyStat = ({ loading }: { loading: boolean }): ReactNode => <EmptyLayout loading={loading} />
 
 export function useStatGenerator({ stat }: { stat: Statistic }): StatGenerator {
-    const compute = useCallback((previousGenerator: Promise<StatGenerator<{ loading: boolean }>> | undefined) => makeStatGenerator({ stat, previousGenerator }), [stat])
+    const compute = useCallback((previousGenerator: Promise<StatGenerator<{ loading: boolean }>>) => makeStatGenerator({ stat, previousGenerator }), [stat])
 
     return useDebouncedResolve(
         compute,
@@ -45,6 +47,8 @@ export function useStatGenerator({ stat }: { stat: Statistic }): StatGenerator {
             initial: {
                 ui: emptyStat,
                 errors: [],
+                screencap: () => undefined,
+                universesFiltered: universes_ordered,
             },
             ui: (generator, loading) => ({
                 ...generator,
@@ -55,19 +59,19 @@ export function useStatGenerator({ stat }: { stat: Statistic }): StatGenerator {
 }
 
 export interface StatGenerator<T = unknown> {
-    ui: (props: T & Omit<Parameters<typeof StatisticPanelTable>[0], 'stat' | 'data'>) => ReactNode
+    ui: (props: T & { view: View, stat: Statistic, set: StatSetter }) => ReactNode
     exportCSV?: CSVExportData
     errors: EditorError[]
-    universesFiltered: Universe[]
+    universesFiltered: readonly Universe[]
     screencap: (headers: React.RefObject<HTMLDivElement>) => Parameters<typeof PageTemplate>[0]['screencap']
 }
 
-async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic, previousGenerator: Promise<StatGenerator<{ loading: boolean }>> | undefined }): Promise<StatGenerator<{ loading: boolean }>> {
+async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic, previousGenerator: Promise<StatGenerator<{ loading: boolean }>> }): Promise<StatGenerator<{ loading: boolean }>> {
     const errorResult = async (errors: EditorError[]): Promise<StatGenerator<{ loading: boolean }>> => {
         const prev = await previousGenerator
         return {
             ...prev,
-            ui: prev?.ui ?? emptyStat,
+            ui: prev.ui,
             errors,
         }
     }
@@ -83,8 +87,11 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
     if (stat.type === 'simple') {
         const statIndex = statistic_name_list.indexOf(stat.statName)
         const [data, articleNames] = await loadStatisticsPage(stat.universe, paths[statIndex], stat.articleType)
-        const totalCountInClass = forType(counts, stat.universe, stats[statIndex], stat.articleType)
-        const totalCountOverall = forType(counts, stat.universe, stats[statIndex], 'overall')
+
+        const statcol = stats[statIndex]
+
+        const totalCountInClass = forType(counts, stat.universe, statcol, stat.articleType)
+        const totalCountOverall = forType(counts, stat.universe, statcol, 'overall')
 
         const table = [{
             value: data.value,
@@ -98,7 +105,7 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
             table,
             articleNames,
             renderedStatname: stat.statName,
-            statcol: stats[statIndex],
+            statcol,
             explanationPage: explanation_pages[statIndex],
             totalCountInClass,
             totalCountOverall,
@@ -108,7 +115,15 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
         return {
             exportCSV: exportCSV(statData),
             errors: [],
-            ui: props => <StatisticPanelTable {...props} stat={stat} data={statData} />,
+            ui: props => <StatisticPanelTable {...props} data={statData} />,
+            universesFiltered: universes_ordered.filter(
+                universe => forType(counts, universe, statcol, stat.articleType) > 0,
+            ),
+            screencap: headersRef => (universe, colors) => createScreenshot({
+                path: `${sanitize(statData.renderedStatname)}.png`,
+                overallWidth: tableRef.current!.offsetWidth * 2,
+                elementsToRender: [headersRef.current!, tableRef.current!],
+            }, universe, colors),
         }
     }
 
