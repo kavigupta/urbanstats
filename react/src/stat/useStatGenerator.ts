@@ -1,17 +1,12 @@
-import React, { ReactNode, useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { CountsByUT, forType, getCountsByArticleType } from '../components/countsByArticleType'
-import { CSVExportData, generateStatisticsPanelCSVData } from '../components/csv-export'
-import { createScreenshot } from '../components/screenshot'
 import explanation_pages from '../data/explanation_page'
 import validGeographies from '../data/mapper/used_geographies'
 import stats from '../data/statistic_list'
 import statistic_name_list from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
-import universes_ordered from '../data/universes_ordered'
 import { loadStatisticsPage } from '../load_json'
-import { RelativeLoader } from '../navigation/loading'
-import { PageTemplate } from '../page_template/template'
 import { Universe } from '../universe'
 import { toStatement } from '../urban-stats-script/ast'
 import { orderNonNan, TableColumnWithPopulationPercentiles } from '../urban-stats-script/constants/table'
@@ -20,12 +15,10 @@ import { noLocation } from '../urban-stats-script/location'
 import { renderType } from '../urban-stats-script/types-values'
 import { executeAsync } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
-import { sanitize } from '../utils/paths'
 import { pluralize } from '../utils/text'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
-import { StatisticPanelTable } from './StatisticPanelTable'
-import { StatData, Statistic, StatSetter, View } from './types'
+import { StatData, Statistic } from './types'
 
 /**
  * For next time:
@@ -35,43 +28,35 @@ import { StatData, Statistic, StatSetter, View } from './types'
 
 const statUpdateInterval = 500
 
-const emptyStat = ({ loading }: { loading: boolean }): ReactNode => <EmptyLayout loading={loading} />
-
-export function useStatGenerator({ stat }: { stat: Statistic }): StatGenerator {
-    const compute = useCallback((previousGenerator: Promise<StatGenerator<{ loading: boolean }>>) => makeStatGenerator({ stat, previousGenerator }), [stat])
+export function useStatGenerator({ stat }: { stat: Statistic }): StatGenerator & { loading: boolean } {
+    const compute = useCallback((previousGenerator: Promise<StatGenerator>) => makeStatGenerator({ stat, previousGenerator }), [stat])
 
     return useDebouncedResolve(
         compute,
         {
             interval: statUpdateInterval,
             initial: {
-                ui: emptyStat,
+                data: undefined,
                 errors: [],
-                screencap: () => undefined,
-                universesFiltered: universes_ordered,
             },
             ui: (generator, loading) => ({
                 ...generator,
-                ui: props => generator.ui({ ...props, loading }),
+                loading,
             }),
         },
     )
 }
 
-export interface StatGenerator<T = unknown> {
-    ui: (props: T & { view: View, stat: Statistic, set: StatSetter }) => ReactNode
-    exportCSV?: CSVExportData
+export interface StatGenerator {
+    data: StatData | undefined
     errors: EditorError[]
-    universesFiltered: readonly Universe[]
-    screencap: (headers: React.RefObject<HTMLDivElement>) => Parameters<typeof PageTemplate>[0]['screencap']
 }
 
-async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic, previousGenerator: Promise<StatGenerator<{ loading: boolean }>> }): Promise<StatGenerator<{ loading: boolean }>> {
-    const errorResult = async (errors: EditorError[]): Promise<StatGenerator<{ loading: boolean }>> => {
+async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic, previousGenerator: Promise<StatGenerator> }): Promise<StatGenerator> {
+    const errorResult = async (errors: EditorError[]): Promise<StatGenerator> => {
         const prev = await previousGenerator
         return {
             ...prev,
-            ui: prev.ui,
             errors,
         }
     }
@@ -85,6 +70,7 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
     }
 
     if (stat.type === 'simple') {
+        // TODO: Maybe just convert to USS?
         const statIndex = statistic_name_list.indexOf(stat.statName)
         const [data, articleNames] = await loadStatisticsPage(stat.universe, paths[statIndex], stat.articleType)
 
@@ -113,17 +99,8 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
         }
 
         return {
-            exportCSV: exportCSV(statData),
+            data: statData,
             errors: [],
-            ui: props => <StatisticPanelTable {...props} data={statData} />,
-            universesFiltered: universes_ordered.filter(
-                universe => forType(counts, universe, statcol, stat.articleType) > 0,
-            ),
-            screencap: headersRef => (universe, colors) => createScreenshot({
-                path: `${sanitize(statData.renderedStatname)}.png`,
-                overallWidth: tableRef.current!.offsetWidth * 2,
-                elementsToRender: [headersRef.current!, tableRef.current!],
-            }, universe, colors),
         }
     }
 
@@ -175,23 +152,14 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
         }
 
         return {
-            exportCSV: exportCSV(statData),
+            data: statData,
             errors: execErrors,
-            ui: props => <StatisticPanelTable {...props} stat={stat} data={statData} />,
         }
     }
     catch (e) {
         const error: EditorError = { type: 'error', value: e instanceof Error ? e.message : 'Unknown error', location: noLocation, kind: 'error' }
         return errorResult([error])
     }
-}
-
-function EmptyLayout({ loading }: { loading: boolean }): ReactNode {
-    return (
-        <div style={{ position: 'relative' }}>
-            <RelativeLoader loading={loading} />
-        </div>
-    )
 }
 
 function checkArticleCount(counts: CountsByUT, universe: Universe, articleType: string): EditorError[] {
@@ -216,11 +184,4 @@ function computeOrdinals(values: number[]): number[] {
         ordinals[rowIdx] = rank + 1
     })
     return ordinals
-}
-
-function exportCSV(data: StatData): CSVExportData {
-    return () => ({
-        csvData: generateStatisticsPanelCSVData(data.articleNames, data.table, data.hideOrdinalsPercentiles),
-        csvFilename: `${sanitize(data.renderedStatname)}.csv`,
-    })
 }
