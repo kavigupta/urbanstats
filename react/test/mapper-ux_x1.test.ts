@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { nthEditor, typeInEditor } from './editor_test_utils'
-import { getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript, urlFromCode } from './mapper-utils'
+import { checkSelector, getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { checkTextboxesDirect, downloadImage, getLocation, mapper, screencap, target, urbanstatsFixture, waitForLoading, withHamburgerMenu } from './test_utils'
 
 urbanstatsFixture('mapper default', `${target}/mapper.html`)
@@ -285,4 +285,23 @@ mapper(() => test)('deprecation warning for deprecated weather statistic', { cod
     const warning = 'Deprecated: Use high_temp_son (Mean high temperature in Sep/Oct/Nov) instead, which uses month-based seasons instead and is valid in the southern hemisphere'
     await toggleCustomScript(t)
     await t.expect(getErrors()).eql([warning])
+})
+
+mapper(() => test)('preamble checkbox stays checked when preamble is cleared', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    const preamble = checkSelector(/^Preamble/)
+    await t.expect(preamble.checked).notOk()
+    await t.click(preamble)
+    await t.expect(preamble.checked).ok()
+
+    // Type some preamble code
+    await typeInEditor(t, 0, 'myVar = 42', true)
+    await t.expect(preamble.checked).ok()
+
+    // Clear the preamble via backspace (ctrl+a backspace in helper)
+    await typeInEditor(t, 0, '', true)
+    await t.expect(preamble.checked).ok()
+
+    // Undo should not unexpectedly uncheck the preamble
+    await t.pressKey('ctrl+z')
+    await t.expect(preamble.checked).ok()
 })
