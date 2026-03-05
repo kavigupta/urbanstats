@@ -24,7 +24,7 @@ import type {
     QuizDescriptor, RetroQuestionJSON, QuizHistory,
 } from '../quiz/quiz'
 import { StatisticPanel } from '../stat/StatisticPanel'
-import { Statistic, StatSettings, View } from '../stat/types'
+import { StatSettings } from '../stat/types'
 import { loadSYAUData, SYAUData } from '../syau/load'
 import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse, Universe, universeSchema } from '../universe'
@@ -219,7 +219,7 @@ export type PageData =
         mapPartitions: number[][]
         comparisonPanel: typeof ComparisonPanel
     }
-    | { kind: 'statistic', settings: StatSettings, statisticPanel: typeof StatisticPanel }
+    | { kind: 'statistic', settings: StatSettings, statisticPanel: typeof StatisticPanel, counts: CountsByUT }
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit', dataCreditPanel: typeof DataCreditPanel }
@@ -514,6 +514,9 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'statistic': {
+            const counts = getCountsByArticleType()
+            const panel = import('../stat/StatisticPanel')
+
             const statUniverse = newDescriptor.universe ?? 'world'
             const displayStatUniverse = statUniverse !== 'world' ? statUniverse : undefined
 
@@ -528,7 +531,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             return {
                 pageData: {
                     kind: 'statistic',
-                    statisticPanel: (await import('../stat/StatisticPanel')).StatisticPanel,
+                    statisticPanel: (await panel).StatisticPanel,
                     settings: {
                         stat: {
                             universe: statUniverse,
@@ -552,6 +555,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                             sortColumn: newDescriptor.sort_column ?? 0,
                         },
                     },
+                    counts: await counts,
                 },
                 newPageDescriptor: {
                     ...newDescriptor,

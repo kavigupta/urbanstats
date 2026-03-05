@@ -123,7 +123,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef }: {
         sortInfo: {
             onSort: () => {
                 const newOrder = colIndex === view.sortColumn ? (isAscending ? 'descending' : 'ascending') : 'descending'
-                set({ view: { ...view, sortColumn: colIndex, order: newOrder } }, { history: 'replace' })
+                set({ view: { ...view, sortColumn: colIndex, order: newOrder } }, {})
             },
             sortDirection: view.sortColumn === colIndex ? (isAscending ? 'up' : 'down') : 'both',
         },
@@ -190,9 +190,7 @@ function Pagination({ set, view, count, data }: { set: StatSetter, view: View, c
                 ...view,
                 start: newStart,
             },
-        }, {
-            history: 'push',
-        })
+        }, {})
     }
 
     const changeAmount = (newAmount: string | number): void => {
@@ -217,9 +215,7 @@ function Pagination({ set, view, count, data }: { set: StatSetter, view: View, c
                 start,
                 amount: newAmount === 'All' ? 'All' : newAmountNum,
             },
-        }, {
-            history: 'push',
-        })
+        }, {})
     }
 
     const current = view.start
@@ -238,7 +234,7 @@ function Pagination({ set, view, count, data }: { set: StatSetter, view: View, c
                     ...view,
                     start: (newPage - 1) * perPage + 1,
                 },
-            }, { undoable: false, history: 'replace' })
+            }, { })
         }
 
         if (currentPage > maxPages) {

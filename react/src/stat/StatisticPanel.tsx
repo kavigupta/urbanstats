@@ -1,16 +1,14 @@
 import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
+import { CountsByUT } from '../components/countsByArticleType'
 import { Selection, SelectionContext } from '../mapper/settings/SelectionContext'
 import { Navigator } from '../navigation/Navigator'
-import { PageTemplate } from '../page_template/template'
-import { universeContext, useUniverse } from '../universe'
+import { universeContext } from '../universe'
 import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
-import { assert } from '../utils/defensive'
-import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
-import { displayType } from '../utils/text'
 import { useUndoRedo } from '../utils/useUndoRedo'
 
+import { StatisticPanelPage } from './StatisticPanelPage'
 import { StatSettings, ActionOptions } from './types'
 import { useStatGenerator } from './useStatGenerator'
 import { pageDescriptor } from './utils'
@@ -27,7 +25,7 @@ import { pageDescriptor } from './utils'
  * When transitioning between modes, we push to the browser stack.
  */
 
-export function StatisticPanel({ settings }: { settings: StatSettings }): ReactNode {
+export function StatisticPanel({ settings, counts }: { settings: StatSettings, counts: CountsByUT }): ReactNode {
     const navContext = useContext(Navigator.Context)
 
     const [settingsState, setSettingsState] = useState(settings)
@@ -103,10 +101,6 @@ export function StatisticPanel({ settings }: { settings: StatSettings }): ReactN
 
     const generator = useStatGenerator({ stat: generatorSettings.stat })
 
-    const headersRef = useRef<HTMLDivElement>(null)
-
-    const subHeaderTextClass = useSubHeaderTextClass()
-
     return (
         <SelectionContext.Provider value={selectionContext}>
             <universeContext.Provider value={{
@@ -117,7 +111,14 @@ export function StatisticPanel({ settings }: { settings: StatSettings }): ReactN
                 },
             }}
             >
-                {generator.ui({ view, set: setSettingsStateWrapper })}
+                <StatisticPanelPage
+                    stat={stat}
+                    view={view}
+                    loading={generator.loading}
+                    set={setSettingsStateWrapper}
+                    errors={generator.errors}
+                    counts={counts}
+                />
             </universeContext.Provider>
             {settingsState.view.edit && undoRedo.ui}
         </SelectionContext.Provider>
