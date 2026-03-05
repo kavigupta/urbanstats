@@ -75,7 +75,7 @@ export function StatisticPanel({ settings, counts }: { settings: StatSettings, c
             firstEffect.current = false
         }
         else {
-            // So that map settings are updated when the prop changes
+            // So that stat settings are updated when the prop changes
             // Presumably the navigation has already happened, so just replace
             setSettingsStateNav(settings, true, { history: 'replaceState' })
             if (settings.view.edit) {
