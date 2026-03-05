@@ -1,23 +1,28 @@
 from dataclasses import dataclass
-from typing import List
+from typing import TYPE_CHECKING, Any, List
 
+import geopandas as gpd
 import numpy as np
 import pandas as pd
 import tqdm
+from numpy.typing import NDArray
 from permacache import permacache
 
 from urbanstats.data.canada.canada_blocks import load_canada_db_shapefile
 from urbanstats.data.census_blocks import all_densities_gpd
 
+if TYPE_CHECKING:
+    from urbanstats.geometry.shapefiles.shapefile import Shapefile
+
 
 @dataclass
 class Crosswalk:
     shapefile_index_actual: List[object]
-    index_shapefile: np.ndarray
-    index_block: np.ndarray
+    index_shapefile: NDArray[np.intp]
+    index_block: NDArray[np.intp]
 
     @classmethod
-    def combine(cls, crosswalks):
+    def combine(cls, crosswalks: list["Crosswalk"]) -> "Crosswalk":
         shapefile_index_actual = [
             idx for c in crosswalks for idx in c.shapefile_index_actual
         ]
@@ -26,14 +31,16 @@ class Crosswalk:
         return cls(shapefile_index_actual, index_shapefile, index_block)
 
     @staticmethod
-    def compute_usa(year, shapefile):
+    def compute_usa(year: int, shapefile: "Shapefile") -> "Crosswalk":
         return _compute_crosswalk(year, shapefile)
 
     @staticmethod
-    def compute_canada(year, shapefile):
+    def compute_canada(year: int, shapefile: "Shapefile") -> "Crosswalk":
         return _compute_crosswalk_canada(year, shapefile)
 
-    def compute_sum_by_shapefile(self, values):
+    def compute_sum_by_shapefile(
+        self, values: NDArray[np.floating[Any]]
+    ) -> NDArray[np.floating[Any]]:
         """
         values: np.ndarray of shape (max(index_block), ...)
 
@@ -55,7 +62,9 @@ class Crosswalk:
         np.add.at(result, self.index_shapefile, values[self.index_block])
         return result
 
-    def compute_sum_by_shapefile_dataframe(self, shapefile, values):
+    def compute_sum_by_shapefile_dataframe(
+        self, shapefile: "Shapefile", values: pd.DataFrame
+    ) -> pd.DataFrame:
         sum_array = self.compute_sum_by_shapefile(np.array(values.fillna(0)))
         index = shapefile.load_file().index
         if len(index) > len(sum_array):
@@ -72,7 +81,7 @@ class Crosswalk:
     "urbanstats/geometry/census_aggregation/_compute_crosswalk_3",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def _compute_crosswalk(year, shapefile):
+def _compute_crosswalk(year: int, shapefile: "Shapefile") -> Crosswalk:
     geometry_row = all_densities_gpd(year)[["geometry"]].fillna(0)
     return _compute_crosswalk_for_geometry_row(geometry_row, shapefile)
 
@@ -81,12 +90,14 @@ def _compute_crosswalk(year, shapefile):
     "urbanstats/geometry/census_aggregation/_compute_crosswalk_canada_2",
     key_function=dict(shapefile=lambda x: x.hash_key),
 )
-def _compute_crosswalk_canada(year, shapefile):
+def _compute_crosswalk_canada(year: int, shapefile: "Shapefile") -> Crosswalk:
     geometry_row = load_canada_db_shapefile(year)[["geometry"]]
     return _compute_crosswalk_for_geometry_row(geometry_row, shapefile)
 
 
-def _compute_crosswalk_for_geometry_row(geometry_row, shapefile):
+def _compute_crosswalk_for_geometry_row(
+    geometry_row: gpd.GeoDataFrame, shapefile: "Shapefile"
+) -> Crosswalk:
     s = shapefile.load_file().reset_index(drop=True)
     if shapefile.chunk_size is None:
         return _compute_crosswalk_direct(geometry_row, s)
@@ -100,21 +111,27 @@ def _compute_crosswalk_for_geometry_row(geometry_row, shapefile):
     return Crosswalk.combine(crosswalks)
 
 
-def _compute_crosswalk_direct(geometry_row, s):
+def _compute_crosswalk_direct(
+    geometry_row: gpd.GeoDataFrame, s: gpd.GeoDataFrame
+) -> Crosswalk:
     c = s.sjoin(
         geometry_row,
         how="inner",
         predicate="intersects",
     )
     index_shapefile, index_block = np.array(c.index), np.array(c.index_right)
-    return Crosswalk(s.index, index_shapefile, index_block)
+    return Crosswalk(list(s.index), index_shapefile, index_block)
 
 
-def aggregate_by_census_block(year, shapefile, values):
+def aggregate_by_census_block(
+    year: int, shapefile: "Shapefile", values: pd.DataFrame
+) -> pd.DataFrame:
     crosswalk = Crosswalk.compute_usa(year, shapefile)
     return crosswalk.compute_sum_by_shapefile_dataframe(shapefile, values)
 
 
-def aggregate_by_census_block_canada(year, shapefile, values):
+def aggregate_by_census_block_canada(
+    year: int, shapefile: "Shapefile", values: pd.DataFrame
+) -> pd.DataFrame:
     crosswalk = Crosswalk.compute_canada(year, shapefile)
     return crosswalk.compute_sum_by_shapefile_dataframe(shapefile, values)
