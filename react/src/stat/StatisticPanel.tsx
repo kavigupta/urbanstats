@@ -118,6 +118,7 @@ export function StatisticPanel({ settings, counts }: { settings: StatSettings, c
                     set={setSettingsStateWrapper}
                     errors={generator.errors}
                     counts={counts}
+                    data={generator.data}
                 />
             </universeContext.Provider>
             {settingsState.view.edit && undoRedo.ui}

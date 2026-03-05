@@ -27,7 +27,7 @@ import { mapUSSFromStat } from './utils'
 export function StatisticPanelPage({ view, stat, data, set, loading, counts, errors }: {
     view: View
     stat: Statistic
-    data?: StatData
+    data: StatData | undefined
     set: StatSetter
     loading: boolean
     counts: CountsByUT
