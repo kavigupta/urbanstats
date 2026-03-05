@@ -11,7 +11,7 @@ from urbanstats.universe.universe_provider.constants import us_domestic_provider
 
 
 @permacache("population_density/shapefiles/school_district_shapefiles")
-def school_district_shapefiles():
+def school_district_shapefiles() -> gpd.GeoDataFrame:
     paths = [
         f"named_region_shapefiles/cb_2022_us_{ident}_500k.zip"
         for ident in ["elsd", "scsd", "unsd"]

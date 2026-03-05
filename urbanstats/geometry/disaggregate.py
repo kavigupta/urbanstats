@@ -12,11 +12,11 @@ import pandas as pd
 
 
 def disaggregate_by_area(
-    precincts_gdf,
-    blocks_gdf,
-    data_columns,
-    population_col="population",
-):
+    precincts_gdf: gpd.GeoDataFrame,
+    blocks_gdf: gpd.GeoDataFrame,
+    data_columns: list[str],
+    population_col: str = "population",
+) -> pd.DataFrame:
     """
     Disaggregate data from precincts to blocks using area-proportional allocation.
 
@@ -55,7 +55,7 @@ def disaggregate_by_area(
     block_cols = [block_index_col, population_col, "geometry"]
 
     # Use overlay to get intersections - this handles blocks split across precinct boundaries
-    intersections = gpd.overlay(
+    intersections: pd.DataFrame = gpd.overlay(
         blocks[block_cols].reset_index(),
         precincts[precinct_cols],
         how="intersection",
@@ -102,7 +102,9 @@ def disaggregate_by_area(
         intersections[col] *= intersections["portion_precinct"]
 
     # Aggregate by block to get the disaggregated data for each block
-    block_results = intersections.groupby(block_index_col)[data_columns].sum()
+    block_results: pd.DataFrame = intersections.groupby(block_index_col)[
+        data_columns
+    ].sum()
 
     # Create output DataFrame with all blocks (fill missing with zeros)
     result = pd.DataFrame(index=blocks.index, columns=data_columns, data=0.0)

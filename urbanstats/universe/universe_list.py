@@ -1,6 +1,7 @@
 from functools import lru_cache
 
 import us
+from us.states import State
 
 from urbanstats.universe.universe_constants import CONTINENTS, COUNTRIES
 
@@ -9,16 +10,16 @@ from urbanstats.universe.universe_constants import CONTINENTS, COUNTRIES
 default_universes = ["world", "USA", "Canada"]
 
 
-def get_universe_name_for_state(state):
+def get_universe_name_for_state(state: State) -> str:
     assert state is not None
-    name = state.name
+    name: str = state.name
     if name == "Virgin Islands":
         name = "US Virgin Islands"
     return name + ", USA"
 
 
 @lru_cache(None)
-def universe_by_universe_type():
+def universe_by_universe_type() -> dict[str, list[str]]:
     return {
         "world": ["world"],
         "continent": CONTINENTS,
@@ -45,7 +46,7 @@ def universe_by_universe_type():
 
 
 @lru_cache(None)
-def all_universes():
+def all_universes() -> list[str]:
     return [
         universe
         for universe_by_type in universe_by_universe_type().values()

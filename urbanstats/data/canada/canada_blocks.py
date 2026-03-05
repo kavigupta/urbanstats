@@ -89,7 +89,7 @@ dwell_col_by_year = {
     "urbanstats/data/canada/canada_blocks/load_canada_db_shapefile_4",
     key_function=dict(pointify=drop_if_equal(True)),
 )
-def load_canada_db_shapefile(year, pointify=True):
+def load_canada_db_shapefile(year: int, pointify: bool = True) -> gpd.GeoDataFrame:
     if year not in base_dir_by_year:
         raise ValueError(f"Unsupported Canada census year: {year}")
     base_dir = os.path.join("named_region_shapefiles", base_dir_by_year[year])

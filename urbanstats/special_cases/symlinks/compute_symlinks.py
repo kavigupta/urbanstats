@@ -15,7 +15,7 @@ from .symlinks_from_historical_congressional_rename import (
 from .symlinks_from_subnational_usa_fixes import symlinks_from_subnational_usa_fixes
 
 
-def symlinks_most_recent_year():
+def symlinks_most_recent_year() -> dict[str, str]:
     table = shapefile_without_ordinals()
     table = table[table.longname_sans_date != table.longname]
     sans_date_to_last_start_date = (
@@ -34,7 +34,7 @@ def symlinks_most_recent_year():
 
 
 @lru_cache(None)
-def compute_symlinks():
+def compute_symlinks() -> dict[str, str]:
     real_names = set(shapefile_without_ordinals().longname)
     symlinks = {}
 

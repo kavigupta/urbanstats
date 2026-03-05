@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
@@ -14,15 +15,18 @@ from urbanstats.universe.universe_provider.contained_within import (
 from urbanstats.universe.universe_provider.override import OverrideUniverseProvider
 from urbanstats.universe.universe_provider.universe_provider import UniverseProvider
 
+if TYPE_CHECKING:
+    from urbanstats.geometry.shapefiles.shapefile import Shapefile, ShapefileTable
+
 
 @dataclass
 class USContinentProvider(UniverseProvider):
     state_provider: UniverseProvider
 
-    def hash_key_details(self):
+    def hash_key_details(self) -> tuple[object, ...]:
         return self.state_provider.hash_key()
 
-    def relevant_shapefiles(self):
+    def relevant_shapefiles(self) -> list[str]:
         return sorted(
             set(
                 self.state_provider.relevant_shapefiles()
@@ -30,7 +34,12 @@ class USContinentProvider(UniverseProvider):
             )
         )
 
-    def universes_for_shapefile(self, shapefiles, shapefile, shapefile_table):
+    def universes_for_shapefile(
+        self,
+        shapefiles: dict[str, "Shapefile"],
+        shapefile: "Shapefile",
+        shapefile_table: "ShapefileTable",
+    ) -> dict[str, list[str]]:
         ours_to_state = self.state_provider.universes_for_shapefile(
             shapefiles, shapefile, shapefile_table
         )
@@ -56,8 +65,10 @@ class USContinentProvider(UniverseProvider):
         return ours_to_continent
 
 
-def us_domestic_provider(overrides=None):
-    state_provider = STATE_PROVIDER
+def us_domestic_provider(
+    overrides: dict[str, list[str]] | None = None,
+) -> CombinedUniverseProvider:
+    state_provider: UniverseProvider = STATE_PROVIDER
     if overrides is not None:
         state_provider = OverrideUniverseProvider(overrides, state_provider)
     return CombinedUniverseProvider(
@@ -70,8 +81,10 @@ def us_domestic_provider(overrides=None):
     )
 
 
-def canada_domestic_provider(overrides=None):
-    province_provider = PROVINCE_PROVIDER
+def canada_domestic_provider(
+    overrides: dict[str, list[str]] | None = None,
+) -> CombinedUniverseProvider:
+    province_provider: UniverseProvider = PROVINCE_PROVIDER
     if overrides is not None:
         province_provider = OverrideUniverseProvider(overrides, province_provider)
     return CombinedUniverseProvider(

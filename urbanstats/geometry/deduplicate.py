@@ -1,7 +1,7 @@
 import geopandas as gpd
 
 
-def deduplicate_polygons(result):
+def deduplicate_polygons(result: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     shape = result.unary_union
     return (
         gpd.GeoDataFrame(geometry=[shape], crs=result.crs)

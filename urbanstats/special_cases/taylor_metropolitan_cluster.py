@@ -11,14 +11,16 @@ from urbanstats.special_cases.ghsl_urban_center import (
 @permacache_with_remapping_pickle(
     "urbanstats/special_cases/taylor_metropolitan_cluster/load_taylor_metropolitan_clusters_post_pruning_3"
 )
-def load_taylor_metropolitan_clusters_post_pruning(min_km2=0.5):
+def load_taylor_metropolitan_clusters_post_pruning(
+    min_km2: float = 0.5,
+) -> gpd.GeoDataFrame:
     tmc = load_taylor_metropolitan_clusters_pre_pruning()
     area_m2 = tmc.to_crs(dict(proj="cea")).area
     tmc = tmc[area_m2 >= min_km2 * 1e6]
     return tmc
 
 
-def load_taylor_metropolitan_clusters_pre_pruning():
+def load_taylor_metropolitan_clusters_pre_pruning() -> gpd.GeoDataFrame:
     tmc = gpd.read_file(
         "named_region_shapefiles/taylor-metropolitan-clusters/output/taylor_metropolitan_clusters.shp.zip"
     )

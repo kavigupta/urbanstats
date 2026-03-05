@@ -1,4 +1,5 @@
 import os
+from typing import Any, cast
 
 import dask.array
 import numpy as np
@@ -6,6 +7,7 @@ import shapely
 import tqdm.auto as tqdm
 import zarr
 from geotiff import GeoTiff
+from numpy.typing import NDArray
 from permacache import drop_if_equal, permacache, stable_hash
 from scipy.interpolate import RegularGridInterpolator
 
@@ -18,25 +20,25 @@ GPW_RADII = [k for k in RADII if k >= 1]
 
 
 @permacache("urbanstats/data/gpw/load_full_ghs_2")
-def load_full_ghs_30_arcsec():
+def load_full_ghs_30_arcsec() -> NDArray[np.float32]:
     path = "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_30ss_V1_0.tif"
     return load_ghs_from_path(path, resolution=60 * 60 // 30)
 
 
-def load_full_ghs_3arcsec_zarr():
+def load_full_ghs_3arcsec_zarr() -> NDArray[np.float32]:
     result = GeoTiff(
         "named_region_shapefiles/gpw/GHS_POP_E2020_GLOBE_R2023A_4326_3ss_V1_0/GHS_POP_E2020_GLOBE_R2023A_4326_3ss_V1_0.tif"
     )
-    return result.read()
+    return cast(NDArray[np.float32], result.read())
 
 
-def load_full_ghs_30arcsec_zarr():
+def load_full_ghs_30arcsec_zarr() -> Any:
     return cached_zarr_array(
         "named_region_shapefiles/gpw/zarr/ghs_population", load_full_ghs_30_arcsec
     )
 
 
-def load_full_ghs_zarr(resolution):
+def load_full_ghs_zarr(resolution: int) -> Any:
     if resolution == 1200:
         return load_full_ghs_3arcsec_zarr()
     if resolution == 120:
@@ -44,10 +46,12 @@ def load_full_ghs_zarr(resolution):
     raise ValueError(f"Resolution must be 1200 or 120, not {resolution}")
 
 
-def load_ghs_from_path(path, resolution):
+def load_ghs_from_path(path: str, resolution: int) -> NDArray[np.float32]:
     gt = GeoTiff(path)
     ghs = np.array(gt.read())
-    popu = np.zeros((180 * resolution, 360 * resolution), dtype=np.float32)
+    popu: NDArray[np.float32] = np.zeros(
+        (180 * resolution, 360 * resolution), dtype=np.float32
+    )
     min_lon, max_lat = gt.get_coords(0, 0)
     j_off = round((min_lon - (-180)) * resolution)
     i_off = round((90 - max_lat) * resolution)
@@ -56,17 +60,25 @@ def load_ghs_from_path(path, resolution):
     return popu
 
 
-def lat_from_row_idx(row_idx, resolution):
+def lat_from_row_idx(row_idx: float, resolution: int) -> float:
     return 90 - row_idx * 1 / resolution
 
 
-def lon_from_col_idx(col_idx, resolution):
+def lon_from_col_idx(col_idx: float, resolution: int) -> float:
     return -180 + col_idx * 1 / resolution
 
 
 def compute_cell_overlaps_with_circle_grid_array(
-    radius, row_idx, *, grid_size, resolution
-):
+    radius: float,
+    row_idx: int,
+    *,
+    grid_size: int,
+    resolution: int,
+) -> tuple[
+    NDArray[np.intp],
+    NDArray[np.intp],
+    NDArray[np.floating[Any]],
+]:
     # pylint: disable=too-many-locals
     ell = Ellipse(
         radius,
@@ -92,18 +104,24 @@ def compute_cell_overlaps_with_circle_grid_array(
     return xs, ys, attributable_to_each
 
 
-def compute_cell_overlaps_with_circle(radius, row_idx, grid_size=100, *, resolution):
+def compute_cell_overlaps_with_circle(
+    radius: float,
+    row_idx: int,
+    grid_size: int = 100,
+    *,
+    resolution: int,
+) -> dict[tuple[int, int], float]:
     xs, ys, b_arr = compute_cell_overlaps_with_circle_grid_array(
         radius, row_idx, grid_size=grid_size, resolution=resolution
     )
     x_idxs, y_idxs = np.where(b_arr)
     return {
-        (y + row_idx, x): amount
+        (int(y) + row_idx, int(x)): float(amount)
         for (x, y, amount) in zip(xs[x_idxs], ys[y_idxs], b_arr[x_idxs, y_idxs])
     }
 
 
-def compute_circle_density_per_cell_zarr(radius, resolution):
+def compute_circle_density_per_cell_zarr(radius: int, resolution: int) -> Any:
     path = (
         f"named_region_shapefiles/gpw/zarr/ghs_gpw_radius_{radius}km_res_{resolution}"
     )
@@ -127,42 +145,46 @@ def compute_circle_density_per_cell_zarr(radius, resolution):
 
 
 class ChunkedAssigner:
-    def __init__(self, out, chunk_size):
+    def __init__(self, out: Any, chunk_size: int) -> None:
         self.out = out
         self.chunk_size = chunk_size
-        self.current_start = 0
-        self.cache = np.zeros((chunk_size, *out.shape[1:]), dtype=out.dtype)
+        self.current_start: int = 0
+        self.cache: NDArray[np.floating[Any]] = np.zeros(
+            (chunk_size, *out.shape[1:]), dtype=out.dtype
+        )
 
-    def assign(self, row_idx, value):
+    def assign(self, row_idx: int, value: NDArray[np.floating[Any]]) -> None:
         if row_idx >= self.current_start + self.chunk_size:
             self.flush()
             self.current_start = row_idx
         self.cache[row_idx - self.current_start] = value
 
-    def flush(self):
-        self.out[self.current_start : self.current_start + self.chunk_size] = self.cache
-        self.current_start = "invalid"
+    def flush(self) -> None:
+        if self.current_start >= 0:
+            start = self.current_start
+            self.out[start : start + self.chunk_size] = self.cache
+        self.current_start = -self.chunk_size - 1
         self.cache = np.zeros_like(self.cache, dtype=self.out.dtype)
 
 
 def sum_in_radius(
-    radius,
-    global_map,
-    row_idxs,
-    out,
-    multiplier=1,
+    radius: int,
+    global_map: Any,
+    row_idxs: NDArray[np.intp],
+    out: Any,
+    multiplier: float = 1,
     *,
-    resolution,
-    loading_chunk=1000,
-    saving_chunk=1000,
-):
+    resolution: int,
+    loading_chunk: int = 1000,
+    saving_chunk: int = 1000,
+) -> Any:
     # pylint: disable=too-many-locals
     assigner = ChunkedAssigner(out, saving_chunk)
-    loading_start = -float("inf")
-    local_array = None
-    local_array_cumsum = None
+    loading_start: int = -1
+    local_array: NDArray[np.floating[Any]] | None = None
+    local_array_cumsum: NDArray[np.floating[Any]] | None = None
 
-    def fetch_chunk_for(start, end):
+    def fetch_chunk_for(start: int, end: int) -> None:
         nonlocal loading_start, local_array, local_array_cumsum
         assert start >= loading_start
         if end >= loading_start + loading_chunk:
@@ -180,6 +202,7 @@ def sum_in_radius(
         )
         rows = [row for row, _ in overlaps.keys()]
         fetch_chunk_for(min(rows), max(rows))
+        assert local_array is not None and local_array_cumsum is not None
         result_for_row = compute_convolution(
             loading_start, local_array, local_array_cumsum, overlaps
         )
@@ -190,10 +213,13 @@ def sum_in_radius(
 
 
 def compute_convolution(
-    array_row_idx_base, local_array, local_array_cumsum, filter_to_convolve
-):
+    array_row_idx_base: int,
+    local_array: NDArray[np.floating[Any]],
+    local_array_cumsum: NDArray[np.floating[Any]],
+    filter_to_convolve: dict[tuple[int, int], float],
+) -> NDArray[np.floating[Any]]:
     source_rows = {source_row for source_row, _ in filter_to_convolve.keys()}
-    result_for_row = 0
+    result_for_row: NDArray[np.floating[Any]] = np.array(0.0)
     for source_row in source_rows:
         local_row = local_array[source_row - array_row_idx_base]
         local_row_cumsum = local_array_cumsum[source_row - array_row_idx_base]
@@ -217,7 +243,10 @@ def compute_convolution(
     return result_for_row
 
 
-def produce_histogram(density_data, population_data):
+def produce_histogram(
+    density_data: NDArray[np.floating[Any]],
+    population_data: NDArray[np.floating[Any]],
+) -> NDArray[np.floating[Any]]:
     """
     Produce a histogram of population data with the given density data.
     """
@@ -229,22 +258,29 @@ def produce_histogram(density_data, population_data):
 
 
 def compute_gpw_weighted_for_shape(
-    shape, glo_pop, gridded_statistics, *, do_histograms, resolution
-):
+    shape: Any,
+    glo_pop: NDArray[np.floating[Any]],
+    gridded_statistics: dict[str, tuple[NDArray[np.floating[Any]], bool]],
+    *,
+    do_histograms: bool,
+    resolution: int,
+) -> tuple[dict[str, float], dict[str, NDArray[np.floating[Any]]]]:
     row_selected, col_selected = select_points_in_shape(
         shape, glo_pop, resolution=resolution
     )
     pop = glo_pop[row_selected, col_selected]
-    result = {}
-    hists = {}
+    result: dict[str, float] = {}
+    hists: dict[str, NDArray[np.floating[Any]]] = {}
     for name, (data, pop_weight) in gridded_statistics.items():
         data_selected = _compute_gridded_statistics_for_coordinates(
             row_selected, col_selected, glo_pop.shape[0], glo_pop.shape[1], data
         )
         if pop_weight:
-            result[name] = np.nansum(pop * data_selected) / np.nansum(pop)
+            result[name] = float(
+                np.nansum(pop * data_selected) / np.nansum(pop)
+            )
         else:
-            result[name] = np.nansum(data_selected)
+            result[name] = float(np.nansum(data_selected))
         if do_histograms:
             assert pop_weight, "pop_weight is required for histograms"
             hists[name] = produce_histogram(data_selected, pop)
@@ -252,8 +288,12 @@ def compute_gpw_weighted_for_shape(
 
 
 def _compute_gridded_statistics_for_coordinates(
-    row_selected, col_selected, height, width, data
-):
+    row_selected: NDArray[np.intp],
+    col_selected: NDArray[np.intp],
+    height: int,
+    width: int,
+    data: NDArray[np.floating[Any]],
+) -> NDArray[np.floating[Any]]:
     if data.shape == (height, width):
         return data[row_selected, col_selected]
     scale = data.shape[0] / height
@@ -267,7 +307,11 @@ def _compute_gridded_statistics_for_coordinates(
     )
 
 
-def _compute_bilinear_subinterpolation(data, fractional_rows, fractional_cols):
+def _compute_bilinear_subinterpolation(
+    data: NDArray[np.floating[Any]],
+    fractional_rows: NDArray[np.floating[Any]],
+    fractional_cols: NDArray[np.floating[Any]],
+) -> NDArray[np.floating[Any]]:
     """
     Does a bilinear interpolation of the data at the given fractional rows and columns. Treat the first data point as being at (0.5, 0.5).
     """
@@ -280,14 +324,19 @@ def _compute_bilinear_subinterpolation(data, fractional_rows, fractional_cols):
     fractional_rows = np.clip(fractional_rows, 0.5, data.shape[0] - 0.5)
     fractional_cols = np.clip(fractional_cols, 0.5, data.shape[1] - 0.5)
     points = np.array([fractional_rows, fractional_cols]).T
-    return interp(points)
+    return cast(NDArray[np.floating[Any]], interp(points))
 
 
 @permacache(
     "urbanstats/data/gpw/compute_gpw_for_shape_raster_7",
     key_function=dict(shape=lambda x: stable_hash(shapely.to_geojson(x))),
 )
-def compute_gpw_for_shape_raster(shape, collect_density=True, *, resolution_by_radius):
+def compute_gpw_for_shape_raster(
+    shape: Any,
+    collect_density: bool = True,
+    *,
+    resolution_by_radius: dict[int | float, int],
+) -> tuple[dict[str, float], dict[str, NDArray[np.floating[Any]]]]:
     glo_by_resolution = {
         resolution: load_full_ghs_zarr(resolution)
         for resolution in set(resolution_by_radius.values())
@@ -343,7 +392,12 @@ def compute_gpw_for_shape_raster(shape, collect_density=True, *, resolution_by_r
     )
 
 
-def select_points_in_shape(shape, glo, *, resolution):
+def select_points_in_shape(
+    shape: Any,
+    glo: NDArray[np.floating[Any]],
+    *,
+    resolution: int,
+) -> tuple[NDArray[np.intp], NDArray[np.intp]]:
     lats, lon_starts, lon_ends = rasterize_using_lines(shape, resolution=resolution)
     row_selected, col_selected = exract_raster_points(lats, lon_starts, lon_ends, glo)
     return row_selected, col_selected
@@ -358,17 +412,26 @@ def select_points_in_shape(shape, glo, *, resolution):
     ),
 )
 def compute_gpw_data_for_shapefile(
-    shapefile, collect_density=True, log=True, *, resolution_by_radius
-):
+    shapefile: Any,
+    collect_density: bool = True,
+    log: bool = True,
+    *,
+    resolution_by_radius: dict[int | float, int],
+) -> tuple[dict[str, list[float]], dict[str, list[NDArray[np.floating[Any]]]]]:
     """
     Compute the GHS-POP data for a shapefile.
     """
 
     shapes = shapefile.load_file()
 
-    result = {"gpw_population": [], **{f"gpw_pw_density_{k}": [] for k in GPW_RADII}}
+    result: dict[str, list[float]] = {
+        "gpw_population": [],
+        **{f"gpw_pw_density_{k}": [] for k in GPW_RADII},
+    }
 
-    result_hists = {f"gpw_pw_density_histogram_{k}": [] for k in GPW_RADII}
+    result_hists: dict[str, list[NDArray[np.floating[Any]]]] = {
+        f"gpw_pw_density_histogram_{k}": [] for k in GPW_RADII
+    }
 
     for longname, shape in tqdm.tqdm(
         zip(shapes.longname, shapes.geometry),

@@ -2,13 +2,16 @@ from collections import Counter
 
 import geopandas as gpd
 import numpy as np
+import pandas as pd
 
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.special_cases.country import subnational_regions
 from urbanstats.special_cases.country_names import iso_to_country
 
 
-def classify_areas_by_subnational_region(snr, areas):
+def classify_areas_by_subnational_region(
+    snr: gpd.GeoDataFrame, areas: gpd.GeoDataFrame
+) -> pd.DataFrame:
     joined = gpd.overlay(snr, areas[["index_", "geometry"]], keep_geom_type=False)
     pcts = joined.to_crs(dict(proj="cea")).area / np.array(
         areas.to_crs(dict(proj="cea")).area[joined.index_]
@@ -57,13 +60,13 @@ def load_ghsl_urban_center_no_names():
 
 
 def attach_subnational_suffxes(
-    areas,
-    snr,
-    subnational_classes,
+    areas: gpd.GeoDataFrame,
+    snr: gpd.GeoDataFrame,
+    subnational_classes: pd.DataFrame,
     *,
-    name_column="UC_NM_MN",
-    more_general_direction=False
-):
+    name_column: str = "UC_NM_MN",
+    more_general_direction: bool = False,
+) -> gpd.GeoDataFrame:
     backmap = subnational_classes.loc[areas.index_].applymap(sorted)
     for col in subnational_classes.columns:
         areas["subnationals_" + col] = list(backmap[col])

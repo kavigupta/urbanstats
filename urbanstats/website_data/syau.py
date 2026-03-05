@@ -1,15 +1,25 @@
 import re
 import unicodedata
-from typing import Counter, Iterator, Set
+from typing import Callable, Counter, Iterable, Iterator, Protocol, Set
 
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 
 
-def syau_regions():
-    return [x.meta["type"] for x in shapefiles.values() if x.include_in_syau]
+class TableWithLongname(Protocol):
+    """Protocol for a table-like object with a longname column/attribute."""
+
+    longname: Iterable[str]
 
 
-def compute_relevant(all_names, fn, limit):
+def syau_regions() -> list[str]:
+    return [str(x.meta["type"]) for x in shapefiles.values() if x.include_in_syau]
+
+
+def compute_relevant(
+    all_names: list[str],
+    fn: Callable[[str], Iterator[str]],
+    limit: int,
+) -> list[str]:
     all_chunks = [chunk for name in all_names for chunk in computeMatchChunks(name)]
 
     component = Counter(x for c in all_chunks for x in fn(c))
@@ -108,6 +118,6 @@ def get_suffixes(name: str) -> Iterator[str]:
     return (prefix[::-1] for prefix in get_prefixes(name[::-1]))
 
 
-def get_suffixes_from_table(table):
-    suffixes = compute_relevant(table.longname, get_suffixes, limit=10)
+def get_suffixes_from_table(table: TableWithLongname) -> list[str]:
+    suffixes = compute_relevant(list(table.longname), get_suffixes, limit=10)
     return suffixes

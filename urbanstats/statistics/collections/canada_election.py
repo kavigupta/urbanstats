@@ -39,9 +39,9 @@ class CanadaElectionStatistics(CanadaStatistics):
             swing_name = f"{elect1.year}-{elect2.year} Swing"
 
             # Coalition margin swing
-            result[
-                (swing_name, "coalition_margin")
-            ] = f"{swing_name} 2-Coalition Margin"
+            result[(swing_name, "coalition_margin")] = (
+                f"{swing_name} 2-Coalition Margin"
+            )
 
             # Party swings (all parties that exist in both elections)
             for party_col, party_name in [
@@ -79,9 +79,9 @@ class CanadaElectionStatistics(CanadaStatistics):
             swing_name = f"{elect1.year}-{elect2.year} Swing"
 
             # Coalition margin swing
-            result[
-                (swing_name, "coalition_margin")
-            ] = f"canada_swing_{elect1.year}_{elect2.year}_coalition_margin"
+            result[(swing_name, "coalition_margin")] = (
+                f"canada_swing_{elect1.year}_{elect2.year}_coalition_margin"
+            )
 
             # Party swings
             for party_col, party_abbr in [
@@ -91,15 +91,15 @@ class CanadaElectionStatistics(CanadaStatistics):
                 ("V_BQ", "bq"),
                 ("V_GRN", "grn"),
             ]:
-                result[
-                    (swing_name, party_col)
-                ] = f"canada_swing_{elect1.year}_{elect2.year}_{party_abbr}"
+                result[(swing_name, party_col)] = (
+                    f"canada_swing_{elect1.year}_{elect2.year}_{party_abbr}"
+                )
 
             # PPC didn't exist in 2015, so skip 2015-2019 swing for PPC
             if elect1.year != 2015:
-                result[
-                    (swing_name, "V_PPC")
-                ] = f"canada_swing_{elect1.year}_{elect2.year}_ppc"
+                result[(swing_name, "V_PPC")] = (
+                    f"canada_swing_{elect1.year}_{elect2.year}_ppc"
+                )
 
         return result
 

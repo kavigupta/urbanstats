@@ -1,7 +1,15 @@
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, Iterable, TypeVar
 
 import numpy as np
 import pandas as pd
+
+if TYPE_CHECKING:
+    from urbanstats.geometry.shapefiles.shapefile import Shapefile
+
+import geopandas as gpd
+
+_T = TypeVar("_T")
 
 from urbanstats.acs.load import (
     ACSDataEntityForMultipleLevels,
@@ -25,39 +33,43 @@ class StatisticCollection(ABC):
             not missing_quiz_questions
         ), f"Missing quiz questions: {missing_quiz_questions}"
 
-    def internal_statistic_names_list(self):
+    def internal_statistic_names_list(self) -> list[str]:
         return list(self.name_for_each_statistic())
 
-    def legacy_statistic_names(self):
+    def legacy_statistic_names(self) -> dict[str, str]:
         return {}
 
-    def deprecation_for_each_statistic(self):
+    def deprecation_for_each_statistic(self) -> dict[str, str | None]:
         """Returns a dictionary mapping statistic keys to deprecation messages (None if not deprecated)."""
         return {name: None for name in self.internal_statistic_names_list()}
 
     @abstractmethod
-    def name_for_each_statistic(self):
+    def name_for_each_statistic(self) -> dict[str, str] | Iterable[str]:
         pass
 
     @abstractmethod
-    def varname_for_each_statistic(self):
+    def varname_for_each_statistic(self) -> dict[str, str]:
         """Returns a dictionary mapping statistic keys to program-friendly variable names."""
 
     @abstractmethod
-    def explanation_page_for_each_statistic(self):
+    def explanation_page_for_each_statistic(self) -> dict[str, str]:
         pass
 
     @abstractmethod
-    def quiz_question_descriptors(self):
+    def quiz_question_descriptors(self) -> Iterable[str]:
         pass
 
-    def dependencies(self):
+    def dependencies(self) -> Iterable[str]:
         return ()
 
     @abstractmethod
     def compute_statistics_dictionary(
-        self, *, shapefile, existing_statistics, shapefile_table
-    ):
+        self,
+        *,
+        shapefile: "Shapefile",
+        existing_statistics: dict[str, Any],
+        shapefile_table: gpd.GeoDataFrame,
+    ) -> dict[str, Any]:
         """
         Returns a dictionary of statistics to add to the existing statistics table.
 
@@ -68,13 +80,13 @@ class StatisticCollection(ABC):
         :return: A dictionary of statistics to add to the existing statistics table.
         """
 
-    def same_for_each_name(self, value):
+    def same_for_each_name(self, value: _T) -> dict[str, _T]:
         return {name: value for name in self.internal_statistic_names_list()}
 
-    def extra_stats(self):
+    def extra_stats(self) -> dict[str, Any]:
         return {}
 
-    def __permacache_hash__(self):
+    def __permacache_hash__(self) -> tuple[str, Any]:
         return (self.__class__.__name__, getattr(self, "version", None))
 
 
@@ -84,8 +96,12 @@ class GeographicStatistics(StatisticCollection):
 
 class InternationalStatistics(StatisticCollection):
     def compute_statistics_dictionary(
-        self, *, shapefile, existing_statistics, shapefile_table
-    ):
+        self,
+        *,
+        shapefile: "Shapefile",
+        existing_statistics: dict[str, Any],
+        shapefile_table: gpd.GeoDataFrame,
+    ) -> dict[str, Any]:
         if "international_gridded_data" in shapefile.special_data_sources:
             return self.compute_statistics_dictionary_intl(
                 shapefile=shapefile,
@@ -96,15 +112,23 @@ class InternationalStatistics(StatisticCollection):
 
     @abstractmethod
     def compute_statistics_dictionary_intl(
-        self, *, shapefile, existing_statistics, shapefile_table
-    ):
+        self,
+        *,
+        shapefile: "Shapefile",
+        existing_statistics: dict[str, Any],
+        shapefile_table: gpd.GeoDataFrame,
+    ) -> dict[str, Any]:
         pass
 
 
 class USAStatistics(StatisticCollection):
     def compute_statistics_dictionary(
-        self, *, shapefile, existing_statistics, shapefile_table
-    ):
+        self,
+        *,
+        shapefile: "Shapefile",
+        existing_statistics: dict[str, Any],
+        shapefile_table: gpd.GeoDataFrame,
+    ) -> dict[str, Any]:
         _, result = compute_subset_statistics(
             shapefile,
             existing_statistics,
@@ -116,15 +140,23 @@ class USAStatistics(StatisticCollection):
 
     @abstractmethod
     def compute_statistics_dictionary_usa(
-        self, *, shapefile, existing_statistics, shapefile_table
-    ):
+        self,
+        *,
+        shapefile: "Shapefile",
+        existing_statistics: dict[str, Any],
+        shapefile_table: gpd.GeoDataFrame,
+    ) -> dict[str, Any]:
         pass
 
 
 class USAStatisticsCounties(USAStatistics):
     def compute_statistics_dictionary(
-        self, *, shapefile, existing_statistics, shapefile_table
-    ):
+        self,
+        *,
+        shapefile: "Shapefile",
+        existing_statistics: dict[str, Any],
+        shapefile_table: gpd.GeoDataFrame,
+    ) -> dict[str, Any]:
         if "composed_of_counties" not in shapefile.special_data_sources:
             return {}
         return super().compute_statistics_dictionary(
@@ -136,8 +168,12 @@ class USAStatisticsCounties(USAStatistics):
 
 class CanadaStatistics(StatisticCollection):
     def compute_statistics_dictionary(
-        self, *, shapefile, existing_statistics, shapefile_table
-    ):
+        self,
+        *,
+        shapefile: "Shapefile",
+        existing_statistics: dict[str, Any],
+        shapefile_table: gpd.GeoDataFrame,
+    ) -> dict[str, Any]:
         _, result = compute_subset_statistics(
             shapefile,
             existing_statistics,
@@ -149,14 +185,23 @@ class CanadaStatistics(StatisticCollection):
 
     @abstractmethod
     def compute_statistics_dictionary_canada(
-        self, *, shapefile, existing_statistics, shapefile_table
-    ):
+        self,
+        *,
+        shapefile: "Shapefile",
+        existing_statistics: dict[str, Any],
+        shapefile_table: gpd.GeoDataFrame,
+    ) -> dict[str, Any]:
         pass
 
 
 def compute_subset_statistics(
-    shapefile, existing_statistics, shapefile_table, *, subset, compute_function
-):
+    shapefile: "Shapefile",
+    existing_statistics: dict[str, Any],
+    shapefile_table: gpd.GeoDataFrame,
+    *,
+    subset: str,
+    compute_function: Any,
+) -> tuple[bool, dict[str, Any]]:
     if subset not in shapefile.subset_masks:
         return False, {}
 

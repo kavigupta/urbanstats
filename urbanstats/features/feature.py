@@ -1,3 +1,5 @@
+from typing import Callable
+
 import attr
 import geopandas as gpd
 import pandas as pd
@@ -5,28 +7,28 @@ import pandas as pd
 
 @attr.s
 class Feature:
-    hash_key = attr.ib()
-    name = attr.ib()
-    radius_km = attr.ib()
-    load_fn = attr.ib()
+    hash_key: str = attr.ib()
+    name: str = attr.ib()
+    radius_km: float = attr.ib()
+    load_fn: Callable[[], gpd.GeoDataFrame] = attr.ib()
 
-    def within_distance_column_name(self):
+    def within_distance_column_name(self) -> tuple[str, str]:
         return (
             f"within_{self.name}_{self.radius_km}",
             f"Within {self.radius_km}km of {self.name} %",
         )
 
-    def shortest_distance_column_name(self):
+    def shortest_distance_column_name(self) -> tuple[str, str]:
         return f"mean_dist_{self.name}_updated", f"Mean distance to nearest {self.name}"
 
-    def column_names(self):
+    def column_names(self) -> list[tuple[str, str]]:
         return [
             self.within_distance_column_name(),
             self.shortest_distance_column_name(),
         ]
 
 
-def load_hospitals():
+def load_hospitals() -> gpd.GeoDataFrame:
     loc = "named_region_shapefiles/features/hospitals.zip"
     file = pd.read_csv(loc)
     file = gpd.GeoDataFrame(
@@ -35,7 +37,7 @@ def load_hospitals():
     return file
 
 
-def load_airports():
+def load_airports() -> gpd.GeoDataFrame:
     loc = "named_region_shapefiles/features/airports.zip"
     file = gpd.read_file(loc)
     file = file[
@@ -45,12 +47,12 @@ def load_airports():
     return file[["geometry"]]
 
 
-def load_schools():
+def load_schools() -> gpd.GeoDataFrame:
     f = gpd.read_file("named_region_shapefiles/features/Public_Schools.zip")
     return f[["geometry"]].to_crs("epsg:4326")
 
 
-def load_superfund_sites():
+def load_superfund_sites() -> gpd.GeoDataFrame:
     data = pd.read_excel(
         "named_region_shapefiles/features/epa-national-priorities-list-ciesin-mod-v2-2014.xls",
         sheet_name="EPA_NPL_Sites_asof_27Feb2014",

@@ -224,12 +224,9 @@ class CensusCanadaCommuteTime(CensusCanadaSameAsUS):
                 for s in stats_array
             ]
         )
-        statistic_table[
-            "transportation_commute_time_30_to_59_canada"
-        ] = statistic_table.pop(
-            "transportation_commute_time_30_to_44_canada"
-        ) + statistic_table.pop(
-            "transportation_commute_time_45_to_59_canada"
+        statistic_table["transportation_commute_time_30_to_59_canada"] = (
+            statistic_table.pop("transportation_commute_time_30_to_44_canada")
+            + statistic_table.pop("transportation_commute_time_45_to_59_canada")
         )
         columns = [
             "transportation_commute_time_under_15_canada",

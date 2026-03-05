@@ -2,7 +2,9 @@ import copy
 import os
 
 import geopandas as gpd
+import pandas as pd
 import tqdm.auto as tqdm
+from shapely.geometry.base import BaseGeometry
 
 from urbanstats.special_cases.country_names import iso_to_country
 from urbanstats.special_cases.special_subnational_source import (
@@ -15,7 +17,7 @@ SIMPLIFY_REALLY_SMALL = 1 / 120 * 50e-3
 SIMPLIFY_WATER = 1 / 120
 
 
-def subnational_regions_direct():
+def subnational_regions_direct() -> gpd.GeoDataFrame:
     path = "named_region_shapefiles/World_Administrative_Divisions.zip"
     data = gpd.read_file(path)
     print("read subnational regions")
@@ -49,7 +51,7 @@ def subnational_regions_direct():
     return data
 
 
-def filter_small_islands(r):
+def filter_small_islands(r: pd.Series) -> pd.Series:
     r = copy.deepcopy(r)
     g = gpd.GeoDataFrame([r])
     polys = gpd.GeoSeries(
@@ -65,7 +67,10 @@ def filter_small_islands(r):
     return r
 
 
-def bounds_overlap(bounds1, bounds2):
+def bounds_overlap(
+    bounds1: tuple[float, float, float, float],
+    bounds2: tuple[float, float, float, float],
+) -> bool:
     lon1, lat1, lon2, lat2 = bounds1
     lon3, lat3, lon4, lat4 = bounds2
     lon_does_overlap = not (lon1 < lon2 < lon3 < lon4 or lon3 < lon4 < lon1 < lon2)
@@ -73,7 +78,7 @@ def bounds_overlap(bounds1, bounds2):
     return lon_does_overlap and lat_does_overlap
 
 
-def buffer_geometry(data, idx, buffer):
+def buffer_geometry(data: gpd.GeoDataFrame, idx: int, buffer: float) -> BaseGeometry:
     geom = data.iloc[idx].geometry
     buffered_geom = geom.buffer(buffer).simplify(buffer / 2)
     idxs = []
@@ -89,7 +94,11 @@ def buffer_geometry(data, idx, buffer):
     return buffered_geom
 
 
-def buffer_all(data, buffer, unmanipulated_indices):
+def buffer_all(
+    data: gpd.GeoDataFrame,
+    buffer: float,
+    unmanipulated_indices: list[int],
+) -> gpd.GeoDataFrame:
     data = data.copy()
     data["bounds_tuples"] = data.geometry.apply(lambda x: x.bounds)
     fullname = data.NAME + ", " + data.COUNTRY
@@ -103,7 +112,7 @@ def buffer_all(data, buffer, unmanipulated_indices):
     return data
 
 
-def subnational_regions():
+def subnational_regions() -> gpd.GeoDataFrame:
     path = "named_region_shapefiles/World_Administrative_Divisions_processed"
     if not os.path.exists(path):
         snr = subnational_regions_direct()
@@ -112,7 +121,7 @@ def subnational_regions():
     return gpd.read_file(path + "/subnational_regions.shp")
 
 
-def countries_direct():
+def countries_direct() -> gpd.GeoDataFrame:
     data = subnational_regions()
     print("read countries")
     data["dissolveby"] = data.ISO_CC
@@ -123,7 +132,7 @@ def countries_direct():
     return data
 
 
-def countries():
+def countries() -> gpd.GeoDataFrame:
     path = "named_region_shapefiles/countries_processed"
     if not os.path.exists(path):
         c = countries_direct()
@@ -132,7 +141,7 @@ def countries():
     return gpd.read_file(path + "/countries.shp")
 
 
-def continents_direct():
+def continents_direct() -> gpd.GeoDataFrame:
     data = gpd.read_file("named_region_shapefiles/continents/subnational_regions.shp")
     data = data.dissolve("newcont")
     data.geometry = data.geometry.buffer(SIMPLIFY_REALLY_SMALL)
@@ -142,7 +151,7 @@ def continents_direct():
     return data
 
 
-def continents():
+def continents() -> gpd.GeoDataFrame:
     path = "named_region_shapefiles/continents_processed"
     if not os.path.exists(path):
         c = continents_direct()

@@ -9,14 +9,15 @@ from urbanstats.data.wikipedia.wikidata_sourcer import WikidataSourcer
 class CongressionalDistrictWikidataSourcer(WikidataSourcer):
     version: int = 3
 
-    def columns(self):
+    def columns(self) -> list[str]:
         return ["shortname"]
 
-    def special_case(self, shortname):
+    def special_case(self, shortname: str) -> str | None:
         return {"WI-AL": "Q8027336"}.get(shortname)
 
     # pylint: disable=arguments-differ
-    def compute_wikidata(self, shortname):
+    def compute_wikidata(self, *args: str) -> str | None:
+        (shortname,) = args
         shortname = shortname.split(" ")[0]  # remove date
         state, district = shortname.split("-")
         special_case = self.special_case(shortname)
@@ -39,7 +40,7 @@ class CongressionalDistrictWikidataSourcer(WikidataSourcer):
                 return item
         raise ValueError(f"Could not find wikidata for {shortname}")
 
-    def wikidata_name(self, state, district):
+    def wikidata_name(self, state: str, district: str) -> str:
         state_name = us.states.lookup(state).name
 
         apostrophe_state_name = state_name + "'s"
@@ -48,9 +49,9 @@ class CongressionalDistrictWikidataSourcer(WikidataSourcer):
         if district == "AL":
             return f"{apostrophe_state_name} at-large congressional district"
 
-        district = int(district)
+        district_num = int(district)
 
-        suffix = {1: "st", 2: "nd", 3: "rd"}.get(district % 10, "th")
-        if district % 100 in [11, 12, 13]:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(district_num % 10, "th")
+        if district_num % 100 in (11, 12, 13):
             suffix = "th"
-        return f"{apostrophe_state_name} {district}{suffix} congressional district"
+        return f"{apostrophe_state_name} {district_num}{suffix} congressional district"

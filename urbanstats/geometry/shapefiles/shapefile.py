@@ -1,11 +1,25 @@
 import pickle
 from collections import defaultdict
+from typing import TYPE_CHECKING, Iterable, Protocol
 
 import attr
+
+if TYPE_CHECKING:
+    from urbanstats.universe.universe_provider.universe_provider import (
+        UniverseProvider,
+    )
+
 import geopandas as gpd
 import pandas as pd
 
 from urbanstats.metadata import metadata_types
+
+
+class ShapefileTable(Protocol):
+    """Table returned by Shapefile.load_file(), with longname and subnational codes."""
+
+    longname: Iterable[str]
+    subnationals_ISO_CODE: Iterable[Iterable[str]]
 
 
 @attr.s
@@ -22,7 +36,7 @@ class Shapefile:
     drop_dup = attr.ib(default=False)
     chunk_size = attr.ib(default=None)
     special_data_sources = attr.ib(default=attr.Factory(dict))
-    universe_provider = attr.ib(kw_only=True)
+    universe_provider: "UniverseProvider" = attr.ib(kw_only=True)
     subset_masks = attr.ib(default=attr.Factory(dict))
     abbreviation = attr.ib(kw_only=True)
     data_credit = attr.ib(kw_only=True)
@@ -39,7 +53,7 @@ class Shapefile:
         assert set(self.metadata_columns) <= set(self.available_columns)
         assert set(self.metadata_columns) <= set(metadata_types)
 
-    def load_file(self):
+    def load_file(self) -> gpd.GeoDataFrame:
         """
         Load the shapefile and apply the filters and extractors.
 
@@ -166,8 +180,10 @@ class EmptyShapefileError(Exception):
     pass
 
 
-def multiple_localized_type_names(shapefiles):
-    localized = defaultdict(dict)
+def multiple_localized_type_names(
+    shapefiles: dict[str, Shapefile],
+) -> defaultdict[str, dict]:
+    localized: defaultdict[str, dict] = defaultdict(dict)
     for sf in shapefiles.values():
         for subset_name, subset_localized in sf.localized_type_names().items():
             localized[subset_name].update(subset_localized)

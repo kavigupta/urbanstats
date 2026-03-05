@@ -97,7 +97,7 @@ jobs:
         run: bash -c '[ $(git status --porcelain --untracked-files=no | wc -c) -eq 0 ]  || (git status; git diff; exit 1)'
         if: "!cancelled()"
       - name: typecheck
-        run: mypy --strict urbanstats-persistent-data/urbanstats_persistent_data
+        run: mypy --strict urbanstats urbanstats-persistent-data/urbanstats_persistent_data
         if: "!cancelled()"
       - run: npm run lint:ci
         working-directory: react

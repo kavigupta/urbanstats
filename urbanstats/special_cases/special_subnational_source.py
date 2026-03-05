@@ -6,12 +6,12 @@ import geopandas as gpd
 
 class SpecialSubnationalSource(ABC):
     @abstractmethod
-    def replace_subnational_geographies(self, data) -> List[int]:
+    def replace_subnational_geographies(self, data: gpd.GeoDataFrame) -> List[int]:
         pass
 
 
 class USStateSpecialSubnationalSource(SpecialSubnationalSource):
-    def replace_subnational_geographies(self, data) -> List[int]:
+    def replace_subnational_geographies(self, data: gpd.GeoDataFrame) -> List[int]:
         usa = gpd.read_file("named_region_shapefiles/cb_2022_us_state_500k.zip")
         data_usa = data[data.ISO_CC == "US"]
         postal_to_geometry = dict(zip(usa.STUSPS, usa.geometry))
