@@ -24,7 +24,11 @@ export function PreambleEditor({
     const [showPreamble, setShowPreamble] = useState(preamble.originalCode.trim() !== '')
 
     useEffect(() => {
-        setShowPreamble(preamble.originalCode.trim() !== '')
+        // don't disable the checkbox if you delete all of it
+        // it'll get deleted on a refresh
+        if (preamble.originalCode.trim() !== '') {
+            setShowPreamble(true)
+        }
     }, [preamble.originalCode])
 
     return (
