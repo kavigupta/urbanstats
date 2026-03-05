@@ -1,8 +1,11 @@
 import statistic_name_list from '../data/statistic_name_list'
 import statistic_variables_info from '../data/statistic_variables_info'
-import { MapUSS, mapUSSFromString } from '../mapper/settings/map-uss'
+import { defaultTypeEnvironment } from '../mapper/context'
+import { attemptParseAsTopLevel, MapUSS, mapUSSFromString } from '../mapper/settings/map-uss'
 import { PageDescriptor } from '../navigation/PageDescriptor'
 import { StatName } from '../page_template/statistic-tree'
+import { Universe } from '../universe'
+import { tableType } from '../urban-stats-script/constants/table'
 import { unparse } from '../urban-stats-script/parser'
 import { assert } from '../utils/defensive'
 
@@ -23,10 +26,14 @@ export function pageDescriptor({ stat, view }: StatSettings): PageDescriptor & {
     }
 }
 
+export function parseStatUSS(uss: string, universe: Universe): MapUSS {
+    return attemptParseAsTopLevel(mapUSSFromString(uss), defaultTypeEnvironment(universe), true, [tableType])
+}
+
 export function mapUSSFromStat(stat: Statistic): MapUSS {
     return stat.type === 'uss'
         ? stat.uss
-        : mapUSSFromString(`customNode(""); condition (true); table(columns=[column(values=${varName(stat.statName)})])`)
+        : parseStatUSS(`customNode(""); condition (true); table(columns=[column(values=${varName(stat.statName)})])`, stat.universe)
 }
 
 function varName(statname: StatName): string {

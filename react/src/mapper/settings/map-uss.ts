@@ -76,7 +76,7 @@ export function makeStatements<const T extends UrbanStatsASTStatement[]>(element
     }
 }
 
-export function attemptParseCondition(conditionStmt: UrbanStatsASTStatement | undefined): { conditionRest: UrbanStatsASTStatement[], conditionExpr: UrbanStatsASTExpression } {
+function attemptParseCondition(conditionStmt: UrbanStatsASTStatement | undefined): { conditionRest: UrbanStatsASTStatement[], conditionExpr: UrbanStatsASTExpression } {
     let stmts = conditionStmt !== undefined ? [conditionStmt] : []
     if (conditionStmt?.type === 'condition') {
         const conditionText = unparse(conditionStmt.condition, { simplify: true })

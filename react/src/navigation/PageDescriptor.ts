@@ -12,7 +12,6 @@ import type { ScreenshotDiffViewerPanel } from '../dev/ScreenshotDiffViewerPanel
 import { loadJSON } from '../load_json'
 import type { DebugMapTextBoxPanel } from '../mapper/components/DebugMapTextBox'
 import type { MapperPanel } from '../mapper/components/MapperPanel'
-import { mapUSSFromString } from '../mapper/settings/map-uss'
 import type { MapSettings } from '../mapper/settings/utils'
 import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
@@ -25,6 +24,7 @@ import type {
 } from '../quiz/quiz'
 import { StatisticPanel } from '../stat/StatisticPanel'
 import { StatSettings } from '../stat/types'
+import { parseStatUSS } from '../stat/utils'
 import { loadSYAUData, SYAUData } from '../syau/load'
 import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse, Universe, universeSchema } from '../universe'
@@ -539,7 +539,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                             ...('uss' in newDescriptor
                                 ? {
                                         type: 'uss',
-                                        uss: mapUSSFromString(newDescriptor.uss),
+                                        uss: parseStatUSS(newDescriptor.uss, statUniverse),
                                     }
                                 : {
                                         type: 'simple',
