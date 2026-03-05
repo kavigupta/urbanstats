@@ -93,9 +93,7 @@ def create_article_gzip(
                 fol.article_universes_idx = article_universes_idx
                 # vulture: ignore -- not actually creating a field. this is from protobuf
                 fol.is_first = ordinal_overall == 1
-            statrow.percentile_by_population_by_universe.append(
-                int(percentile_by_type * 100)
-            )
+            statrow.percentile_by_population_by_universe.append(percentile_by_type)
     for _, extra_stat in sorted(extra_stats().items()):
         data.extra_stats.append(extra_stat.create(row))
     for relationship_type in relationships:
