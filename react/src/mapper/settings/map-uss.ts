@@ -1,4 +1,5 @@
 import { UrbanStatsASTExpression, UrbanStatsASTStatement, locationOf, unify } from '../../urban-stats-script/ast'
+import type { AutoUXNodeMetadata } from '../../urban-stats-script/autoux-node-metadata'
 import { longMessage } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { parse, parseNoErrorAsCustomNode, unparse } from '../../urban-stats-script/parser'
@@ -11,12 +12,16 @@ export const idPreamble = `${rootBlockIdent}p`
 export const idCondition = `${rootBlockIdent}c`
 export const idOutput = `${rootBlockIdent}o`
 
+export type PreambleCustomNode = UrbanStatsASTExpression & { type: 'customNode' }
+export type PreambleAutoUXNode = UrbanStatsASTExpression & { type: 'autoUXNode', expr: PreambleCustomNode, metadata: AutoUXNodeMetadata }
+export type PreambleNode = PreambleCustomNode | PreambleAutoUXNode
+
 export type MapUSS = UrbanStatsASTExpression & { type: 'customNode' } |
     (UrbanStatsASTStatement &
     {
         type: 'statements'
         result: [
-                UrbanStatsASTStatement & { type: 'expression', value: UrbanStatsASTExpression & { type: 'customNode' } },
+                UrbanStatsASTStatement & { type: 'expression', value: PreambleNode },
                 UrbanStatsASTStatement & { type: 'condition', rest: [UrbanStatsASTStatement & { type: 'expression' }] },
         ]
     })
@@ -27,29 +32,44 @@ const pMap = { type: 'opaque', name: 'pMap', allowCustomExpression: false } sati
 
 export const validMapperOutputs = [cMap, cMapRGB, pMap] satisfies USSType[]
 
+function parsePreambleCustomNodeAsMapUSS(stmt: UrbanStatsASTStatement): PreambleNode | undefined {
+    if (stmt.type !== 'expression') {
+        return undefined
+    }
+    const expr = stmt.value
+    if (expr.type === 'customNode') {
+        return expr
+    }
+    if (expr.type === 'autoUXNode') {
+        if (expr.expr.type === 'customNode') {
+            // really not sure why typescript can't figure this out, but it can't
+            return expr as PreambleAutoUXNode
+        }
+    }
+    return undefined
+}
+
 export function convertToMapUss(uss: UrbanStatsASTStatement): MapUSS {
     if (uss.type === 'expression' && uss.value.type === 'customNode') {
         return uss.value
     }
     if (uss.type === 'statements'
         && uss.result.length === 2
-        && uss.result[0].type === 'expression'
-        && uss.result[0].value.type === 'customNode'
         && uss.result[1].type === 'condition'
         && uss.result[1].rest.length === 1
         && uss.result[1].rest[0].type === 'expression') {
-        return {
-            ...uss,
-            result: [
-                {
-                    ...uss.result[0],
-                    value: uss.result[0].value,
-                },
-                {
-                    ...uss.result[1],
-                    rest: [uss.result[1].rest[0]],
-                },
-            ],
+        const preambleValue = parsePreambleCustomNodeAsMapUSS(uss.result[0])
+        if (preambleValue !== undefined) {
+            return {
+                ...uss,
+                result: [
+                    { type: 'expression', value: preambleValue },
+                    {
+                        ...uss.result[1],
+                        rest: [uss.result[1].rest[0]],
+                    },
+                ],
+            }
         }
     }
     // Support arbitrary scripts
