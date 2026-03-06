@@ -30,27 +30,20 @@ export function PreambleEditor({
     errors: EditorError[]
     blockIdent: string
 }): ReactNode {
-    const [showPreamble, setShowPreamble] = useState(shouldShowPreamble(preamble))
-
-    useEffect(() => {
-        setShowPreamble(shouldShowPreamble(preamble))
-    }, [preamble])
-
     return (
         <div style={{ margin: '0.5em 0' }}>
             <CheckboxSettingCustom
                 name="Preamble"
-                checked={showPreamble}
+                checked={shouldShowPreamble(preamble)}
                 onChange={(checked) => {
                     const expr: PreambleCustomNode = preamble.type === 'autoUXNode' ? preamble.expr : preamble
                     const meta: AutoUXNodeMetadata = preamble.type === 'autoUXNode' ? preamble.metadata : {}
                     setPreamble(checked
                         ? preambleAsAutoUXNode(expr, { ...meta, forceUncollapsed: true })
                         : parseNoErrorAsCustomNode('', blockIdent))
-                    setShowPreamble(checked)
                 }}
             />
-            {showPreamble && (
+            {shouldShowPreamble(preamble) && (
                 <CustomEditor
                     uss={preamble.type === 'autoUXNode' ? preamble.expr : preamble}
                     setUss={(newExpr) => {
