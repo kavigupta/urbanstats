@@ -40,11 +40,8 @@ function parsePreambleCustomNodeAsMapUSS(stmt: UrbanStatsASTStatement): Preamble
     if (expr.type === 'customNode') {
         return expr
     }
-    if (expr.type === 'autoUXNode') {
-        if (expr.expr.type === 'customNode') {
-            // really not sure why typescript can't figure this out, but it can't
-            return expr as PreambleAutoUXNode
-        }
+    if (expr.type === 'autoUXNode' && expr.expr.type === 'customNode') {
+        return { ...expr, expr: expr.expr }
     }
     return undefined
 }
