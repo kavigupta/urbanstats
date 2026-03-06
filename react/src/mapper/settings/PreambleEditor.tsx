@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react'
+import React, { ReactNode } from 'react'
 
 import { CheckboxSettingCustom } from '../../components/sidebar'
 import { locationOf } from '../../urban-stats-script/ast'
@@ -8,11 +8,12 @@ import { parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
 
 import { CustomEditor } from './CustomEditor'
-import { type PreambleCustomNode, type PreambleNode, type PreambleAutoUXNode } from './map-uss'
+import type { PreambleAutoUXNode, PreambleCustomNode, PreambleNode } from './map-uss'
 
 function shouldShowPreamble(preamble: PreambleNode): boolean {
     if (preamble.type === 'autoUXNode') {
-        return (preamble.expr.originalCode.trim() !== '') || (preamble.metadata.forceUncollapsed ?? false)
+        // default is collapsed
+        return (preamble.expr.originalCode.trim() !== '') || !(preamble.metadata.collapsed ?? true)
     }
     return preamble.originalCode.trim() !== ''
 }
@@ -39,7 +40,7 @@ export function PreambleEditor({
                     const expr: PreambleCustomNode = preamble.type === 'autoUXNode' ? preamble.expr : preamble
                     const meta: AutoUXNodeMetadata = preamble.type === 'autoUXNode' ? preamble.metadata : {}
                     setPreamble(checked
-                        ? preambleAsAutoUXNode(expr, { ...meta, forceUncollapsed: true })
+                        ? preambleAsAutoUXNode(expr, { ...meta, collapsed: false })
                         : parseNoErrorAsCustomNode('', blockIdent))
                 }}
             />
@@ -61,7 +62,6 @@ export function PreambleEditor({
     )
 }
 
-/** Wrap a customNode in autoUXNode to persist metadata (e.g. forceUncollapsed). Same pattern as AutoUXEditor for collapsed. */
 function preambleAsAutoUXNode(expr: PreambleCustomNode, metadata: AutoUXNodeMetadata = {}): PreambleAutoUXNode {
     return {
         type: 'autoUXNode',

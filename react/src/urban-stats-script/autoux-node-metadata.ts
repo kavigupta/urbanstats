@@ -2,8 +2,8 @@ import { z } from 'zod'
 
 // Don't make backwards incompatible changes
 const autoUXNodeMetadataSchema = z.object({
+    // applies both to collapsed/uncollapsed arguments and checked/unchecked blocks
     collapsed: z.optional(z.boolean()),
-    forceUncollapsed: z.optional(z.boolean()),
 })
 
 export type AutoUXNodeMetadata = z.infer<typeof autoUXNodeMetadataSchema>
