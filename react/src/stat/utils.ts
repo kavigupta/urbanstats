@@ -33,12 +33,12 @@ export function parseStatUSS(uss: string, universe: Universe): MapUSS {
 export function mapUSSFromStat(stat: Statistic): MapUSS {
     return stat.type === 'uss'
         ? stat.uss
-        : parseStatUSS(`customNode(""); condition (true); table(columns=[column(values=${varName(stat.statName)})])`, stat.universe)
+        : parseStatUSS(`customNode(""); condition (true); table(columns=[column(values=${variable(stat.statName).varName})])`, stat.universe)
 }
 
-function varName(statname: StatName): string {
+export function variable(statname: StatName): typeof statistic_variables_info['variableNames'][number] {
     const index = statistic_name_list.indexOf(statname)
     const result = statistic_variables_info.variableNames.find(v => v.index === index)
     assert(result !== undefined, `No variable name found for statistic ${statname}`)
-    return result.varName
+    return result
 }

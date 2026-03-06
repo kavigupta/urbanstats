@@ -22,7 +22,7 @@ import { base64Gzip } from '../utils/urlParamShort'
 import { AddColumnSearchBox } from './AddColumnSearchBox'
 import { StatisticPanelTable } from './StatisticPanelTable'
 import { StatData, Statistic, StatSetter, View } from './types'
-import { mapUSSFromStat } from './utils'
+import { mapUSSFromStat, variable } from './utils'
 
 export function StatisticPanelPage({ view, stat, data, set, loading, counts, errors }: {
     view: View
@@ -40,6 +40,8 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
 
     const typeEnvironment = useMemo(() => defaultTypeEnvironment(stat.universe), [stat.universe])
 
+    const subHeaderText = useMemo(() => data?.renderedStatname ?? (stat.type === 'simple' ? variable(stat.statName).humanReadableName : '\u00A0'), [data, stat])
+
     return (
         <PageTemplate
             screencap={data && ((universe, c) => createScreenshot({
@@ -54,7 +56,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
         >
             <div ref={headersRef} style={{ position: 'relative' }}>
                 <StatisticPanelHead articleType={stat.articleType} universe={stat.universe} />
-                <div className={subHeaderTextClass}>{data?.renderedStatname ?? (stat.type === 'simple' ? stat.statName : '\u00A0')}</div>
+                <div className={subHeaderTextClass}>{subHeaderText}</div>
                 {!view.edit && <ViewHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} />}
             </div>
             <div style={{ marginBlockEnd: '16px' }}></div>
@@ -62,7 +64,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
             {data
                 ? <StatisticPanelTable view={view} stat={stat} data={data} set={set} tableRef={tableRef} />
                 : (
-                        <div style={{ position: 'relative' }}>
+                        <div style={{ position: 'relative', width: '100%', height: '200px' }}>
                             <RelativeLoader loading={loading} />
                         </div>
                     )}
