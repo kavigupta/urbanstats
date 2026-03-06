@@ -54,7 +54,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
         >
             <div ref={headersRef} style={{ position: 'relative' }}>
                 <StatisticPanelHead articleType={stat.articleType} universe={stat.universe} />
-                <div className={subHeaderTextClass}>{data?.renderedStatname ?? 'Table'}</div>
+                <div className={subHeaderTextClass}>{data?.renderedStatname ?? (stat.type === 'simple' ? stat.statName : '\u00A0')}</div>
                 {!view.edit && <ViewHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} />}
             </div>
             <div style={{ marginBlockEnd: '16px' }}></div>

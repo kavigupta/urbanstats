@@ -42,7 +42,7 @@ export function useDebouncedResolve<T, U>(
     compute: (prev: Promise<T>) => Promise<T>,
     options: { initial: T, interval: number, ui: (t: T, loading: boolean) => U },
 ): U {
-    const updateTime = useRef(Date.now())
+    const updateTime = useRef(0) // We've never updated before
 
     const [currentGenerator, setCurrentGenerator] = useState<Promise<T>>(Promise.resolve(options.initial))
 
