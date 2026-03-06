@@ -209,6 +209,11 @@ function Pagination({ set, view, count, data }: { set: StatSetter, view: View, c
         if (start > count - newAmountNum) {
             start = count - newAmountNum + 1
         }
+        if (newAmount !== 'All') {
+            start = start - 1
+            start = start - (start % newAmountNum)
+            start = start + 1
+        }
         set({
             view: {
                 ...view,
