@@ -10,6 +10,7 @@ import { Navigator } from '../navigation/Navigator'
 import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { PageTemplate } from '../page_template/template'
+import { DisplayResults } from '../urban-stats-script/Editor'
 import { tableType } from '../urban-stats-script/constants/table'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
@@ -61,8 +62,9 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
             </div>
             <div style={{ marginBlockEnd: '16px' }}></div>
             {view.edit && <EditPreamble stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} counts={counts} errors={errors} />}
+            {!view.edit && <DisplayResults results={errors} editor={false} />}
             {data
-                ? <StatisticPanelTable view={view} stat={stat} data={data} set={set} tableRef={tableRef} />
+                ? <StatisticPanelTable view={view} stat={stat} data={data} set={set} tableRef={tableRef} loading={loading} />
                 : (
                         <div style={{ position: 'relative', width: '100%', height: '200px' }}>
                             <RelativeLoader loading={loading} />

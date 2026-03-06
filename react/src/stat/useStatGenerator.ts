@@ -68,7 +68,11 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
     // Check if there are no geographic entities using counts before executing
     const countErrors = checkArticleCount(counts, stat.universe, stat.articleType)
     if (countErrors.length > 0) {
-        return errorResult(countErrors)
+        return {
+            ...(await previousGenerator),
+            data: undefined,
+            errors: countErrors,
+        }
     }
 
     try {

@@ -14,12 +14,13 @@ import { sanitize } from '../utils/paths'
 
 import { Statistic, StatData, StatSetter, View } from './types'
 
-export function StatisticPanelTable({ view, stat, data, set, tableRef }: {
+export function StatisticPanelTable({ view, stat, data, set, tableRef, loading }: {
     view: View
     stat: Statistic
     data: StatData
     set: StatSetter
     tableRef: React.RefObject<HTMLDivElement>
+    loading: boolean
 }): ReactNode {
     const colors = useColors()
 
@@ -163,6 +164,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef }: {
                         onlyColumns={onlyColumns}
                         simpleOrdinals={true}
                         highlightRowIndex={highlightRowIndex}
+                        loading={loading}
                     />
                     {footer}
                 </div>
