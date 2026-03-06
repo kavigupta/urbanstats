@@ -123,7 +123,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef }: {
         sortInfo: {
             onSort: () => {
                 const newOrder = colIndex === view.sortColumn ? (isAscending ? 'descending' : 'ascending') : 'descending'
-                set({ view: { ...view, sortColumn: colIndex, order: newOrder } }, {})
+                set({ view: { ...view, sortColumn: colIndex, order: newOrder, start: 1 } }, {})
             },
             sortDirection: view.sortColumn === colIndex ? (isAscending ? 'up' : 'down') : 'both',
         },
