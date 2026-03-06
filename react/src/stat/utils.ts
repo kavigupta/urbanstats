@@ -40,9 +40,5 @@ function varName(statname: StatName): string {
     const index = statistic_name_list.indexOf(statname)
     const result = statistic_variables_info.variableNames.find(v => v.index === index)
     assert(result !== undefined, `No variable name found for statistic ${statname}`)
-    const multi = statistic_variables_info.multiSourceVariables.find(([, ns]) => (ns.individualVariables as readonly string[]).includes(result.varName))
-    if (multi !== undefined) {
-        return multi[0]
-    }
     return result.varName
 }
