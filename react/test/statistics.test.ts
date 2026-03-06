@@ -338,30 +338,30 @@ const densityRatioPage2 = ['1.97', '1.96', '1.90', '1.89', '1.81']
 test('edit starting from a statname page works', async (t) => {
     await t.click(Selector('button[data-test-id="edit"]'))
     await waitForLoading()
-    await t.wait(1000)
     const populations = [
         '10.0', '3.30', '3.19', '2.42', '2.18',
     ]
     const hispanic = ['85.16', '65.50', '61.83', '61.71', '61.11']
     await t.expect(await dataValues()).eql(populations)
-    // should be a USS page now
-    await t.expect(getLocation()).contains('uss=')
-    await t.wait(1000)
+    // should not yet be a uss page
+    await t.expect(getLocation()).notContains('uss=')
     await t.expect(await dataValues()).eql(populations)
     // replace Population with White %
-    await replaceInput(t, 'Population', 'Hispanic %')
-    await t.wait(1000)
+    await replaceInput(t, 'Population [US Census]', 'Hispanic %')
+    await waitForLoading()
+    // should be uss now that we've made a change
+    await t.expect(getLocation()).contains('uss=')
     await t.expect(await dataValues()).eql(hispanic)
     // switch to custom expression
     await replaceInput(t, 'Hispanic %', 'Custom Expression')
-    await t.wait(1000)
+    await waitForLoading()
     await t.expect(await dataValues()).eql(hispanic)
     await t.expect(nthEditor(0).exists).ok()
     await t.expect(nthEditor(0).textContent).eql('hispanic\n')
     await t.click(nthEditor(0))
     await t.pressKey('ctrl+a backspace')
     await typeTextWithKeys(t, 'density_pw_1km/density_pw_2km')
-    await t.wait(1000)
+    await waitForLoading()
     await t.expect(await dataValues()).eql(densityRatio)
     const text = Selector('div').withAttribute('id', 'test-editor-result')
     await t.expect(text.textContent).eql('Name could not be derived for column, please pass name="<your name here>" to column(...)')
@@ -375,13 +375,11 @@ test('edit starting from a statname page works', async (t) => {
     // next page
     await t.click(Selector('button[data-test-id="1"]'))
     await waitForLoading()
-    await t.wait(1000)
     await t.expect(await dataValues()).eql(densityRatioPage2)
     await screencap(t)
     // switch to view mode
     await t.click(Selector('button[data-test-id="view"]'))
     await waitForLoading()
-    await t.wait(1000)
     await t.expect(await dataValues()).eql(densityRatioPage2)
     await screencap(t)
 })
@@ -416,12 +414,14 @@ test('convert table to custom expression and back', async (t) => {
 
 test('parse error', async (t) => {
     await typeInEditor(t, 0, '+')
+    await waitForLoading()
     await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:32', 'Parse error: Unexpected end of input'])
     await screencap(t)
 })
 
 test('type error', async (t) => {
     await typeInEditor(t, 0, '+"a"')
+    await waitForLoading()
     await t.expect(await getErrors()).eql(['Invalid types for operator +: number and string at 1:1-35', 'Invalid types for operator +: number and string'])
     await screencap(t)
     await t.click(Selector('button[data-test-id="view"]'))
@@ -434,6 +434,7 @@ test('type error', async (t) => {
 test('error display on correct field -- first', async (t) => {
     await replaceInput(t, 'Constant', 'Custom Expression')
     await typeInEditor(t, 0, '+')
+    await waitForLoading()
     await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:32', 'Parse error: Unexpected end of input'])
     await screencap(t)
 })
@@ -441,6 +442,7 @@ test('error display on correct field -- first', async (t) => {
 test('error display on correct field -- second', async (t) => {
     await replaceInput(t, 'Constant', 'Custom Expression')
     await typeInEditor(t, 1, '+')
+    await waitForLoading()
     await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:16', 'Parse error: Unexpected end of input'])
     await screencap(t)
 })
@@ -454,7 +456,6 @@ test('warning', async (t) => {
     // switch to view mode
     await t.click(Selector('button[data-test-id="view"]'))
     await waitForLoading()
-    await t.wait(1000)
     await t.expect(await getErrors()).eql([])
     await screencap(t)
 })
@@ -463,7 +464,6 @@ test('add filter', async (t) => {
     await checkTextboxesDirect(t, ['Filter?'])
     await typeInEditor(t, 0, 'population>1m', true)
     await waitForLoading()
-    await t.wait(1000)
     await t.expect(await dataValues()).eql(['1.16', '1.14', '1.13', '1.13', '1.13'])
     await screencap(t)
 })
