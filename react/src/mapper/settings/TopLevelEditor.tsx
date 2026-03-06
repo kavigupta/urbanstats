@@ -14,7 +14,7 @@ import { ConditionEditor } from './ConditionEditor'
 import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import { PreambleEditor } from './PreambleEditor'
-import { MapUSS, makeStatements, idOutput, idCondition, idPreamble, rootBlockIdent, attemptParseAsTopLevel } from './map-uss'
+import { MapUSS, makeStatements, idOutput, idCondition, idPreamble, rootBlockIdent, attemptParseAsTopLevel, type PreambleNode } from './map-uss'
 
 export function TopLevelEditor({
     uss,
@@ -47,7 +47,7 @@ export function TopLevelEditor({
                 {/* Preamble */}
                 <PreambleEditor
                     preamble={uss.result[0].value}
-                    setPreamble={(u: UrbanStatsASTExpression & { type: 'customNode' }) => {
+                    setPreamble={(u: PreambleNode) => {
                         const preamble = {
                             type: 'expression',
                             value: u,
