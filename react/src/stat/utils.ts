@@ -19,7 +19,7 @@ export function pageDescriptor({ stat, view }: StatSettings): PageDescriptor & {
         amount: view.amount,
         order: view.order,
         highlight: view.highlight,
-        universe: stat.universe,
+        universe: stat.universe === 'world' ? undefined : stat.universe,
         edit: view.edit,
         sort_column: view.sortColumn,
         ...(stat.type === 'uss' ? { uss: unparse(stat.uss, { simplify: false }) } : { statname: stat.statName }),
