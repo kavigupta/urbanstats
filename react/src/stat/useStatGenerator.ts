@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { CountsByUT, forType, getCountsByArticleType } from '../components/countsByArticleType'
+import explanation_page from '../data/explanation_page'
 import validGeographies from '../data/mapper/used_geographies'
 import stats from '../data/statistic_list'
 import statistic_name_list from '../data/statistic_name_list'
@@ -108,6 +109,8 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
             unit: col.unit,
         }))
 
+        const statIndex = stat.type === 'simple' ? statistic_name_list.indexOf(stat.statName) : undefined
+
         const statData: StatData = {
             table: dataColumns,
             articleNames: geonames,
@@ -115,16 +118,16 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
             totalCountInClass: firstColumn.values.length,
             totalCountOverall: firstColumn.values.length,
             hideOrdinalsPercentiles: table.hideOrdinalsPercentiles,
+            explanationPage: statIndex !== undefined ? explanation_page[statIndex] : undefined,
         }
 
         return {
             data: statData,
             errors: execErrors,
-            universesFiltered: stat.type === 'uss'
-                ? universes_ordered
-                : universes_ordered.filter(
-                    universe => forType(counts, universe, stats[statistic_name_list.indexOf(stat.statName)], stat.articleType) > 0,
-                ),
+            universesFiltered: statIndex !== undefined
+                ? universes_ordered.filter(
+                    universe => forType(counts, universe, stats[statIndex], stat.articleType) > 0)
+                : universes_ordered,
         }
     }
     catch (e) {
