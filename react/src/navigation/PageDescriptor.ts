@@ -22,9 +22,8 @@ import type {
     QuizQuestionsModel, CustomQuizContent, JuxtaQuestionJSON,
     QuizDescriptor, RetroQuestionJSON, QuizHistory,
 } from '../quiz/quiz'
-import { StatisticPanel } from '../stat/StatisticPanel'
-import { StatSettings } from '../stat/types'
-import { parseStatUSS } from '../stat/utils'
+import type { StatisticPanel } from '../stat/StatisticPanel'
+import type { StatSettings } from '../stat/types'
 import { loadSYAUData, SYAUData } from '../syau/load'
 import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse, Universe, universeSchema } from '../universe'
@@ -516,6 +515,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
         case 'statistic': {
             const counts = getCountsByArticleType()
             const panel = import('../stat/StatisticPanel')
+            const utils = import('../stat/utils')
 
             const statUniverse = newDescriptor.universe ?? 'world'
             const displayStatUniverse = statUniverse !== 'world' ? statUniverse : undefined
@@ -539,7 +539,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                             ...('uss' in newDescriptor
                                 ? {
                                         type: 'uss',
-                                        uss: parseStatUSS(newDescriptor.uss, statUniverse),
+                                        uss: (await utils).parseStatUSS(newDescriptor.uss, statUniverse),
                                     }
                                 : {
                                         type: 'simple',
