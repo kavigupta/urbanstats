@@ -1,7 +1,7 @@
 import { parse } from 'csv-parse/sync'
 import { Selector } from 'testcafe'
 
-import { nthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
+import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
 import { getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
 import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, dataValues, checkTextboxes, checkTextboxesDirect, downloadCSV, downloadImage, searchField, waitForSelectedSearchResult, goBack, goForward } from './test_utils'
 
@@ -469,6 +469,27 @@ test('undo redo', async (t) => {
     await waitForLoading()
     await t.expect(await dataValues()).eql(densityRatioPage2)
     await t.expect(getErrors()).eql(['Custom expression expected to return type table, but got [number] at 1:1-0'])
+})
+
+urbanstatsFixture('counties living with parents', `${target}/statistic.html?uss=customNode%28""%29%3B%0Acondition+%28true%29%0Atable%28columns%3D%5Bcolumn%28values%3Dliving_with_parents%29%5D%29&article_type=County&start=21&amount=20&edit=true`)
+
+test('selection is preserved across undo redo', async (t) => {
+    await t.click('[data-test-id=test-add-vector-element-button]')
+    await replaceInput(t, 'Living With Parents %', 'Custom Expression', 1)
+    // move selection an arbitrary location in the custom editor
+    await t.click(nthEditor(0))
+    await t.pressKey('left left shift+left shift+left shift+left')
+    await t.expect(selectionIsNthEditor(0)).ok()
+    await t.expect(getSelectionAnchor()).eql(17)
+    await t.expect(getSelectionFocus()).eql(14)
+
+    await t.pressKey('ctrl+z')
+    await t.expect(selectionIsNthEditor(0)).notOk()
+
+    await t.pressKey('ctrl+y')
+    await t.expect(selectionIsNthEditor(0)).ok()
+    await t.expect(getSelectionAnchor()).eql(14)
+    await t.expect(getSelectionFocus()).eql(17)
 })
 
 urbanstatsFixture('undo redo page navigation', createUSSStatisticsPage(basicPage, 1, 10))
