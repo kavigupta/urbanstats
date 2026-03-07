@@ -62,7 +62,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
             </div>
             <div style={{ marginBlockEnd: '16px' }}></div>
             {view.edit && <EditPreamble stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} counts={counts} errors={errors} />}
-            {!view.edit && <DisplayResults results={errors} editor={false} />}
+            {!view.edit && <DisplayResults results={errors.filter(error => error.kind === 'error')} editor={false} />}
             {data
                 ? <StatisticPanelTable view={view} stat={stat} data={data} set={set} tableRef={tableRef} loading={loading} />
                 : (

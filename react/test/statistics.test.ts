@@ -496,6 +496,7 @@ async function setUpSecondColumn(t: TestController): Promise<void> {
     await waitForLoading()
     await typeInEditor(t, 1, 'density_pw_1km', true)
     await checkTextboxesDirect(t, ['Name', 'Unit'], 1)
+    await waitForLoading()
 }
 
 test('sorting by columns', async (t) => {
