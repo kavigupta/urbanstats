@@ -35,7 +35,7 @@ import { getTextBoxes, scriptWithNewTextBoxes } from './edit-text-boxes'
 import { validMapperOutputs } from './map-uss'
 import { MapEditorMode, MapSettings } from './utils'
 
-export interface ActionOptions { undoable?: boolean, updateMap?: boolean }
+export interface ActionOptions { undoable?: boolean, update?: boolean }
 
 export function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }): ReactNode {
     const [mapSettings, setMapSettings] = useState(props.mapSettings)
@@ -67,7 +67,7 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
     const { updateCurrentSelection, addState, updateCurrentState } = undoRedo
 
     const setMapSettingsWrapper = useCallback((newSettings: MapSettings, actionOptions: ActionOptions): void => {
-        if (actionOptions.updateMap === false) {
+        if (actionOptions.update === false) {
             setMapSettings(newSettings)
         }
         else {
