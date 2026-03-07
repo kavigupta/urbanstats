@@ -539,7 +539,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                                     }),
                         },
                         view: {
-                            start,
+                            start: newDescriptor.start,
                             amount: newDescriptor.amount,
                             order: newDescriptor.order,
                             highlight: newDescriptor.highlight,
@@ -551,7 +551,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 },
                 newPageDescriptor: {
                     ...newDescriptor,
-                    start,
                     universe: displayStatUniverse,
                     highlight: undefined,
                 },
