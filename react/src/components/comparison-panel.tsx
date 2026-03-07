@@ -293,7 +293,7 @@ export function ComparisonPanel(props: {
             <TransposeContext.Provider value={transpose}>
                 <QuerySettingsConnection />
                 <PageTemplate
-                    screencap={universe => createScreenshot(screencapElements(), universe, colors)}
+                    screencap={(...args) => createScreenshot(screencapElements(), ...args)}
                     csvExportCallback={csvExportCallback}
                 >
                     <DndContext

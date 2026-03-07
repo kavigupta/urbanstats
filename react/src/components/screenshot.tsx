@@ -167,7 +167,10 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, h
     return resultCanvas
 }
 
-export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors): Promise<void> {
+export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors, setScreenshotMode: (on: boolean) => void): Promise<void> {
+    setScreenshotMode(true)
+    await new Promise(resolve => setTimeout(resolve))
+
     const overallWidth = config.overallWidth
     const heightMultiplier = config.heightMultiplier ?? 1
 
@@ -225,6 +228,8 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
     canvas.toBlob(function (blob) {
         saveAs(blob!, config.path)
     })
+
+    setScreenshotMode(false)
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Context declaration
