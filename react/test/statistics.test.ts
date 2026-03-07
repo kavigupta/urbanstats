@@ -410,6 +410,141 @@ test('convert table to custom expression and back', async (t) => {
     await t.expect(await getLocation()).eql(url)
 })
 
+const tableExpression = `table(
+    columns=[
+        column(
+            values=density_pw_1km / density_pw_2km,
+            name="Density Ratio",
+            unit=unitNumber
+        )
+    ]
+)
+`
+
+test('undo redo', async (t) => {
+    // Initially in Table mode
+    await t.expect(getInput('Table').exists).ok()
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+
+    // Step 1: Switch to Custom Expression mode
+    await replaceInput(t, 'Table', 'Custom Expression')
+    await t.wait(2000)
+    await t.expect(nthEditor(0).textContent).eql(tableExpression)
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+    await t.expect(getErrors()).eql([])
+
+    // Step 2: Replace the code
+    await typeInEditor(t, 0, 'density_pw_1km ', true)
+    await waitForLoading()
+    await t.wait(2000)
+    await t.expect(nthEditor(0).textContent).eql('density_pw_1km \n')
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+    await t.expect(getErrors()).eql(['Custom expression expected to return type table, but got [number] at 1:1-0'])
+
+    // Undo step 2: code reverts to table expression
+    await t.pressKey('ctrl+z')
+    await t.expect(nthEditor(0).textContent).eql(tableExpression)
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+    await t.expect(getErrors()).eql([])
+
+    // Undo step 1: back to Table mode
+    await t.pressKey('ctrl+z')
+    await t.expect(getInput('Table').exists).ok()
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+    await t.expect(getErrors()).eql([])
+
+    // Redo step 1: Custom Expression mode with table expression
+    await t.pressKey('ctrl+y')
+    await t.expect(nthEditor(0).textContent).eql(tableExpression)
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+    await t.expect(getErrors()).eql([])
+
+    // Redo step 2: code restored
+    await t.pressKey('ctrl+y')
+    await t.expect(nthEditor(0).textContent).eql('density_pw_1km \n')
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+    await t.expect(getErrors()).eql(['Custom expression expected to return type table, but got [number] at 1:1-0'])
+})
+
+urbanstatsFixture('undo redo page navigation', createUSSStatisticsPage(basicPage, 1, 10))
+
+test('page navigation and amount changes in edit mode: undoable and do not add to browser history', async (t) => {
+    // Start in view mode at page 1, amount=10
+    await waitForLoading()
+    const initialValues = await dataValues()
+    await t.expect(Selector('button[data-test-id="edit"]').exists).ok()
+
+    // In VIEW mode, page navigation uses pushState → goBack/goForward work
+    await t.click(Selector('button[data-test-id="1"]'))
+    await waitForLoading()
+    const page2Values = await dataValues()
+    await t.expect(page2Values).notEql(initialValues)
+
+    // Control z should do nothing here
+    await t.pressKey('ctrl+z')
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(page2Values)
+
+    await goBack()
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(initialValues)
+    await t.expect(Selector('button[data-test-id="edit"]').exists).ok() // still in view mode
+
+    await goForward()
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(page2Values)
+    await t.expect(Selector('button[data-test-id="edit"]').exists).ok() // still in view mode
+
+    // Return to page 1 before switching to edit mode
+    await goBack()
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(initialValues)
+
+    // Switch to edit mode — this is a pushState and DOES add to browser history
+    await t.click(Selector('button[data-test-id="edit"]'))
+    await waitForLoading()
+    await t.expect(Selector('button[data-test-id="view"]').exists).ok()
+    await t.expect(await dataValues()).eql(initialValues)
+
+    // Navigate to page 2 in edit mode — should be replaceState, not pushState
+    await t.click(Selector('button[data-test-id="1"]'))
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(page2Values)
+    await t.wait(2000)
+
+    // Change amount to 20 in edit mode — should also be replaceState
+    await t.click(Selector('select').withText(/10/)).click(Selector('option').withExactText('20'))
+    await waitForLoading()
+    const amount20Values = await dataValues()
+    await t.expect(amount20Values).notEql(page2Values)
+    await t.wait(2000)
+
+    // Undo amount change → back to page 2, amount=10
+    await t.pressKey('ctrl+z')
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(page2Values)
+
+    // We should not be able to control z back to view mode
+    await t.pressKey('ctrl+z')
+    await waitForLoading()
+    await t.expect(Selector('button[data-test-id="view"]').exists).ok()
+
+    // goBack() should take us to VIEW mode (the edit click was the only pushState after
+    // returning to page 1); the page navigation and amount change were replaceState,
+    // so they are not in browser history
+    await goBack()
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(initialValues)
+    await t.expect(Selector('button[data-test-id="edit"]').exists).ok() // back in view mode
+})
+
+urbanstatsFixture('statistic page uss navigation tests', `${target}/statistic.html?uss=customNode%28%22%22%29%3B%0Acondition+%28true%29%0Atable%28%0A++++columns%3D%5B%0A++++++++column%28%0A++++++++++++values%3DcustomNode%28%22density_pw_1km+%2F+density_pw_2km%22%29%2C%0A++++++++++++name%3D%22Density+Ratio%22%2C%0A++++++++++++unit%3DunitNumber%0A++++++++%29%0A++++%5D%0A%29&article_type=County&start=6&amount=5&universe=California%2C+USA&edit=true`)
+
 test('parse error', async (t) => {
     await typeInEditor(t, 0, '+')
     await waitForLoading()

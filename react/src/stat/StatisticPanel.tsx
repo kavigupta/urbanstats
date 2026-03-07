@@ -50,6 +50,7 @@ export function StatisticPanel({ settings, counts }: { settings: StatSettings, c
         },
         {
             undoChunking: TestUtils.shared.isTesting ? 2000 : 1000,
+            onlyElement: settingsState.view.edit ? undefined : { current: null }, // Disable undo in view mode
         },
     )
 
@@ -79,10 +80,10 @@ export function StatisticPanel({ settings, counts }: { settings: StatSettings, c
             // Presumably the navigation has already happened, so just replace
             setSettingsStateNav(settings, true, { history: 'replaceState' })
             if (settings.view.edit) {
-                updateCurrentState(settings)
+                addState(settings, selectionContext.value)
             }
             else {
-                addState(settings, selectionContext.value)
+                updateCurrentState(settings)
             }
         }
     }, [settings, setSettingsStateNav, updateCurrentState, addState, selectionContext])

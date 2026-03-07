@@ -143,7 +143,7 @@ function ViewHeader({ stat, set, typeEnvironment, view }: { stat: Statistic, set
             <AddColumnSearchBox stat={stat} set={set} typeEnvironment={typeEnvironment} />
             <button
                 data-test-id="edit"
-                onClick={() => { set({ view: { ...view, edit: true } }, { push: true }) }}
+                onClick={() => { set({ view: { ...view, edit: true } }, { push: true, undoable: false }) }}
                 style={{
                     padding: '0.25em 0.5em',
                     backgroundColor: colors.unselectedButton,
