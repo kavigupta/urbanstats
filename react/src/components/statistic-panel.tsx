@@ -370,7 +370,7 @@ export function StatisticPanel({ articleType: articleTypeDontUse, universe: univ
                 universe: editUniverse,
                 uss: statDesc.uss,
                 article_type: editGeographyKind,
-            })
+            }, { history: 'replaceState' })
         }
     }, [statDesc, editUniverse, editGeographyKind, isFromStatName, navContext])
 

@@ -37,7 +37,7 @@ export function QuerySettingsConnection(): null {
     useEffect(() => {
         const kind = navContext.currentDescriptor.kind
         assert(kind === 'article' || kind === 'comparison', 'query settings connection may not be used on this page type')
-        navContext.unsafeUpdateCurrentDescriptor({ s: settingsVector, kind })
+        navContext.unsafeUpdateCurrentDescriptor({ s: settingsVector, kind }, { history: 'replaceState' })
     }, [settingsVector, navContext])
 
     useEffect(() => {
