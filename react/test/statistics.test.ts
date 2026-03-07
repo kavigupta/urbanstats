@@ -415,14 +415,14 @@ test('convert table to custom expression and back', async (t) => {
 test('parse error', async (t) => {
     await typeInEditor(t, 0, '+')
     await waitForLoading()
-    await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:32', 'Parse error: Unexpected end of input'])
+    await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:32'])
     await screencap(t)
 })
 
 test('type error', async (t) => {
     await typeInEditor(t, 0, '+"a"')
     await waitForLoading()
-    await t.expect(await getErrors()).eql(['Invalid types for operator +: number and string at 1:1-35', 'Invalid types for operator +: number and string'])
+    await t.expect(await getErrors()).eql(['Invalid types for operator +: number and string at 1:1-35'])
     await screencap(t)
     await t.click(Selector('button[data-test-id="view"]'))
     await waitForLoading()
@@ -435,7 +435,7 @@ test('error display on correct field -- first', async (t) => {
     await replaceInput(t, 'Constant', 'Custom Expression')
     await typeInEditor(t, 0, '+')
     await waitForLoading()
-    await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:32', 'Parse error: Unexpected end of input'])
+    await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:32'])
     await screencap(t)
 })
 
@@ -443,7 +443,7 @@ test('error display on correct field -- second', async (t) => {
     await replaceInput(t, 'Constant', 'Custom Expression')
     await typeInEditor(t, 1, '+')
     await waitForLoading()
-    await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:16', 'Parse error: Unexpected end of input'])
+    await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:16'])
     await screencap(t)
 })
 
@@ -696,7 +696,7 @@ test('add columns starting from a statname', async (t) => {
     await toggleCustomScript(t)
     await t.expect(nthEditor(0).textContent).eql(`table(
     columns=[
-        column(values=white),
+        column(values=white_us_census),
         column(values=binge_drinking),
         column(values=naturalized_citizen),
         column(values=gen_z)
@@ -723,7 +723,7 @@ test('column click on element', async (t) => {
     await t.click(Selector('button[data-test-id="edit"]'))
     await waitForLoading()
     await toggleCustomScript(t)
-    await t.expect(nthEditor(0).textContent).eql('table(columns=[column(values=white), column(values=population)])\n')
+    await t.expect(nthEditor(0).textContent).eql('table(columns=[column(values=white_us_census), column(values=population)])\n')
 })
 
 const transit = `condition (population > 500k)
@@ -953,7 +953,7 @@ test('forward back navigation works', async (t) => {
 
     async function assertCounties(): Promise<void> {
         await t.expect(Selector('.headertext').textContent).eql('Counties')
-        await t.expect(Selector('.subheadertext').textContent).eql('Population')
+        await t.expect(Selector('.subheadertext').textContent).eql('Population [US Census]')
         await t.expect(await getElements()).eql([
             'Los Angeles County, California, USA',
             'Cook County, Illinois, USA',
