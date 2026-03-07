@@ -22,5 +22,5 @@ test('under network limit stat counties by population', async (t) => {
     await t.expect(await flushNetworkUsage('search')).lt(3_400_000)
     await t.pressKey('enter')
     await t.expect(getLocation()).eql(`${target}/statistic.html?statname=Area&article_type=County&start=1&amount=20&universe=USA`)
-    await t.expect(await flushNetworkUsage('stat')).lt(1_700_00)
+    await t.expect(await flushNetworkUsage('stat')).lt(1_700_000)
 })
