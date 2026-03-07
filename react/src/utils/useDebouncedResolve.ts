@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { TestUtils } from './TestUtils'
 import { useOrderedResolve } from './useOrderedResolve'
 
 /**
@@ -39,10 +40,10 @@ import { useOrderedResolve } from './useOrderedResolve'
  * ```
  */
 export function useDebouncedResolve<T, U>(
-    compute: (prev?: Promise<T>) => Promise<T>,
+    compute: (prev: Promise<T>) => Promise<T>,
     options: { initial: T, interval: number, ui: (t: T, loading: boolean) => U },
 ): U {
-    const updateTime = useRef(Date.now())
+    const updateTime = useRef(0) // We've never updated before
 
     const [currentGenerator, setCurrentGenerator] = useState<Promise<T>>(Promise.resolve(options.initial))
 
@@ -54,17 +55,28 @@ export function useDebouncedResolve<T, U>(
             return
         }
         else {
+            TestUtils.shared.startLoading('useDebouncedResolve - waiting')
+            let finishedLoading = false
+
             updateTime.current = Date.now()
             const timeout = setTimeout(() => {
                 setCurrentGenerator(previousGenerator => compute(previousGenerator))
+                if (!finishedLoading) {
+                    finishedLoading = true
+                    void TestUtils.shared.finishLoading('useDebouncedResolve - waiting')
+                }
             }, options.interval - timeSinceUpdate)
             return () => {
                 clearTimeout(timeout)
+                if (!finishedLoading) {
+                    finishedLoading = true
+                    void TestUtils.shared.finishLoading('useDebouncedResolve - waiting')
+                }
             }
         }
     }, [compute, options.interval])
 
-    const { result, loading } = useOrderedResolve(currentGenerator, 'useDebouncedResolve')
+    const { result, loading } = useOrderedResolve(currentGenerator, 'useDebouncedResolve - executing')
 
     return result !== undefined
         ? options.ui(result, loading)
