@@ -184,10 +184,10 @@ export function EditInsetsHandles(props: {
             const rawMovementX = (e.clientX - drag.startX) / containerBounds.width
             const rawMovementY = -(e.clientY - drag.startY) / containerBounds.height
             const resizedFrame: Frame = [
-                Math.max(0, Math.min(drag.startFrame[0] + rawMovementX, drag.startFrame[2] - 0.05)),
-                Math.max(0, Math.min(drag.startFrame[1] + rawMovementY, drag.startFrame[3] - 0.1)),
-                Math.max(drag.startFrame[0] + 0.05, Math.min(drag.startFrame[2] + rawMovementX, 1)),
-                Math.max(drag.startFrame[1] + 0.1, Math.min(drag.startFrame[3] + rawMovementY, 1)),
+                Math.max(0, Math.min(drag.startFrame[0] + rawMovementX, drag.startFrame[2])),
+                Math.max(0, Math.min(drag.startFrame[1] + rawMovementY, drag.startFrame[3])),
+                Math.max(drag.startFrame[0], Math.min(drag.startFrame[2] + rawMovementX, 1)),
+                Math.max(drag.startFrame[1], Math.min(drag.startFrame[3] + rawMovementY, 1)),
             ]
             let newFrame: Frame
             switch (drag.kind) {
