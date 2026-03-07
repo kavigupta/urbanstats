@@ -9,7 +9,6 @@ urbanstatsFixture('statistic.html default page', `${target}/statistic.html`)
 
 test('statistic.html-default-page', async (t) => {
     await t.resizeWindow(1400, 800)
-    await t.wait(1000)
     await waitForLoading()
     const location = await getLocation()
     // Check that it redirected to the default Custom Table page
@@ -394,7 +393,6 @@ test('convert table to custom expression and back', async (t) => {
     const url = await getLocation()
     await replaceInput(t, 'Table', 'Custom Expression')
     await waitForLoading()
-    await t.wait(500)
     // get code
     await t.expect(nthEditor(0).exists).ok()
     await t.expect(nthEditor(0).textContent).eql(`table(
@@ -426,7 +424,6 @@ test('type error', async (t) => {
     await screencap(t)
     await t.click(Selector('button[data-test-id="view"]'))
     await waitForLoading()
-    await t.wait(500)
     await t.expect(await getErrors()).eql(['Invalid types for operator +: number and string'])
     await screencap(t)
 })
@@ -449,7 +446,6 @@ test('error display on correct field -- second', async (t) => {
 
 test('warning', async (t) => {
     await checkTextboxesDirect(t, ['Name', 'Unit'])
-    await t.wait(100)
     await waitForLoading()
     await t.expect(await getErrors()).eql(['Name could not be derived for column, please pass name="<your name here>" to column(...)'])
     await screencap(t)
@@ -539,7 +535,6 @@ test('disable ordinals/percentiles and verify CSV export', async (t) => {
     await replaceInput(t, 'false', 'true')
 
     await waitForLoading()
-    await t.wait(500)
 
     const csvAfter = await downloadCSV(t)
     const parsedAfter: Record<string, string>[] = parse(csvAfter, {
@@ -615,7 +610,6 @@ function inOrder(data: CSVRow[], colIndex: number, ascending: boolean): string[]
 }
 
 test('render many columns', async (t) => {
-    await t.wait(1000)
     await waitForLoading()
     await screencap(t)
     const parsedCsv = await getParsedCsv(t)
@@ -634,7 +628,6 @@ test('render many columns', async (t) => {
             await t.expect(namesPage2).eql(expectedNames.slice(10, 20))
         }
     }
-    await t.wait(1000)
     await waitForLoading()
     await screencap(t)
     await downloadImage(t)
@@ -736,7 +729,6 @@ table(
 urbanstatsFixture('page with nans', createUSSStatisticsPage(transit, 1, 20, 'USA', 'Metropolitan Cluster'))
 
 test('page with nans', async (t) => {
-    await t.wait(2000)
     await waitForLoading()
     const ordinal = Selector('div').withAttribute('data-test-id', 'statistic-ordinal')
     await t.expect(ordinal.count).eql(20)
