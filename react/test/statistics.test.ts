@@ -1154,14 +1154,17 @@ test('forward back navigation works', async (t) => {
     await t.click(searchField).typeText(searchField, 'county population')
     await waitForSelectedSearchResult(t)
     await t.pressKey('enter')
+    await waitForLoading()
 
     await assertCounties()
 
     await goBack()
+    await waitForLoading()
 
     await assertStates()
 
     await goForward()
+    await waitForLoading()
 
     await assertCounties()
 })
