@@ -520,6 +520,14 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             const statUniverse = newDescriptor.universe ?? 'world'
             const displayStatUniverse = statUniverse !== 'world' ? statUniverse : undefined
 
+            // Pin the start position correctly to the beginning of the page
+            let start = newDescriptor.start
+            if (newDescriptor.amount !== 'All') {
+                start = start - 1
+                start = start - (start % newDescriptor.amount)
+                start = start + 1
+            }
+
             return {
                 pageData: {
                     kind: 'statistic',
