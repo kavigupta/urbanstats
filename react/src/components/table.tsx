@@ -5,7 +5,6 @@ import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useStat
 import { ArticleOrderingListInternal, loadOrdering } from '../load_json'
 import './table.css'
 import { Navigator } from '../navigation/Navigator'
-import { statisticDescriptor } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
@@ -851,16 +850,17 @@ export function StatisticName(props: {
                 ...(
                     props.row === undefined
                         ? {}
-                        : navContext.link(statisticDescriptor({
+                        : navContext.link({
+                            kind: 'statistic',
                             universe: props.currentUniverse,
-                            statDesc: { type: 'simple-statistic', statname: props.row.statname },
-                            articleType: props.row.articleType,
+                            statname: props.row.statname,
+                            article_type: props.row.articleType,
                             start: props.row.ordinal,
                             amount: 20,
                             order: 'descending',
                             highlight: props.longname,
-                            sortColumn: 0,
-                        }), { scroll: { kind: 'position', top: 0 } })
+                            sort_column: 0,
+                        }, { scroll: { kind: 'position', top: 0 } })
                 )
             }
             data-test-id="statistic-link"

@@ -1,11 +1,7 @@
-import type { StatisticDescriptor } from '../components/statistic-panel'
 import type_ordering_idx from '../data/type_ordering_idx'
 import { loadProtobuf } from '../load_json'
-import type { Universe } from '../universe'
 import { sanitize } from '../utils/paths'
 import { shardBytesFullNum } from '../utils/shardHash'
-
-import type { PageDescriptor } from './PageDescriptor'
 
 // Shard indices (gzipped proto, int32): store as Int32Array; interpret as unsigned when comparing. Not cached.
 async function getShardIndexShape(): Promise<Int32Array> {
@@ -84,37 +80,6 @@ export function searchIconLink(typeIdx: number): string {
 
 export function centroidsPath(universe: string, typ: string): string {
     return `/centroids/${encodeURIComponent(universe)}_${encodeURIComponent(sanitize(typ))}.gz`
-}
-
-export function statisticDescriptor(props: {
-    universe: Universe | undefined
-    statDesc: StatisticDescriptor
-    articleType: string
-    start: number
-    amount: number | 'All'
-    order: 'ascending' | 'descending'
-    highlight?: string
-    edit?: boolean
-    sortColumn: number
-}): PageDescriptor & { kind: 'statistic' } {
-    let start = props.start
-    if (props.amount !== 'All') {
-        start = start - 1
-        start = start - (start % props.amount)
-        start = start + 1
-    }
-    return {
-        kind: 'statistic',
-        ...(props.statDesc.type === 'simple-statistic' ? { statname: props.statDesc.statname } : { uss: props.statDesc.uss }),
-        article_type: props.articleType,
-        start,
-        amount: props.amount,
-        order: props.order,
-        highlight: props.highlight,
-        universe: props.universe,
-        edit: props.edit,
-        sort_column: props.sortColumn,
-    }
 }
 
 export function universePath(universe: string): string {

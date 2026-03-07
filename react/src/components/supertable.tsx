@@ -1,5 +1,6 @@
 import React, { CSSProperties, Fragment, ReactNode, useMemo } from 'react'
 
+import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
@@ -43,6 +44,7 @@ export interface TableContentsProps {
     onlyColumns: ColumnIdentifier[]
     simpleOrdinals: boolean
     highlightRowIndex?: number
+    loading?: boolean
 }
 
 export function TableContents(props: TableContentsProps): ReactNode {
@@ -162,6 +164,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
                         )
                     : null,
                 )}
+                <RelativeLoader loading={props.loading ?? false} />
             </div>
             {screenshotMode && disclaimerFootnotes.footnotes.length > 0 && (
                 <div className="disclaimer-footnotes serif" style={{ fontSize: '0.85em', marginTop: '1em', color: colors.textMain }}>

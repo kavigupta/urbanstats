@@ -1,7 +1,7 @@
 import { parse } from 'csv-parse/sync'
 import { Selector } from 'testcafe'
 
-import { nthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
+import { getSelectionAnchor, getSelectionFocus, nthEditor, selectionIsNthEditor, typeInEditor, typeTextWithKeys } from './editor_test_utils'
 import { getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript } from './mapper-utils'
 import { target, getLocation, screencap, urbanstatsFixture, clickUniverseFlag, downloadOrCheckString, waitForLoading, dataValues, checkTextboxes, checkTextboxesDirect, downloadCSV, downloadImage, searchField, waitForSelectedSearchResult, goBack, goForward } from './test_utils'
 
@@ -9,7 +9,6 @@ urbanstatsFixture('statistic.html default page', `${target}/statistic.html`)
 
 test('statistic.html-default-page', async (t) => {
     await t.resizeWindow(1400, 800)
-    await t.wait(1000)
     await waitForLoading()
     const location = await getLocation()
     // Check that it redirected to the default Custom Table page
@@ -34,7 +33,7 @@ test('statistics-page', async (t) => {
     await t.expect(getLocation())
         .eql(`${target}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=21&amount=20&universe=USA`)
     await screencap(t)
-    const count = Selector('div').withAttribute('style', /background-color: rgb\(212, 181, 226\);/)
+    const count = Selector('div').withAttribute('style', /background-color: rgb\((212, 181, 226|59, 29, 73)\);/)
         .withText(/Indianapolis IN HRR, USA/)
     await t.expect(count.count).gte(1, 'Need highlighting')
     // click link "Data Explanation and Credit"
@@ -338,30 +337,30 @@ const densityRatioPage2 = ['1.97', '1.96', '1.90', '1.89', '1.81']
 test('edit starting from a statname page works', async (t) => {
     await t.click(Selector('button[data-test-id="edit"]'))
     await waitForLoading()
-    await t.wait(1000)
     const populations = [
         '10.0', '3.30', '3.19', '2.42', '2.18',
     ]
     const hispanic = ['85.16', '65.50', '61.83', '61.71', '61.11']
     await t.expect(await dataValues()).eql(populations)
-    // should be a USS page now
-    await t.expect(getLocation()).contains('uss=')
-    await t.wait(1000)
+    // should not yet be a uss page
+    await t.expect(getLocation()).notContains('uss=')
     await t.expect(await dataValues()).eql(populations)
     // replace Population with White %
-    await replaceInput(t, 'Population', 'Hispanic %')
-    await t.wait(1000)
+    await replaceInput(t, 'Population [US Census]', 'Hispanic %')
+    await waitForLoading()
+    // should be uss now that we've made a change
+    await t.expect(getLocation()).contains('uss=')
     await t.expect(await dataValues()).eql(hispanic)
     // switch to custom expression
     await replaceInput(t, 'Hispanic %', 'Custom Expression')
-    await t.wait(1000)
+    await waitForLoading()
     await t.expect(await dataValues()).eql(hispanic)
     await t.expect(nthEditor(0).exists).ok()
     await t.expect(nthEditor(0).textContent).eql('hispanic\n')
     await t.click(nthEditor(0))
     await t.pressKey('ctrl+a backspace')
     await typeTextWithKeys(t, 'density_pw_1km/density_pw_2km')
-    await t.wait(1000)
+    await waitForLoading()
     await t.expect(await dataValues()).eql(densityRatio)
     const text = Selector('div').withAttribute('id', 'test-editor-result')
     await t.expect(text.textContent).eql('Name could not be derived for column, please pass name="<your name here>" to column(...)')
@@ -375,13 +374,11 @@ test('edit starting from a statname page works', async (t) => {
     // next page
     await t.click(Selector('button[data-test-id="1"]'))
     await waitForLoading()
-    await t.wait(1000)
     await t.expect(await dataValues()).eql(densityRatioPage2)
     await screencap(t)
     // switch to view mode
     await t.click(Selector('button[data-test-id="view"]'))
     await waitForLoading()
-    await t.wait(1000)
     await t.expect(await dataValues()).eql(densityRatioPage2)
     await screencap(t)
 })
@@ -396,7 +393,6 @@ test('convert table to custom expression and back', async (t) => {
     const url = await getLocation()
     await replaceInput(t, 'Table', 'Custom Expression')
     await waitForLoading()
-    await t.wait(500)
     // get code
     await t.expect(nthEditor(0).exists).ok()
     await t.expect(nthEditor(0).textContent).eql(`table(
@@ -414,19 +410,176 @@ test('convert table to custom expression and back', async (t) => {
     await t.expect(await getLocation()).eql(url)
 })
 
+const tableExpression = `table(
+    columns=[
+        column(
+            values=density_pw_1km / density_pw_2km,
+            name="Density Ratio",
+            unit=unitNumber
+        )
+    ]
+)
+`
+
+test('undo redo', async (t) => {
+    // Initially in Table mode
+    await t.expect(getInput('Table').exists).ok()
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+
+    // Step 1: Switch to Custom Expression mode
+    await replaceInput(t, 'Table', 'Custom Expression')
+    await t.wait(2000)
+    await t.expect(nthEditor(0).textContent).eql(tableExpression)
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+    await t.expect(getErrors()).eql([])
+
+    // Step 2: Replace the code
+    await typeInEditor(t, 0, 'density_pw_1km ', true)
+    await waitForLoading()
+    await t.wait(2000)
+    await t.expect(nthEditor(0).textContent).eql('density_pw_1km \n')
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+    await t.expect(getErrors()).eql(['Custom expression expected to return type table, but got [number] at 1:1-0'])
+
+    // Undo step 2: code reverts to table expression
+    await t.pressKey('ctrl+z')
+    await t.expect(nthEditor(0).textContent).eql(tableExpression)
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+    await t.expect(getErrors()).eql([])
+
+    // Undo step 1: back to Table mode
+    await t.pressKey('ctrl+z')
+    await t.expect(getInput('Table').exists).ok()
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+    await t.expect(getErrors()).eql([])
+
+    // Redo step 1: Custom Expression mode with table expression
+    await t.pressKey('ctrl+y')
+    await t.expect(nthEditor(0).textContent).eql(tableExpression)
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+    await t.expect(getErrors()).eql([])
+
+    // Redo step 2: code restored
+    await t.pressKey('ctrl+y')
+    await t.expect(nthEditor(0).textContent).eql('density_pw_1km \n')
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(densityRatioPage2)
+    await t.expect(getErrors()).eql(['Custom expression expected to return type table, but got [number] at 1:1-0'])
+})
+
+urbanstatsFixture('counties living with parents', `${target}/statistic.html?uss=customNode%28""%29%3B%0Acondition+%28true%29%0Atable%28columns%3D%5Bcolumn%28values%3Dliving_with_parents%29%5D%29&article_type=County&start=21&amount=20&edit=true`)
+
+test('selection is preserved across undo redo', async (t) => {
+    await t.click('[data-test-id=test-add-vector-element-button]')
+    await replaceInput(t, 'Living With Parents %', 'Custom Expression', 1)
+    // move selection an arbitrary location in the custom editor
+    await t.click(nthEditor(0))
+    await t.pressKey('left left shift+left shift+left shift+left')
+    await t.expect(selectionIsNthEditor(0)).ok()
+    await t.expect(getSelectionAnchor()).eql(17)
+    await t.expect(getSelectionFocus()).eql(14)
+
+    await t.pressKey('ctrl+z')
+    await t.expect(selectionIsNthEditor(0)).notOk()
+
+    await t.pressKey('ctrl+y')
+    await t.expect(selectionIsNthEditor(0)).ok()
+    await t.expect(getSelectionAnchor()).eql(14)
+    await t.expect(getSelectionFocus()).eql(17)
+})
+
+urbanstatsFixture('undo redo page navigation', createUSSStatisticsPage(basicPage, 1, 10))
+
+test('page navigation and amount changes in edit mode: undoable and do not add to browser history', async (t) => {
+    // Start in view mode at page 1, amount=10
+    await waitForLoading()
+    const initialValues = await dataValues()
+    await t.expect(Selector('button[data-test-id="edit"]').exists).ok()
+
+    // In VIEW mode, page navigation uses pushState → goBack/goForward work
+    await t.click(Selector('button[data-test-id="1"]'))
+    await waitForLoading()
+    const page2Values = await dataValues()
+    await t.expect(page2Values).notEql(initialValues)
+
+    // Control z should do nothing here
+    await t.pressKey('ctrl+z')
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(page2Values)
+
+    await goBack()
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(initialValues)
+    await t.expect(Selector('button[data-test-id="edit"]').exists).ok() // still in view mode
+
+    await goForward()
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(page2Values)
+    await t.expect(Selector('button[data-test-id="edit"]').exists).ok() // still in view mode
+
+    // Return to page 1 before switching to edit mode
+    await goBack()
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(initialValues)
+
+    // Switch to edit mode — this is a pushState and DOES add to browser history
+    await t.click(Selector('button[data-test-id="edit"]'))
+    await waitForLoading()
+    await t.expect(Selector('button[data-test-id="view"]').exists).ok()
+    await t.expect(await dataValues()).eql(initialValues)
+
+    // Navigate to page 2 in edit mode — should be replaceState, not pushState
+    await t.click(Selector('button[data-test-id="1"]'))
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(page2Values)
+    await t.wait(2000)
+
+    // Change amount to 20 in edit mode — should also be replaceState
+    await t.click(Selector('select').withText(/10/)).click(Selector('option').withExactText('20'))
+    await waitForLoading()
+    const amount20Values = await dataValues()
+    await t.expect(amount20Values).notEql(page2Values)
+    await t.wait(2000)
+
+    // Undo amount change → back to page 2, amount=10
+    await t.pressKey('ctrl+z')
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(page2Values)
+
+    // We should not be able to control z back to view mode
+    await t.pressKey('ctrl+z')
+    await waitForLoading()
+    await t.expect(Selector('button[data-test-id="view"]').exists).ok()
+
+    // goBack() should take us to VIEW mode (the edit click was the only pushState after
+    // returning to page 1); the page navigation and amount change were replaceState,
+    // so they are not in browser history
+    await goBack()
+    await waitForLoading()
+    await t.expect(await dataValues()).eql(initialValues)
+    await t.expect(Selector('button[data-test-id="edit"]').exists).ok() // back in view mode
+})
+
+urbanstatsFixture('statistic page uss navigation tests', `${target}/statistic.html?uss=customNode%28%22%22%29%3B%0Acondition+%28true%29%0Atable%28%0A++++columns%3D%5B%0A++++++++column%28%0A++++++++++++values%3DcustomNode%28%22density_pw_1km+%2F+density_pw_2km%22%29%2C%0A++++++++++++name%3D%22Density+Ratio%22%2C%0A++++++++++++unit%3DunitNumber%0A++++++++%29%0A++++%5D%0A%29&article_type=County&start=6&amount=5&universe=California%2C+USA&edit=true`)
+
 test('parse error', async (t) => {
     await typeInEditor(t, 0, '+')
-    await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:32', 'Parse error: Unexpected end of input'])
+    await waitForLoading()
+    await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:32'])
     await screencap(t)
 })
 
 test('type error', async (t) => {
     await typeInEditor(t, 0, '+"a"')
-    await t.expect(await getErrors()).eql(['Invalid types for operator +: number and string at 1:1-35', 'Invalid types for operator +: number and string'])
+    await waitForLoading()
+    await t.expect(await getErrors()).eql(['Invalid types for operator +: number and string at 1:1-35'])
     await screencap(t)
     await t.click(Selector('button[data-test-id="view"]'))
     await waitForLoading()
-    await t.wait(500)
     await t.expect(await getErrors()).eql(['Invalid types for operator +: number and string'])
     await screencap(t)
 })
@@ -434,27 +587,27 @@ test('type error', async (t) => {
 test('error display on correct field -- first', async (t) => {
     await replaceInput(t, 'Constant', 'Custom Expression')
     await typeInEditor(t, 0, '+')
-    await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:32', 'Parse error: Unexpected end of input'])
+    await waitForLoading()
+    await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:32'])
     await screencap(t)
 })
 
 test('error display on correct field -- second', async (t) => {
     await replaceInput(t, 'Constant', 'Custom Expression')
     await typeInEditor(t, 1, '+')
-    await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:16', 'Parse error: Unexpected end of input'])
+    await waitForLoading()
+    await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:16'])
     await screencap(t)
 })
 
 test('warning', async (t) => {
     await checkTextboxesDirect(t, ['Name', 'Unit'])
-    await t.wait(100)
     await waitForLoading()
     await t.expect(await getErrors()).eql(['Name could not be derived for column, please pass name="<your name here>" to column(...)'])
     await screencap(t)
     // switch to view mode
     await t.click(Selector('button[data-test-id="view"]'))
     await waitForLoading()
-    await t.wait(1000)
     await t.expect(await getErrors()).eql([])
     await screencap(t)
 })
@@ -463,7 +616,6 @@ test('add filter', async (t) => {
     await checkTextboxesDirect(t, ['Filter?'])
     await typeInEditor(t, 0, 'population>1m', true)
     await waitForLoading()
-    await t.wait(1000)
     await t.expect(await dataValues()).eql(['1.16', '1.14', '1.13', '1.13', '1.13'])
     await screencap(t)
 })
@@ -496,6 +648,7 @@ async function setUpSecondColumn(t: TestController): Promise<void> {
     await waitForLoading()
     await typeInEditor(t, 1, 'density_pw_1km', true)
     await checkTextboxesDirect(t, ['Name', 'Unit'], 1)
+    await waitForLoading()
 }
 
 test('sorting by columns', async (t) => {
@@ -538,7 +691,6 @@ test('disable ordinals/percentiles and verify CSV export', async (t) => {
     await replaceInput(t, 'false', 'true')
 
     await waitForLoading()
-    await t.wait(500)
 
     const csvAfter = await downloadCSV(t)
     const parsedAfter: Record<string, string>[] = parse(csvAfter, {
@@ -614,7 +766,6 @@ function inOrder(data: CSVRow[], colIndex: number, ascending: boolean): string[]
 }
 
 test('render many columns', async (t) => {
-    await t.wait(1000)
     await waitForLoading()
     await screencap(t)
     const parsedCsv = await getParsedCsv(t)
@@ -633,7 +784,6 @@ test('render many columns', async (t) => {
             await t.expect(namesPage2).eql(expectedNames.slice(10, 20))
         }
     }
-    await t.wait(1000)
     await waitForLoading()
     await screencap(t)
     await downloadImage(t)
@@ -696,7 +846,7 @@ test('add columns starting from a statname', async (t) => {
     await toggleCustomScript(t)
     await t.expect(nthEditor(0).textContent).eql(`table(
     columns=[
-        column(values=white),
+        column(values=white_us_census),
         column(values=binge_drinking),
         column(values=naturalized_citizen),
         column(values=gen_z)
@@ -723,7 +873,7 @@ test('column click on element', async (t) => {
     await t.click(Selector('button[data-test-id="edit"]'))
     await waitForLoading()
     await toggleCustomScript(t)
-    await t.expect(nthEditor(0).textContent).eql('table(columns=[column(values=white), column(values=population)])\n')
+    await t.expect(nthEditor(0).textContent).eql('table(columns=[column(values=white_us_census), column(values=population)])\n')
 })
 
 const transit = `condition (population > 500k)
@@ -735,7 +885,6 @@ table(
 urbanstatsFixture('page with nans', createUSSStatisticsPage(transit, 1, 20, 'USA', 'Metropolitan Cluster'))
 
 test('page with nans', async (t) => {
-    await t.wait(2000)
     await waitForLoading()
     const ordinal = Selector('div').withAttribute('data-test-id', 'statistic-ordinal')
     await t.expect(ordinal.count).eql(20)
@@ -953,7 +1102,7 @@ test('forward back navigation works', async (t) => {
 
     async function assertCounties(): Promise<void> {
         await t.expect(Selector('.headertext').textContent).eql('Counties')
-        await t.expect(Selector('.subheadertext').textContent).eql('Population')
+        await t.expect(Selector('.subheadertext').textContent).eql('Population [US Census]')
         await t.expect(await getElements()).eql([
             'Los Angeles County, California, USA',
             'Cook County, Illinois, USA',
@@ -1005,14 +1154,17 @@ test('forward back navigation works', async (t) => {
     await t.click(searchField).typeText(searchField, 'county population')
     await waitForSelectedSearchResult(t)
     await t.pressKey('enter')
+    await waitForLoading()
 
     await assertCounties()
 
     await goBack()
+    await waitForLoading()
 
     await assertStates()
 
     await goForward()
+    await waitForLoading()
 
     await assertCounties()
 })
