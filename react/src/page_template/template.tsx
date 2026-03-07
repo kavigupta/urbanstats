@@ -20,7 +20,7 @@ export function PageTemplate({
     children,
     showFooter = true,
 }: {
-    screencap?: (currentUniverse: string | undefined, colors: Colors) => Promise<void>
+    screencap?: (currentUniverse: string | undefined, colors: Colors, setScreenshotMode: (on: boolean) => void) => Promise<void>
     csvExportCallback?: CSVExportData
     children?: React.ReactNode
     showFooter?: boolean
@@ -65,19 +65,11 @@ export function PageTemplate({
             return
         }
         try {
-            await screencap(currentUniverse, colors)
+            await screencap(currentUniverse, colors, setScreenshotMode)
         }
         catch (e) {
             console.error(e)
         }
-    }
-
-    const initiateScreenshot = (currentUniverse: string | undefined): void => {
-        setScreenshotMode(true)
-        setTimeout(async () => {
-            await doScreencap(currentUniverse)
-            setScreenshotMode(false)
-        })
     }
 
     // https://stackoverflow.com/a/55451665
@@ -108,7 +100,7 @@ export function PageTemplate({
                     setHamburgerOpen={setHamburgerOpen}
                     hasScreenshot={hasScreenshotButton}
                     hasCSV={hasCSVButton}
-                    initiateScreenshot={(currentUniverse) => { initiateScreenshot(currentUniverse) }}
+                    initiateScreenshot={(currentUniverse) => { void doScreencap(currentUniverse) }}
                     exportCSV={exportCSV}
                 />
                 <div style={{ marginBlockEnd: '16px' }}></div>
