@@ -44,7 +44,7 @@ const mapUpdateInterval = 500
 export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): MapGenerator {
     const cache = useRef<MapCache>({})
 
-    const compute = useCallback((previousGenerator: Promise<MapGenerator<{ loading: boolean }>> | undefined) => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator }), [mapSettings])
+    const compute = useCallback((previousGenerator: Promise<MapGenerator<{ loading: boolean }>>) => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator }), [mapSettings])
 
     return useDebouncedResolve(
         compute,
@@ -71,12 +71,10 @@ export interface MapGenerator<T = unknown> {
     errors: EditorError[]
 }
 
-async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { mapSettings: MapSettings, cache: MapCache, previousGenerator: Promise<MapGenerator<{ loading: boolean }>> | undefined }): Promise<MapGenerator<{ loading: boolean }>> {
-    const emptyMap = ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> })
-
+async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { mapSettings: MapSettings, cache: MapCache, previousGenerator: Promise<MapGenerator<{ loading: boolean }>> }): Promise<MapGenerator<{ loading: boolean }>> {
     if (mapSettings.geographyKind === undefined || mapSettings.universe === undefined) {
         return {
-            ui: emptyMap,
+            ui: ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
             errors: [{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }],
         }
     }
@@ -88,7 +86,6 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         const prev = await previousGenerator
         return {
             ...prev,
-            ui: prev?.ui ?? emptyMap,
             errors: parseErrors.map(e => ({ ...e, kind: 'error' })),
         }
     }
@@ -99,7 +96,6 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         const prev = await previousGenerator
         return {
             ...prev,
-            ui: prev?.ui ?? emptyMap,
             errors: execResult.error,
         }
     }
