@@ -55,13 +55,17 @@ export function interpolateColor(ramp: Keypoints, item: number, color?: string):
     const r1 = parseInt(color1.slice(1, 3), 16)
     const g1 = parseInt(color1.slice(3, 5), 16)
     const b1 = parseInt(color1.slice(5, 7), 16)
+    const a1 = color1.length === 9 ? parseInt(color1.slice(7, 9), 16) : 255
     const r2 = parseInt(color2.slice(1, 3), 16)
     const g2 = parseInt(color2.slice(3, 5), 16)
     const b2 = parseInt(color2.slice(5, 7), 16)
+    const a2 = color2.length === 9 ? parseInt(color2.slice(7, 9), 16) : 255
     const r = Math.round(r1 + fraction * (r2 - r1))
     const g = Math.round(g1 + fraction * (g2 - g1))
     const b = Math.round(b1 + fraction * (b2 - b1))
-    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+    const a = Math.round(a1 + fraction * (a2 - a1))
+    const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+    return a === 255 ? hex : `${hex}${a.toString(16).padStart(2, '0')}`
 }
 
 export function mixWithBackground(color: string, fraction: number, background: string): string {
