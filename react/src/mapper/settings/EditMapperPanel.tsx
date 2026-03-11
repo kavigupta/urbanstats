@@ -1,6 +1,6 @@
 import { gzipSync } from 'zlib'
 
-import React, { ReactNode, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import React, { ComponentProps, MutableRefObject, ReactNode, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { CountsByUT } from '../../components/countsByArticleType'
 import universes_ordered from '../../data/universes_ordered'
@@ -24,7 +24,7 @@ import { saveAsFile } from '../../utils/saveAsFile'
 import { useUndoRedo } from '../../utils/useUndoRedo'
 import { Selection as TextBoxesSelection, SelectionContext as TextBoxesSelectionContext } from '../components/MapTextBox'
 import { defaultTypeEnvironment, loadInsets } from '../context'
-import { MapGenerator, useMapGenerator } from '../map-generator'
+import { MapGenerator, transformContext, useMapGenerator } from '../map-generator'
 
 import { ImportExportCode } from './ImportExportCode'
 import { mapSettingsContext } from './MapSettingsContext'
@@ -46,7 +46,7 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
         setGeneratorMapSettings(newSettings)
     }, [])
 
-    const [mapEditorMode, setMapEditorMode] = useState<MapEditorMode>('uss')
+    const [mapEditorMode, setMapEditorMode] = useState<MapEditorMode>('insets')
 
     const selectionContext = useMemo(() => new Property<Selection | undefined>(undefined), [])
 
@@ -185,41 +185,41 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
         }}
         >
             <mapSettingsContext.Provider value={{ mapSettings, typeEnvironment, setMapEditorMode }}>
-                <PageTemplate csvExportCallback={mapGenerator.exportCSV} screencap={exportPng} showFooter={false}>
-                    <MaybeSplitLayout
-                        error={mapGenerator.errors.some(e => e.kind === 'error')}
-                        left={(
-                            <MapperSettings
-                                mapSettings={mapSettings}
-                                setMapSettings={setMapSettings}
-                                errors={mapGenerator.errors}
-                                counts={counts}
-                                typeEnvironment={typeEnvironment}
-                                targetOutputTypes={validMapperOutputs}
-                            />
-                        )}
-                        right={(
-                            <>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
-                                    <Export pngExport={exportPng} geoJSONExport={mapGenerator.exportGeoJSON} mapSettings={mapSettings} typeEnvironment={typeEnvironment} />
-                                    <ImportExportCode
-                                        mapSettings={mapSettings}
-                                        setMapSettings={setMapSettings}
-                                    />
-                                </div>
-                                <div style={{ position: 'relative', flex: 1 }}>
-                                    {ui.node}
-                                </div>
-                            </>
-                        )}
-                    />
-                </PageTemplate>
+                <transformContext.Provider value={{ selfDetermineHeight: useMobileLayout() }}>
+                    <PageTemplate csvExportCallback={mapGenerator.exportCSV} screencap={exportPng} showFooter={false}>
+                        <MaybeSplitLayout
+                            error={mapGenerator.errors.some(e => e.kind === 'error')}
+                            left={(
+                                <MapperSettings
+                                    mapSettings={mapSettings}
+                                    setMapSettings={setMapSettings}
+                                    errors={mapGenerator.errors}
+                                    counts={counts}
+                                    typeEnvironment={typeEnvironment}
+                                    targetOutputTypes={validMapperOutputs}
+                                />
+                            )}
+                            right={(
+                                <>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
+                                        <Export pngExport={exportPng} geoJSONExport={mapGenerator.exportGeoJSON} mapSettings={mapSettings} typeEnvironment={typeEnvironment} />
+                                        <ImportExportCode
+                                            mapSettings={mapSettings}
+                                            setMapSettings={setMapSettings}
+                                        />
+                                    </div>
+                                    <div style={{ position: 'relative', flex: 1 }}>
+                                        {ui.node}
+                                    </div>
+                                </>
+                            )}
+                        />
+                    </PageTemplate>
+                </transformContext.Provider>
             </mapSettingsContext.Provider>
         </universeContext.Provider>
     )
 }
-
-export const splitLayoutContext = React.createContext(false)
 
 function MaybeSplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode, error: boolean }): ReactNode {
     const mobileLayout = useMobileLayout()
@@ -234,15 +234,14 @@ function MaybeSplitLayout({ left, right, error }: { left: ReactNode, right: Reac
         : <SplitLayout error={error} left={left} right={right} />
 }
 
-function SplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode, error: boolean }): ReactNode {
+function DivThatTakesUpTheRestOfThePage(props: ComponentProps<'div'> & { divRef?: MutableRefObject<HTMLDivElement | null> }): ReactNode {
     const [height, setHeight] = useState(0)
-    const splitRef = useRef<HTMLDivElement>(null)
-    const colors = useColors()
+    const ref = useRef<HTMLDivElement | null>(null)
 
     const updateHeight = useCallback(() => {
-        if (splitRef.current) {
-            const bounds = splitRef.current.getBoundingClientRect()
-            setHeight(window.innerHeight - bounds.top - 8)
+        if (ref.current) {
+            const bounds = ref.current.getBoundingClientRect()
+            setHeight(window.innerHeight - bounds.top - window.scrollY - 8)
         }
     }, [])
 
@@ -254,6 +253,24 @@ function SplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode
             window.removeEventListener('resize', updateHeight)
         }
     }, [updateHeight])
+
+    return (
+        <div
+            {...props}
+            style={{ height: `${height}px`, ...props.style }}
+            ref={(thing) => {
+                ref.current = thing
+                if (props.divRef) {
+                    props.divRef.current = thing
+                }
+            }}
+        />
+    )
+}
+
+function SplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode, error: boolean }): ReactNode {
+    const splitRef = useRef<HTMLDivElement>(null)
+    const colors = useColors()
 
     const [leftColProp, setLeftColProp] = useSetting('mapperSettingsColumnProp')
 
@@ -278,64 +295,62 @@ function SplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode
     const dividerWidth = '1em'
 
     return (
-        <splitLayoutContext.Provider value={true}>
-            <div style={{ display: 'flex', height, position: 'relative' }} ref={splitRef}>
-                {left && (
-                    <>
-                        <div data-test="split-left" style={{ width: leftPct, minWidth: minLeftWidth, overflowY: 'scroll', backgroundColor: mixWithBackground(colors.hueColors.red, error ? 0.8 : 1, colors.slightlyDifferentBackground), padding: '1em', borderRadius: '5px' }}>
-                            {left}
-                        </div>
-                        <div
-                            ref={dividerRef}
-                            style={{ width: dividerWidth, position: 'relative' }}
-                            onPointerDown={(e) => {
-                                if (drag === undefined) {
-                                    const div = e.target as HTMLDivElement
-                                    setDrag({
-                                        pointerId: e.pointerId,
-                                        startOffsetX: e.nativeEvent.offsetX + div.offsetLeft,
-                                        startProp: Math.max(minLeftColProp(), leftColProp),
-                                    })
-                                    div.setPointerCapture(e.pointerId)
-                                }
-                            }}
-                            onPointerMove={(e) => {
-                                if (e.pointerId === drag?.pointerId) {
-                                    const div = e.target as HTMLDivElement
-                                    const propChange = (div.offsetLeft + e.nativeEvent.offsetX - drag.startOffsetX) / splitRef.current!.offsetWidth
-                                    setLeftColProp(Math.max(minLeftColProp(), Math.min(drag.startProp + propChange, maxLeftColProp)))
-                                }
-                            }}
-                            onPointerCancel={(e) => {
-                                if (drag?.pointerId === e.pointerId) {
-                                    setDrag(undefined)
-                                }
-                            }}
-                            onPointerUp={(e) => {
-                                if (drag?.pointerId === e.pointerId) {
-                                    setDrag(undefined)
-                                }
-                            }}
-                        >
-                            <div style={{
-                                backgroundColor: colors.borderNonShadow,
-                                borderRadius: '5px',
-                                position: 'absolute',
-                                width: '5px',
-                                left: 'calc(50% - 2px)',
-                                height: '50%',
-                                top: '25%',
-                                pointerEvents: 'none',
-                            }}
-                            />
-                        </div>
-                    </>
-                )}
-                <div style={{ width: `calc(100% - max(${minLeftWidth}px, ${leftPct}) - ${dividerWidth})`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    {right}
-                </div>
+        <DivThatTakesUpTheRestOfThePage style={{ display: 'flex', position: 'relative' }} divRef={splitRef}>
+            {left && (
+                <>
+                    <div data-test="split-left" style={{ width: leftPct, minWidth: minLeftWidth, overflowY: 'scroll', backgroundColor: mixWithBackground(colors.hueColors.red, error ? 0.8 : 1, colors.slightlyDifferentBackground), padding: '1em', borderRadius: '5px' }}>
+                        {left}
+                    </div>
+                    <div
+                        ref={dividerRef}
+                        style={{ width: dividerWidth, position: 'relative' }}
+                        onPointerDown={(e) => {
+                            if (drag === undefined) {
+                                const div = e.target as HTMLDivElement
+                                setDrag({
+                                    pointerId: e.pointerId,
+                                    startOffsetX: e.nativeEvent.offsetX + div.offsetLeft,
+                                    startProp: Math.max(minLeftColProp(), leftColProp),
+                                })
+                                div.setPointerCapture(e.pointerId)
+                            }
+                        }}
+                        onPointerMove={(e) => {
+                            if (e.pointerId === drag?.pointerId) {
+                                const div = e.target as HTMLDivElement
+                                const propChange = (div.offsetLeft + e.nativeEvent.offsetX - drag.startOffsetX) / splitRef.current!.offsetWidth
+                                setLeftColProp(Math.max(minLeftColProp(), Math.min(drag.startProp + propChange, maxLeftColProp)))
+                            }
+                        }}
+                        onPointerCancel={(e) => {
+                            if (drag?.pointerId === e.pointerId) {
+                                setDrag(undefined)
+                            }
+                        }}
+                        onPointerUp={(e) => {
+                            if (drag?.pointerId === e.pointerId) {
+                                setDrag(undefined)
+                            }
+                        }}
+                    >
+                        <div style={{
+                            backgroundColor: colors.borderNonShadow,
+                            borderRadius: '5px',
+                            position: 'absolute',
+                            width: '5px',
+                            left: 'calc(50% - 2px)',
+                            height: '50%',
+                            top: '25%',
+                            pointerEvents: 'none',
+                        }}
+                        />
+                    </div>
+                </>
+            )}
+            <div style={{ width: `calc(100% - max(${minLeftWidth}px, ${leftPct}) - ${dividerWidth})`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                {right}
             </div>
-        </splitLayoutContext.Provider>
+        </DivThatTakesUpTheRestOfThePage>
     )
 }
 
@@ -460,9 +475,9 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                                 </button>
                             </div>
                         </div>
-                        <div style={{ flex: 1, position: 'relative' }}>
+                        <DivThatTakesUpTheRestOfThePage style={{ position: 'relative' }}>
                             {ui.node}
-                        </div>
+                        </DivThatTakesUpTheRestOfThePage>
                     </>
                 )}
             />
