@@ -7,6 +7,7 @@ import { useColors } from '../../page_template/colors'
 import { Inset } from '../../urban-stats-script/constants/insets'
 import { TestUtils } from '../../utils/TestUtils'
 import { Edit } from '../../utils/array-edits'
+import { useMobileLayout } from '../../utils/responsive'
 
 // eslint-disable-next-line no-restricted-syntax -- Forward Ref
 function _InsetMap({ inset, children, editInset, container, i, numInsets, interactive }: {
@@ -257,6 +258,8 @@ function Handle({ handleSize, style, img, ...rest }: { handleSize: number, img?:
     const colors = useColors()
     const [hover, setHover] = useState(false)
 
+    const mobileMultiplier = useMobileLayout() ? 2 : 1
+
     const divRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
@@ -286,8 +289,8 @@ function Handle({ handleSize, style, img, ...rest }: { handleSize: number, img?:
                 backgroundColor: hover ? colors.slightlyDifferentBackgroundFocused : colors.slightlyDifferentBackground,
                 border: `1px solid ${colors.textMain}`,
                 position: 'absolute',
-                width: `${handleSize}px`,
-                height: `${handleSize}px`,
+                width: `${handleSize * mobileMultiplier}px`,
+                height: `${handleSize * mobileMultiplier}px`,
                 borderRadius: '2px',
                 ...style,
             }}
