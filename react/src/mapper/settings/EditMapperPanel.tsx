@@ -439,7 +439,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                             gap: '0.5em',
                         }}
                         >
-                            <div>
+                            <div ref={instructionsRef} style={{ whiteSpace: 'nowrap', overflowX: 'auto' }}>
                                 <b>Editing Insets.</b>
                                 {' '}
                                 Pans and zooms to maps will be reflected permanently. Drag inset frames to reposition and resize.
