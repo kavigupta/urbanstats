@@ -22,6 +22,7 @@ import { mapperToTable } from '../../utils/page-conversion'
 import { useMobileLayout } from '../../utils/responsive'
 import { saveAsFile } from '../../utils/saveAsFile'
 import { useUndoRedo } from '../../utils/useUndoRedo'
+import { zIndex } from '../../utils/zIndex'
 import { Selection as TextBoxesSelection, SelectionContext as TextBoxesSelectionContext } from '../components/MapTextBox'
 import { defaultTypeEnvironment, loadInsets } from '../context'
 import { MapGenerator, transformContext, useMapGenerator } from '../map-generator'
@@ -357,18 +358,16 @@ function SplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode
 function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps): ReactNode {
     const colors = useColors()
 
-    const instructionsRef = useRef<HTMLDivElement>(null)
+    const isMobile = useMobileLayout()
 
     // Lock down scrolling on mobile
     useEffect(() => {
-        const exempt = [
-            instructionsRef,
-        ]
+        if (!isMobile) {
+            return
+        }
 
         const handler = (e: Event): void => {
-            if (!exempt.some(ref => ref.current === e.target)) {
-                e.preventDefault()
-            }
+            e.preventDefault()
         }
 
         const events: string[] = [
@@ -388,7 +387,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                 document.removeEventListener(event, handler)
             }
         }
-    }, [])
+    }, [isMobile])
 
     const [insetEdits, setInsetEdits] = useState<InsetEdits>({
         ast: a => a,
@@ -452,15 +451,17 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                             display: 'flex',
                             justifyContent: 'space-between',
                             gap: '0.5em',
+                            ...(isMobile ? { position: 'absolute', zIndex: zIndex.mobileUndoRedoControls, bottom: '10px', left: '20px' } : {}),
                         }}
                         >
-                            <div>
-                                <b>Editing Insets.</b>
-                                {' '}
-                                Pans and zooms to maps will be reflected permanently. Drag inset frames to reposition and resize.
-                            </div>
+                            {!isMobile && (
+                                <div>
+                                    <b>Editing Insets.</b>
+                                    {' '}
+                                    Pans and zooms to maps will be reflected permanently. Drag inset frames to reposition and resize.
+                                </div>
+                            )}
                             <div style={{ display: 'flex', gap: '10px' }}>
-
                                 <button onClick={() => { setMapEditorMode('uss') }}>
                                     Cancel
                                 </button>
