@@ -342,6 +342,39 @@ function SplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode
 function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps): ReactNode {
     const colors = useColors()
 
+    const instructionsRef = useRef<HTMLDivElement>(null)
+
+    // Lock down scrolling on mobile
+    useEffect(() => {
+        const exempt = [
+            instructionsRef,
+        ]
+
+        const handler = (e: Event): void => {
+            if (!exempt.some(ref => ref.current === e.target)) {
+                e.preventDefault()
+            }
+        }
+
+        const events: string[] = [
+            'scroll',
+            'touchstart',
+            'gesturestart',
+            'gesturechange',
+            'gestureend',
+        ]
+
+        for (const event of events) {
+            document.addEventListener(event, handler, { passive: false })
+        }
+
+        return () => {
+            for (const event of events) {
+                document.removeEventListener(event, handler)
+            }
+        }
+    }, [])
+
     const [insetEdits, setInsetEdits] = useState<InsetEdits>({
         ast: a => a,
         insets: i => i,
