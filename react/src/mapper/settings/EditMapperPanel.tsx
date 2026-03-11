@@ -422,8 +422,8 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
         },
     })
 
-    return (
-        <PageTemplate csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
+    const content = (
+        <>
             <MaybeSplitLayout
                 left={undefined}
                 error={false}
@@ -467,8 +467,16 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                 )}
             />
             {undoRedoUi}
-        </PageTemplate>
+        </>
     )
+
+    return useMobileLayout()
+        ? content
+        : (
+                <PageTemplate csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
+                    {content}
+                </PageTemplate>
+            )
 }
 
 function moveInset<T extends Inset | TextBox>(inset: T, x: number, y: number): T {
