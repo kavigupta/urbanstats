@@ -12,8 +12,16 @@ export function useDisableMobileGestures(): void {
         }
 
         const handler = (e: Event): void => {
-            if (e.target instanceof HTMLButtonElement) {
-                return
+            for (const elementType of [
+                HTMLButtonElement,
+                HTMLInputElement,
+                HTMLSelectElement,
+                HTMLTextAreaElement,
+                HTMLAnchorElement,
+            ]) {
+                if (e.target instanceof elementType) {
+                    return
+                }
             }
             e.preventDefault()
         }
@@ -21,6 +29,7 @@ export function useDisableMobileGestures(): void {
         const events: string[] = [
             'scroll',
             'touchstart',
+            'touchmove',
             'gesturestart',
             'gesturechange',
             'gestureend',
