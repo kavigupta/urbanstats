@@ -21,6 +21,7 @@ import { assert } from '../../utils/defensive'
 import { mapperToTable } from '../../utils/page-conversion'
 import { useMobileLayout } from '../../utils/responsive'
 import { saveAsFile } from '../../utils/saveAsFile'
+import { useDisableMobileGestures } from '../../utils/useDisableMobileGestures'
 import { useUndoRedo } from '../../utils/useUndoRedo'
 import { zIndex } from '../../utils/zIndex'
 import { Selection as TextBoxesSelection, SelectionContext as TextBoxesSelectionContext } from '../components/MapTextBox'
@@ -360,34 +361,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
 
     const isMobile = useMobileLayout()
 
-    // Lock down scrolling on mobile
-    useEffect(() => {
-        if (!isMobile) {
-            return
-        }
-
-        const handler = (e: Event): void => {
-            e.preventDefault()
-        }
-
-        const events: string[] = [
-            'scroll',
-            'touchstart',
-            'gesturestart',
-            'gesturechange',
-            'gestureend',
-        ]
-
-        for (const event of events) {
-            document.addEventListener(event, handler, { passive: false })
-        }
-
-        return () => {
-            for (const event of events) {
-                document.removeEventListener(event, handler)
-            }
-        }
-    }, [isMobile])
+    useDisableMobileGestures()
 
     const [insetEdits, setInsetEdits] = useState<InsetEdits>({
         ast: a => a,
@@ -436,8 +410,8 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
         },
     })
 
-    const content = (
-        <>
+    return (
+        <PageTemplate topPanel={!isMobile} csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
             <MaybeSplitLayout
                 left={undefined}
                 error={false}
@@ -447,11 +421,11 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                             backgroundColor: colors.slightlyDifferentBackgroundFocused,
                             borderRadius: '5px',
                             padding: '10px',
-                            margin: '10px 0',
+                            margin: isMobile ? 0 : '10px 0',
                             display: 'flex',
                             justifyContent: 'space-between',
                             gap: '0.5em',
-                            ...(isMobile ? { position: 'absolute', zIndex: zIndex.mobileUndoRedoControls, bottom: '10px', left: '20px' } : {}),
+                            ...(isMobile ? { position: 'absolute', zIndex: zIndex.mobileUndoRedoControls, bottom: 0, left: 0 } : {}),
                         }}
                         >
                             {!isMobile && (
@@ -462,10 +436,11 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                                 </div>
                             )}
                             <div style={{ display: 'flex', gap: '10px' }}>
-                                <button onClick={() => { setMapEditorMode('uss') }}>
+                                <button style={{ height: isMobile ? 30 : undefined }} onClick={() => { setMapEditorMode('uss') }}>
                                     Cancel
                                 </button>
                                 <button
+                                    style={{ height: isMobile ? 30 : undefined }}
                                     onClick={() => {
                                         setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, insetEdits, typeEnvironment) } }, {})
                                         setMapEditorMode('uss')
@@ -483,16 +458,8 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                 )}
             />
             {undoRedoUi}
-        </>
+        </PageTemplate>
     )
-
-    return useMobileLayout()
-        ? content
-        : (
-                <PageTemplate csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
-                    {content}
-                </PageTemplate>
-            )
 }
 
 function moveInset<T extends Inset | TextBox>(inset: T, x: number, y: number): T {
@@ -608,6 +575,10 @@ function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => 
 function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps): ReactNode {
     const colors = useColors()
 
+    useDisableMobileGestures()
+
+    const isMobile = useMobileLayout()
+
     const [textBoxes, setTextBoxes] = useState<TextBox[]>(() => getTextBoxes(mapSettings, typeEnvironment)!)
 
     const selectionProperty = useMemo(() => new Property<TextBoxesSelection | undefined>(undefined), [])
@@ -694,8 +665,7 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
     })
 
     return (
-        <PageTemplate csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
-
+        <PageTemplate topPanel={!isMobile} csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
             <TextBoxesSelectionContext.Provider value={selectionProperty}>
                 <MaybeSplitLayout
                     left={undefined}
@@ -706,21 +676,24 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
                                 backgroundColor: colors.slightlyDifferentBackgroundFocused,
                                 borderRadius: '5px',
                                 padding: '10px',
-                                margin: '10px 0',
+                                margin: isMobile ? 0 : '10px 0',
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 gap: '0.5em',
+                                ...(isMobile ? { position: 'absolute', zIndex: zIndex.mobileUndoRedoControls, bottom: 0, left: 0 } : {}),
                             }}
                             >
-                                <div>
-                                    <b>Editing Text Boxes.</b>
-                                </div>
+                                {!isMobile && (
+                                    <div>
+                                        <b>Editing Text Boxes.</b>
+                                    </div>
+                                )}
                                 <div style={{ display: 'flex', gap: '10px' }}>
-
-                                    <button onClick={() => { setMapEditorMode('uss') }}>
+                                    <button style={{ height: isMobile ? 30 : undefined }} onClick={() => { setMapEditorMode('uss') }}>
                                         Cancel
                                     </button>
                                     <button
+                                        style={{ height: isMobile ? 30 : undefined }}
                                         onClick={() => {
                                             setMapSettings({ ...mapSettings, script: { uss: scriptWithNewTextBoxes(mapSettings, textBoxes, typeEnvironment) } }, {})
                                             setMapEditorMode('uss')
@@ -731,9 +704,9 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
                                     </button>
                                 </div>
                             </div>
-                            <div style={{ flex: 1, position: 'relative' }}>
+                            <DivThatTakesUpTheRestOfThePage style={{ position: 'relative' }}>
                                 {ui.node}
-                            </div>
+                            </DivThatTakesUpTheRestOfThePage>
                         </>
                     )}
                 />

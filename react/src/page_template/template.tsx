@@ -19,11 +19,13 @@ export function PageTemplate({
     csvExportCallback = undefined,
     children,
     showFooter = true,
+    topPanel = true,
 }: {
     screencap?: (currentUniverse: string | undefined, colors: Colors, setScreenshotMode: (on: boolean) => void) => Promise<void>
     csvExportCallback?: CSVExportData
     children?: React.ReactNode
     showFooter?: boolean
+    topPanel?: boolean
 }): ReactNode {
     const [hamburgerOpen, setHamburgerOpen] = useState(false)
     const [screenshotMode, setScreenshotMode] = useState(false)
@@ -95,15 +97,19 @@ export function PageTemplate({
                     zoom: mobileLayout && runningInTestCafe ? 0.75 : undefined,
                 }}
             >
-                <Header
-                    hamburgerOpen={hamburgerOpen}
-                    setHamburgerOpen={setHamburgerOpen}
-                    hasScreenshot={hasScreenshotButton}
-                    hasCSV={hasCSVButton}
-                    initiateScreenshot={(currentUniverse) => { void doScreencap(currentUniverse) }}
-                    exportCSV={exportCSV}
-                />
-                <div style={{ marginBlockEnd: '16px' }}></div>
+                {topPanel && (
+                    <>
+                        <Header
+                            hamburgerOpen={hamburgerOpen}
+                            setHamburgerOpen={setHamburgerOpen}
+                            hasScreenshot={hasScreenshotButton}
+                            hasCSV={hasCSVButton}
+                            initiateScreenshot={(currentUniverse) => { void doScreencap(currentUniverse) }}
+                            exportCSV={exportCSV}
+                        />
+                        <div style={{ marginBlockEnd: '16px' }}></div>
+                    </>
+                )}
                 <BodyPanel
                     hamburgerOpen={hamburgerOpen}
                     mainContent={children}
