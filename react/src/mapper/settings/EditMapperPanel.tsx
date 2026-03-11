@@ -48,7 +48,7 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
         setGeneratorMapSettings(newSettings)
     }, [])
 
-    const [mapEditorMode, setMapEditorMode] = useState<MapEditorMode>('insets')
+    const [mapEditorMode, setMapEditorMode] = useState<MapEditorMode>('uss')
 
     const selectionContext = useMemo(() => new Property<Selection | undefined>(undefined), [])
 
