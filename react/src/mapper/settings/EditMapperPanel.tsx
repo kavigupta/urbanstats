@@ -243,7 +243,8 @@ function DivThatTakesUpTheRestOfThePage(props: ComponentProps<'div'> & { divRef?
     const updateHeight = useCallback(() => {
         if (ref.current) {
             const bounds = ref.current.getBoundingClientRect()
-            setHeight(window.innerHeight - bounds.top - window.scrollY - 8)
+            // window.innerHeight appears to be a mess on Android Chrome, so use the root element client height
+            setHeight(document.documentElement.clientHeight - bounds.top - window.scrollY - 8)
         }
     }, [])
 
@@ -251,8 +252,10 @@ function DivThatTakesUpTheRestOfThePage(props: ComponentProps<'div'> & { divRef?
     useLayoutEffect(() => {
         updateHeight()
         window.addEventListener('resize', updateHeight)
+        window.addEventListener('scroll', updateHeight)
         return () => {
             window.removeEventListener('resize', updateHeight)
+            window.addEventListener('scroll', updateHeight)
         }
     }, [updateHeight])
 
