@@ -160,7 +160,7 @@ class RelationshipComputer:
         """Sum population in grid cells covered by the RLE."""
         rows, lon_starts, lon_ends = rle_arrays_from_dict(self._to_dict(rle))
         row_sel, col_sel = exract_raster_points(
-            rows, lon_starts, lon_ends, require_positive_in=None
+            rows, lon_starts, lon_ends, require_positive_in=self._population
         )
         return float(np.nansum(self._population[row_sel, col_sel]))
 
