@@ -26,15 +26,10 @@ for (const platform of ['desktop', 'mobile']) {
         await screencap(t)
     })
 
-    async function clickIframeInput(t: TestController, i: number, selector: string): Promise<void> {
-        await t.switchToIframe(Selector(`${selector} + iframe`).nth(i))
-        await t.click(selector)
-        await t.switchToMainWindow()
-    }
-
     async function changeValue(t: TestController, i: number, from: string, to: string): Promise<void> {
-        await clickIframeInput(t, i, `input[value="${from}"]`)
+        await t.click(Selector(`input[value="${from}"] + iframe`).nth(i))
         await t.click(Selector('div').withExactText(to))
+        await t.wait(1000)
     }
 
     const expectedNewTextBoxCode = `cMap(
@@ -253,7 +248,7 @@ for (const platform of ['desktop', 'mobile']) {
     ramp=rampUridis,
     textBoxes=[
         textBox(
-            screenBounds={north: 0.627, east: 0.985, south: 0, west: 0.392},
+            screenBounds={${platform === 'mobile' ? 'north: 0.5, east: 1, south: 0, west: 0.5' : 'north: 0.627, east: 0.985, south: 0, west: 0.392'}},
             text=rtfDocument([
                 rtfString(
                     "Hello, World!",
@@ -285,7 +280,7 @@ for (const platform of ['desktop', 'mobile']) {
             borderWidth=1
         ),
         textBox(
-            screenBounds={north: 0.923, east: 0.658, south: 0.423, west: 0.158},
+            screenBounds={${platform === 'mobile' ? 'north: 1, east: 0.5, south: 0.5, west: 0' : 'north: 0.923, east: 0.658, south: 0.423, west: 0.158'}},
             text=rtfDocument([
                 rtfString(
                     "Hello, World!",
