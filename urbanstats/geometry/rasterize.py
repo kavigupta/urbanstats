@@ -1,6 +1,7 @@
 import numpy as np
 import shapely
 from permacache import permacache, stable_hash
+import tqdm.auto as tqdm
 
 # Per-resolution row offsets that align the working grid with the
 # global population raster.
@@ -126,7 +127,9 @@ def exract_raster_points(
     if len(lats) == 0:
         return np.array([], dtype=np.int32), np.array([], dtype=np.int32)
     row_selected_all, col_selected_all = [], []
-    for i in range(0, len(lats), chunk_size):
+    for i in tqdm.trange(
+        0, len(lats), chunk_size, desc="Extracting raster points", delay=10
+    ):
         row_selected = np.concatenate(
             [
                 np.repeat(np.int32(row_idx), lon_end - lon_start + 1)
