@@ -92,7 +92,7 @@ export async function waitForLoading(): Promise<void> {
 
 async function prepForImage(t: TestController, options: { hover: boolean }): Promise<void> {
     if (options.hover) {
-        await t.hover('#searchbox') // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
+        await t.hover('body', { offsetX: 0, offsetY: 0 }) // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
     }
     await t.eval(() => {
         // disable the map, so that we're not testing the tiles

@@ -5,66 +5,71 @@ import { TestWindow } from '../src/utils/TestUtils'
 import { drag, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { screencap, urbanstatsFixture } from './test_utils'
 
-urbanstatsFixture(`default map`, '/mapper.html')
-
-function numMaps(): Promise<number> {
-    return Selector('[id^="map-"]').count
-}
-
-function map(n: number): string {
-    return `[id^="map-${n}"]`
-}
-
-function handle(mapNumber: number, pos: 'move' | 'topRight' | 'bottomRight' | 'bottomLeft' | 'topLeft' | 'duplicate' | 'delete' | 'add' | 'moveUp' | 'moveDown'): string {
-    return `${map(mapNumber)} [data-test="${pos}"]`
-}
-
-interface Bounds { n: number, e: number, s: number, w: number }
-
-function bounds(mapNumber: number): Promise<Bounds | undefined> {
-    const mapSelector = map(mapNumber)
-    return ClientFunction(() => {
-        const mapId = document.querySelector(mapSelector)?.id
-        if (mapId === undefined) {
-            return undefined
+for (const platform of ['desktop', 'mobile']) {
+    urbanstatsFixture(`default map`, '/mapper.html', async (t) => {
+        if (platform === 'mobile') {
+            await t.resizeWindow(400, 800)
         }
-        const mapObj = (window as unknown as TestWindow).testUtils.maps.get(mapId)!.deref()!
-        const latLon = mapObj.getBounds()
-        return {
-            n: Math.round(latLon.getNorth()),
-            e: Math.round(latLon.getEast()),
-            s: Math.round(latLon.getSouth()),
-            w: Math.round(latLon.getWest()),
-        }
-    }, { dependencies: { mapSelector } })()
-}
+    })
 
-interface Rect { x: number, y: number, width: number, height: number }
+    function numMaps(): Promise<number> {
+        return Selector('[id^="map-"]').count
+    }
 
-function frame(selector: string): Promise<Rect | undefined> {
-    const map0 = map(0)
-    return ClientFunction(() => {
-        const map0Elem = document.querySelector(map0)
-        const domElem = document.querySelector(selector)
-        if (map0Elem === null || domElem === null) {
-            return undefined
-        }
-        const map0Rect = map0Elem.getBoundingClientRect()
-        const domRect = domElem.getBoundingClientRect()
-        // Fudge Y since it's unstable
-        return { x: Math.round(100 * (domRect.x - map0Rect.x) / map0Rect.width) / 100, y: Math.round(100 * (domRect.y - map0Rect.y) / map0Rect.height) / 100, width: Math.round(100 * domRect.width / map0Rect.width) / 100, height: Math.round(100 * domRect.height / map0Rect.height) / 100 }
-    }, { dependencies: { selector, map0 } })()
-}
+    function map(n: number): string {
+        return `[id^="map-${n}"]`
+    }
 
-async function wheel(t: TestController, selector: string, deltaY: number, offset: { x: number, y: number }): Promise<void> {
-    return ClientFunction(() => {
-        const element = document.querySelector(`${selector} .maplibregl-canvas-container`)!
-        const elementRect = element.getBoundingClientRect()
-        const eventLocation = { clientX: ((elementRect.left + elementRect.right) / 2) + offset.x, clientY: ((elementRect.bottom + elementRect.top) / 2) + offset.y }
-        // Magic constant simulates a scroll wheel so our events are processed properly
-        element.dispatchEvent(new WheelEvent('wheel', { deltaY: deltaY * 4.000244140625, ...eventLocation }))
-    }, { dependencies: { selector, deltaY, offset } })()
-}
+    function handle(mapNumber: number, pos: 'move' | 'topRight' | 'bottomRight' | 'bottomLeft' | 'topLeft' | 'duplicate' | 'delete' | 'add' | 'moveUp' | 'moveDown'): string {
+        return `${map(mapNumber)} [data-test="${pos}"]`
+    }
+
+    interface Bounds { n: number, e: number, s: number, w: number }
+
+    function bounds(mapNumber: number): Promise<Bounds | undefined> {
+        const mapSelector = map(mapNumber)
+        return ClientFunction(() => {
+            const mapId = document.querySelector(mapSelector)?.id
+            if (mapId === undefined) {
+                return undefined
+            }
+            const mapObj = (window as unknown as TestWindow).testUtils.maps.get(mapId)!.deref()!
+            const latLon = mapObj.getBounds()
+            return {
+                n: Math.round(latLon.getNorth()),
+                e: Math.round(latLon.getEast()),
+                s: Math.round(latLon.getSouth()),
+                w: Math.round(latLon.getWest()),
+            }
+        }, { dependencies: { mapSelector } })()
+    }
+
+    interface Rect { x: number, y: number, width: number, height: number }
+
+    function frame(selector: string): Promise<Rect | undefined> {
+        const map0 = map(0)
+        return ClientFunction(() => {
+            const map0Elem = document.querySelector(map0)
+            const domElem = document.querySelector(selector)
+            if (map0Elem === null || domElem === null) {
+                return undefined
+            }
+            const map0Rect = map0Elem.getBoundingClientRect()
+            const domRect = domElem.getBoundingClientRect()
+            // Fudge Y since it's unstable
+            return { x: Math.round(100 * (domRect.x - map0Rect.x) / map0Rect.width) / 100, y: Math.round(100 * (domRect.y - map0Rect.y) / map0Rect.height) / 100, width: Math.round(100 * domRect.width / map0Rect.width) / 100, height: Math.round(100 * domRect.height / map0Rect.height) / 100 }
+        }, { dependencies: { selector, map0 } })()
+    }
+
+    async function wheel(t: TestController, selector: string, deltaY: number, offset: { x: number, y: number }): Promise<void> {
+        return ClientFunction(() => {
+            const element = document.querySelector(`${selector} .maplibregl-canvas-container`)!
+            const elementRect = element.getBoundingClientRect()
+            const eventLocation = { clientX: ((elementRect.left + elementRect.right) / 2) + offset.x, clientY: ((elementRect.bottom + elementRect.top) / 2) + offset.y }
+            // Magic constant simulates a scroll wheel so our events are processed properly
+            element.dispatchEvent(new WheelEvent('wheel', { deltaY: deltaY * 4.000244140625, ...eventLocation }))
+        }, { dependencies: { selector, deltaY, offset } })()
+    }
 
 type MapPositions = { frame: Rect | undefined, bounds: Bounds | undefined }[]
 
@@ -93,7 +98,7 @@ function insetsEditTest(testFn: () => TestFn, { description, action, before, aft
     customInsetsAfterEdit: number
 }): void {
     for (const confirmation of ['Accept', 'Cancel'] as const) {
-        testFn()(`${description} then ${confirmation}`, async (t) => {
+        testFn()(`${description} then ${confirmation}${platform === 'mobile' ? ' mobile' : ''}`, async (t) => {
             const check = async (positions: MapPositions): Promise<void> => {
                 let currentPositions
                 for (let iter = 0; iter < 3; iter++) {
@@ -168,7 +173,7 @@ insetsEditTest(() => test, {
     description: 'move frame',
     action: t => drag(t, handle(4, 'move'), move.x, move.y),
     before: defaultUSA,
-    after: [...defaultUSA.slice(0, 4), { frame: { ...defaultUSA[4].frame, x: 0.18, y: 0.35 }, bounds: defaultUSA[4].bounds }],
+    after: [...defaultUSA.slice(0, 4), { frame: platform === 'mobile' ? { ...defaultUSA[4].frame, x: 0.56, y: 0 } : { ...defaultUSA[4].frame, x: 0.18, y: 0.35 }, bounds: defaultUSA[4].bounds }],
     customInsetsAfterEdit: 1,
 })
 
@@ -177,12 +182,19 @@ insetsEditTest(() => test, {
     action: t => drag(t, handle(4, 'topRight'), resize, -resize),
     before: defaultUSA,
     after: [...defaultUSA.slice(0, 4), {
-        frame: {
-            x: defaultUSA[4].frame.x,
-            y: 0.6,
-            width: 0.21,
-            height: 0.4,
-        },
+        frame: platform === 'mobile'
+            ? {
+                    x: defaultUSA[4].frame.x,
+                    y: 0.43,
+                    width: 0.3,
+                    height: 0.57,
+                }
+            : {
+                    x: defaultUSA[4].frame.x,
+                    y: 0.6,
+                    width: 0.21,
+                    height: 0.4,
+                },
         bounds: { n: 72, e: -126, s: 51, w: -172 },
     }],
     customInsetsAfterEdit: 1,
@@ -192,7 +204,12 @@ insetsEditTest(() => test, {
     description: 'move bounds',
     action: t => t.drag(map(0), 50, 50, { speed: 0.1, offsetX: 50, offsetY: 50 }),
     before: defaultUSA,
-    after: [{ ...defaultUSA[0], bounds: { n: 52, e: -68, s: 26, w: -133 } }, ...defaultUSA.slice(1)],
+    after: [{ ...defaultUSA[0], bounds: platform === 'mobile'
+        ? { e: -74,
+                n: 56,
+                s: 31,
+                w: -139 }
+        : { n: 52, e: -68, s: 26, w: -133 } }, ...defaultUSA.slice(1)],
     customInsetsAfterEdit: 1,
 })
 
@@ -261,10 +278,15 @@ cMap(data=density_pw_1km + density_aw, scale=linearScale(), ramp=rampUridis)
 `
 
 const populationConditionUrl = urlFromCode('County', 'USA', populationConditionCode)
-urbanstatsFixture(`insets with population condition`, populationConditionUrl)
+urbanstatsFixture(`insets with population condition`, populationConditionUrl, async (t) => {
+    if (platform === 'mobile') {
+        await t.resizeWindow(400, 800)
+    }
+})
 
 test('insets page with population condition', async (t) => {
     await toggleCustomScript(t)
     await t.click(editInsetsButton)
     await screencap(t)
 })
+}
