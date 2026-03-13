@@ -2,6 +2,7 @@ import copy
 import os
 
 import geopandas as gpd
+import pandas as pd
 import tqdm.auto as tqdm
 
 from urbanstats.special_cases.country_names import iso_to_country
