@@ -145,9 +145,10 @@ def exract_raster_points(
                 )
             ]
         )
-        mask = require_positive_in[row_selected, col_selected] > 0
-        row_selected = row_selected[mask]
-        col_selected = col_selected[mask]
+        if require_positive_in is not None:
+            mask = require_positive_in[row_selected, col_selected] > 0
+            row_selected = row_selected[mask]
+            col_selected = col_selected[mask]
         row_selected_all.append(row_selected)
         col_selected_all.append(col_selected)
     row_selected_all, col_selected_all = np.concatenate(
