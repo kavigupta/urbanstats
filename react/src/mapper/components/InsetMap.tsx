@@ -231,19 +231,19 @@ export function EditInsetsHandles(props: {
     return (
         <>
             {props.moveUp && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="moveUp" style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50% - ${25 * mobileMultiplier}px)`, cursor: 'default' }} onClick={props.moveUp} img={{ src: '/sort-up.png', alt: 'Move Up' }} />
+                <Handle handleSize={25 * mobileMultiplier} data-test="moveUp" style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50% - ${25 * mobileMultiplier}px)`, cursor: 'default' }} onPointerDown={props.moveUp} img={{ src: '/sort-up.png', alt: 'Move Up' }} />
             )}
             {props.moveDown && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="moveDown" style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50%)`, cursor: 'default' }} onClick={props.moveDown} img={{ src: '/sort-down.png', alt: 'Move Down' }} />
+                <Handle handleSize={25 * mobileMultiplier} data-test="moveDown" style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50%)`, cursor: 'default' }} onPointerDown={props.moveDown} img={{ src: '/sort-down.png', alt: 'Move Down' }} />
             )}
             {props.duplicate && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="duplicate" style={{ margin: 'auto', left: `calc(66% - ${12.5 * mobileMultiplier}px)`, textAlign: 'center', lineHeight: `${25 * mobileMultiplier}px`, top: -insetBorderWidth, cursor: 'copy' }} onClick={props.duplicate} img={{ src: '/duplicate.png', alt: 'Duplicate' }} />
+                <Handle handleSize={25 * mobileMultiplier} data-test="duplicate" style={{ margin: 'auto', left: `calc(66% - ${12.5 * mobileMultiplier}px)`, textAlign: 'center', lineHeight: `${25 * mobileMultiplier}px`, top: -insetBorderWidth, cursor: 'copy' }} onPointerDown={props.duplicate} img={{ src: '/duplicate.png', alt: 'Duplicate' }} />
             )}
             {props.delete && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="delete" style={{ margin: 'auto', left: `calc(33% - ${12.5 * mobileMultiplier}px)`, textAlign: 'center', lineHeight: `${25 * mobileMultiplier}px`, top: -insetBorderWidth, cursor: 'default' }} onClick={props.delete} img={{ src: '/close-red-small.png', alt: 'Delete' }} />
+                <Handle handleSize={25 * mobileMultiplier} data-test="delete" style={{ margin: 'auto', left: `calc(33% - ${12.5 * mobileMultiplier}px)`, textAlign: 'center', lineHeight: `${25 * mobileMultiplier}px`, top: -insetBorderWidth, cursor: 'default' }} onPointerDown={props.delete} img={{ src: '/close-red-small.png', alt: 'Delete' }} />
             )}
             {props.add && (
-                <Handle handleSize={25 * mobileMultiplier} data-test="add" style={{ margin: 'auto', left: `calc(50% - ${12.5 * mobileMultiplier}px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add} img={{ src: '/add-green-small.png', alt: 'Add' }} />
+                <Handle handleSize={25 * mobileMultiplier} data-test="add" style={{ margin: 'auto', left: `calc(50% - ${12.5 * mobileMultiplier}px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onPointerDown={props.add} img={{ src: '/add-green-small.png', alt: 'Add' }} />
             )}
             {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />}
             {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />}
