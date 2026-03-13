@@ -2,7 +2,6 @@ import numpy as np
 import shapely
 from permacache import permacache, stable_hash
 
-
 # Per-resolution row offsets that align the working grid with the
 # global population raster.
 # This is necessary because the population raster doesn't start at the north pole
