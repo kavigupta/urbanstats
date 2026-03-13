@@ -21,7 +21,6 @@ import { assert } from '../../utils/defensive'
 import { mapperToTable } from '../../utils/page-conversion'
 import { useMobileLayout } from '../../utils/responsive'
 import { saveAsFile } from '../../utils/saveAsFile'
-import { useDisableMobileGestures } from '../../utils/useDisableMobileGestures'
 import { useUndoRedo } from '../../utils/useUndoRedo'
 import { zIndex } from '../../utils/zIndex'
 import { Selection as TextBoxesSelection, SelectionContext as TextBoxesSelectionContext } from '../components/MapTextBox'
@@ -364,8 +363,6 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
 
     const isMobile = useMobileLayout()
 
-    useDisableMobileGestures()
-
     const [insetEdits, setInsetEdits] = useState<InsetEdits>({
         ast: a => a,
         insets: i => i,
@@ -577,8 +574,6 @@ function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => 
 
 function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps): ReactNode {
     const colors = useColors()
-
-    useDisableMobileGestures()
 
     const isMobile = useMobileLayout()
 

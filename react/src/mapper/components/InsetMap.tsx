@@ -292,6 +292,7 @@ function Handle({ handleSize, style, img, ...rest }: { handleSize: number, img?:
                 width: `${handleSize}px`,
                 height: `${handleSize}px`,
                 borderRadius: '2px',
+                touchAction: 'none',
                 ...style,
             }}
             {...rest}
