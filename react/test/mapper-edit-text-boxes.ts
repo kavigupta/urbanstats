@@ -3,9 +3,7 @@ import { ClientFunction, Selector } from 'testcafe'
 import { drag, getCodeFromMainField, getErrors, nastyDiff, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { screencap, urbanstatsFixture } from './test_utils'
 
-for (const platform of ['desktop', 'mobile']) {
-    const testSuffix = platform === 'mobile' ? ' mobile' : ''
-
+export function runTests(platform: 'desktop' | 'mobile'): void {
     urbanstatsFixture(`default map`, '/mapper.html', async (t) => {
         if (platform === 'mobile') {
             await t.resizeWindow(400, 800)
@@ -14,7 +12,7 @@ for (const platform of ['desktop', 'mobile']) {
 
     const editTextBoxesButton = Selector('button[data-test=edit-text-boxes]')
 
-    test(`basic add box${testSuffix}`, async (t) => {
+    test(`basic add box`, async (t) => {
         await t.click(editTextBoxesButton)
         await t.click('[data-test="add"]')
         await t.typeText('.ql-editor', 'Hello, World!')
@@ -65,7 +63,7 @@ for (const platform of ['desktop', 'mobile']) {
 )
 `
 
-    test(`create a new text box with formatting${testSuffix}`, async (t) => {
+    test(`create a new text box with formatting`, async (t) => {
     // Open the "Edit Text Boxes" dialog and add a new text box
         await t.click(editTextBoxesButton)
         await t.click('[data-test="add"]')
@@ -107,7 +105,7 @@ for (const platform of ['desktop', 'mobile']) {
         }, { dependencies: { selector, value } })()
     }
 
-    test(`change background color, border color, border width, insert images, insert formulas, format formulas${testSuffix}`, async (t) => {
+    test(`change background color, border color, border width, insert images, insert formulas, format formulas`, async (t) => {
         await t.click(editTextBoxesButton)
         await t.click('[data-test="add"]')
 
@@ -207,7 +205,7 @@ for (const platform of ['desktop', 'mobile']) {
         return ClientFunction(() => window.getSelection())()
     }
 
-    test(`duplicate text box, edit, resize, resposition, move down${testSuffix}`, async (t) => {
+    test(`duplicate text box, edit, resize, resposition, move down`, async (t) => {
     // Open dialog and duplicate text box
         await t.click(editTextBoxesButton)
         await t.click('[data-test="duplicate"]')

@@ -5,7 +5,7 @@ import { TestWindow } from '../src/utils/TestUtils'
 import { drag, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { screencap, urbanstatsFixture } from './test_utils'
 
-for (const platform of ['desktop', 'mobile']) {
+export function runTests(platform: 'desktop' | 'mobile'): void {
     urbanstatsFixture(`default map`, '/mapper.html', async (t) => {
         if (platform === 'mobile') {
             await t.resizeWindow(400, 800)
@@ -112,7 +112,7 @@ for (const platform of ['desktop', 'mobile']) {
         customInsetsAfterEdit: number
     }): void {
         for (const confirmation of ['Accept', 'Cancel'] as const) {
-            testFn()(`${description} then ${confirmation}${platform === 'mobile' ? ' mobile' : ''}`, async (t) => {
+            testFn()(`${description} then ${confirmation}`, async (t) => {
                 const check = async (positions: MapPositions): Promise<void> => {
                     let currentPositions
                     for (let iter = 0; iter < 3; iter++) {
