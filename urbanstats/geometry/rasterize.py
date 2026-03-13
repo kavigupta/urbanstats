@@ -3,6 +3,15 @@ import shapely
 from permacache import permacache, stable_hash
 
 
+# Per-resolution row offsets that align the working grid with the
+# global population raster.
+# This is necessary because the population raster doesn't start at the north pole
+ROW_OFFSET = {
+    1200: 1089,
+    120: 1,
+}
+
+
 def to_col_idx(lon, resolution):
     """
     Convert a longitude to a column index in a grid.
@@ -22,7 +31,8 @@ def to_row_idx(lat, resolution):
     :param resolution: Resolution of the grid, as pixels per degree.
     :return: Row index corresponding to the given latitude.
     """
-    return (90 - lat) * resolution
+    base = (90 - lat) * resolution
+    return base - ROW_OFFSET[resolution]
 
 
 def from_row_idx(row, resolution):
@@ -33,7 +43,7 @@ def from_row_idx(row, resolution):
     :param resolution: Resolution of the grid, as pixels per degree.
     :return: Latitude value corresponding to the given row index.
     """
-    return 90 - row / resolution
+    return 90 - (row + ROW_OFFSET[resolution]) / resolution
 
 
 @permacache(
@@ -85,11 +95,6 @@ def rasterize_using_lines(shape, resolution):
     lon_start = lon_start[mask]
     lon_end = lon_end[mask]
     # see notebooks/gpw-alignment.ipynb to confirm these are correct.
-    if resolution == 1200:
-        # 60 * 60 * 180 // 3 - global_map.shape[0] = 2178, half of this is 1089
-        rows = rows - 1089
-    elif resolution == 120:
-        rows = rows - 1
     return rows, lon_start, lon_end
 
 
