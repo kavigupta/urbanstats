@@ -7,6 +7,7 @@ from urbanstats.geometry.rle import (
     intersect_rle_runs,
     merge_rle_runs,
     rle_bounds,
+    rle_spatial_join,
     pad_rle,
 )
 
@@ -133,6 +134,27 @@ class TestRleFuzz(unittest.TestCase):
 
         padded_rle_direct = bool_to_rle_dict(padded_mask)
         self.assertEqual(padded_rle, padded_rle_direct)
+
+    @parameterized.expand([(seed,) for seed in range(30)])
+    def test_rle_spatial_join_fuzz(self, seed):
+        rows, cols = 24, 48
+        rng = np.random.RandomState(seed)
+        n_a = rng.randint(2, 80)
+        n_b = rng.randint(2, 80)
+        masks_a = self._random_masks(rng, n_a, (rows, cols))
+        masks_b = self._random_masks(rng, n_b, (rows, cols))
+        rles_a = [bool_to_rle_dict(m) for m in masks_a]
+        rles_b = [bool_to_rle_dict(m) for m in masks_b]
+
+        pairs = rle_spatial_join(rles_a, rles_b)
+
+        naive_pairs = []
+        for i in range(n_a):
+            for j in range(n_b):
+                if np.any(masks_a[i] & masks_b[j]):
+                    naive_pairs.append((i, j))
+
+        self.assertEqual(pairs, naive_pairs)
 
 
 if __name__ == "__main__":

@@ -100,7 +100,6 @@ def rle_bounds(rle):
     """
     Compute the bounding box of an RLE as (min_row, max_row, min_col, max_col).
     """
-
     if not rle:
         return (0, 0, 0, 0)
 
@@ -117,6 +116,47 @@ def rle_bounds(rle):
                 max_col = e
 
     return min_row, max_row, min_col, max_col
+
+
+def rle_spatial_join(list_a, list_b):
+    """
+    Return pairs of indices (i, j) such that list_a[i] and list_b[j] overlap
+    (have at least one cell in common). Uses precomputed bounds and row-sweep
+    to limit full intersection checks to bbox-overlapping candidates.
+    """
+    bounds_a = np.array([rle_bounds(r) for r in list_a])
+    bounds_b = np.array([rle_bounds(r) for r in list_b])
+    results = []
+    for i, j in bounding_box_overlaps(bounds_a, bounds_b):
+        inter = intersect_rle_runs(list_a[i], list_b[j])
+        if inter:
+            results.append((i, j))
+    return results
+
+
+def bounding_box_overlaps(bounds_a, bounds_b):
+    if len(bounds_a) * len(bounds_b) > 10_000_000 and len(bounds_b) > 1:
+        return [
+            *bounding_box_overlaps(bounds_a, bounds_b[: len(bounds_b) // 2]),
+            *bounding_box_overlaps(bounds_a, bounds_b[len(bounds_b) // 2 :]),
+        ]
+    xmin_a, xmax_a, ymin_a, ymax_a = (
+        bounds_a[:, 0],
+        bounds_a[:, 1],
+        bounds_a[:, 2],
+        bounds_a[:, 3],
+    )
+    xmin_b, xmax_b, ymin_b, ymax_b = (
+        bounds_b[:, 0],
+        bounds_b[:, 1],
+        bounds_b[:, 2],
+        bounds_b[:, 3],
+    )
+    xoverlap_mask = (xmax_a[:, None] >= xmin_b) & (xmax_b >= xmin_a[:, None])
+    yoverlap_mask = (ymax_a[:, None] >= ymin_b) & (ymax_b >= ymin_a[:, None])
+    overlap_mask = xoverlap_mask & yoverlap_mask
+    a_idxs, b_idxs = np.where(overlap_mask)
+    return list(zip(a_idxs, b_idxs))
 
 
 def pad_rle(rle, radius_fn, ry, *, shape=None):
