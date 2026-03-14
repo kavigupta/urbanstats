@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from permacache import permacache
+from permacache import permacache, stable_hash
 import tqdm.auto as tqdm
 
 """
@@ -141,20 +141,20 @@ def land_rle_summaries_for_shapefile(shapefile):
 
     Returns a dict mapping longname to LandRleSummary.
     """
-    rc = RelationshipComputer()
     table = shapefile.load_file()
     result = {}
-    for _, row in tqdm.tqdm(
-        table.iterrows(), total=len(table), desc="compute land RLE summaries"
-    ):
-        print(row.longname)
+    pbar = tqdm.tqdm(total=len(table), delay=10)
+    for _, row in table.iterrows():
+        pbar.set_description(f"RLE summaries: Processing {row['longname']}")
         geom = row.geometry
         rows, lon_starts, lon_ends = rasterize_using_lines(
             geom, resolution=RESOLUTION_3ARCSEC
         )
         rle = rle_dict_from_arrays(rows, lon_starts, lon_ends)
-        summary = rc.land_rle_summary(rle)
+        summary = land_rle_summary(rle)
         result[row["longname"]] = summary
+        pbar.update(1)
+    pbar.close()
     return result
 
 
@@ -176,6 +176,12 @@ class RelationshipComputer:
     resolution, clipped to land. Uses area and population of intersection;
     a contains b iff both are >= 95% of b's.
     """
+
+    @classmethod
+    def singleton(cls):
+        if not hasattr(cls, "_singleton"):
+            cls._singleton = cls()
+        return cls._singleton
 
     def __init__(self):
         raw_rle = coastlines_rle()
@@ -237,47 +243,54 @@ class RelationshipComputer:
             pop_inter=pop_inter,
         )
 
-    def land_rle_summary(self, rle, *, shape=None):
-        """
-        Compute summary information for an RLE relative to land:
 
-        - land-clipped dict RLE
-        - buffered land-clipped dict RLE (using an ellipse radius derived from
-          the great-circle diagonal of the unbuffered land-clipped bounding box)
-        - population and area of the land-clipped RLE
-        - bounding box of the buffered land-clipped RLE
-        """
-        land_rle = self.clip_to_land(rle)
-        area = self.area_of(land_rle)
-        population = self.population_of(land_rle)
-        min_row, max_row, min_col, max_col = rle_bounds(land_rle)
-        # Corner coordinates in degrees (approximate cell centers)
-        lat_north = _lat_deg_from_rle_row(min_row)
-        lat_south = _lat_deg_from_rle_row(max_row)
-        lon_west = lon_from_col_idx(min_col, RESOLUTION_3ARCSEC)
-        lon_east = lon_from_col_idx(max_col + 1, RESOLUTION_3ARCSEC)
-        # Use NW and SE corners for the diagonal
-        buffer_km = haversine(lat_north, lon_west, lat_south, lon_east) * BUFFER_PCT
-        # print("buffering with radius (km)", buffer_km)
+@permacache(
+    "population_density/relationship_equirectangular/compute_containment",
+    key_function=dict(rle=stable_hash),
+)
+def land_rle_summary(rle):
+    """
+    Compute summary information for an RLE relative to land:
 
-        # Convert this physical radius back into cell radii in rows/cols.
-        # Row spacing (lat) is uniform in degrees, but km per degree of lon
-        # depends on latitude, so let the radius depend on y.
-        km_per_row = _KM_PER_DEG_LAT / RESOLUTION_3ARCSEC
-        ry = buffer_km / km_per_row
-        # print("buffering with radius (rows)", ry)
+    - land-clipped dict RLE
+    - buffered land-clipped dict RLE (using an ellipse radius derived from
+        the great-circle diagonal of the unbuffered land-clipped bounding box)
+    - population and area of the land-clipped RLE
+    - bounding box of the buffered land-clipped RLE
+    """
+    assert isinstance(rle, dict), "Expected dict-format RLE"
+    rc = RelationshipComputer.singleton()
+    land_rle = rc.clip_to_land(rle)
+    area = rc.area_of(land_rle)
+    population = rc.population_of(land_rle)
+    min_row, max_row, min_col, max_col = rle_bounds(land_rle)
+    # Corner coordinates in degrees (approximate cell centers)
+    lat_north = _lat_deg_from_rle_row(min_row)
+    lat_south = _lat_deg_from_rle_row(max_row)
+    lon_west = lon_from_col_idx(min_col, RESOLUTION_3ARCSEC)
+    lon_east = lon_from_col_idx(max_col + 1, RESOLUTION_3ARCSEC)
+    # Use NW and SE corners for the diagonal
+    buffer_km = haversine(lat_north, lon_west, lat_south, lon_east) * BUFFER_PCT
+    # print("buffering with radius (km)", buffer_km)
 
-        def radius_fn(y):
-            lat_here = _lat_deg_from_rle_row(y)
-            cos_lat = math.cos(math.radians(lat_here))
-            return ry / cos_lat
+    # Convert this physical radius back into cell radii in rows/cols.
+    # Row spacing (lat) is uniform in degrees, but km per degree of lon
+    # depends on latitude, so let the radius depend on y.
+    km_per_row = _KM_PER_DEG_LAT / RESOLUTION_3ARCSEC
+    ry = buffer_km / km_per_row
+    # print("buffering with radius (rows)", ry)
 
-        buffered_land_rle = pad_rle(land_rle, radius_fn, ry, shape=shape)
-        buffered_bounds = rle_bounds(buffered_land_rle)
-        return LandRleSummary(
-            land_rle=land_rle,
-            buffered_land_rle=buffered_land_rle,
-            area=area,
-            population=population,
-            buffered_bounds=buffered_bounds,
-        )
+    def radius_fn(y):
+        lat_here = _lat_deg_from_rle_row(y)
+        cos_lat = math.cos(math.radians(lat_here))
+        return ry / cos_lat
+
+    buffered_land_rle = pad_rle(land_rle, radius_fn, ry)
+    buffered_bounds = rle_bounds(buffered_land_rle)
+    return LandRleSummary(
+        land_rle=land_rle,
+        buffered_land_rle=buffered_land_rle,
+        area=area,
+        population=population,
+        buffered_bounds=buffered_bounds,
+    )
