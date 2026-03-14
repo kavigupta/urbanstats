@@ -101,7 +101,8 @@ def rle_bounds(rle):
     Compute the bounding box of an RLE as (min_row, max_row, min_col, max_col).
     """
 
-    assert rle, "RLE is empty, cannot compute bounds"
+    if not rle:
+        return (0, 0, 0, 0)
 
     min_row = min(rle)
     max_row = max(rle)
@@ -118,55 +119,68 @@ def rle_bounds(rle):
     return min_row, max_row, min_col, max_col
 
 
-def pad_rle(rle, radius_fn, *, shape=None):
+def pad_rle(rle, radius_fn, ry, *, shape=None):
     """
     Pad (dilate) an RLE using per-cell ellipses.
 
     Accepts either dict-format RLE ({row: [(start, end), ...]}) or array-format
-    (rows, lon_starts, lon_ends). The padding is defined by a function
-    radius_fn(y) -> (rx, ry) giving the ellipse radii (in cells) for all cells
-    in row y. Returns dict-format RLE.
+    (rows, lon_starts, lon_ends). The padding is defined by radius_fn(y) -> rx
+    (x-radius in cells for row y) and ry (y-radius in cells, constant).
+    Returns dict-format RLE.
 
     If shape is provided as (nrows, ncols), the padded RLE is clipped so that
     0 <= row < nrows and 0 <= col < ncols.
     """
+    if not isinstance(rle, dict):
+        rows, lon_starts, lon_ends = rle
+        rle = rle_dict_from_arrays(rows, lon_starts, lon_ends)
     if not rle:
         return {}
+    if ry <= 0:
+        return {}
 
-    padded = defaultdict(list)
     max_row = max_col = None
     if shape is not None:
         max_row, max_col = shape
 
-    for row, intervals in rle.items():
-        rx, ry = radius_fn(row)
-        if rx <= 0 or ry <= 0:
+    max_dy = int(np.ceil(ry))
+    output_rows = set()
+    for row in rle:
+        rx = radius_fn(row)
+        if rx <= 0:
             continue
-
-        max_dy = int(np.ceil(ry))
         for dy in range(-max_dy, max_dy + 1):
             yy = row + dy
             if max_row is not None and (yy < 0 or yy >= max_row):
+                continue
+            output_rows.add(yy)
+
+    result = {}
+    for yy in sorted(output_rows):
+        row_intervals = []
+        for dy in range(-max_dy, max_dy + 1):
+            row = yy - dy
+            if row not in rle:
+                continue
+            intervals = rle[row]
+            rx = radius_fn(row)
+            if rx <= 0:
                 continue
             y_term = (dy / ry) ** 2
             if y_term > 1:
                 continue
             max_dx = int(np.floor(rx * np.sqrt(1 - y_term)))
-
             for s, e in intervals:
                 start = s - max_dx
                 end = e + max_dx
-
                 if max_col is not None:
                     if end < 0 or start >= max_col:
                         continue
                     start = max(start, 0)
                     end = min(end, max_col - 1)
-
                 if start <= end:
-                    padded[yy].append((start, end))
-
-    return {
-        row: _merge_intervals(sorted(intervals))
-        for row, intervals in sorted(padded.items())
-    }
+                    row_intervals.append((start, end))
+        merged = _merge_intervals(sorted(row_intervals))
+        if merged:
+            result[yy] = merged
+    return result

@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 
+from permacache import permacache
+import tqdm.auto as tqdm
+
 """
 Containment and basic utilities for polygons in equirectangular (RLE) space.
 
@@ -20,7 +23,11 @@ import numpy as np
 import shapely.geometry as geom
 
 from urbanstats.data.gpw import load_full_ghs_zarr, lon_from_col_idx
-from urbanstats.geometry.rasterize import exract_raster_points, from_row_idx
+from urbanstats.geometry.rasterize import (
+    exract_raster_points,
+    from_row_idx,
+    rasterize_using_lines,
+)
 from urbanstats.geometry.rle import (
     RESOLUTION_3ARCSEC,
     intersect_rle_runs,
@@ -124,6 +131,45 @@ class LandRleSummary:
     buffered_bounds: tuple[int, int, int, int]
 
 
+@permacache(
+    "population_density/relationship_equirectangular/land_rle_summaries_for_shapefile_2",
+    key_function=dict(shapefile=lambda s: s.hash_key),
+)
+def land_rle_summaries_for_shapefile(shapefile):
+    """
+    Compute LandRleSummary for every geometry in a Shapefile object.
+
+    Returns a dict mapping longname to LandRleSummary.
+    """
+    rc = RelationshipComputer()
+    table = shapefile.load_file()
+    result = {}
+    for _, row in tqdm.tqdm(
+        table.iterrows(), total=len(table), desc="compute land RLE summaries"
+    ):
+        print(row.longname)
+        geom = row.geometry
+        rows, lon_starts, lon_ends = rasterize_using_lines(
+            geom, resolution=RESOLUTION_3ARCSEC
+        )
+        rle = rle_dict_from_arrays(rows, lon_starts, lon_ends)
+        summary = rc.land_rle_summary(rle)
+        result[row["longname"]] = summary
+    return result
+
+
+@permacache(
+    "population_density/relationship_equirectangular/compute_population_for_rle",
+)
+def compute_population_for_rle(rle, resolution):
+    zarr = load_full_ghs_zarr(resolution)
+    rows, lon_starts, lon_ends = rle_arrays_from_dict(rle)
+    row_sel, col_sel = exract_raster_points(
+        rows, lon_starts, lon_ends, require_positive_in=zarr
+    )
+    return float(np.nansum(zarr[row_sel, col_sel]))
+
+
 class RelationshipComputer:
     """
     Computes containment between polygons represented as RLEs at 3 arcsecond
@@ -143,8 +189,6 @@ class RelationshipComputer:
         self._land_rle = filtered_rle
         self._resolution = RESOLUTION_3ARCSEC
         assert self._resolution == RESOLUTION_3ARCSEC
-        self._population = load_full_ghs_zarr(self._resolution)
-        self._nrows, self._ncols = self._population.shape
 
     def _to_dict(self, rle):
         """Convert RLE to dict format. Accepts dict or (rows, lon_starts, lon_ends)."""
@@ -158,11 +202,7 @@ class RelationshipComputer:
 
     def population_of(self, rle):
         """Sum population in grid cells covered by the RLE."""
-        rows, lon_starts, lon_ends = rle_arrays_from_dict(self._to_dict(rle))
-        row_sel, col_sel = exract_raster_points(
-            rows, lon_starts, lon_ends, require_positive_in=self._population
-        )
-        return float(np.nansum(self._population[row_sel, col_sel]))
+        return compute_population_for_rle(rle, self._resolution)
 
     def area_of(self, rle):
         """Area in m² of cells covered by the RLE (equirectangular)."""
@@ -217,21 +257,22 @@ class RelationshipComputer:
         lon_west = lon_from_col_idx(min_col, RESOLUTION_3ARCSEC)
         lon_east = lon_from_col_idx(max_col + 1, RESOLUTION_3ARCSEC)
         # Use NW and SE corners for the diagonal
-        diag_km = haversine(lat_north, lon_west, lat_south, lon_east)
+        buffer_km = haversine(lat_north, lon_west, lat_south, lon_east) * BUFFER_PCT
+        # print("buffering with radius (km)", buffer_km)
 
         # Convert this physical radius back into cell radii in rows/cols.
         # Row spacing (lat) is uniform in degrees, but km per degree of lon
         # depends on latitude, so let the radius depend on y.
         km_per_row = _KM_PER_DEG_LAT / RESOLUTION_3ARCSEC
-        ry = diag_km / km_per_row * BUFFER_PCT
+        ry = buffer_km / km_per_row
+        # print("buffering with radius (rows)", ry)
 
         def radius_fn(y):
             lat_here = _lat_deg_from_rle_row(y)
             cos_lat = math.cos(math.radians(lat_here))
-            rx = ry / cos_lat
-            return rx, ry
+            return ry / cos_lat
 
-        buffered_land_rle = pad_rle(land_rle, radius_fn, shape=shape)
+        buffered_land_rle = pad_rle(land_rle, radius_fn, ry, shape=shape)
         buffered_bounds = rle_bounds(buffered_land_rle)
         return LandRleSummary(
             land_rle=land_rle,

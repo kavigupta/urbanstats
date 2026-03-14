@@ -118,8 +118,8 @@ class TestRleFuzz(unittest.TestCase):
         mask = rng.random((rows, cols)) < rng.uniform(0.0, 1.0)
 
         rle = bool_to_rle_dict(mask)
-        radius_fn = lambda y: (rx0 * np.log(y + 1), ry0)
-        padded_rle = pad_rle(rle, radius_fn, shape=mask.shape)
+        radius_fn = lambda y: rx0 * np.log(y + 1)
+        padded_rle = pad_rle(rle, radius_fn, ry0, shape=mask.shape)
 
         padded_mask = np.zeros_like(mask, dtype=bool)
 
@@ -127,8 +127,8 @@ class TestRleFuzz(unittest.TestCase):
         for y, x in zip(*np.where(mask)):
             dx = xmask - x
             dy = ymask - y
-            rx, ry = radius_fn(y)
-            in_ellipse = (dx / rx) ** 2 + (dy / ry) ** 2 <= 1
+            rx = radius_fn(y)
+            in_ellipse = (dx / rx) ** 2 + (dy / ry0) ** 2 <= 1
             padded_mask |= in_ellipse
 
         padded_rle_direct = bool_to_rle_dict(padded_mask)
