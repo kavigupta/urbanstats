@@ -180,7 +180,16 @@ function computeCommonMap(
     const basemap = (namedArgs.basemap as { type: 'opaque', opaqueType: 'basemap', value: Basemap }).value
     const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Inset[] }).value
     const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: string } } | null
-    const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
+    let unit: UnitType | undefined
+    if (unitArg) {
+        unit = unitArg.value.unit as UnitType
+    }
+    else {
+        const inferredUnit = originalArgs.namedArgs.data.documentation?.unit
+        if (inferredUnit !== undefined) {
+            unit = inferredUnit
+        }
+    }
     const textBoxes = (namedArgs.textBoxes as { value: TextBox }[] | null ?? []).map(({ value }) => value)
 
     if (geo.length !== data.length) {
