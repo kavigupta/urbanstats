@@ -2,9 +2,9 @@ import React, { CSSProperties, ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
-import { UnitType } from '../utils/unit'
+import { classifyStatistic, UnitType } from '../utils/unit'
 
-import { classifyStatistic, getUnitDisplay } from './unit-display'
+import { getUnitDisplay } from './unit-display'
 
 export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, isUnit: boolean, unit?: UnitType }): ReactNode {
     const [useImperial] = useSetting('use_imperial')
