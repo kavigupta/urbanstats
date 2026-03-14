@@ -9,6 +9,7 @@ Two formats:
 from collections import defaultdict
 
 import numpy as np
+import tqdm.auto as tqdm
 
 # 3 arcsec = 1200 pixels per degree (same as GHS 3 arcsec)
 RESOLUTION_3ARCSEC = 1200
@@ -127,7 +128,9 @@ def rle_spatial_join(list_a, list_b):
     bounds_a = np.array([rle_bounds(r) for r in list_a])
     bounds_b = np.array([rle_bounds(r) for r in list_b])
     results = []
-    for i, j in bounding_box_overlaps(bounds_a, bounds_b):
+    for i, j in tqdm.tqdm(
+        bounding_box_overlaps(bounds_a, bounds_b), desc="RLE spatial join", delay=10
+    ):
         inter = intersect_rle_runs(list_a[i], list_b[j])
         if inter:
             results.append((i, j))
@@ -135,10 +138,15 @@ def rle_spatial_join(list_a, list_b):
 
 
 def bounding_box_overlaps(bounds_a, bounds_b):
-    if len(bounds_a) * len(bounds_b) > 10_000_000 and len(bounds_b) > 1:
+    num_pairs = 10_000_000
+    if len(bounds_a) * len(bounds_b) > num_pairs and len(bounds_b) > 1:
+        b_chunk_size = max(1, 10_000_000 // len(bounds_a))
         return [
-            *bounding_box_overlaps(bounds_a, bounds_b[: len(bounds_b) // 2]),
-            *bounding_box_overlaps(bounds_a, bounds_b[len(bounds_b) // 2 :]),
+            pair
+            for i in tqdm.trange(
+                0, len(bounds_b), b_chunk_size, delay=10, desc="Bounding box overlaps"
+            )
+            for pair in bounding_box_overlaps(bounds_a, bounds_b[i : i + b_chunk_size])
         ]
     xmin_a, xmax_a, ymin_a, ymax_a = (
         bounds_a[:, 0],

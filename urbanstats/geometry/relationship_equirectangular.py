@@ -35,6 +35,7 @@ from urbanstats.geometry.rle import (
     rle_arrays_from_dict,
     rle_bounds,
     rle_dict_from_arrays,
+    rle_spatial_join,
 )
 from urbanstats.features.within_distance import haversine
 from urbanstats.special_cases.coastlines import coastlines_rle
@@ -156,6 +157,63 @@ def land_rle_summaries_for_shapefile(shapefile):
         pbar.update(1)
     pbar.close()
     return result
+
+
+@permacache(
+    "population_density/relationship_equirectangular/compute_relationships_2",
+    key_function=dict(
+        shapefile_a=lambda s: s.hash_key,
+        shapefile_b=lambda s: s.hash_key,
+    ),
+)
+def compute_relationships(shapefile_a, shapefile_b):
+    summaries_a = land_rle_summaries_for_shapefile(shapefile_a)
+    summaries_b = land_rle_summaries_for_shapefile(shapefile_b)
+    keys_a = list(summaries_a.keys())
+    keys_b = list(summaries_b.keys())
+    rles_a = [summaries_a[k].buffered_land_rle for k in keys_a]
+    rles_b = [summaries_b[k].buffered_land_rle for k in keys_b]
+    pairs = rle_spatial_join(rles_a, rles_b)
+    relationships = {
+        "same_geography": [],
+        "a_contains_b": [],
+        "a_contained_by_b": [],
+        "intersects": [],
+        "borders": [],
+    }
+    for i, j in tqdm.tqdm(pairs, desc="Classifying relationships", delay=10):
+        rel = classify_relationship(summaries_a[keys_a[i]], summaries_b[keys_b[j]])
+        relationships[rel].append((keys_a[i], keys_b[j]))
+    return relationships
+
+
+def classify_relationship(summary_a: LandRleSummary, summary_b: LandRleSummary):
+    intersection = intersect_rle_runs(summary_a.land_rle, summary_b.land_rle)
+    if not intersection:
+        return "borders"
+    eps = 1e-9
+    rc = RelationshipComputer.singleton()
+    inter_area = rc.area_of(intersection)
+    inter_pop = rc.population_of(intersection)
+    union_area = summary_a.area + summary_b.area - inter_area
+    union_pop = summary_a.population + summary_b.population - inter_pop
+    iou_area = inter_area / (union_area + eps)
+    iou_pop = inter_pop / (union_pop + eps)
+    if iou_area >= 0.95 and iou_pop >= 0.95:
+        return "same_geography"
+    if (
+        inter_area / (summary_b.area + eps) >= 0.95
+        and inter_pop / (summary_b.population + eps) >= 0.95
+    ):
+        return "a_contains_b"
+    if (
+        inter_area / (summary_a.area + eps) >= 0.95
+        and inter_pop / (summary_a.population + eps) >= 0.95
+    ):
+        return "a_contained_by_b"
+    if inter_area > 0.05 or inter_pop > 0.05:
+        return "intersects"
+    return "borders"
 
 
 @permacache(
