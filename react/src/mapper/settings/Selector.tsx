@@ -10,8 +10,9 @@ import { hsvToColor, rgbToColor } from '../../urban-stats-script/constants/color
 import { Color, doRender, hexToColor, hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
 import { RampT } from '../../urban-stats-script/constants/ramp'
 import { EditorError } from '../../urban-stats-script/editor-utils'
-import { emptyLocation, parseNumber } from '../../urban-stats-script/lexer'
-import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
+import { emptyLocation } from '../../urban-stats-script/lexer'
+import { extendBlockIdPositionalArg } from '../../urban-stats-script/location'
+import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
 import { Documentation, TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 import { TestUtils } from '../../utils/TestUtils'
 import { assert } from '../../utils/defensive'
@@ -71,7 +72,12 @@ export function Selector(props: {
     const isNumber = props.type.some(type => type.type === 'number')
     const isString = props.type.some(type => type.type === 'string')
     const showConstantInput = selected.type === 'constant' && (isNumber || isString)
-    const currentValue = props.uss.type === 'constant' ? props.uss.value.node.value.toString() : ''
+    const currentValue = (() => {
+        if (props.uss.type === 'constant') {
+            return props.uss.value.node.value.toString()
+        }
+        return parseToNumber(props.uss) ?? ''
+    })()
     const errors = props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent)
     const errorComponent = <DisplayResults results={errors} editor={false} />
 
@@ -157,6 +163,41 @@ function TextInput({ currentValue, blockIdent, setUss }: { currentValue: string,
     )
 }
 
+export function toNumberAST(value: string, blockIdent: string): UrbanStatsASTExpression {
+    return {
+        type: 'call',
+        fn: {
+            type: 'identifier',
+            name: { node: 'toNumber', location: emptyLocation(extendBlockIdPositionalArg(blockIdent, 0)) },
+        },
+        args: [{
+            type: 'unnamed',
+            value: {
+                type: 'constant',
+                value: {
+                    node: { type: 'string', value },
+                    location: emptyLocation(extendBlockIdPositionalArg(blockIdent, 0)),
+                },
+            },
+        }],
+        entireLoc: emptyLocation(blockIdent),
+    }
+}
+
+export function parseToNumber(uss: UrbanStatsASTExpression): string | undefined {
+    if (uss.type === 'call'
+        && uss.fn.type === 'identifier'
+        && uss.fn.name.node === 'toNumber'
+        && uss.args.length === 1
+        && uss.args[0].type === 'unnamed') {
+        const argExpr = uss.args[0].value
+        if (argExpr.type === 'constant' && argExpr.value.node.type === 'string') {
+            return argExpr.value.node.value
+        }
+    }
+    return undefined
+}
+
 function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void }): ReactNode {
     return (
         <input
@@ -164,21 +205,7 @@ function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: strin
             value={currentValue}
             onChange={(e) => {
                 const value = e.target.value
-                let node: (UrbanStatsASTExpression & { type: 'constant' })['value']['node']
-                let numberValue
-                if ((numberValue = parseNumber(value)) !== undefined) {
-                    node = { type: 'number', value: numberValue }
-                }
-                else {
-                    node = { type: 'string', value }
-                }
-                const newUss: UrbanStatsASTExpression = {
-                    type: 'constant',
-                    value: {
-                        node,
-                        location: emptyLocation(blockIdent),
-                    },
-                }
+                const newUss: UrbanStatsASTExpression = toNumberAST(value, blockIdent)
                 setUss(newUss, {})
             }}
             style={{ width: '200px', fontSize: '14px', padding: '4px 8px', resize: 'none' }}
@@ -187,7 +214,10 @@ function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: strin
     )
 }
 
-export function classifyExpr(uss: UrbanStatsASTExpression): Selection {
+export function maybeClassifyExpr(uss: UrbanStatsASTExpression): Selection | undefined {
+    if (parseToNumber(uss) !== undefined) {
+        return { type: 'constant' }
+    }
     if (uss.type === 'customNode') {
         return { type: 'custom' }
     }
@@ -208,7 +238,15 @@ export function classifyExpr(uss: UrbanStatsASTExpression): Selection {
     if (uss.type === 'objectLiteral') {
         return { type: 'object' }
     }
-    throw new Error(`Unsupported USS expression type: ${uss.type}`)
+    return undefined
+}
+
+export function classifyExpr(uss: UrbanStatsASTExpression): Selection {
+    const classified = maybeClassifyExpr(uss)
+    if (!classified) {
+        throw new Error(`Unsupported USS expression: ${unparse(uss)}`)
+    }
+    return classified
 }
 
 export function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection): SelectorRenderResult {

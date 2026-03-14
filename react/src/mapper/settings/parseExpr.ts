@@ -5,6 +5,8 @@ import { Decorated, ParseError, parseNoErrorAsCustomNode, unparse } from '../../
 import { renderType, TypeEnvironment, USSObjectType, USSType } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
 
+import { parseToNumber, toNumberAST } from './Selector'
+
 export function maybeParseExpr(
     expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
     blockIdent: string,
@@ -138,6 +140,10 @@ function attemptParseExpr(
             }
             return undefined
         case 'call':
+            const toNumberCallStr = parseToNumber(expr)
+            if (toNumberCallStr !== undefined && types.some(t => t.type === 'number')) {
+                return toNumberAST(toNumberCallStr, blockIdent)
+            }
             const fn = expr.fn
             if (fn.type !== 'identifier') {
                 return undefined
@@ -241,7 +247,9 @@ export function possibilities(target: USSType[], env: TypeEnvironment): Selectio
         results.push(...variables)
     }
     return results
-} export function changeBlockId(expr: UrbanStatsASTExpression, a: string, b: string): UrbanStatsASTExpression {
+}
+
+export function changeBlockId(expr: UrbanStatsASTExpression, a: string, b: string): UrbanStatsASTExpression {
     function recD<T>(e: Decorated<T>): Decorated<T> {
         return {
             node: e.node,

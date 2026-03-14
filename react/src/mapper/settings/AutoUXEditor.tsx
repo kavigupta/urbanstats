@@ -20,7 +20,7 @@ import * as ArgEditButtons from './ArgEditButtons'
 import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import { SelectionContext, Selection as ContextSelection } from './SelectionContext'
-import { Selector, classifyExpr, getColor, labelPadding } from './Selector'
+import { Selector, classifyExpr, getColor, labelPadding, maybeClassifyExpr } from './Selector'
 import { maybeParseExpr, parseExpr, Selection, possibilities, changeBlockId } from './parseExpr'
 
 function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression {
@@ -253,7 +253,7 @@ export function AutoUXEditor(props: {
 
     const subcomponent = (): [ReactNode | undefined, 'consumes-errors' | 'does-not-consume-errors'] => {
         const uss = props.uss
-        if (uss.type === 'constant') {
+        if (maybeClassifyExpr(uss)?.type === 'constant') {
             return [undefined, 'does-not-consume-errors']
         }
         if (uss.type === 'customNode') {
