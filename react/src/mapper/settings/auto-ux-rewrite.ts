@@ -26,9 +26,9 @@ export type UnparseRewriteRules = UnparseRewriteRule<any>[]
 
 export const autoUXSimplificationRewriteRules: UnparseRewriteRules = [autoUXToNumberRewriteRule]
 
-export function applyRewriteRules(rewriteRules: UnparseRewriteRules, expr: UrbanStatsASTExpression): UrbanStatsASTExpression {
+export function applyRewriteRules(expr: UrbanStatsASTExpression): UrbanStatsASTExpression {
     let rewritten = expr
-    for (const rewriteRule of rewriteRules) {
+    for (const rewriteRule of autoUXSimplificationRewriteRules) {
         try {
             rewritten = rewriteRule.createNew(rewriteRule.parser.parse(rewritten, new Map()), rewritten) ?? expr
         }

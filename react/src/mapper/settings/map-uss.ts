@@ -97,7 +97,7 @@ export function makeStatements<const T extends UrbanStatsASTStatement[]>(element
 function attemptParseCondition(conditionStmt: UrbanStatsASTStatement | undefined): { conditionRest: UrbanStatsASTStatement[], conditionExpr: UrbanStatsASTExpression } {
     let stmts = conditionStmt !== undefined ? [conditionStmt] : []
     if (conditionStmt?.type === 'condition') {
-        const conditionText = unparse(conditionStmt.condition, { simplify: true, rewriteRules: autoUXSimplificationRewriteRules })
+        const conditionText = unparse(conditionStmt.condition, { simplify: 'auto-ux' })
         if (conditionText.trim() !== 'true') {
             return {
                 conditionExpr: parseNoErrorAsCustomNode(conditionText, idCondition, [{ type: 'vector', elementType: { type: 'boolean' } }]),
@@ -137,7 +137,7 @@ export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, ty
     return {
         type: 'statements',
         result: [
-            { type: 'expression', value: parseNoErrorAsCustomNode(unparse(preamble, { simplify: true, rewriteRules: autoUXSimplificationRewriteRules }), idPreamble) },
+            { type: 'expression', value: parseNoErrorAsCustomNode(unparse(preamble, { simplify: 'auto-ux' }), idPreamble) },
             condition,
         ] as const,
         entireLoc: locationOf(stmt),

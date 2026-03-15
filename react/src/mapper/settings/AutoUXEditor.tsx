@@ -21,7 +21,6 @@ import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import { SelectionContext, Selection as ContextSelection } from './SelectionContext'
 import { Selector, getColor, labelPadding } from './Selector'
-import { autoUXSimplificationRewriteRules } from './auto-ux-rewrite'
 import { maybeParseExpr, parseExpr, possibilities, changeBlockId } from './parseExpr'
 import { classifyExpr, maybeClassifyExpr, Selection } from './selector-classifier'
 
@@ -625,7 +624,7 @@ function defaultForSelection(
 
     switch (selection.type) {
         case 'custom':
-            return parseNoErrorAsCustomNode(unparse(current, { simplify: true, rewriteRules: autoUXSimplificationRewriteRules }), blockIdent, [type])
+            return parseNoErrorAsCustomNode(unparse(current, { simplify: 'auto-ux' }), blockIdent, [type])
         case 'constant':
             return createDefaultExpression(type, blockIdent, typeEnvironment)
         case 'variable':

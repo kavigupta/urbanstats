@@ -1,4 +1,4 @@
-import { applyRewriteRules, UnparseRewriteRules } from '../mapper/settings/auto-ux-rewrite'
+import { applyRewriteRules } from '../mapper/settings/auto-ux-rewrite'
 import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
@@ -19,10 +19,9 @@ export interface ParseError { type: 'error', value: string, location: LocInfo }
 export interface UnparseOptions {
     indent?: number
     inline?: boolean
-    simplify?: boolean
+    simplify?: 'basic' | 'auto-ux'
     expressionalContext?: boolean
     wrap?: boolean
-    rewriteRules?: UnparseRewriteRules
 }
 
 type USSInfixSequenceElement = { type: 'operator', operatorType: 'unary' | 'binary', value: Decorated<string> } | UrbanStatsASTExpression
@@ -845,8 +844,8 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
         }
     }
 
-    if (opts.rewriteRules !== undefined && isExpressionNode(node)) {
-        node = applyRewriteRules(opts.rewriteRules, node)
+    if (opts.simplify === 'auto-ux' && isExpressionNode(node)) {
+        node = applyRewriteRules(node)
     }
 
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
@@ -860,12 +859,12 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
 
     switch (node.type) {
         case 'autoUXNode':
-            if (opts.simplify) {
+            if (opts.simplify !== undefined) {
                 return unparse(node.expr, opts)
             }
             return `autoUXNode(${unparse(node.expr, { ...opts, inline: true, expressionalContext: true })}, ${JSON.stringify(JSON.stringify(node.metadata))})`
         case 'customNode':
-            if (!opts.simplify) {
+            if (opts.simplify === undefined) {
                 return `customNode(${JSON.stringify(node.originalCode)})`
             }
             if (opts.expressionalContext && node.expr.type !== 'expression') {
@@ -1008,7 +1007,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
             const restStatements = { type: 'statements' as const, result: node.rest, entireLoc: node.entireLoc }
             const restStr = unparse(restStatements, opts)
             // If condition is literal "true", elide it
-            if (opts.simplify && node.condition.type === 'identifier' && node.condition.name.node === 'true') {
+            if (opts.simplify !== undefined && node.condition.type === 'identifier' && node.condition.name.node === 'true') {
                 return restStr
             }
             return `${indentSpaces(opts.indent)}condition (${condStr})\n${restStr}`
