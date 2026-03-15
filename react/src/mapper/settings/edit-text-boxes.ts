@@ -69,8 +69,13 @@ export function getTextBoxes(settings: MapSettings, typeEnvironment: TypeEnviron
         try {
             return mapSchema.parse(settings.script.uss, typeEnvironment).currentValue?.expr ?? []
         }
-        catch {
-            return undefined
+        catch (err) {
+            if (err instanceof l.LiteralParseError) {
+                return undefined
+            }
+            else {
+                throw err
+            }
         }
     }
     return undefined
