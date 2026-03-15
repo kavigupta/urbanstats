@@ -85,7 +85,7 @@ export function numberWithOriginalString(): LiteralExprParser<{ value?: number, 
         parse(expr, env) {
             if (expr?.type === 'unaryOperator' && expr.operator.node === '-') {
                 const { value, originalString } = numberWithOriginalString().parse(expr.expr, env)
-                return { value: -value, originalString: `-${originalString}` }
+                return { value: value === undefined ? undefined : -value, originalString: `-${originalString}` }
             }
             if (expr?.type === 'constant' && expr.value.node.type === 'number') {
                 return { value: expr.value.node.value, originalString: expr.value.node.value.toString() }
@@ -95,9 +95,7 @@ export function numberWithOriginalString(): LiteralExprParser<{ value?: number, 
                 unnamedArgs: [string()],
                 namedArgs: {},
             })
-            console.log('attempting to run toNumberSchema on', unparse(expr!))
             const numberStr = toNumberSchema.parse(expr, env).unnamedArgs[0]
-            console.log('got numberStr', numberStr)
             const numValue = parseNumber(numberStr)
             return { value: numValue, originalString: numberStr }
         },
