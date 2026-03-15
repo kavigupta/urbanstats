@@ -8,12 +8,12 @@ export const emptyTypeEnvironment: TypeEnvironment = new Map()
 interface UnparseRewriteRule<T> {
     parser: l.LiteralExprParser<T>
     // undefined if the rule should not be applied; otherwise returns the expression to replace with
-    method: (match: T, expr: UrbanStatsASTExpression) => UrbanStatsASTExpression | undefined
+    createNew: (match: T, expr: UrbanStatsASTExpression) => UrbanStatsASTExpression | undefined
 }
 
-export const autoUXToNumberRewriteRule: UnparseRewriteRule<number> = {
+const autoUXToNumberRewriteRule: UnparseRewriteRule<number> = {
     parser: l.number(),
-    method: (value) => {
+    createNew: (value) => {
         return {
             type: 'constant',
             value: { node: { type: 'number', value }, location: emptyLocation('') },
@@ -30,7 +30,7 @@ export function applyRewriteRules(rewriteRules: UnparseRewriteRules, expr: Urban
     let rewritten = expr
     for (const rewriteRule of rewriteRules) {
         try {
-            rewritten = rewriteRule.method(rewriteRule.parser.parse(rewritten, new Map()), rewritten) ?? expr
+            rewritten = rewriteRule.createNew(rewriteRule.parser.parse(rewritten, new Map()), rewritten) ?? expr
         }
         catch (err) {
             if (err instanceof l.LiteralParseError) {
