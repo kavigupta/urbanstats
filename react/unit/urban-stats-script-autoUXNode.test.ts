@@ -74,5 +74,5 @@ void test('autoUX expression evaluates correctly', () => {
 void test('unparsing', () => {
     assert.equal(unparse(parseNoError('autoUXNode(1 + 2, "{}")', 'test')), 'autoUXNode(1 + 2, "{}")')
     assert.equal(unparse(parseNoError('autoUXNode(1 + 2, "{\\"collapsed\\": true}")', 'test')), 'autoUXNode(1 + 2, "{\\"collapsed\\":true}")')
-    assert.equal(unparse(parseNoError('autoUXNode(1 + 2, "{\\"collapsed\\": true}")', 'test'), { simplify: true }), '1 + 2')
+    assert.equal(unparse(parseNoError('autoUXNode(1 + 2, "{\\"collapsed\\": true}")', 'test'), { simplify: 'basic' }), '1 + 2')
 })
