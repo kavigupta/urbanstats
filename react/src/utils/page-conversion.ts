@@ -141,7 +141,7 @@ export function tableToMapper(uss: MapUSS): string | undefined {
                 unnamedArgs: [],
             })), (columns) => {
                 if (columns.length === 0) {
-                    throw new Error('table must have at least one column')
+                    throw new l.LiteralParseError('table must have at least one column')
                 }
                 return {
                     values: columns[0].namedArgs.values,
