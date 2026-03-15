@@ -1,4 +1,5 @@
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
+import * as l from '../../urban-stats-script/literal-parser'
 import { parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
 import { assert } from '../../utils/defensive'
 
@@ -10,8 +11,13 @@ export function parseToNumber(uss: UrbanStatsASTExpression): string | undefined 
     try {
         return toNumberSchema.parse(uss, emptyTypeEnvironment).unnamedArgs[0]
     }
-    catch {
-        return undefined
+    catch (err) {
+        if (err instanceof l.LiteralParseError) {
+            return undefined
+        }
+        else {
+            throw err
+        }
     }
 }
 

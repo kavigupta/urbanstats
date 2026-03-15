@@ -40,7 +40,17 @@ export const autoUXSimplificationRewriteRules: UnparseRewriteRules = [autoUXToNu
 export function applyRewriteRules(rewriteRules: UnparseRewriteRule<any>[], expr: UrbanStatsASTExpression): UrbanStatsASTExpression {
     let rewritten = expr
     for (const rewriteRule of rewriteRules) {
-        rewritten = rewriteRule.method(rewriteRule.parser.parse(rewritten, new Map()), rewritten) ?? expr
+        try {
+            rewritten = rewriteRule.method(rewriteRule.parser.parse(rewritten, new Map()), rewritten) ?? expr
+        }
+        catch (err) {
+            if (err instanceof l.LiteralParseError) {
+                continue
+            }
+            else {
+                throw err
+            }
+        }
     }
     return rewritten
 }

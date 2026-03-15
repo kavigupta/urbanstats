@@ -234,8 +234,13 @@ export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnv
     try {
         return colorSchema.parse(expr, typeEnvironment)
     }
-    catch {
-        return
+    catch (err) {
+        if (err instanceof l.LiteralParseError) {
+            return undefined
+        }
+        else {
+            throw err
+        }
     }
 }
 

@@ -106,8 +106,13 @@ export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): Ur
             entireLoc: uss.entireLoc,
         }) as UrbanStatsASTExpression
     }
-    catch {
-        return undefined
+    catch (err) {
+        if (err instanceof l.LiteralParseError) {
+            return undefined
+        }
+        else {
+            throw err
+        }
     }
 }
 
@@ -220,7 +225,12 @@ export function tableToMapper(uss: MapUSS): string | undefined {
         const result = edit(cMapCall) as UrbanStatsASTExpression
         return unparse(result)
     }
-    catch {
-        return undefined
+    catch (err) {
+        if (err instanceof l.LiteralParseError) {
+            return undefined
+        }
+        else {
+            throw err
+        }
     }
 }
