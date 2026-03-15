@@ -11,8 +11,15 @@ import { noLocation } from './location'
 import { unparse } from './parser'
 import { TypeEnvironment, USSType } from './types-values'
 
+export class LiteralParseError extends Error {
+    constructor(message: string) {
+        super(message)
+        this.name = 'LiteralParseError'
+    }
+}
+
 function error(message: string, expr: UrbanStatsASTExpression | UrbanStatsASTStatement | undefined | UrbanStatsASTStatement[], childErrors?: Error[]): never {
-    throw new Error(`${message}: ${JSON.stringify(expr)}${childErrors && `\n${childErrors.map(e => `  ${e.message}`).join('\n')}`}`)
+    throw new LiteralParseError(`${message}: ${JSON.stringify(expr)}${childErrors && `\n${childErrors.map(e => `  ${e.message}`).join('\n')}`}`)
 }
 
 interface LiteralExprParser<T> {
@@ -59,7 +66,12 @@ export function union<T>(schemas: LiteralExprParser<T>[]): LiteralExprParser<T> 
                     return schema.parse(expr, env, doEdit)
                 }
                 catch (e) {
-                    errors.push(e as Error)
+                    if (e instanceof LiteralParseError) {
+                        errors.push(e)
+                    }
+                    else {
+                        throw e
+                    }
                 }
             }
             error(`No union schema could be parsed`, expr, errors)
@@ -205,7 +217,14 @@ export function deconstruct<T>(schema: LiteralExprParser<T>): LiteralExprParser<
                         try {
                             return schema.parse(equivalentExpression, env, doEdit)
                         }
-                        catch {}
+                        catch (err) {
+                            if (err instanceof LiteralParseError) {
+                                continue
+                            }
+                            else {
+                                throw err
+                            }
+                        }
                     }
                 }
             }
