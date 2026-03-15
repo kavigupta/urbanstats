@@ -1,16 +1,8 @@
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
-import * as l from '../../urban-stats-script/literal-parser'
 import { parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
-import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
 
-const emptyTypeEnvironment: TypeEnvironment = new Map()
-
-const toNumberSchema = l.call({
-    fn: l.identifier('toNumber'),
-    unnamedArgs: [l.string()] as [ReturnType<typeof l.string>],
-    namedArgs: {},
-})
+import { emptyTypeEnvironment, toNumberSchema } from './auto-ux-rewrite'
 
 export type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' } | { type: 'constant' } | { type: 'vector' } | { type: 'object' }
 

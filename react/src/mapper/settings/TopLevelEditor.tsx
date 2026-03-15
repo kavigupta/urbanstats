@@ -14,6 +14,7 @@ import { ConditionEditor } from './ConditionEditor'
 import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import { PreambleEditor } from './PreambleEditor'
+import { autoUXSimplificationRewriteRules } from './auto-ux-rewrite'
 import { MapUSS, makeStatements, idOutput, idCondition, idPreamble, rootBlockIdent, attemptParseAsTopLevel, type PreambleNode } from './map-uss'
 
 export function TopLevelEditor({
@@ -104,7 +105,7 @@ export function TopLevelEditor({
                 onChange={(checked) => {
                     if (checked) {
                         assert(uss.type === 'statements', 'USS should be statements when enabling custom script')
-                        setUss(parseNoErrorAsCustomNode(unparse(uss, { simplify: true }), rootBlockIdent), {})
+                        setUss(parseNoErrorAsCustomNode(unparse(uss, { simplify: true, rewriteRules: autoUXSimplificationRewriteRules }), rootBlockIdent), {})
                     }
                     else {
                         assert(uss.type === 'customNode', 'USS should not be a custom node when disabled')

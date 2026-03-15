@@ -6,7 +6,7 @@ import { Context } from './context'
 import { AnnotatedToken, AnnotatedTokenWithValue, lex, Keyword, emptyLocation } from './lexer'
 import { noLocation, LocInfo, Block } from './location'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
-import { USSType } from './types-values'
+import type { TypeEnvironment, USSType } from './types-values'
 
 export interface Decorated<T> {
     node: T
@@ -14,6 +14,33 @@ export interface Decorated<T> {
 }
 
 export interface ParseError { type: 'error', value: string, location: LocInfo }
+
+export interface LiteralExprParser<T> {
+    parse: (
+        expr: UrbanStatsASTExpression | undefined,
+        typeEnvironment: TypeEnvironment,
+        doEdit?: (newExpr: UrbanStatsASTExpression | undefined) => UrbanStatsASTExpression | UrbanStatsASTStatement | undefined
+    ) => T
+}
+
+export interface UnparseRewriteRule<T = unknown> {
+    parser: LiteralExprParser<T>
+    // undefined if the rule should not be applied; otherwise returns the expression to replace with
+    method: (match: T, expr: UrbanStatsASTExpression) => UrbanStatsASTExpression | undefined
+}
+
+export interface UnparseOptions {
+    indent?: number
+    inline?: boolean
+    simplify?: boolean
+    expressionalContext?: boolean
+    wrap?: boolean
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- This is used for the rewrite rules, which can have any intermediate
+    rewriteRules?: UnparseRewriteRule<any>[]
+    rewriteTypeEnvironment?: TypeEnvironment
+}
+
+const defaultRewriteTypeEnvironment: TypeEnvironment = new Map()
 
 type USSInfixSequenceElement = { type: 'operator', operatorType: 'unary' | 'binary', value: Decorated<string> } | UrbanStatsASTExpression
 
@@ -814,12 +841,54 @@ export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpre
     return identifiers
 }
 
-export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, opts: { indent?: number, inline?: boolean, simplify?: boolean, expressionalContext?: boolean, wrap?: boolean } = {}): string {
+export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, opts: UnparseOptions = {}): string {
     if (opts.inline) {
         assert(opts.expressionalContext ?? false, 'expressionalContext must be true if inline is true')
     }
     opts.indent = opts.indent ?? 0
     opts.wrap = opts.wrap ?? true
+
+    function isExpressionNode(n: UrbanStatsASTStatement | UrbanStatsASTExpression): n is UrbanStatsASTExpression {
+        switch (n.type) {
+            case 'assignment':
+            case 'expression':
+            case 'statements':
+            case 'if':
+            case 'do':
+            case 'condition':
+                return false
+            default:
+                return true
+        }
+    }
+
+    function applyRewriteRules(expr: UrbanStatsASTExpression): UrbanStatsASTExpression {
+        if (opts.rewriteRules === undefined) {
+            return expr
+        }
+        let rewritten: UrbanStatsASTExpression = expr
+        const rewriteTypeEnvironment = opts.rewriteTypeEnvironment ?? defaultRewriteTypeEnvironment
+        for (const rewriteRule of opts.rewriteRules) {
+            if (typeof rewritten === 'string') {
+                break
+            }
+            try {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- can be anything, but next enforces it.
+                const parsed = rewriteRule.parser.parse(rewritten, rewriteTypeEnvironment)
+                rewritten = rewriteRule.method(parsed, rewritten) ?? expr
+            }
+            catch {}
+        }
+        return rewritten
+    }
+
+    if (opts.rewriteRules !== undefined && isExpressionNode(node)) {
+        console.log('Original expression:', unparse(node))
+        const rewritten = applyRewriteRules(node)
+        console.log('Rewritten expression:', unparse(rewritten))
+        node = rewritten
+    }
+
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
         return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant' || expr.type === 'autoUXNode' || expr.type === 'customNode'
     }

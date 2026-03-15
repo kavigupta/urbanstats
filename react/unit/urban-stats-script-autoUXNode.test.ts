@@ -1,6 +1,7 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
+import { autoUXSimplificationRewriteRules } from '../src/mapper/settings/auto-ux-rewrite'
 import { evaluate } from '../src/urban-stats-script/interpreter'
 import { Block } from '../src/urban-stats-script/location'
 import { parse, parseNoError, toSExp, unparse } from '../src/urban-stats-script/parser'
@@ -75,4 +76,9 @@ void test('unparsing', () => {
     assert.equal(unparse(parseNoError('autoUXNode(1 + 2, "{}")', 'test')), 'autoUXNode(1 + 2, "{}")')
     assert.equal(unparse(parseNoError('autoUXNode(1 + 2, "{\\"collapsed\\": true}")', 'test')), 'autoUXNode(1 + 2, "{\\"collapsed\\":true}")')
     assert.equal(unparse(parseNoError('autoUXNode(1 + 2, "{\\"collapsed\\": true}")', 'test'), { simplify: true }), '1 + 2')
+})
+
+void test('unparsing with rewrite rules', () => {
+    assert.equal(unparse(parseNoError('toNumber("23.000")', 'test'), { rewriteRules: autoUXSimplificationRewriteRules }), '23.000')
+    assert.equal(unparse(parseNoError('autoUXNode(toNumber("23.000"), "{}")', 'test'), { simplify: true, rewriteRules: autoUXSimplificationRewriteRules }), '23.000')
 })

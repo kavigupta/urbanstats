@@ -15,7 +15,7 @@ function error(message: string, expr: UrbanStatsASTExpression | UrbanStatsASTSta
     throw new Error(`${message}: ${JSON.stringify(expr)}${childErrors && `\n${childErrors.map(e => `  ${e.message}`).join('\n')}`}`)
 }
 
-interface LiteralExprParser<T> {
+export interface LiteralExprParser<T> {
     // Undefined is a non-existent expression, used for optionals
     parse: (
         expr: UrbanStatsASTExpression | undefined,
