@@ -52,7 +52,6 @@ export default tseslint.config(
             'import/named': 'off',
         },
         settings: {
-            'import/extensions': ['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx', '.mts', '.cts'],
             'import/resolver': {
                 typescript: true,
                 node: true,
