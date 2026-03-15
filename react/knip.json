@@ -4,9 +4,7 @@
     "src/index.tsx",
     "src/loading.ts",
     "test/**/*.test.ts",
-    "unit/**/*.test.ts",
-    "test/scripts/**/*.ts",
-    "unit/scripts/**/*.ts"
+    "unit/**/*.test.ts"
   ],
   "project": [
     "src/**/*.{ts,tsx}",
