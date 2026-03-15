@@ -18,6 +18,7 @@ import { activeVectorKeys, fromVector, getVector } from '../page_template/settin
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { allGroups, CategoryIdentifier, StatPath, statsTree } from '../page_template/statistic-tree'
 import { OauthCallbackPanel } from '../quiz/OauthCallbackPanel'
+import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
 import type {
     QuizQuestionsModel, CustomQuizContent, JuxtaQuestionJSON,
     QuizDescriptor, RetroQuestionJSON, QuizHistory,
@@ -624,7 +625,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             let todayName: string | undefined
             const updatedDescriptor: PageDescriptor = { ...newDescriptor }
             const panel = import('../components/quiz-panel')
-            const dates = import('../quiz/dates')
             const quizImport = import('../quiz/quiz')
             switch (newDescriptor.mode) {
                 case 'custom': {
@@ -639,7 +639,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     break
                 }
                 case 'retro': {
-                    const retro = newDescriptor.date ?? (await dates).getRetrostatOffsetNumber()
+                    const retro = newDescriptor.date ?? getRetrostatOffsetNumber()
                     quizDescriptor = {
                         kind: 'retrostat',
                         name: `W${retro}`,
@@ -675,7 +675,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     break
                 }
                 case undefined:
-                    const today = newDescriptor.date ?? (await dates).getDailyOffsetNumber()
+                    const today = newDescriptor.date ?? getDailyOffsetNumber()
                     quizDescriptor = { kind: 'juxtastat', name: today }
                     const [json, { wrapQuestionsModel, loadJuxta }] = await Promise.all([
                         loadJSON(`/quiz/${today}`),
