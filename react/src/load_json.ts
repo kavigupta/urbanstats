@@ -187,7 +187,7 @@ function pullKey(arr: number[], key: string): number {
     throw new Error('index not found')
 }
 
-export async function loadUniverses(type: string): Promise<ArticleUniverseList> {
+async function loadUniverses(type: string): Promise<ArticleUniverseList> {
     return loadProtobuf(`/universes/${type}.gz`, 'ArticleUniverseList')
 }
 
@@ -226,13 +226,6 @@ export async function loadOrderingDataProtobuf(universe: Universe, statpath: str
             return [res.populationPercentileByUniverse![i].populationPercentile![universeIndex]]
         }),
     }
-}
-
-export async function loadDataInIndexOrder(
-    universe: Universe, statpath: string, type: string,
-): Promise<[number[], number[]]> {
-    const dataPromise = await loadOrderingDataProtobuf(universe, statpath, type)
-    return [dataPromise.value, dataPromise.populationPercentile]
 }
 
 export interface ArticleOrderingListInternal {

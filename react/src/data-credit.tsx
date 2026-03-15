@@ -59,7 +59,7 @@ function NRef({ children, name, h: Header = 'h2' }: { children: React.ReactNode,
     )
 }
 
-export function Shapefiles(): ReactNode {
+function Shapefiles(): ReactNode {
     // {name: string, dataCredit: {text: string | undefined, linkText: string, link: string}[]}[]
     // make a table of this data, with the link in the second column and the text in the third, if it exists. Put multiple rows on the right 2 columns if there are multiple data credits.
     const colors = useColors()

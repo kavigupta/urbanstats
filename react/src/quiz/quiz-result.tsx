@@ -387,7 +387,7 @@ function summaryTexts(correctPattern: CorrectPattern, quizKind: QuizKind): [stri
     }
 }
 
-export function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizKind }): ReactNode {
+function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizKind }): ReactNode {
     const [compactRepr] = useSetting('juxtastatCompactEmoji')
     const juxtaColors = useJuxtastatColors()
     const [prefix, summaryText] = summaryTexts(props.correctPattern, props.quizKind)
@@ -472,7 +472,7 @@ interface GenericQuizResultRowProps extends QuizResultRowProps {
     getStat: (letter: 'a' | 'b') => ReactNode
 }
 
-export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNode {
+function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     const comparison = aCorrect(props.question)
@@ -706,7 +706,7 @@ function toCompactRepresentation(correctPattern: CorrectPattern, correct: string
     return result.map(line => line.join(''))
 }
 
-export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: CorrectPattern, compactRepr: boolean): string[] {
+function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: CorrectPattern, compactRepr: boolean): string[] {
     if (compactRepr && correctPattern.length > maxPerLine) {
         return toCompactRepresentation(correctPattern, juxtaColors.correctEmoji, juxtaColors.incorrectEmoji)
     }
