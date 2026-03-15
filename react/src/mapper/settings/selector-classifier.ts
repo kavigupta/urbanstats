@@ -1,44 +1,30 @@
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
-import { emptyLocation } from '../../urban-stats-script/lexer'
-import { extendBlockIdPositionalArg } from '../../urban-stats-script/location'
-import { unparse } from '../../urban-stats-script/parser'
+import * as l from '../../urban-stats-script/literal-parser'
+import { parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
+import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
+
+const emptyTypeEnvironment: TypeEnvironment = new Map()
+
+const toNumberSchema = l.call({
+    fn: l.identifier('toNumber'),
+    unnamedArgs: [l.string()] as [ReturnType<typeof l.string>],
+    namedArgs: {},
+})
 
 export type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' } | { type: 'constant' } | { type: 'vector' } | { type: 'object' }
 
 export function parseToNumber(uss: UrbanStatsASTExpression): string | undefined {
-    if (uss.type === 'call'
-        && uss.fn.type === 'identifier'
-        && uss.fn.name.node === 'toNumber'
-        && uss.args.length === 1
-        && uss.args[0].type === 'unnamed') {
-        const argExpr = uss.args[0].value
-        if (argExpr.type === 'constant' && argExpr.value.node.type === 'string') {
-            return argExpr.value.node.value
-        }
+    try {
+        return toNumberSchema.parse(uss, emptyTypeEnvironment).unnamedArgs[0]
     }
-    return undefined
+    catch {
+        return undefined
+    }
 }
 
 export function toNumberAST(value: string, blockIdent: string): UrbanStatsASTExpression {
-    return {
-        type: 'call',
-        fn: {
-            type: 'identifier',
-            name: { node: 'toNumber', location: emptyLocation(extendBlockIdPositionalArg(blockIdent, 0)) },
-        },
-        args: [{
-            type: 'unnamed',
-            value: {
-                type: 'constant',
-                value: {
-                    node: { type: 'string', value },
-                    location: emptyLocation(extendBlockIdPositionalArg(blockIdent, 0)),
-                },
-            },
-        }],
-        entireLoc: emptyLocation(blockIdent),
-    }
+    return parseNoErrorAsExpression(`toNumber(${JSON.stringify(value)})`, blockIdent)
 }
 
 export function maybeClassifyExpr(uss: UrbanStatsASTExpression): Selection | undefined {
