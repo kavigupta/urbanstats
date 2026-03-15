@@ -47,6 +47,12 @@ export default tseslint.config(
             // this rule causes .eslintrc.json to be required, or it will error when you run npm run lint.
             'import/no-unused-modules': ['error', {
                 unusedExports: true,
+                src: [
+                    'src/**/*.ts',
+                    'src/**/*.tsx',
+                    'test/**/*.ts',
+                    'unit/**/*.ts',
+                ],
                 ignoreUnusedTypeExports: true,
             }],
             'import/no-unassigned-import': ['error', {
@@ -57,6 +63,7 @@ export default tseslint.config(
             'import/named': 'off',
         },
         settings: {
+            'import/extensions': ['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx', '.mts', '.cts'],
             'import/resolver': {
                 typescript: true,
                 node: true,
