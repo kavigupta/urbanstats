@@ -3,13 +3,14 @@ import * as l from '../../urban-stats-script/literal-parser'
 import { parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
 import { assert } from '../../utils/defensive'
 
-import { emptyTypeEnvironment, toNumberSchema } from './auto-ux-rewrite'
+import { emptyTypeEnvironment } from './auto-ux-rewrite'
 
 export type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' } | { type: 'constant' } | { type: 'vector' } | { type: 'object' }
 
 export function parseToNumber(uss: UrbanStatsASTExpression): string | undefined {
+    console.log('parsing uss', unparse(uss))
     try {
-        return toNumberSchema.parse(uss, emptyTypeEnvironment).unnamedArgs[0]
+        return l.numberWithOriginalString().parse(uss, emptyTypeEnvironment).originalString
     }
     catch (err) {
         if (err instanceof l.LiteralParseError) {

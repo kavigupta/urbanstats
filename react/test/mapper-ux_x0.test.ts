@@ -238,7 +238,7 @@ mapper(() => test)('do not re quote when selecting custom expression again', { c
 })
 
 for (const [typedValue, errorCase, inCode, simplifiedValue] of [['0.001', false, '0.001', '0.001'], ['23.000', false, '23', '23'], ['23a', true, 'toNumber("23a")', '23a']] as const) {
-    mapper(() => test)(`${typedValue} through custom expression toggle -> ${simplifiedValue}`, { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    mapper(() => test)(`${typedValue} through custom expression toggle to ${simplifiedValue}`, { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
         const messages = errorCase ? ['Error while executing function: Error: Expected a number or a string that can be converted to a number, got 23a'] : []
         await checkBox(t, /^max/)
         await replaceInput(t, '0', typedValue)

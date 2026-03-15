@@ -1,15 +1,9 @@
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
-import { parseNumber, emptyLocation } from '../../urban-stats-script/lexer'
+import { emptyLocation } from '../../urban-stats-script/lexer'
 import * as l from '../../urban-stats-script/literal-parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
 
 export const emptyTypeEnvironment: TypeEnvironment = new Map()
-
-export const toNumberSchema = l.call({
-    fn: l.identifier('toNumber'),
-    unnamedArgs: [l.string()] as [ReturnType<typeof l.string>],
-    namedArgs: {},
-})
 
 interface UnparseRewriteRule<T> {
     parser: l.LiteralExprParser<T>
@@ -17,16 +11,12 @@ interface UnparseRewriteRule<T> {
     method: (match: T, expr: UrbanStatsASTExpression) => UrbanStatsASTExpression | undefined
 }
 
-export const autoUXToNumberRewriteRule: UnparseRewriteRule<ReturnType<typeof toNumberSchema.parse>> = {
-    parser: toNumberSchema,
-    method: ({ unnamedArgs: [value] }) => {
-        const numValue = parseNumber(value)
-        if (numValue === undefined) {
-            return undefined
-        }
+export const autoUXToNumberRewriteRule: UnparseRewriteRule<number> = {
+    parser: l.number(),
+    method: (value) => {
         return {
             type: 'constant',
-            value: { node: { type: 'number', value: numValue }, location: emptyLocation('') },
+            value: { node: { type: 'number', value }, location: emptyLocation('') },
         } satisfies UrbanStatsASTExpression
     },
 }
