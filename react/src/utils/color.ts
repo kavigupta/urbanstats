@@ -4,7 +4,7 @@ import { Keypoints } from '../mapper/ramps'
 
 import { assert } from './defensive'
 
-export function randomColor(name: string): string {
+function randomColor(name: string): string {
     // randomly choose a color hex code where H is between 0 and 360,
     // S is between 50 and 100, and L is between 20 and 50
     // seed random with the hash of longname
@@ -23,7 +23,7 @@ export function randomColor(name: string): string {
     return `hsl(${random() * 360}, ${50 + random() * 50}%, ${20 + random() * 30}%)`
 }
 
-export function interpolateColor(ramp: Keypoints, item: number, color?: string): string {
+function interpolateColor(ramp: Keypoints, item: number, color?: string): string {
     // ramp is a list of [value, color] pairs
     // item is a value
 
@@ -78,7 +78,7 @@ export function mixWithBackground(color: string, fraction: number, background: s
 
 type LABColor = [number, number, number]
 
-export function furthestColor(fromColors: string[]): string {
+function furthestColor(fromColors: string[]): string {
     // tries every 16 * 16 * 16 color and finds the one that maximizes the minimum distance to any of the given colors
     const avoidColors: LABColor[] = fromColors.map(color => Color(color).lab().array() as LABColor)
     let bestColor: [number, number, number] = [0, 0, 0]

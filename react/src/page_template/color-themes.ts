@@ -56,7 +56,7 @@ const defaultHueColors: HueColors = hueColors
 export type Theme = 'Light Mode' | 'Dark Mode'
 
 /* eslint-disable no-restricted-syntax -- Allowing hex colors for themes */
-export const colorThemes: Record<Theme, Colors> = {
+const colorThemes: Record<Theme, Colors> = {
     'Light Mode': {
         background: '#fff8f0',
         cleanBackground: '#ffffff',

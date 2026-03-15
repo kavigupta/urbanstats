@@ -10,7 +10,7 @@ type ThemeSelection = 'userSettings' | 'Light Mode' | 'Dark Mode' | 'System Them
 // eslint-disable-next-line no-restricted-syntax -- React context
 const ThemeContext = React.createContext<ThemeSelection>('userSettings')
 
-export function useCurrentTheme(): Theme {
+function useCurrentTheme(): Theme {
     const [settingTheme] = useSetting('theme')
     const themeContext = useContext(ThemeContext)
     const theme = themeContext === 'userSettings' ? settingTheme : themeContext
@@ -20,7 +20,7 @@ export function useCurrentTheme(): Theme {
     return theme
 }
 
-export function useColors(): Colors {
+function useColors(): Colors {
     const theme = useCurrentTheme()
     const [cleanBackground] = useSetting('clean_background')
 
@@ -34,7 +34,7 @@ export function useColors(): Colors {
     }, [theme, cleanBackground])
 }
 
-export function useJuxtastatColors(): JuxtastatColors {
+function useJuxtastatColors(): JuxtastatColors {
     const colors = useColors()
     const [colorblindMode] = useSetting('colorblind_mode')
     return {
@@ -49,7 +49,7 @@ export function useJuxtastatColors(): JuxtastatColors {
     }
 }
 
-export function colorFromCycle(colors: HueColors, i: number): string {
+function colorFromCycle(colors: HueColors, i: number): string {
     const colorCycle = [
         colors.blue,
         colors.orange,
@@ -63,7 +63,7 @@ export function colorFromCycle(colors: HueColors, i: number): string {
     return colorCycle[i % colorCycle.length]
 }
 
-export function useStyleElement(): (elem: HTMLElement) => void {
+function useStyleElement(): (elem: HTMLElement) => void {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
 
@@ -84,7 +84,7 @@ export function useStyleElement(): (elem: HTMLElement) => void {
     }, [colors, juxtaColors])
 }
 
-export function OverrideTheme({ theme, children }: { theme: ThemeSelection, children: ReactNode }): ReactNode {
+function OverrideTheme({ theme, children }: { theme: ThemeSelection, children: ReactNode }): ReactNode {
     return (
         <ThemeContext.Provider value={theme}>
             <ThemeOverride>

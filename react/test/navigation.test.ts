@@ -107,7 +107,7 @@ test('using pointers preserves scroll', async (t) => {
 // Artificially induce lag for cetrain requests for testing purposes
 
 type Filter = (options: RequestMockOptions) => boolean
-export class DelayRequests extends RequestHook {
+class DelayRequests extends RequestHook {
     private delayFilter?: Filter
     private delayedRequests: (() => void)[] = []
 

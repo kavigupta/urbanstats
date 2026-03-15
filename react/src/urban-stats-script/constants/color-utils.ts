@@ -3,7 +3,7 @@ import { round as doRound } from 'mathjs'
 
 import { assert } from '../../utils/defensive'
 
-export function hexToColor(hex: string, round?: number): Color {
+function hexToColor(hex: string, round?: number): Color {
     const maybeRound: (num: number) => number = num => round !== undefined ? (Math.round(num * Math.pow(10, round)) / Math.pow(10, round)) : num
     const r = maybeRound(parseInt(hex.slice(1, 3), 16) / 255)
     const g = maybeRound(parseInt(hex.slice(3, 5), 16) / 255)
@@ -17,7 +17,7 @@ export type Color =
     { r: number, g: number, b: number, a: number } |
     { h: number, s: number, v: number, a: number }
 
-export function toRgb(color: Color): { r: number, g: number, b: number, a: number } {
+function toRgb(color: Color): { r: number, g: number, b: number, a: number } {
     if ('r' in color) {
         return color
     }
@@ -31,7 +31,7 @@ export function toRgb(color: Color): { r: number, g: number, b: number, a: numbe
     }
 }
 
-export function toHsv(color: Color): { h: number, s: number, v: number, a: number } {
+function toHsv(color: Color): { h: number, s: number, v: number, a: number } {
     if ('v' in color) {
         return color
     }
@@ -50,17 +50,17 @@ function drawFunction(functionName: string, param1: number, param2: number, para
     return `${functionName}(${format(param1)}, ${format(param2)}, ${format(param3)}${alphaPart})`
 }
 
-export function rgbColorExpression(color: Color, { forceAlpha, round }: { forceAlpha?: number, round?: number } = {}): string {
+function rgbColorExpression(color: Color, { forceAlpha, round }: { forceAlpha?: number, round?: number } = {}): string {
     const { r, g, b, a } = toRgb(color)
     return drawFunction('rgb', r, g, b, forceAlpha ?? a, round)
 }
 
-export function hsvColorExpression(color: Color, { forceAlpha, round }: { forceAlpha?: number, round?: number } = {}): string {
+function hsvColorExpression(color: Color, { forceAlpha, round }: { forceAlpha?: number, round?: number } = {}): string {
     const { h, s, v, a } = toHsv(color)
     return drawFunction('hsv', h, s, v, forceAlpha ?? a, round)
 }
 
-export function deconstructColor(color: Color): string {
+function deconstructColor(color: Color): string {
     if ('r' in color) {
         return drawFunction('rgb', color.r, color.g, color.b, color.a, 3)
     }
@@ -70,7 +70,7 @@ export function deconstructColor(color: Color): string {
     throw new Error()
 }
 
-export function doRender(color: Color, ignoreAlpha?: boolean): string {
+function doRender(color: Color, ignoreAlpha?: boolean): string {
     const hex = (x: number): string => {
         x = Math.round(x * 255)
         const hexValue = x.toString(16)

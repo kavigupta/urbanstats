@@ -2,11 +2,11 @@ import { Selector } from 'testcafe'
 
 import { target, checkTextboxes, comparisonPage, downloadHistogram, downloadImage, downloadOrCheckString, screencap, urbanstatsFixture, waitForSelectedSearchResult, getLocationWithoutSettings } from './test_utils'
 
-export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
-export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
-export const swSGV = 'Southwest San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
-export const eastSGV = 'East San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
-export const chicago = 'Chicago city [CCD], Cook County, Illinois, USA'
+const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
+const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
+const swSGV = 'Southwest San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
+const eastSGV = 'East San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
+const chicago = 'Chicago city [CCD], Cook County, Illinois, USA'
 
 async function downloadOrCheckHistogram(t: TestController, name: string, nth = 0): Promise<void> {
     const output = await t.eval(() => {

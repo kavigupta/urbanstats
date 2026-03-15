@@ -181,7 +181,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
     )
 }
 
-export function SuperTableRow(props: {
+function SuperTableRow(props: {
     rowIndex: number
     leftHeaderSpec: CellSpec
     cellSpecs: CellSpec[]

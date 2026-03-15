@@ -211,7 +211,7 @@ export function classifyExpr(uss: UrbanStatsASTExpression): Selection {
     throw new Error(`Unsupported USS expression type: ${uss.type}`)
 }
 
-export function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection): SelectorRenderResult {
+function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection): SelectorRenderResult {
     if (selection.type === 'custom') {
         return { text: 'Custom Expression' }
     }

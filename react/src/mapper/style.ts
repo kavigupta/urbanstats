@@ -7,7 +7,7 @@ export const settingNameStyle = {
     marginTop: '0.25em',
 }
 
-export const useSettingSubNameStyle = (): React.CSSProperties => ({
+const useSettingSubNameStyle = (): React.CSSProperties => ({
     fontWeight: 500,
     fontSize: '1em',
     marginBottom: '0.125em',

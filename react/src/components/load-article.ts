@@ -76,7 +76,7 @@ function unpackBytes(bytes: Uint8Array): number[] {
     return result
 }
 
-export function loadSingleArticle(data: Article, counts: CountsByUT, universe: string): ArticleRow[] {
+function loadSingleArticle(data: Article, counts: CountsByUT, universe: string): ArticleRow[] {
     // index of universe in data.universes
     const universeIndex = data.universes.indexOf(universe)
     const articleType = data.articleType

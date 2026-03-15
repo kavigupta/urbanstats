@@ -2,11 +2,11 @@ import { Selector } from 'testcafe'
 
 import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues, createComparison, downloadOrCheckString, downloadCSV } from './test_utils'
 
-export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
-export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
-export const swSGV = 'Southwest San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
-export const eastSGV = 'East San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
-export const chicago = 'Chicago city [CCD], Cook County, Illinois, USA'
+const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
+const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
+const swSGV = 'Southwest San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
+const eastSGV = 'East San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
+const chicago = 'Chicago city [CCD], Cook County, Illinois, USA'
 
 urbanstatsFixture('comparison test heterogenous', comparisonPage(['San Marino city, California, USA', pasadena, swSGV]))
 
