@@ -1,3 +1,4 @@
+import { applyRewriteRules } from '../mapper/settings/auto-ux-rewrite'
 import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
@@ -6,7 +7,7 @@ import { Context } from './context'
 import { AnnotatedToken, AnnotatedTokenWithValue, lex, Keyword, emptyLocation } from './lexer'
 import { noLocation, LocInfo, Block } from './location'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
-import { USSType } from './types-values'
+import type { USSType } from './types-values'
 
 export interface Decorated<T> {
     node: T
@@ -18,7 +19,7 @@ export interface ParseError { type: 'error', value: string, location: LocInfo }
 export interface UnparseOptions {
     indent?: number
     inline?: boolean
-    simplify?: 'basic'
+    simplify?: 'basic' | 'auto-ux'
     expressionalContext?: boolean
     wrap?: boolean
 }
@@ -828,6 +829,10 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
     }
     opts.indent = opts.indent ?? 0
     opts.wrap = opts.wrap ?? true
+
+    if (opts.simplify === 'auto-ux') {
+        node = applyRewriteRules(node)
+    }
 
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
         return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant' || expr.type === 'autoUXNode' || expr.type === 'customNode'

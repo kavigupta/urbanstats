@@ -7,6 +7,7 @@ import { assert } from '../utils/defensive'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import { AutoUXNodeMetadata } from './autoux-node-metadata'
+import { parseNumber } from './lexer'
 import { noLocation } from './location'
 import { unparse } from './parser'
 import { TypeEnvironment, USSType } from './types-values'
@@ -22,7 +23,7 @@ function error(message: string, expr: UrbanStatsASTExpression | UrbanStatsASTSta
     throw new LiteralParseError(`${message}: ${JSON.stringify(expr)}${childErrors && `\n${childErrors.map(e => `  ${e.message}`).join('\n')}`}`)
 }
 
-interface LiteralExprParser<T> {
+export interface LiteralExprParser<T> {
     // Undefined is a non-existent expression, used for optionals
     parse: (
         expr: UrbanStatsASTExpression | undefined,
@@ -79,16 +80,36 @@ export function union<T>(schemas: LiteralExprParser<T>[]): LiteralExprParser<T> 
     }
 }
 
-export function number(): LiteralExprParser<number> {
+export function numberWithOriginalString(): LiteralExprParser<{ value?: number, originalString: string }> {
     return {
         parse(expr, env) {
             if (expr?.type === 'unaryOperator' && expr.operator.node === '-') {
-                return -this.parse(expr.expr, env)
+                const { value, originalString } = numberWithOriginalString().parse(expr.expr, env)
+                return { value: value === undefined ? undefined : -value, originalString: `-${originalString}` }
             }
             if (expr?.type === 'constant' && expr.value.node.type === 'number') {
-                return expr.value.node.value
+                return { value: expr.value.node.value, originalString: expr.value.node.value.toString() }
             }
-            error('not a number', expr)
+            const toNumberSchema = call({
+                fn: identifier('toNumber'),
+                unnamedArgs: [string()],
+                namedArgs: {},
+            })
+            const numberStr = toNumberSchema.parse(expr, env).unnamedArgs[0]
+            const numValue = parseNumber(numberStr)
+            return { value: numValue, originalString: numberStr }
+        },
+    }
+}
+
+export function number(): LiteralExprParser<number> {
+    return {
+        parse(expr, env) {
+            const { value } = numberWithOriginalString().parse(expr, env)
+            if (value === undefined) {
+                error('not a valid number', expr)
+            }
+            return value
         },
     }
 }
