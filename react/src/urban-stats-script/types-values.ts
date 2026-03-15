@@ -1,6 +1,7 @@
 import type * as ArgEditButtons from '../mapper/settings/ArgEditButtons'
 import { Basemap } from '../mapper/settings/utils'
 import { assert } from '../utils/defensive'
+import { UnitType } from '../utils/unit'
 
 import { UrbanStatsASTExpression } from './ast'
 import { Color, deconstructColor, hexToColor } from './constants/color-utils'
@@ -191,6 +192,12 @@ export interface Documentation {
      * The string should explain why it's deprecated and what alternatives to use.
      */
     deprecated?: string
+    /**
+     * If present, describes the physical units of the underlying statistic
+     * This is primarily intended for statistics that originate from data
+     * columns; other USS constants will omit this field.
+     */
+    unit?: UnitType
 }
 
 export interface USSDocumentedType {
