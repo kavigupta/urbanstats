@@ -240,7 +240,7 @@ function ShareButton(props: ShareButtonProps): ReactNode {
 
 function ActualShareButton({ buttonRef, todayName, correctPattern, quizKind, medal, compactRepr }: (ShareButtonProps & { compactRepr: boolean })): ReactNode {
     const juxtaColors = useJuxtastatColors()
-    const produceSummary = (): Promise<[string, string]> => summary(juxtaColors, todayName, correctPattern, quizKind, medal, compactRepr)
+    const produceSummary = (): Promise<[string, string]> => worldeStyleSummary(juxtaColors, todayName, correctPattern, quizKind, medal, compactRepr)
     return <GenericShareButton buttonRef={buttonRef} produceSummary={produceSummary} />
 }
 
@@ -410,7 +410,7 @@ function renderMedalAsString(medal: Medal): string {
     return ['🥇 Personal Best!', '🥈 Personal 2nd Best!', '🥉 Personal 3rd Best!'][medal - 1]
 }
 
-export async function summary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind, medal: Medal | undefined, compactRepr: boolean): Promise<[string, string]> {
+async function worldeStyleSummary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind, medal: Medal | undefined, compactRepr: boolean): Promise<[string, string]> {
     // wordle-style summary
     const [, summaryText] = summaryTexts(correctPattern, quizKind)
     let text = nameOfQuizKind(quizKind)
