@@ -36,8 +36,7 @@ export type UnparseRewriteRules = UnparseRewriteRule<any>[]
 
 export const autoUXSimplificationRewriteRules: UnparseRewriteRules = [autoUXToNumberRewriteRule]
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- see above
-export function applyRewriteRules(rewriteRules: UnparseRewriteRule<any>[], expr: UrbanStatsASTExpression): UrbanStatsASTExpression {
+export function applyRewriteRules(rewriteRules: UnparseRewriteRules, expr: UrbanStatsASTExpression): UrbanStatsASTExpression {
     let rewritten = expr
     for (const rewriteRule of rewriteRules) {
         try {
