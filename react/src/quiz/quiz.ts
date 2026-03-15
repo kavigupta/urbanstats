@@ -124,8 +124,6 @@ export class StoredProperty<T> extends Property<T> {
     }
 }
 
-export const loading = Symbol('loading')
-
 export class QuizModel {
     private constructor() {
         // Private constructor
