@@ -44,6 +44,10 @@ export default tseslint.config(
                 },
                 'newlines-between': 'always',
             }],
+            'import/no-unused-modules': ['error', {
+                unusedExports: true,
+                ignoreUnusedTypeExports: true,
+            }],
             'import/no-unassigned-import': ['error', {
                 allow: ['**/*.css', './unit/util/*'],
             }],
