@@ -1,4 +1,4 @@
-import { applyRewriteRules } from '../mapper/settings/auto-ux-rewrite'
+import { applyRewriteRules, UnparseRewriteRules } from '../mapper/settings/auto-ux-rewrite'
 import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
@@ -7,7 +7,7 @@ import { Context } from './context'
 import { AnnotatedToken, AnnotatedTokenWithValue, lex, Keyword, emptyLocation } from './lexer'
 import { noLocation, LocInfo, Block } from './location'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
-import type { TypeEnvironment, USSType } from './types-values'
+import type { USSType } from './types-values'
 
 export interface Decorated<T> {
     node: T
@@ -16,29 +16,13 @@ export interface Decorated<T> {
 
 export interface ParseError { type: 'error', value: string, location: LocInfo }
 
-export interface LiteralExprParser<T> {
-    parse: (
-        expr: UrbanStatsASTExpression | undefined,
-        typeEnvironment: TypeEnvironment,
-        doEdit?: (newExpr: UrbanStatsASTExpression | undefined) => UrbanStatsASTExpression | UrbanStatsASTStatement | undefined
-    ) => T
-}
-
-export interface UnparseRewriteRule<T = unknown> {
-    parser: LiteralExprParser<T>
-    // undefined if the rule should not be applied; otherwise returns the expression to replace with
-    method: (match: T, expr: UrbanStatsASTExpression) => UrbanStatsASTExpression | undefined
-}
-
 export interface UnparseOptions {
     indent?: number
     inline?: boolean
     simplify?: boolean
     expressionalContext?: boolean
     wrap?: boolean
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- This is used for the rewrite rules, which can have any intermediate
-    rewriteRules?: UnparseRewriteRule<any>[]
-    rewriteTypeEnvironment?: TypeEnvironment
+    rewriteRules?: UnparseRewriteRules
 }
 
 type USSInfixSequenceElement = { type: 'operator', operatorType: 'unary' | 'binary', value: Decorated<string> } | UrbanStatsASTExpression
