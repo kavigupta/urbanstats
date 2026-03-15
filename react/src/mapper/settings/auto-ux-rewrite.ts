@@ -1,9 +1,6 @@
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import * as l from '../../urban-stats-script/literal-parser'
-import { TypeEnvironment } from '../../urban-stats-script/types-values'
-
-const emptyTypeEnvironment: TypeEnvironment = new Map()
 
 interface UnparseRewriteRule<T> {
     parser: l.LiteralExprParser<T>

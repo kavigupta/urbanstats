@@ -3,13 +3,11 @@ import * as l from '../../urban-stats-script/literal-parser'
 import { parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
 import { assert } from '../../utils/defensive'
 
-import { emptyTypeEnvironment } from './auto-ux-rewrite'
-
 export type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' } | { type: 'constant' } | { type: 'vector' } | { type: 'object' }
 
 export function parseToNumber(uss: UrbanStatsASTExpression): string | undefined {
     try {
-        return l.numberWithOriginalString().parse(uss, emptyTypeEnvironment).originalString
+        return l.numberWithOriginalString().parse(uss, new Map()).originalString
     }
     catch (err) {
         if (err instanceof l.LiteralParseError) {
