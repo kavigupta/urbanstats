@@ -44,17 +44,6 @@ export default tseslint.config(
                 },
                 'newlines-between': 'always',
             }],
-            // this rule causes .eslintrc.json to be required, or it will error when you run npm run lint.
-            'import/no-unused-modules': ['error', {
-                unusedExports: true,
-                src: [
-                    'src/**/*.ts',
-                    'src/**/*.tsx',
-                    'test/**/*.ts',
-                    'unit/**/*.ts',
-                ],
-                ignoreUnusedTypeExports: true,
-            }],
             'import/no-unassigned-import': ['error', {
                 allow: ['**/*.css', './unit/util/*'],
             }],
