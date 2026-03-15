@@ -1,9 +1,9 @@
-import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
+import { UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import * as l from '../../urban-stats-script/literal-parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
 
-export const emptyTypeEnvironment: TypeEnvironment = new Map()
+const emptyTypeEnvironment: TypeEnvironment = new Map()
 
 interface UnparseRewriteRule<T> {
     parser: l.LiteralExprParser<T>
@@ -22,11 +22,28 @@ const autoUXToNumberRewriteRule: UnparseRewriteRule<number> = {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- This is used for the rewrite rule, which can have any intermediate
-export type UnparseRewriteRules = UnparseRewriteRule<any>[]
+type UnparseRewriteRules = UnparseRewriteRule<any>[]
 
-export const autoUXSimplificationRewriteRules: UnparseRewriteRules = [autoUXToNumberRewriteRule]
+const autoUXSimplificationRewriteRules: UnparseRewriteRules = [autoUXToNumberRewriteRule]
 
-export function applyRewriteRules(expr: UrbanStatsASTExpression): UrbanStatsASTExpression {
+function isExpressionNode(n: UrbanStatsASTStatement | UrbanStatsASTExpression): n is UrbanStatsASTExpression {
+    switch (n.type) {
+        case 'assignment':
+        case 'expression':
+        case 'statements':
+        case 'if':
+        case 'do':
+        case 'condition':
+            return false
+        default:
+            return true
+    }
+}
+
+export function applyRewriteRules(expr: UrbanStatsASTExpression | UrbanStatsASTStatement): UrbanStatsASTExpression | UrbanStatsASTStatement {
+    if (!isExpressionNode(expr)) {
+        return expr
+    }
     let rewritten = expr
     for (const rewriteRule of autoUXSimplificationRewriteRules) {
         try {

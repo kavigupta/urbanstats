@@ -1,7 +1,6 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
 
-import { autoUXSimplificationRewriteRules } from '../src/mapper/settings/auto-ux-rewrite'
 import { evaluate } from '../src/urban-stats-script/interpreter'
 import { Block } from '../src/urban-stats-script/location'
 import { parse, parseNoError, toSExp, unparse } from '../src/urban-stats-script/parser'

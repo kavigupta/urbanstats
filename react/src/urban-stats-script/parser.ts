@@ -830,21 +830,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
     opts.indent = opts.indent ?? 0
     opts.wrap = opts.wrap ?? true
 
-    function isExpressionNode(n: UrbanStatsASTStatement | UrbanStatsASTExpression): n is UrbanStatsASTExpression {
-        switch (n.type) {
-            case 'assignment':
-            case 'expression':
-            case 'statements':
-            case 'if':
-            case 'do':
-            case 'condition':
-                return false
-            default:
-                return true
-        }
-    }
-
-    if (opts.simplify === 'auto-ux' && isExpressionNode(node)) {
+    if (opts.simplify === 'auto-ux') {
         node = applyRewriteRules(node)
     }
 

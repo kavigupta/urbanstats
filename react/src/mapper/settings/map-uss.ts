@@ -5,7 +5,6 @@ import { emptyLocation } from '../../urban-stats-script/lexer'
 import { parse, parseNoErrorAsCustomNode, unparse } from '../../urban-stats-script/parser'
 import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 
-import { autoUXSimplificationRewriteRules } from './auto-ux-rewrite'
 import { parseExpr } from './parseExpr'
 
 export const rootBlockIdent = 'r'
