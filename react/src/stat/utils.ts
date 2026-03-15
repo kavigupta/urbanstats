@@ -26,6 +26,7 @@ export function pageDescriptor({ stat, view }: StatSettings): PageDescriptor & {
     }
 }
 
+/** @public this is included dynamically */
 export function parseStatUSS(uss: string, universe: Universe): MapUSS {
     return attemptParseAsTopLevel(mapUSSFromString(uss), defaultTypeEnvironment(universe), true, [tableType])
 }
