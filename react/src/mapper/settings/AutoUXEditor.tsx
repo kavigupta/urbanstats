@@ -20,8 +20,9 @@ import * as ArgEditButtons from './ArgEditButtons'
 import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import { SelectionContext, Selection as ContextSelection } from './SelectionContext'
-import { Selector, classifyExpr, getColor, labelPadding, maybeClassifyExpr } from './Selector'
-import { maybeParseExpr, parseExpr, Selection, possibilities, changeBlockId } from './parseExpr'
+import { Selector, getColor, labelPadding } from './Selector'
+import { maybeParseExpr, parseExpr, possibilities, changeBlockId } from './parseExpr'
+import { classifyExpr, maybeClassifyExpr, Selection } from './selector-classifier'
 
 function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression {
     if (type.type === 'number') {

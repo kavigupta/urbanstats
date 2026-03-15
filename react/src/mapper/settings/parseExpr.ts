@@ -5,7 +5,7 @@ import { Decorated, ParseError, parseNoErrorAsCustomNode, unparse } from '../../
 import { renderType, TypeEnvironment, USSObjectType, USSType } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
 
-import { parseToNumber, toNumberAST } from './Selector'
+import { parseToNumber, Selection, toNumberAST } from './selector-classifier'
 
 export function maybeParseExpr(
     expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
@@ -190,8 +190,6 @@ function attemptParseExpr(
             }
     }
 }
-
-export type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' } | { type: 'constant' } | { type: 'vector' } | { type: 'object' }
 
 function shouldShowConstant(type: USSType): boolean {
     return type.type === 'number' || type.type === 'string'

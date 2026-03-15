@@ -11,16 +11,15 @@ import { Color, doRender, hexToColor, hsvColorExpression, rgbColorExpression } f
 import { RampT } from '../../urban-stats-script/constants/ramp'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
-import { extendBlockIdPositionalArg } from '../../urban-stats-script/location'
-import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
+import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 import { Documentation, TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 import { TestUtils } from '../../utils/TestUtils'
-import { assert } from '../../utils/defensive'
 
 import * as l from './../../urban-stats-script/literal-parser'
 import { BetterSelector, SelectorRenderResult } from './BetterSelector'
 import { ActionOptions } from './EditMapperPanel'
-import { parseExpr, possibilities, Selection } from './parseExpr'
+import { parseExpr, possibilities } from './parseExpr'
+import { classifyExpr, parseToNumber, Selection, toNumberAST } from './selector-classifier'
 
 export const labelPadding = '4px'
 
@@ -163,41 +162,6 @@ function TextInput({ currentValue, blockIdent, setUss }: { currentValue: string,
     )
 }
 
-export function toNumberAST(value: string, blockIdent: string): UrbanStatsASTExpression {
-    return {
-        type: 'call',
-        fn: {
-            type: 'identifier',
-            name: { node: 'toNumber', location: emptyLocation(extendBlockIdPositionalArg(blockIdent, 0)) },
-        },
-        args: [{
-            type: 'unnamed',
-            value: {
-                type: 'constant',
-                value: {
-                    node: { type: 'string', value },
-                    location: emptyLocation(extendBlockIdPositionalArg(blockIdent, 0)),
-                },
-            },
-        }],
-        entireLoc: emptyLocation(blockIdent),
-    }
-}
-
-export function parseToNumber(uss: UrbanStatsASTExpression): string | undefined {
-    if (uss.type === 'call'
-        && uss.fn.type === 'identifier'
-        && uss.fn.name.node === 'toNumber'
-        && uss.args.length === 1
-        && uss.args[0].type === 'unnamed') {
-        const argExpr = uss.args[0].value
-        if (argExpr.type === 'constant' && argExpr.value.node.type === 'string') {
-            return argExpr.value.node.value
-        }
-    }
-    return undefined
-}
-
 function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void }): ReactNode {
     return (
         <input
@@ -212,41 +176,6 @@ function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: strin
             placeholder="Enter number"
         />
     )
-}
-
-export function maybeClassifyExpr(uss: UrbanStatsASTExpression): Selection | undefined {
-    if (parseToNumber(uss) !== undefined) {
-        return { type: 'constant' }
-    }
-    if (uss.type === 'customNode') {
-        return { type: 'custom' }
-    }
-    if (uss.type === 'constant') {
-        return { type: 'constant' }
-    }
-    if (uss.type === 'identifier') {
-        return { type: 'variable', name: uss.name.node }
-    }
-    if (uss.type === 'call') {
-        const classifiedFn = classifyExpr(uss.fn)
-        assert(classifiedFn.type === 'variable', 'Function must be a variable or another function')
-        return { type: 'function', name: classifiedFn.name }
-    }
-    if (uss.type === 'vectorLiteral') {
-        return { type: 'vector' }
-    }
-    if (uss.type === 'objectLiteral') {
-        return { type: 'object' }
-    }
-    return undefined
-}
-
-export function classifyExpr(uss: UrbanStatsASTExpression): Selection {
-    const classified = maybeClassifyExpr(uss)
-    if (!classified) {
-        throw new Error(`Unsupported USS expression: ${unparse(uss)}`)
-    }
-    return classified
 }
 
 export function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection): SelectorRenderResult {
