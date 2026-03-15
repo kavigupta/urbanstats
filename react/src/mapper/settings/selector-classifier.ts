@@ -8,7 +8,6 @@ import { emptyTypeEnvironment } from './auto-ux-rewrite'
 export type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' } | { type: 'constant' } | { type: 'vector' } | { type: 'object' }
 
 export function parseToNumber(uss: UrbanStatsASTExpression): string | undefined {
-    console.log('parsing uss', unparse(uss))
     try {
         return l.numberWithOriginalString().parse(uss, emptyTypeEnvironment).originalString
     }
