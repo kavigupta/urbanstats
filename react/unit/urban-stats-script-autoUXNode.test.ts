@@ -79,6 +79,6 @@ void test('unparsing', () => {
 })
 
 void test('unparsing with rewrite rules', () => {
-    assert.equal(unparse(parseNoError('toNumber("23.000")', 'test'), { rewriteRules: autoUXSimplificationRewriteRules }), '23.000')
-    assert.equal(unparse(parseNoError('autoUXNode(toNumber("23.000"), "{}")', 'test'), { simplify: true, rewriteRules: autoUXSimplificationRewriteRules }), '23.000')
+    assert.equal(unparse(parseNoError('toNumber("23.000")', 'test'), { rewriteRules: autoUXSimplificationRewriteRules }), '23')
+    assert.equal(unparse(parseNoError('autoUXNode(toNumber("23.000"), "{}")', 'test'), { simplify: true, rewriteRules: autoUXSimplificationRewriteRules }), '23')
 })
