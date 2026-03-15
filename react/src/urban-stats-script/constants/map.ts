@@ -52,17 +52,17 @@ export interface PMap extends CommonMap {
     relativeArea: number[]
 }
 
-export const cMapType = {
+const cMapType = {
     type: 'opaque',
     name: 'cMap',
 } satisfies USSType
 
-export const cMapRGBType = {
+const cMapRGBType = {
     type: 'opaque',
     name: 'cMapRGB',
 } satisfies USSType
 
-export const pMapType = {
+const pMapType = {
     type: 'opaque',
     name: 'pMap',
 } satisfies USSType

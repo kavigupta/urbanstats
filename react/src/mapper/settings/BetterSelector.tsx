@@ -9,8 +9,7 @@ import { bitap } from '../../utils/bitap-selector'
 import { zIndex } from '../../utils/zIndex'
 
 import '../../common.css'
-
-export const labelPadding = '4px'
+import { labelPadding } from './Selector'
 
 const maxErrors = 31
 

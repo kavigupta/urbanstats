@@ -47,40 +47,6 @@ export function ElectionResult(props: { value: number }): ReactNode {
     )
 }
 
-export function PartyPercentage(props: { value: number, color: string }): ReactNode {
-    // check if value is NaN
-    if (props.value !== props.value) {
-        return <span>N/A</span>
-    }
-    const displayValue = (props.value * 100).toFixed(2)
-    const spanStyle: CSSProperties = {
-        color: props.color,
-        display: 'flex',
-        justifyContent: 'flex-end',
-    }
-    return <span style={spanStyle}>{displayValue}</span>
-}
-
-export function PartyChange(props: { value: number, color: string }): ReactNode {
-    // check if value is NaN
-    if (props.value !== props.value) {
-        return <span>N/A</span>
-    }
-    const displayValue = (props.value * 100).toFixed(2)
-    const sign = props.value >= 0 ? '+' : ''
-    const spanStyle: CSSProperties = {
-        color: props.color,
-        display: 'flex',
-        justifyContent: 'flex-end',
-    }
-    return (
-        <span style={spanStyle}>
-            {sign}
-            {displayValue}
-        </span>
-    )
-}
-
 export function GenericPartyPercentage(props: { value: number, unitType: string }): ReactNode {
     const colors = useColors()
     // check if value is NaN
