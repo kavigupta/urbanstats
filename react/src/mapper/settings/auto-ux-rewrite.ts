@@ -28,3 +28,12 @@ export const autoUXToNumberRewriteRule: UnparseRewriteRule<ReturnType<typeof toN
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- This is used for the rewrite rule, which can have any intermediate
 export const autoUXSimplificationRewriteRules: UnparseRewriteRule<any>[] = [autoUXToNumberRewriteRule]
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- see above
+export function applyRewriteRules(rewriteRules: UnparseRewriteRule<any>[], expr: UrbanStatsASTExpression): UrbanStatsASTExpression {
+    let rewritten = expr
+    for (const rewriteRule of rewriteRules) {
+        rewritten = rewriteRule.method(rewriteRule.parser.parse(rewritten, new Map()), rewritten) ?? expr
+    }
+    return rewritten
+}

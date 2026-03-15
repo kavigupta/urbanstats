@@ -1,3 +1,4 @@
+import { applyRewriteRules } from '../mapper/settings/auto-ux-rewrite'
 import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
@@ -39,8 +40,6 @@ export interface UnparseOptions {
     rewriteRules?: UnparseRewriteRule<any>[]
     rewriteTypeEnvironment?: TypeEnvironment
 }
-
-const defaultRewriteTypeEnvironment: TypeEnvironment = new Map()
 
 type USSInfixSequenceElement = { type: 'operator', operatorType: 'unary' | 'binary', value: Decorated<string> } | UrbanStatsASTExpression
 
@@ -862,31 +861,8 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
         }
     }
 
-    function applyRewriteRules(expr: UrbanStatsASTExpression): UrbanStatsASTExpression {
-        if (opts.rewriteRules === undefined) {
-            return expr
-        }
-        let rewritten: UrbanStatsASTExpression = expr
-        const rewriteTypeEnvironment = opts.rewriteTypeEnvironment ?? defaultRewriteTypeEnvironment
-        for (const rewriteRule of opts.rewriteRules) {
-            if (typeof rewritten === 'string') {
-                break
-            }
-            try {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- can be anything, but next enforces it.
-                const parsed = rewriteRule.parser.parse(rewritten, rewriteTypeEnvironment)
-                rewritten = rewriteRule.method(parsed, rewritten) ?? expr
-            }
-            catch {}
-        }
-        return rewritten
-    }
-
     if (opts.rewriteRules !== undefined && isExpressionNode(node)) {
-        console.log('Original expression:', unparse(node))
-        const rewritten = applyRewriteRules(node)
-        console.log('Rewritten expression:', unparse(rewritten))
-        node = rewritten
+        node = applyRewriteRules(opts.rewriteRules, node)
     }
 
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
