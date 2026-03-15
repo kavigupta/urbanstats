@@ -187,7 +187,7 @@ export function execute(expr: UrbanStatsASTStatement, env: Context): USSValue {
     }
 }
 
-function evaluateLHS(lhs: UrbanStatsASTLHS, value: USSValue, env: Context): void {
+export function evaluateLHS(lhs: UrbanStatsASTLHS, value: USSValue, env: Context): void {
     switch (lhs.type) {
         case 'identifier':
             const varName = lhs.name.node

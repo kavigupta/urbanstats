@@ -1,7 +1,7 @@
 import { checkGeojson, downloadPNG, getCodeFromMainField, getErrors, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { safeReload, screencap, urbanstatsFixture, downloadOrCheckString, downloadCSV } from './test_utils'
 
-function testCode(testFn: () => TestFn, geographyKind: string, universe: string, code: string, name: string, includeGeojson: boolean = false): void {
+export function testCode(testFn: () => TestFn, geographyKind: string, universe: string, code: string, name: string, includeGeojson: boolean = false): void {
     const url = urlFromCode(geographyKind, universe, code)
     urbanstatsFixture(name, url)
 

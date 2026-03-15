@@ -400,7 +400,7 @@ function IconButton(props: React.DetailedHTMLProps<React.ButtonHTMLAttributes<HT
     )
 }
 
-function toQuillDelta(text: RichTextDocument): Delta {
+export function toQuillDelta(text: RichTextDocument): Delta {
     const result = new Delta(text.map(segment => ({
         ...segment,
         attributes: segment.attributes && {
@@ -412,7 +412,7 @@ function toQuillDelta(text: RichTextDocument): Delta {
     return result
 }
 
-function fromQuillDelta(delta: Delta): RichTextDocument {
+export function fromQuillDelta(delta: Delta): RichTextDocument {
     const result = delta.ops.flatMap((op) => {
         const { success, data } = richTextSegmentSchema.safeParse(op)
         if (!success) {

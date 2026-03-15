@@ -635,7 +635,7 @@ class ParseState {
     }
 }
 
-function mergeStatements(statements: UrbanStatsASTStatement[], fallbackLocation?: LocInfo): UrbanStatsASTStatement {
+export function mergeStatements(statements: UrbanStatsASTStatement[], fallbackLocation?: LocInfo): UrbanStatsASTStatement {
     statements = gulpRestForConditions(statements)
     if (statements.length === 1) {
         return statements[0]
@@ -670,7 +670,7 @@ export function parse(code: string, block?: Block, returnParseErrorNode: boolean
     return parseTokens(tokens, code, returnParseErrorNode)
 }
 
-function parseTokens(tokens: AnnotatedToken[], originalCode: string, returnParseErrorNode: boolean = false): UrbanStatsASTStatement | { type: 'error', errors: ParseError[] } {
+export function parseTokens(tokens: AnnotatedToken[], originalCode: string, returnParseErrorNode: boolean = false): UrbanStatsASTStatement | { type: 'error', errors: ParseError[] } {
     const lexErrors = tokens.filter(token => token.token.type === 'error')
     if (lexErrors.length > 0) {
         const errors: ParseError[] = lexErrors.map(token => ({ type: 'error' as const, value: `Unrecognized token: ${token.token.value}`, location: token.location }))

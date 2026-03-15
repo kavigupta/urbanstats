@@ -7,7 +7,7 @@ import { zIndex } from '../../utils/zIndex'
 
 import '../../common.css'
 
-const labelPadding = '4px'
+export const labelPadding = '4px'
 
 export interface RenderResult { text: string, node?: (highlighted: boolean) => ReactNode }
 

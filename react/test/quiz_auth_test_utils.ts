@@ -16,7 +16,7 @@ export const signOutLink = Selector('a').withExactText('Sign Out')
 
 export const signInLink = Selector('a[data-test="googleSignIn"]')
 
-const signInButton = Selector('Button').withExactText('Sign In')
+export const signInButton = Selector('Button').withExactText('Sign In')
 
 const continueButton = Selector('button').withExactText('Continue')
 

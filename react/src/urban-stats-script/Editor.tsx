@@ -316,7 +316,7 @@ export function Editor(
     )
 }
 
-function codeStyle(colors: Colors): CSSProperties {
+export function codeStyle(colors: Colors): CSSProperties {
     return {
         whiteSpace: 'pre-wrap',
         fontFamily: 'Inconsolata, monospace',

@@ -55,11 +55,11 @@ export function QuerySettingsConnection(): null {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No non-histogram extras yet
-const statPathsWithHistogram = extra_stats.filter(([,{ type }]) => type === 'histogram').map(([index]) => stat_path_list[index])
+export const statPathsWithHistogram = extra_stats.filter(([,{ type }]) => type === 'histogram').map(([index]) => stat_path_list[index])
 
 interface SettingsConnectionConfig { stagedSettingsKeys: readonly VectorSettingKey[], applySettingsKeys: (visibleStatPaths: StatPath[]) => readonly VectorSettingKey[] }
 
-function getStagedSettingsKeys(statPaths: StatPath[][]): readonly VectorSettingKey[] {
+export function getStagedSettingsKeys(statPaths: StatPath[][]): readonly VectorSettingKey[] {
     const flatStatPaths = statPaths.flat()
     return [
         'use_imperial',

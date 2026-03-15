@@ -10,7 +10,7 @@ export function useMobileLayout(): boolean {
     return useSyncExternalStore(onWidthChange, isMobileLayout)
 }
 
-function onWidthChange(listener: () => void): () => void {
+export function onWidthChange(listener: () => void): () => void {
     const myListener = (): void => {
         if (window.innerWidth !== 1) {
             // When taking screenshots, testcafe sets the inner width to 1, so we want to throw away those updates

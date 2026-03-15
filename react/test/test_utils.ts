@@ -398,7 +398,7 @@ export async function createComparison(t: TestController, searchTerm: string, ex
     await t.pressKey('enter')
 }
 
-async function getAllElements(selector: Selector): Promise<NodeSnapshot[]> {
+export async function getAllElements(selector: Selector): Promise<NodeSnapshot[]> {
     return Promise.all(Array.from({ length: await selector.count }).map((_, i) => selector.nth(i)()))
 }
 

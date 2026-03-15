@@ -288,7 +288,7 @@ export function renderArgumentType(arg: USSFunctionArgType): string {
     return 'any'
 }
 
-function renderKwargType(arg: { type: USSFunctionArgType, defaultValue?: UrbanStatsASTExpression }): string {
+export function renderKwargType(arg: { type: USSFunctionArgType, defaultValue?: UrbanStatsASTExpression }): string {
     const type = renderArgumentType(arg.type)
     if (arg.defaultValue !== undefined) {
         return `${type} = ${unparse(arg.defaultValue)}`

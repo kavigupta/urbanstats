@@ -155,7 +155,7 @@ export function setRange(editor: HTMLElement, newRange: Range | null): void {
 
 // Inverse of `positionInEditor`
 // Traverse down the tree, always keeping the text content behind us lte position
-function getContainerOffset(node: Node, position: number): [Node, number] {
+export function getContainerOffset(node: Node, position: number): [Node, number] {
     let offset = 0
     while (node.childNodes.length > 0) {
         node = node.childNodes.item(0)

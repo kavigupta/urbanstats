@@ -387,7 +387,7 @@ function summaryTexts(correctPattern: CorrectPattern, quizKind: QuizKind): [stri
     }
 }
 
-function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizKind }): ReactNode {
+export function Summary(props: { correctPattern: CorrectPattern, quizKind: QuizKind }): ReactNode {
     const [compactRepr] = useSetting('juxtastatCompactEmoji')
     const juxtaColors = useJuxtastatColors()
     const [prefix, summaryText] = summaryTexts(props.correctPattern, props.quizKind)
@@ -410,7 +410,7 @@ function renderMedalAsString(medal: Medal): string {
     return ['🥇 Personal Best!', '🥈 Personal 2nd Best!', '🥉 Personal 3rd Best!'][medal - 1]
 }
 
-async function summary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind, medal: Medal | undefined, compactRepr: boolean): Promise<[string, string]> {
+export async function summary(juxtaColors: JuxtastatColors, todayName: string | undefined, correctPattern: CorrectPattern, quizKind: QuizKind, medal: Medal | undefined, compactRepr: boolean): Promise<[string, string]> {
     // wordle-style summary
     const [, summaryText] = summaryTexts(correctPattern, quizKind)
     let text = nameOfQuizKind(quizKind)
@@ -472,7 +472,7 @@ interface GenericQuizResultRowProps extends QuizResultRowProps {
     getStat: (letter: 'a' | 'b') => ReactNode
 }
 
-function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNode {
+export function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNode {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
     const comparison = aCorrect(props.question)
@@ -706,7 +706,7 @@ function toCompactRepresentation(correctPattern: CorrectPattern, correct: string
     return result.map(line => line.join(''))
 }
 
-function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: CorrectPattern, compactRepr: boolean): string[] {
+export function redAndGreenSquares(juxtaColors: JuxtastatColors, correctPattern: CorrectPattern, compactRepr: boolean): string[] {
     if (compactRepr && correctPattern.length > maxPerLine) {
         return toCompactRepresentation(correctPattern, juxtaColors.correctEmoji, juxtaColors.incorrectEmoji)
     }

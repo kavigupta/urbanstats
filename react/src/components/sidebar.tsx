@@ -22,7 +22,7 @@ export function useSidebarSectionContentClassName(): string {
     return sidebarSectionContent
 }
 
-function useSidebarSectionTitleStyle(): CSSProperties {
+export function useSidebarSectionTitleStyle(): CSSProperties {
     const colors = useColors()
     return {
         marginBottom: useMobileLayout() ? '0.75rem' : '0.5rem',
@@ -284,7 +284,7 @@ export function CheckboxSetting(props: { name: string, settingKey: BooleanSettin
 };
 
 // represents the color theme setting, which sets it to either 'light' or 'dark'
-function ColorThemeSetting(): ReactNode {
+export function ColorThemeSetting(): ReactNode {
     const [theme, setTheme] = useSetting('theme')
     const colors = useColors()
 
@@ -305,7 +305,7 @@ function ColorThemeSetting(): ReactNode {
     )
 };
 
-function TemperatureSetting(): ReactNode {
+export function TemperatureSetting(): ReactNode {
     const [temperatureUnit, setTemperatureUnit] = useSetting('temperature_unit')
     const info = useSettingInfo('temperature_unit')
     const colors = useColors()
@@ -379,7 +379,7 @@ export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactN
     )
 };
 
-function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProps): ReactNode {
+export function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProps): ReactNode {
     const colors = useColors()
     const id = useId()
     const checkboxRef = useRef<HTMLInputElement>(null)

@@ -10,7 +10,7 @@ import { zIndex } from '../../utils/zIndex'
 
 import '../../common.css'
 
-const labelPadding = '4px'
+export const labelPadding = '4px'
 
 const maxErrors = 31
 

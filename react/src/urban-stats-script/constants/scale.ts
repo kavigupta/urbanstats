@@ -13,7 +13,7 @@ export interface ScaleInstance {
     inverse: (value: number) => number
 }
 
-const scaleType = {
+export const scaleType = {
     type: 'opaque',
     name: 'scale',
 } satisfies USSType

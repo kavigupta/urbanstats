@@ -10,7 +10,7 @@ type ThemeSelection = 'userSettings' | 'Light Mode' | 'Dark Mode' | 'System Them
 // eslint-disable-next-line no-restricted-syntax -- React context
 const ThemeContext = React.createContext<ThemeSelection>('userSettings')
 
-function useCurrentTheme(): Theme {
+export function useCurrentTheme(): Theme {
     const [settingTheme] = useSetting('theme')
     const themeContext = useContext(ThemeContext)
     const theme = themeContext === 'userSettings' ? settingTheme : themeContext
@@ -20,7 +20,7 @@ function useCurrentTheme(): Theme {
     return theme
 }
 
-function useColors(): Colors {
+export function useColors(): Colors {
     const theme = useCurrentTheme()
     const [cleanBackground] = useSetting('clean_background')
 
@@ -34,7 +34,7 @@ function useColors(): Colors {
     }, [theme, cleanBackground])
 }
 
-function useJuxtastatColors(): JuxtastatColors {
+export function useJuxtastatColors(): JuxtastatColors {
     const colors = useColors()
     const [colorblindMode] = useSetting('colorblind_mode')
     return {
@@ -49,7 +49,7 @@ function useJuxtastatColors(): JuxtastatColors {
     }
 }
 
-function colorFromCycle(colors: HueColors, i: number): string {
+export function colorFromCycle(colors: HueColors, i: number): string {
     const colorCycle = [
         colors.blue,
         colors.orange,
@@ -63,7 +63,7 @@ function colorFromCycle(colors: HueColors, i: number): string {
     return colorCycle[i % colorCycle.length]
 }
 
-function useStyleElement(): (elem: HTMLElement) => void {
+export function useStyleElement(): (elem: HTMLElement) => void {
     const colors = useColors()
     const juxtaColors = useJuxtastatColors()
 
@@ -84,7 +84,7 @@ function useStyleElement(): (elem: HTMLElement) => void {
     }, [colors, juxtaColors])
 }
 
-function OverrideTheme({ theme, children }: { theme: ThemeSelection, children: ReactNode }): ReactNode {
+export function OverrideTheme({ theme, children }: { theme: ThemeSelection, children: ReactNode }): ReactNode {
     return (
         <ThemeContext.Provider value={theme}>
             <ThemeOverride>

@@ -31,7 +31,7 @@ import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCell
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
-const leftBarMargin = 0.02
+export const leftBarMargin = 0.02
 
 const tableRowStyle: React.CSSProperties = {
     display: 'flex',
@@ -76,7 +76,7 @@ interface ColumnLayoutProps {
 }
 
 // Lays out column content
-function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
+export function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     const cellPercentages: number[] = []
     const cellContents = []
     for (const { widthPercentage, columnIdentifier, content, style } of props.cells) {
@@ -159,7 +159,7 @@ export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactN
     )
 }
 
-function SuperHeaderGroupNames(props: { leftSpacerWidth: number, groupNames: (string | undefined)[], widthsEach: number[] }): ReactNode {
+export function SuperHeaderGroupNames(props: { leftSpacerWidth: number, groupNames: (string | undefined)[], widthsEach: number[] }): ReactNode {
     if (props.groupNames.every(groupName => groupName === undefined)) {
         return null
     }
@@ -285,7 +285,7 @@ function makeOrdinalStyle(colors: Colors, isHeader: boolean, columnWidthsInfo?: 
     ]
 }
 
-function StatisticHeaderCells(props: {
+export function StatisticHeaderCells(props: {
     simpleOrdinals: boolean
     totalWidth: number
     onlyColumns?: ColumnIdentifier[]
@@ -623,7 +623,7 @@ function ManipulationButton({ color: buttonColor, onClick, text, image }: { colo
     )
 }
 
-function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify, sharedTypeOfAllArticles }: {
+export function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify, sharedTypeOfAllArticles }: {
     longname: string
     includeDelete: boolean
     onDelete: () => void
@@ -818,7 +818,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
     )
 }
 
-function ExpansionButton(props: { row: ArticleRow }): ReactNode {
+export function ExpansionButton(props: { row: ArticleRow }): ReactNode {
     const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
     return (
@@ -832,7 +832,7 @@ function ExpansionButton(props: { row: ArticleRow }): ReactNode {
     )
 }
 
-function StatisticName(props: {
+export function StatisticName(props: {
     row?: ArticleRow
     longname: string
     currentUniverse: Universe
@@ -908,7 +908,7 @@ function StatisticName(props: {
     return link
 }
 
-function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undefined }): ReactNode {
+export function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undefined }): ReactNode {
     const colors = useColors()
 
     return (
@@ -1241,7 +1241,7 @@ function PointerButtonIndex(props: {
     )
 }
 
-function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearInScreenshot: boolean }): ReactNode {
+export function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearInScreenshot: boolean }): ReactNode {
     const isScreenshot = useScreenshotMode()
 
     if (isScreenshot && !props.shouldAppearInScreenshot) {

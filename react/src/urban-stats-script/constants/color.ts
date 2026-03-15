@@ -6,11 +6,11 @@ import { USSRawValue, USSType, USSValue, createConstantExpression } from '../typ
 import { Color, doRender, hexToColor, hsvColorExpression, rgbColorExpression } from './color-utils'
 import { camelToHuman } from './utils'
 
-const colorType = { type: 'opaque', name: 'color' } satisfies USSType
+export const colorType = { type: 'opaque', name: 'color' } satisfies USSType
 
 export function rgbToColor(red: number, green: number, blue: number, alpha: number, tolerateError: true): Color | undefined
 export function rgbToColor(red: number, green: number, blue: number, alpha: number): Color
-function rgbToColor(red: number, green: number, blue: number, alpha: number, tolerateError?: boolean): Color | undefined {
+export function rgbToColor(red: number, green: number, blue: number, alpha: number, tolerateError?: boolean): Color | undefined {
     if (red < 0 || red > 1 || green < 0 || green > 1 || blue < 0 || blue > 1 || alpha < 0 || alpha > 1) {
         if (tolerateError) {
             return undefined
@@ -22,7 +22,7 @@ function rgbToColor(red: number, green: number, blue: number, alpha: number, tol
 
 export function hsvToColor(hue: number, saturation: number, value: number, alpha: number, tolerateError: true): Color | undefined
 export function hsvToColor(hue: number, saturation: number, value: number, alpha: number): Color
-function hsvToColor(hue: number, saturation: number, value: number, alpha: number, tolerateError?: boolean): Color | undefined {
+export function hsvToColor(hue: number, saturation: number, value: number, alpha: number, tolerateError?: boolean): Color | undefined {
     if (hue < 0 || hue > 360 || saturation < 0 || saturation > 1 || value < 0 || value > 1 || alpha < 0 || alpha > 1) {
         if (tolerateError) {
             return undefined
@@ -37,7 +37,7 @@ function hsvToColor(hue: number, saturation: number, value: number, alpha: numbe
     }
 }
 
-const rgb = {
+export const rgb = {
     type: {
         type: 'function',
         posArgs: [
@@ -63,7 +63,7 @@ const rgb = {
     },
 } satisfies USSValue
 
-const hsv = {
+export const hsv = {
     type: {
         type: 'function',
         posArgs: [
@@ -88,7 +88,7 @@ const hsv = {
     },
 } satisfies USSValue
 
-const renderColor = {
+export const renderColor = {
     type: {
         type: 'function',
         posArgs: [{ type: 'concrete', value: colorType }],
@@ -130,7 +130,7 @@ function colorConstant(name: string, value: string, isDefault?: boolean): [strin
     }] satisfies [string, USSValue]
 }
 
-const colorConstants = [
+export const colorConstants = [
     ...Object.entries(hueColors).map(([name, value]) => colorConstant(name, value)),
     // eslint-disable-next-line no-restricted-syntax -- Allow hex colors for constants
     colorConstant('white', '#ffffff'),

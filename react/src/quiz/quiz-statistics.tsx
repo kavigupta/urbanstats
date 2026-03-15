@@ -94,7 +94,7 @@ export function computeUserStatisticsData(
     }
 }
 
-function QuizStatisticsForTimedStatistics(
+export function QuizStatisticsForTimedStatistics(
     props: {
         quiz: QuizDescriptorWithTime
         wholeHistory: QuizHistory
@@ -179,7 +179,7 @@ export function AudienceStatistics({ total, perQuestion }: { total: number, perQ
         </div>
     )
 }
-function DisplayedStats({ statistics }: {
+export function DisplayedStats({ statistics }: {
     statistics: {
         value: string
         name: string
@@ -210,7 +210,7 @@ function DisplayedStats({ statistics }: {
         </div>
     )
 }
-function DisplayedStat({ number, name, additionalClass, color, onClick }: {
+export function DisplayedStat({ number, name, additionalClass, color, onClick }: {
     number: string
     name: string
     additionalClass?: string
@@ -304,7 +304,7 @@ export function ourResultToDisplayForFriends(quiz: QuizDescriptor & { kind: 'inf
     }
 }
 
-function QuizStatisticsForInfinite(
+export function QuizStatisticsForInfinite(
     props: {
         quiz: QuizDescriptor & { kind: 'infinite' }
         wholeHistory: QuizHistory
