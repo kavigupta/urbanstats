@@ -29,7 +29,7 @@ mapper(() => test)('manipulate insets', { code: 'cMap(data=density_pw_1km, scale
     insets=constructInsets([
         constructInset(
             screenBounds={north: 1, east: 1, south: 0, west: 0},
-            mapBounds={north: 66.546, east: -13, south: 63.384, west: -24.542},
+            mapBounds={north: 66.546, east: toNumber("-13"), south: 63.384, west: -24.542},
             mainMap=true,
             name="Iceland"
         )
@@ -207,7 +207,7 @@ mapper(() => test)('custom ramp', { code: 'customNode("");\ncondition (true)\ncM
     await replaceInput(t, 'Custom Ramp', 'Custom Expression')
     await t.expect(nthEditor(0).textContent).eql(`constructRamp([
     {value: 0, color: rgb(1, 0, 0)},
-    {value: 0.25, color: rgb(1, 0.49, 0.765)},
+    {value: 0.25, color: rgb(toNumber("1"), 0.49, 0.765)},
     {value: 0.5, color: rgb(0.027, 0.647, 0.686)},
     {value: 0.75, color: rgb(0.541, 0.765, 0.353)},
     {value: 1, color: rgb(0.722, 0.639, 0.184)}
