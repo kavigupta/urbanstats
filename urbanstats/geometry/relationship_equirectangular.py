@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from permacache import permacache, stable_hash
 import tqdm.auto as tqdm
+from permacache import permacache, stable_hash
 
 """
 Containment and basic utilities for polygons in equirectangular (RLE) space.
@@ -23,6 +23,7 @@ import numpy as np
 import shapely.geometry as geom
 
 from urbanstats.data.gpw import load_full_ghs_zarr, lon_from_col_idx
+from urbanstats.features.within_distance import haversine
 from urbanstats.geometry.rasterize import (
     exract_raster_points,
     from_row_idx,
@@ -37,7 +38,6 @@ from urbanstats.geometry.rle import (
     rle_dict_from_arrays,
     rle_spatial_join,
 )
-from urbanstats.features.within_distance import haversine
 from urbanstats.special_cases.coastlines import coastlines_rle
 
 # Approx m per degree at equator; cell side at 3 arcsec = 1/1200 deg
@@ -167,6 +167,7 @@ def land_rle_summaries_for_shapefile(shapefile):
     ),
 )
 def compute_relationships(shapefile_a, shapefile_b):
+    print("Computing relationships between", shapefile_a.hash_key, "and", shapefile_b.hash_key)
     summaries_a = land_rle_summaries_for_shapefile(shapefile_a)
     summaries_b = land_rle_summaries_for_shapefile(shapefile_b)
     keys_a = list(summaries_a.keys())

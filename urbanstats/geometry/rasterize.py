@@ -1,7 +1,8 @@
 import numpy as np
 import shapely
-from permacache import permacache, stable_hash
+import shapely.ops
 import tqdm.auto as tqdm
+from permacache import permacache, stable_hash
 
 # Per-resolution row offsets that align the working grid with the
 # global population raster.
@@ -46,6 +47,41 @@ def from_row_idx(row, resolution):
     return 90 - (row + ROW_OFFSET[resolution]) / resolution
 
 
+def _make_valid_for_intersection(shape):
+    """Return a valid geometry suitable for line intersection; avoids GEOS TopologyException."""
+    if shape.is_empty:
+        return shape
+    if shape.is_valid:
+        return shape
+    fixed = shapely.make_valid(shape)
+    if fixed.is_empty:
+        return fixed
+    if fixed.geom_type == "GeometryCollection":
+        polys = [
+            g
+            for g in fixed.geoms
+            if not g.is_empty and g.geom_type in ("Polygon", "MultiPolygon")
+        ]
+        if not polys:
+            return shapely.GeometryCollection()
+        fixed = shapely.ops.unary_union(polys)
+    return fixed
+
+
+def safe_intersection(multilines, shape):
+    try:
+        return multilines.intersection(shape)
+    except shapely.errors.GEOSException:
+        pass
+    shape = shapely.make_valid(shape)
+    try:
+        return multilines.intersection(shape)
+    except shapely.errors.GEOSException:
+        pass
+    shape = shape.buffer(0)
+    return multilines.intersection(shape)
+
+
 @permacache(
     "urbanstats/geometry/rasterize/rasterize_using_lines_6",
     key_function=dict(
@@ -64,8 +100,10 @@ def rasterize_using_lines(shape, resolution):
                 iff
             exists i st lat_start[i] == to_row_idx(y, res) and lon_start[i] <= to_col_idx(x, res) <= lon_end[i]
     """
+    if shape.is_empty:
+        return [], [], []
     multilines = compute_multilines(shape, resolution)
-    intersections = multilines.intersection(shape)
+    intersections = safe_intersection(multilines, shape)
     if isinstance(intersections, shapely.geometry.LineString):
         intersections = [intersections]
     elif isinstance(
@@ -99,6 +137,7 @@ def rasterize_using_lines(shape, resolution):
 
 
 def compute_multilines(shape, resolution):
+    assert not shape.is_empty, "Shape is empty"
     # Get the bounds of the shape
     minx, miny, maxx, maxy = shape.bounds
     minx -= 1 / resolution
@@ -107,12 +146,10 @@ def compute_multilines(shape, resolution):
     maxy += 1 / resolution
 
     # flipped because the grid is flipped
-    yidxs = np.arange(
-        min(to_row_idx(miny, resolution) + 1, 180 * resolution - 1),
-        max(to_row_idx(maxy, resolution), 0) - 1,
-        -1,
-        dtype=np.int32,
-    )
+    top = min(to_row_idx(miny, resolution) + 1, 180 * resolution - 1)
+    bot = max(to_row_idx(maxy, resolution), 0)
+    assert top >= bot, f"Invalid bounds: {minx}, {miny}, {maxx}, {maxy}"
+    yidxs = np.arange(top, bot - 1, -1, dtype=np.int32)
 
     # place the lines in the middle of the pixels
     ys = from_row_idx(yidxs + 0.5, resolution)

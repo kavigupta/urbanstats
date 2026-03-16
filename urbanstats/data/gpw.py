@@ -1,5 +1,5 @@
-from functools import lru_cache
 import os
+from functools import lru_cache
 
 import dask.array
 import numpy as np

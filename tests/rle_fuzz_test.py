@@ -6,9 +6,9 @@ from parameterized import parameterized
 from urbanstats.geometry.rle import (
     intersect_rle_runs,
     merge_rle_runs,
+    pad_rle,
     rle_bounds,
     rle_spatial_join,
-    pad_rle,
 )
 
 
