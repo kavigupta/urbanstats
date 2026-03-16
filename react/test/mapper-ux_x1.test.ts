@@ -106,14 +106,14 @@ mapper(() => test)('add custom elements to vector', { code: 'pMap(data=density_p
     await toggleCustomScript(t)
     await checkTextboxesDirect(t, ['Insets'])
     await replaceInput(t, 'Iceland', 'Custom Expression', 1)
-    await t.click(Selector('button[data-test-id="test-add-vector-element-button"]'))
+    await t.click(Selector('button[data-test-id="test-add-vector-element-button"]:not([inert] *)'))
 })
 
 mapper(() => test)('add non-custom elements to vector', { code: 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     await toggleCustomScript(t)
     await checkTextboxesDirect(t, ['Insets'])
     await replaceInput(t, 'Iceland', 'Custom Inset', 1)
-    await t.click(Selector('button[data-test-id="test-add-vector-element-button"]'))
+    await t.click(Selector('button[data-test-id="test-add-vector-element-button"]:not([inert] *)'))
 })
 
 // Tests for Convert to Table button
