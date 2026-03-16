@@ -551,13 +551,13 @@ void test('constant listing', (): void => {
                 'linearScale',
                 'logScale',
             ],
-            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMap': [
+            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoFeatureHandle] = geo, opacity: number = 1, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMap': [
                 'cMap',
             ],
-            '(; dataR: [number], dataG: [number], dataB: [number], label: string, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMapRGB': [
+            '(; dataR: [number], dataG: [number], dataB: [number], label: string, unit: Unit = null, geo: [geoFeatureHandle] = geo, opacity: number = 1, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMapRGB': [
                 'cMapRGB',
             ],
-            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = null, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> pMap': [
+            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, opacity: number = 1, maxRadius: number = 10, relativeArea: [number] = null, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> pMap': [
                 'pMap',
             ],
             '(; color: color = rgb(0, 0, 0), weight: number = 0.5) -> outline': [
