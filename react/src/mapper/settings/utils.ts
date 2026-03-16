@@ -78,6 +78,7 @@ export const mapperMetaFields = z.object({
     universe: z.optional(z.enum(universes_ordered)).catch(undefined),
 })
 
+/** @public this is included dynamically */
 export function mapSettingsFromURLParam(encodedSettings: string | undefined): MapSettings {
     let settings: Partial<MapSettings> = {}
     if (encodedSettings !== undefined) {

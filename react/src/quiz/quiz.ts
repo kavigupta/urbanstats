@@ -52,6 +52,7 @@ export function loadJuxta(quiz: JuxtaQuestionJSON): JuxtaQuestion {
     return { kind: 'juxtastat', ...quiz }
 }
 
+/** @public this is included dynamically */
 export function loadRetro(quiz: RetroQuestionJSON): RetroQuestion {
     return { kind: 'retrostat', a: loadJuxta(quiz.a), b: loadJuxta(quiz.b), a_ease: quiz.a_ease, b_ease: quiz.b_ease }
 }
@@ -263,6 +264,7 @@ export function wrapQuestionsModel(questions: QuizQuestion[]): QuizQuestionsMode
     }
 }
 
+/** @public this is included dynamically */
 export function infiniteQuiz(seed: string, version: number): QuizQuestionsModel {
     return {
         questionByIndex: (index: number) => sampleRandomQuestion(seed, version, index),
