@@ -20,8 +20,9 @@ import * as ArgEditButtons from './ArgEditButtons'
 import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import { SelectionContext, Selection as ContextSelection } from './SelectionContext'
-import { Selector, classifyExpr, getColor, labelPadding } from './Selector'
-import { maybeParseExpr, parseExpr, Selection, possibilities, changeBlockId } from './parseExpr'
+import { Selector, getColor, labelPadding } from './Selector'
+import { maybeParseExpr, parseExpr, possibilities, changeBlockId } from './parseExpr'
+import { classifyExpr, maybeClassifyExpr, Selection } from './selector-classifier'
 
 function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression {
     if (type.type === 'number') {
@@ -253,7 +254,7 @@ export function AutoUXEditor(props: {
 
     const subcomponent = (): [ReactNode | undefined, 'consumes-errors' | 'does-not-consume-errors'] => {
         const uss = props.uss
-        if (uss.type === 'constant') {
+        if (maybeClassifyExpr(uss)?.type === 'constant') {
             return [undefined, 'does-not-consume-errors']
         }
         if (uss.type === 'customNode') {
@@ -623,7 +624,7 @@ function defaultForSelection(
 
     switch (selection.type) {
         case 'custom':
-            return parseNoErrorAsCustomNode(unparse(current, { simplify: 'basic' }), blockIdent, [type])
+            return parseNoErrorAsCustomNode(unparse(current, { simplify: 'auto-ux' }), blockIdent, [type])
         case 'constant':
             return createDefaultExpression(type, blockIdent, typeEnvironment)
         case 'variable':
