@@ -143,7 +143,7 @@ cMapRGB(
 )
 `
 
-testCode(() => test, 'County', 'USA', cMapRGBWithAlphaChannelAndGlobalOpacity, 'cmaprgb-alpha-channel')
+testCode(() => test, 'County', 'USA', cMapRGBWithAlphaChannelAndGlobalOpacity, 'cmaprgb-alpha-channel-and-global-opacity')
 
 const translucentOutline = `
 cMap(
