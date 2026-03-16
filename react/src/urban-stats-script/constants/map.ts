@@ -23,6 +23,7 @@ interface CommonMap {
     data: number[]
     scale: ScaleDescriptor
     ramp: RampT
+    opacity: number
     label: string
     basemap: Basemap
     insets: Inset[]
@@ -39,6 +40,7 @@ export interface CMapRGB {
     dataR: number[]
     dataG: number[]
     dataB: number[]
+    opacity: number
     label: string
     basemap: Basemap
     insets: Inset[]
@@ -135,6 +137,10 @@ function mapConstructorArguments(
             },
         },
         ...intermediateArgs,
+        opacity: {
+            type: { type: 'concrete', value: { type: 'number' } },
+            defaultValue: parseNoErrorAsExpression('1', ''),
+        },
         basemap: {
             type: { type: 'concrete', value: basemapType },
             defaultValue: { type: 'call', fn: { type: 'identifier', name: { node: 'osmBasemap', location: noLocation } }, args: [], entireLoc: noLocation },
@@ -191,6 +197,7 @@ function computeCommonMap(
         }
     }
     const textBoxes = (namedArgs.textBoxes as { value: TextBox }[] | null ?? []).map(({ value }) => value)
+    const opacity = Math.max(0, Math.min(1, namedArgs.opacity as number))
 
     if (geo.length !== data.length) {
         throw new Error(`geo and data must have the same length: ${geo.length} and ${data.length}`)
@@ -208,13 +215,14 @@ function computeCommonMap(
         })
     }
 
-    return { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', basemap, insets, unit, textBoxes }
+    return { geo, data, scale: scaleInstance, ramp, opacity, label: label ?? '[Unlabeled Map]', basemap, insets, unit, textBoxes }
 }
 
 const namedArgDocumentation = {
     data: 'Data',
     scale: 'Scale',
     ramp: 'Ramp',
+    opacity: 'Opacity',
     label: 'Label',
     geo: 'Geography',
     basemap: 'Basemap',
@@ -358,6 +366,7 @@ export const cMapRGB: USSValue = {
         const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: string } } | null
         const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
         const textBoxes = (namedArgs.textBoxes as { value: TextBox }[] | null ?? []).map(({ value }) => value)
+        const opacity = Math.max(0, Math.min(1, namedArgs.opacity as number))
 
         if (geo.length !== dataR.length || geo.length !== dataG.length || geo.length !== dataB.length) {
             throw new Error(`geo, dataR, dataG, and dataB must have the same length: ${geo.length}, ${dataR.length}, ${dataG.length}, ${dataB.length}`)
@@ -365,7 +374,7 @@ export const cMapRGB: USSValue = {
         return {
             type: 'opaque',
             opaqueType: 'cMapRGB',
-            value: { geo, dataR, dataG, dataB, label, basemap, insets, unit, outline, textBoxes } satisfies CMapRGB,
+            value: { geo, dataR, dataG, dataB, opacity, label, basemap, insets, unit, outline, textBoxes } satisfies CMapRGB,
         }
     },
     documentation: {
@@ -376,6 +385,7 @@ export const cMapRGB: USSValue = {
             dataR: 'Red Data (0-1)',
             dataG: 'Green Data (0-1)',
             dataB: 'Blue Data (0-1)',
+            opacity: 'Opacity',
             label: 'Label',
             geo: 'Geography',
             outline: 'Outline',

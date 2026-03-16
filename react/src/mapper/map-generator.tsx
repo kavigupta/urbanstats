@@ -381,7 +381,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                 return {
                     name: value.geo[i],
                     fillColor: colors[i],
-                    fillOpacity: 1,
+                    fillOpacity: value.opacity,
                     radius: Math.sqrt(value.relativeArea[i]) * value.maxRadius,
                     statistic: dataValue,
                 }
@@ -408,7 +408,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                 return {
                     name: value.geo[i],
                     fillColor: color,
-                    fillOpacity: 1,
+                    fillOpacity: value.opacity,
                     color: doRender(value.outline.color),
                     weight: value.outline.weight,
                     ...meta,
