@@ -18,7 +18,7 @@ import { Nav } from './hamburger'
 import { ScreenshotButton } from './screenshot'
 import { SearchBox } from './search'
 
-export const headerBarSize = 48
+const headerBarSize = 48
 const flagIconWidthRatio = 1.8
 const flagIconMaxHeightPercent = 0.85
 const headerBarSizeDesktop = '60px'

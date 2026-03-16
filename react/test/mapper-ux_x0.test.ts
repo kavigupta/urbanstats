@@ -237,6 +237,26 @@ mapper(() => test)('do not re quote when selecting custom expression again', { c
     await t.expect(getInput('Uridis').exists).ok()
 })
 
+for (const [typedValue, errorCase, inCode, simplifiedValue] of [['0.001', false, '0.001', '0.001'], ['23.000', false, '23', '23'], ['23a', true, 'toNumber("23a")', '23a']] as const) {
+    mapper(() => test)(`${typedValue} through custom expression toggle to ${simplifiedValue}`, { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+        const messages = errorCase ? ['Error while executing function: Error: Expected a number or a string that can be converted to a number, got 23a'] : []
+        await checkBox(t, /^max/)
+        await replaceInput(t, '0', typedValue)
+        await t.expect(getErrors()).eql(messages)
+        if (errorCase) {
+            await screencap(t)
+        }
+        await toggleCustomScript(t)
+        await t.expect(nthEditor(0).textContent).contains(inCode)
+        await toggleCustomScript(t)
+        if (errorCase) {
+            await screencap(t)
+        }
+        await t.expect(getErrors()).eql(messages)
+        await t.expect(getInput(simplifiedValue).exists).ok()
+    })
+}
+
 mapper(() => test)('selection preserved on reload', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=constructRamp([{value: 0, color: rgb(customNode("\\"abc\\""), 0.353, 0.765)}, {value: 0.25, color: rgb(0.353, 0.49, 0.765)}, {value: 0.5, color: rgb(0.027, 0.647, 0.686)}, {value: 0.75, color: rgb(0.541, 0.765, 0.353)}, {value: 1, color: rgb(0.722, 0.639, 0.184)}]))' }, async (t) => {
     async function checkErrors(): Promise<void> {
         await waitForLoading()

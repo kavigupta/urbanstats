@@ -59,8 +59,13 @@ export function getInsets(settings: MapSettings, typeEnvironment: TypeEnvironmen
             }
             return parseResult.currentValue?.currentValue
         }
-        catch {
-            return undefined
+        catch (err) {
+            if (err instanceof l.LiteralParseError) {
+                return undefined
+            }
+            else {
+                throw err
+            }
         }
     }
     return undefined

@@ -104,7 +104,7 @@ export function TopLevelEditor({
                 onChange={(checked) => {
                     if (checked) {
                         assert(uss.type === 'statements', 'USS should be statements when enabling custom script')
-                        setUss(parseNoErrorAsCustomNode(unparse(uss, { simplify: true }), rootBlockIdent), {})
+                        setUss(parseNoErrorAsCustomNode(unparse(uss, { simplify: 'auto-ux' }), rootBlockIdent), {})
                     }
                     else {
                         assert(uss.type === 'customNode', 'USS should not be a custom node when disabled')
