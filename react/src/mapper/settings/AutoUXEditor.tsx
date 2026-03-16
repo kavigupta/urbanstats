@@ -418,7 +418,7 @@ export function AutoUXEditor(props: {
                                 key={key}
                                 uss={uss.properties.find(([k]) => k === key)?.[1] ?? createDefaultExpression(propertyType, extendBlockIdObjectProperty(props.blockIdent, key), props.typeEnvironment)}
                                 setUss={(newVal, options) => {
-                                    const newProperties: [string, UrbanStatsASTExpression][] = Array.from(propertiesTypes.entries()).map(([propertyKey, expectedType]) => {
+                                    const newProperties: [string, UrbanStatsASTExpression][] = Array.from(propertiesTypes.entries()).map(([propertyKey]) => {
                                         if (propertyKey === key) {
                                             return [propertyKey, newVal]
                                         }
