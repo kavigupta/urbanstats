@@ -129,7 +129,7 @@ cMapRGB(
 )
 `
 
-testCode(() => test.only, 'County', 'USA', cMapRGBWithAlphaChannel, 'cmaprgb-alpha-channel')
+testCode(() => test, 'County', 'USA', cMapRGBWithAlphaChannel, 'cmaprgb-alpha-channel')
 
 const cMapRGBWithAlphaChannelAndGlobalOpacity = `
 cMapRGB(
