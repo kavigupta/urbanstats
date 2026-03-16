@@ -116,6 +116,77 @@ mapper(() => test)('add non-custom elements to vector', { code: 'pMap(data=densi
     await t.click(Selector('button[data-test-id="test-add-vector-element-button"]'))
 })
 
+mapper(() => test)('custom ramp can be rebuilt after deleting all elements', { code: 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    await t.resizeWindow(2200, 1600)
+    await waitForLoading()
+    await toggleCustomScript(t)
+    await replaceInput(t, 'Uridis', 'Custom Ramp')
+
+    const rampVectorEditor = Selector('#auto-ux-editor-ro_ramp_pos_0:not([inert] *)')
+    const removeElementButton = rampVectorEditor.find('button[title="Remove element"]')
+    while (await removeElementButton.count > 0) {
+        const button = removeElementButton.nth((await removeElementButton.count) - 1)
+        await t.scrollIntoView(button)
+        await t.click(button)
+    }
+    await t.expect(removeElementButton.count).eql(0)
+    await t.wait(250)
+
+    const addElementButton = rampVectorEditor.find('button[data-test-id="test-add-vector-element-button"]')
+    await t.expect(addElementButton.exists).ok()
+    await t.scrollIntoView(addElementButton)
+    await t.click(addElementButton)
+    await t.wait(250)
+    await t.scrollIntoView(addElementButton)
+    await t.click(addElementButton)
+
+    const valueInputs = rampVectorEditor.find('input[placeholder="Enter number"]')
+    await t.expect(valueInputs.count).eql(2)
+    await t.click(valueInputs.nth(1))
+    await t.selectText(valueInputs.nth(1))
+    await t.typeText(valueInputs.nth(1), '1')
+    await t.pressKey('enter')
+
+    await toggleCustomScript(t)
+    const code = await getCodeFromMainField()
+    await t.expect(code).contains('constructRamp([')
+    await t.expect(code).contains('{value: 0, color: colorBlack}')
+    await t.expect(code).contains('{value: 1, color: colorBlack}')
+    await t.expect(getErrors()).eql([])
+})
+
+mapper(() => test)('custom ramp intermediate deletions keep code valid', { code: 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    await t.resizeWindow(2200, 1600)
+    await waitForLoading()
+    if (await checkSelector(/^Enable custom script/).checked) {
+        await toggleCustomScript(t)
+    }
+    await replaceInput(t, 'Uridis', 'Custom Ramp')
+
+    const rampVectorEditor = Selector('#auto-ux-editor-ro_ramp_pos_0:not([inert] *)')
+    const removeElementButton = rampVectorEditor.find('button[title="Remove element"]')
+    await t.expect(removeElementButton.count).eql(5)
+
+    for (let i = 0; i < 3; i++) {
+        const middleButton = removeElementButton.nth(1)
+        await t.scrollIntoView(middleButton)
+        await t.click(middleButton)
+    }
+
+    await toggleCustomScript(t)
+    const code = await getCodeFromMainField()
+    await t.expect(code).eql(`cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=constructRamp([
+        {value: 0, color: rgb(0.592, 0.353, 0.765)},
+        {value: 1, color: rgb(0.722, 0.639, 0.184)}
+    ])
+)
+`)
+    await t.expect(getErrors()).eql([])
+})
+
 // Tests for Convert to Table button
 const simpleMapCodeForConvert = `cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, basemap=noBasemap())`
 const expectedSimpleTableCode = `table(columns=[column(values=density_pw_1km)])
