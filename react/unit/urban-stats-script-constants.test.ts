@@ -554,7 +554,7 @@ void test('constant listing', (): void => {
             '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), opacity: number = 1, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMap': [
                 'cMap',
             ],
-            '(; dataR: [number], dataG: [number], dataB: [number], label: string, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), opacity: number = 1, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMapRGB': [
+            '(; dataR: [number], dataG: [number], dataB: [number], dataA: [number] = null, label: string, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), opacity: number = 1, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMapRGB': [
                 'cMapRGB',
             ],
             '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = null, opacity: number = 1, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> pMap': [

@@ -367,7 +367,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                 r,
                 g: value.dataG[i],
                 b: value.dataB[i],
-                a: 1,
+                a: value.dataA[i],
             }))
             ramp = { type: 'label', value: value.label }
             break

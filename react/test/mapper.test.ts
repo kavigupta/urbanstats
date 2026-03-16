@@ -118,6 +118,33 @@ cMapRGB(
 
 testCode(() => test, 'County', 'USA', cMapRGBWithGlobalOpacity, 'cmaprgb-global-opacity')
 
+const cMapRGBWithAlphaChannel = `
+cMapRGB(
+    dataR=commute_car,
+    dataG=commute_transit,
+    dataB=commute_walk,
+    dataA=population / (max(population)),
+    label="RGB Map with Alpha Channel",
+    basemap=noBasemap()
+)
+`
+
+testCode(() => test, 'County', 'USA', cMapRGBWithAlphaChannel, 'cmaprgb-alpha-channel')
+
+const cMapRGBWithAlphaChannelAndGlobalOpacity = `
+cMapRGB(
+    dataR=commute_car,
+    dataG=commute_transit,
+    dataB=commute_walk,
+    dataA=population / (max(population)),
+    label="RGB Map with Alpha Channel",
+    basemap=noBasemap(),
+    opacity=0.5
+)
+`
+
+testCode(() => test, 'County', 'USA', cMapRGBWithAlphaChannelAndGlobalOpacity, 'cmaprgb-alpha-channel-and-global-opacity')
+
 const translucentOutline = `
 cMap(
     data=density_pw_1km,
