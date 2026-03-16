@@ -81,7 +81,7 @@ export const quizFriends = z.array(z.union([
 
 export type QuizFriends = z.infer<typeof quizFriends>
 
-export const quizPersonaSchema = z.object({
+const quizPersonaSchema = z.object({
     persistent_id: z.string(),
     secure_id: z.string(),
     quiz_history: quizHistorySchema,
@@ -123,8 +123,6 @@ export class StoredProperty<T> extends Property<T> {
         super.value = newValue
     }
 }
-
-export const loading = Symbol('loading')
 
 export class QuizModel {
     private constructor() {

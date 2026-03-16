@@ -243,19 +243,6 @@ function ArticleTable(props: {
     )
 }
 
-export function StatisticHeader(props: {
-    longname: string
-    groupName?: string
-}): ReactNode {
-    return (
-        <div style={{ width: '100%', padding: '1px' }}>
-            <span className="serif value">
-                <span>{props.groupName}</span>
-            </span>
-        </div>
-    )
-}
-
 function ComparisonSearchBox({ longname, type }: { longname: string, type: string }): ReactNode {
     const currentUniverse = useUniverse()
     const navContext = useContext(Navigator.Context)

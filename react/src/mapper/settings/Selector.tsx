@@ -178,7 +178,7 @@ function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: strin
     )
 }
 
-export function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection): SelectorRenderResult {
+function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection): SelectorRenderResult {
     if (selection.type === 'custom') {
         return { text: 'Custom Expression' }
     }

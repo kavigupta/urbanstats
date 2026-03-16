@@ -97,7 +97,7 @@ export function mapSettingsFromURLParam(encodedSettings: string | undefined): Ma
 
 export type MapEditorMode = 'uss' | 'insets' | 'textBoxes'
 
-export function defaultTopLevelEditor(): UrbanStatsASTStatement {
+function defaultTopLevelEditor(): UrbanStatsASTStatement {
     const expr = parseNoErrorAsCustomNode('cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', rootBlockIdent, validMapperOutputs)
     return expr.expr
 }

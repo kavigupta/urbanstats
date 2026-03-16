@@ -398,10 +398,6 @@ export async function createComparison(t: TestController, searchTerm: string, ex
     await t.pressKey('enter')
 }
 
-export async function getAllElements(selector: Selector): Promise<NodeSnapshot[]> {
-    return Promise.all(Array.from({ length: await selector.count }).map((_, i) => selector.nth(i)()))
-}
-
 export function mapFeatureName(r: RegExp): Promise<string | undefined> {
     return ClientFunction(() => {
         for (const { features } of (window as unknown as TestWindow).testUtils.clickableMaps.values()) {
