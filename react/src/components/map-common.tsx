@@ -128,6 +128,7 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
                 source={polygonsId(id, 'source')}
                 paint={{
                     'line-color': ['get', 'color'],
+                    'line-opacity': ['get', 'fillOpacity'],
                     'line-width': ['get', 'weight'],
                 }}
                 beforeId={labelId}
