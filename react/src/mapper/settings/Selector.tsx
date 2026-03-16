@@ -178,30 +178,6 @@ function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: strin
     )
 }
 
-export function classifyExpr(uss: UrbanStatsASTExpression): Selection {
-    if (uss.type === 'customNode') {
-        return { type: 'custom' }
-    }
-    if (uss.type === 'constant') {
-        return { type: 'constant' }
-    }
-    if (uss.type === 'identifier') {
-        return { type: 'variable', name: uss.name.node }
-    }
-    if (uss.type === 'call') {
-        const classifiedFn = classifyExpr(uss.fn)
-        assert(classifiedFn.type === 'variable', 'Function must be a variable or another function')
-        return { type: 'function', name: classifiedFn.name }
-    }
-    if (uss.type === 'vectorLiteral') {
-        return { type: 'vector' }
-    }
-    if (uss.type === 'objectLiteral') {
-        return { type: 'object' }
-    }
-    throw new Error(`Unsupported USS expression type: ${uss.type}`)
-}
-
 function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection): SelectorRenderResult {
     if (selection.type === 'custom') {
         return { text: 'Custom Expression' }
