@@ -49,6 +49,16 @@ function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironm
             elements: [],
         }
     }
+    if (type.type === 'object') {
+        return {
+            type: 'objectLiteral',
+            entireLoc: emptyLocation(blockIdent),
+            properties: Array.from(type.properties.entries()).map(([key, propertyType]) => [
+                key,
+                createDefaultExpression(propertyType, extendBlockIdObjectProperty(blockIdent, key), typeEnvironment),
+            ]),
+        }
+    }
     return parseNoErrorAsCustomNode('', blockIdent, [type])
 }
 
@@ -322,8 +332,12 @@ export function AutoUXEditor(props: {
             // Determine the element type
             let elementType: USSType = { type: 'number' } // fallback
             if (props.type[0].type === 'vector') {
+                assert(
+                    props.type[0].elementType.type !== 'elementOfEmptyVector',
+                    'the provided type for an autoux editor shouldn\'t be an empty vector',
+                )
                 // something of a hack, but this really shouldn't be an issue because we don't support multiple types for vectors
-                elementType = props.type[0].elementType as USSType
+                elementType = props.type[0].elementType
             }
             const element = (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%' }}>
@@ -345,7 +359,19 @@ export function AutoUXEditor(props: {
                             <button
                                 style={{ flexShrink: 0 }}
                                 onClick={() => {
-                                    const newElements = uss.elements.filter((_, j) => j !== i)
+                                    const newElements = uss.elements.flatMap((vectorElement, j) => {
+                                        if (j === i) {
+                                            return []
+                                        }
+                                        if (j < i) {
+                                            return [vectorElement]
+                                        }
+                                        return [changeBlockId(
+                                            vectorElement,
+                                            extendBlockIdVectorElement(props.blockIdent, j),
+                                            extendBlockIdVectorElement(props.blockIdent, j - 1),
+                                        )]
+                                    })
                                     props.setUss({ ...uss, elements: newElements }, {})
                                 }}
                                 title="Remove element"
@@ -392,7 +418,15 @@ export function AutoUXEditor(props: {
                                 key={key}
                                 uss={uss.properties.find(([k]) => k === key)?.[1] ?? createDefaultExpression(propertyType, extendBlockIdObjectProperty(props.blockIdent, key), props.typeEnvironment)}
                                 setUss={(newVal, options) => {
-                                    props.setUss({ ...uss, properties: uss.properties.map(([k, v]) => [k, k === key ? newVal : v]) }, options)
+                                    const newProperties: [string, UrbanStatsASTExpression][] = Array.from(propertiesTypes.entries()).map(([propertyKey, expectedType]) => {
+                                        if (propertyKey === key) {
+                                            return [propertyKey, newVal]
+                                        }
+                                        const original = uss.properties.find(([k]) => k === propertyKey)
+                                        assert(original !== undefined, 'object properties should all exist already')
+                                        return original
+                                    })
+                                    props.setUss({ ...uss, properties: newProperties }, options)
                                 }}
                                 typeEnvironment={props.typeEnvironment}
                                 errors={props.errors}
@@ -640,10 +674,6 @@ function defaultForSelection(
             }
         }
         case 'object':
-            return {
-                type: 'objectLiteral',
-                entireLoc: emptyLocation(blockIdent),
-                properties: [],
-            }
+            return createDefaultExpression(type, blockIdent, typeEnvironment)
     }
 }
