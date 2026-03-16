@@ -151,7 +151,7 @@ function CategoryContents({ category, isExpanded }: { category: Category, isExpa
                                 // @ts-expect-error -- inert is not in the type definitions yet
                                 inert=""
                                 className={`${sidebarSectionContent} hidden`}
-                                style={{ opacity: 0, position: 'fixed' }}
+                                style={{ opacity: 0, position: 'absolute' }}
                                 ref={arg.ref}
                             >
                                 <CategoryCoreContents category={category} />
