@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-import { Octokit } from 'octokit'
+import { getOctokit } from '@actions/github'
 import { z } from 'zod'
 
 import { loadAndMergeTestHistories, repoInfo } from './util'
@@ -12,7 +12,7 @@ for (const result of await loadAndMergeTestHistories()) {
     durations[result.test] = result.result.duration
 }
 
-const octokit = new Octokit({ auth: z.string().parse(process.env.FINE_GRAINED_TOKEN_FOR_VARIABLES) })
+const octokit = getOctokit(z.string().parse(process.env.FINE_GRAINED_TOKEN_FOR_VARIABLES))
 
 const response = await octokit.rest.actions.updateRepoVariable({
     ...repoInfo,

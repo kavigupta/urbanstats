@@ -206,17 +206,20 @@ jobs:
           pattern: "{delta,changed_screenshots}"
           separate-directories: true
         continue-on-error: true
-      - if: ${{ steps.upload-combined.outputs.artifact-id != '' && github.event_name == 'pull_request' }}
-        uses: actions/github-script@v7
+      - *checkout
+      - uses: ./.github/actions/node_modules
+      - uses: actions/download-artifact@v4
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '[Screenshots merge ${{ github.event.pull_request.head.sha }}](https://urbanstats.org/screenshot-diff-viewer.html?artifactId=${{ steps.upload-combined.outputs.artifact-id }}&hash=${{ github.sha }})\n\n`!updateScreenshots` to update'
-            })
+          pattern: "test_histories-*"
+          path: react/test_histories
+          merge-multiple: true
+      - run: |
+          npx tsx test/scripts/post-comment.ts
+        working-directory: react
+        env:
+          ARTIFACT_ID: ${{ steps.upload-combined.outputs.artifact-id }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
   merge-and-save-durations:
     runs-on: ubuntu-22.04

@@ -7,13 +7,13 @@
  * and then any files not generated, we'll proxy the request to a CI proxy that has a copy of densitydb.
  */
 
+import { getOctokit } from '@actions/github'
 import compression from 'compression'
 import express from 'express'
 import proxy from 'express-http-proxy'
-import { Octokit } from 'octokit'
 import { z } from 'zod'
 
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
+const octokit = getOctokit(z.string().parse(process.env.GITHUB_TOKEN))
 
 export async function startProxy(): Promise<void> {
     /**
