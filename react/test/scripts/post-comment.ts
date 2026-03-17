@@ -15,6 +15,10 @@ const github = (await maybeGithub(() => env.GITHUB_TOKEN))!
 
 const body = [await testsComment(), screenshotsComment()].filter(s => s !== undefined).join('\n\n')
 
+if (body === '') {
+    process.exit(0)
+}
+
 if (github.context.eventName === 'pull_request') {
     await github.octokit.rest.issues.createComment({
         issue_number: github.context.issue.number,
