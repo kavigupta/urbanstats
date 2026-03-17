@@ -70,13 +70,13 @@ async function testsComment(): Promise<string | undefined> {
 
         const logs = z.string().parse(data).split('\n')
 
-        const stepStartIdx = logs.findIndex(line => line.startsWith('##[group]Run npm run test:e2e'))
+        const stepStartIdx = logs.findIndex(line => line.includes('##[group]Run npm run test:e2e'))
 
         if (stepStartIdx === -1) {
             throw new Error('Could not find the start of the test step in the logs')
         }
 
-        const lineIdx = logs.findIndex(line => line.startsWith(`##[group]${testFile(test)} attempt ${(retries + 1)}`))
+        const lineIdx = logs.findIndex(line => line.includes(`##[group]${testFile(test)} attempt ${(retries + 1)}`))
 
         if (lineIdx === -1) {
             throw new Error(`Couldn't find log line for ${test}`)
