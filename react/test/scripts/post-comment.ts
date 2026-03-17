@@ -17,11 +17,11 @@ await github.octokit.rest.issues.createComment({
     issue_number: github.context.issue.number,
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
-    body: [await testsComment(), screenshotsCommment()].join('\n\n'),
+    body: [await testsComment(), screenshotsComment()].join('\n\n'),
 })
 
-function screenshotsCommment(): string | undefined {
-    if (env.ARTIFACT_ID === '') {
+function screenshotsComment(): string | undefined {
+    if (env.ARTIFACT_ID !== '') {
         // There is a screenshots artifact, so there were screenshots changes
         return `[Screenshots merge ${env.HEAD_SHA}](https://urbanstats.org/screenshot-diff-viewer.html?artifactId=${env.ARTIFACT_ID}&hash=${github.context.sha})\n\n\`!updateScreenshots\` to update`
     }
@@ -29,7 +29,7 @@ function screenshotsCommment(): string | undefined {
 }
 
 async function testsComment(): Promise<string | undefined> {
-    const executions = (await loadAndMergeTestHistories()).flat().filter((execution): execution is Required<typeof execution> => {
+    const executions = (await loadAndMergeTestHistories()).filter((execution): execution is Required<typeof execution> => {
         assert(execution.github, 'Must be a Github test execution')
         return true
     }).sort((a, b) => a.test.localeCompare(b.test))
