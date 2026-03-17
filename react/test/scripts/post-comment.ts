@@ -17,7 +17,7 @@ await github.octokit.rest.issues.createComment({
     issue_number: github.context.issue.number,
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
-    body: [await testsComment(), screenshotsComment()].join('\n\n'),
+    body: [await testsComment(), screenshotsComment()].filter(s => s !== undefined).join('\n\n'),
 })
 
 function screenshotsComment(): string | undefined {
@@ -50,7 +50,7 @@ async function testsComment(): Promise<string | undefined> {
         const statusText = result.status === 'timeout'
             ? `timeout (limit: ${result.timeLimitSeconds}s)`
             : 'failure'
-        const retriesText = retries === 1 ? '' : ` (${retries} retries)`
+        const retriesText = retries === 0 ? '' : ` (${retries} retries)`
 
         const job = jobs.find(j => j.name === executionGithub.jobName)
         assert(job, `Couldn't find job ${executionGithub.jobName} in the jobs for run ${github.context.runId}`)
