@@ -40,6 +40,7 @@ export interface CMapRGB {
     dataR: number[]
     dataG: number[]
     dataB: number[]
+    dataA: number[]
     opacity: number
     label: string
     basemap: Basemap
@@ -110,7 +111,7 @@ function mapConstructorArguments(
 ): Record<string, NamedFunctionArgumentWithDocumentation> {
     const dataType = { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } } } satisfies NamedFunctionArgumentWithDocumentation
     const dataArgs: Record<string, NamedFunctionArgumentWithDocumentation> = isRGB
-        ? { dataR: dataType, dataG: dataType, dataB: dataType }
+        ? { dataR: dataType, dataG: dataType, dataB: dataType, dataA: { ...dataType, defaultValue: createConstantExpression(null) } }
         : {
                 data: dataType,
                 scale: { type: { type: 'concrete', value: { type: 'opaque', name: 'scale' } } },
@@ -368,13 +369,21 @@ export const cMapRGB: USSValue = {
         const textBoxes = (namedArgs.textBoxes as { value: TextBox }[] | null ?? []).map(({ value }) => value)
         const opacity = Math.max(0, Math.min(1, namedArgs.opacity as number))
 
+        const dataARaw = namedArgs.dataA as number[] | null
+        const dataA: number[] = dataARaw === null
+            ? Array.from({ length: geo.length }, () => 1)
+            : clipValues(dataARaw)
+
         if (geo.length !== dataR.length || geo.length !== dataG.length || geo.length !== dataB.length) {
             throw new Error(`geo, dataR, dataG, and dataB must have the same length: ${geo.length}, ${dataR.length}, ${dataG.length}, ${dataB.length}`)
+        }
+        if (dataARaw !== null && geo.length !== dataA.length) {
+            throw new Error(`geo and dataA must have the same length: ${geo.length} and ${dataA.length}`)
         }
         return {
             type: 'opaque',
             opaqueType: 'cMapRGB',
-            value: { geo, dataR, dataG, dataB, opacity, label, basemap, insets, unit, outline, textBoxes } satisfies CMapRGB,
+            value: { geo, dataR, dataG, dataB, dataA, opacity, label, basemap, insets, unit, outline, textBoxes } satisfies CMapRGB,
         }
     },
     documentation: {
@@ -385,6 +394,7 @@ export const cMapRGB: USSValue = {
             dataR: 'Red Data (0-1)',
             dataG: 'Green Data (0-1)',
             dataB: 'Blue Data (0-1)',
+            dataA: 'Alpha Data (0-1)',
             opacity: 'Opacity',
             label: 'Label',
             geo: 'Geography',

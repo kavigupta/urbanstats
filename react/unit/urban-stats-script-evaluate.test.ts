@@ -1442,6 +1442,7 @@ void test('test basic RGB map', () => {
     assert.deepStrictEqual(resultMapRaw.dataR, [0.1, 0.5, 0.9])
     assert.deepStrictEqual(resultMapRaw.dataG, [0.2, 0.6, 0.8])
     assert.deepStrictEqual(resultMapRaw.dataB, [0.3, 0.7, 0.7])
+    assert.deepStrictEqual(resultMapRaw.dataA, [1, 1, 1])
     assert.deepStrictEqual(resultMapRaw.opacity, 1)
     assert.deepStrictEqual(resultMapRaw.label, 'RGB Test Map')
 })
@@ -2202,9 +2203,10 @@ void test('test map opacity channel', () => {
     const cMapRaw = (cMapResult.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(cMapRaw.opacity, 0.25)
 
-    const cMapRGBResult = evaluate(parseExpr('cMapRGB(geo=geo, dataR=[0.1, 0.2, 0.3], dataG=[0.4, 0.5, 0.6], dataB=[0.7, 0.8, 0.9], opacity=0.6, label="x")'), emptyContextWithInsets())
+    const cMapRGBResult = evaluate(parseExpr('cMapRGB(geo=geo, dataR=[0.1, 0.2, 0.3], dataG=[0.4, 0.5, 0.6], dataB=[0.7, 0.8, 0.9], dataA=[0.2, 0.5, 0.8], opacity=0.6, label="x")'), emptyContextWithInsets())
     assert.deepStrictEqual(cMapRGBResult.type, { type: 'opaque', name: 'cMapRGB' })
     const cMapRGBRaw = (cMapRGBResult.value as { type: 'opaque', value: CMapRGB }).value
+    assert.deepStrictEqual(cMapRGBRaw.dataA, [0.2, 0.5, 0.8])
     assert.deepStrictEqual(cMapRGBRaw.opacity, 0.6)
 
     const [ctx] = contextForTestIfStatement()

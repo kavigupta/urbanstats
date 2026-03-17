@@ -186,7 +186,7 @@ function ArgumentEditor(props: {
                                                     ...(renderArg.kind === 'hidden'
                                                         ? {
                                                                 opacity: 0,
-                                                                position: 'absolute',
+                                                                position: 'fixed',
                                                             }
                                                         : {
                                                                 maxHeight: collapsed ? 0 : renderArg.height,
