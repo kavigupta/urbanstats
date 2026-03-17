@@ -219,7 +219,7 @@ jobs:
         working-directory: react
         env:
           ARTIFACT_ID: ${{ steps.upload-combined.outputs.artifact-id }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
   merge-and-save-durations:

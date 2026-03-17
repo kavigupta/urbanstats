@@ -13,12 +13,24 @@ const env = z.object({
 
 const github = (await maybeGithub(() => env.GITHUB_TOKEN))!
 
-await github.octokit.rest.issues.createComment({
-    issue_number: github.context.issue.number,
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
-    body: [await testsComment(), screenshotsComment()].filter(s => s !== undefined).join('\n\n'),
-})
+const body = [await testsComment(), screenshotsComment()].filter(s => s !== undefined).join('\n\n')
+
+if (github.context.eventName === 'pull_request') {
+    await github.octokit.rest.issues.createComment({
+        issue_number: github.context.issue.number,
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        body,
+    })
+}
+else {
+    await github.octokit.rest.repos.createCommitComment({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        commit_sha: github.context.sha,
+        body,
+    })
+}
 
 function screenshotsComment(): string | undefined {
     if (env.ARTIFACT_ID !== '') {
