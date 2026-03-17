@@ -43,7 +43,6 @@ export const testHistorySchema = z.array(z.object({
     github: z.optional(z.object({
         jobId: z.number(),
         stepNumber: z.number(),
-        groupNumber: z.number(),
     })),
 }))
 
@@ -66,4 +65,8 @@ export async function loadAndMergeTestHistories(): Promise<TestHistory> {
     }))
 
     return rawResult.flat()
+}
+
+export function testFile(test: string): string {
+    return `test/${test}.test.ts`
 }

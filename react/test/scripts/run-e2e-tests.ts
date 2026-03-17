@@ -9,7 +9,7 @@ import { argumentParser } from 'zodcli'
 
 import { startProxy } from './ci_proxy'
 import { maybeGithub } from './github-utils'
-import { booleanArgument, getTOTPWait, setTOTPWait, TestHistory, TestResult } from './util'
+import { booleanArgument, getTOTPWait, setTOTPWait, testFile, TestHistory, TestResult } from './util'
 
 const options = argumentParser({
     options: z.object({
@@ -51,19 +51,16 @@ const testHistory: TestHistory = []
 
 const github = await maybeGithub(() => z.string().parse(process.env.GITHUB_TOKEN))
 
-let groupNumber = 0
-
 for (const test of tests) {
     const numTries = options.tries * (await testFileDidChange(test) ? 1 : 2)
     let retries = 0
     let result: TestResult
 
     retry: while (true) {
-        if (process.env.GITHUB_ACTIONS) {
-            groupNumber++
+        if (github) {
             console.warn(`::group::${testFile(test)} attempt ${retries + 1}`)
         }
-        console.warn(chalkTemplate`{cyan ${testFile(test)} running...}`)
+        console.warn(chalkTemplate`{cyan ${testFile(test)} attempt ${(retries + 1)} running...}`)
         result = await runTest(test)
         printResult({ test, result, retries })
         switch (result.status) {
@@ -83,7 +80,7 @@ for (const test of tests) {
         }
     }
 
-    if (process.env.GITHUB_ACTIONS) {
+    if (github) {
         console.warn(`::endgroup::`)
     }
 
@@ -94,7 +91,6 @@ for (const test of tests) {
         github: github && {
             jobId: github.currentJobId(),
             stepNumber: await github.currentStepNumber(),
-            groupNumber,
         },
     })
 }
@@ -122,10 +118,6 @@ function printResult({ test, result, retries }: { test: string, result: TestResu
             console.error(chalkTemplate`{red ${testFile(test)} took too long! (allowed duration ${result.timeLimitSeconds}s) (${retries} retries)}`)
             break
     }
-}
-
-function testFile(test: string): string {
-    return `test/${test}.test.ts`
 }
 
 async function testFileDidChange(test: string): Promise<boolean> {

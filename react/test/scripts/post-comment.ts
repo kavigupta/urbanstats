@@ -3,7 +3,7 @@ import assert from 'assert'
 import { z } from 'zod'
 
 import { maybeGithub } from './github-utils'
-import { loadAndMergeTestHistories } from './util'
+import { loadAndMergeTestHistories, testFile } from './util'
 
 const env = z.object({
     GITHUB_TOKEN: z.string(),
@@ -56,16 +56,30 @@ async function testsComment(): Promise<string | undefined> {
         return
     }
 
-    const lines = failedExecutions.map(({ test, result, retries, github: executionGithub }) => {
+    const lines = await Promise.all(failedExecutions.map(async ({ test, result, retries, github: executionGithub }) => {
         const statusText = result.status === 'timeout'
             ? `timeout (limit: ${result.timeLimitSeconds}s)`
             : 'failure'
         const retriesText = retries === 0 ? '' : ` (${retries} retries)`
 
-        const link = `${github.context.serverUrl}/${github.context.repo.owner}/${github.context.repo.repo}/actions/runs/${github.context.runId}/job/${executionGithub.jobId}#step:${executionGithub.stepNumber}:${executionGithub.groupNumber}`
+        const { data } = await github.octokit.rest.actions.downloadJobLogsForWorkflowRun({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            job_id: executionGithub.jobId,
+        })
+
+        const logs = z.string().parse(data).split('\n')
+
+        const lineIdx = logs.findIndex(line => line.includes(`${testFile(test)} attempt ${(retries + 1)} running...`))
+
+        if (lineIdx === -1) {
+            throw new Error(`Couldn't find log line for ${test}`)
+        }
+
+        const link = `${github.context.serverUrl}/${github.context.repo.owner}/${github.context.repo.repo}/actions/runs/${github.context.runId}/job/${executionGithub.jobId}#step:${executionGithub.stepNumber}:${lineIdx + 3}`
 
         return `- [\`test/${test}.test.ts\`](${link}): ${statusText}${retriesText}`
-    })
+    }))
 
     return `## Failed Tests\n\n${lines.join('\n')}`
 }
