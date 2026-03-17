@@ -14,7 +14,7 @@ export async function maybeGithub(token: () => string): Promise<undefined | type
         })
         const currentJob = data.jobs.find(job => job.name === context.job)
         if (currentJob === undefined) {
-            throw new Error(`Could not find current job. Jobs: ${JSON.stringify(data.jobs, null, 2)}`)
+            throw new Error(`Could not find current job '${context.job}'. Jobs: ${JSON.stringify(data.jobs, null, 2)}`)
         }
         if (currentJob.steps === undefined) {
             throw new Error(`Current job has no steps. Current job: ${JSON.stringify(currentJob, null, 2)}`)
