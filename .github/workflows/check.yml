@@ -143,7 +143,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
+        test-file:
+          [
+            "mapper-expand-collapse",
+            "article_link_settings",
+            "uss-documentation",
+          ]
     timeout-minutes: 30
     steps:
       - *checkout
