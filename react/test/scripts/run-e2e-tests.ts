@@ -92,7 +92,7 @@ for (const test of tests) {
         result,
         retries,
         github: github && {
-            jobName: github.context.job,
+            jobId: github.currentJobId(),
             stepNumber: await github.currentStepNumber(),
             groupNumber,
         },

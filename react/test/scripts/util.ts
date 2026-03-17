@@ -41,7 +41,7 @@ export const testHistorySchema = z.array(z.object({
     ]),
     retries: z.number(),
     github: z.optional(z.object({
-        jobName: z.string(),
+        jobId: z.number(),
         stepNumber: z.number(),
         groupNumber: z.number(),
     })),

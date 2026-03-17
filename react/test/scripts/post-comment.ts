@@ -56,21 +56,13 @@ async function testsComment(): Promise<string | undefined> {
         return
     }
 
-    const { data: { jobs } } = await github.octokit.rest.actions.listJobsForWorkflowRun({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        run_id: github.context.runId,
-    })
-
     const lines = failedExecutions.map(({ test, result, retries, github: executionGithub }) => {
         const statusText = result.status === 'timeout'
             ? `timeout (limit: ${result.timeLimitSeconds}s)`
             : 'failure'
         const retriesText = retries === 0 ? '' : ` (${retries} retries)`
 
-        const job = jobs.find(j => j.name === executionGithub.jobName)
-        assert(job, `Couldn't find job ${executionGithub.jobName} in the jobs for run ${github.context.runId}`)
-        const link = `${github.context.serverUrl}/${github.context.repo.owner}/${github.context.repo.repo}/actions/runs/${github.context.runId}/job/${job.id}#step:${executionGithub.stepNumber}:${executionGithub.groupNumber}`
+        const link = `${github.context.serverUrl}/${github.context.repo.owner}/${github.context.repo.repo}/actions/runs/${github.context.runId}/job/${executionGithub.jobId}#step:${executionGithub.stepNumber}:${executionGithub.groupNumber}`
 
         return `- [\`test/${test}.test.ts\`](${link}): ${statusText}${retriesText}`
     })
