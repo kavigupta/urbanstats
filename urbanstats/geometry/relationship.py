@@ -10,10 +10,10 @@ from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 
-# @permacache(
-#     "population_density/relationship/create_relationships_8",
-#     key_function=dict(x=lambda x: x.hash_key, y=lambda y: y.hash_key),
-# )
+@permacache(
+    "population_density/relationship/create_relationships_9",
+    key_function=dict(x=lambda x: x.hash_key, y=lambda y: y.hash_key),
+)
 def create_relationships(x, y):
     """
     Get the relationships between the two shapefiles x and y.
@@ -286,31 +286,34 @@ def compute_all_relationships(long_to_type, shapefiles_to_use):
                 continue
             d[x].add(y)
 
-    for k1 in shapefiles_to_use:
-        for k2 in shapefiles_to_use:
-            print(k1, k2)
-            if k1 < k2:
-                continue
+    pairs = [
+        (k1, k2) for k1 in shapefiles_to_use for k2 in shapefiles_to_use if k1 >= k2
+    ]
 
-            (
-                a_contains_b,
-                b_contains_a,
-                a_intersects_b,
-                a_borders_b,
-            ) = create_relationships_dispatch(shapefiles_to_use, k1, k2)
+    for i, (k1, k2) in enumerate(pairs):
+        print(f"{i}/{len(pairs)}: {k1} and {k2}")
+        if k1 < k2:
+            continue
 
-            add(contains, a_contains_b)
-            add(contains, [(big, small) for small, big in b_contains_a])
-            add(contained_by, b_contains_a)
-            add(contained_by, [(big, small) for small, big in a_contains_b])
-            add(intersects, a_intersects_b)
-            add(intersects, [(big, small) for small, big in a_intersects_b])
-            if can_border(
-                shapefiles_to_use[k1].meta["type"],
-                shapefiles_to_use[k2].meta["type"],
-            ):
-                add(borders, a_borders_b)
-                add(borders, [(big, small) for small, big in a_borders_b])
+        (
+            a_contains_b,
+            b_contains_a,
+            a_intersects_b,
+            a_borders_b,
+        ) = create_relationships_dispatch(shapefiles_to_use, k1, k2)
+
+        add(contains, a_contains_b)
+        add(contains, [(big, small) for small, big in b_contains_a])
+        add(contained_by, b_contains_a)
+        add(contained_by, [(big, small) for small, big in a_contains_b])
+        add(intersects, a_intersects_b)
+        add(intersects, [(big, small) for small, big in a_intersects_b])
+        if can_border(
+            shapefiles_to_use[k1].meta["type"],
+            shapefiles_to_use[k2].meta["type"],
+        ):
+            add(borders, a_borders_b)
+            add(borders, [(big, small) for small, big in a_borders_b])
     return contains, contained_by, intersects, borders
 
 

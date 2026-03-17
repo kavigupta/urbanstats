@@ -167,7 +167,12 @@ def land_rle_summaries_for_shapefile(shapefile):
     ),
 )
 def compute_relationships(shapefile_a, shapefile_b):
-    print("Computing relationships between", shapefile_a.hash_key, "and", shapefile_b.hash_key)
+    print(
+        "Computing relationships between",
+        shapefile_a.hash_key,
+        "and",
+        shapefile_b.hash_key,
+    )
     summaries_a = land_rle_summaries_for_shapefile(shapefile_a)
     summaries_b = land_rle_summaries_for_shapefile(shapefile_b)
     keys_a = list(summaries_a.keys())
@@ -195,24 +200,39 @@ def classify_relationship(summary_a: LandRleSummary, summary_b: LandRleSummary):
     eps = 1e-9
     rc = RelationshipComputer.singleton()
     inter_area = rc.area_of(intersection)
-    inter_pop = rc.population_of(intersection)
+
+    # In general, we do not want to compute population unless we have to,
+    # it involves reading from a zarr and is therefore very expensive.
+
+    _inter_pop = None
+
+    def get_inter_pop():
+        nonlocal _inter_pop
+        if _inter_pop is None:
+            _inter_pop = rc.population_of(intersection)
+        return _inter_pop
+
     union_area = summary_a.area + summary_b.area - inter_area
-    union_pop = summary_a.population + summary_b.population - inter_pop
+    get_union_pop = (
+        lambda: summary_a.population + summary_b.population - get_inter_pop()
+    )
     iou_area = inter_area / (union_area + eps)
-    iou_pop = inter_pop / (union_pop + eps)
-    if iou_area >= 0.95 and iou_pop >= 0.95:
+    get_iou_pop = lambda: get_inter_pop() / (get_union_pop() + eps)
+    # the >= 0.9999 is just to catch cases where the area is so obviously the same
+    # that we don't even need to check the population
+    if iou_area >= 0.99999 or (iou_area >= 0.95 and get_iou_pop() >= 0.95):
         return "same_geography"
-    if (
-        inter_area / (summary_b.area + eps) >= 0.95
-        and inter_pop / (summary_b.population + eps) >= 0.95
+    area_frac_b = inter_area / (summary_b.area + eps)
+    if area_frac_b >= 0.99999 or (
+        area_frac_b >= 0.95 and get_inter_pop() / (summary_b.population + eps) >= 0.95
     ):
         return "a_contains_b"
-    if (
-        inter_area / (summary_a.area + eps) >= 0.95
-        and inter_pop / (summary_a.population + eps) >= 0.95
+    area_frac_a = inter_area / (summary_a.area + eps)
+    if area_frac_a >= 0.99999 or (
+        area_frac_a >= 0.95 and get_inter_pop() / (summary_a.population + eps) >= 0.95
     ):
         return "a_contained_by_b"
-    if inter_area > 0.05 or inter_pop > 0.05:
+    if inter_area > 0.05 or get_inter_pop() > 0.05:
         return "intersects"
     return "borders"
 
