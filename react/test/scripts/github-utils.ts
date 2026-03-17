@@ -9,7 +9,7 @@ export async function maybeGithub(token: () => string): Promise<undefined | type
     const octokit = getOctokit(token())
 
     function currentJobId(): number {
-        return z.number().parse(process.env.CHECK_RUN_ID)
+        return z.coerce.number().parse(process.env.CHECK_RUN_ID)
     }
 
     async function currentStepNumber(): Promise<number> {
