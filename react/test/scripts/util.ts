@@ -53,8 +53,10 @@ export async function loadAndMergeTestHistories(): Promise<TestHistory> {
 
     const rawResult = await Promise.all(historiesFiles.map(async (historyFile) => {
         const history = testHistorySchema.parse(JSON.parse(await fs.readFile(historyFile, 'utf-8')))
-        assert(history.every(result => !processedTests.has(result.test)), 'Duplicate test histories!')
-        history.forEach(result => processedTests.add(result.test))
+        for (const result of history) {
+            assert(!processedTests.has(result.test), 'Duplicate test histories!')
+            processedTests.add(result.test)
+        }
         return history
     }))
 

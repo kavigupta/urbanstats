@@ -8,7 +8,7 @@ import { loadAndMergeTestHistories, repoInfo } from './util'
 const durations: Record<string, number> = {}
 
 for (const result of await loadAndMergeTestHistories()) {
-    assert(result.result.status === 'success', 'Cannot save durations is a test is unsuccessful')
+    assert(result.result.status === 'success', 'Cannot save durations if a test is unsuccessful')
     durations[result.test] = result.result.duration
 }
 
