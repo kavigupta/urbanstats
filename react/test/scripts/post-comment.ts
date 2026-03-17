@@ -84,7 +84,7 @@ async function testsComment(): Promise<string | undefined> {
 
         const lineInStep = lineIdx - stepStartIdx
 
-        const link = `${github.context.serverUrl}/${github.context.repo.owner}/${github.context.repo.repo}/actions/runs/${github.context.runId}/job/${executionGithub.jobId}#step:${executionGithub.stepNumber}:${lineInStep + 3}`
+        const link = `${github.context.serverUrl}/${github.context.repo.owner}/${github.context.repo.repo}/actions/runs/${github.context.runId}/job/${executionGithub.jobId}#step:${executionGithub.stepNumber}:${lineInStep + 2}`
 
         return `- [\`test/${test}.test.ts\`](${link}): ${statusText}${retriesText}`
     }))
