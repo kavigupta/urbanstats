@@ -89,5 +89,5 @@ async function testsComment(): Promise<string | undefined> {
         return `- [\`test/${test}.test.ts\`](${link}): ${statusText}${retriesText}`
     }))
 
-    return `## Failed Tests\n\n${lines.join('\n')}`
+    return lines.join('\n')
 }
