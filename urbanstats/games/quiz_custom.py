@@ -45,8 +45,6 @@ def extract(row, column):
     [cols] = [z for x, _, z in get_quiz_stats() if x == column]
     vals = [row[col] for col in cols]
     vals = [v for v in vals if not np.isnan(v)]
-    if not vals:
-        import IPython; IPython.embed()  # noqa: F401
     assert vals, f"No non-nan values for column {column} in row {row.name}"
     # get the one non-nan value
     [val] = vals
