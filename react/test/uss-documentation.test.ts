@@ -17,7 +17,7 @@ test('undo is scoped by editor', async (t) => {
     await t.expect(nthEditor(0).textContent).eql('Enter Urban Stats Script\n')
     await t.click('h1')
     await t.pressKey('ctrl+z')
-    await t.expect(nthEditor(0).textContent).eql('Enter Urban Stat Script\n')
+    await t.expect(nthEditor(0).textContent).eql('Enter Urban Stats Script\n')
     await t.click(nthEditor(1))
     await t.pressKey('ctrl+z')
     await t.expect(nthEditor(0).textContent).eql('Enter Urban Stats Script\n')

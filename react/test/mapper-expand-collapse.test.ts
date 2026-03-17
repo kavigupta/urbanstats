@@ -16,7 +16,7 @@ function expandButton(name?: string): Selector {
 
 test('expanded when checking insets, click expand button to collapse', async (t) => {
     await t.expect(expandButton().length).eql(0) // No expand arrows initially
-    await checkBox(t, /Inses/)
+    await checkBox(t, /Insets/)
     await t.expect(expandButton('insets').getAttribute('data-test-state')).eql('true')
     await screencap(t, { selector: Selector('[data-test=split-left]'), scrollTargetY: 1000 })
     await t.click(expandButton('insets'))
