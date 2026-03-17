@@ -70,13 +70,21 @@ async function testsComment(): Promise<string | undefined> {
 
         const logs = z.string().parse(data).split('\n')
 
-        const lineIdx = logs.findIndex(line => line.includes(`${testFile(test)} attempt ${(retries + 1)} running...`))
+        const stepStartIdx = logs.findIndex(line => line.startsWith('##[group]Run npm run test:e2e'))
+
+        if (stepStartIdx === -1) {
+            throw new Error('Could not find the start of the test step in the logs')
+        }
+
+        const lineIdx = logs.findIndex(line => line.startsWith(`##[group]${testFile(test)} attempt ${(retries + 1)}`))
 
         if (lineIdx === -1) {
             throw new Error(`Couldn't find log line for ${test}`)
         }
 
-        const link = `${github.context.serverUrl}/${github.context.repo.owner}/${github.context.repo.repo}/actions/runs/${github.context.runId}/job/${executionGithub.jobId}#step:${executionGithub.stepNumber}:${lineIdx + 3}`
+        const lineInStep = lineIdx - stepStartIdx
+
+        const link = `${github.context.serverUrl}/${github.context.repo.owner}/${github.context.repo.repo}/actions/runs/${github.context.runId}/job/${executionGithub.jobId}#step:${executionGithub.stepNumber}:${lineInStep + 3}`
 
         return `- [\`test/${test}.test.ts\`](${link}): ${statusText}${retriesText}`
     }))
