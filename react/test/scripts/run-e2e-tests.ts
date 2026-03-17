@@ -82,6 +82,7 @@ for (const test of tests) {
 
     if (github) {
         console.warn(`::endgroup::`)
+        console.warn(result.status === 'success' ? '✅' : '❌')
     }
 
     testHistory.push({
