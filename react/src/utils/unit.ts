@@ -108,3 +108,80 @@ export function getUnitName(unitType: UnitType): string {
             return 'Left Margin'
     }
 }
+
+export function classifyStatistic(statname: string): UnitType {
+    if (/20\d{2}GE/.test(statname) || /20\d{2}-20\d{2} Swing/.test(statname)) {
+        // Canadian election statistics
+        const isSwing = statname.includes('Swing')
+        if (statname.includes('Lib %')) {
+            return isSwing ? 'partyChangeRed' : 'partyPctRed'
+        }
+        if (statname.includes('Con %')) {
+            return isSwing ? 'partyChangeBlue' : 'partyPctBlue'
+        }
+        if (statname.includes('NDP %')) {
+            return isSwing ? 'partyChangeOrange' : 'partyPctOrange'
+        }
+        if (statname.includes('BQ %')) {
+            return isSwing ? 'partyChangeTeal' : 'partyPctTeal'
+        }
+        if (statname.includes('Grn %')) {
+            return isSwing ? 'partyChangeGreen' : 'partyPctGreen'
+        }
+        if (statname.includes('PPC %')) {
+            return isSwing ? 'partyChangePurple' : 'partyPctPurple'
+        }
+    }
+    if (statname.includes('2-Coalition Margin')) {
+        return 'leftMargin'
+    }
+    if (statname.includes('Change') && (statname.includes('Population') || statname.includes('Density'))) {
+        return 'percentageChange'
+    }
+    if (statname.includes('%') || statname.includes('Change') || statname.includes('(Grade)')) {
+        return 'percentage'
+    }
+    if (statname.includes('Total') && statname.includes('Fatalities')) {
+        return 'fatalities'
+    }
+    if (statname.includes('Fatalities Per Capita')) {
+        return 'fatalitiesPerCapita'
+    }
+    if (statname.includes('Density')) {
+        return 'density'
+    }
+    if (statname.includes('Elevation')) {
+        return 'distanceInM'
+    }
+    if (statname.startsWith('Population')) {
+        return 'population'
+    }
+    if (statname === 'Area') {
+        return 'area'
+    }
+    if (statname.includes('Mean distance')) {
+        return 'distanceInKm'
+    }
+    if (statname.includes('Election') || statname.includes('Swing')) {
+        return 'democraticMargin'
+    }
+    if (statname.includes('high temp') || statname.includes('low temp') || statname.includes('high heat index') || statname.includes('dewpt')) {
+        return 'temperature'
+    }
+    if (statname === 'Mean sunny hours') {
+        return 'time'
+    }
+    if (statname === 'Rainfall' || statname === 'Snowfall [rain-equivalent]') {
+        return 'distancePerYear'
+    }
+    if (statname.includes('Pollution')) {
+        return 'contaminantLevel'
+    }
+    if (statname.includes('(USD)')) {
+        return 'usd'
+    }
+    if (statname.includes('(min)')) {
+        return 'minutes'
+    }
+    return 'number'
+}

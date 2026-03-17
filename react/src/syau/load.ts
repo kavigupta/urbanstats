@@ -7,7 +7,7 @@ import { normalize } from '../search'
 import { Universe } from '../universe'
 import { ICoordinate } from '../utils/protos'
 
-export const populationStatcols: Statistic[] = allGroups.find(g => g.id === 'population')!.contents.find(g => g.year === 2020)!.stats[0].bySource
+const populationStatcols: Statistic[] = allGroups.find(g => g.id === 'population')!.contents.find(g => g.year === 2020)!.stats[0].bySource
 
 let sortedSuffixes: string[] | undefined
 
@@ -65,7 +65,7 @@ function computeMatchChunksAll(longnames: string[]): MatchInfo[] {
     return chunksAllCleaned
 }
 
-export function onlyKeepAlpanumeric(s: string): string {
+function onlyKeepAlpanumeric(s: string): string {
     // remove all non-alphanumeric characters
     return s.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, ' ').trim()
 }

@@ -537,7 +537,7 @@ function ComparisonMap({ longnames, colors, attribution }: { longnames: string[]
     )
 }
 
-export function ComparisonMapButtons({ longnames, colors, features, mapRef }: { longnames: string[], colors: string[], features: (GeoJSON.Feature | typeof waiting)[], mapRef: MapRef | null }): ReactNode {
+function ComparisonMapButtons({ longnames, colors, features, mapRef }: { longnames: string[], colors: string[], features: (GeoJSON.Feature | typeof waiting)[], mapRef: MapRef | null }): ReactNode {
     const systemColors = useColors()
     const isScreenshot = useScreenshotMode()
 

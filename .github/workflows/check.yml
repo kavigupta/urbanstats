@@ -102,6 +102,9 @@ jobs:
       - run: npm run lint:ci
         working-directory: react
         if: "!cancelled()"
+      - run: npm run unused-exports
+        working-directory: react
+        if: "!cancelled()"
 
   build-frontend:
     runs-on: ubuntu-22.04

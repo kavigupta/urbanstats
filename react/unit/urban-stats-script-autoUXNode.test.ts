@@ -74,5 +74,11 @@ void test('autoUX expression evaluates correctly', () => {
 void test('unparsing', () => {
     assert.equal(unparse(parseNoError('autoUXNode(1 + 2, "{}")', 'test')), 'autoUXNode(1 + 2, "{}")')
     assert.equal(unparse(parseNoError('autoUXNode(1 + 2, "{\\"collapsed\\": true}")', 'test')), 'autoUXNode(1 + 2, "{\\"collapsed\\":true}")')
-    assert.equal(unparse(parseNoError('autoUXNode(1 + 2, "{\\"collapsed\\": true}")', 'test'), { simplify: true }), '1 + 2')
+    assert.equal(unparse(parseNoError('autoUXNode(1 + 2, "{\\"collapsed\\": true}")', 'test'), { simplify: 'basic' }), '1 + 2')
+})
+
+void test('unparsing with rewrite rules', () => {
+    assert.equal(unparse(parseNoError('toNumber("23.000")', 'test'), { simplify: 'basic' }), 'toNumber("23.000")')
+    assert.equal(unparse(parseNoError('toNumber("23.000")', 'test'), { simplify: 'auto-ux' }), '23')
+    assert.equal(unparse(parseNoError('autoUXNode(toNumber("23.000"), "{}")', 'test'), { simplify: 'auto-ux' }), '23')
 })

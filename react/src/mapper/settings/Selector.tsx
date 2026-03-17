@@ -10,16 +10,16 @@ import { hsvToColor, rgbToColor } from '../../urban-stats-script/constants/color
 import { Color, doRender, hexToColor, hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
 import { RampT } from '../../urban-stats-script/constants/ramp'
 import { EditorError } from '../../urban-stats-script/editor-utils'
-import { emptyLocation, parseNumber } from '../../urban-stats-script/lexer'
+import { emptyLocation } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 import { Documentation, TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 import { TestUtils } from '../../utils/TestUtils'
-import { assert } from '../../utils/defensive'
 
 import * as l from './../../urban-stats-script/literal-parser'
 import { BetterSelector, SelectorRenderResult } from './BetterSelector'
 import { ActionOptions } from './EditMapperPanel'
-import { parseExpr, possibilities, Selection } from './parseExpr'
+import { parseExpr, possibilities } from './parseExpr'
+import { classifyExpr, parseToNumber, Selection, toNumberAST } from './selector-classifier'
 
 export const labelPadding = '4px'
 
@@ -71,7 +71,12 @@ export function Selector(props: {
     const isNumber = props.type.some(type => type.type === 'number')
     const isString = props.type.some(type => type.type === 'string')
     const showConstantInput = selected.type === 'constant' && (isNumber || isString)
-    const currentValue = props.uss.type === 'constant' ? props.uss.value.node.value.toString() : ''
+    const currentValue = (() => {
+        if (props.uss.type === 'constant') {
+            return props.uss.value.node.value.toString()
+        }
+        return parseToNumber(props.uss) ?? ''
+    })()
     const errors = props.errors.filter(e => e.location.start.block.type === 'single' && e.location.start.block.ident === props.blockIdent)
     const errorComponent = <DisplayResults results={errors} editor={false} />
 
@@ -164,21 +169,7 @@ function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: strin
             value={currentValue}
             onChange={(e) => {
                 const value = e.target.value
-                let node: (UrbanStatsASTExpression & { type: 'constant' })['value']['node']
-                let numberValue
-                if ((numberValue = parseNumber(value)) !== undefined) {
-                    node = { type: 'number', value: numberValue }
-                }
-                else {
-                    node = { type: 'string', value }
-                }
-                const newUss: UrbanStatsASTExpression = {
-                    type: 'constant',
-                    value: {
-                        node,
-                        location: emptyLocation(blockIdent),
-                    },
-                }
+                const newUss: UrbanStatsASTExpression = toNumberAST(value, blockIdent)
                 setUss(newUss, {})
             }}
             style={{ width: '200px', fontSize: '14px', padding: '4px 8px', resize: 'none' }}
@@ -187,31 +178,7 @@ function NumberInput({ currentValue, blockIdent, setUss }: { currentValue: strin
     )
 }
 
-export function classifyExpr(uss: UrbanStatsASTExpression): Selection {
-    if (uss.type === 'customNode') {
-        return { type: 'custom' }
-    }
-    if (uss.type === 'constant') {
-        return { type: 'constant' }
-    }
-    if (uss.type === 'identifier') {
-        return { type: 'variable', name: uss.name.node }
-    }
-    if (uss.type === 'call') {
-        const classifiedFn = classifyExpr(uss.fn)
-        assert(classifiedFn.type === 'variable', 'Function must be a variable or another function')
-        return { type: 'function', name: classifiedFn.name }
-    }
-    if (uss.type === 'vectorLiteral') {
-        return { type: 'vector' }
-    }
-    if (uss.type === 'objectLiteral') {
-        return { type: 'object' }
-    }
-    throw new Error(`Unsupported USS expression type: ${uss.type}`)
-}
-
-export function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection): SelectorRenderResult {
+function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection): SelectorRenderResult {
     if (selection.type === 'custom') {
         return { text: 'Custom Expression' }
     }
@@ -267,8 +234,13 @@ export function getColor(expr: UrbanStatsASTExpression, typeEnvironment: TypeEnv
     try {
         return colorSchema.parse(expr, typeEnvironment)
     }
-    catch {
-        return
+    catch (err) {
+        if (err instanceof l.LiteralParseError) {
+            return undefined
+        }
+        else {
+            throw err
+        }
     }
 }
 

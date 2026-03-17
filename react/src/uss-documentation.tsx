@@ -4,6 +4,7 @@ import { Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 
 import './style.css'
 import './common.css'
+import { getUnit } from './components/unit-display'
 import { defaultTypeEnvironment } from './mapper/context'
 import { urlFromPageDescriptor } from './navigation/PageDescriptor'
 import { useColors } from './page_template/colors'
@@ -473,19 +474,28 @@ export function LongFormDocumentation(props: { name: string, value: USSDocumente
     return (
         <Header key={props.name} title={props.name} header="h4" ident={`${constantPrefix}${props.name}`}>
             <div style={{ marginBottom: '20px', marginLeft: '20px' }}>
-                <div style={{ marginBottom: '10px' }}>
-                    Type:
-                    <code style={{
-                        backgroundColor: colors.slightlyDifferentBackground,
-                        padding: '4px 8px',
-                        borderRadius: '3px',
-                        fontFamily: '\'Courier New\', monospace',
-                        fontSize: '13px',
-                        marginLeft: '10px',
-                    }}
-                    >
-                        {renderType(props.value.type)}
-                    </code>
+                <div style={{ marginBottom: '10px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div>
+                        Type:
+                        <code style={{
+                            backgroundColor: colors.slightlyDifferentBackground,
+                            padding: '4px 8px',
+                            borderRadius: '3px',
+                            fontFamily: '\'Courier New\', monospace',
+                            fontSize: '13px',
+                            marginLeft: '10px',
+                        }}
+                        >
+                            {renderType(props.value.type)}
+                        </code>
+                    </div>
+                    {props.value.documentation?.unit !== undefined && (
+                        <div style={{ color: colors.textMain }}>
+                            <strong>Unit:</strong>
+                            {' '}
+                            {getUnit(props.value.documentation.unit)}
+                        </div>
+                    )}
                 </div>
                 <div style={{ marginBottom: '10px' }}>
                     {props.value.documentation?.longDescription ?? 'No description available.'}

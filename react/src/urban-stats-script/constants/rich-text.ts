@@ -67,12 +67,12 @@ export const richTextDocumentType = {
     name: 'richTextDocument',
 } satisfies USSType
 
-export const richTextSegmentType = {
+const richTextSegmentType = {
     type: 'opaque',
     name: 'richTextSegment',
 } satisfies USSType
 
-export const constructRichTextDocumentValue: USSValue = {
+const constructRichTextDocumentValue: USSValue = {
     type: {
         type: 'function',
         posArgs: [
@@ -102,12 +102,12 @@ export const constructRichTextDocumentValue: USSValue = {
     },
 } satisfies USSValue
 
-export const richTextListType = {
+const richTextListType = {
     type: 'opaque',
     name: 'richTextList',
 } satisfies USSType
 
-export const richTextAlignType = {
+const richTextAlignType = {
     type: 'opaque',
     name: 'richTextAlign',
 } satisfies USSType
@@ -187,7 +187,7 @@ const richTextSegmentConstructorType: USSType = {
     returnType: { type: 'concrete', value: richTextSegmentType },
 }
 
-export const constructRichTextStringSegmentValue: USSValue = {
+const constructRichTextStringSegmentValue: USSValue = {
     type: richTextSegmentConstructorType,
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const text = posArgs[0] as string
@@ -210,7 +210,7 @@ export const constructRichTextStringSegmentValue: USSValue = {
     },
 } satisfies USSValue
 
-export const constructRichTextFormulaSegmentValue: USSValue = {
+const constructRichTextFormulaSegmentValue: USSValue = {
     type: richTextSegmentConstructorType,
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const formula = posArgs[0] as string
@@ -233,7 +233,7 @@ export const constructRichTextFormulaSegmentValue: USSValue = {
     },
 } satisfies USSValue
 
-export const constructRichTextImageSegmentValue: USSValue = {
+const constructRichTextImageSegmentValue: USSValue = {
     type: richTextSegmentConstructorType,
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const image = posArgs[0] as string

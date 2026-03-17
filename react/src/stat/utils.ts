@@ -22,10 +22,11 @@ export function pageDescriptor({ stat, view }: StatSettings): PageDescriptor & {
         universe: stat.universe === 'world' ? undefined : stat.universe,
         edit: view.edit,
         sort_column: view.sortColumn,
-        ...(stat.type === 'uss' ? { uss: unparse(stat.uss, { simplify: false }) } : { statname: stat.statName }),
+        ...(stat.type === 'uss' ? { uss: unparse(stat.uss) } : { statname: stat.statName }),
     }
 }
 
+/** @public this is included dynamically */
 export function parseStatUSS(uss: string, universe: Universe): MapUSS {
     return attemptParseAsTopLevel(mapUSSFromString(uss), defaultTypeEnvironment(universe), true, [tableType])
 }
