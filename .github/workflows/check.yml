@@ -181,8 +181,8 @@ jobs:
           path: react/changed_screenshots
       - uses: actions/upload-artifact@v4
         with:
-          name: durations-${{ matrix.test-file }}
-          path: react/durations
+          name: test_histories-${{ matrix.test-file }}
+          path: react/test_histories
 
   merge-screenshots:
     runs-on: ubuntu-22.04
@@ -227,8 +227,8 @@ jobs:
       - uses: ./.github/actions/node_modules
       - uses: actions/download-artifact@v4
         with:
-          pattern: "durations-*"
-          path: react/durations
+          pattern: "test_histories-*"
+          path: react/test_histories
           merge-multiple: true
       - run: |
           npx tsx test/scripts/save-durations.ts

@@ -8,7 +8,7 @@ import { z } from 'zod'
 import { argumentParser } from 'zodcli'
 
 import { startProxy } from './ci_proxy'
-import { booleanArgument, getTOTPWait, setTOTPWait } from './util'
+import { booleanArgument, getTOTPWait, setTOTPWait, TestHistory, TestResult } from './util'
 
 const options = argumentParser({
     options: z.object({
@@ -40,34 +40,28 @@ if (options.headless) {
     void execa('bash', ['-c', 'fluxbox >/dev/null 2>&1'])
 }
 
-// For debugging behavior differences
-await execa('lscpu', { reject: false, stdio: 'inherit' })
-
 if (options.proxy) {
     await startProxy()
 }
 
 const testcafe = await createTestCafe('localhost', 1337, 1338)
 
-// Run tests
-type TestResult = { status: 'timeout', timeLimitSeconds: number } | { status: 'success' | 'failure', duration: number }
-
-const testHistory: { test: string, result: TestResult, retries: number }[] = []
+const testHistory: TestHistory = []
 
 for (const test of tests) {
-    console.warn(chalkTemplate`{cyan ${testFile(test)} running...}`)
-
     const numTries = options.tries * (await testFileDidChange(test) ? 1 : 2)
     let retries = 0
     let result: TestResult
 
     retry: while (true) {
+        if (process.env.GITHUB_ACTIONS) {
+            console.warn(`::group::${testFile(test)} attempt ${retries + 1}`)
+        }
+        console.warn(chalkTemplate`{cyan ${testFile(test)} running...}`)
         result = await runTest(test)
         printResult({ test, result, retries })
         switch (result.status) {
             case 'success':
-                await fs.mkdir('durations', { recursive: true })
-                await fs.writeFile(`durations/${test}.json`, JSON.stringify(result.duration))
                 break retry
             case 'timeout':
             case 'failure':
@@ -76,14 +70,24 @@ for (const test of tests) {
                     break retry
                 }
                 console.warn(chalkTemplate`{red ${testFile(test)} failed... trying again}`)
+                if (process.env.GITHUB_ACTIONS) {
+                    console.warn(`::endgroup::`)
+                }
                 retries++
         }
+    }
+
+    if (process.env.GITHUB_ACTIONS) {
+        console.warn(`::endgroup::`)
     }
 
     testHistory.push({ test, result, retries })
 }
 
 testHistory.forEach(printResult)
+
+await fs.mkdir('test_histories', { recursive: true })
+await fs.writeFile(`test_histories/${process.env.GITHUB_ACTIONS ? crypto.randomUUID() : 'history'}.json`, JSON.stringify(testHistory))
 
 if (testHistory.some(({ result }) => result.status !== 'success')) {
     process.exit(1)
