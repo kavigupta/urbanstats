@@ -18,7 +18,7 @@ export function IndexPanel(): ReactNode {
 
                 <div className="centered_text" style={{ textAlign: 'left' }}>
                     <p>
-                        Urban Stats is a database of various statistics related to density, housing, race, transportation,
+                        Urban Stat is a database of various statistics related to density, housing, race, transportation,
                         elections, and climate change in the United States for a variety of regions; as well as density
                         globally. It is intended to be a resource for journalists, researchers, and anyone else who is
                         interested in these topics. The data is collected from a variety of sources, including the US Census,
