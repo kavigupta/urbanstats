@@ -2,7 +2,7 @@ import assert from 'assert'
 
 import { z } from 'zod'
 
-import { github, maybeGithub } from './github-utils'
+import { github } from './github-utils'
 import { loadAndMergeTestHistories, repoInfo } from './util'
 
 const durations: Record<string, number> = {}
