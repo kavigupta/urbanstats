@@ -57,3 +57,9 @@ jobs:
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
           claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
+
+      - name: Save Claude Output
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-execution-output
+          path: /home/runner/work/_temp/claude-execution-output.json
