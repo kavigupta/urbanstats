@@ -3,6 +3,7 @@ from types import NoneType
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.data.gpw import GPW_RADII
+from urbanstats.metadata import export_metadata_types
 
 from .stat_path import get_statistic_column_path
 
@@ -51,6 +52,7 @@ class MultiSource:
         for source, col in self.by_source.items():
             result.append(
                 {
+                    "kind": "data",
                     "source": source.json() if source is not None else None,
                     "column": names.index(col),
                 }
@@ -68,6 +70,48 @@ class MultiSource:
 
     def compute_name(self, name_map):
         return name_map[self.canonical_column()]
+
+
+@dataclass
+class MetadataMultiSource(MultiSource):
+    metadata_index: int = 0
+    metadata_path: str = ""
+    metadata_value_type: str = "string"
+    metadata_name: str = ""
+
+    def __post_init__(self):
+        super().__post_init__()
+        assert None in self.by_source
+        assert len(self.by_source) == 1
+        assert isinstance(self.metadata_index, int)
+        assert isinstance(self.metadata_path, str)
+        assert self.metadata_value_type == "string"
+        assert isinstance(self.metadata_name, str)
+
+    def internal_statistics(self):
+        return []
+
+    def name_to_category(self, category_id):
+        return {}
+
+    def flatten(self, name_map, names):
+        output = {
+            "name": self.metadata_name,
+            "stats": [
+                {
+                    "kind": "metadata",
+                    "source": None,
+                    "path": self.metadata_path,
+                    "metadata_index": self.metadata_index,
+                    "value_type": self.metadata_value_type,
+                }
+            ],
+        }
+        output["indentedName"] = self.indented_name
+        return output
+
+    def compute_name(self, name_map):
+        return self.metadata_name
 
 
 @dataclass
@@ -388,6 +432,30 @@ def census_basics_with_canada(col_name, canada_name=None, *, change):
     ]
     result[col_name].group_name_statcol = col_name
     return result
+
+
+def metadata_statistics_category():
+    metadata = export_metadata_types()
+    contents = {}
+    for entry in metadata["displayed_metadata"]:
+        if not entry.get("show_in_metadata_table", True):
+            continue
+        metadata_path = get_statistic_column_path(f"metadata_{entry['setting_key']}")
+        contents[metadata_path] = StatisticGroup(
+            {
+                None: [
+                    MetadataMultiSource(
+                        by_source={None: metadata_path},
+                        metadata_index=entry["index"],
+                        metadata_path=metadata_path,
+                        metadata_value_type="string",
+                        metadata_name=entry["name"],
+                    )
+                ]
+            },
+            group_name=entry["name"],
+        )
+    return {"metadata": StatisticCategory(name="Metadata", contents=contents)}
 
 
 statistics_tree = StatisticTree(
@@ -948,5 +1016,6 @@ statistics_tree = StatisticTree(
             "transportation_means_transit",
             "transportation_means_worked_at_home",
         ),
+        **metadata_statistics_category(),
     }
 )

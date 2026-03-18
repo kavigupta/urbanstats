@@ -451,13 +451,17 @@ export function StatisticRowCells(props: {
             columnIdentifier: 'statval',
             content: (
                 <span className="serif value testing-statistic-value">
-                    <Statistic
-                        statname={props.row.statname}
-                        value={props.row.statval}
-                        isUnit={false}
-                        style={props.statisticStyle ?? {}}
-                        unit={props.row.unit}
-                    />
+                    {props.row.statvalString !== undefined
+                        ? <span style={props.statisticStyle ?? {}}>{props.row.statvalString}</span>
+                        : (
+                                <Statistic
+                                    statname={props.row.statname}
+                                    value={props.row.statval}
+                                    isUnit={false}
+                                    style={props.statisticStyle ?? {}}
+                                    unit={props.row.unit}
+                                />
+                            )}
                 </span>
             ),
             style: { textAlign: 'right' },
@@ -468,12 +472,16 @@ export function StatisticRowCells(props: {
             content: (
                 <div className="value_unit">
                     <span className="serif value">
-                        <Statistic
-                            statname={props.row.statname}
-                            value={props.row.statval}
-                            isUnit={true}
-                            unit={props.row.unit}
-                        />
+                        {props.row.statvalString !== undefined
+                            ? <span></span>
+                            : (
+                                    <Statistic
+                                        statname={props.row.statname}
+                                        value={props.row.statval}
+                                        isUnit={true}
+                                        unit={props.row.unit}
+                                    />
+                                )}
                     </span>
                 </div>
             ),
@@ -514,13 +522,16 @@ export function StatisticRowCells(props: {
         ...PointerRowCells({ ordinalStyle, row: props.row, longname: props.longname }),
     ] satisfies ColumnLayoutProps['cells']
 
+    const metadataBlankColumns: ColumnIdentifier[] = ['statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
+    const blankColumns = props.blankColumns ?? (props.row.isMetadata ? metadataBlankColumns : undefined)
+
     return (
         <>
             <ColumnLayout
                 cells={cells}
                 totalWidth={props.width}
                 onlyColumns={props.onlyColumns}
-                blankColumns={props.blankColumns}
+                blankColumns={blankColumns}
             />
             <div style={{ width: `${props.extraSpaceRight}%` }} />
         </>
@@ -533,9 +544,10 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: StatisticCel
     const singlePointerCell = useSinglePointerCell()
     const [preferredPointerCell] = useSetting('mobile_article_pointers')
 
-    const statpath = props.row.statpath
+    // For non-metadata rows, statpath must be defined
+    const statpath = props.row.statpath!
 
-    if (statpath === undefined) {
+    if (props.row.isMetadata) {
         return []
     }
 

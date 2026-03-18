@@ -34,6 +34,7 @@ export const rawStatsTree = [
                                 "name": "Population",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -41,6 +42,7 @@ export const rawStatsTree = [
                                         "column": 399
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -48,6 +50,7 @@ export const rawStatsTree = [
                                         "column": 403
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "GHSL"
@@ -66,6 +69,7 @@ export const rawStatsTree = [
                                 "name": "Population (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -73,6 +77,7 @@ export const rawStatsTree = [
                                         "column": 401
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -86,6 +91,7 @@ export const rawStatsTree = [
                                 "name": "Population Change (2010-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -93,6 +99,7 @@ export const rawStatsTree = [
                                         "column": 405
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -111,6 +118,7 @@ export const rawStatsTree = [
                                 "name": "Population (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 400
                                     }
@@ -121,6 +129,7 @@ export const rawStatsTree = [
                                 "name": "Population Change (2000-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 404
                                     }
@@ -142,6 +151,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=1km)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -149,6 +159,7 @@ export const rawStatsTree = [
                                         "column": 92
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -156,6 +167,7 @@ export const rawStatsTree = [
                                         "column": 171
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "GHSL"
@@ -174,6 +186,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=1km) (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -181,6 +194,7 @@ export const rawStatsTree = [
                                         "column": 104
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -194,6 +208,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=1km) Change (2010-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -201,6 +216,7 @@ export const rawStatsTree = [
                                         "column": 106
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -219,6 +235,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=1km) (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 103
                                     }
@@ -229,6 +246,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=1km) Change (2000-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 105
                                     }
@@ -250,6 +268,7 @@ export const rawStatsTree = [
                                 "name": "AW Density",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -257,6 +276,7 @@ export const rawStatsTree = [
                                         "column": 430
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -264,6 +284,7 @@ export const rawStatsTree = [
                                         "column": 434
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "GHSL"
@@ -282,6 +303,7 @@ export const rawStatsTree = [
                                 "name": "AW Density (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -289,6 +311,7 @@ export const rawStatsTree = [
                                         "column": 432
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -307,6 +330,7 @@ export const rawStatsTree = [
                                 "name": "AW Density (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 431
                                     }
@@ -328,6 +352,7 @@ export const rawStatsTree = [
                                 "name": "Area",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 132
                                     }
@@ -349,6 +374,7 @@ export const rawStatsTree = [
                                 "name": "Compactness",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 150
                                     }
@@ -376,6 +402,7 @@ export const rawStatsTree = [
                                 "name": "PW Mean Hilliness (Grade)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 225
                                     }
@@ -397,6 +424,7 @@ export const rawStatsTree = [
                                 "name": "PW Mean Elevation",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 224
                                     }
@@ -424,6 +452,7 @@ export const rawStatsTree = [
                                 "name": "White %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -431,6 +460,7 @@ export const rawStatsTree = [
                                         "column": 484
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -449,6 +479,7 @@ export const rawStatsTree = [
                                 "name": "White % (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 486
                                     }
@@ -464,6 +495,7 @@ export const rawStatsTree = [
                                 "name": "White % (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 485
                                     }
@@ -485,6 +517,7 @@ export const rawStatsTree = [
                                 "name": "Hispanic %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -492,6 +525,7 @@ export const rawStatsTree = [
                                         "column": 236
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -510,6 +544,7 @@ export const rawStatsTree = [
                                 "name": "Hispanic % (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 238
                                     }
@@ -525,6 +560,7 @@ export const rawStatsTree = [
                                 "name": "Hispanic % (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 237
                                     }
@@ -546,6 +582,7 @@ export const rawStatsTree = [
                                 "name": "Black %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -553,6 +590,7 @@ export const rawStatsTree = [
                                         "column": 140
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -571,6 +609,7 @@ export const rawStatsTree = [
                                 "name": "Black % (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 142
                                     }
@@ -586,6 +625,7 @@ export const rawStatsTree = [
                                 "name": "Black % (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 141
                                     }
@@ -607,6 +647,7 @@ export const rawStatsTree = [
                                 "name": "Asian %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -614,6 +655,7 @@ export const rawStatsTree = [
                                         "column": 133
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -632,6 +674,7 @@ export const rawStatsTree = [
                                 "name": "Asian % (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 135
                                     }
@@ -647,6 +690,7 @@ export const rawStatsTree = [
                                 "name": "Asian % (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 134
                                     }
@@ -668,6 +712,7 @@ export const rawStatsTree = [
                                 "name": "Native %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -675,6 +720,7 @@ export const rawStatsTree = [
                                         "column": 353
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -693,6 +739,7 @@ export const rawStatsTree = [
                                 "name": "Native % (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 355
                                     }
@@ -708,6 +755,7 @@ export const rawStatsTree = [
                                 "name": "Native % (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 354
                                     }
@@ -729,6 +777,7 @@ export const rawStatsTree = [
                                 "name": "Hawaiian / PI %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -736,6 +785,7 @@ export const rawStatsTree = [
                                         "column": 226
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -754,6 +804,7 @@ export const rawStatsTree = [
                                 "name": "Hawaiian / PI % (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 228
                                     }
@@ -769,6 +820,7 @@ export const rawStatsTree = [
                                 "name": "Hawaiian / PI % (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 227
                                     }
@@ -790,6 +842,7 @@ export const rawStatsTree = [
                                 "name": "Other / Mixed %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -797,6 +850,7 @@ export const rawStatsTree = [
                                         "column": 392
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -815,6 +869,7 @@ export const rawStatsTree = [
                                 "name": "Other / Mixed % (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 394
                                     }
@@ -830,6 +885,7 @@ export const rawStatsTree = [
                                 "name": "Other / Mixed % (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 393
                                     }
@@ -851,6 +907,7 @@ export const rawStatsTree = [
                                 "name": "Racial Homogeneity (2000) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 240
                                     }
@@ -861,6 +918,7 @@ export const rawStatsTree = [
                                 "name": "Racial Homogeneity Change (2000-2020) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 243
                                     }
@@ -876,6 +934,7 @@ export const rawStatsTree = [
                                 "name": "Racial Homogeneity (2010) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 241
                                     }
@@ -886,6 +945,7 @@ export const rawStatsTree = [
                                 "name": "Racial Homogeneity Change (2010-2020) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 244
                                     }
@@ -901,6 +961,7 @@ export const rawStatsTree = [
                                 "name": "Racial Homogeneity %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 242
                                     }
@@ -922,6 +983,7 @@ export const rawStatsTree = [
                                 "name": "Segregation (2000) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 440
                                     }
@@ -932,6 +994,7 @@ export const rawStatsTree = [
                                 "name": "Segregation Change (2000-2020) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 443
                                     }
@@ -947,6 +1010,7 @@ export const rawStatsTree = [
                                 "name": "Segregation (2010) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 441
                                     }
@@ -957,6 +1021,7 @@ export const rawStatsTree = [
                                 "name": "Segregation Change (2010-2020) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 444
                                     }
@@ -972,6 +1037,7 @@ export const rawStatsTree = [
                                 "name": "Segregation %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 442
                                     }
@@ -993,6 +1059,7 @@ export const rawStatsTree = [
                                 "name": "Mean Local Segregation (2000) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 435
                                     }
@@ -1003,6 +1070,7 @@ export const rawStatsTree = [
                                 "name": "Mean Local Segregation Change (2000-2020) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 438
                                     }
@@ -1018,6 +1086,7 @@ export const rawStatsTree = [
                                 "name": "Mean Local Segregation (2010) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 436
                                     }
@@ -1028,6 +1097,7 @@ export const rawStatsTree = [
                                 "name": "Mean Local Segregation Change (2010-2020) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 439
                                     }
@@ -1043,6 +1113,7 @@ export const rawStatsTree = [
                                 "name": "Mean Local Segregation %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 437
                                     }
@@ -1070,6 +1141,7 @@ export const rawStatsTree = [
                                 "name": "Citizen by Birth %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -1077,6 +1149,7 @@ export const rawStatsTree = [
                                         "column": 144
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -1101,6 +1174,7 @@ export const rawStatsTree = [
                                 "name": "Citizen by Naturalization %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -1108,6 +1182,7 @@ export const rawStatsTree = [
                                         "column": 146
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -1132,6 +1207,7 @@ export const rawStatsTree = [
                                 "name": "Non-citizen %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -1139,6 +1215,7 @@ export const rawStatsTree = [
                                         "column": 148
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -1163,6 +1240,7 @@ export const rawStatsTree = [
                                 "name": "Born outside US %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 137
                                     }
@@ -1184,6 +1262,7 @@ export const rawStatsTree = [
                                 "name": "Born in us outside state %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 138
                                     }
@@ -1205,6 +1284,7 @@ export const rawStatsTree = [
                                 "name": "Born in state of residence %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 139
                                     }
@@ -1226,6 +1306,7 @@ export const rawStatsTree = [
                                 "name": "Only English at Home %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -1233,6 +1314,7 @@ export const rawStatsTree = [
                                         "column": 312
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -1257,6 +1339,7 @@ export const rawStatsTree = [
                                 "name": "Spanish at Home %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -1264,6 +1347,7 @@ export const rawStatsTree = [
                                         "column": 317
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -1288,6 +1372,7 @@ export const rawStatsTree = [
                                 "name": "French at Home % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 314
                                     }
@@ -1309,6 +1394,7 @@ export const rawStatsTree = [
                                 "name": "Other (non-French) at Home % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 316
                                     }
@@ -1330,6 +1416,7 @@ export const rawStatsTree = [
                                 "name": "Other at Home %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 315
                                     }
@@ -1357,6 +1444,7 @@ export const rawStatsTree = [
                                 "name": "No religion % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 414
                                     }
@@ -1378,6 +1466,7 @@ export const rawStatsTree = [
                                 "name": "Catholic % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 410
                                     }
@@ -1399,6 +1488,7 @@ export const rawStatsTree = [
                                 "name": "Protestant (non-Catholic Christian) % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 416
                                     }
@@ -1420,6 +1510,7 @@ export const rawStatsTree = [
                                 "name": "Hindu % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 411
                                     }
@@ -1441,6 +1532,7 @@ export const rawStatsTree = [
                                 "name": "Jewish % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 412
                                     }
@@ -1462,6 +1554,7 @@ export const rawStatsTree = [
                                 "name": "Muslim % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 413
                                     }
@@ -1483,6 +1576,7 @@ export const rawStatsTree = [
                                 "name": "Sikh % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 417
                                     }
@@ -1504,6 +1598,7 @@ export const rawStatsTree = [
                                 "name": "Buddhist % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 409
                                     }
@@ -1525,6 +1620,7 @@ export const rawStatsTree = [
                                 "name": "Other religion % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 415
                                     }
@@ -1552,6 +1648,7 @@ export const rawStatsTree = [
                                 "name": "High School %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 195
                                     }
@@ -1573,6 +1670,7 @@ export const rawStatsTree = [
                                 "name": "Undergrad %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 197
                                     }
@@ -1594,6 +1692,7 @@ export const rawStatsTree = [
                                 "name": "Grad %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 193
                                     }
@@ -1615,6 +1714,7 @@ export const rawStatsTree = [
                                 "name": "High school diploma [25-64] %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 196
                                     }
@@ -1636,6 +1736,7 @@ export const rawStatsTree = [
                                 "name": "Bachelor's degree [25-64] %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 198
                                     }
@@ -1657,6 +1758,7 @@ export const rawStatsTree = [
                                 "name": "Graduate degree [25-64] %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 194
                                     }
@@ -1678,6 +1780,7 @@ export const rawStatsTree = [
                                 "name": "Undergrad STEM %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 191
                                     }
@@ -1699,6 +1802,7 @@ export const rawStatsTree = [
                                 "name": "Undergrad Humanities %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 189
                                     }
@@ -1720,6 +1824,7 @@ export const rawStatsTree = [
                                 "name": "Undergrad Business %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 187
                                     }
@@ -1741,6 +1846,7 @@ export const rawStatsTree = [
                                 "name": "Undergrad STEM [25-64] % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 192
                                     }
@@ -1762,6 +1868,7 @@ export const rawStatsTree = [
                                 "name": "Undergrad Humanities [25-64] % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 190
                                     }
@@ -1783,6 +1890,7 @@ export const rawStatsTree = [
                                 "name": "Undergrad Business [25-64] % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 188
                                     }
@@ -1804,6 +1912,7 @@ export const rawStatsTree = [
                                 "name": "% of women with high school education - % of men with high school education",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 200
                                     }
@@ -1825,6 +1934,7 @@ export const rawStatsTree = [
                                 "name": "% of women with undergraduate education - % of men with undergraduate education",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 201
                                     }
@@ -1846,6 +1956,7 @@ export const rawStatsTree = [
                                 "name": "% of women with graduate education - % of men with graduate education",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 199
                                     }
@@ -1873,6 +1984,7 @@ export const rawStatsTree = [
                                 "name": "Silent %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -1880,6 +1992,7 @@ export const rawStatsTree = [
                                         "column": 212
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -1904,6 +2017,7 @@ export const rawStatsTree = [
                                 "name": "Boomer %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -1911,6 +2025,7 @@ export const rawStatsTree = [
                                         "column": 202
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -1935,6 +2050,7 @@ export const rawStatsTree = [
                                 "name": "Gen X %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -1942,6 +2058,7 @@ export const rawStatsTree = [
                                         "column": 206
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -1966,6 +2083,7 @@ export const rawStatsTree = [
                                 "name": "Millennial %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -1973,6 +2091,7 @@ export const rawStatsTree = [
                                         "column": 210
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -1997,6 +2116,7 @@ export const rawStatsTree = [
                                 "name": "Gen Z %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -2004,6 +2124,7 @@ export const rawStatsTree = [
                                         "column": 208
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -2028,6 +2149,7 @@ export const rawStatsTree = [
                                 "name": "Gen Alpha %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -2035,6 +2157,7 @@ export const rawStatsTree = [
                                         "column": 204
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -2065,6 +2188,7 @@ export const rawStatsTree = [
                                 "name": "Median Household Income (USD)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 352
                                     }
@@ -2086,6 +2210,7 @@ export const rawStatsTree = [
                                 "name": "Poverty %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 407
                                     }
@@ -2107,6 +2232,7 @@ export const rawStatsTree = [
                                 "name": "LICO-AT %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 323
                                     }
@@ -2128,6 +2254,7 @@ export const rawStatsTree = [
                                 "name": "LIM-AT %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 325
                                     }
@@ -2149,6 +2276,7 @@ export const rawStatsTree = [
                                 "name": "Household Income < $50k %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 251
                                     }
@@ -2170,6 +2298,7 @@ export const rawStatsTree = [
                                 "name": "Household Income $50k - $100k %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 247
                                     }
@@ -2191,6 +2320,7 @@ export const rawStatsTree = [
                                 "name": "Household Income > $100k %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 249
                                     }
@@ -2212,6 +2342,7 @@ export const rawStatsTree = [
                                 "name": "Household income < C$50k %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 250
                                     }
@@ -2233,6 +2364,7 @@ export const rawStatsTree = [
                                 "name": "Household income C$50k - C$100k %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 246
                                     }
@@ -2254,6 +2386,7 @@ export const rawStatsTree = [
                                 "name": "Household income > C$100k %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 248
                                     }
@@ -2275,6 +2408,7 @@ export const rawStatsTree = [
                                 "name": "Individual Income < $50k %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 267
                                     }
@@ -2296,6 +2430,7 @@ export const rawStatsTree = [
                                 "name": "Individual Income $50k - $100k %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 263
                                     }
@@ -2317,6 +2452,7 @@ export const rawStatsTree = [
                                 "name": "Individual Income > $100k %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 265
                                     }
@@ -2338,6 +2474,7 @@ export const rawStatsTree = [
                                 "name": "Individual income < C$50k %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 266
                                     }
@@ -2359,6 +2496,7 @@ export const rawStatsTree = [
                                 "name": "Individual income C$50k - C$100k %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 262
                                     }
@@ -2380,6 +2518,7 @@ export const rawStatsTree = [
                                 "name": "Individual income > C$100k %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 264
                                     }
@@ -2407,6 +2546,7 @@ export const rawStatsTree = [
                                 "name": "Housing Units per Adult",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -2414,6 +2554,7 @@ export const rawStatsTree = [
                                         "column": 258
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -2432,6 +2573,7 @@ export const rawStatsTree = [
                                 "name": "Housing Units per Adult (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 260
                                     }
@@ -2447,6 +2589,7 @@ export const rawStatsTree = [
                                 "name": "Housing Units per Adult (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 259
                                     }
@@ -2468,6 +2611,7 @@ export const rawStatsTree = [
                                 "name": "Housing Units per Person",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -2475,6 +2619,7 @@ export const rawStatsTree = [
                                         "column": 254
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -2493,6 +2638,7 @@ export const rawStatsTree = [
                                 "name": "Housing Units per Person (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 256
                                     }
@@ -2508,6 +2654,7 @@ export const rawStatsTree = [
                                 "name": "Housing Units per Person (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 255
                                     }
@@ -2529,6 +2676,7 @@ export const rawStatsTree = [
                                 "name": "Vacancy %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 478
                                     }
@@ -2544,6 +2692,7 @@ export const rawStatsTree = [
                                 "name": "Vacancy % (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 480
                                     }
@@ -2559,6 +2708,7 @@ export const rawStatsTree = [
                                 "name": "Vacancy % (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 479
                                     }
@@ -2580,6 +2730,7 @@ export const rawStatsTree = [
                                 "name": "Rent/Income < 20%",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 427
                                     }
@@ -2601,6 +2752,7 @@ export const rawStatsTree = [
                                 "name": "Rent/Income 20%-40%",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 424
                                     }
@@ -2622,6 +2774,7 @@ export const rawStatsTree = [
                                 "name": "Rent/Income > 40%",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 426
                                     }
@@ -2643,6 +2796,7 @@ export const rawStatsTree = [
                                 "name": "1BR Rent < $750 %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 420
                                     }
@@ -2664,6 +2818,7 @@ export const rawStatsTree = [
                                 "name": "1BR Rent $750 - $1500 %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 418
                                     }
@@ -2685,6 +2840,7 @@ export const rawStatsTree = [
                                 "name": "1BR Rent > $1500 %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 419
                                     }
@@ -2706,6 +2862,7 @@ export const rawStatsTree = [
                                 "name": "2BR Rent < $750 %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 423
                                     }
@@ -2727,6 +2884,7 @@ export const rawStatsTree = [
                                 "name": "2BR Rent $750 - $1500 %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 421
                                     }
@@ -2748,6 +2906,7 @@ export const rawStatsTree = [
                                 "name": "2BR Rent > $1500 %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 422
                                     }
@@ -2769,6 +2928,7 @@ export const rawStatsTree = [
                                 "name": "% units built pre-1970",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 493
                                     }
@@ -2790,6 +2950,7 @@ export const rawStatsTree = [
                                 "name": "% units built in 1970s",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 494
                                     }
@@ -2811,6 +2972,7 @@ export const rawStatsTree = [
                                 "name": "% units built in 1980s",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 495
                                     }
@@ -2832,6 +2994,7 @@ export const rawStatsTree = [
                                 "name": "% units built in 1990s",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 496
                                     }
@@ -2853,6 +3016,7 @@ export const rawStatsTree = [
                                 "name": "% units built in 2000s",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 497
                                     }
@@ -2874,6 +3038,7 @@ export const rawStatsTree = [
                                 "name": "% units built in 2010s+",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 498
                                     }
@@ -2895,6 +3060,7 @@ export const rawStatsTree = [
                                 "name": "PW Household Size",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -2902,6 +3068,7 @@ export const rawStatsTree = [
                                         "column": 252
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -2926,6 +3093,7 @@ export const rawStatsTree = [
                                 "name": "Renter %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -2933,6 +3101,7 @@ export const rawStatsTree = [
                                         "column": 428
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -2957,6 +3126,7 @@ export const rawStatsTree = [
                                 "name": "Housing Cost/Income > 30% [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 425
                                     }
@@ -2984,6 +3154,7 @@ export const rawStatsTree = [
                                 "name": "Commute Car %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -2991,6 +3162,7 @@ export const rawStatsTree = [
                                         "column": 469
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -3015,6 +3187,7 @@ export const rawStatsTree = [
                                 "name": "Commute Bike %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -3022,6 +3195,7 @@ export const rawStatsTree = [
                                         "column": 466
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -3046,6 +3220,7 @@ export const rawStatsTree = [
                                 "name": "Commute Walk %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -3053,6 +3228,7 @@ export const rawStatsTree = [
                                         "column": 475
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -3077,6 +3253,7 @@ export const rawStatsTree = [
                                 "name": "Commute Transit %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -3084,6 +3261,7 @@ export const rawStatsTree = [
                                         "column": 472
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -3108,6 +3286,7 @@ export const rawStatsTree = [
                                 "name": "Median Commute Time (min)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -3115,6 +3294,7 @@ export const rawStatsTree = [
                                         "column": 459
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -3139,6 +3319,7 @@ export const rawStatsTree = [
                                 "name": "Commute Time < 15 min %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -3146,6 +3327,7 @@ export const rawStatsTree = [
                                         "column": 463
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -3170,6 +3352,7 @@ export const rawStatsTree = [
                                 "name": "Commute Time 15 - 29 min %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -3177,6 +3360,7 @@ export const rawStatsTree = [
                                         "column": 455
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -3201,6 +3385,7 @@ export const rawStatsTree = [
                                 "name": "Commute Time 30 - 59 min %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -3208,6 +3393,7 @@ export const rawStatsTree = [
                                         "column": 457
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -3232,6 +3418,7 @@ export const rawStatsTree = [
                                 "name": "Commute Time > 60 min %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -3239,6 +3426,7 @@ export const rawStatsTree = [
                                         "column": 461
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -3263,6 +3451,7 @@ export const rawStatsTree = [
                                 "name": "Households With no Vehicle %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 483
                                     }
@@ -3284,6 +3473,7 @@ export const rawStatsTree = [
                                 "name": "Households With 1+ Vehicles %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 481
                                     }
@@ -3305,6 +3495,7 @@ export const rawStatsTree = [
                                 "name": "Households With 2+ Vehicles %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 482
                                     }
@@ -3326,6 +3517,7 @@ export const rawStatsTree = [
                                 "name": "Traffic Fatalities Per Capita Per Year",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 452
                                     }
@@ -3347,6 +3539,7 @@ export const rawStatsTree = [
                                 "name": "Pedestrian/Cyclist Fatalities Per Capita Per Year",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 454
                                     }
@@ -3368,6 +3561,7 @@ export const rawStatsTree = [
                                 "name": "Total Traffic Fatalities In Last Decade",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 451
                                     }
@@ -3389,6 +3583,7 @@ export const rawStatsTree = [
                                 "name": "Total Pedestrian/Cyclist Fatalities In Last Decade",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 453
                                     }
@@ -3416,6 +3611,7 @@ export const rawStatsTree = [
                                 "name": "Fair or poor self-rated health status %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 70
                                     }
@@ -3437,6 +3633,7 @@ export const rawStatsTree = [
                                 "name": "Physical health not good for two weeks in last year %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 77
                                     }
@@ -3458,6 +3655,7 @@ export const rawStatsTree = [
                                 "name": "Arthritis %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 56
                                     }
@@ -3479,6 +3677,7 @@ export const rawStatsTree = [
                                 "name": "Current asthma %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 60
                                     }
@@ -3500,6 +3699,7 @@ export const rawStatsTree = [
                                 "name": "High blood pressure %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 58
                                     }
@@ -3521,6 +3721,7 @@ export const rawStatsTree = [
                                 "name": "Cancer (excluding skin cancer) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 59
                                     }
@@ -3542,6 +3743,7 @@ export const rawStatsTree = [
                                 "name": "Chronic kidney disease %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 73
                                     }
@@ -3563,6 +3765,7 @@ export const rawStatsTree = [
                                 "name": "COPD %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 65
                                     }
@@ -3584,6 +3787,7 @@ export const rawStatsTree = [
                                 "name": "Coronary heart disease %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 61
                                     }
@@ -3605,6 +3809,7 @@ export const rawStatsTree = [
                                 "name": "Diagnosed diabetes %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 68
                                     }
@@ -3626,6 +3831,7 @@ export const rawStatsTree = [
                                 "name": "Obesity %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 76
                                     }
@@ -3647,6 +3853,7 @@ export const rawStatsTree = [
                                 "name": "Stroke %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 80
                                     }
@@ -3668,6 +3875,7 @@ export const rawStatsTree = [
                                 "name": "Disability %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 69
                                     }
@@ -3689,6 +3897,7 @@ export const rawStatsTree = [
                                 "name": "Hearing disability %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 71
                                     }
@@ -3710,6 +3919,7 @@ export const rawStatsTree = [
                                 "name": "Vision disability %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 81
                                     }
@@ -3731,6 +3941,7 @@ export const rawStatsTree = [
                                 "name": "Cognitive disability %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 64
                                     }
@@ -3752,6 +3963,7 @@ export const rawStatsTree = [
                                 "name": "Mobility disability %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 75
                                     }
@@ -3773,6 +3985,7 @@ export const rawStatsTree = [
                                 "name": "Self-care disability %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 78
                                     }
@@ -3794,6 +4007,7 @@ export const rawStatsTree = [
                                 "name": "Independent living disability %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 72
                                     }
@@ -3815,6 +4029,7 @@ export const rawStatsTree = [
                                 "name": "Binge drinking among adults %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 57
                                     }
@@ -3836,6 +4051,7 @@ export const rawStatsTree = [
                                 "name": "Smoking %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 66
                                     }
@@ -3857,6 +4073,7 @@ export const rawStatsTree = [
                                 "name": "No leisure-time physical activity %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 74
                                     }
@@ -3878,6 +4095,7 @@ export const rawStatsTree = [
                                 "name": "Sleeping less than 7 hours %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 79
                                     }
@@ -3899,6 +4117,7 @@ export const rawStatsTree = [
                                 "name": "Attended doctor in last year %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 62
                                     }
@@ -3920,6 +4139,7 @@ export const rawStatsTree = [
                                 "name": "Attended dentist in last year %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 67
                                     }
@@ -3941,6 +4161,7 @@ export const rawStatsTree = [
                                 "name": "Cholesterol screening in last year %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 63
                                     }
@@ -3962,6 +4183,7 @@ export const rawStatsTree = [
                                 "name": "Life Expectancy (2019)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 324
                                     }
@@ -3983,6 +4205,7 @@ export const rawStatsTree = [
                                 "name": "IHME Health Performance Score (2019)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 397
                                     }
@@ -4010,6 +4233,7 @@ export const rawStatsTree = [
                                 "name": "PW Mean PM2.5 Pollution",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 398
                                     }
@@ -4031,6 +4255,7 @@ export const rawStatsTree = [
                                 "name": "Utility gas heating %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 235
                                     }
@@ -4052,6 +4277,7 @@ export const rawStatsTree = [
                                 "name": "Electricity heating %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 231
                                     }
@@ -4073,6 +4299,7 @@ export const rawStatsTree = [
                                 "name": "Bottled, tank, or LP gas heating %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 230
                                     }
@@ -4094,6 +4321,7 @@ export const rawStatsTree = [
                                 "name": "Fuel oil, kerosene, etc. heating %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 232
                                     }
@@ -4115,6 +4343,7 @@ export const rawStatsTree = [
                                 "name": "Other fuel heating %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 234
                                     }
@@ -4136,6 +4365,7 @@ export const rawStatsTree = [
                                 "name": "No heating %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 233
                                     }
@@ -4163,6 +4393,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Agriculture, forestry, fishing and hunting %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4170,6 +4401,7 @@ export const rawStatsTree = [
                                         "column": 272
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4194,6 +4426,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Mining, quarrying, and oil and gas extraction %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4201,6 +4434,7 @@ export const rawStatsTree = [
                                         "column": 290
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4225,6 +4459,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Accommodation and food services %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4232,6 +4467,7 @@ export const rawStatsTree = [
                                         "column": 268
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4256,6 +4492,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Arts, entertainment, and recreation %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4263,6 +4500,7 @@ export const rawStatsTree = [
                                         "column": 274
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4287,6 +4525,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Construction %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4294,6 +4533,7 @@ export const rawStatsTree = [
                                         "column": 276
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4318,6 +4558,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Educational services %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4325,6 +4566,7 @@ export const rawStatsTree = [
                                         "column": 278
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4349,6 +4591,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Health care and social assistance %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4356,6 +4599,7 @@ export const rawStatsTree = [
                                         "column": 282
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4380,6 +4624,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Finance and insurance %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4387,6 +4632,7 @@ export const rawStatsTree = [
                                         "column": 280
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4411,6 +4657,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Real estate and rental and leasing %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4418,6 +4665,7 @@ export const rawStatsTree = [
                                         "column": 298
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4442,6 +4690,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Information %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4449,6 +4698,7 @@ export const rawStatsTree = [
                                         "column": 284
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4473,6 +4723,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Manufacturing %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4480,6 +4731,7 @@ export const rawStatsTree = [
                                         "column": 288
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4504,6 +4756,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Other services, except public administration %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4511,6 +4764,7 @@ export const rawStatsTree = [
                                         "column": 292
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4535,6 +4789,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Administrative and support and waste management services %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4542,6 +4797,7 @@ export const rawStatsTree = [
                                         "column": 270
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4566,6 +4822,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Management of companies and enterprises %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4573,6 +4830,7 @@ export const rawStatsTree = [
                                         "column": 286
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4597,6 +4855,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Professional, scientific, and technical services %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4604,6 +4863,7 @@ export const rawStatsTree = [
                                         "column": 294
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4628,6 +4888,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Public administration %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4635,6 +4896,7 @@ export const rawStatsTree = [
                                         "column": 296
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4659,6 +4921,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Retail trade %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4666,6 +4929,7 @@ export const rawStatsTree = [
                                         "column": 300
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4690,6 +4954,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Transportation and warehousing %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4697,6 +4962,7 @@ export const rawStatsTree = [
                                         "column": 302
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4721,6 +4987,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Utilities %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4728,6 +4995,7 @@ export const rawStatsTree = [
                                         "column": 304
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4752,6 +5020,7 @@ export const rawStatsTree = [
                                 "name": "Employed in Wholesale trade %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -4759,6 +5028,7 @@ export const rawStatsTree = [
                                         "column": 306
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -4789,6 +5059,7 @@ export const rawStatsTree = [
                                 "name": "Architecture and engineering occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 357
                                     }
@@ -4810,6 +5081,7 @@ export const rawStatsTree = [
                                 "name": "Computer and mathematical occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 364
                                     }
@@ -4831,6 +5103,7 @@ export const rawStatsTree = [
                                 "name": "Life, physical, and social science occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 379
                                     }
@@ -4852,6 +5125,7 @@ export const rawStatsTree = [
                                 "name": "Arts, design, entertainment, sports, and media occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 359
                                     }
@@ -4873,6 +5147,7 @@ export const rawStatsTree = [
                                 "name": "Community and social service occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 363
                                     }
@@ -4894,6 +5169,7 @@ export const rawStatsTree = [
                                 "name": "Educational instruction, and library occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 367
                                     }
@@ -4915,6 +5191,7 @@ export const rawStatsTree = [
                                 "name": "Legal occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 377
                                     }
@@ -4936,6 +5213,7 @@ export const rawStatsTree = [
                                 "name": "Health diagnosing and treating practitioners and other technical occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 372
                                     }
@@ -4957,6 +5235,7 @@ export const rawStatsTree = [
                                 "name": "Health technologists and technicians %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 373
                                     }
@@ -4978,6 +5257,7 @@ export const rawStatsTree = [
                                 "name": "Business and financial operations occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 361
                                     }
@@ -4999,6 +5279,7 @@ export const rawStatsTree = [
                                 "name": "Management occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 380
                                     }
@@ -5020,6 +5301,7 @@ export const rawStatsTree = [
                                 "name": "Construction and extraction occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 365
                                     }
@@ -5041,6 +5323,7 @@ export const rawStatsTree = [
                                 "name": "Farming, fishing, and forestry occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 368
                                     }
@@ -5062,6 +5345,7 @@ export const rawStatsTree = [
                                 "name": "Installation, maintenance, and repair occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 375
                                     }
@@ -5083,6 +5367,7 @@ export const rawStatsTree = [
                                 "name": "Material moving occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 382
                                     }
@@ -5104,6 +5389,7 @@ export const rawStatsTree = [
                                 "name": "Production occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 387
                                     }
@@ -5125,6 +5411,7 @@ export const rawStatsTree = [
                                 "name": "Transportation occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 391
                                     }
@@ -5146,6 +5433,7 @@ export const rawStatsTree = [
                                 "name": "Office and administrative support occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 385
                                     }
@@ -5167,6 +5455,7 @@ export const rawStatsTree = [
                                 "name": "Sales and related occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 388
                                     }
@@ -5188,6 +5477,7 @@ export const rawStatsTree = [
                                 "name": "Building and grounds cleaning and maintenance occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 360
                                     }
@@ -5209,6 +5499,7 @@ export const rawStatsTree = [
                                 "name": "Food preparation and serving related occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 370
                                     }
@@ -5230,6 +5521,7 @@ export const rawStatsTree = [
                                 "name": "Healthcare support occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 374
                                     }
@@ -5251,6 +5543,7 @@ export const rawStatsTree = [
                                 "name": "Personal care and service occupations %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 386
                                     }
@@ -5272,6 +5565,7 @@ export const rawStatsTree = [
                                 "name": "Firefighting and prevention, and other protective service workers including supervisors %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 369
                                     }
@@ -5293,6 +5587,7 @@ export const rawStatsTree = [
                                 "name": "Law enforcement workers including supervisors %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 376
                                     }
@@ -5314,6 +5609,7 @@ export const rawStatsTree = [
                                 "name": "Legislative and senior management occupations % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 378
                                     }
@@ -5335,6 +5631,7 @@ export const rawStatsTree = [
                                 "name": "Business, finance and administration occupations % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 362
                                     }
@@ -5356,6 +5653,7 @@ export const rawStatsTree = [
                                 "name": "Natural and applied sciences occupations % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 383
                                     }
@@ -5377,6 +5675,7 @@ export const rawStatsTree = [
                                 "name": "Health occupations % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 371
                                     }
@@ -5398,6 +5697,7 @@ export const rawStatsTree = [
                                 "name": "Education, law, social, community and government occupations % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 366
                                     }
@@ -5419,6 +5719,7 @@ export const rawStatsTree = [
                                 "name": "Art, culture, recreation and sport occupations % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 358
                                     }
@@ -5440,6 +5741,7 @@ export const rawStatsTree = [
                                 "name": "Sales and service occupations % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 389
                                     }
@@ -5461,6 +5763,7 @@ export const rawStatsTree = [
                                 "name": "Trades, transport and equipment operators occupations % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 390
                                     }
@@ -5482,6 +5785,7 @@ export const rawStatsTree = [
                                 "name": "Natural resources and agriculture occupations % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 384
                                     }
@@ -5503,6 +5807,7 @@ export const rawStatsTree = [
                                 "name": "Manufacturing and utilities occupations % [StatCan]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 381
                                     }
@@ -5530,6 +5835,7 @@ export const rawStatsTree = [
                                 "name": "Not Cohabiting With Partner %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 450
                                     }
@@ -5551,6 +5857,7 @@ export const rawStatsTree = [
                                 "name": "Cohabiting With Partner (Gay) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 447
                                     }
@@ -5572,6 +5879,7 @@ export const rawStatsTree = [
                                 "name": "Cohabiting With Partner (Straight) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 448
                                     }
@@ -5593,6 +5901,7 @@ export const rawStatsTree = [
                                 "name": "Living With Parents %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 446
                                     }
@@ -5614,6 +5923,7 @@ export const rawStatsTree = [
                                 "name": "Other Living Situation %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 449
                                     }
@@ -5635,6 +5945,7 @@ export const rawStatsTree = [
                                 "name": "Never Married %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -5642,6 +5953,7 @@ export const rawStatsTree = [
                                         "column": 330
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -5666,6 +5978,7 @@ export const rawStatsTree = [
                                 "name": "Married (not divorced) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -5673,6 +5986,7 @@ export const rawStatsTree = [
                                         "column": 328
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -5697,6 +6011,7 @@ export const rawStatsTree = [
                                 "name": "Divorced %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -5704,6 +6019,7 @@ export const rawStatsTree = [
                                         "column": 326
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -5734,6 +6050,7 @@ export const rawStatsTree = [
                                 "name": "2008 Presidential Election",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 0
                                     }
@@ -5744,6 +6061,7 @@ export const rawStatsTree = [
                                 "name": "2008-2012 Swing",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 1
                                     }
@@ -5754,6 +6072,7 @@ export const rawStatsTree = [
                                 "name": "2012 Presidential Election",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 2
                                     }
@@ -5764,6 +6083,7 @@ export const rawStatsTree = [
                                 "name": "2012-2016 Swing",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 3
                                     }
@@ -5779,6 +6099,7 @@ export const rawStatsTree = [
                                 "name": "2016 Presidential Election",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 16
                                     }
@@ -5789,6 +6110,7 @@ export const rawStatsTree = [
                                 "name": "2016-2020 Swing",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 17
                                     }
@@ -5799,6 +6121,7 @@ export const rawStatsTree = [
                                 "name": "2020 Presidential Election",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 32
                                     }
@@ -5809,6 +6132,7 @@ export const rawStatsTree = [
                                 "name": "2020-2024 Swing",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 33
                                     }
@@ -5819,6 +6143,7 @@ export const rawStatsTree = [
                                 "name": "2024 Presidential Election",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 48
                                     }
@@ -5840,6 +6165,7 @@ export const rawStatsTree = [
                                 "name": "2015GE 2-Coalition Margin",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 15
                                     }
@@ -5850,6 +6176,7 @@ export const rawStatsTree = [
                                 "name": "2015-2019 Swing 2-Coalition Margin",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 9
                                     }
@@ -5860,6 +6187,7 @@ export const rawStatsTree = [
                                 "name": "2019GE 2-Coalition Margin",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 31
                                     }
@@ -5870,6 +6198,7 @@ export const rawStatsTree = [
                                 "name": "2019-2021 Swing 2-Coalition Margin",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 24
                                     }
@@ -5880,6 +6209,7 @@ export const rawStatsTree = [
                                 "name": "2021GE 2-Coalition Margin",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 47
                                     }
@@ -5890,6 +6220,7 @@ export const rawStatsTree = [
                                 "name": "2021-2025 Swing 2-Coalition Margin",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 40
                                     }
@@ -5900,6 +6231,7 @@ export const rawStatsTree = [
                                 "name": "2025GE 2-Coalition Margin",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 55
                                     }
@@ -5921,6 +6253,7 @@ export const rawStatsTree = [
                                 "name": "2015GE Lib %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 13
                                     }
@@ -5931,6 +6264,7 @@ export const rawStatsTree = [
                                 "name": "2015-2019 Swing Lib %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 7
                                     }
@@ -5941,6 +6275,7 @@ export const rawStatsTree = [
                                 "name": "2019GE Lib %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 28
                                     }
@@ -5951,6 +6286,7 @@ export const rawStatsTree = [
                                 "name": "2019-2021 Swing Lib %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 21
                                     }
@@ -5961,6 +6297,7 @@ export const rawStatsTree = [
                                 "name": "2021GE Lib %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 44
                                     }
@@ -5971,6 +6308,7 @@ export const rawStatsTree = [
                                 "name": "2021-2025 Swing Lib %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 37
                                     }
@@ -5981,6 +6319,7 @@ export const rawStatsTree = [
                                 "name": "2025GE Lib %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 52
                                     }
@@ -6002,6 +6341,7 @@ export const rawStatsTree = [
                                 "name": "2015GE Con %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 11
                                     }
@@ -6012,6 +6352,7 @@ export const rawStatsTree = [
                                 "name": "2015-2019 Swing Con %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 5
                                     }
@@ -6022,6 +6363,7 @@ export const rawStatsTree = [
                                 "name": "2019GE Con %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 26
                                     }
@@ -6032,6 +6374,7 @@ export const rawStatsTree = [
                                 "name": "2019-2021 Swing Con %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 19
                                     }
@@ -6042,6 +6385,7 @@ export const rawStatsTree = [
                                 "name": "2021GE Con %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 42
                                     }
@@ -6052,6 +6396,7 @@ export const rawStatsTree = [
                                 "name": "2021-2025 Swing Con %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 35
                                     }
@@ -6062,6 +6407,7 @@ export const rawStatsTree = [
                                 "name": "2025GE Con %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 50
                                     }
@@ -6083,6 +6429,7 @@ export const rawStatsTree = [
                                 "name": "2015GE NDP %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 14
                                     }
@@ -6093,6 +6440,7 @@ export const rawStatsTree = [
                                 "name": "2015-2019 Swing NDP %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 8
                                     }
@@ -6103,6 +6451,7 @@ export const rawStatsTree = [
                                 "name": "2019GE NDP %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 29
                                     }
@@ -6113,6 +6462,7 @@ export const rawStatsTree = [
                                 "name": "2019-2021 Swing NDP %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 22
                                     }
@@ -6123,6 +6473,7 @@ export const rawStatsTree = [
                                 "name": "2021GE NDP %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 45
                                     }
@@ -6133,6 +6484,7 @@ export const rawStatsTree = [
                                 "name": "2021-2025 Swing NDP %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 38
                                     }
@@ -6143,6 +6495,7 @@ export const rawStatsTree = [
                                 "name": "2025GE NDP %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 53
                                     }
@@ -6164,6 +6517,7 @@ export const rawStatsTree = [
                                 "name": "2015GE BQ %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 10
                                     }
@@ -6174,6 +6528,7 @@ export const rawStatsTree = [
                                 "name": "2015-2019 Swing BQ %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 4
                                     }
@@ -6184,6 +6539,7 @@ export const rawStatsTree = [
                                 "name": "2019GE BQ %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 25
                                     }
@@ -6194,6 +6550,7 @@ export const rawStatsTree = [
                                 "name": "2019-2021 Swing BQ %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 18
                                     }
@@ -6204,6 +6561,7 @@ export const rawStatsTree = [
                                 "name": "2021GE BQ %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 41
                                     }
@@ -6214,6 +6572,7 @@ export const rawStatsTree = [
                                 "name": "2021-2025 Swing BQ %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 34
                                     }
@@ -6224,6 +6583,7 @@ export const rawStatsTree = [
                                 "name": "2025GE BQ %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 49
                                     }
@@ -6245,6 +6605,7 @@ export const rawStatsTree = [
                                 "name": "2015GE Grn %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 12
                                     }
@@ -6255,6 +6616,7 @@ export const rawStatsTree = [
                                 "name": "2015-2019 Swing Grn %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 6
                                     }
@@ -6265,6 +6627,7 @@ export const rawStatsTree = [
                                 "name": "2019GE Grn %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 27
                                     }
@@ -6275,6 +6638,7 @@ export const rawStatsTree = [
                                 "name": "2019-2021 Swing Grn %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 20
                                     }
@@ -6285,6 +6649,7 @@ export const rawStatsTree = [
                                 "name": "2021GE Grn %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 43
                                     }
@@ -6295,6 +6660,7 @@ export const rawStatsTree = [
                                 "name": "2021-2025 Swing Grn %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 36
                                     }
@@ -6305,6 +6671,7 @@ export const rawStatsTree = [
                                 "name": "2025GE Grn %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 51
                                     }
@@ -6326,6 +6693,7 @@ export const rawStatsTree = [
                                 "name": "2019GE PPC %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 30
                                     }
@@ -6336,6 +6704,7 @@ export const rawStatsTree = [
                                 "name": "2019-2021 Swing PPC %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 23
                                     }
@@ -6346,6 +6715,7 @@ export const rawStatsTree = [
                                 "name": "2021GE PPC %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 46
                                     }
@@ -6356,6 +6726,7 @@ export const rawStatsTree = [
                                 "name": "2021-2025 Swing PPC %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 39
                                     }
@@ -6366,6 +6737,7 @@ export const rawStatsTree = [
                                 "name": "2025GE PPC %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 54
                                     }
@@ -6393,6 +6765,7 @@ export const rawStatsTree = [
                                 "name": "PW Mean % of parkland within 1km",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 396
                                     }
@@ -6414,6 +6787,7 @@ export const rawStatsTree = [
                                 "name": "Within 10km of Hospital %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 491
                                     }
@@ -6435,6 +6809,7 @@ export const rawStatsTree = [
                                 "name": "Mean distance to nearest Hospital",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 334
                                     }
@@ -6456,6 +6831,7 @@ export const rawStatsTree = [
                                 "name": "Within 2km of Public School %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 492
                                     }
@@ -6477,6 +6853,7 @@ export const rawStatsTree = [
                                 "name": "Mean distance to nearest Public School",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 335
                                     }
@@ -6498,6 +6875,7 @@ export const rawStatsTree = [
                                 "name": "Within 30km of Airport %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 490
                                     }
@@ -6519,6 +6897,7 @@ export const rawStatsTree = [
                                 "name": "Mean distance to nearest Airport",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 333
                                     }
@@ -6540,6 +6919,7 @@ export const rawStatsTree = [
                                 "name": "Within 10km of Active Superfund Site %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 489
                                     }
@@ -6561,6 +6941,7 @@ export const rawStatsTree = [
                                 "name": "Mean distance to nearest Active Superfund Site",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 332
                                     }
@@ -6582,6 +6963,7 @@ export const rawStatsTree = [
                                 "name": "Within 0.5mi of a grocery store %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 322
                                     }
@@ -6603,6 +6985,7 @@ export const rawStatsTree = [
                                 "name": "Within 1mi of a grocery store %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 320
                                     }
@@ -6624,6 +7007,7 @@ export const rawStatsTree = [
                                 "name": "Within 10mi of a grocery store %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 319
                                     }
@@ -6645,6 +7029,7 @@ export const rawStatsTree = [
                                 "name": "Within 20mi of a grocery store %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 321
                                     }
@@ -6672,6 +7057,7 @@ export const rawStatsTree = [
                                 "name": "Mean high temp",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 338
                                     }
@@ -6693,6 +7079,7 @@ export const rawStatsTree = [
                                 "name": "Mean low temp",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 347
                                     }
@@ -6714,6 +7101,7 @@ export const rawStatsTree = [
                                 "name": "Mean high heat index",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 337
                                     }
@@ -6735,6 +7123,7 @@ export const rawStatsTree = [
                                 "name": "Mean high dewpt",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 336
                                     }
@@ -6756,6 +7145,7 @@ export const rawStatsTree = [
                                 "name": "High temperature Above 90\u00b0F %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 151
                                     }
@@ -6777,6 +7167,7 @@ export const rawStatsTree = [
                                 "name": "High temperature Between 40 and 90\u00b0F %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 153
                                     }
@@ -6798,6 +7189,7 @@ export const rawStatsTree = [
                                 "name": "High temperature Below 40\u00b0F %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 152
                                     }
@@ -6819,6 +7211,7 @@ export const rawStatsTree = [
                                 "name": "Humid days (dewpt > 70\u00b0F) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 156
                                     }
@@ -6840,6 +7233,7 @@ export const rawStatsTree = [
                                 "name": "Non-humid, Non-dry days (50\u00b0F < dewpt < 70\u00b0F) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 155
                                     }
@@ -6861,6 +7255,7 @@ export const rawStatsTree = [
                                 "name": "Dry days (dewpt < 50\u00b0F) %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 154
                                     }
@@ -6882,6 +7277,7 @@ export const rawStatsTree = [
                                 "name": "Mean sunny hours",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 245
                                     }
@@ -6903,6 +7299,7 @@ export const rawStatsTree = [
                                 "name": "Rainfall",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 408
                                     }
@@ -6924,6 +7321,7 @@ export const rawStatsTree = [
                                 "name": "Snowfall [rain-equivalent]",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 445
                                     }
@@ -6945,6 +7343,7 @@ export const rawStatsTree = [
                                 "name": "High windspeed (>10mph) days %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 488
                                     }
@@ -6966,6 +7365,7 @@ export const rawStatsTree = [
                                 "name": "Mean high temperature in Dec/Jan/Feb",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 339
                                     }
@@ -6987,6 +7387,7 @@ export const rawStatsTree = [
                                 "name": "Mean high temperature in Mar/Apr/May",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 342
                                     }
@@ -7008,6 +7409,7 @@ export const rawStatsTree = [
                                 "name": "Mean high temperature in Jun/Jul/Aug",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 341
                                     }
@@ -7029,6 +7431,7 @@ export const rawStatsTree = [
                                 "name": "Mean high temperature in Sep/Oct/Nov",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 343
                                     }
@@ -7050,6 +7453,7 @@ export const rawStatsTree = [
                                 "name": "Mean low temperature in Dec/Jan/Feb",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 348
                                     }
@@ -7071,6 +7475,7 @@ export const rawStatsTree = [
                                 "name": "Mean low temperature in Mar/Apr/May",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 350
                                     }
@@ -7092,6 +7497,7 @@ export const rawStatsTree = [
                                 "name": "Mean low temperature in Jun/Jul/Aug",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 349
                                     }
@@ -7113,6 +7519,7 @@ export const rawStatsTree = [
                                 "name": "Mean low temperature in Sep/Oct/Nov",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 351
                                     }
@@ -7140,6 +7547,7 @@ export const rawStatsTree = [
                                 "name": "No internet access %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 311
                                     }
@@ -7161,6 +7569,7 @@ export const rawStatsTree = [
                                 "name": "Uninsured %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 309
                                     }
@@ -7182,6 +7591,7 @@ export const rawStatsTree = [
                                 "name": "Public Insurance %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 308
                                     }
@@ -7203,6 +7613,7 @@ export const rawStatsTree = [
                                 "name": "Private Insurance %",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 310
                                     }
@@ -7230,6 +7641,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=250m)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7237,6 +7649,7 @@ export const rawStatsTree = [
                                         "column": 82
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7255,6 +7668,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=250m) (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7262,6 +7676,7 @@ export const rawStatsTree = [
                                         "column": 84
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7275,6 +7690,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=250m) Change (2010-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7282,6 +7698,7 @@ export const rawStatsTree = [
                                         "column": 86
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7300,6 +7717,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=250m) (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 83
                                     }
@@ -7310,6 +7728,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=250m) Change (2000-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 85
                                     }
@@ -7331,6 +7750,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=500m)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7338,6 +7758,7 @@ export const rawStatsTree = [
                                         "column": 87
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7356,6 +7777,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=500m) (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7363,6 +7785,7 @@ export const rawStatsTree = [
                                         "column": 89
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7376,6 +7799,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=500m) Change (2010-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7383,6 +7807,7 @@ export const rawStatsTree = [
                                         "column": 91
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7401,6 +7826,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=500m) (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 88
                                     }
@@ -7411,6 +7837,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=500m) Change (2000-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 90
                                     }
@@ -7432,6 +7859,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=1mi)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7439,6 +7867,7 @@ export const rawStatsTree = [
                                         "column": 93
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7446,6 +7875,7 @@ export const rawStatsTree = [
                                         "column": 169
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "GHSL"
@@ -7464,6 +7894,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=1mi) (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7471,6 +7902,7 @@ export const rawStatsTree = [
                                         "column": 95
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7484,6 +7916,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=1mi) Change (2010-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7491,6 +7924,7 @@ export const rawStatsTree = [
                                         "column": 97
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7509,6 +7943,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=1mi) (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 94
                                     }
@@ -7519,6 +7954,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=1mi) Change (2000-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 96
                                     }
@@ -7540,6 +7976,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=2km)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7547,6 +7984,7 @@ export const rawStatsTree = [
                                         "column": 107
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7554,6 +7992,7 @@ export const rawStatsTree = [
                                         "column": 172
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "GHSL"
@@ -7572,6 +8011,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=2km) (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7579,6 +8019,7 @@ export const rawStatsTree = [
                                         "column": 109
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7592,6 +8033,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=2km) Change (2010-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7599,6 +8041,7 @@ export const rawStatsTree = [
                                         "column": 111
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7617,6 +8060,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=2km) (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 108
                                     }
@@ -7627,6 +8071,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=2km) Change (2000-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 110
                                     }
@@ -7648,6 +8093,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=4km)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7655,6 +8101,7 @@ export const rawStatsTree = [
                                         "column": 117
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7662,6 +8109,7 @@ export const rawStatsTree = [
                                         "column": 174
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "GHSL"
@@ -7680,6 +8128,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=4km) (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7687,6 +8136,7 @@ export const rawStatsTree = [
                                         "column": 119
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7700,6 +8150,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=4km) Change (2010-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7707,6 +8158,7 @@ export const rawStatsTree = [
                                         "column": 121
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7725,6 +8177,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=4km) (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 118
                                     }
@@ -7735,6 +8188,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=4km) Change (2000-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 120
                                     }
@@ -7756,6 +8210,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=8km)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7763,6 +8218,7 @@ export const rawStatsTree = [
                                         "column": 127
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7770,6 +8226,7 @@ export const rawStatsTree = [
                                         "column": 176
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "GHSL"
@@ -7788,6 +8245,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=8km) (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7795,6 +8253,7 @@ export const rawStatsTree = [
                                         "column": 129
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7808,6 +8267,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=8km) Change (2010-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7815,6 +8275,7 @@ export const rawStatsTree = [
                                         "column": 131
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7833,6 +8294,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=8km) (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 128
                                     }
@@ -7843,6 +8305,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=8km) Change (2000-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 130
                                     }
@@ -7864,6 +8327,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=16km)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7871,6 +8335,7 @@ export const rawStatsTree = [
                                         "column": 98
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7878,6 +8343,7 @@ export const rawStatsTree = [
                                         "column": 170
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "GHSL"
@@ -7896,6 +8362,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=16km) (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7903,6 +8370,7 @@ export const rawStatsTree = [
                                         "column": 100
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7916,6 +8384,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=16km) Change (2010-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7923,6 +8392,7 @@ export const rawStatsTree = [
                                         "column": 102
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7941,6 +8411,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=16km) (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 99
                                     }
@@ -7951,6 +8422,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=16km) Change (2000-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 101
                                     }
@@ -7972,6 +8444,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=32km)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -7979,6 +8452,7 @@ export const rawStatsTree = [
                                         "column": 112
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -7986,6 +8460,7 @@ export const rawStatsTree = [
                                         "column": 173
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "GHSL"
@@ -8004,6 +8479,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=32km) (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -8011,6 +8487,7 @@ export const rawStatsTree = [
                                         "column": 114
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -8024,6 +8501,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=32km) Change (2010-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -8031,6 +8509,7 @@ export const rawStatsTree = [
                                         "column": 116
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -8049,6 +8528,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=32km) (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 113
                                     }
@@ -8059,6 +8539,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=32km) Change (2000-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 115
                                     }
@@ -8080,6 +8561,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=64km)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -8087,6 +8569,7 @@ export const rawStatsTree = [
                                         "column": 122
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -8094,6 +8577,7 @@ export const rawStatsTree = [
                                         "column": 175
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "GHSL"
@@ -8112,6 +8596,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=64km) (2010)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -8119,6 +8604,7 @@ export const rawStatsTree = [
                                         "column": 124
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -8132,6 +8618,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=64km) Change (2010-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "US Census"
@@ -8139,6 +8626,7 @@ export const rawStatsTree = [
                                         "column": 126
                                     },
                                     {
+                                        "kind": "data",
                                         "source": {
                                             "category": "Population",
                                             "name": "Canadian Census"
@@ -8157,6 +8645,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=64km) (2000)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 123
                                     }
@@ -8167,6 +8656,7 @@ export const rawStatsTree = [
                                 "name": "PW Density (r=64km) Change (2000-2020)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 125
                                     }
@@ -8194,6 +8684,7 @@ export const rawStatsTree = [
                                 "name": "Mean high temperature in summer",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 345
                                     }
@@ -8215,6 +8706,7 @@ export const rawStatsTree = [
                                 "name": "Mean high temperature in winter",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 346
                                     }
@@ -8236,6 +8728,7 @@ export const rawStatsTree = [
                                 "name": "Mean high temperature in fall",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 340
                                     }
@@ -8257,6 +8750,7 @@ export const rawStatsTree = [
                                 "name": "Mean high temperature in spring",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 344
                                     }
@@ -8278,6 +8772,7 @@ export const rawStatsTree = [
                                 "name": "Commute Car % (incl WFH)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 468
                                     }
@@ -8299,6 +8794,7 @@ export const rawStatsTree = [
                                 "name": "Commute Bike % (incl WFH)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 465
                                     }
@@ -8320,6 +8816,7 @@ export const rawStatsTree = [
                                 "name": "Commute Walk % (incl WFH)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 474
                                     }
@@ -8341,6 +8838,7 @@ export const rawStatsTree = [
                                 "name": "Commute Transit % (incl WFH)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 471
                                     }
@@ -8362,11 +8860,90 @@ export const rawStatsTree = [
                                 "name": "Commute Work From Home % (incl WFH)",
                                 "stats": [
                                     {
+                                        "kind": "data",
                                         "source": null,
                                         "column": 477
                                     }
                                 ],
                                 "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "metadata",
+        "name": "Metadata",
+        "contents": [
+            {
+                "id": "metadata_show_metadata_us_census_geoid",
+                "name": "US Census GeoID",
+                "contents": [
+                    {
+                        "year": null,
+                        "stats_by_source": [
+                            {
+                                "name": "US Census GeoID",
+                                "stats": [
+                                    {
+                                        "kind": "metadata",
+                                        "source": null,
+                                        "path": "metadata_show_metadata_us_census_geoid",
+                                        "metadata_index": 0,
+                                        "value_type": "string"
+                                    }
+                                ],
+                                "indentedName": null
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "metadata_show_metadata_statcan_geocode",
+                "name": "StatCan GeoCode",
+                "contents": [
+                    {
+                        "year": null,
+                        "stats_by_source": [
+                            {
+                                "name": "StatCan GeoCode",
+                                "stats": [
+                                    {
+                                        "kind": "metadata",
+                                        "source": null,
+                                        "path": "metadata_show_metadata_statcan_geocode",
+                                        "metadata_index": 1,
+                                        "value_type": "string"
+                                    }
+                                ],
+                                "indentedName": null
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "metadata_show_metadata_iso_code",
+                "name": "ISO Code",
+                "contents": [
+                    {
+                        "year": null,
+                        "stats_by_source": [
+                            {
+                                "name": "ISO Code",
+                                "stats": [
+                                    {
+                                        "kind": "metadata",
+                                        "source": null,
+                                        "path": "metadata_show_metadata_iso_code",
+                                        "metadata_index": 4,
+                                        "value_type": "string"
+                                    }
+                                ],
+                                "indentedName": null
                             }
                         ]
                     }

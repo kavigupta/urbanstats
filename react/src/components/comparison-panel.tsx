@@ -9,8 +9,7 @@ import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 import { boundingBox, extendBoxes } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
 import { colorFromCycle, useColors } from '../page_template/colors'
-import { rowExpandedKey, useSettings } from '../page_template/settings'
-import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
+import { useSettings } from '../page_template/settings'
 import { statParents, Year } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
@@ -28,7 +27,7 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { computeNameSpecsWithGroups } from './article-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
-import { ArticleRow } from './load-article'
+import { ArticleRow, DisplayRow, RowSettings, rowSettingsKeys, StatisticCellRenderingInfo, isArticleRow } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
@@ -37,11 +36,27 @@ import { SearchBox } from './search'
 import { TableContents, CellSpec } from './supertable'
 import { ColumnIdentifier } from './table'
 
+interface ComparisonTableRow {
+    renderedStatname: string
+    rows: StatisticCellRenderingInfo[]
+    expandedKey: DisplayRow['expandedKey']
+    statIndex?: number
+}
+
+interface ComparisonStatisticTableRow extends ComparisonTableRow {
+    rows: ArticleRow[]
+    statIndex: number
+}
+
+function isComparisonStatisticRow(tableRow: ComparisonTableRow): tableRow is ComparisonStatisticTableRow {
+    return tableRow.statIndex !== undefined
+}
+
 export function ComparisonPanel(props: {
     universe: Universe
     universes: readonly Universe[]
     articles: Article[]
-    rows: (settings: StatGroupSettings) => ArticleRow[][]
+    rows: (settings: RowSettings) => DisplayRow[][]
     mapPartitions: number[][]
 }): ReactNode {
     const colors = useColors()
@@ -118,10 +133,46 @@ export function ComparisonPanel(props: {
         setActiveId(null)
     }
 
-    const settings = useSettings(groupYearKeys())
+    const settings = useSettings(rowSettingsKeys())
 
-    const dataByArticleStat = props.rows(settings)
-    const dataByStatArticle = dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
+    const dataByArticleDisplayRows = props.rows(settings)
+    const dataByDisplayRowArticle = dataByArticleDisplayRows[0].map((_, displayRowIndex) =>
+        dataByArticleDisplayRows.map(articleData => articleData[displayRowIndex]),
+    )
+
+    let statisticRowIndex = -1
+    const filteredRowsByStat: ComparisonTableRow[] = dataByDisplayRowArticle.map((displayRows) => {
+        const rows = displayRows.map(displayRow => displayRow.row)
+        if (rows.every(isArticleRow)) {
+            statisticRowIndex += 1
+            return {
+                renderedStatname: displayRows[0].renderedStatname,
+                rows,
+                expandedKey: displayRows[0].expandedKey,
+                statIndex: statisticRowIndex,
+            }
+        }
+        return {
+            renderedStatname: displayRows[0].renderedStatname,
+            rows,
+            expandedKey: displayRows[0].expandedKey,
+        }
+    })
+
+    const dataByStatArticle = filteredRowsByStat
+        .filter(isComparisonStatisticRow)
+        .map(tableRow => tableRow.rows)
+    const dataByArticleStat = localArticlesToUse.map((unused, articleIndex) =>
+        dataByStatArticle.map(statRows => statRows[articleIndex]),
+    )
+
+    // For CSV export, include all rows (stat + metadata) in the same order as localArticlesToUse
+    const dataByArticleDisplayForCSV = localArticlesToUse.map((article) => {
+        const originalIndex = props.articles.findIndex(a => a.longname === article.longname)
+        return dataByArticleDisplayRows[originalIndex] ?? []
+    })
+
+    const totalRowsByStat = filteredRowsByStat.length
 
     const handleSort = (statIndex: number): void => {
         let newSortDirection: 'up' | 'down' | 'both'
@@ -163,13 +214,15 @@ export function ComparisonPanel(props: {
 
     const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
 
-    const expandedSettings = useSettings(dataByStatArticle.filter(statData => statData.some(row => row.extraStat !== undefined)).map(([{ statpath }]) => rowExpandedKey(statpath)))
-
-    const expandedByStatIndex = dataByStatArticle.map(([{ statpath }]) => expandedSettings[rowExpandedKey(statpath)] ?? false)
-    const numExpandedExtras = expandedByStatIndex.filter(v => v).length
+    const expandedSettings = useSettings(filteredRowsByStat.map(tableRow => tableRow.expandedKey))
+    const expandedByRowIndex = filteredRowsByStat.map(tableRow => expandedSettings[tableRow.expandedKey] ?? false)
+    const expandableByRowIndex = filteredRowsByStat.map(tableRow =>
+        isComparisonStatisticRow(tableRow) && tableRow.rows.some(row => row.extraStat !== undefined),
+    )
+    const numExpandedExtras = expandableByRowIndex.filter((canExpand, rowIndex) => canExpand && expandedByRowIndex[rowIndex]).length
 
     let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, includeOrdinals)
-    let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (dataByArticleStat[0].length + numExpandedExtras) + 1.5
+    let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (totalRowsByStat + numExpandedExtras) + 1.5
 
     const transpose = widthColumns > computeMaxColumns(mobileLayout) && widthColumns > widthTransposeColumns
 
@@ -178,7 +231,7 @@ export function ComparisonPanel(props: {
     }
 
     const leftMarginPercent = transpose ? 0.24 : 0.18
-    const numColumns = transpose ? dataByArticleStat[0].length : localArticlesToUse.length
+    const numColumns = transpose ? totalRowsByStat : localArticlesToUse.length
     const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
 
     const highlightArticleIndicesByStat: (number | undefined)[] = dataByStatArticle.map(articlesStatData => getHighlightIndex(articlesStatData))
@@ -214,7 +267,20 @@ export function ComparisonPanel(props: {
         } satisfies CellSpec
     ))
 
-    const statisticNameHeaderSpecsOriginal: (CellSpec & { type: 'statistic-name' })[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => {
+    const statisticNameHeaderSpecsOriginal: (CellSpec & { type: 'statistic-name' })[] = filteredRowsByStat.map((tableRow) => {
+        if (tableRow.statIndex === undefined) {
+            return {
+                type: 'statistic-name',
+                row: undefined,
+                renderedStatname: tableRow.renderedStatname,
+                longname: names[0],
+                currentUniverse: props.universe,
+                center: transpose ? true : false,
+                transpose,
+            } satisfies CellSpec
+        }
+
+        const statIndex = tableRow.statIndex
         const row = rowToDisplayForStat(statIndex)
         return {
             type: 'statistic-name',
@@ -236,32 +302,45 @@ export function ComparisonPanel(props: {
 
     const { updatedNameSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames } = computeNameSpecsWithGroups(statisticNameHeaderSpecsOriginal)
 
-    const rowSpecsByStat: CellSpec[][] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => (
-        Array.from({ length: localArticlesToUse.length }).map((unused, articleIndex) => ({
-            type: 'statistic-row',
-            row: dataByArticleStat[articleIndex][statIndex],
-            longname: names[articleIndex],
-            onlyColumns,
-            blankColumns: validOrdinalsByStat[statIndex] ? [] : ['statistic_ordinal', 'statistic_percentile'],
-            simpleOrdinals: true,
-            statisticStyle: highlightArticleIndicesByStat[statIndex] === articleIndex ? { backgroundColor: mixWithBackground(colorFromCycle(colors.hueColors, articleIndex), colors.mixPct / 100, colors.background) } : {},
-            onNavigate: (x: string) => {
-                void navContext.navigate({
-                    kind: 'comparison',
-                    universe: props.universe,
-                    longnames: names.map((value, index) => index === articleIndex ? x : value),
-                }, { history: 'push', scroll: { kind: 'none' } })
-            },
-        }))
+    const rowSpecsByStat: CellSpec[][] = filteredRowsByStat.map(tableRow => (
+        Array.from({ length: localArticlesToUse.length }).map((unused, articleIndex) => {
+            if (!isComparisonStatisticRow(tableRow)) {
+                return {
+                    type: 'statistic-row',
+                    row: tableRow.rows[articleIndex],
+                    longname: names[articleIndex],
+                    onlyColumns,
+                    simpleOrdinals: true,
+                }
+            }
+
+            const statIndex = tableRow.statIndex
+            return {
+                type: 'statistic-row',
+                row: tableRow.rows[articleIndex],
+                longname: names[articleIndex],
+                onlyColumns,
+                blankColumns: validOrdinalsByStat[statIndex] ? [] : ['statistic_ordinal', 'statistic_percentile'],
+                simpleOrdinals: true,
+                statisticStyle: highlightArticleIndicesByStat[statIndex] === articleIndex ? { backgroundColor: mixWithBackground(colorFromCycle(colors.hueColors, articleIndex), colors.mixPct / 100, colors.background) } : {},
+                onNavigate: (x: string) => {
+                    void navContext.navigate({
+                        kind: 'comparison',
+                        universe: props.universe,
+                        longnames: names.map((value, index) => index === articleIndex ? x : value),
+                    }, { history: 'push', scroll: { kind: 'none' } })
+                },
+            }
+        })
     ))
 
     const rowSpecsByStatTransposed = rowSpecsByStat.length === 0 ? [] : rowSpecsByStat[0].map((_, statIndex) => rowSpecsByStat.map(rowSpecs => rowSpecs[statIndex]))
 
-    const plotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) =>
-        expandedByStatIndex[statIndex]
+    const plotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[] = filteredRowsByStat.map((tableRow, rowIndex) =>
+        tableRow.statIndex !== undefined && expandableByRowIndex[rowIndex] && expandedByRowIndex[rowIndex]
             ? {
-                    statDescription: dataByStatArticle[statIndex][0].renderedStatname,
-                    plotProps: plotProps(statIndex),
+                    statDescription: tableRow.renderedStatname,
+                    plotProps: plotProps(tableRow.statIndex),
                 }
             : undefined,
     )
@@ -269,10 +348,10 @@ export function ComparisonPanel(props: {
     const topLeftSpec: CellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
 
     const csvExportCallback = useCallback<CSVExportData>(() => {
-        const data = generateCSVDataForArticles(localArticlesToUse, dataByArticleStat, includeOrdinals)
+        const data = generateCSVDataForArticles(localArticlesToUse, dataByArticleDisplayForCSV, includeOrdinals)
         const filename = `${sanitize(joinedString)}.csv`
         return { csvData: data, csvFilename: filename }
-    }, [joinedString, localArticlesToUse, dataByArticleStat, includeOrdinals])
+    }, [joinedString, localArticlesToUse, dataByArticleDisplayForCSV, includeOrdinals])
 
     return (
         <universeContext.Provider value={{

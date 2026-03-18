@@ -5,8 +5,7 @@ import React, { ReactNode, useCallback, useContext, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
-import { rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
-import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
+import { useSetting, useSettings } from '../page_template/settings'
 import { statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { Universe, universeContext, useUniverse } from '../universe'
@@ -22,14 +21,14 @@ import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { pullRelevantPlotProps } from './comparison-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
-import { ArticleRow } from './load-article'
+import { DisplayRow, RowSettings, rowSettingsKeys, isArticleRow } from './load-article'
 import { Related } from './related-button'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { CellSpec, PlotSpec, TableContents } from './supertable'
 import { ColumnIdentifier } from './table'
 
-export function ArticlePanel({ article, rows, universe }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][], universe: Universe }): ReactNode {
+export function ArticlePanel({ article, rows, universe }: { article: Article, rows: (settings: RowSettings) => DisplayRow[][], universe: Universe }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
     const mapRef = useRef<HTMLDivElement>(null)
@@ -44,7 +43,7 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     const subHeaderTextClass = useSubHeaderTextClass()
     const comparisonHeadStyle = useComparisonHeadStyle('right')
 
-    const settings = useSettings(groupYearKeys())
+    const settings = useSettings(rowSettingsKeys())
     const filteredRows = rows(settings)[0]
 
     const csvExportCallback = useCallback<CSVExportData>(() => {
@@ -169,12 +168,16 @@ export function computeNameSpecsWithGroups(nameSpecs: NameSpec[]): { updatedName
 }
 
 function ArticleTable(props: {
-    filteredRows: ArticleRow[]
+    filteredRows: DisplayRow[]
     article: Article
 }): ReactNode {
     const colors = useColors()
-    const expandedSettings = useSettings(props.filteredRows.map(row => rowExpandedKey(row.statpath)))
-    const expandedEach = props.filteredRows.map(row => expandedSettings[rowExpandedKey(row.statpath)])
+    const displayRows = props.filteredRows
+    const statRows = displayRows
+        .map(displayRow => displayRow.row)
+        .filter(isArticleRow)
+    const expandedSettings = useSettings(props.filteredRows.map(row => row.expandedKey))
+    const expandedEach = props.filteredRows.map(row => expandedSettings[row.expandedKey] ?? false)
     const currentUniverse = useUniverse()
     assert(currentUniverse !== undefined, 'no universe')
     const [simpleOrdinals] = useSetting('simple_ordinals')
@@ -185,7 +188,7 @@ function ArticleTable(props: {
     const statNameSpecs: Extract<CellSpec, { type: 'statistic-name' }>[] = props.filteredRows.map(row => ({
         type: 'statistic-name',
         longname: props.article.longname,
-        row,
+        row: isArticleRow(row.row) ? row.row : undefined,
         renderedStatname: row.renderedStatname,
         currentUniverse,
     }))
@@ -196,7 +199,7 @@ function ArticleTable(props: {
     const cellSpecs: CellSpec[][] = props.filteredRows.map(row => [({
         type: 'statistic-row',
         longname: props.article.longname,
-        row,
+        row: row.row,
         onNavigate: (newArticle) => {
             void navContext.navigate({
                 kind: 'article',
@@ -212,7 +215,7 @@ function ArticleTable(props: {
         ? {
                 statDescription: props.filteredRows[index].renderedStatname,
                 plotProps: pullRelevantPlotProps(
-                    props.filteredRows,
+                    statRows,
                     index,
                     colors.hueColors.blue,
                     props.article.shortname,

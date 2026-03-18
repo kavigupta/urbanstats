@@ -7,7 +7,7 @@ import React, { ReactNode } from 'react'
 import { USSOpaqueValue, USSValue } from '../urban-stats-script/types-values'
 import { Article } from '../utils/protos'
 
-import { ArticleRow } from './load-article'
+import { DisplayRow } from './load-article'
 
 export type CSVExportData = () => { csvData: string[][], csvFilename: string }
 
@@ -41,15 +41,19 @@ export function CSVButton(props: { onClick: () => void }): ReactNode {
 
 export function generateCSVDataForArticles(
     articles: Article[],
-    dataByArticleStat: ArticleRow[][],
+    dataByArticleDisplay: DisplayRow[][],
     includeOrdinals: boolean,
 ): string[][] {
     const names = articles.map(a => a.longname)
-    const statNames = dataByArticleStat[0].map(row => row.renderedStatname)
-    const headerRow = ['Region', ...statNames]
+    const displayRows = dataByArticleDisplay[0]
+    const headerRow = ['Region', ...displayRows.map(dr => dr.renderedStatname)]
 
+    // Add ordinal/percentile headers only for non-metadata rows
     if (includeOrdinals) {
-        headerRow.push(...statNames.flatMap(statName => [`${statName} (Rank)`, `${statName} (Percentile)`]))
+        const ordinalsPercentileHeaders = displayRows
+            .filter(dr => !dr.row.isMetadata)
+            .flatMap(dr => [`${dr.renderedStatname} (Rank)`, `${dr.renderedStatname} (Percentile)`])
+        headerRow.push(...ordinalsPercentileHeaders)
     }
 
     const dataRows: string[][] = []
@@ -57,16 +61,21 @@ export function generateCSVDataForArticles(
     for (let articleIndex = 0; articleIndex < articles.length; articleIndex++) {
         const row = [names[articleIndex]]
 
-        for (let statIndex = 0; statIndex < dataByArticleStat[0].length; statIndex++) {
-            const rowData = dataByArticleStat[articleIndex][statIndex]
-            row.push(rowData.statval.toString())
+        // Add statistic and metadata values
+        for (let displayIndex = 0; displayIndex < displayRows.length; displayIndex++) {
+            const displayRow = dataByArticleDisplay[articleIndex][displayIndex]
+            const value = displayRow.row.statvalString ?? displayRow.row.statval
+            row.push(value.toString())
         }
 
+        // Add ordinal and percentile values for non-metadata rows
         if (includeOrdinals) {
-            for (let statIndex = 0; statIndex < dataByArticleStat[0].length; statIndex++) {
-                const rowData = dataByArticleStat[articleIndex][statIndex]
-                row.push(rowData.ordinal.toString())
-                row.push(rowData.percentileByPopulation.toString())
+            for (let displayIndex = 0; displayIndex < displayRows.length; displayIndex++) {
+                const displayRow = dataByArticleDisplay[articleIndex][displayIndex]
+                if (!displayRow.row.isMetadata) {
+                    row.push(displayRow.row.ordinal.toString())
+                    row.push(displayRow.row.percentileByPopulation.toString())
+                }
             }
         }
 

@@ -84,6 +84,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading }
                 totalCountOverall: data.totalCountOverall,
                 overallFirstLast: { isFirst: false, isLast: false },
                 unit: col.unit,
+                kind: 'statistic',
             } satisfies StatisticCellRenderingInfo
         })
     })
