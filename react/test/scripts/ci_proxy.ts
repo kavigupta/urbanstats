@@ -10,10 +10,11 @@
 import compression from 'compression'
 import express from 'express'
 import proxy from 'express-http-proxy'
-import { Octokit } from 'octokit'
 import { z } from 'zod'
 
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
+import { github } from './github-utils'
+
+const { octokit } = await github()
 
 export async function startProxy(): Promise<void> {
     /**

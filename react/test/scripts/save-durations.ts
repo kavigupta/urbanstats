@@ -1,21 +1,18 @@
-import fs from 'fs'
+import assert from 'assert'
 
-import { globSync } from 'glob'
-import { Octokit } from 'octokit'
 import { z } from 'zod'
 
-import { repoInfo } from './util'
+import { github } from './github-utils'
+import { loadAndMergeTestHistories, repoInfo } from './util'
 
-const durationsFiles = globSync('durations/*.json')
 const durations: Record<string, number> = {}
 
-for (const durationFile of durationsFiles) {
-    const test = /([^/]+)\.json$/.exec(durationFile)![1]
-    const duration = z.number().parse(JSON.parse(fs.readFileSync(durationFile, 'utf-8')))
-    durations[test] = duration
+for (const result of await loadAndMergeTestHistories()) {
+    assert(result.result.status === 'success', 'Cannot save durations if a test is unsuccessful')
+    durations[result.test] = result.result.duration
 }
 
-const octokit = new Octokit({ auth: z.string().parse(process.env.FINE_GRAINED_TOKEN_FOR_VARIABLES) })
+const { octokit } = await github(z.string().parse(process.env.FINE_GRAINED_TOKEN_FOR_VARIABLES))
 
 const response = await octokit.rest.actions.updateRepoVariable({
     ...repoInfo,
