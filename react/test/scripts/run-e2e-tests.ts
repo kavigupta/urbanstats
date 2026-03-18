@@ -49,7 +49,7 @@ const testcafe = await createTestCafe('localhost', 1337, 1338)
 
 const testHistory: TestHistory = []
 
-const gh = process.env.GITHUB_ACTION ? await github() : undefined
+const gh = process.env.GITHUB_ACTIONS ? await github() : undefined
 
 for (const test of tests) {
     const numTries = options.tries * (await testFileDidChange(test) ? 1 : 2)
@@ -73,7 +73,7 @@ for (const test of tests) {
                     break retry
                 }
                 console.warn(chalkTemplate`{red ${testFile(test)} failed... trying again}`)
-                if (process.env.GITHUB_ACTIONS) {
+                if (gh) {
                     console.warn(`::endgroup::`)
                 }
                 retries++
