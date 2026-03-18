@@ -2,16 +2,15 @@ import assert from 'assert'
 
 import { z } from 'zod'
 
-import { maybeGithub } from './github-utils'
+import { github } from './github-utils'
 import { loadAndMergeTestHistories, testFile } from './util'
 
 const env = z.object({
-    GITHUB_TOKEN: z.string(),
     ARTIFACT_ID: z.string(),
     HEAD_SHA: z.string(),
 }).parse(process.env)
 
-const github = (await maybeGithub(() => env.GITHUB_TOKEN))!
+const gh = await github()
 
 const body = [await testsComment(), screenshotsComment()].filter(s => s !== undefined).join('\n\n')
 
@@ -19,19 +18,19 @@ if (body === '') {
     process.exit(0)
 }
 
-if (github.context.eventName === 'pull_request') {
-    await github.octokit.rest.issues.createComment({
-        issue_number: github.context.issue.number,
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
+if (gh.context.eventName === 'pull_request') {
+    await gh.octokit.rest.issues.createComment({
+        issue_number: gh.context.issue.number,
+        owner: gh.context.repo.owner,
+        repo: gh.context.repo.repo,
         body,
     })
 }
 else {
-    await github.octokit.rest.repos.createCommitComment({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        commit_sha: github.context.sha,
+    await gh.octokit.rest.repos.createCommitComment({
+        owner: gh.context.repo.owner,
+        repo: gh.context.repo.repo,
+        commit_sha: gh.context.sha,
         body,
     })
 }
@@ -39,7 +38,7 @@ else {
 function screenshotsComment(): string | undefined {
     if (env.ARTIFACT_ID !== '') {
         // There is a screenshots artifact, so there were screenshots changes
-        return `[Screenshots merge ${env.HEAD_SHA}](https://urbanstats.org/screenshot-diff-viewer.html?artifactId=${env.ARTIFACT_ID}&hash=${github.context.sha})\n\n\`!updateScreenshots\` to update`
+        return `[Screenshots merge ${env.HEAD_SHA}](https://urbanstats.org/screenshot-diff-viewer.html?artifactId=${env.ARTIFACT_ID}&hash=${gh.context.sha})\n\n\`!updateScreenshots\` to update`
     }
     return
 }
@@ -62,9 +61,9 @@ async function testsComment(): Promise<string | undefined> {
             : 'failure'
         const retriesText = retries === 0 ? '' : ` (${retries} retries)`
 
-        const { data } = await github.octokit.rest.actions.downloadJobLogsForWorkflowRun({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
+        const { data } = await gh.octokit.rest.actions.downloadJobLogsForWorkflowRun({
+            owner: gh.context.repo.owner,
+            repo: gh.context.repo.repo,
             job_id: executionGithub.jobId,
         })
 
@@ -84,7 +83,7 @@ async function testsComment(): Promise<string | undefined> {
 
         const lineInStep = lineIdx - stepStartIdx
 
-        const link = `${github.context.serverUrl}/${github.context.repo.owner}/${github.context.repo.repo}/actions/runs/${github.context.runId}/job/${executionGithub.jobId}#step:${executionGithub.stepNumber}:${lineInStep + 2}`
+        const link = `${gh.context.serverUrl}/${gh.context.repo.owner}/${gh.context.repo.repo}/actions/runs/${gh.context.runId}/job/${executionGithub.jobId}#step:${executionGithub.stepNumber}:${lineInStep + 2}`
 
         return `- [\`test/${test}.test.ts\`](${link}): ${statusText}${retriesText}`
     }))

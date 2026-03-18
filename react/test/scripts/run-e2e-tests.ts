@@ -8,7 +8,7 @@ import { z } from 'zod'
 import { argumentParser } from 'zodcli'
 
 import { startProxy } from './ci_proxy'
-import { maybeGithub } from './github-utils'
+import { github } from './github-utils'
 import { booleanArgument, getTOTPWait, setTOTPWait, testFile, TestHistory, TestResult } from './util'
 
 const options = argumentParser({
@@ -49,7 +49,7 @@ const testcafe = await createTestCafe('localhost', 1337, 1338)
 
 const testHistory: TestHistory = []
 
-const github = await maybeGithub(() => z.string().parse(process.env.GITHUB_TOKEN))
+const gh = process.env.GITHUB_ACTION ? await github() : undefined
 
 for (const test of tests) {
     const numTries = options.tries * (await testFileDidChange(test) ? 1 : 2)
@@ -57,7 +57,7 @@ for (const test of tests) {
     let result: TestResult
 
     retry: while (true) {
-        if (github) {
+        if (gh) {
             console.warn(`::group::${testFile(test)} attempt ${retries + 1}`)
         }
         console.warn(chalkTemplate`{cyan ${testFile(test)} attempt ${(retries + 1)} running...}`)
@@ -80,7 +80,7 @@ for (const test of tests) {
         }
     }
 
-    if (github) {
+    if (gh) {
         console.warn(`::endgroup::`)
         console.warn(result.status === 'success' ? '✅' : '❌')
     }
@@ -89,9 +89,9 @@ for (const test of tests) {
         test,
         result,
         retries,
-        github: github && {
-            jobId: github.currentJobId(),
-            stepNumber: await github.currentStepNumber(),
+        github: gh && {
+            jobId: gh.currentJobId(),
+            stepNumber: await gh.currentStepNumber(),
         },
     })
 }

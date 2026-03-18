@@ -1,12 +1,9 @@
 import { z } from 'zod'
 
-export async function maybeGithub(token: () => string): Promise<undefined | typeof result> {
-    if (!process.env.GITHUB_ACTIONS) {
-        return undefined
-    }
+export async function github(token = z.string().parse(process.env.GITHUB_TOKEN)): Promise<typeof result> {
     const { context, getOctokit } = await import('@actions/github')
 
-    const octokit = getOctokit(token())
+    const octokit = getOctokit(token)
 
     function currentJobId(): number {
         return z.coerce.number().parse(process.env.CHECK_RUN_ID)
