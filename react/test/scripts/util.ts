@@ -40,6 +40,10 @@ export const testHistorySchema = z.array(z.object({
         z.object({ status: z.enum(['success', 'failure']), duration: z.number() }),
     ]),
     retries: z.number(),
+    github: z.optional(z.object({
+        jobId: z.number(),
+        stepNumber: z.number(),
+    })),
 }))
 
 export type TestHistory = z.infer<typeof testHistorySchema>
