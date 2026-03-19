@@ -47,27 +47,6 @@ def from_row_idx(row, resolution):
     return 90 - (row + ROW_OFFSET[resolution]) / resolution
 
 
-def _make_valid_for_intersection(shape):
-    """Return a valid geometry suitable for line intersection; avoids GEOS TopologyException."""
-    if shape.is_empty:
-        return shape
-    if shape.is_valid:
-        return shape
-    fixed = shapely.make_valid(shape)
-    if fixed.is_empty:
-        return fixed
-    if fixed.geom_type == "GeometryCollection":
-        polys = [
-            g
-            for g in fixed.geoms
-            if not g.is_empty and g.geom_type in ("Polygon", "MultiPolygon")
-        ]
-        if not polys:
-            return shapely.GeometryCollection()
-        fixed = shapely.ops.unary_union(polys)
-    return fixed
-
-
 def safe_intersection(multilines, shape):
     try:
         return multilines.intersection(shape)

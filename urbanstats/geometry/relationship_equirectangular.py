@@ -63,70 +63,6 @@ def _cell_area_m2(row):
     return _CELL_SIDE_M * _CELL_SIDE_M * math.cos(lat_rad)
 
 
-def rle_to_polygons(rle, *, resolution=RESOLUTION_3ARCSEC):
-    """
-    Convert an RLE into a list of shapely Polygons in lon/lat space.
-
-    :param rle: dict {row: [(lon_start, lon_end), ...]} or (rows, lon_starts, lon_ends)
-    :param resolution: pixels per degree, defaults to 3 arcsec grid.
-    :return: list of shapely.geometry.Polygon
-    """
-    if not isinstance(rle, dict):
-        rle = rle_dict_from_arrays(*rle)
-
-    polygons = []
-    half_cell = 0.5 / resolution
-    for row, intervals in rle.items():
-        lat_center = _lat_deg_from_rle_row(row)
-        lat_top = lat_center + half_cell
-        lat_bottom = lat_center - half_cell
-        for start, end in intervals:
-            lon_left = lon_from_col_idx(start, resolution)
-            lon_right = lon_from_col_idx(end + 1, resolution)
-            polygons.append(geom.box(lon_left, lat_bottom, lon_right, lat_top))
-    return polygons
-
-
-def rle_to_geodataframe(rle, *, resolution=RESOLUTION_3ARCSEC):
-    """
-    Convert an RLE into a GeoDataFrame (EPSG:4326) for plotting.
-
-    :param rle: dict {row: [(lon_start, lon_end), ...]} or (rows, lon_starts, lon_ends)
-    :param resolution: pixels per degree, defaults to 3 arcsec grid.
-    :return: GeoDataFrame with one row per RLE interval rectangle.
-    """
-    polys = rle_to_polygons(rle, resolution=resolution)
-    if not polys:
-        return gpd.GeoDataFrame(geometry=[], crs="EPSG:4326")
-    return gpd.GeoDataFrame(geometry=polys, crs="EPSG:4326")
-
-
-def plot_rle(rle, ax=None, *, resolution=RESOLUTION_3ARCSEC, **plot_kwargs):
-    """
-    Quick helper to plot an RLE using matplotlib via GeoPandas.
-
-    Example:
-        land = coastlines_rle()[\"rle\"]
-        from urbanstats.geometry.relationship_equirectangular import plot_rle
-        plot_rle(land)
-
-    :param rle: dict or (rows, lon_starts, lon_ends)
-    :param ax: optional matplotlib axis
-    :param resolution: pixels per degree
-    :param plot_kwargs: forwarded to GeoDataFrame.plot
-    :return: axis with the plot
-    """
-    gdf = rle_to_geodataframe(rle, resolution=resolution)
-    default_kwargs = {"linewidth": 0, "alpha": 1, "edgecolor": "none"}
-    default_kwargs.update(plot_kwargs)
-    if ax is None:
-        ax = gdf.plot(**default_kwargs)
-    else:
-        gdf.plot(ax=ax, **default_kwargs)
-    ax.set_aspect("equal")
-    return ax
-
-
 @dataclass
 class LandRleSummary:
     land_rle: dict
@@ -312,30 +248,6 @@ class RelationshipComputer:
             for s, e in intervals:
                 total += (e - s + 1) * _cell_area_m2(row)
         return total
-
-    def intersection_population_and_area(self, a_rle, b_rle):
-        """
-        Compute population and area for a, b, and their intersection.
-
-        All RLEs are clipped to land before computing metrics.
-
-        :param a_rle: dict {row: [(lon_start, lon_end), ...]} or (rows, lon_starts, lon_ends)
-        :param b_rle: dict or arrays
-        :return: dict with keys
-            - area_a, area_b, area_inter (m²)
-            - pop_a, pop_b, pop_inter
-        """
-        a_land = self.clip_to_land(a_rle)
-        b_land = self.clip_to_land(b_rle)
-        inter = intersect_rle_runs(a_land, b_land)
-
-        area_inter = self.area_of(inter)
-        pop_inter = self.population_of(inter)
-
-        return dict(
-            area_inter=area_inter,
-            pop_inter=pop_inter,
-        )
 
 
 @permacache(
