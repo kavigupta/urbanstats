@@ -14,9 +14,9 @@ import { z } from 'zod'
 
 import { github } from './github-utils'
 
-const { octokit } = await github()
-
 export async function startProxy(): Promise<void> {
+    const { octokit } = await github()
+
     /**
      * If the user is using a branch that also exists on densitydb, we should use it as well.
      *
