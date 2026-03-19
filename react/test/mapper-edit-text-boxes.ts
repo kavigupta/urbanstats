@@ -1,7 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 
 import { drag, getCodeFromMainField, getErrors, nastyDiff, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { screencap, urbanstatsFixture } from './test_utils'
+import { hideMobileUndoRedo, screencap, urbanstatsFixture } from './test_utils'
 
 export function runTests(platform: 'desktop' | 'mobile'): void {
     urbanstatsFixture(`default map`, '/mapper.html', async (t) => {
@@ -151,6 +151,7 @@ export function runTests(platform: 'desktop' | 'mobile'): void {
 
         // Ensure no errors, take a screenshot, and toggle custom script
         await t.expect(getErrors()).eql([])
+        await hideMobileUndoRedo() // The buttons shift around slightly for this test, for whatever reason, which breaks screenshots
         await screencap(t)
         await toggleCustomScript(t)
 
