@@ -223,7 +223,9 @@ def classify_relationship(summary_a: LandRleSummary, summary_b: LandRleSummary):
     iou_area = inter_area / (union_area + eps)
     iomin_area = inter_area / (min(summary_a.area, summary_b.area) + eps)
     get_iou_pop = lambda: get_inter_pop() / (get_union_pop() + eps)
-    get_iomin_pop = lambda: get_inter_pop() / (min(summary_a.population, summary_b.population) + eps)
+    get_iomin_pop = lambda: get_inter_pop() / (
+        min(summary_a.population, summary_b.population) + eps
+    )
     # the >= 0.9999 is just to catch cases where the area is so obviously the same
     # that we don't even need to check the population
     if iou_area >= 1 - OVERLAP_EPSILON or (
