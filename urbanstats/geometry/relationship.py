@@ -1,8 +1,6 @@
 from collections import defaultdict
 
-import geopandas as gpd
 import numpy as np
-import tqdm
 from permacache import permacache, stable_hash
 
 from urbanstats.geometry.relationship_equirectangular import compute_relationships

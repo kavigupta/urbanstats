@@ -1,26 +1,9 @@
+import math
 from dataclasses import dataclass
 
+import numpy as np
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
-
-"""
-Containment and basic utilities for polygons in equirectangular (RLE) space.
-
-RelationshipComputer provides:
-- clip_to_land(rle) -> rle: intersect RLE with land mask
-- population_of(rle): sum of population grid cells in the RLE
-- area_of(rle): area in m² of cells in the RLE (equirectangular)
-- contains(a_rle, b_rle): True iff intersection(a, b) has both area and
-  population >= 95% of b's (after clipping both to land).
-
-This module also includes helpers to turn an RLE into polygons for plotting.
-"""
-
-import math
-
-import geopandas as gpd
-import numpy as np
-import shapely.geometry as geom
 
 from urbanstats.data.gpw import load_full_ghs_zarr, lon_from_col_idx
 from urbanstats.features.within_distance import haversine
@@ -134,6 +117,7 @@ def compute_relationships(shapefile_a, shapefile_b):
 
 
 def classify_relationship(summary_a: LandRleSummary, summary_b: LandRleSummary):
+    # pylint: disable=too-many-locals
     intersection = intersect_rle_runs(summary_a.land_rle, summary_b.land_rle)
     if not intersection:
         return "borders"
@@ -264,6 +248,7 @@ def land_rle_summary(rle):
     - population and area of the land-clipped RLE
     - bounding box of the buffered land-clipped RLE
     """
+    # pylint: disable=too-many-locals
     assert isinstance(rle, dict), "Expected dict-format RLE"
     rc = RelationshipComputer.singleton()
     land_rle = rc.clip_to_land(rle)

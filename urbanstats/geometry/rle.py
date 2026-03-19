@@ -31,6 +31,7 @@ def _merge_intervals(intervals):
 def rle_dict_from_arrays(rows, lon_starts, lon_ends):
     """Convert array-format RLE to dict format: {row: [(lon_start, lon_end), ...]}."""
     by_row = defaultdict(list)
+    # pylint: disable=consider-using-enumerate
     for i in range(len(rows)):
         by_row[int(rows[i])].append((int(lon_starts[i]), int(lon_ends[i])))
     return {
@@ -137,9 +138,11 @@ def rle_spatial_join(list_a, list_b):
     return results
 
 
+num_pairs_max = 10_000_000
+
+
 def bounding_box_overlaps(bounds_a, bounds_b):
-    num_pairs = 10_000_000
-    if len(bounds_a) * len(bounds_b) > num_pairs and len(bounds_b) > 1:
+    if len(bounds_a) * len(bounds_b) > num_pairs_max and len(bounds_b) > 1:
         b_chunk_size = max(1, 10_000_000 // len(bounds_a))
         return [
             (a, b + i)
@@ -163,8 +166,7 @@ def bounding_box_overlaps(bounds_a, bounds_b):
     xoverlap_mask = (xmax_a[:, None] >= xmin_b) & (xmax_b >= xmin_a[:, None])
     yoverlap_mask = (ymax_a[:, None] >= ymin_b) & (ymax_b >= ymin_a[:, None])
     overlap_mask = xoverlap_mask & yoverlap_mask
-    a_idxs, b_idxs = np.where(overlap_mask)
-    return list(zip(a_idxs, b_idxs))
+    return list(zip(*np.where(overlap_mask)))
 
 
 def pad_rle(rle, radius_fn, ry, *, shape=None):
@@ -178,7 +180,10 @@ def pad_rle(rle, radius_fn, ry, *, shape=None):
 
     If shape is provided as (nrows, ncols), the padded RLE is clipped so that
     0 <= row < nrows and 0 <= col < ncols.
+
+    This is a total mess, but we've tested it fairly robustly with a fuzzer, so :shrug:
     """
+    # pylint: disable=too-many-locals,too-many-branches
     if not isinstance(rle, dict):
         rows, lon_starts, lon_ends = rle
         rle = rle_dict_from_arrays(rows, lon_starts, lon_ends)

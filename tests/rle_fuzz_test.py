@@ -72,8 +72,8 @@ class TestRleFuzz(unittest.TestCase):
         rows, cols = 32, 64
         rng = np.random.RandomState(seed)
 
-        masks = self._random_masks(rng, 2, (rows, cols))
-        a, b = masks
+        # pylint: disable=unbalanced-tuple-unpacking
+        a, b = self._random_masks(rng, 2, (rows, cols))
 
         rle_a = bool_to_rle_dict(a)
         rle_b = bool_to_rle_dict(b)
@@ -118,22 +118,20 @@ class TestRleFuzz(unittest.TestCase):
         rng = np.random.RandomState(seed)
         mask = rng.random((rows, cols)) < rng.uniform(0.0, 1.0)
 
-        rle = bool_to_rle_dict(mask)
         radius_fn = lambda y: rx0 * np.log(y + 1)
-        padded_rle = pad_rle(rle, radius_fn, ry0, shape=mask.shape)
 
         padded_mask = np.zeros_like(mask, dtype=bool)
 
+        # pylint: disable=unpacking-non-sequence
         xmask, ymask = np.meshgrid(np.arange(cols), np.arange(rows))
         for y, x in zip(*np.where(mask)):
-            dx = xmask - x
-            dy = ymask - y
             rx = radius_fn(y)
-            in_ellipse = (dx / rx) ** 2 + (dy / ry0) ** 2 <= 1
-            padded_mask |= in_ellipse
+            padded_mask |= ((xmask - x) / rx) ** 2 + ((ymask - y) / ry0) ** 2 <= 1
 
-        padded_rle_direct = bool_to_rle_dict(padded_mask)
-        self.assertEqual(padded_rle, padded_rle_direct)
+        self.assertEqual(
+            pad_rle(bool_to_rle_dict(mask), radius_fn, ry0, shape=mask.shape),
+            bool_to_rle_dict(padded_mask),
+        )
 
     @parameterized.expand([(seed,) for seed in range(30)])
     def test_rle_spatial_join_fuzz(self, seed):
