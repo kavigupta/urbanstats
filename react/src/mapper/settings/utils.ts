@@ -78,6 +78,7 @@ export const mapperMetaFields = z.object({
     universe: z.optional(z.enum(universes_ordered)).catch(undefined),
 })
 
+/** @public this is included dynamically */
 export function mapSettingsFromURLParam(encodedSettings: string | undefined): MapSettings {
     let settings: Partial<MapSettings> = {}
     if (encodedSettings !== undefined) {
@@ -97,7 +98,7 @@ export function mapSettingsFromURLParam(encodedSettings: string | undefined): Ma
 
 export type MapEditorMode = 'uss' | 'insets' | 'textBoxes'
 
-export function defaultTopLevelEditor(): UrbanStatsASTStatement {
+function defaultTopLevelEditor(): UrbanStatsASTStatement {
     const expr = parseNoErrorAsCustomNode('cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', rootBlockIdent, validMapperOutputs)
     return expr.expr
 }

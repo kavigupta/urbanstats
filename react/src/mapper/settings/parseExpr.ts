@@ -5,6 +5,8 @@ import { Decorated, ParseError, parseNoErrorAsCustomNode, unparse } from '../../
 import { renderType, TypeEnvironment, USSObjectType, USSType } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
 
+import { parseToNumber, Selection, toNumberAST } from './selector-classifier'
+
 export function maybeParseExpr(
     expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
     blockIdent: string,
@@ -99,7 +101,7 @@ function attemptParseExpr(
             return attemptParseExpr(stmts, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes) ?? fallback(unparse(stmts), blockIdent, types)
         case 'customNode':
             if (preserveCustomNodes) {
-                return parseNoErrorAsCustomNode(unparse(expr, { simplify: true }), blockIdent, types)
+                return parseNoErrorAsCustomNode(unparse(expr, { simplify: 'basic' }), blockIdent, types)
             }
             else {
                 return parseExpr(expr.expr, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)
@@ -138,6 +140,10 @@ function attemptParseExpr(
             }
             return undefined
         case 'call':
+            const toNumberCallStr = parseToNumber(expr)
+            if (toNumberCallStr !== undefined && types.some(t => t.type === 'number')) {
+                return toNumberAST(toNumberCallStr, blockIdent)
+            }
             const fn = expr.fn
             if (fn.type !== 'identifier') {
                 return undefined
@@ -184,8 +190,6 @@ function attemptParseExpr(
             }
     }
 }
-
-export type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' } | { type: 'constant' } | { type: 'vector' } | { type: 'object' }
 
 function shouldShowConstant(type: USSType): boolean {
     return type.type === 'number' || type.type === 'string'
@@ -241,7 +245,9 @@ export function possibilities(target: USSType[], env: TypeEnvironment): Selectio
         results.push(...variables)
     }
     return results
-} export function changeBlockId(expr: UrbanStatsASTExpression, a: string, b: string): UrbanStatsASTExpression {
+}
+
+export function changeBlockId(expr: UrbanStatsASTExpression, a: string, b: string): UrbanStatsASTExpression {
     function recD<T>(e: Decorated<T>): Decorated<T> {
         return {
             node: e.node,

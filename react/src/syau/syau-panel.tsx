@@ -81,7 +81,7 @@ function GuessInputField(props: { guessCallback: (query: string) => boolean }): 
     )
 }
 
-export function SYAUGame(props: { typ: string, universe: Universe, syauData: SYAUData }): ReactNode {
+function SYAUGame(props: { typ: string, universe: Universe, syauData: SYAUData }): ReactNode {
     const colors = useColors()
     const jColors = useJuxtastatColors()
     const [history, setHistory] = SYAULocalStorage.shared.useHistory(props.typ, props.universe)

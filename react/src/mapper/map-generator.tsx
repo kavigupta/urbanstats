@@ -1,5 +1,5 @@
 import Color from 'color'
-import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
@@ -36,7 +36,6 @@ import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar
 import { InsetMap } from './components/InsetMap'
 import { AddTextBox, MapTextBoxComponent } from './components/MapTextBox'
 import { loadInsets } from './context'
-import { splitLayoutContext } from './settings/EditMapperPanel'
 import { Basemap, computeUSS, MapSettings } from './settings/utils'
 
 const mapUpdateInterval = 500
@@ -367,7 +366,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                 r,
                 g: value.dataG[i],
                 b: value.dataB[i],
-                a: 1,
+                a: value.dataA[i],
             }))
             ramp = { type: 'label', value: value.label }
             break
@@ -381,7 +380,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                 return {
                     name: value.geo[i],
                     fillColor: colors[i],
-                    fillOpacity: 1,
+                    fillOpacity: value.opacity,
                     radius: Math.sqrt(value.relativeArea[i]) * value.maxRadius,
                     statistic: dataValue,
                 }
@@ -408,7 +407,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                 return {
                     name: value.geo[i],
                     fillColor: color,
-                    fillOpacity: 1,
+                    fillOpacity: value.opacity,
                     color: doRender(value.outline.color),
                     weight: value.outline.weight,
                     ...meta,
@@ -435,6 +434,8 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 }
 
 const canonicalWidth = 1200
+
+export const transformContext = createContext({ selfDetermineHeight: false })
 
 function TransformConstantWidth({ children }: { children: ReactNode }): ReactNode {
     const [layout, setLayout] = useState({ scale: 1, top: 0, left: 0, selfDeterminedHeight: 0 })
@@ -468,7 +469,7 @@ function TransformConstantWidth({ children }: { children: ReactNode }): ReactNod
     }, [])
 
     return (
-        <div ref={ref} style={{ ...(useContext(splitLayoutContext) ? { position: 'absolute' } : { height: layout.selfDeterminedHeight }), inset: 0 }}>
+        <div ref={ref} style={{ ...(useContext(transformContext).selfDetermineHeight ? { height: layout.selfDeterminedHeight } : { position: 'absolute' }), inset: 0 }}>
             <div
                 ref={childRef}
                 style={{

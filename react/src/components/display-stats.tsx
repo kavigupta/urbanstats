@@ -2,9 +2,9 @@ import React, { CSSProperties, ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
-import { UnitType } from '../utils/unit'
+import { classifyStatistic, UnitType } from '../utils/unit'
 
-import { classifyStatistic, getUnitDisplay } from './unit-display'
+import { getUnitDisplay } from './unit-display'
 
 export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, isUnit: boolean, unit?: UnitType }): ReactNode {
     const [useImperial] = useSetting('use_imperial')
@@ -43,40 +43,6 @@ export function ElectionResult(props: { value: number }): ReactNode {
             {party}
             +
             {text}
-        </span>
-    )
-}
-
-export function PartyPercentage(props: { value: number, color: string }): ReactNode {
-    // check if value is NaN
-    if (props.value !== props.value) {
-        return <span>N/A</span>
-    }
-    const displayValue = (props.value * 100).toFixed(2)
-    const spanStyle: CSSProperties = {
-        color: props.color,
-        display: 'flex',
-        justifyContent: 'flex-end',
-    }
-    return <span style={spanStyle}>{displayValue}</span>
-}
-
-export function PartyChange(props: { value: number, color: string }): ReactNode {
-    // check if value is NaN
-    if (props.value !== props.value) {
-        return <span>N/A</span>
-    }
-    const displayValue = (props.value * 100).toFixed(2)
-    const sign = props.value >= 0 ? '+' : ''
-    const spanStyle: CSSProperties = {
-        color: props.color,
-        display: 'flex',
-        justifyContent: 'flex-end',
-    }
-    return (
-        <span style={spanStyle}>
-            {sign}
-            {displayValue}
         </span>
     )
 }

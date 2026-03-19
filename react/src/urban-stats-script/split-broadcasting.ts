@@ -144,7 +144,7 @@ export function indexMask(value: USSValue, mask: USSValue, reference: USSPrimiti
     }
 }
 
-export function indexMaskIntoContext(
+function indexMaskIntoContext(
     env: Context,
     mask: USSValue,
     reference: USSPrimitiveRawValue,
