@@ -26,8 +26,8 @@ jobs:
         name: Checkout repository
         uses: nick-fields/retry@v3
         with:
-          max_attempts: 2
-          timeout_minutes: 2
+          max_attempts: 5
+          timeout_seconds: 30
           shell: bash
           command: |
             rm -rf $GITHUB_WORKSPACE/*
