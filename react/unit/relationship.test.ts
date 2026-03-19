@@ -136,6 +136,53 @@ void test('boothbay-harbor-contained-by-county', async () => {
     assert.deepStrictEqual(boothbayRelationships, expectedRelationships)
 })
 
+void test('contents-borders-delaware', async () => {
+    const delawareRelationships = await getRelationships('Delaware, USA', 'County')
+
+    const expectedRelationships = new Set<[string, string]>([
+        ['Sussex County, Delaware, USA', 'contains'],
+        ['New Castle County, Delaware, USA', 'contains'],
+        ['Kent County, Delaware, USA', 'contains'],
+        // we don't report borders for one level down in the actual website.
+        // ['Worcester County, Maryland, USA', 'borders'],
+        // ['Wicomico County, Maryland, USA', 'borders'],
+        // ['Dorchester County, Maryland, USA', 'borders'],
+        // ['Caroline County, Maryland, USA', 'borders'],
+        // ['Queen Anne\'s County, Maryland, USA', 'borders'],
+        // ['Cecil County, Maryland, USA', 'borders'],
+        // ['Kent County, Maryland, USA', 'borders'],
+        // ['Chester County, Pennsylvania, USA', 'borders'],
+        // ['Delaware County, Pennsylvania, USA', 'borders'],
+        // ['Gloucester County, New Jersey, USA', 'borders'],
+        // ['Salem County, New Jersey, USA', 'borders'],
+    ])
+
+    assert.deepStrictEqual(delawareRelationships, expectedRelationships)
+})
+
+void test('issue-1289-stbernard', async () => {
+    const stBernardRelationships = await getRelationships('District E [CCD], St. Bernard Parish, Louisiana, USA', 'County')
+
+    const expectedRelationships = new Set<[string, string]>([
+        ['St. Bernard Parish, Louisiana, USA', 'contained_by'],
+        // we don't report borders for one level up in the actual website.
+        // ['Orleans Parish, Louisiana, USA', 'borders'],
+        // ['Plaquemines Parish, Louisiana, USA', 'borders'],
+    ])
+
+    assert.deepStrictEqual(stBernardRelationships, expectedRelationships)
+})
+
+void test('issue-247-acapulco-5mpc-vs-tokyo-1bpc', async () => {
+    const acapulcoRelationships = await getRelationships('Acapulco 5MPC, Mexico', '1B Person Circle')
+
+    const expectedRelationships = new Set<[string, string]>([
+        ['São Paulo 1BPC, USA-Brazil-Mexico', 'contained_by'],
+    ])
+
+    assert.deepStrictEqual(acapulcoRelationships, expectedRelationships)
+})
+
 void test('6th-judicial-circuit-relationships', async () => {
     const circuitRelationships = await getRelationships('6th Circuit, USA', 'Subnational Region')
 
