@@ -1,0 +1,57 @@
+name: Checkout repository
+description: Sparse checkout with retry logic
+
+inputs:
+  sparse-checkout:
+    description: Sparse checkout patterns
+    required: false
+    default: |
+      !named_region_shapefiles/*
+      !outputs/*
+      /*
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout repository
+      uses: nick-fields/retry@v3
+      with:
+        max_attempts: 5
+        timeout_seconds: 30
+        shell: bash
+        command: |
+          set -x
+
+          echo "::group::Cleanup"
+          echo "Starting cleanup at $(date -u +%T)"
+          rm -rf $GITHUB_WORKSPACE/*
+          echo "Cleanup done at $(date -u +%T)"
+          echo "::endgroup::"
+
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+
+          echo "::group::Clone"
+          echo "Starting clone at $(date -u +%T)"
+          GIT_TRACE=1 GIT_TRACE_PACKET=1 GIT_TRACE_PERFORMANCE=1 GIT_CURL_VERBOSE=1 \
+            git clone --no-checkout --filter=blob:none --verbose --progress \
+            ${{ github.server_url }}/${{ github.repository }}.git $GITHUB_WORKSPACE
+          echo "Clone done at $(date -u +%T)"
+          echo "::endgroup::"
+
+          echo "::group::Sparse checkout config"
+          echo "Starting sparse checkout config at $(date -u +%T)"
+          git config core.sparseCheckout true
+          echo "${{ inputs.sparse-checkout }}" > .git/info/sparse-checkout
+          echo "Sparse checkout patterns:"
+          cat .git/info/sparse-checkout
+          echo "Sparse checkout config done at $(date -u +%T)"
+          echo "::endgroup::"
+
+          echo "::group::Checkout"
+          echo "Starting checkout at $(date -u +%T)"
+          GIT_TRACE=1 GIT_TRACE_PERFORMANCE=1 GIT_CURL_VERBOSE=1 \
+            git checkout --progress --force ${{ github.sha }}
+          echo "Checkout done at $(date -u +%T)"
+          echo "::endgroup::"
+
+          echo "All steps completed at $(date -u +%T)"

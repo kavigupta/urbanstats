@@ -10,10 +10,6 @@ env:
   URBANSTATS_BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   FORCE_COLOR: 1
-  SPARSE_CHECKOUT: |
-    !named_region_shapefiles/*
-    !outputs/*
-    /*
 jobs:
   build-and-push-common-image:
     runs-on: ubuntu-22.04
@@ -22,49 +18,7 @@ jobs:
     permissions:
       packages: write
     steps:
-      - &checkout
-        name: Checkout repository
-        uses: nick-fields/retry@v3
-        with:
-          max_attempts: 5
-          timeout_seconds: 30
-          shell: bash
-          command: |
-            set -x
-
-            echo "::group::Cleanup"
-            echo "Starting cleanup at $(date -u +%T)"
-            rm -rf $GITHUB_WORKSPACE/*
-            echo "Cleanup done at $(date -u +%T)"
-            echo "::endgroup::"
-
-            git config --global --add safe.directory $GITHUB_WORKSPACE
-
-            echo "::group::Clone"
-            echo "Starting clone at $(date -u +%T)"
-            GIT_TRACE=1 GIT_TRACE_PACKET=1 GIT_TRACE_PERFORMANCE=1 GIT_CURL_VERBOSE=1 \
-              git clone --no-checkout --filter=blob:none --verbose --progress \
-              ${{ github.server_url }}/${{ github.repository }}.git $GITHUB_WORKSPACE
-            echo "Clone done at $(date -u +%T)"
-            echo "::endgroup::"
-
-            echo "::group::Sparse checkout config"
-            echo "Starting sparse checkout config at $(date -u +%T)"
-            git config core.sparseCheckout true
-            echo "$SPARSE_CHECKOUT" > .git/info/sparse-checkout
-            echo "Sparse checkout patterns:"
-            cat .git/info/sparse-checkout
-            echo "Sparse checkout config done at $(date -u +%T)"
-            echo "::endgroup::"
-
-            echo "::group::Checkout"
-            echo "Starting checkout at $(date -u +%T)"
-            GIT_TRACE=1 GIT_TRACE_PERFORMANCE=1 GIT_CURL_VERBOSE=1 \
-              git checkout --progress --force ${{ github.sha }}
-            echo "Checkout done at $(date -u +%T)"
-            echo "::endgroup::"
-
-            echo "All steps completed at $(date -u +%T)"
+      - uses: ./.github/actions/checkout
 
       - uses: ./.github/actions/docker_image
         with:
@@ -79,7 +33,7 @@ jobs:
     permissions:
       packages: write
     steps:
-      - *checkout
+      - uses: ./.github/actions/checkout
 
       - uses: ./.github/actions/docker_image
         with:
@@ -92,12 +46,12 @@ jobs:
     needs: build-and-push-common-image
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
-    env:
-      SPARSE_CHECKOUT: |
-        !outputs/*
-        /*
     steps:
-      - *checkout
+      - uses: ./.github/actions/checkout
+        with:
+          sparse-checkout: |
+            !outputs/*
+            /*
       - uses: lukebrody/nothing-action@master # Without this, the below actions don't work. This is a bug in Github
       - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
@@ -132,7 +86,7 @@ jobs:
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
     steps:
-      - *checkout
+      - uses: ./.github/actions/checkout
       - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
       - run: python3 create_website.py --mode ci --target scripts --site-folder react/test/density-db
@@ -146,7 +100,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - *checkout
+      - uses: ./.github/actions/checkout
       - uses: ./.github/actions/node_modules
       - id: set-matrix
         run: echo "matrix=$(npx tsx test/scripts/list-e2e-tests.ts --test-durations='${{ vars.E2E_TEST_DURATIONS }}')" >> $GITHUB_OUTPUT
@@ -166,7 +120,7 @@ jobs:
         test-file: ${{ fromJson(needs.list-e2e-tests.outputs.matrix) }}
     timeout-minutes: 30
     steps:
-      - *checkout
+      - uses: ./.github/actions/checkout
       - run: git fetch origin ${{ github.base_ref }} --depth=1 # needed so test runner can diff tests against base ref
         if: ${{ github.base_ref != '' }}
       - uses: ./.github/actions/python_environment
@@ -228,7 +182,7 @@ jobs:
           pattern: "{delta,changed_screenshots}"
           separate-directories: true
         continue-on-error: true
-      - *checkout
+      - uses: ./.github/actions/checkout
       - uses: ./.github/actions/node_modules
       - uses: actions/download-artifact@v4
         with:
@@ -248,7 +202,7 @@ jobs:
     needs: [e2e]
     if: github.ref_name == github.event.repository.default_branch # We only want results where all tests run
     steps:
-      - *checkout
+      - uses: ./.github/actions/checkout
       - uses: ./.github/actions/node_modules
       - uses: actions/download-artifact@v4
         with:
@@ -266,12 +220,12 @@ jobs:
     needs: [build-and-push-common-image]
     container:
       image: ${{ needs.build-and-push-common-image.outputs.image }}
-    env:
-      SPARSE_CHECKOUT: |
-        !outputs/*
-        /*
     steps:
-      - *checkout
+      - uses: ./.github/actions/checkout
+        with:
+          sparse-checkout: |
+            !outputs/*
+            /*
       - uses: lukebrody/nothing-action@master # Without this, the below actions don't work. This is a bug in Github
       - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
