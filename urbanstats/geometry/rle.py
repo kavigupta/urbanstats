@@ -142,11 +142,11 @@ def bounding_box_overlaps(bounds_a, bounds_b):
     if len(bounds_a) * len(bounds_b) > num_pairs and len(bounds_b) > 1:
         b_chunk_size = max(1, 10_000_000 // len(bounds_a))
         return [
-            pair
+            (a, b + i)
             for i in tqdm.trange(
                 0, len(bounds_b), b_chunk_size, delay=10, desc="Bounding box overlaps"
             )
-            for pair in bounding_box_overlaps(bounds_a, bounds_b[i : i + b_chunk_size])
+            for a, b in bounding_box_overlaps(bounds_a, bounds_b[i : i + b_chunk_size])
         ]
     xmin_a, xmax_a, ymin_a, ymax_a = (
         bounds_a[:, 0],

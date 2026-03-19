@@ -46,6 +46,10 @@ _CELL_SIDE_M = _M_PER_DEG_AT_EQUATOR / RESOLUTION_3ARCSEC
 _KM_PER_DEG_LAT = _M_PER_DEG_AT_EQUATOR / 1000.0
 BUFFER_PCT = 0.01
 
+OVERLAP_EPSILON = 1e-5
+OVERLAP_FOR_CONTAINS = 0.95
+OVERLAP_FOR_INTERSECTS = 0.05
+
 
 def _lat_deg_from_rle_row(row):
     """Latitude (degrees) at center of this RLE row (3 arcsec grid)."""
@@ -133,7 +137,7 @@ class LandRleSummary:
 
 
 @permacache(
-    "population_density/relationship_equirectangular/land_rle_summaries_for_shapefile_2",
+    "population_density/relationship_equirectangular/land_rle_summaries_for_shapefile_4",
     key_function=dict(shapefile=lambda s: s.hash_key),
 )
 def land_rle_summaries_for_shapefile(shapefile):
@@ -160,7 +164,7 @@ def land_rle_summaries_for_shapefile(shapefile):
 
 
 @permacache(
-    "population_density/relationship_equirectangular/compute_relationships_2",
+    "population_density/relationship_equirectangular/compute_relationships_8",
     key_function=dict(
         shapefile_a=lambda s: s.hash_key,
         shapefile_b=lambda s: s.hash_key,
@@ -217,22 +221,31 @@ def classify_relationship(summary_a: LandRleSummary, summary_b: LandRleSummary):
         lambda: summary_a.population + summary_b.population - get_inter_pop()
     )
     iou_area = inter_area / (union_area + eps)
+    iomin_area = inter_area / (min(summary_a.area, summary_b.area) + eps)
     get_iou_pop = lambda: get_inter_pop() / (get_union_pop() + eps)
+    get_iomin_pop = lambda: get_inter_pop() / (min(summary_a.population, summary_b.population) + eps)
     # the >= 0.9999 is just to catch cases where the area is so obviously the same
     # that we don't even need to check the population
-    if iou_area >= 0.99999 or (iou_area >= 0.95 and get_iou_pop() >= 0.95):
+    if iou_area >= 1 - OVERLAP_EPSILON or (
+        iou_area >= OVERLAP_FOR_CONTAINS and get_iou_pop() >= OVERLAP_FOR_CONTAINS
+    ):
         return "same_geography"
     area_frac_b = inter_area / (summary_b.area + eps)
-    if area_frac_b >= 0.99999 or (
-        area_frac_b >= 0.95 and get_inter_pop() / (summary_b.population + eps) >= 0.95
+    if area_frac_b >= 1 - OVERLAP_EPSILON or (
+        area_frac_b >= OVERLAP_FOR_CONTAINS
+        and get_inter_pop() / (summary_b.population + eps) >= OVERLAP_FOR_CONTAINS
     ):
         return "a_contains_b"
     area_frac_a = inter_area / (summary_a.area + eps)
-    if area_frac_a >= 0.99999 or (
-        area_frac_a >= 0.95 and get_inter_pop() / (summary_a.population + eps) >= 0.95
+    if area_frac_a >= 1 - OVERLAP_EPSILON or (
+        area_frac_a >= OVERLAP_FOR_CONTAINS
+        and get_inter_pop() / (summary_a.population + eps) >= OVERLAP_FOR_CONTAINS
     ):
         return "a_contained_by_b"
-    if inter_area > 0.05 or get_inter_pop() > 0.05:
+    # if there's basically no area of intersection, call it borders not intersects
+    if iomin_area > OVERLAP_EPSILON and (
+        iomin_area > OVERLAP_FOR_INTERSECTS or get_iomin_pop() > OVERLAP_FOR_INTERSECTS
+    ):
         return "intersects"
     return "borders"
 
@@ -324,7 +337,7 @@ class RelationshipComputer:
 
 
 @permacache(
-    "population_density/relationship_equirectangular/compute_containment",
+    "population_density/relationship_equirectangular/compute_containment_2",
     key_function=dict(rle=stable_hash),
 )
 def land_rle_summary(rle):
@@ -359,12 +372,15 @@ def land_rle_summary(rle):
     ry = buffer_km / km_per_row
     # print("buffering with radius (rows)", ry)
 
+    # we add 1 to the radius because we want to ensure
+    # that, even for very small geometries. Otherwise we
+    # will miss a bunch of "borders"
     def radius_fn(y):
         lat_here = _lat_deg_from_rle_row(y)
         cos_lat = math.cos(math.radians(lat_here))
-        return ry / cos_lat
+        return ry / cos_lat + 1
 
-    buffered_land_rle = pad_rle(land_rle, radius_fn, ry)
+    buffered_land_rle = pad_rle(land_rle, radius_fn, ry + 1)
     buffered_bounds = rle_bounds(buffered_land_rle)
     return LandRleSummary(
         land_rle=land_rle,

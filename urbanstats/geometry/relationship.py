@@ -11,7 +11,7 @@ from urbanstats.website_data.table import shapefile_without_ordinals
 
 
 @permacache(
-    "population_density/relationship/create_relationships_9",
+    "population_density/relationship/create_relationships_14",
     key_function=dict(x=lambda x: x.hash_key, y=lambda y: y.hash_key),
 )
 def create_relationships(x, y):
