@@ -321,3 +321,20 @@ void test('10th-judicial-circuit-relationships', async () => {
 
     assert.deepStrictEqual(circuitRelationships, expectedRelationships)
 })
+
+void test('ca-sd23-relationship-to-congressional-districts', async () => {
+    const districtRelationships = await getRelationships('CA-SD23 (2023), USA', 'Congressional District')
+
+    const expectedRelationships = new Set<[string, string]>([
+        ['CA-20 (2023), USA', 'borders'],
+        ['CA-23 (2023), USA', 'intersects'],
+        ['CA-26 (2023), USA', 'borders'],
+        ['CA-27 (2023), USA', 'intersects'],
+        ['CA-28 (2023), USA', 'intersects'],
+        ['CA-29 (2023), USA', 'borders'],
+        ['CA-30 (2023), USA', 'intersects'],
+        ['CA-32 (2023), USA', 'borders'],
+    ])
+
+    assert.deepStrictEqual(districtRelationships, expectedRelationships)
+})
