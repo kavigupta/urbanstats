@@ -9,6 +9,10 @@ inputs:
       !named_region_shapefiles/*
       !outputs/*
       /*
+  ref:
+    description: Git ref to checkout
+    required: false
+    default: ${{ github.sha }}
 
 runs:
   using: composite
@@ -50,7 +54,7 @@ runs:
           echo "::group::Checkout"
           echo "Starting checkout at $(date -u +%T)"
           GIT_TRACE=1 GIT_TRACE_PERFORMANCE=1 GIT_CURL_VERBOSE=1 \
-            git checkout --progress --force ${{ github.sha }}
+            git checkout --progress --force ${{ inputs.ref }}
           echo "Checkout done at $(date -u +%T)"
           echo "::endgroup::"
 
