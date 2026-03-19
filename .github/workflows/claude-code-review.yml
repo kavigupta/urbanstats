@@ -71,7 +71,7 @@ jobs:
             ```
 
             Each comment should specify the file path, line number (from the new version of the file), and your feedback.
-            If there are no issues worth commenting on, post a single short PR comment saying the changes look good.
+            If there are no issues worth commenting on, post a single PR comment: "LGTM".
 
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
