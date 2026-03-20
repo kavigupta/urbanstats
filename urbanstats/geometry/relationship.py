@@ -290,9 +290,6 @@ def compute_all_relationships(long_to_type, shapefiles_to_use):
 
     for i, (k1, k2) in enumerate(pairs):
         print(f"{i}/{len(pairs)}: {k1} and {k2}")
-        if k1 < k2:
-            continue
-
         (
             a_contains_b,
             b_contains_a,
