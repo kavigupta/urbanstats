@@ -54,7 +54,7 @@ export function ComparisonPanel(props: {
     const [activeId, setActiveId] = useState<string | null>(null)
     const [localArticles, setLocalArticles] = useState<{ value: Article[], propsValue: Article[] }>({ value: props.articles, propsValue: props.articles })
 
-    const [sortByStatIndex, setSortByStatIndex] = useState<number | null>(null)
+    const [sortByRowIndex, setSortByRowIndex] = useState<number | null>(null)
     const [sortDirection, setSortDirection] = useState<'up' | 'down'>('down')
 
     // Sensors for drag and drop - more sensitive for vertical dragging
@@ -128,25 +128,25 @@ export function ComparisonPanel(props: {
         return dataByArticleDisplayOriginalOrder[originalIndex] ?? []
     })
 
-    const dataByArticleStat: ArticleRow[][] = dataByArticleDisplay.map(articleRows => articleRows.filter(isArticleRow))
-
     const totalRowsByDisplay = dataByArticleDisplay[0]?.length ?? 0
 
-    const dataByStatArticle = (dataByArticleStat[0] ?? []).map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
-
-    const handleSort = (statIndex: number): void => {
+    const handleSort = (fullIndex: number): void => {
         let newSortDirection: 'up' | 'down' | 'both'
-        if (sortByStatIndex === statIndex) {
+        if (sortByRowIndex === fullIndex) {
             newSortDirection = sortDirection === 'up' ? 'down' : 'up'
         }
         else {
             newSortDirection = 'down'
-            setSortByStatIndex(statIndex)
+            setSortByRowIndex(fullIndex)
         }
 
         setSortDirection(newSortDirection)
 
-        const statData = dataByStatArticle[statIndex]
+        const statData: ArticleRow[] = localArticlesToUse.map((unused, articleIndex) => {
+            const row = dataByArticleDisplay[articleIndex][fullIndex]
+            assert(isArticleRow(row), 'unreachable: can only sort statistic rows')
+            return row
+        })
         const sortedIndices = statData
             .map((row, index) => ({ row, index }))
             .sort((a, b) => compareArticleRows(a.row, b.row, newSortDirection))
@@ -165,36 +165,47 @@ export function ComparisonPanel(props: {
 
     const mobileLayout = useMobileLayout()
 
-    const validOrdinalsByStat = dataByStatArticle.map(statData => statData.every(value => value.disclaimer !== 'heterogenous-sources'))
+    const fullRows = dataByArticleDisplay[0] ?? []
+
+    const validOrdinalsByFullIndex = fullRows.map((rowFull, fullIndex) => {
+        if (rowFull.kind !== 'statistic') {
+            return false
+        }
+        return localArticlesToUse.every((unused, articleIndex) => {
+            const row = dataByArticleDisplay[articleIndex][fullIndex]
+            assert(isArticleRow(row), 'unreachable: expected statistic row')
+            return row.disclaimer !== 'heterogenous-sources'
+        })
+    })
+
+    const statRowsCount = fullRows.reduce((acc, rowFull) => acc + (rowFull.kind === 'statistic' ? 1 : 0), 0)
 
     const includeOrdinals = (
         localArticlesToUse.every(article => article.articleType === localArticlesToUse[0].articleType)
-        && (validOrdinalsByStat.length === 0 || validOrdinalsByStat.some(x => x))
+        && (statRowsCount === 0 || validOrdinalsByFullIndex.some(x => x))
     )
 
-    const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
+    const onlyColumns: ColumnIdentifier[] = includeOrdinals
+        ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
+        : ['statval', 'statval_unit']
 
     const expandedSettings = useSettings(
-        dataByStatArticle
-            .filter(statData => statData.some(row => row.extraStat !== undefined))
-            .map((statData) => {
-                const row0 = statData[0]
-                assert(row0.statpath !== undefined, 'statpath missing for expanded setting')
-                return rowExpandedKey(row0.statpath)
-            }),
+        fullRows.map((row) => {
+            assert(row.statpath !== undefined, 'statpath missing for expanded setting')
+            return rowExpandedKey(row.statpath)
+        }),
     )
 
-    const expandedByStatIndex = dataByStatArticle.map((statData) => {
-        const row0 = statData[0]
-        assert(row0.statpath !== undefined, 'statpath missing for expanded setting')
-        return expandedSettings[rowExpandedKey(row0.statpath)] ?? false
+    const expandedByFullIndex = fullRows.map((row) => {
+        assert(row.statpath !== undefined, 'statpath missing for expanded setting')
+        return expandedSettings[rowExpandedKey(row.statpath)] ?? false
     })
 
-    const numExpandedExtras = expandedByStatIndex.reduce((acc, expanded, statIndex) => {
-        if (!expanded) {
+    const numExpandedExtras = fullRows.reduce((acc, row, fullIndex) => {
+        if (row.kind !== 'statistic' || row.extraStat === undefined || !expandedByFullIndex[fullIndex]) {
             return acc
         }
-        return dataByStatArticle[statIndex].some(row => row.extraStat !== undefined) ? acc + 1 : acc
+        return acc + 1
     }, 0)
 
     let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, includeOrdinals)
@@ -210,8 +221,6 @@ export function ComparisonPanel(props: {
     const numColumns = transpose ? totalRowsByDisplay : localArticlesToUse.length
     const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
 
-    const highlightArticleIndicesByStat: (number | undefined)[] = dataByStatArticle.map(articlesStatData => getHighlightIndex(articlesStatData))
-
     const headerTextClass = useHeaderTextClass()
     const subHeaderTextClass = useSubHeaderTextClass()
     const comparisonRightStyle = useComparisonHeadStyle('right')
@@ -221,13 +230,38 @@ export function ComparisonPanel(props: {
 
     const sharedTypeOfAllArticles = localArticlesToUse.every(article => article.articleType === localArticlesToUse[0].articleType) ? localArticlesToUse[0].articleType : undefined
 
-    const rowToDisplayForStat = (statIndex: number): ArticleRow => {
-        return dataByStatArticle[statIndex].find(row => row.extraStat !== undefined) ?? dataByStatArticle[statIndex][0]
+    const highlightArticleIndicesByFullIndex: (number | undefined)[] = fullRows.map((rowFull, fullIndex) => {
+        if (rowFull.kind !== 'statistic') {
+            return undefined
+        }
+        const rowsAcrossArticles: ArticleRow[] = localArticlesToUse.map((unused, articleIndex) => {
+            const row = dataByArticleDisplay[articleIndex][fullIndex]
+            assert(isArticleRow(row), 'unreachable: expected statistic row for highlighting')
+            return row
+        })
+        return getHighlightIndex(rowsAcrossArticles)
+    })
+
+    const rowToDisplayForFullIndex = (fullIndex: number): ArticleRow => {
+        const rowsAcrossArticles: ArticleRow[] = localArticlesToUse.map((unused, articleIndex) => {
+            const row = dataByArticleDisplay[articleIndex][fullIndex]
+            assert(isArticleRow(row), 'unreachable: expected statistic row for header rendering')
+            return row
+        })
+        return rowsAcrossArticles.find(row => row.extraStat !== undefined) ?? rowsAcrossArticles[0]
     }
 
-    const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].flatMap((row, articleIdx) =>
-        pullRelevantPlotProps(dataByArticleStat[articleIdx], statIndex, colorFromCycle(colors.hueColors, articleIdx), localArticlesToUse[articleIdx].shortname, localArticlesToUse[articleIdx].longname, sharedTypeOfAllArticles),
-    )
+    const plotProps = (fullIndex: number): PlotProps[] =>
+        dataByArticleDisplay.map((articleRows, articleIdx) =>
+            pullRelevantPlotProps(
+                articleRows,
+                fullIndex,
+                colorFromCycle(colors.hueColors, articleIdx),
+                localArticlesToUse[articleIdx].shortname,
+                localArticlesToUse[articleIdx].longname,
+                sharedTypeOfAllArticles,
+            ),
+        ).flat()
 
     const longnameHeaderSpecs: CellSpec[] = Array.from({ length: localArticlesToUse.length }).map((_, articleIndex) => (
         {
@@ -243,17 +277,6 @@ export function ComparisonPanel(props: {
         } satisfies CellSpec
     ))
 
-    const fullRows = dataByArticleDisplay[0] ?? []
-    let statCounter = 0
-    const statIndexByFullIndex: (number | undefined)[] = fullRows.map((row) => {
-        if (row.kind !== 'statistic') {
-            return undefined
-        }
-        const idx = statCounter
-        statCounter += 1
-        return idx
-    })
-
     const statisticNameHeaderSpecsOriginal: Parameters<typeof computeNameSpecsWithGroups>[0] = fullRows.map((rowFull, fullIndex) => {
         if (rowFull.kind !== 'statistic') {
             return {
@@ -267,9 +290,7 @@ export function ComparisonPanel(props: {
             } satisfies CellSpec
         }
 
-        const statIndex = statIndexByFullIndex[fullIndex]
-        assert(statIndex !== undefined, 'unreachable: missing stat index for statistic row')
-        const rowToDisplay = rowToDisplayForStat(statIndex)
+        const rowToDisplay = rowToDisplayForFullIndex(fullIndex)
         assert(rowToDisplay.statpath !== undefined, 'statpath missing for loaded statistic row')
         return {
             type: 'statistic-name',
@@ -279,12 +300,12 @@ export function ComparisonPanel(props: {
             currentUniverse: props.universe,
             center: transpose ? true : false,
             transpose,
-            highlightIndex: highlightArticleIndicesByStat[statIndex],
+            highlightIndex: highlightArticleIndicesByFullIndex[fullIndex],
             sortInfo: {
                 onSort: () => {
-                    handleSort(statIndex)
+                    handleSort(fullIndex)
                 },
-                sortDirection: sortByStatIndex === statIndex ? sortDirection : 'both',
+                sortDirection: sortByRowIndex === fullIndex ? sortDirection : 'both',
             },
         } satisfies CellSpec
     })
@@ -312,16 +333,14 @@ export function ComparisonPanel(props: {
                 } satisfies CellSpec
             }
 
-            const statIndex = statIndexByFullIndex[fullIndex]
-            assert(statIndex !== undefined, 'unreachable: missing stat index for statistic row')
             return {
                 type: 'statistic-row',
                 row,
                 longname: names[articleIndex],
                 onlyColumns,
-                blankColumns: validOrdinalsByStat[statIndex] ? [] : ['statistic_ordinal', 'statistic_percentile'],
+                blankColumns: validOrdinalsByFullIndex[fullIndex] ? [] : ['statistic_ordinal', 'statistic_percentile'],
                 simpleOrdinals: true,
-                statisticStyle: highlightArticleIndicesByStat[statIndex] === articleIndex
+                statisticStyle: highlightArticleIndicesByFullIndex[fullIndex] === articleIndex
                     ? { backgroundColor: mixWithBackground(colorFromCycle(colors.hueColors, articleIndex), colors.mixPct / 100, colors.background) }
                     : {},
                 onNavigate: (x: string) => {
@@ -335,18 +354,16 @@ export function ComparisonPanel(props: {
         })
     ))
 
-    const rowSpecsByStatTransposed = rowSpecsByStat.length === 0 ? [] : rowSpecsByStat[0].map((_, statIndex) => rowSpecsByStat.map(rowSpecs => rowSpecs[statIndex]))
+    const rowSpecsByStatTransposed = rowSpecsByStat.length === 0 ? [] : rowSpecsByStat[0].map((_, fullIndex) => rowSpecsByStat.map(rowSpecs => rowSpecs[fullIndex]))
 
     const plotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[] = fullRows.map((rowFull, fullIndex) => {
-        if (rowFull.kind !== 'statistic') {
+        if (rowFull.kind !== 'statistic' || rowFull.extraStat === undefined) {
             return undefined
         }
-        const statIndex = statIndexByFullIndex[fullIndex]
-        assert(statIndex !== undefined, 'unreachable: missing stat index for plot data')
-        return expandedByStatIndex[statIndex]
+        return expandedByFullIndex[fullIndex]
             ? {
                     statDescription: rowFull.renderedStatname,
-                    plotProps: plotProps(statIndex),
+                    plotProps: plotProps(fullIndex),
                 }
             : undefined
     })
@@ -477,8 +494,8 @@ export function ComparisonPanel(props: {
     )
 }
 
-export function pullRelevantPlotProps(rows: ArticleTableRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
-    if (rows[statIndex].kind !== 'statistic' || rows[statIndex].extraStat === undefined) {
+export function pullRelevantPlotProps(rows: ArticleTableRow[], rowIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
+    if (rows[rowIndex].kind !== 'statistic' || rows[rowIndex].extraStat === undefined) {
         return []
     }
     const sPs = rows
@@ -489,7 +506,7 @@ export function pullRelevantPlotProps(rows: ArticleTableRow[], statIndex: number
         .map((sP, i) => ({ sP, i }))
     const byYear = new Map<Year, number[]>()
     sPs.filter((
-        { sP, i }) => sP.group.id === sPs[statIndex].sP.group.id && rows[i].kind === 'statistic' && rows[i].extraStat !== undefined,
+        { sP, i }) => sP.group.id === sPs[rowIndex].sP.group.id && rows[i].kind === 'statistic' && rows[i].extraStat !== undefined,
     ).forEach(({ sP: { year }, i }) => {
         assert(year !== null, 'Year should not be null for plot data')
         byYear.set(year, [...(byYear.get(year) ?? []), i])
@@ -499,7 +516,7 @@ export function pullRelevantPlotProps(rows: ArticleTableRow[], statIndex: number
             return indices[0]
         }
         const sources = indices.map(i => sPs[i].sP.source)
-        const exactMatch = sources.findIndex(source => JSON.stringify(source) === JSON.stringify(sPs[statIndex].sP.source))
+        const exactMatch = sources.findIndex(source => JSON.stringify(source) === JSON.stringify(sPs[rowIndex].sP.source))
         if (exactMatch !== -1) {
             return indices[exactMatch]
         }
