@@ -450,8 +450,8 @@ export function ComparisonPanel(props: {
     )
 }
 
-export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
-    if (rows[statIndex].extraStat === undefined) {
+export function pullRelevantPlotProps(rows: ArticleTableRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
+    if (rows[statIndex].kind !== 'statistic' || rows[statIndex].extraStat === undefined) {
         return []
     }
     const sPs = rows
@@ -462,7 +462,7 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
         .map((sP, i) => ({ sP, i }))
     const byYear = new Map<Year, number[]>()
     sPs.filter((
-        { sP, i }) => sP.group.id === sPs[statIndex].sP.group.id && rows[i].extraStat !== undefined,
+        { sP, i }) => sP.group.id === sPs[statIndex].sP.group.id && rows[i].kind === 'statistic' && rows[i].extraStat !== undefined,
     ).forEach(({ sP: { year }, i }) => {
         assert(year !== null, 'Year should not be null for plot data')
         byYear.set(year, [...(byYear.get(year) ?? []), i])

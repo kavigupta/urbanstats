@@ -151,19 +151,20 @@ function getGroupAndDisplayNames(nameSpec: NameSpec, nameSpecs: NameSpec[]): [st
 }
 
 export function computeNameSpecsWithGroups(nameSpecs: NameSpec[]): { updatedNameSpecs: NameSpec[], groupNames: (string | undefined)[] } {
-    const updatedNameSpecs: NameSpec[] = []
-    const groupNames: (string | undefined)[] = []
-
-    for (const spec of nameSpecs) {
+    const grouped = nameSpecs.map((spec) => {
         const [groupName, displayName] = getGroupAndDisplayNames(spec, nameSpecs)
+        return {
+            groupName,
+            updatedSpec: {
+                ...spec,
+                isIndented: groupName !== undefined,
+                displayName,
+            },
+        }
+    })
 
-        updatedNameSpecs.push({
-            ...spec,
-            isIndented: groupName !== undefined,
-            displayName,
-        })
-        groupNames.push(groupName)
-    }
+    const updatedNameSpecs = grouped.map(x => x.updatedSpec)
+    const groupNames = grouped.map(x => x.groupName)
 
     return { updatedNameSpecs, groupNames }
 }
@@ -174,7 +175,6 @@ function ArticleTable(props: {
 }): ReactNode {
     const colors = useColors()
     const filteredRows = props.filteredRows
-    const statRows = filteredRows.filter(isArticleRow)
     const expandedKeys = filteredRows.map((row) => {
         assert(row.statpath !== undefined, 'statpath missing for expanded setting')
         return rowExpandedKey(row.statpath)
@@ -214,21 +214,17 @@ function ArticleTable(props: {
         onlyColumns,
     })])
 
-    let statOrdinal = -1
     const plotSpecs: (PlotSpec | undefined)[] = expandedEach.map((expanded, index) => {
         const row = filteredRows[index]
-        if (!isArticleRow(row)) {
+        if (!isArticleRow(row) || !expanded) {
             return undefined
         }
-        statOrdinal += 1
-        if (!expanded) {
-            return undefined
-        }
+
         return {
             statDescription: row.renderedStatname,
             plotProps: pullRelevantPlotProps(
-                statRows,
-                statOrdinal,
+                filteredRows,
+                index,
                 colors.hueColors.blue,
                 props.article.shortname,
                 props.article.longname,
