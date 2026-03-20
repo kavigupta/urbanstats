@@ -210,12 +210,6 @@ class RelationshipComputer:
         self._resolution = RESOLUTION_3ARCSEC
         assert self._resolution == RESOLUTION_3ARCSEC
 
-    def _to_dict(self, rle):
-        """Convert RLE to dict format. Accepts dict or (rows, lon_starts, lon_ends)."""
-        if isinstance(rle, dict):
-            return rle.get("rle", rle)
-        return rle_dict_from_arrays(*rle)
-
     def clip_to_land(self, rle):
         """Intersect RLE with land mask; returns dict format."""
         return intersect_rle_runs(rle, self._land_rle)
@@ -226,9 +220,8 @@ class RelationshipComputer:
 
     def area_of(self, rle):
         """Area in m² of cells covered by the RLE (equirectangular)."""
-        d = self._to_dict(rle)
         total = 0.0
-        for row, intervals in d.items():
+        for row, intervals in rle.items():
             for s, e in intervals:
                 total += (e - s + 1) * _cell_area_m2(row)
         return total
