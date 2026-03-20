@@ -11,7 +11,7 @@ import { Navigator } from '../navigation/Navigator'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { rowExpandedKey, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
-import { statParents, Year } from '../page_template/statistic-tree'
+import { StatPath, statParents, Year } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
 import { Universe, universeContext } from '../universe'
@@ -222,6 +222,11 @@ export function ComparisonPanel(props: {
         return dataByStatArticle[statIndex].find(row => row.extraStat !== undefined) ?? dataByStatArticle[statIndex][0]
     }
 
+    function assertLoadedStatisticRow(row: ArticleRow): ArticleRow & { statpath: StatPath } {
+        assert(row.statpath !== undefined, 'statpath missing for loaded statistic row')
+        return row as ArticleRow & { statpath: StatPath }
+    }
+
     const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].flatMap((row, articleIdx) =>
         pullRelevantPlotProps(dataByArticleStat[articleIdx], statIndex, colorFromCycle(colors.hueColors, articleIdx), localArticlesToUse[articleIdx].shortname, localArticlesToUse[articleIdx].longname, sharedTypeOfAllArticles),
     )
@@ -240,7 +245,7 @@ export function ComparisonPanel(props: {
         } satisfies CellSpec
     ))
 
-    const statisticNameHeaderSpecsOriginal: (CellSpec & { type: 'statistic-name' })[] = (rowsByArticle[0] ?? []).map((row, rowIndex) => {
+    const statisticNameHeaderSpecsOriginal: Parameters<typeof computeNameSpecsWithGroups>[0] = (rowsByArticle[0] ?? []).map((row, rowIndex) => {
         if (row.kind !== 'statistic') {
             return {
                 type: 'statistic-name',
@@ -257,7 +262,7 @@ export function ComparisonPanel(props: {
         const rowToDisplay = rowToDisplayForStat(statIndex)
         return {
             type: 'statistic-name',
-            row: rowToDisplay,
+            row: assertLoadedStatisticRow(rowToDisplay),
             renderedStatname: rowToDisplay.renderedStatname,
             longname: names[0],
             currentUniverse: props.universe,

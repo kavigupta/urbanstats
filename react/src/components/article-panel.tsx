@@ -7,7 +7,7 @@ import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
-import { statParents } from '../page_template/statistic-tree'
+import { StatPath, statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { Universe, universeContext, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
@@ -22,7 +22,7 @@ import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { pullRelevantPlotProps } from './comparison-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
-import { ArticleTableRow, isArticleRow } from './load-article'
+import { ArticleRow, ArticleTableRow, isArticleRow } from './load-article'
 import { Related } from './related-button'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
@@ -122,20 +122,21 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     )
 }
 
-type NameSpec = Extract<CellSpec, { type: 'statistic-name' }>
+type LoadedStatisticRow = ArticleRow & { statpath: StatPath }
+type NameSpec = Omit<Extract<CellSpec, { type: 'statistic-name' }>, 'row'> & { row?: LoadedStatisticRow }
 
 function getGroupAndDisplayNames(nameSpec: NameSpec, nameSpecs: NameSpec[]): [string | undefined, string] {
     if (nameSpec.row === undefined) {
         return [undefined, nameSpec.renderedStatname]
     }
-    const statParent = statParents.get(nameSpec.row.statpath!)
+    const statParent = statParents.get(nameSpec.row.statpath)
 
-    const groupRows = nameSpecs.filter(s => s.row !== undefined && statParents.get(s.row.statpath!)?.group.id === statParent?.group.id)
+    const groupRows = nameSpecs.filter((s): s is NameSpec & { row: LoadedStatisticRow } => s.row !== undefined && statParents.get(s.row.statpath)?.group.id === statParent?.group.id)
     const groupSize = groupRows.length
 
     const groupSourcesSet = new Set(
         groupRows
-            .map(s => statParents.get(s.row!.statpath!)?.source)
+            .map(s => statParents.get(s.row.statpath)?.source)
             .filter(source => source !== null)
             .map(source => source!.name),
     )
@@ -186,10 +187,15 @@ function ArticleTable(props: {
 
     const { widthLeftHeader, columnWidth } = useWidths()
 
-    const statNameSpecs: Extract<CellSpec, { type: 'statistic-name' }>[] = props.filteredRows.map(row => ({
+    function assertLoadedStatisticRow(row: ArticleRow): LoadedStatisticRow {
+        assert(row.statpath !== undefined, 'statpath missing for loaded statistic row')
+        return { ...row, statpath: row.statpath }
+    }
+
+    const statNameSpecs: NameSpec[] = props.filteredRows.map(row => ({
         type: 'statistic-name',
         longname: props.article.longname,
-        row: isArticleRow(row) ? row : undefined,
+        row: isArticleRow(row) ? assertLoadedStatisticRow(row) : undefined,
         renderedStatname: row.renderedStatname,
         currentUniverse,
     }))
