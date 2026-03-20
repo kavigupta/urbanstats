@@ -214,24 +214,20 @@ function ArticleTable(props: {
         onlyColumns,
     })])
 
-    const plotSpecs: (PlotSpec | undefined)[] = expandedEach.map((expanded, index) => {
-        const row = filteredRows[index]
-        if (!isArticleRow(row) || !expanded) {
-            return undefined
-        }
-
-        return {
-            statDescription: row.renderedStatname,
-            plotProps: pullRelevantPlotProps(
-                filteredRows,
-                index,
-                colors.hueColors.blue,
-                props.article.shortname,
-                props.article.longname,
-                props.article.articleType,
-            ),
-        }
-    })
+    const plotSpecs: (PlotSpec | undefined)[] = expandedEach.map((expanded, index) => expanded
+        ? {
+                statDescription: props.filteredRows[index].renderedStatname,
+                plotProps: pullRelevantPlotProps(
+                    props.filteredRows,
+                    index,
+                    colors.hueColors.blue,
+                    props.article.shortname,
+                    props.article.longname,
+                    props.article.articleType,
+                ),
+            }
+        : undefined,
+    )
 
     const topLeftSpec = { type: 'top-left-header' } satisfies CellSpec
 
