@@ -4,7 +4,7 @@ import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
-import { findAmbiguousSourcesAll, statDataOrderToOrder, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
+import { findAmbiguousSourcesAll, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { Article, IFirstOrLast, IMetadata } from '../utils/protos'
 import { UnitType } from '../utils/unit'
 
@@ -67,10 +67,10 @@ export function isArticleRow(row: ArticleTableRow): row is ArticleRow {
     return row.kind === 'statistic'
 }
 
-const metadataStatPathsInTreeOrder = Array.from(statPathToOrder.entries())
-    .sort(([, orderA], [, orderB]) => orderA - orderB)
-    .map(([path]) => path)
-    .filter(path => statParents.get(path)?.kind === 'metadata')
+// statParents is built in statistic-tree order (via statParentsList),
+// so filtering preserves the desired UI ordering.
+const metadataStatPathsInTreeOrder = Array.from(statParents.entries())
+    .flatMap(([path, parent]) => parent.kind === 'metadata' ? [path] : [])
 
 function metadataValueByIndex(metadataProtos: IMetadata[] | null | undefined): Map<number, string> {
     const values = new Map<number, string>()
@@ -201,63 +201,73 @@ export function loadArticles(datas: Article[], counts: CountsByUT, universe: str
 
     return { rows: (settings: StatGroupSettings) => {
         const enabledMetadataPaths = metadataStatPathsInTreeOrder.filter(path => statIsEnabled(path, settings, ambiguousSourcesAll))
-        const rows = availableRowsAll.map(availableRows => availableRows
-            .filter(row => statIsEnabled(row.statpath, settings, ambiguousSourcesAll))
-            // sort by order in statistics tree.
-            .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
-        )
-        const rowsNothingMissing = insertMissing(rows)
-        const rowsCollapsed = collapseAlternateSources(rowsNothingMissing)
-        return rowsCollapsed.map((articleRows, articleIndex) => [
-            ...articleRows,
+        const rows = availableRowsAll.map((availableRows, articleIndex) => [
+            ...availableRows
+                .filter(row => statIsEnabled(row.statpath, settings, ambiguousSourcesAll))
+                // sort by order in statistics tree.
+                .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
             ...metadataRowsForArticle(datas[articleIndex], enabledMetadataPaths),
         ])
+
+        const rowsNothingMissing = insertMissing(rows)
+        return collapseAlternateSources(rowsNothingMissing)
     }, statPaths: statPathsEach }
 }
 
-function insertMissing(rows: ArticleRow[][]): ArticleRow[][] {
-    const idxs = rows.map(row => row.map(x => x.index))
+function insertMissing(rows: ArticleTableRow[][]): ArticleTableRow[][] {
+    if (rows.length === 0) {
+        return rows
+    }
+    if (rows[0].length === 0) {
+        return rows
+    }
 
-    const emptyRowExample: Record<number, ArticleRow> = {}
-    for (const dataI of rows.keys()) {
-        for (const rowI of rows[dataI].keys()) {
-            const idx = idxs[dataI][rowI]
-            emptyRowExample[idx] = JSON.parse(JSON.stringify(rows[dataI][rowI])) as typeof rows[number][number]
-            for (const key of Object.keys(emptyRowExample[idx]) as (keyof ArticleRow)[]) {
-                if (typeof emptyRowExample[idx][key] === 'number') {
-                    // @ts-expect-error Typescript is fucking up this assignment
-                    emptyRowExample[idx][key] = NaN
+    // Compute the global set of statpaths for these enabled rows, then align each article's
+    // row list to that same ordered statpath list.
+    const statpathToExample = new Map<StatPath, ArticleTableRow>()
+    for (const articleRows of rows) {
+        for (const row of articleRows) {
+            if (!statpathToExample.has(row.statpath)) {
+                statpathToExample.set(row.statpath, row)
+            }
+        }
+    }
+
+    const orderedStatpaths = Array.from(statpathToExample.keys())
+        .sort((a, b) => statPathToOrder.get(a)! - statPathToOrder.get(b)!)
+
+    const emptyRowExample = new Map<StatPath, ArticleTableRow>()
+    for (const statpath of orderedStatpaths) {
+        const example = statpathToExample.get(statpath)!
+        if (example.kind === 'statistic') {
+            const empty = JSON.parse(JSON.stringify(example)) as ArticleRow
+            for (const key of Object.keys(empty) as (keyof ArticleRow)[]) {
+                if (typeof empty[key] === 'number') {
+                    // @ts-expect-error -- Writing NaN into numeric fields
+                    empty[key] = NaN
                 }
                 else if (key === 'extraStat') {
-                    emptyRowExample[idx][key] = undefined
+                    empty[key] = undefined
                 }
             }
-            emptyRowExample[idx].articleType = 'none' // doesn't matter since we are using simple mode
+            empty.articleType = 'none' // doesn't matter since we are using simple mode
+            emptyRowExample.set(statpath, empty)
+        }
+        else {
+            const empty = JSON.parse(JSON.stringify(example)) as MetadataArticleRow
+            empty.statvalString = ''
+            empty.articleType = 'none' // doesn't matter since we are using simple mode
+            emptyRowExample.set(statpath, empty)
         }
     }
 
-    const allIdxs = idxs.flat().filter((x, i, a) => a.indexOf(x) === i)
-    // sort all_idxs in ascending order numerically
-    allIdxs.sort((a, b) => statDataOrderToOrder.get(a)! - statDataOrderToOrder.get(b)!)
-
-    const newRowsAll = []
-    for (const dataI of rows.keys()) {
-        const newRows = []
-        for (const idx of allIdxs) {
-            if (idxs[dataI].includes(idx)) {
-                const indexToPull = idxs[dataI].findIndex(x => x === idx)
-                newRows.push(rows[dataI][indexToPull])
-            }
-            else {
-                newRows.push(emptyRowExample[idx])
-            }
-        }
-        newRowsAll.push(newRows)
-    }
-    return newRowsAll
+    return rows.map((articleRows) => {
+        const byStatpath = new Map(articleRows.map(row => [row.statpath, row] as const))
+        return orderedStatpaths.map(statpath => byStatpath.get(statpath) ?? emptyRowExample.get(statpath)!)
+    })
 }
 
-function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
+function collapseAlternateSources(rows: ArticleTableRow[][]): ArticleTableRow[][] {
     // collapses multiple rows if they
     // (1) have the same stat group and year
     // (2) no two rows apply to the same article
@@ -273,7 +283,7 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     }
     // ts Map guarantees insertion order
     // rowsByStatGroupAndYear.get(key)[stat_column][article]
-    const rowsByStatGroupAndYear = new Map<string, ArticleRow[][]>()
+    const rowsByStatGroupAndYear = new Map<string, ArticleTableRow[][]>()
     const groupYearToName = new Map<string, string>()
     for (let i = 0; i < numRows; i++) {
         const { group, year, groupYearName } = statParents.get(rows[0][i].statpath)!
@@ -284,7 +294,7 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
         rowsByStatGroupAndYear.get(key)!.push(rows.map(row => row[i]))
         groupYearToName.set(key, groupYearName)
     }
-    const rowsCollapsed: ArticleRow[][] = []
+    const rowsCollapsed: ArticleTableRow[][] = []
     for (const key of rowsByStatGroupAndYear.keys()) {
         rowsCollapsed.push(...collapseAlternateSourcesSingleGroupYear(
             rowsByStatGroupAndYear.get(key)!,
@@ -294,17 +304,23 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
 }
 
-function collapseAlternateSourcesSingleGroupYear(rows: ArticleRow[][], groupYearName: string): ArticleRow[][] {
+function collapseAlternateSourcesSingleGroupYear(rows: ArticleTableRow[][], groupYearName: string): ArticleTableRow[][] {
     // rows[stat_column][article]
     if (rows.length === 1) {
         return rows
     }
+    // Metadata rows do not participate in alternate-source collapsing.
+    // Each metadata StatPath is its own group/year in the tree.
+    if (rows[0][0].kind === 'metadata') {
+        return rows
+    }
     // convert to a bitmap of whether each thing has a value (alternative is nan)
-    const hasValue = rows.map(row => row.map(x => !Number.isNaN(x.statval)))
-    const rowsC: ArticleRow[][] = []
+    const statisticRows = rows as ArticleRow[][]
+    const hasValue = statisticRows.map(row => row.map(x => !Number.isNaN(x.statval)))
+    const rowsC: ArticleTableRow[][] = []
     const collapsedRows = computeCollapsedRows(new Map(hasValue.map((x, i) => [i, x])))
     for (const collapsedRow of collapsedRows) {
-        rowsC.push(collapse(collapsedRow.map(i => rows[i]), groupYearName))
+        rowsC.push(collapse(collapsedRow.map(i => statisticRows[i]), groupYearName))
     }
     return rowsC
 }
