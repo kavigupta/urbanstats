@@ -6,7 +6,7 @@ import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { Article } from '../utils/protos'
 
-import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
+import { ArticleRow, ArticleTableRow } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
 import { useScreenshotMode } from './screenshot'
 import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeDisclaimerFootnotes, computeSizesForRow, CommonLayoutInformation } from './table'
@@ -283,7 +283,7 @@ export interface StatisticNameCellProps {
 export interface StatisticRowCellProps {
     longname: string
     statisticStyle?: CSSProperties
-    row: StatisticCellRenderingInfo
+    row: ArticleTableRow
     onlyColumns?: string[]
     blankColumns?: string[]
     onNavigate?: (newArticle: string) => void

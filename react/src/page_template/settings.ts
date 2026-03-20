@@ -15,6 +15,7 @@ export type RelationshipKey = `related__${string}__${string}`
 
 export const statPathsWithExtra = extra_stats.map(([index]) => stat_path_list[index])
 export type StatPathWithExtra = (typeof statPathsWithExtra)[number]
+export type RowExpandedKey<P extends StatPath> = `expanded__${P}`
 
 export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
 
@@ -23,7 +24,6 @@ export type StatCategorySavedIndeterminateKey<C extends CategoryIdentifier = Cat
 export type StatCategoryExpandedKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_expanded_${C}`
 export type StatYearKey<Y extends Year = Year> = `show_stat_year_${Y}`
 export type StatSourceKey<C extends SourceCategoryIdentifier = SourceCategoryIdentifier, S extends SourceIdentifier = SourceIdentifier> = `show_stat_source_${C}_${S}`
-export type RowExpandedKey<P extends StatPath> = `expanded__${P}`
 
 export type TemperatureUnit = 'fahrenheit' | 'celsius'
 
@@ -70,10 +70,6 @@ export function sourceEnabledKey<C extends SourceCategoryIdentifier, S extends S
 
 export function checkboxCategoryName(category: SourceCategoryIdentifier): string {
     return `${category} Sources`
-}
-
-function keysOf<T extends object>(obj: T): (keyof T)[] {
-    return Object.keys(obj) as (keyof T)[]
 }
 
 const defaultCategorySelections = new Set(['main', 'metadata'] as CategoryIdentifier[])
@@ -129,7 +125,7 @@ export class Settings {
     private constructor() {
         const savedSettings = localStorage.getItem('settings')
         const loadedSettings = JSON.parse(savedSettings ?? '{}') as Partial<SettingsDictionary>
-        this.settings = { ...defaultSettings, ...loadedSettings } as SettingsDictionary
+        this.settings = { ...defaultSettings, ...loadedSettings }
     }
 
     private readonly settingValueObservers = new DefaultMap<keyof SettingsDictionary, Set<() => void>>(() => new Set())
@@ -175,7 +171,7 @@ export class Settings {
     }
 
     getMultiple<const Keys extends readonly (keyof SettingsDictionary)[]>(keys: Keys): Pick<SettingsDictionary, Keys[number]> {
-        return Object.fromEntries(keys.map(key => [key, this.get(key)] as const)) as Pick<SettingsDictionary, Keys[number]>
+        return Object.fromEntries(keys.map(key => [key, this.get(key)])) as Pick<SettingsDictionary, Keys[number]>
     }
 
     // Singular settings means we can use observers
@@ -234,17 +230,10 @@ export class Settings {
     }
 
     getStagedKeys(): (keyof SettingsDictionary)[] | undefined {
-        const stagedSettings = this.stagedSettings
-        if (stagedSettings === undefined) {
+        if (this.stagedSettings === undefined) {
             return undefined
         }
-        const stagedKeys: (keyof SettingsDictionary)[] = []
-        for (const key of keysOf(defaultSettings)) {
-            if (key in stagedSettings) {
-                stagedKeys.push(key)
-            }
-        }
-        return stagedKeys
+        return Object.keys(this.stagedSettings)
     }
 
     private readonly stagedKeysObservers = new Set<() => void>()

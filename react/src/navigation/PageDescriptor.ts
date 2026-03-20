@@ -4,7 +4,7 @@ import { applySettingsParamSettings, settingsConnectionConfig } from '../compone
 import type { ArticlePanel } from '../components/article-panel'
 import type { ComparisonPanel } from '../components/comparison-panel'
 import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
-import { DisplayRow, loadArticles, RowSettings } from '../components/load-article'
+import { ArticleTableRow, loadArticles } from '../components/load-article'
 import type { QuizPanel } from '../components/quiz-panel'
 import statnames from '../data/statistic_name_list'
 import type { DataCreditPanel } from '../data-credit'
@@ -15,6 +15,7 @@ import type { MapperPanel } from '../mapper/components/MapperPanel'
 import type { MapSettings } from '../mapper/settings/utils'
 import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
+import { StatGroupSettings } from '../page_template/statistic-settings'
 import { allGroups, CategoryIdentifier, StatPath, statsTree } from '../page_template/statistic-tree'
 import { OauthCallbackPanel } from '../quiz/OauthCallbackPanel'
 import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
@@ -207,13 +208,13 @@ export type ExceptionalPageDescriptor = PageDescriptor
     | { kind: 'error', url: URL }
 
 export type PageData =
-    { kind: 'article', article: Article, universe: Universe, rows: (settings: RowSettings) => DisplayRow[][], statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
+    { kind: 'article', article: Article, universe: Universe, rows: (settings: StatGroupSettings) => ArticleTableRow[][], statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
     | {
         kind: 'comparison'
         articles: Article[]
         universe: Universe
         universes: readonly Universe[]
-        rows: (settings: RowSettings) => DisplayRow[][]
+        rows: (settings: StatGroupSettings) => ArticleTableRow[][]
         statPaths: StatPath[][]
         mapPartitions: number[][]
         comparisonPanel: typeof ComparisonPanel

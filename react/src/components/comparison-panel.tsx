@@ -9,7 +9,8 @@ import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 import { boundingBox, extendBoxes } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
 import { colorFromCycle, useColors } from '../page_template/colors'
-import { useSettings } from '../page_template/settings'
+import { rowExpandedKey, useSettings } from '../page_template/settings'
+import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { statParents, Year } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
@@ -27,7 +28,7 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { computeNameSpecsWithGroups } from './article-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
-import { ArticleRow, DisplayRow, RowSettings, rowSettingsKeys, StatisticCellRenderingInfo, isArticleRow } from './load-article'
+import { ArticleRow, ArticleTableRow, isArticleRow } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
@@ -38,8 +39,8 @@ import { ColumnIdentifier } from './table'
 
 interface ComparisonTableRow {
     renderedStatname: string
-    rows: StatisticCellRenderingInfo[]
-    expandedKey: DisplayRow['expandedKey']
+    rows: ArticleTableRow[]
+    statpath: ArticleTableRow['statpath']
     statIndex?: number
 }
 
@@ -56,7 +57,7 @@ export function ComparisonPanel(props: {
     universe: Universe
     universes: readonly Universe[]
     articles: Article[]
-    rows: (settings: RowSettings) => DisplayRow[][]
+    rows: (settings: StatGroupSettings) => ArticleTableRow[][]
     mapPartitions: number[][]
 }): ReactNode {
     const colors = useColors()
@@ -133,7 +134,7 @@ export function ComparisonPanel(props: {
         setActiveId(null)
     }
 
-    const settings = useSettings(rowSettingsKeys())
+    const settings = useSettings(groupYearKeys())
 
     const dataByArticleDisplayRows = props.rows(settings)
     const dataByDisplayRowArticle = dataByArticleDisplayRows[0].map((_, displayRowIndex) =>
@@ -141,21 +142,21 @@ export function ComparisonPanel(props: {
     )
 
     let statisticRowIndex = -1
-    const filteredRowsByStat: ComparisonTableRow[] = dataByDisplayRowArticle.map((displayRows) => {
-        const rows = displayRows.map(displayRow => displayRow.row)
+    const filteredRowsByStat: ComparisonTableRow[] = dataByDisplayRowArticle.map((columnOfRows) => {
+        const rows = columnOfRows
         if (rows.every(isArticleRow)) {
             statisticRowIndex += 1
             return {
-                renderedStatname: displayRows[0].renderedStatname,
+                renderedStatname: rows[0].renderedStatname,
                 rows,
-                expandedKey: displayRows[0].expandedKey,
+                statpath: rows[0].statpath,
                 statIndex: statisticRowIndex,
             }
         }
         return {
-            renderedStatname: displayRows[0].renderedStatname,
+            renderedStatname: rows[0].renderedStatname,
             rows,
-            expandedKey: displayRows[0].expandedKey,
+            statpath: rows[0].statpath,
         }
     })
 
@@ -214,8 +215,8 @@ export function ComparisonPanel(props: {
 
     const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
 
-    const expandedSettings = useSettings(filteredRowsByStat.map(tableRow => tableRow.expandedKey))
-    const expandedByRowIndex = filteredRowsByStat.map(tableRow => expandedSettings[tableRow.expandedKey] ?? false)
+    const expandedSettings = useSettings(filteredRowsByStat.map(tableRow => rowExpandedKey(tableRow.statpath)))
+    const expandedByRowIndex = filteredRowsByStat.map(tableRow => expandedSettings[rowExpandedKey(tableRow.statpath)] ?? false)
     const expandableByRowIndex = filteredRowsByStat.map(tableRow =>
         isComparisonStatisticRow(tableRow) && tableRow.rows.some(row => row.extraStat !== undefined),
     )

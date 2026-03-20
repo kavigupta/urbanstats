@@ -3,8 +3,7 @@ import extra_stats from '../data/extra_stats'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
-import { rowExpandedKey, RowExpandedKey, SettingsDictionary } from '../page_template/settings'
-import { groupYearKeys, StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
+import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, statDataOrderToOrder, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { Article, IFirstOrLast, IMetadata } from '../utils/protos'
 import { UnitType } from '../utils/unit'
@@ -34,6 +33,7 @@ export type StatCol = (typeof stats)[number]
 export interface FirstLastStatus { isFirst: boolean, isLast: boolean }
 
 export interface ArticleRow {
+    kind: 'statistic'
     statval: number
     ordinal: number
     percentileByPopulation: number
@@ -49,41 +49,22 @@ export interface ArticleRow {
     extraStat?: ExtraStat
     disclaimer?: Disclaimer
     overallFirstLast: FirstLastStatus
-    kind: 'statistic'
-}
-
-export interface StatisticCellRenderingInfo {
-    totalCountInClass: number
-    totalCountOverall: number
-    percentileByPopulation: number
-    articleType: string
-    statname: string
-    statval: number
-    statvalString?: string
-    ordinal: number
     unit?: UnitType
-    statpath?: StatPath
-    overallFirstLast?: FirstLastStatus
-    isMetadata?: boolean
-    kind: 'statistic' | 'metadata'
 }
 
-export interface DisplayRow {
+/** Metadata shown as an extra table row (same UI pipeline as statistics). */
+export interface MetadataArticleRow {
+    kind: 'metadata'
+    statpath: StatPath
     renderedStatname: string
-    row: StatisticCellRenderingInfo
-    expandedKey: RowExpandedKey<StatPath>
+    articleType: string
+    statvalString: string
 }
 
-export function isArticleRow(row: StatisticCellRenderingInfo): row is ArticleRow {
+export type ArticleTableRow = ArticleRow | MetadataArticleRow
+
+export function isArticleRow(row: ArticleTableRow): row is ArticleRow {
     return row.kind === 'statistic'
-}
-
-type StatGroupSettingKey = keyof StatGroupSettings
-export type RowSettingKey = StatGroupSettingKey
-export type RowSettings = Pick<SettingsDictionary, RowSettingKey>
-
-export function rowSettingsKeys(): RowSettingKey[] {
-    return groupYearKeys()
 }
 
 const metadataStatPathsInTreeOrder = Array.from(statPathToOrder.entries())
@@ -105,23 +86,7 @@ function metadataValueByIndex(metadataProtos: IMetadata[] | null | undefined): M
     return values
 }
 
-function makeMetadataRow(name: string, value: string | undefined, articleType: string, statpath: StatPath): StatisticCellRenderingInfo {
-    return {
-        totalCountInClass: NaN,
-        totalCountOverall: NaN,
-        percentileByPopulation: NaN,
-        articleType,
-        statname: name,
-        statval: NaN,
-        statvalString: value ?? '',
-        ordinal: NaN,
-        statpath,
-        isMetadata: true,
-        kind: 'metadata',
-    }
-}
-
-function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath[]): DisplayRow[] {
+function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath[]): MetadataArticleRow[] {
     const values = metadataValueByIndex(article.metadata)
     return enabledMetadataPaths.flatMap((path) => {
         const parent = statParents.get(path)
@@ -129,9 +94,11 @@ function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath
             return []
         }
         return [{
+            kind: 'metadata' as const,
+            statpath: path,
             renderedStatname: parent.groupYearName,
-            row: makeMetadataRow(parent.groupYearName, values.get(parent.metadataIndex), article.articleType, path),
-            expandedKey: rowExpandedKey(path),
+            articleType: article.articleType,
+            statvalString: values.get(parent.metadataIndex) ?? '',
         }]
     })
 }
@@ -191,6 +158,7 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
         const disclaimer = electionDisclaimerForRow(paths[i], population)
 
         return {
+            kind: 'statistic' as const,
             statval: rowOriginal.statval!,
             ordinal: rowOriginal.ordinalByUniverse![universeIndex],
             percentileByPopulation: rowOriginal.percentileByPopulationByUniverse![universeIndex],
@@ -209,13 +177,12 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
                 isFirst: overallFirstLastThis.some((x: IFirstOrLast) => x.isFirst),
                 isLast: overallFirstLastThis.some((x: IFirstOrLast) => !x.isFirst),
             },
-            kind: 'statistic',
         } satisfies ArticleRow
     })
 }
 
 export function loadArticles(datas: Article[], counts: CountsByUT, universe: string): {
-    rows: (settings: RowSettings) => DisplayRow[][]
+    rows: (settings: StatGroupSettings) => ArticleTableRow[][]
     statPaths: StatPath[][]
 } {
     const availableRowsAll = datas.map(data => loadSingleArticle(data, counts, universe))
@@ -232,7 +199,7 @@ export function loadArticles(datas: Article[], counts: CountsByUT, universe: str
 
     const ambiguousSourcesAll = findAmbiguousSourcesAll(statPathsEach)
 
-    return { rows: (settings: RowSettings) => {
+    return { rows: (settings: StatGroupSettings) => {
         const enabledMetadataPaths = metadataStatPathsInTreeOrder.filter(path => statIsEnabled(path, settings, ambiguousSourcesAll))
         const rows = availableRowsAll.map(availableRows => availableRows
             .filter(row => statIsEnabled(row.statpath, settings, ambiguousSourcesAll))
@@ -241,15 +208,8 @@ export function loadArticles(datas: Article[], counts: CountsByUT, universe: str
         )
         const rowsNothingMissing = insertMissing(rows)
         const rowsCollapsed = collapseAlternateSources(rowsNothingMissing)
-        const statisticRowsByArticle = rowsCollapsed.map(articleRows =>
-            articleRows.map(row => ({
-                renderedStatname: row.renderedStatname,
-                row,
-                expandedKey: rowExpandedKey(row.statpath),
-            })),
-        )
-        return statisticRowsByArticle.map((statisticRows, articleIndex) => [
-            ...statisticRows,
+        return rowsCollapsed.map((articleRows, articleIndex) => [
+            ...articleRows,
             ...metadataRowsForArticle(datas[articleIndex], enabledMetadataPaths),
         ])
     }, statPaths: statPathsEach }

@@ -22,7 +22,7 @@ import { computeDisclaimerText, type Disclaimer } from './disclaimer-text'
 import { Percentile, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
 import { footnoteSymbol } from './footnote-symbol'
-import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
+import { ArticleRow, ArticleTableRow, FirstLastStatus } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
@@ -434,7 +434,7 @@ export function StatisticRowCells(props: {
     width: number
     longname: string
     statisticStyle?: CSSProperties
-    row: StatisticCellRenderingInfo
+    row: ArticleTableRow
     onlyColumns?: string[]
     blankColumns?: string[]
     onNavigate?: (newArticle: string) => void
@@ -442,8 +442,80 @@ export function StatisticRowCells(props: {
     extraSpaceRight?: number
     columnWidthsInfo?: CommonLayoutInformation
 }): ReactNode {
-    const colors = useColors()
-    const [ordinalStyle, percentileStyle] = makeOrdinalStyle(colors, false, props.columnWidthsInfo)
+    const [ordinalStyle, percentileStyle] = makeOrdinalStyle(useColors(), false, props.columnWidthsInfo)
+    const row = props.row
+
+    const metadataBlankColumns: ColumnIdentifier[] = ['statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
+
+    if (row.kind === 'metadata') {
+        const cells = [
+            {
+                widthPercentage: 15,
+                columnIdentifier: 'statval',
+                content: (
+                    <span className="serif value testing-statistic-value">
+                        <span style={props.statisticStyle ?? {}}>{row.statvalString}</span>
+                    </span>
+                ),
+                style: { textAlign: 'right' },
+            },
+            {
+                widthPercentage: 10,
+                columnIdentifier: 'statval_unit',
+                content: (
+                    <div className="value_unit">
+                        <span className="serif value"><span></span></span>
+                    </div>
+                ),
+                style: { textAlign: 'right' },
+            },
+            {
+                widthPercentage: props.simpleOrdinals ? 7 : 17,
+                columnIdentifier: 'statistic_percentile',
+                content: (
+                    <div className="serif" style={percentileStyle}>
+                        <Percentile
+                            ordinal={NaN}
+                            total={NaN}
+                            percentileByPopulation={NaN}
+                            simpleOrdinals={props.simpleOrdinals}
+                        />
+                    </div>
+                ),
+                style: { textAlign: 'right' },
+            },
+            {
+                widthPercentage: props.simpleOrdinals ? 8 : 25,
+                columnIdentifier: 'statistic_ordinal',
+                content: (
+                    <div className="serif" style={ordinalStyle}>
+                        <Ordinal
+                            ordinal={NaN}
+                            total={NaN}
+                            type={row.articleType}
+                            statpath={row.statpath}
+                            simpleOrdinals={props.simpleOrdinals}
+                            onNavigate={props.onNavigate}
+                        />
+                    </div>
+                ),
+                style: { textAlign: 'right' },
+            },
+            ...PointerRowCells({ ordinalStyle, row, longname: props.longname }),
+        ] satisfies ColumnLayoutProps['cells']
+
+        return (
+            <>
+                <ColumnLayout
+                    cells={cells}
+                    totalWidth={props.width}
+                    onlyColumns={props.onlyColumns}
+                    blankColumns={props.blankColumns ?? metadataBlankColumns}
+                />
+                <div style={{ width: `${props.extraSpaceRight}%` }} />
+            </>
+        )
+    }
 
     const cells = [
         {
@@ -451,17 +523,13 @@ export function StatisticRowCells(props: {
             columnIdentifier: 'statval',
             content: (
                 <span className="serif value testing-statistic-value">
-                    {props.row.statvalString !== undefined
-                        ? <span style={props.statisticStyle ?? {}}>{props.row.statvalString}</span>
-                        : (
-                                <Statistic
-                                    statname={props.row.statname}
-                                    value={props.row.statval}
-                                    isUnit={false}
-                                    style={props.statisticStyle ?? {}}
-                                    unit={props.row.unit}
-                                />
-                            )}
+                    <Statistic
+                        statname={row.statname}
+                        value={row.statval}
+                        isUnit={false}
+                        style={props.statisticStyle ?? {}}
+                        unit={row.unit}
+                    />
                 </span>
             ),
             style: { textAlign: 'right' },
@@ -472,16 +540,12 @@ export function StatisticRowCells(props: {
             content: (
                 <div className="value_unit">
                     <span className="serif value">
-                        {props.row.statvalString !== undefined
-                            ? <span></span>
-                            : (
-                                    <Statistic
-                                        statname={props.row.statname}
-                                        value={props.row.statval}
-                                        isUnit={true}
-                                        unit={props.row.unit}
-                                    />
-                                )}
+                        <Statistic
+                            statname={row.statname}
+                            value={row.statval}
+                            isUnit={true}
+                            unit={row.unit}
+                        />
                     </span>
                 </div>
             ),
@@ -493,9 +557,9 @@ export function StatisticRowCells(props: {
             content: (
                 <div className="serif" style={percentileStyle}>
                     <Percentile
-                        ordinal={props.row.ordinal}
-                        total={props.row.totalCountInClass}
-                        percentileByPopulation={props.row.percentileByPopulation}
+                        ordinal={row.ordinal}
+                        total={row.totalCountInClass}
+                        percentileByPopulation={row.percentileByPopulation}
                         simpleOrdinals={props.simpleOrdinals}
                     />
                 </div>
@@ -508,10 +572,10 @@ export function StatisticRowCells(props: {
             content: (
                 <div className="serif" style={ordinalStyle}>
                     <Ordinal
-                        ordinal={props.row.ordinal}
-                        total={props.row.totalCountInClass}
-                        type={props.row.articleType}
-                        statpath={props.row.statpath}
+                        ordinal={row.ordinal}
+                        total={row.totalCountInClass}
+                        type={row.articleType}
+                        statpath={row.statpath}
                         simpleOrdinals={props.simpleOrdinals}
                         onNavigate={props.onNavigate}
                     />
@@ -519,11 +583,8 @@ export function StatisticRowCells(props: {
             ),
             style: { textAlign: 'right' },
         },
-        ...PointerRowCells({ ordinalStyle, row: props.row, longname: props.longname }),
+        ...PointerRowCells({ ordinalStyle, row, longname: props.longname }),
     ] satisfies ColumnLayoutProps['cells']
-
-    const metadataBlankColumns: ColumnIdentifier[] = ['statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
-    const blankColumns = props.blankColumns ?? (props.row.isMetadata ? metadataBlankColumns : undefined)
 
     return (
         <>
@@ -531,25 +592,24 @@ export function StatisticRowCells(props: {
                 cells={cells}
                 totalWidth={props.width}
                 onlyColumns={props.onlyColumns}
-                blankColumns={blankColumns}
+                blankColumns={props.blankColumns}
             />
             <div style={{ width: `${props.extraSpaceRight}%` }} />
         </>
     )
 }
 
-function PointerRowCells(props: { ordinalStyle: CSSProperties, row: StatisticCellRenderingInfo, longname: string }): ColumnLayoutProps['cells'] {
+function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleTableRow, longname: string }): ColumnLayoutProps['cells'] {
     const screenshotMode = useScreenshotMode()
 
     const singlePointerCell = useSinglePointerCell()
     const [preferredPointerCell] = useSetting('mobile_article_pointers')
 
-    // For non-metadata rows, statpath must be defined
-    const statpath = props.row.statpath!
-
-    if (props.row.isMetadata) {
+    if (props.row.kind === 'metadata') {
         return []
     }
+
+    const statpath = props.row.statpath
 
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
@@ -1066,7 +1126,10 @@ function ordinalWidthInEm(ordinal: number, total: number, type: string, universe
     }
 }
 
-export function computeSizesForRow(row: StatisticCellRenderingInfo, universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
+export function computeSizesForRow(row: ArticleTableRow, universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
+    if (row.kind === 'metadata') {
+        return { ordinalColumnWidthEm: 0, ordinalColumnPadding: 0, percentileColumnWidthEm: 0 }
+    }
     // Compute the size of the ordinal and percentile text
     const [ordinalColumnWidthEm, ordinalColumnPadding] = ordinalWidthInEm(row.totalCountInClass, row.totalCountInClass, row.articleType, universe, simpleOrdinals)
     const percentileTextSample = percentileText(row.percentileByPopulation, simpleOrdinals)

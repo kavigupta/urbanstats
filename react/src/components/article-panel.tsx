@@ -5,7 +5,8 @@ import React, { ReactNode, useCallback, useContext, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
-import { useSetting, useSettings } from '../page_template/settings'
+import { rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
+import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { Universe, universeContext, useUniverse } from '../universe'
@@ -21,14 +22,14 @@ import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { pullRelevantPlotProps } from './comparison-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
-import { DisplayRow, RowSettings, rowSettingsKeys, isArticleRow } from './load-article'
+import { ArticleTableRow, isArticleRow } from './load-article'
 import { Related } from './related-button'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { CellSpec, PlotSpec, TableContents } from './supertable'
 import { ColumnIdentifier } from './table'
 
-export function ArticlePanel({ article, rows, universe }: { article: Article, rows: (settings: RowSettings) => DisplayRow[][], universe: Universe }): ReactNode {
+export function ArticlePanel({ article, rows, universe }: { article: Article, rows: (settings: StatGroupSettings) => ArticleTableRow[][], universe: Universe }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
     const mapRef = useRef<HTMLDivElement>(null)
@@ -43,7 +44,7 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     const subHeaderTextClass = useSubHeaderTextClass()
     const comparisonHeadStyle = useComparisonHeadStyle('right')
 
-    const settings = useSettings(rowSettingsKeys())
+    const settings = useSettings(groupYearKeys())
     const filteredRows = rows(settings)[0]
 
     const csvExportCallback = useCallback<CSVExportData>(() => {
@@ -168,16 +169,14 @@ export function computeNameSpecsWithGroups(nameSpecs: NameSpec[]): { updatedName
 }
 
 function ArticleTable(props: {
-    filteredRows: DisplayRow[]
+    filteredRows: ArticleTableRow[]
     article: Article
 }): ReactNode {
     const colors = useColors()
-    const displayRows = props.filteredRows
-    const statRows = displayRows
-        .map(displayRow => displayRow.row)
-        .filter(isArticleRow)
-    const expandedSettings = useSettings(props.filteredRows.map(row => row.expandedKey))
-    const expandedEach = props.filteredRows.map(row => expandedSettings[row.expandedKey] ?? false)
+    const filteredRows = props.filteredRows
+    const statRows = filteredRows.filter(isArticleRow)
+    const expandedSettings = useSettings(filteredRows.map(row => rowExpandedKey(row.statpath)))
+    const expandedEach = filteredRows.map(row => expandedSettings[rowExpandedKey(row.statpath)] ?? false)
     const currentUniverse = useUniverse()
     assert(currentUniverse !== undefined, 'no universe')
     const [simpleOrdinals] = useSetting('simple_ordinals')
@@ -185,10 +184,10 @@ function ArticleTable(props: {
 
     const { widthLeftHeader, columnWidth } = useWidths()
 
-    const statNameSpecs: Extract<CellSpec, { type: 'statistic-name' }>[] = props.filteredRows.map(row => ({
+    const statNameSpecs: Extract<CellSpec, { type: 'statistic-name' }>[] = filteredRows.map(row => ({
         type: 'statistic-name',
         longname: props.article.longname,
-        row: isArticleRow(row.row) ? row.row : undefined,
+        row: isArticleRow(row) ? row : undefined,
         renderedStatname: row.renderedStatname,
         currentUniverse,
     }))
@@ -196,10 +195,10 @@ function ArticleTable(props: {
     const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(statNameSpecs)
 
     const onlyColumns: ColumnIdentifier[] = ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
-    const cellSpecs: CellSpec[][] = props.filteredRows.map(row => [({
+    const cellSpecs: CellSpec[][] = filteredRows.map(row => [({
         type: 'statistic-row',
         longname: props.article.longname,
-        row: row.row,
+        row,
         onNavigate: (newArticle) => {
             void navContext.navigate({
                 kind: 'article',
@@ -211,20 +210,28 @@ function ArticleTable(props: {
         onlyColumns,
     })])
 
-    const plotSpecs: (PlotSpec | undefined)[] = expandedEach.map((expanded, index) => expanded
-        ? {
-                statDescription: props.filteredRows[index].renderedStatname,
-                plotProps: pullRelevantPlotProps(
-                    statRows,
-                    index,
-                    colors.hueColors.blue,
-                    props.article.shortname,
-                    props.article.longname,
-                    props.article.articleType,
-                ),
-            }
-        : undefined,
-    )
+    let statOrdinal = -1
+    const plotSpecs: (PlotSpec | undefined)[] = expandedEach.map((expanded, index) => {
+        const row = filteredRows[index]
+        if (!isArticleRow(row)) {
+            return undefined
+        }
+        statOrdinal += 1
+        if (!expanded) {
+            return undefined
+        }
+        return {
+            statDescription: row.renderedStatname,
+            plotProps: pullRelevantPlotProps(
+                statRows,
+                statOrdinal,
+                colors.hueColors.blue,
+                props.article.shortname,
+                props.article.longname,
+                props.article.articleType,
+            ),
+        }
+    })
 
     const topLeftSpec = { type: 'top-left-header' } satisfies CellSpec
 
