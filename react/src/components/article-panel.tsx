@@ -174,8 +174,7 @@ function ArticleTable(props: {
     article: Article
 }): ReactNode {
     const colors = useColors()
-    const filteredRows = props.filteredRows
-    const expandedKeys = filteredRows.map((row) => {
+    const expandedKeys = props.filteredRows.map((row) => {
         assert(row.statpath !== undefined, 'statpath missing for expanded setting')
         return rowExpandedKey(row.statpath)
     })
@@ -188,7 +187,7 @@ function ArticleTable(props: {
 
     const { widthLeftHeader, columnWidth } = useWidths()
 
-    const statNameSpecs: Extract<CellSpec, { type: 'statistic-name' }>[] = filteredRows.map(row => ({
+    const statNameSpecs: Extract<CellSpec, { type: 'statistic-name' }>[] = props.filteredRows.map(row => ({
         type: 'statistic-name',
         longname: props.article.longname,
         row: isArticleRow(row) ? row : undefined,
@@ -199,7 +198,7 @@ function ArticleTable(props: {
     const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(statNameSpecs)
 
     const onlyColumns: ColumnIdentifier[] = ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
-    const cellSpecs: CellSpec[][] = filteredRows.map(row => [({
+    const cellSpecs: CellSpec[][] = props.filteredRows.map(row => [({
         type: 'statistic-row',
         longname: props.article.longname,
         row,
