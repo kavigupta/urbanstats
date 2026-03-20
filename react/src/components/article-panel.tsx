@@ -151,20 +151,19 @@ function getGroupAndDisplayNames(nameSpec: NameSpec, nameSpecs: NameSpec[]): [st
 }
 
 export function computeNameSpecsWithGroups(nameSpecs: NameSpec[]): { updatedNameSpecs: NameSpec[], groupNames: (string | undefined)[] } {
-    const grouped = nameSpecs.map((spec) => {
-        const [groupName, displayName] = getGroupAndDisplayNames(spec, nameSpecs)
-        return {
-            groupName,
-            updatedSpec: {
-                ...spec,
-                isIndented: groupName !== undefined,
-                displayName,
-            },
-        }
-    })
+    const updatedNameSpecs: NameSpec[] = []
+    const groupNames: (string | undefined)[] = []
 
-    const updatedNameSpecs = grouped.map(x => x.updatedSpec)
-    const groupNames = grouped.map(x => x.groupName)
+    for (const spec of nameSpecs) {
+        const [groupName, displayName] = getGroupAndDisplayNames(spec, nameSpecs)
+
+        updatedNameSpecs.push({
+            ...spec,
+            isIndented: groupName !== undefined,
+            displayName,
+        })
+        groupNames.push(groupName)
+    }
 
     return { updatedNameSpecs, groupNames }
 }
