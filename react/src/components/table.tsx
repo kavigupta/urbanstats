@@ -8,6 +8,7 @@ import { Navigator } from '../navigation/Navigator'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
+import type { StatPath } from '../page_template/statistic-tree'
 import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { useComparisonHeadStyle, useMobileLayout } from '../utils/responsive'
@@ -610,6 +611,9 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: ArticleTable
     }
 
     const statpath = props.row.statpath
+    if (statpath === undefined) {
+        return []
+    }
 
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
@@ -891,8 +895,12 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
 }
 
 function ExpansionButton(props: { row: ArticleRow }): ReactNode {
-    const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
+    const effectiveStatpath = props.row.statpath ?? ('population' as StatPath)
+    const [expanded, setExpanded] = useSetting(rowExpandedKey(effectiveStatpath))
     const colors = useColors()
+    if (props.row.statpath === undefined) {
+        return null
+    }
     return (
         <div
             className="expand-toggle"

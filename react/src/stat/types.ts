@@ -1,7 +1,6 @@
 import { StatCol } from '../components/load-article'
 import statnames from '../data/statistic_name_list'
 import { MapUSS } from '../mapper/settings/map-uss'
-import { StatPath } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { UnitType } from '../utils/unit'
 
@@ -33,7 +32,6 @@ export interface StatData {
     articleNames: string[]
     renderedStatname: string
     statcol?: StatCol
-    statpath?: StatPath
     explanationPage?: string
     totalCountInClass: number
     totalCountOverall: number

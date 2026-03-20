@@ -5,9 +5,7 @@ import explanation_page from '../data/explanation_page'
 import validGeographies from '../data/mapper/used_geographies'
 import stats from '../data/statistic_list'
 import statistic_name_list from '../data/statistic_name_list'
-import paths from '../data/statistic_path_list'
 import universes_ordered from '../data/universes_ordered'
-import { StatPath } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { toStatement } from '../urban-stats-script/ast'
 import { orderNonNan, TableColumnWithPopulationPercentiles } from '../urban-stats-script/constants/table'
@@ -125,8 +123,6 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
             totalCountOverall: firstColumn.values.length,
             hideOrdinalsPercentiles: table.hideOrdinalsPercentiles,
             explanationPage: statIndex !== undefined ? explanation_page[statIndex] : undefined,
-            statcol: statIndex !== undefined && statIndex >= 0 ? stats[statIndex] : undefined,
-            statpath: statIndex !== undefined && statIndex >= 0 ? paths[statIndex] as StatPath : undefined,
         }
 
         return {

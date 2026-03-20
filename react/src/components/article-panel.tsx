@@ -128,14 +128,14 @@ function getGroupAndDisplayNames(nameSpec: NameSpec, nameSpecs: NameSpec[]): [st
     if (nameSpec.row === undefined) {
         return [undefined, nameSpec.renderedStatname]
     }
-    const statParent = statParents.get(nameSpec.row.statpath)
+    const statParent = statParents.get(nameSpec.row.statpath!)
 
-    const groupRows = nameSpecs.filter(s => s.row !== undefined && statParents.get(s.row.statpath)?.group.id === statParent?.group.id)
+    const groupRows = nameSpecs.filter(s => s.row !== undefined && statParents.get(s.row.statpath!)?.group.id === statParent?.group.id)
     const groupSize = groupRows.length
 
     const groupSourcesSet = new Set(
         groupRows
-            .map(s => statParents.get(s.row!.statpath)?.source)
+            .map(s => statParents.get(s.row!.statpath!)?.source)
             .filter(source => source !== null)
             .map(source => source!.name),
     )
@@ -175,8 +175,12 @@ function ArticleTable(props: {
     const colors = useColors()
     const filteredRows = props.filteredRows
     const statRows = filteredRows.filter(isArticleRow)
-    const expandedSettings = useSettings(filteredRows.map(row => rowExpandedKey(row.statpath)))
-    const expandedEach = filteredRows.map(row => expandedSettings[rowExpandedKey(row.statpath)] ?? false)
+    const expandedKeys = filteredRows.map((row) => {
+        assert(row.statpath !== undefined, 'statpath missing for expanded setting')
+        return rowExpandedKey(row.statpath)
+    })
+    const expandedSettings = useSettings(expandedKeys)
+    const expandedEach = expandedKeys.map(key => expandedSettings[key] ?? false)
     const currentUniverse = useUniverse()
     assert(currentUniverse !== undefined, 'no universe')
     const [simpleOrdinals] = useSetting('simple_ordinals')

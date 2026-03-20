@@ -179,8 +179,12 @@ export function ComparisonPanel(props: {
 
     const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
 
-    const expandedSettings = useSettings((rowsByArticle[0] ?? []).map(row => rowExpandedKey(row.statpath)))
-    const expandedByRowIndex = (rowsByArticle[0] ?? []).map(row => expandedSettings[rowExpandedKey(row.statpath)] ?? false)
+    const expandedKeys = (rowsByArticle[0] ?? []).map((row) => {
+        assert(row.statpath !== undefined, 'statpath missing for expanded setting')
+        return rowExpandedKey(row.statpath)
+    })
+    const expandedSettings = useSettings(expandedKeys)
+    const expandedByRowIndex = expandedKeys.map(key => expandedSettings[key] ?? false)
     const expandableByRowIndex = (rowsByArticle[0] ?? []).map((row, rowIndex) => {
         if (row.kind !== 'statistic') {
             return false
@@ -450,7 +454,12 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
     if (rows[statIndex].extraStat === undefined) {
         return []
     }
-    const sPs = rows.map(row => statParents.get(row.statpath)!).map((sP, i) => ({ sP, i }))
+    const sPs = rows
+        .map((row) => {
+            assert(row.statpath !== undefined, 'statpath missing for plot data')
+            return statParents.get(row.statpath)!
+        })
+        .map((sP, i) => ({ sP, i }))
     const byYear = new Map<Year, number[]>()
     sPs.filter((
         { sP, i }) => sP.group.id === sPs[statIndex].sP.group.id && rows[i].extraStat !== undefined,

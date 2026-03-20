@@ -1,16 +1,13 @@
 import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
-import { ArticleRow, ArticleTableRow } from '../components/load-article'
+import { ArticleRow } from '../components/load-article'
 import { PointerArrow } from '../components/pointer-cell'
 import { computeComparisonWidthColumns, MaybeScroll } from '../components/scrollable'
 import { CellSpec, SuperHeaderSpec, TableContents } from '../components/supertable'
 import { ColumnIdentifier } from '../components/table'
-import stats from '../data/statistic_list'
-import names from '../data/statistic_name_list'
-import paths from '../data/statistic_path_list'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
-import { StatName, StatPath } from '../page_template/statistic-tree'
+import { StatName } from '../page_template/statistic-tree'
 import { useUniverse } from '../universe'
 import { orderNonNan } from '../urban-stats-script/constants/table'
 import { assert } from '../utils/defensive'
@@ -75,29 +72,18 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading }
 
     const onlyColumns: ColumnIdentifier[] = data.hideOrdinalsPercentiles ? ['statval', 'statval_unit'] : ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
 
-    const allColumnRows: ArticleTableRow[][] = data.table.map((col) => {
+    const allColumnRows: ArticleRow[][] = data.table.map((col) => {
         return indexRange.map((rangeIdx) => {
             const actualRowIdx = sortedIndices[rangeIdx]
-            const colNameIdx = (names as readonly string[]).indexOf(col.name)
-            const fallbackPath: StatPath = data.statpath ?? 'population'
-            const fallbackIdx = Math.max(0, (paths as readonly string[]).indexOf(fallbackPath))
-            const statpath: StatPath = colNameIdx >= 0 ? paths[colNameIdx] : fallbackPath
-            const statcol = colNameIdx >= 0 ? stats[colNameIdx] : (data.statcol ?? stats[fallbackIdx])
-            const statname: StatName = colNameIdx >= 0 ? names[colNameIdx] : (col.name as StatName)
-            const index = colNameIdx >= 0 ? colNameIdx : fallbackIdx
             return {
                 kind: 'statistic' as const,
                 statval: col.value[actualRowIdx],
                 ordinal: col.ordinal[actualRowIdx],
                 percentileByPopulation: col.populationPercentile[actualRowIdx],
-                statcol,
-                statname,
-                statpath,
-                explanationPage: data.explanationPage ?? '',
+                statname: col.name as StatName,
                 articleType: stat.articleType,
                 totalCountInClass: data.totalCountInClass,
                 totalCountOverall: data.totalCountOverall,
-                index,
                 renderedStatname: col.name,
                 overallFirstLast: { isFirst: false, isLast: false },
                 unit: col.unit,

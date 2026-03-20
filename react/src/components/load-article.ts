@@ -5,6 +5,7 @@ import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
+import { assert } from '../utils/defensive'
 import { Article, IFirstOrLast, IMetadata } from '../utils/protos'
 import { UnitType } from '../utils/unit'
 
@@ -37,14 +38,14 @@ export interface ArticleRow {
     statval: number
     ordinal: number
     percentileByPopulation: number
-    statcol: StatCol
+    statcol?: StatCol
     statname: StatName
-    statpath: StatPath
-    explanationPage: string
+    statpath?: StatPath
+    explanationPage?: string
     articleType: string
     totalCountInClass: number
     totalCountOverall: number
-    index: number
+    index?: number
     renderedStatname: string
     extraStat?: ExtraStat
     disclaimer?: Disclaimer
@@ -189,6 +190,7 @@ export function loadArticles(datas: Article[], counts: CountsByUT, universe: str
     const statPathsEach = availableRowsAll.map((availableRows) => {
         const statPathsThis = new Set<StatPath>()
         availableRows.forEach((row) => {
+            assert(row.statpath !== undefined, 'statpath missing for loaded statistics row')
             statPathsThis.add(row.statpath)
         })
         metadataStatPathsInTreeOrder.forEach((statPath) => {
@@ -203,9 +205,9 @@ export function loadArticles(datas: Article[], counts: CountsByUT, universe: str
         const enabledMetadataPaths = metadataStatPathsInTreeOrder.filter(path => statIsEnabled(path, settings, ambiguousSourcesAll))
         const rows = availableRowsAll.map((availableRows, articleIndex) => [
             ...availableRows
-                .filter(row => statIsEnabled(row.statpath, settings, ambiguousSourcesAll))
+                .filter(row => statIsEnabled(row.statpath!, settings, ambiguousSourcesAll))
                 // sort by order in statistics tree.
-                .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
+                .sort((a, b) => statPathToOrder.get(a.statpath!)! - statPathToOrder.get(b.statpath!)!),
             ...metadataRowsForArticle(datas[articleIndex], enabledMetadataPaths),
         ])
 
@@ -227,6 +229,9 @@ function insertMissing(rows: ArticleTableRow[][]): ArticleTableRow[][] {
     const statpathToExample = new Map<StatPath, ArticleTableRow>()
     for (const articleRows of rows) {
         for (const row of articleRows) {
+            if (row.statpath === undefined) {
+                throw new Error('Missing statpath for row; this should not happen for loaded articles')
+            }
             if (!statpathToExample.has(row.statpath)) {
                 statpathToExample.set(row.statpath, row)
             }
@@ -262,7 +267,7 @@ function insertMissing(rows: ArticleTableRow[][]): ArticleTableRow[][] {
     }
 
     return rows.map((articleRows) => {
-        const byStatpath = new Map(articleRows.map(row => [row.statpath, row] as const))
+        const byStatpath = new Map(articleRows.map(row => [row.statpath!, row] as const))
         return orderedStatpaths.map(statpath => byStatpath.get(statpath) ?? emptyRowExample.get(statpath)!)
     })
 }
@@ -286,7 +291,9 @@ function collapseAlternateSources(rows: ArticleTableRow[][]): ArticleTableRow[][
     const rowsByStatGroupAndYear = new Map<string, ArticleTableRow[][]>()
     const groupYearToName = new Map<string, string>()
     for (let i = 0; i < numRows; i++) {
-        const { group, year, groupYearName } = statParents.get(rows[0][i].statpath)!
+        const statpath = rows[0][i].statpath
+        assert(statpath !== undefined, 'statpath must be defined for collapseAlternateSources')
+        const { group, year, groupYearName } = statParents.get(statpath)!
         const key = `${group.id}_${year}`
         if (!rowsByStatGroupAndYear.has(key)) {
             rowsByStatGroupAndYear.set(key, [])
