@@ -483,3 +483,12 @@ Consolidate data and shape into a file (#1750)
 775     order
 1308    data
 3191    total
+
+compute relations via run-length encoding (#1816)
+
+125     consolidated
+167     quiz_sampling_info
+685     shape
+775     order
+1314    data
+3194    total
