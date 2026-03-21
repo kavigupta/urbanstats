@@ -239,29 +239,31 @@ export function Editor(
         let hoveredToken: AnnotatedToken | undefined
         const listener = (event: MouseEvent): void => {
             for (const elem of document.elementsFromPoint(event.clientX, event.clientY)) {
-                let token: AnnotatedToken | undefined, name, documentation, value
-                if (
-                    (token = spanTokenMapRef.current.get(elem)) !== undefined
-                    && token.token.type === 'identifier' && (name = token.token.value)
-                    && ((documentation = typeEnvironment.get(name)) !== undefined || (value = context.get(name)) !== undefined)) {
-                    hoveredToken = token
-                    const opts = {
-                        location: token.location,
-                        name,
-                        documentation,
-                        value,
-                    }
-                    const elemOffset = totalOffset(elem).left
-                    setTimeout(() => {
-                        if (hoveredToken === token) {
-                            setPopoverState({
-                                kind: 'inspect',
-                                ...opts,
-                                element: createDocumentationPopover(colors, editorRef.current!, elemOffset),
-                            })
+                const token = spanTokenMapRef.current.get(elem)
+                if (token?.token.type === 'identifier') {
+                    const name = token.token.value
+                    const documentation = typeEnvironment.get(name)
+                    const value = context.get(name)
+                    if (documentation !== undefined || value !== undefined) {
+                        hoveredToken = token
+                        const opts = {
+                            location: token.location,
+                            name,
+                            documentation,
+                            value,
                         }
-                    }, 500)
-                    return
+                        const elemOffset = totalOffset(elem).left
+                        setTimeout(() => {
+                            if (hoveredToken === token) {
+                                setPopoverState({
+                                    kind: 'inspect',
+                                    ...opts,
+                                    element: createDocumentationPopover(colors, editorRef.current!, elemOffset),
+                                })
+                            }
+                        }, 500)
+                        return
+                    }
                 }
                 if (popoverState?.kind === 'inspect' && popoverState.element === elem) {
                     hoveredToken = undefined
