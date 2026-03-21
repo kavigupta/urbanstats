@@ -68,6 +68,35 @@ export function isArticleRow(row: ArticleTableRow): row is ArticleRow {
     return row.kind === 'statistic'
 }
 
+/** One comparison table row: cells from each article at the same row index (aligned `statpath`s). */
+export type ComparisonArticlesSlice = readonly ArticleTableRow[]
+
+function firstCellInComparisonSlice(slice: ComparisonArticlesSlice): ArticleTableRow {
+    assert(slice.length > 0, 'empty comparison row slice')
+    return slice[0]
+}
+
+export function statPathForComparisonRow(slice: ComparisonArticlesSlice): StatPath {
+    const sp = firstCellInComparisonSlice(slice).statpath
+    assert(sp !== undefined, 'statpath missing for comparison row')
+    return sp
+}
+
+/** Whether ordinal / percentile columns apply (statistic rows only; all articles must agree). */
+export function comparisonOrdinalColumnsValid(slice: ComparisonArticlesSlice): boolean {
+    if (slice.length === 0 || firstCellInComparisonSlice(slice).kind !== 'statistic') {
+        return false
+    }
+    return slice.every((r) => {
+        assert(isArticleRow(r), 'unreachable: misaligned comparison rows')
+        return r.disclaimer !== 'heterogenous-sources'
+    })
+}
+
+export function comparisonSliceHasExpandableExtraStat(slice: ComparisonArticlesSlice): boolean {
+    return slice.some(r => isArticleRow(r) && r.extraStat !== undefined)
+}
+
 // statParents is built in statistic-tree order (via statParentsList),
 // so filtering preserves the desired UI ordering.
 const metadataStatPathsInTreeOrder = Array.from(statParents.entries())

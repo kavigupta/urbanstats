@@ -41,11 +41,11 @@ export function CSVButton(props: { onClick: () => void }): ReactNode {
 
 export function generateCSVDataForArticles(
     articles: Article[],
-    dataByArticleDisplay: ArticleTableRow[][],
+    dataByArticleStat: ArticleTableRow[][],
     includeOrdinals: boolean,
 ): string[][] {
     const names = articles.map(a => a.longname)
-    const tableRows = dataByArticleDisplay[0]
+    const tableRows = dataByArticleStat[0]
     const headerRow = ['Region', ...tableRows.map(r => r.renderedStatname)]
 
     if (includeOrdinals) {
@@ -61,14 +61,14 @@ export function generateCSVDataForArticles(
         const row = [names[articleIndex]]
 
         for (let displayIndex = 0; displayIndex < tableRows.length; displayIndex++) {
-            const tableRow = dataByArticleDisplay[articleIndex][displayIndex]
+            const tableRow = dataByArticleStat[articleIndex][displayIndex]
             const value = tableRow.kind === 'metadata' ? tableRow.statvalString : tableRow.statval
             row.push(value.toString())
         }
 
         if (includeOrdinals) {
             for (let displayIndex = 0; displayIndex < tableRows.length; displayIndex++) {
-                const tableRow = dataByArticleDisplay[articleIndex][displayIndex]
+                const tableRow = dataByArticleStat[articleIndex][displayIndex]
                 if (tableRow.kind === 'statistic') {
                     row.push(tableRow.ordinal.toString())
                     row.push(tableRow.percentileByPopulation.toString())

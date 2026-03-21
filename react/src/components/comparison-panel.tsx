@@ -28,7 +28,14 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { computeNameSpecsWithGroups } from './article-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
-import { ArticleRow, ArticleTableRow, isArticleRow } from './load-article'
+import {
+    ArticleRow,
+    ArticleTableRow,
+    comparisonOrdinalColumnsValid,
+    comparisonSliceHasExpandableExtraStat,
+    isArticleRow,
+    statPathForComparisonRow,
+} from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
@@ -54,7 +61,7 @@ export function ComparisonPanel(props: {
     const [activeId, setActiveId] = useState<string | null>(null)
     const [localArticles, setLocalArticles] = useState<{ value: Article[], propsValue: Article[] }>({ value: props.articles, propsValue: props.articles })
 
-    const [sortByRowIndex, setSortByRowIndex] = useState<number | null>(null)
+    const [sortByStatIndex, setSortByStatIndex] = useState<number | null>(null)
     const [sortDirection, setSortDirection] = useState<'up' | 'down'>('down')
 
     // Sensors for drag and drop - more sensitive for vertical dragging
@@ -122,27 +129,25 @@ export function ComparisonPanel(props: {
 
     const settings = useSettings(groupYearKeys())
 
-    const dataByArticleDisplay: ArticleTableRow[][] = props.rows(settings)
-    const fullRows = dataByArticleDisplay[0] ?? []
-    const totalRowsByDisplay = fullRows.length
+    const dataByArticleStat: ArticleTableRow[][] = props.rows(settings)
+    const dataByStatArticle: ArticleTableRow[][] = dataByArticleStat[0].map((_, statIndex) =>
+        dataByArticleStat.map(articleData => articleData[statIndex]),
+    )
+    const totalRowsByDisplay = dataByStatArticle.length
 
-    const handleSort = (rowIndex: number): void => {
+    const handleSort = (statIndex: number): void => {
         let newSortDirection: 'up' | 'down' | 'both'
-        if (sortByRowIndex === rowIndex) {
+        if (sortByStatIndex === statIndex) {
             newSortDirection = sortDirection === 'up' ? 'down' : 'up'
         }
         else {
             newSortDirection = 'down'
-            setSortByRowIndex(rowIndex)
+            setSortByStatIndex(statIndex)
         }
 
         setSortDirection(newSortDirection)
 
-        const statData: ArticleRow[] = localArticlesToUse.map((unused, articleIndex) => {
-            const row = dataByArticleDisplay[articleIndex][rowIndex]
-            assert(isArticleRow(row), 'unreachable: can only sort statistic rows')
-            return row
-        })
+        const statData = assertRowIsStatistics(dataByStatArticle[statIndex])
         const sortedIndices = statData
             .map((row, index) => ({ row, index }))
             .sort((a, b) => compareArticleRows(a.row, b.row, newSortDirection))
@@ -161,22 +166,11 @@ export function ComparisonPanel(props: {
 
     const mobileLayout = useMobileLayout()
 
-    const validOrdinalsByRow = fullRows.map((rowFull, rowIndex) => {
-        if (rowFull.kind !== 'statistic') {
-            return false
-        }
-        return localArticlesToUse.every((unused, articleIndex) => {
-            const row = dataByArticleDisplay[articleIndex][rowIndex]
-            assert(isArticleRow(row), 'unreachable: expected statistic row')
-            return row.disclaimer !== 'heterogenous-sources'
-        })
-    })
-
-    const statRowsCount = fullRows.reduce((acc, rowFull) => acc + (rowFull.kind === 'statistic' ? 1 : 0), 0)
+    const validOrdinalsByStat = dataByStatArticle.map(comparisonOrdinalColumnsValid)
 
     const includeOrdinals = (
         localArticlesToUse.every(article => article.articleType === localArticlesToUse[0].articleType)
-        && (statRowsCount === 0 || validOrdinalsByRow.some(x => x))
+        && (validOrdinalsByStat.length === 0 || validOrdinalsByStat.some(x => x))
     )
 
     const onlyColumns: ColumnIdentifier[] = includeOrdinals
@@ -184,23 +178,16 @@ export function ComparisonPanel(props: {
         : ['statval', 'statval_unit']
 
     const expandedSettings = useSettings(
-        fullRows.map((row) => {
-            assert(row.statpath !== undefined, 'statpath missing for expanded setting')
-            return rowExpandedKey(row.statpath)
-        }),
+        dataByStatArticle
+            .filter(comparisonSliceHasExpandableExtraStat)
+            .map(slice => rowExpandedKey(statPathForComparisonRow(slice))),
     )
 
-    const expandedByRow = fullRows.map((row) => {
-        assert(row.statpath !== undefined, 'statpath missing for expanded setting')
-        return expandedSettings[rowExpandedKey(row.statpath)] ?? false
-    })
+    const expandedByStatIndex = dataByStatArticle.map(slice =>
+        expandedSettings[rowExpandedKey(statPathForComparisonRow(slice))] ?? false,
+    )
 
-    const numExpandedExtras = fullRows.reduce((acc, row, rowIndex) => {
-        if (row.kind !== 'statistic' || row.extraStat === undefined || !expandedByRow[rowIndex]) {
-            return acc
-        }
-        return acc + 1
-    }, 0)
+    const numExpandedExtras = expandedByStatIndex.filter(v => v).length
 
     let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, includeOrdinals)
     let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (totalRowsByDisplay + numExpandedExtras) + 1.5
@@ -224,32 +211,18 @@ export function ComparisonPanel(props: {
 
     const sharedTypeOfAllArticles = localArticlesToUse.every(article => article.articleType === localArticlesToUse[0].articleType) ? localArticlesToUse[0].articleType : undefined
 
-    const highlightArticleIndexByRow: (number | undefined)[] = fullRows.map((rowFull, rowIndex) => {
-        if (rowFull.kind !== 'statistic') {
-            return undefined
-        }
-        const rowsAcrossArticles: ArticleRow[] = localArticlesToUse.map((unused, articleIndex) => {
-            const row = dataByArticleDisplay[articleIndex][rowIndex]
-            assert(isArticleRow(row), 'unreachable: expected statistic row for highlighting')
-            return row
-        })
-        return getHighlightIndex(rowsAcrossArticles)
-    })
+    const highlightArticleIndicesByStat = dataByStatArticle.map(articlesStatData => getHighlightIndex(articlesStatData))
 
-    const rowToDisplayForRow = (rowIndex: number): ArticleRow => {
-        const rowsAcrossArticles: ArticleRow[] = localArticlesToUse.map((unused, articleIndex) => {
-            const row = dataByArticleDisplay[articleIndex][rowIndex]
-            assert(isArticleRow(row), 'unreachable: expected statistic row for header rendering')
-            return row
-        })
-        return rowsAcrossArticles.find(row => row.extraStat !== undefined) ?? rowsAcrossArticles[0]
+    const rowToDisplayForStat = (statIndex: number): ArticleRow => {
+        const rows = assertRowIsStatistics(dataByStatArticle[statIndex])
+        return rows.find(r => r.extraStat !== undefined) ?? rows[0]
     }
 
-    const plotProps = (rowIndex: number): PlotProps[] =>
-        dataByArticleDisplay.map((articleRows, articleIdx) =>
+    const plotProps = (statIndex: number): PlotProps[] =>
+        dataByArticleStat.map((articleRows, articleIdx) =>
             pullRelevantPlotProps(
                 articleRows,
-                rowIndex,
+                statIndex,
                 colorFromCycle(colors.hueColors, articleIdx),
                 localArticlesToUse[articleIdx].shortname,
                 localArticlesToUse[articleIdx].longname,
@@ -271,12 +244,12 @@ export function ComparisonPanel(props: {
         } satisfies CellSpec
     ))
 
-    const statisticNameHeaderSpecsOriginal: Parameters<typeof computeNameSpecsWithGroups>[0] = fullRows.map((rowFull, rowIndex) => {
-        if (rowFull.kind !== 'statistic') {
+    const statisticNameHeaderSpecsOriginal: Parameters<typeof computeNameSpecsWithGroups>[0] = dataByStatArticle.map((articlesStatData, statIndex) => {
+        if (articlesStatData[0].kind !== 'statistic') {
             return {
                 type: 'statistic-name',
                 row: undefined,
-                renderedStatname: rowFull.renderedStatname,
+                renderedStatname: articlesStatData[0].renderedStatname,
                 longname: names[0],
                 currentUniverse: props.universe,
                 center: transpose ? true : false,
@@ -284,7 +257,7 @@ export function ComparisonPanel(props: {
             } satisfies CellSpec
         }
 
-        const rowToDisplay = rowToDisplayForRow(rowIndex)
+        const rowToDisplay = rowToDisplayForStat(statIndex)
         assert(rowToDisplay.statpath !== undefined, 'statpath missing for loaded statistic row')
         return {
             type: 'statistic-name',
@@ -294,21 +267,21 @@ export function ComparisonPanel(props: {
             currentUniverse: props.universe,
             center: transpose ? true : false,
             transpose,
-            highlightIndex: highlightArticleIndexByRow[rowIndex],
+            highlightIndex: highlightArticleIndicesByStat[statIndex],
             sortInfo: {
                 onSort: () => {
-                    handleSort(rowIndex)
+                    handleSort(statIndex)
                 },
-                sortDirection: sortByRowIndex === rowIndex ? sortDirection : 'both',
+                sortDirection: sortByStatIndex === statIndex ? sortDirection : 'both',
             },
         } satisfies CellSpec
     })
 
     const { updatedNameSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames } = computeNameSpecsWithGroups(statisticNameHeaderSpecsOriginal)
 
-    const rowSpecsByStat: CellSpec[][] = fullRows.map((unusedRow, rowIndex) => (
+    const rowSpecsByStat: CellSpec[][] = dataByStatArticle.map((unusedArticlesStatData, statIndex) => (
         Array.from({ length: localArticlesToUse.length }).map((unused, articleIndex) => {
-            const row = dataByArticleDisplay[articleIndex][rowIndex]
+            const row = dataByArticleStat[articleIndex][statIndex]
 
             if (row.kind !== 'statistic') {
                 return {
@@ -332,9 +305,9 @@ export function ComparisonPanel(props: {
                 row,
                 longname: names[articleIndex],
                 onlyColumns,
-                blankColumns: validOrdinalsByRow[rowIndex] ? [] : ['statistic_ordinal', 'statistic_percentile'],
+                blankColumns: validOrdinalsByStat[statIndex] ? [] : ['statistic_ordinal', 'statistic_percentile'],
                 simpleOrdinals: true,
-                statisticStyle: highlightArticleIndexByRow[rowIndex] === articleIndex
+                statisticStyle: highlightArticleIndicesByStat[statIndex] === articleIndex
                     ? { backgroundColor: mixWithBackground(colorFromCycle(colors.hueColors, articleIndex), colors.mixPct / 100, colors.background) }
                     : {},
                 onNavigate: (x: string) => {
@@ -348,27 +321,24 @@ export function ComparisonPanel(props: {
         })
     ))
 
-    const rowSpecsByStatTransposed = rowSpecsByStat.length === 0 ? [] : rowSpecsByStat[0].map((_, rowIndex) => rowSpecsByStat.map(rowSpecs => rowSpecs[rowIndex]))
+    const rowSpecsByStatTransposed = rowSpecsByStat.length === 0 ? [] : rowSpecsByStat[0].map((_, statIndex) => rowSpecsByStat.map(rowSpecs => rowSpecs[statIndex]))
 
-    const plotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[] = fullRows.map((rowFull, rowIndex) => {
-        if (rowFull.kind !== 'statistic' || rowFull.extraStat === undefined) {
-            return undefined
-        }
-        return expandedByRow[rowIndex]
+    const plotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[] = dataByStatArticle.map((unused, statIndex) =>
+        expandedByStatIndex[statIndex]
             ? {
-                    statDescription: rowFull.renderedStatname,
-                    plotProps: plotProps(rowIndex),
+                    statDescription: dataByStatArticle[statIndex][0].renderedStatname,
+                    plotProps: plotProps(statIndex),
                 }
-            : undefined
-    })
+            : undefined,
+    )
 
     const topLeftSpec: CellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
 
     const csvExportCallback = useCallback<CSVExportData>(() => {
-        const data = generateCSVDataForArticles(localArticlesToUse, dataByArticleDisplay, includeOrdinals)
+        const data = generateCSVDataForArticles(localArticlesToUse, dataByArticleStat, includeOrdinals)
         const filename = `${sanitize(joinedString)}.csv`
         return { csvData: data, csvFilename: filename }
-    }, [joinedString, localArticlesToUse, dataByArticleDisplay, includeOrdinals])
+    }, [joinedString, localArticlesToUse, dataByArticleStat, includeOrdinals])
 
     return (
         <universeContext.Provider value={{
@@ -541,7 +511,21 @@ export function pullRelevantPlotProps(rows: ArticleTableRow[], rowIndex: number,
     })
 }
 
-function getHighlightIndex(rows: ArticleRow[]): number | undefined {
+function assertRowIsStatistics(rows: readonly ArticleTableRow[]): ArticleRow[] {
+    return rows.map((row) => {
+        assert(isArticleRow(row), 'unreachable: expected statistic row')
+        return row
+    })
+}
+
+function getHighlightIndex(articlesStatData: readonly ArticleTableRow[]): number | undefined {
+    if (!articlesStatData.every(isArticleRow)) {
+        return undefined
+    }
+    return highlightMaxStatvalArticleIndex(articlesStatData)
+}
+
+function highlightMaxStatvalArticleIndex(rows: readonly ArticleRow[]): number | undefined {
     return rows.map(x => x.statval).reduce<number | undefined>((iMax, x, i, arr) => {
         if (isNaN(x)) {
             return iMax
