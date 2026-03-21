@@ -129,7 +129,6 @@ export function ComparisonPanel(props: {
 
     const dataByArticleStat = props.rows(settings)
     const dataByStatArticle = dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
-    const totalRowsByDisplay = dataByStatArticle.length
 
     const handleSort = (statIndex: number): void => {
         let newSortDirection: 'up' | 'down' | 'both'
@@ -186,7 +185,7 @@ export function ComparisonPanel(props: {
     const numExpandedExtras = expandedByStatIndex.filter(v => v).length
 
     let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, includeOrdinals)
-    let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (totalRowsByDisplay + numExpandedExtras) + 1.5
+    let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (dataByStatArticle.length + numExpandedExtras) + 1.5
 
     const transpose = widthColumns > computeMaxColumns(mobileLayout) && widthColumns > widthTransposeColumns
 
@@ -195,7 +194,7 @@ export function ComparisonPanel(props: {
     }
 
     const leftMarginPercent = transpose ? 0.24 : 0.18
-    const numColumns = transpose ? totalRowsByDisplay : localArticlesToUse.length
+    const numColumns = transpose ? dataByStatArticle.length : localArticlesToUse.length
     const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
 
     const headerTextClass = useHeaderTextClass()
