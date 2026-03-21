@@ -45,14 +45,11 @@ export function generateCSVDataForArticles(
     includeOrdinals: boolean,
 ): string[][] {
     const names = articles.map(a => a.longname)
-    const tableRows = dataByArticleStat[0]
-    const headerRow = ['Region', ...tableRows.map(r => r.renderedStatname)]
+    const statNames = dataByArticleStat[0].map(row => row.renderedStatname)
+    const headerRow = ['Region', ...statNames]
 
     if (includeOrdinals) {
-        const ordinalsPercentileHeaders = tableRows
-            .filter(r => r.kind === 'statistic')
-            .flatMap(r => [`${r.renderedStatname} (Rank)`, `${r.renderedStatname} (Percentile)`])
-        headerRow.push(...ordinalsPercentileHeaders)
+        headerRow.push(...statNames.flatMap((statName, idx) => dataByArticleStat[0][idx].kind === 'statistic' ? [`${statName} (Rank)`, `${statName} (Percentile)`] : []))
     }
 
     const dataRows: string[][] = []
@@ -60,18 +57,17 @@ export function generateCSVDataForArticles(
     for (let articleIndex = 0; articleIndex < articles.length; articleIndex++) {
         const row = [names[articleIndex]]
 
-        for (let displayIndex = 0; displayIndex < tableRows.length; displayIndex++) {
-            const tableRow = dataByArticleStat[articleIndex][displayIndex]
-            const value = tableRow.kind === 'metadata' ? tableRow.statval : tableRow.statval
-            row.push(value.toString())
+        for (let statIndex = 0; statIndex < dataByArticleStat[0].length; statIndex++) {
+            const rowData = dataByArticleStat[articleIndex][statIndex]
+            row.push(rowData.statval.toString())
         }
 
         if (includeOrdinals) {
-            for (let displayIndex = 0; displayIndex < tableRows.length; displayIndex++) {
-                const tableRow = dataByArticleStat[articleIndex][displayIndex]
-                if (tableRow.kind === 'statistic') {
-                    row.push(tableRow.ordinal.toString())
-                    row.push(tableRow.percentileByPopulation.toString())
+            for (let statIndex = 0; statIndex < dataByArticleStat[0].length; statIndex++) {
+                const rowData = dataByArticleStat[articleIndex][statIndex]
+                if (rowData.kind === 'statistic') {
+                    row.push(rowData.ordinal.toString())
+                    row.push(rowData.percentileByPopulation.toString())
                 }
             }
         }
