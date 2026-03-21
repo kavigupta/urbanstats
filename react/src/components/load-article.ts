@@ -5,6 +5,7 @@ import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
+import { assert } from '../utils/defensive'
 import { Article, IFirstOrLast, IMetadata } from '../utils/protos'
 import { UnitType } from '../utils/unit'
 
@@ -269,8 +270,7 @@ function insertMissing(rows: ArticleRow[][]): ArticleRow[][] {
             const empty = JSON.parse(JSON.stringify(example)) as ArticleStatisticRow
             for (const key of Object.keys(empty) as (keyof ArticleStatisticRow)[]) {
                 if (typeof empty[key] === 'number') {
-                    // @ts-expect-error -- Writing NaN into numeric fields
-                    empty[key] = NaN
+                    empty[key] = NaN as never
                 }
                 else if (key === 'extraStat') {
                     empty[key] = undefined
@@ -280,9 +280,11 @@ function insertMissing(rows: ArticleRow[][]): ArticleRow[][] {
             emptyRowExample.set(statpath, empty)
         }
         else {
-            const empty = JSON.parse(JSON.stringify(example)) as MetadataArticleRow
-            empty.statval = ''
-            empty.articleType = 'none' // doesn't matter since we are using simple mode
+            const empty = {
+                ...example,
+                statval: '',
+                articleType: 'none', // doesn't matter since we are using simple mode
+            }
             emptyRowExample.set(statpath, empty)
         }
     }
@@ -342,12 +344,11 @@ function collapseAlternateSourcesSingleGroupYear(rows: ArticleRow[][], groupYear
         return rows
     }
     // convert to a bitmap of whether each thing has a value (alternative is nan)
-    const statisticRows = rows as ArticleStatisticRow[][]
-    const hasValue = statisticRows.map(row => row.map(x => !Number.isNaN(x.statval)))
+    const hasValue = rows.map(row => row.map(x => !Number.isNaN(x.statval)))
     const rowsC: ArticleRow[][] = []
     const collapsedRows = computeCollapsedRows(new Map(hasValue.map((x, i) => [i, x])))
     for (const collapsedRow of collapsedRows) {
-        rowsC.push(collapse(collapsedRow.map(i => statisticRows[i]), groupYearName))
+        rowsC.push(collapse(collapsedRow.map(i => rows[i]), groupYearName))
     }
     return rowsC
 }
@@ -391,7 +392,7 @@ function computeCollapsedRows(hasValue: Map<number, boolean[]>): number[][] {
     return [rowIdxs, ...computeCollapsedRows(filtMap)]
 }
 
-function collapse(rows: ArticleStatisticRow[][], groupYearName: string): ArticleStatisticRow[] {
+function collapse(rows: ArticleRow[][], groupYearName: string): ArticleRow[] {
     // rows[stat_column][article]
     if (rows.length === 1) {
         return rows[0]
@@ -402,9 +403,11 @@ function collapse(rows: ArticleStatisticRow[][], groupYearName: string): Article
         if (rowsWithValues.length > 1) {
             throw new Error(`Cannot collapse rows with ${rowsWithValues.length} values (expected <= 1)`)
         }
+        // If we can't find any rows with values, just use the first one
+        const firstRow = rowsWithValues[0] ?? rowsForArticle[0]
+        assert(firstRow.kind === 'statistic', 'First row must be a data statistic')
         return {
-            // If we can't find any rows with values, just use the first one
-            ...(rowsWithValues[0] ?? rowsForArticle[0]),
+            ...firstRow,
             renderedStatname: groupYearName,
             disclaimer: 'heterogenous-sources',
         }

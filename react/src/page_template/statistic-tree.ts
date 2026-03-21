@@ -87,26 +87,26 @@ export const statsTree: StatsTree = rawStatsTree.map(category => (
                     name,
                     indentedName: indentedName ?? undefined,
                     bySource: s.map((stat) => {
-                        if (stat.kind === 'data') {
-                            return {
-                                kind: 'data',
-                                source: stat.source,
-                                path: statPaths[stat.column],
-                                name: statNames[stat.column],
-                                statcol: stats[stat.column],
-                                parent: undefined as unknown as GroupYear, // set below
-                            } satisfies DataStatistic
+                        switch (stat.kind) {
+                            case 'data':
+                                return {
+                                    kind: 'data',
+                                    source: stat.source,
+                                    path: statPaths[stat.column],
+                                    name: statNames[stat.column],
+                                    statcol: stats[stat.column],
+                                    parent: undefined as unknown as GroupYear, // set below
+                                } satisfies DataStatistic
+                            case 'metadata':
+                                return {
+                                    kind: 'metadata',
+                                    source: stat.source,
+                                    path: stat.path,
+                                    name,
+                                    metadataIndex: stat.metadata_index,
+                                    parent: undefined as unknown as GroupYear, // set below
+                                } satisfies MetadataStatistic
                         }
-                        // eslint-disable-next-line no-restricted-syntax -- static assert
-                        stat satisfies { kind: 'metadata', value_type: 'string' }
-                        return {
-                            kind: 'metadata',
-                            source: stat.source,
-                            path: stat.path,
-                            name,
-                            metadataIndex: stat.metadata_index,
-                            parent: undefined as unknown as GroupYear, // set below
-                        } satisfies MetadataStatistic
                     }),
                 } satisfies MultiSourceStatistic)),
                 parent: undefined as unknown as Group, // set below

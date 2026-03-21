@@ -28,7 +28,7 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { computeNameSpecsWithGroups } from './article-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
-import {ArticleStatisticRow, ArticleRow} from './load-article'
+import { ArticleRow } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
@@ -44,8 +44,6 @@ export function ComparisonPanel(props: {
     rows: (settings: StatGroupSettings) => ArticleRow[][]
     mapPartitions: number[][]
 }): ReactNode {
-    type LoadedStatisticRow = ArticleStatisticRow & { statpath: NonNullable<ArticleStatisticRow['statpath']> }
-
     const colors = useColors()
     const tableRef = useRef<HTMLDivElement>(null)
     const mapRef = useRef(null)
@@ -232,7 +230,7 @@ export function ComparisonPanel(props: {
         const rowToDisplay = rowToDisplayForStat(statIndex)
         return {
             type: 'statistic-name',
-            row: rowToDisplay as LoadedStatisticRow,
+            row: rowToDisplay,
             renderedStatname: rowToDisplay.renderedStatname,
             longname: names[0],
             currentUniverse: props.universe,
