@@ -71,7 +71,6 @@ export function createDocumentationPopover(colors: Colors, editor: HTMLPreElemen
         'position': 'absolute',
         'top': '100%',
         'left': '0%',
-        'user-select': 'none',
         'z-index': '3',
         'overflow': 'scroll',
         'max-height': `10lh`,
