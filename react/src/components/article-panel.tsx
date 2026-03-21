@@ -174,11 +174,8 @@ function ArticleTable(props: {
     article: Article
 }): ReactNode {
     const colors = useColors()
-    const expandedKeys = props.filteredRows.map((row) => {
-        return rowExpandedKey(row.statpath)
-    })
-    const expandedSettings = useSettings(expandedKeys)
-    const expandedEach = expandedKeys.map(key => expandedSettings[key] ?? false)
+    const expandedSettings = useSettings(props.filteredRows.map(row => rowExpandedKey(row.statpath)))
+    const expandedEach = props.filteredRows.map(row => expandedSettings[rowExpandedKey(row.statpath)])
     const currentUniverse = useUniverse()
     assert(currentUniverse !== undefined, 'no universe')
     const [simpleOrdinals] = useSetting('simple_ordinals')
