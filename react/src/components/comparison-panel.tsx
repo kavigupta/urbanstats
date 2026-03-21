@@ -31,7 +31,6 @@ import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import {
     ArticleStatisticRow,
     ArticleRow,
-    comparisonSliceHasExpandableExtraStat,
     isArticleRow,
 } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
