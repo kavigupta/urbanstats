@@ -463,7 +463,6 @@ export function pullRelevantPlotProps(rows: ArticleRow[], rowIndex: number, colo
     }
     const sPs = rows
         .map((row) => {
-            assert(row.statpath !== undefined, 'statpath missing for plot data')
             return statParents.get(row.statpath)!
         })
         .map((sP, i) => ({ sP, i }))

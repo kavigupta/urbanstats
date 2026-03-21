@@ -472,18 +472,20 @@ export function StatisticRowCells(props: {
         {
             widthPercentage: 10,
             columnIdentifier: 'statval_unit',
-            content: () => props.row.kind === 'metadata' ? undefined : (
-                <div className="value_unit">
-                    <span className="serif value">
-                        <Statistic
-                            statname={props.row.statname}
-                            value={props.row.statval}
-                            isUnit={true}
-                            unit={props.row.unit}
-                        />
-                    </span>
-                </div>
-            ),
+            content: () => props.row.kind === 'metadata'
+                ? undefined
+                : (
+                        <div className="value_unit">
+                            <span className="serif value">
+                                <Statistic
+                                    statname={props.row.statname}
+                                    value={props.row.statval}
+                                    isUnit={true}
+                                    unit={props.row.unit}
+                                />
+                            </span>
+                        </div>
+                    ),
             style: { textAlign: 'right' },
         },
         {

@@ -204,7 +204,7 @@ function ArticleTable(props: {
     const cellSpecs: CellSpec[][] = props.filteredRows.map(row => [({
         type: 'statistic-row',
         longname: props.article.longname,
-        row: {...row, unit: undefined},
+        row: { ...row, unit: undefined },
         onNavigate: (newArticle) => {
             void navContext.navigate({
                 kind: 'article',
