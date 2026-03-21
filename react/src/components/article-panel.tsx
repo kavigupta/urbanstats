@@ -7,7 +7,7 @@ import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
-import { StatPath, statParents } from '../page_template/statistic-tree'
+import { statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { Universe, universeContext, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
@@ -22,7 +22,7 @@ import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { pullRelevantPlotProps } from './comparison-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
-import { ArticleStatisticRow, ArticleRow } from './load-article'
+import { ArticleRow } from './load-article'
 import { Related } from './related-button'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
@@ -122,8 +122,7 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     )
 }
 
-type LoadedStatisticRow = ArticleStatisticRow & { statpath: StatPath }
-type NameSpec = Omit<Extract<CellSpec, { type: 'statistic-name' }>, 'row'> & { row?: LoadedStatisticRow }
+type NameSpec = Extract<CellSpec, { type: 'statistic-name' }>
 
 function getGroupAndDisplayNames(nameSpec: NameSpec, nameSpecs: NameSpec[]): [string | undefined, string] {
     if (nameSpec.row === undefined) {
@@ -183,7 +182,7 @@ function ArticleTable(props: {
 
     const { widthLeftHeader, columnWidth } = useWidths()
 
-    const statNameSpecs: NameSpec[] = props.filteredRows.map(row => ({
+    const statNameSpecs: Extract<CellSpec, { type: 'statistic-name' }>[] = props.filteredRows.map(row => ({
         type: 'statistic-name',
         longname: props.article.longname,
         row: row.kind === 'statistic' ? row : undefined,
