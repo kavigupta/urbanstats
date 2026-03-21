@@ -90,17 +90,6 @@ interface StatisticCellRenderingInfoMetadata extends StatisticCellRenderingInfoC
 
 export type StatisticCellRenderingInfo = StatisticCellRenderingInfoStatistic | StatisticCellRenderingInfoMetadata
 
-export function isArticleRow(row: ArticleRow): row is ArticleStatisticRow {
-    return row.kind === 'statistic'
-}
-
-/** One comparison table row: cells from each article at the same row index (aligned `statpath`s). */
-export type ComparisonArticlesSlice = readonly ArticleRow[]
-
-export function comparisonSliceHasExpandableExtraStat(slice: ComparisonArticlesSlice): boolean {
-    return slice.some(r => isArticleRow(r) && r.extraStat !== undefined)
-}
-
 // statParents is built in statistic-tree order (via statParentsList),
 // so filtering preserves the desired UI ordering.
 const metadataStatPathsInTreeOrder = Array.from(statParents.entries())

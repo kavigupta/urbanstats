@@ -22,7 +22,7 @@ import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { pullRelevantPlotProps } from './comparison-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
-import { ArticleStatisticRow, ArticleRow, isArticleRow } from './load-article'
+import { ArticleStatisticRow, ArticleRow } from './load-article'
 import { Related } from './related-button'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
@@ -186,7 +186,7 @@ function ArticleTable(props: {
     const statNameSpecs: NameSpec[] = props.filteredRows.map(row => ({
         type: 'statistic-name',
         longname: props.article.longname,
-        row: isArticleRow(row) ? row : undefined,
+        row: row.kind === 'statistic' ? row : undefined,
         renderedStatname: row.renderedStatname,
         currentUniverse,
     }))

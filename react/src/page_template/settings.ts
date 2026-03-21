@@ -72,7 +72,7 @@ export function checkboxCategoryName(category: SourceCategoryIdentifier): string
     return `${category} Sources`
 }
 
-const defaultCategorySelections = new Set(['main', 'metadata'] as CategoryIdentifier[])
+const defaultCategorySelections = new Set(['main'] as CategoryIdentifier[])
 
 const defaultEnabledYears = new Set(
     [2020],

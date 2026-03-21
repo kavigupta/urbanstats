@@ -28,11 +28,7 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { computeNameSpecsWithGroups } from './article-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
-import {
-    ArticleStatisticRow,
-    ArticleRow,
-    isArticleRow,
-} from './load-article'
+import {ArticleStatisticRow, ArticleRow} from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
@@ -477,14 +473,10 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
     })
 }
 
-function getHighlightIndex(articlesStatData: readonly ArticleRow[]): number | undefined {
-    if (!articlesStatData.every(isArticleRow)) {
+function getHighlightIndex(rows: readonly ArticleRow[]): number | undefined {
+    if (!rows.every(r => r.kind === 'statistic')) {
         return undefined
     }
-    return highlightMaxStatvalArticleIndex(articlesStatData)
-}
-
-function highlightMaxStatvalArticleIndex(rows: readonly ArticleStatisticRow[]): number | undefined {
     return rows.map(x => x.statval).reduce<number | undefined>((iMax, x, i, arr) => {
         if (isNaN(x)) {
             return iMax
