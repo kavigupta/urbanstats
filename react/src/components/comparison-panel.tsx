@@ -127,10 +127,8 @@ export function ComparisonPanel(props: {
 
     const settings = useSettings(groupYearKeys())
 
-    const dataByArticleStat: ArticleRow[][] = props.rows(settings)
-    const dataByStatArticle: ArticleRow[][] = dataByArticleStat[0].map((_, statIndex) =>
-        dataByArticleStat.map(articleData => articleData[statIndex]),
-    )
+    const dataByArticleStat = props.rows(settings)
+    const dataByStatArticle = dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
     const totalRowsByDisplay = dataByStatArticle.length
 
     const handleSort = (statIndex: number): void => {
