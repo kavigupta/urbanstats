@@ -299,7 +299,7 @@ export function ComparisonPanel(props: {
 
     const rowSpecsByStatTransposed = rowSpecsByStat.length === 0 ? [] : rowSpecsByStat[0].map((_, statIndex) => rowSpecsByStat.map(rowSpecs => rowSpecs[statIndex]))
 
-    const plotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[] = dataByStatArticle.map((unused, statIndex) =>
+    const plotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) =>
         expandedByStatIndex[statIndex]
             ? {
                     statDescription: dataByStatArticle[statIndex][0].renderedStatname,
@@ -434,8 +434,8 @@ export function ComparisonPanel(props: {
     )
 }
 
-export function pullRelevantPlotProps(rows: ArticleRow[], rowIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
-    if (rows[rowIndex].kind !== 'statistic' || rows[rowIndex].extraStat === undefined) {
+export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
+    if (rows[statIndex].kind !== 'statistic' || rows[statIndex].extraStat === undefined) {
         return []
     }
     const sPs = rows
@@ -445,7 +445,7 @@ export function pullRelevantPlotProps(rows: ArticleRow[], rowIndex: number, colo
         .map((sP, i) => ({ sP, i }))
     const byYear = new Map<Year, number[]>()
     sPs.filter((
-        { sP, i }) => sP.group.id === sPs[rowIndex].sP.group.id && rows[i].kind === 'statistic' && rows[i].extraStat !== undefined,
+        { sP, i }) => sP.group.id === sPs[statIndex].sP.group.id && rows[i].kind === 'statistic' && rows[i].extraStat !== undefined,
     ).forEach(({ sP: { year }, i }) => {
         assert(year !== null, 'Year should not be null for plot data')
         byYear.set(year, [...(byYear.get(year) ?? []), i])
@@ -455,7 +455,7 @@ export function pullRelevantPlotProps(rows: ArticleRow[], rowIndex: number, colo
             return indices[0]
         }
         const sources = indices.map(i => sPs[i].sP.source)
-        const exactMatch = sources.findIndex(source => JSON.stringify(source) === JSON.stringify(sPs[rowIndex].sP.source))
+        const exactMatch = sources.findIndex(source => JSON.stringify(source) === JSON.stringify(sPs[statIndex].sP.source))
         if (exactMatch !== -1) {
             return indices[exactMatch]
         }
@@ -483,13 +483,6 @@ export function pullRelevantPlotProps(rows: ArticleRow[], rowIndex: number, colo
             sharedTypeOfAllArticles,
             subseriesName: year.toString(),
         } satisfies PlotProps
-    })
-}
-
-function assertRowIsStatistics(rows: readonly ArticleRow[]): ArticleStatisticRow[] {
-    return rows.map((row) => {
-        assert(isArticleRow(row), 'unreachable: expected statistic row')
-        return row
     })
 }
 
