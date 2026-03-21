@@ -186,14 +186,10 @@ function ArticleTable(props: {
 
     const { widthLeftHeader, columnWidth } = useWidths()
 
-    function assertLoadedStatisticRow(row: ArticleStatisticRow): LoadedStatisticRow {
-        return { ...row, statpath: row.statpath }
-    }
-
     const statNameSpecs: NameSpec[] = props.filteredRows.map(row => ({
         type: 'statistic-name',
         longname: props.article.longname,
-        row: isArticleRow(row) ? assertLoadedStatisticRow(row) : undefined,
+        row: isArticleRow(row) ? row : undefined,
         renderedStatname: row.renderedStatname,
         currentUniverse,
     }))
