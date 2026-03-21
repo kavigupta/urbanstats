@@ -482,10 +482,3 @@ export const mapper = (testFn: () => TestFn) => (
 export const goBack = ClientFunction(() => { window.history.back() })
 export const goForward = ClientFunction(() => { window.history.forward() })
 export const getScroll = ClientFunction(() => window.scrollY)
-
-export function hideMobileUndoRedo(): Promise<void> {
-    return ClientFunction(() => {
-        const e: HTMLDivElement = document.querySelector('[data-test=mobile-undo-redo]')!
-        e.style.visibility = 'hidden'
-    })()
-}
