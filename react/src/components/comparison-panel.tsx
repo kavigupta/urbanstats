@@ -254,23 +254,19 @@ export function ComparisonPanel(props: {
 
     const { updatedNameSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames } = computeNameSpecsWithGroups(statisticNameHeaderSpecsOriginal)
 
-    const rowSpecsByStat: CellSpec[][] = dataByStatArticle.map((unusedArticlesStatData, statIndex) => (
+    const rowSpecsByStat: CellSpec[][] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => (
         Array.from({ length: localArticlesToUse.length }).map((unused, articleIndex) => {
             const row = dataByArticleStat[articleIndex][statIndex]
 
-            if (row.kind !== 'statistic') {
+            if (row.kind === 'metadata') {
                 return {
                     type: 'statistic-row',
                     row: { ...row, unit: undefined },
                     longname: names[articleIndex],
                     onlyColumns,
                     simpleOrdinals: true,
-                    onNavigate: (x: string) => {
-                        void navContext.navigate({
-                            kind: 'comparison',
-                            universe: props.universe,
-                            longnames: names.map((value, index) => index === articleIndex ? x : value),
-                        }, { history: 'push', scroll: { kind: 'none' } })
+                    onNavigate: () => {
+                        throw new Error('Metadata rows cannot be navigated')
                     },
                 } satisfies CellSpec
             }
