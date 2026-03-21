@@ -49,7 +49,7 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
         return {
             resultingValue: { type: result.type, value: removeFunctions(result.value) },
             error: getWarnings(),
-            context: new Map([...context.variableEntries()].filter(([,v]) => v.documentation?.includedInOutputContext)),
+            context: new Map(context.variableEntries()),
         }
     }
     catch (error) {
@@ -63,7 +63,7 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
         }
         return {
             error: [{ type: 'error', value: interpretationError.value, location: interpretationError.location, kind: 'error' }, ...(getWarnings?.() ?? [])],
-            context: new Map(),
+            context: context ? new Map(context.variableEntries()) : new Map<string, USSValue>(),
         }
     }
 }
