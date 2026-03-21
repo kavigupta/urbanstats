@@ -98,26 +98,6 @@ export function isArticleRow(row: ArticleRow): row is ArticleStatisticRow {
 /** One comparison table row: cells from each article at the same row index (aligned `statpath`s). */
 export type ComparisonArticlesSlice = readonly ArticleRow[]
 
-function firstCellInComparisonSlice(slice: ComparisonArticlesSlice): ArticleRow {
-    assert(slice.length > 0, 'empty comparison row slice')
-    return slice[0]
-}
-
-export function statPathForComparisonRow(slice: ComparisonArticlesSlice): StatPath {
-    const sp = firstCellInComparisonSlice(slice).statpath
-    return sp
-}
-
-/** Whether ordinal / percentile columns apply (statistic rows only; all articles must agree). */
-export function comparisonOrdinalColumnsValid(slice: ComparisonArticlesSlice): boolean {
-    if (slice.length === 0 || firstCellInComparisonSlice(slice).kind !== 'statistic') {
-        return false
-    }
-    return slice.every((r) => {
-        assert(isArticleRow(r), 'unreachable: misaligned comparison rows')
-        return r.disclaimer !== 'heterogenous-sources'
-    })
-}
 
 export function comparisonSliceHasExpandableExtraStat(slice: ComparisonArticlesSlice): boolean {
     return slice.some(r => isArticleRow(r) && r.extraStat !== undefined)

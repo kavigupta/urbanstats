@@ -31,10 +31,8 @@ import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import {
     ArticleStatisticRow,
     ArticleRow,
-    comparisonOrdinalColumnsValid,
     comparisonSliceHasExpandableExtraStat,
     isArticleRow,
-    statPathForComparisonRow,
 } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
@@ -166,7 +164,7 @@ export function ComparisonPanel(props: {
 
     const mobileLayout = useMobileLayout()
 
-    const validOrdinalsByStat = dataByStatArticle.map(comparisonOrdinalColumnsValid)
+    const validOrdinalsByStat = dataByStatArticle.map(statData => statData.every(value => value.kind !== 'metadata' && value.disclaimer !== 'heterogenous-sources'))
 
     const includeOrdinals = (
         localArticlesToUse.every(article => article.articleType === localArticlesToUse[0].articleType)
@@ -180,11 +178,11 @@ export function ComparisonPanel(props: {
     const expandedSettings = useSettings(
         dataByStatArticle
             .filter(comparisonSliceHasExpandableExtraStat)
-            .map(slice => rowExpandedKey(statPathForComparisonRow(slice))),
+            .map(slice => rowExpandedKey(slice[0].statpath)),
     )
 
     const expandedByStatIndex = dataByStatArticle.map(slice =>
-        expandedSettings[rowExpandedKey(statPathForComparisonRow(slice))] ?? false,
+        expandedSettings[rowExpandedKey(slice[0].statpath)] ?? false,
     )
 
     const numExpandedExtras = expandedByStatIndex.filter(v => v).length
