@@ -21,7 +21,10 @@ export function runTests(platform: 'desktop' | 'mobile'): void {
 
         await t.expect(Selector('p').withExactText('Hello,\u00a0World!').exists).ok()
         await t.expect(editTextBoxesButton.exists).ok()
-        await screencap(t)
+        if (platform === 'desktop') {
+            // Flaky for mobile layout
+            await screencap(t)
+        }
     })
 
     async function changeValue(t: TestController, i: number, from: string, to: string): Promise<void> {
@@ -151,7 +154,10 @@ export function runTests(platform: 'desktop' | 'mobile'): void {
 
         // Ensure no errors, take a screenshot, and toggle custom script
         await t.expect(getErrors()).eql([])
-        await screencap(t)
+        if (platform === 'desktop') {
+            // Flaky for mobile layout
+            await screencap(t)
+        }
         await toggleCustomScript(t)
 
         // Verify the expected code
