@@ -433,11 +433,7 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
     if (rows[statIndex].kind !== 'statistic' || rows[statIndex].extraStat === undefined) {
         return []
     }
-    const sPs = rows
-        .map((row) => {
-            return statParents.get(row.statpath)!
-        })
-        .map((sP, i) => ({ sP, i }))
+    const sPs = rows.map(row => statParents.get(row.statpath)!).map((sP, i) => ({ sP, i }))
     const byYear = new Map<Year, number[]>()
     sPs.filter((
         { sP, i }) => sP.group.id === sPs[statIndex].sP.group.id && rows[i].kind === 'statistic' && rows[i].extraStat !== undefined,
