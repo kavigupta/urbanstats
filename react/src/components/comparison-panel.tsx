@@ -122,11 +122,7 @@ export function ComparisonPanel(props: {
 
     const settings = useSettings(groupYearKeys())
 
-    const dataByArticleDisplayOriginalOrder: ArticleTableRow[][] = props.rows(settings)
-    const dataByArticleDisplay: ArticleTableRow[][] = localArticlesToUse.map((article) => {
-        const originalIndex = props.articles.findIndex(a => a.longname === article.longname)
-        return dataByArticleDisplayOriginalOrder[originalIndex] ?? []
-    })
+    const dataByArticleDisplay: ArticleTableRow[][] = props.rows(settings)
 
     const totalRowsByDisplay = dataByArticleDisplay[0]?.length ?? 0
 
