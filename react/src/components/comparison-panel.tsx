@@ -142,7 +142,7 @@ export function ComparisonPanel(props: {
 
         setSortDirection(newSortDirection)
 
-        const statData = assertRowIsStatistics(dataByStatArticle[statIndex])
+        const statData = dataByStatArticle[statIndex]
         const sortedIndices = statData
             .map((row, index) => ({ row, index }))
             .sort((a, b) => compareArticleRows(a.row, b.row, newSortDirection))
@@ -168,24 +168,15 @@ export function ComparisonPanel(props: {
         && (validOrdinalsByStat.length === 0 || validOrdinalsByStat.some(x => x))
     )
 
-    const onlyColumns: ColumnIdentifier[] = includeOrdinals
-        ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
-        : ['statval', 'statval_unit']
+    const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
 
-    const expandedSettings = useSettings(
-        dataByStatArticle
-            .filter(comparisonSliceHasExpandableExtraStat)
-            .map(slice => rowExpandedKey(slice[0].statpath)),
-    )
+    const expandedSettings = useSettings(dataByStatArticle.filter(statData => statData.some(row => row.extraStat !== undefined)).map(([{ statpath }]) => rowExpandedKey(statpath)))
 
-    const expandedByStatIndex = dataByStatArticle.map(slice =>
-        expandedSettings[rowExpandedKey(slice[0].statpath)] ?? false,
-    )
-
+    const expandedByStatIndex = dataByStatArticle.map(([{ statpath }]) => expandedSettings[rowExpandedKey(statpath)] ?? false)
     const numExpandedExtras = expandedByStatIndex.filter(v => v).length
 
     let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, includeOrdinals)
-    let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (dataByStatArticle.length + numExpandedExtras) + 1.5
+    let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (dataByArticleStat[0].length + numExpandedExtras) + 1.5
 
     const transpose = widthColumns > computeMaxColumns(mobileLayout) && widthColumns > widthTransposeColumns
 
