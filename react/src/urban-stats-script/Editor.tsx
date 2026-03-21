@@ -14,6 +14,7 @@ import { renderCode, getRange, nodeContent, Range, setRange, EditorResult, longM
 import { AnnotatedToken } from './lexer'
 import { LocInfo } from './location'
 import { renderValue, TypeEnvironment, USSDocumentedType, USSValue } from './types-values'
+import { AssignmentsResult } from './workerManager'
 
 interface AutocompleteState {
     kind: 'autocomplete'
@@ -35,7 +36,7 @@ interface InspectState {
 type PopoverState = AutocompleteState | InspectState | undefined
 
 export function Editor(
-    { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, eRef, context }: {
+    { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, eRef, assignments }: {
         uss: string
         setUss: (newScript: string) => void
         typeEnvironment: TypeEnvironment
@@ -44,7 +45,7 @@ export function Editor(
         selection: Range | null
         setSelection: (newRange: Range | null) => void
         eRef?: React.MutableRefObject<HTMLPreElement | null>
-        context: Map<string, USSValue>
+        assignments: AssignmentsResult
     },
 ): ReactNode {
     const setSelectionRef = useRef(setSelection)
@@ -243,7 +244,7 @@ export function Editor(
                 if (token?.token.type === 'identifier') {
                     const name = token.token.value
                     const documentation = typeEnvironment.get(name)
-                    const value = context.get(name)
+                    const value = assignments.get(name)
                     if (documentation !== undefined || value !== undefined) {
                         hoveredToken = token
                         const opts = {
@@ -277,7 +278,7 @@ export function Editor(
         }
         document.addEventListener('mousemove', listener)
         return () => { document.removeEventListener('mousemove', listener) }
-    }, [colors, typeEnvironment, popoverState, context])
+    }, [colors, typeEnvironment, popoverState, assignments])
 
     const borderColor = useResultsColor(colorKey(results))
 

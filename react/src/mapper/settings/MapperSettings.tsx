@@ -3,7 +3,8 @@ import React, { ReactNode, useCallback, useMemo } from 'react'
 import { articleTypes, CountsByUT } from '../../components/countsByArticleType'
 import universes_ordered from '../../data/universes_ordered'
 import { EditorError } from '../../urban-stats-script/editor-utils'
-import { TypeEnvironment, USSType, USSValue } from '../../urban-stats-script/types-values'
+import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
+import { AssignmentsResult } from '../../urban-stats-script/workerManager'
 import { settingNameStyle } from '../style'
 
 import { BetterSelector } from './BetterSelector'
@@ -18,7 +19,7 @@ export function MapperSettings({
     counts,
     typeEnvironment,
     targetOutputTypes,
-    context,
+    assignments,
 }: {
     mapSettings: MapSettings
     setMapSettings: (s: MapSettings, o: ActionOptions) => void
@@ -26,7 +27,7 @@ export function MapperSettings({
     counts: CountsByUT
     typeEnvironment: TypeEnvironment
     targetOutputTypes: USSType[]
-    context: Map<string, USSValue>
+    assignments: AssignmentsResult
 }): ReactNode {
     const uss = mapSettings.script.uss
 
@@ -92,7 +93,7 @@ export function MapperSettings({
                 typeEnvironment={typeEnvironment}
                 errors={errors}
                 targetOutputTypes={targetOutputTypes}
-                context={context}
+                assignments={assignments}
             />
         </>
     )

@@ -11,8 +11,8 @@ import { toStatement } from '../urban-stats-script/ast'
 import { orderNonNan, TableColumnWithPopulationPercentiles } from '../urban-stats-script/constants/table'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
-import { renderType, USSValue } from '../urban-stats-script/types-values'
-import { executeAsync } from '../urban-stats-script/workerManager'
+import { renderType } from '../urban-stats-script/types-values'
+import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
 import { pluralize } from '../utils/text'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
@@ -39,7 +39,7 @@ export function useStatGenerator({ stat }: { stat: Statistic }): StatGenerator &
                 data: undefined,
                 errors: [],
                 universesFiltered: universes_ordered,
-                context: new Map(),
+                assignments: new Map(),
             },
             ui: (generator, loading) => ({
                 ...generator,
@@ -53,7 +53,7 @@ export interface StatGenerator {
     data: StatData | undefined
     errors: EditorError[]
     universesFiltered: readonly Universe[]
-    context: Map<string, USSValue>
+    assignments: AssignmentsResult
 }
 
 async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic, previousGenerator: Promise<StatGenerator> }): Promise<StatGenerator> {
@@ -134,7 +134,7 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
                 ? universes_ordered.filter(
                     universe => forType(counts, universe, stats[statIndex], stat.articleType) > 0)
                 : universes_ordered,
-            context: exec.context,
+            assignments: exec.assignments,
         }
     }
     catch (e) {
