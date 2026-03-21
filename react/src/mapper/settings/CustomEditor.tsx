@@ -4,7 +4,7 @@ import { Editor } from '../../urban-stats-script/Editor'
 import { UrbanStatsASTExpression } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { ParseError, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
-import { TypeEnvironment } from '../../urban-stats-script/types-values'
+import { TypeEnvironment, USSValue } from '../../urban-stats-script/types-values'
 
 import { ActionOptions } from './EditMapperPanel'
 import { SelectionContext } from './SelectionContext'
@@ -16,6 +16,7 @@ export function CustomEditor({
     errors,
     blockIdent,
     placeholder,
+    context,
 }: {
     uss: UrbanStatsASTExpression & { type: 'customNode' }
     setUss: (u: UrbanStatsASTExpression & { type: 'customNode' }, o: ActionOptions) => void
@@ -23,6 +24,7 @@ export function CustomEditor({
     errors: EditorError[]
     blockIdent: string
     placeholder?: string
+    context: Map<string, USSValue>
 }): ReactNode {
     const ourErrors = useMemo(() => errors.filter((e: ParseError) => e.location.start.block.type === 'single' && e.location.start.block.ident === blockIdent), [errors, blockIdent])
 
@@ -48,6 +50,7 @@ export function CustomEditor({
                     selectionContext.value = undefined
                 }
             }}
+            context={context}
         />
     )
 }

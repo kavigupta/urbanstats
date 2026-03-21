@@ -80,7 +80,6 @@ export function createDocumentationPopover(colors: Colors, editor: HTMLPreElemen
         'color': colors.textMain,
         'background-color': colors.slightlyDifferentBackground,
         'width': `${width}px`,
-        'padding': '0 1.33em',
         'transform': `translateX(${Math.min(0, editor.offsetWidth - (tokenOffset + width))}px)`,
     }
 

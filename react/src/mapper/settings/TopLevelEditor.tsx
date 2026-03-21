@@ -7,7 +7,7 @@ import { DisplayResults } from '../../urban-stats-script/Editor'
 import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { unparse, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
-import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
+import { TypeEnvironment, USSType, USSValue } from '../../urban-stats-script/types-values'
 
 import { AutoUXEditor } from './AutoUXEditor'
 import { ConditionEditor } from './ConditionEditor'
@@ -22,12 +22,14 @@ export function TopLevelEditor({
     typeEnvironment,
     errors,
     targetOutputTypes,
+    context,
 }: {
     uss: MapUSS
     setUss: (u: MapUSS, o: ActionOptions) => void
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
     targetOutputTypes: USSType[]
+    context: Map<string, USSValue>
 }): ReactNode {
     const subcomponent = (): ReactNode => {
         if (uss.type === 'customNode') {
@@ -38,6 +40,7 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={rootBlockIdent}
+                    context={context}
                 />
             )
         }
@@ -57,6 +60,7 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idPreamble}
+                    context={context}
                 />
                 {/* Condition */}
                 <ConditionEditor
@@ -73,6 +77,7 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idCondition}
+                    context={context}
                 />
                 {/* Output */}
                 <AutoUXEditor
@@ -91,6 +96,7 @@ export function TopLevelEditor({
                     blockIdent={idOutput}
                     type={targetOutputTypes}
                     labelWidth="0px"
+                    context={context}
                 />
             </div>
         )

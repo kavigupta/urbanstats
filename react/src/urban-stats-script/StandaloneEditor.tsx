@@ -11,13 +11,13 @@ import { Editor } from './Editor'
 import { defaultConstants } from './constants/constants'
 import { EditorResult, Range } from './editor-utils'
 import { parse } from './parser'
-import { TypeEnvironment } from './types-values'
+import { TypeEnvironment, USSValue } from './types-values'
 import { executeAsync } from './workerManager'
 
 export function StandaloneEditor(props: { ident: string, getCode: () => string, onChange?: (code: string) => void }): ReactNode {
     const editorRef = useRef<HTMLPreElement | null>(null)
 
-    const { uss, setUss, typeEnvironment, results, selection, setSelection, undoRedoUi } = useStandaloneEditorState<Range | null>({
+    const { uss, setUss, typeEnvironment, results, selection, setSelection, undoRedoUi, context } = useStandaloneEditorState<Range | null>({
         ...props,
         getSelection: () => null,
         undoRedoOptions: { onlyElement: editorRef },
@@ -34,6 +34,7 @@ export function StandaloneEditor(props: { ident: string, getCode: () => string, 
                 selection={selection}
                 setSelection={setSelection}
                 eRef={editorRef}
+                context={context}
             />
             {undoRedoUi}
         </div>
@@ -54,8 +55,10 @@ export function useStandaloneEditorState<Selection>({ ident, getCode, onChange, 
         selection: Selection
         setSelection: (newSelection: Selection) => void
         undoRedoUi: ReactNode
+        context: Map<string, USSValue>
     } {
     const [results, setResults] = useState<EditorResult[]>([])
+    const [context, setContext] = useState<Map<string, USSValue>>(new Map())
 
     const [uss, setUss] = useState(getCode)
     const ussVersion = useRef(0)
@@ -82,6 +85,7 @@ export function useStandaloneEditorState<Selection>({ ident, getCode, onChange, 
                 ...(exec.resultingValue !== undefined ? [{ kind: 'success' as const, result: exec.resultingValue }] : []),
                 ...exec.error,
             ])
+            setContext(exec.context)
         }
     }
 
@@ -117,5 +121,6 @@ export function useStandaloneEditorState<Selection>({ ident, getCode, onChange, 
         selection,
         results,
         undoRedoUi,
+        context,
     }
 }

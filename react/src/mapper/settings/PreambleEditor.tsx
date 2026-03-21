@@ -5,7 +5,7 @@ import { locationOf } from '../../urban-stats-script/ast'
 import type { AutoUXNodeMetadata } from '../../urban-stats-script/autoux-node-metadata'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
-import { TypeEnvironment } from '../../urban-stats-script/types-values'
+import { TypeEnvironment, USSValue } from '../../urban-stats-script/types-values'
 
 import { CustomEditor } from './CustomEditor'
 import type { PreambleAutoUXNode, PreambleCustomNode, PreambleNode } from './map-uss'
@@ -24,12 +24,14 @@ export function PreambleEditor({
     typeEnvironment,
     errors,
     blockIdent,
+    context,
 }: {
     preamble: PreambleNode
     setPreamble: (value: PreambleNode) => void
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
+    context: Map<string, USSValue>
 }): ReactNode {
     return (
         <div style={{ margin: '0.5em 0' }}>
@@ -56,6 +58,7 @@ export function PreambleEditor({
                     errors={errors}
                     blockIdent={blockIdent}
                     placeholder="Variables here can be used by all custom expressions."
+                    context={context}
                 />
             )}
         </div>
