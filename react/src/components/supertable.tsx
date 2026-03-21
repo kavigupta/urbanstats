@@ -6,7 +6,7 @@ import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { Article } from '../utils/protos'
 
-import { ArticleStatisticRow, ArticleRow, StatisticCellRenderingInfo } from './load-article'
+import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
 import { useScreenshotMode } from './screenshot'
 import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeDisclaimerFootnotes, computeSizesForRow, CommonLayoutInformation } from './table'
@@ -54,10 +54,10 @@ export function TableContents(props: TableContentsProps): ReactNode {
     assert(universe !== undefined, 'no universe')
 
     const rowsForFootnotes = useMemo(() => {
-        const fromLeft = props.leftHeaderSpec.leftHeaderSpecs.filter((s): s is CellSpec & { type: 'statistic-name', row: ArticleStatisticRow } =>
+        const fromLeft = props.leftHeaderSpec.leftHeaderSpecs.filter((s): s is CellSpec & { type: 'statistic-name', row: ArticleRow } =>
             s.type === 'statistic-name' && s.row !== undefined,
         ).map(s => s.row)
-        const fromSuper = (props.superHeaderSpec?.headerSpecs ?? []).filter((s): s is CellSpec & { type: 'statistic-name', row: ArticleStatisticRow } =>
+        const fromSuper = (props.superHeaderSpec?.headerSpecs ?? []).filter((s): s is CellSpec & { type: 'statistic-name', row: ArticleRow } =>
             s.type === 'statistic-name' && s.row !== undefined,
         ).map(s => s.row)
         return [...fromLeft, ...fromSuper]

@@ -5,7 +5,6 @@ import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
-import { assert } from '../utils/defensive'
 import { Article, IFirstOrLast, IMetadata } from '../utils/protos'
 import { UnitType } from '../utils/unit'
 
@@ -67,25 +66,26 @@ export interface MetadataArticleRow {
 export type ArticleRow = ArticleStatisticRow | MetadataArticleRow
 
 interface StatisticCellRenderingInfoCommon {
-    totalCountInClass?: number
-    totalCountOverall?: number
-    percentileByPopulation?: number
     articleType: string
     statname: string
-    ordinal?: number
     unit?: UnitType
     statpath?: StatPath
-    overallFirstLast?: FirstLastStatus
 }
 
 interface StatisticCellRenderingInfoStatistic extends StatisticCellRenderingInfoCommon {
     kind: 'statistic'
+    ordinal: number
+    totalCountInClass: number
+    totalCountOverall: number
+    percentileByPopulation: number
     statval: number
+    overallFirstLast: FirstLastStatus
 }
 
 interface StatisticCellRenderingInfoMetadata extends StatisticCellRenderingInfoCommon {
     kind: 'metadata'
     statval: string
+    statpath: StatPath
     unit: undefined
 }
 
@@ -97,7 +97,6 @@ export function isArticleRow(row: ArticleRow): row is ArticleStatisticRow {
 
 /** One comparison table row: cells from each article at the same row index (aligned `statpath`s). */
 export type ComparisonArticlesSlice = readonly ArticleRow[]
-
 
 export function comparisonSliceHasExpandableExtraStat(slice: ComparisonArticlesSlice): boolean {
     return slice.some(r => isArticleRow(r) && r.extraStat !== undefined)

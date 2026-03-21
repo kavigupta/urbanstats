@@ -472,27 +472,30 @@ export function StatisticRowCells(props: {
         {
             widthPercentage: 10,
             columnIdentifier: 'statval_unit',
-            content: () => props.row.kind === 'metadata'
-                ? undefined
-                : (
-                        <div className="value_unit">
-                            <span className="serif value">
-                                <Statistic
-                                    statname={props.row.statname}
-                                    value={props.row.statval}
-                                    isUnit={true}
-                                    unit={props.row.unit}
-                                />
-                            </span>
-                        </div>
-                    ),
+            content: () => {
+                if (props.row.kind === 'metadata') {
+                    return undefined
+                }
+                return (
+                    <div className="value_unit">
+                        <span className="serif value">
+                            <Statistic
+                                statname={props.row.statname}
+                                value={props.row.statval}
+                                isUnit={true}
+                                unit={props.row.unit}
+                            />
+                        </span>
+                    </div>
+                )
+            },
             style: { textAlign: 'right' },
         },
         {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
             columnIdentifier: 'statistic_percentile',
             content: () => {
-                if (props.row.totalCountInClass === undefined || props.row.percentileByPopulation === undefined || props.row.ordinal === undefined) {
+                if (props.row.kind === 'metadata') {
                     return undefined
                 }
                 return (
@@ -512,8 +515,7 @@ export function StatisticRowCells(props: {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
             columnIdentifier: 'statistic_ordinal',
             content: () => {
-                // assert(props.row.totalCountInClass !== undefined && props.row.ordinal !== undefined, 'totalCountInClass must be defined for ordinal display')
-                if (props.row.totalCountInClass === undefined || props.row.ordinal === undefined) {
+                if (props.row.kind === 'metadata') {
                     return undefined
                 }
                 return (
@@ -555,47 +557,50 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: StatisticCel
 
     const statpath = props.row.statpath
 
-    if (statpath === undefined || props.row.totalCountInClass === undefined || props.row.totalCountOverall === undefined) {
+    if (props.row.kind !== 'statistic') {
         return []
     }
+    if (statpath === undefined) {
+        return []
+    }
+    // Capture narrowed values so TypeScript understands them inside the `content` closures.
+    const ordinal = props.row.ordinal
+    const totalCountInClass = props.row.totalCountInClass
+    const totalCountOverall = props.row.totalCountOverall
+    const overallFirstLast = props.row.overallFirstLast
+    const articleType = props.row.articleType
 
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_in_class',
-        content: () => {
-            assert(props.row.totalCountInClass !== undefined, 'totalCountInClass must be defined for in-class pointer')
-            return (
-                <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
-                    <PointerButtonsIndex
-                        ordinal={props.row.ordinal}
-                        statpath={statpath}
-                        type={props.row.articleType}
-                        total={props.row.totalCountInClass}
-                        longname={props.longname}
-                    />
-                </span>
-            )
-        },
+        content: () => (
+            <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
+                <PointerButtonsIndex
+                    ordinal={ordinal}
+                    statpath={statpath}
+                    type={articleType}
+                    total={totalCountInClass}
+                    longname={props.longname}
+                />
+            </span>
+        ),
         style: { textAlign: 'right' },
     }
 
     const pointerOverallCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_overall',
-        content: () => {
-            assert(props.row.totalCountOverall !== undefined, 'totalCountOverall must be defined for overall pointer')
-            return (
-                <span className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
-                    <PointerButtonsIndex
-                        statpath={statpath}
-                        type="overall"
-                        total={props.row.totalCountOverall}
-                        longname={props.longname}
-                        overallFirstLast={props.row.overallFirstLast}
-                    />
-                </span>
-            )
-        },
+        content: () => (
+            <span className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
+                <PointerButtonsIndex
+                    statpath={statpath}
+                    type="overall"
+                    total={totalCountOverall}
+                    longname={props.longname}
+                    overallFirstLast={overallFirstLast}
+                />
+            </span>
+        ),
         style: { textAlign: 'right' },
     }
 
@@ -1059,10 +1064,7 @@ function measureTextWidthEm(text: string, fontSizeEm: number = 1): number {
     return widthPx / 16
 }
 
-function ordinalWidthInEm(ordinal: number | undefined, total: number | undefined, type: string, universe: string, simpleOrdinals: boolean): [number, number] {
-    if (ordinal === undefined || total === undefined) {
-        return [0, 0]
-    }
+function ordinalWidthInEm(ordinal: number, total: number, type: string, universe: string, simpleOrdinals: boolean): [number, number] {
     if (ordinal > total) {
         return [0, 0]
     }
@@ -1085,8 +1087,16 @@ function ordinalWidthInEm(ordinal: number | undefined, total: number | undefined
 
 export function computeSizesForRow(row: StatisticCellRenderingInfo, universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
     // Compute the size of the ordinal and percentile text
+    if (row.kind !== 'statistic') {
+        return {
+            percentileColumnWidthEm: 0,
+            ordinalColumnWidthEm: 0,
+            ordinalColumnPadding: 0,
+        }
+    }
+
     const [ordinalColumnWidthEm, ordinalColumnPadding] = ordinalWidthInEm(row.totalCountInClass, row.totalCountInClass, row.articleType, universe, simpleOrdinals)
-    const percentileTextSample = row.percentileByPopulation === undefined ? '' : percentileText(row.percentileByPopulation, simpleOrdinals)
+    const percentileTextSample = percentileText(row.percentileByPopulation, simpleOrdinals)
     const percentileColumnWidthEm = measureTextWidthEm(percentileTextSample)
     const smallPad = 0.22
     return {
