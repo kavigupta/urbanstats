@@ -185,8 +185,10 @@ export function ComparisonPanel(props: {
     }
 
     const leftMarginPercent = transpose ? 0.24 : 0.18
-    const numColumns = transpose ? dataByStatArticle.length : localArticlesToUse.length
+    const numColumns = transpose ? dataByArticleStat[0].length : localArticlesToUse.length
     const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
+
+    const highlightArticleIndicesByStat: (number | undefined)[] = dataByStatArticle.map(articlesStatData => getHighlightIndex(articlesStatData))
 
     const headerTextClass = useHeaderTextClass()
     const subHeaderTextClass = useSubHeaderTextClass()
@@ -197,24 +199,13 @@ export function ComparisonPanel(props: {
 
     const sharedTypeOfAllArticles = localArticlesToUse.every(article => article.articleType === localArticlesToUse[0].articleType) ? localArticlesToUse[0].articleType : undefined
 
-    const highlightArticleIndicesByStat = dataByStatArticle.map(articlesStatData => getHighlightIndex(articlesStatData))
-
-    const rowToDisplayForStat = (statIndex: number): ArticleStatisticRow => {
-        const rows = assertRowIsStatistics(dataByStatArticle[statIndex])
-        return rows.find(r => r.extraStat !== undefined) ?? rows[0]
+    const rowToDisplayForStat = (statIndex: number): ArticleRow => {
+        return dataByStatArticle[statIndex].find(row => row.extraStat !== undefined) ?? dataByStatArticle[statIndex][0]
     }
 
-    const plotProps = (statIndex: number): PlotProps[] =>
-        dataByArticleStat.map((articleRows, articleIdx) =>
-            pullRelevantPlotProps(
-                articleRows,
-                statIndex,
-                colorFromCycle(colors.hueColors, articleIdx),
-                localArticlesToUse[articleIdx].shortname,
-                localArticlesToUse[articleIdx].longname,
-                sharedTypeOfAllArticles,
-            ),
-        ).flat()
+    const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].flatMap((row, articleIdx) =>
+        pullRelevantPlotProps(dataByArticleStat[articleIdx], statIndex, colorFromCycle(colors.hueColors, articleIdx), localArticlesToUse[articleIdx].shortname, localArticlesToUse[articleIdx].longname, sharedTypeOfAllArticles),
+    )
 
     const longnameHeaderSpecs: CellSpec[] = Array.from({ length: localArticlesToUse.length }).map((_, articleIndex) => (
         {
