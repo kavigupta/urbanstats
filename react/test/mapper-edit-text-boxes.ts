@@ -1,7 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 
 import { drag, getCodeFromMainField, getErrors, nastyDiff, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { screencap, urbanstatsFixture } from './test_utils'
+import { hideMobileUndoRedo, screencap, urbanstatsFixture } from './test_utils'
 
 export function runTests(platform: 'desktop' | 'mobile'): void {
     urbanstatsFixture(`default map`, '/mapper.html', async (t) => {
@@ -21,6 +21,9 @@ export function runTests(platform: 'desktop' | 'mobile'): void {
 
         await t.expect(Selector('p').withExactText('Hello,\u00a0World!').exists).ok()
         await t.expect(editTextBoxesButton.exists).ok()
+        if (platform === 'mobile') {
+            await hideMobileUndoRedo() // The buttons shift around slightly for this test, for whatever reason, which breaks screenshots
+        }
         await screencap(t)
     })
 
@@ -151,6 +154,9 @@ export function runTests(platform: 'desktop' | 'mobile'): void {
 
         // Ensure no errors, take a screenshot, and toggle custom script
         await t.expect(getErrors()).eql([])
+        if (platform === 'mobile') {
+            await hideMobileUndoRedo() // The buttons shift around slightly for this test, for whatever reason, which breaks screenshots
+        }
         await screencap(t)
         await toggleCustomScript(t)
 
