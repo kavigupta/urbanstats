@@ -7,7 +7,7 @@ import React, { ReactNode } from 'react'
 import { USSOpaqueValue, USSValue } from '../urban-stats-script/types-values'
 import { Article } from '../utils/protos'
 
-import { ArticleTableRow } from './load-article'
+import { ArticleRow } from './load-article'
 
 export type CSVExportData = () => { csvData: string[][], csvFilename: string }
 
@@ -41,7 +41,7 @@ export function CSVButton(props: { onClick: () => void }): ReactNode {
 
 export function generateCSVDataForArticles(
     articles: Article[],
-    dataByArticleStat: ArticleTableRow[][],
+    dataByArticleStat: ArticleRow[][],
     includeOrdinals: boolean,
 ): string[][] {
     const names = articles.map(a => a.longname)
@@ -62,7 +62,7 @@ export function generateCSVDataForArticles(
 
         for (let displayIndex = 0; displayIndex < tableRows.length; displayIndex++) {
             const tableRow = dataByArticleStat[articleIndex][displayIndex]
-            const value = tableRow.kind === 'metadata' ? tableRow.statvalString : tableRow.statval
+            const value = tableRow.kind === 'metadata' ? tableRow.statval : tableRow.statval
             row.push(value.toString())
         }
 

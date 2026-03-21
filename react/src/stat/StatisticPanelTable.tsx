@@ -1,13 +1,12 @@
 import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
-import { ArticleRow } from '../components/load-article'
+import { StatisticCellRenderingInfo } from '../components/load-article'
 import { PointerArrow } from '../components/pointer-cell'
 import { computeComparisonWidthColumns, MaybeScroll } from '../components/scrollable'
 import { CellSpec, SuperHeaderSpec, TableContents } from '../components/supertable'
 import { ColumnIdentifier } from '../components/table'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
-import { StatName } from '../page_template/statistic-tree'
 import { useUniverse } from '../universe'
 import { orderNonNan } from '../urban-stats-script/constants/table'
 import { assert } from '../utils/defensive'
@@ -72,22 +71,21 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading }
 
     const onlyColumns: ColumnIdentifier[] = data.hideOrdinalsPercentiles ? ['statval', 'statval_unit'] : ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
 
-    const allColumnRows: ArticleRow[][] = data.table.map((col) => {
+    const allColumnRows: StatisticCellRenderingInfo[][] = data.table.map((col) => {
         return indexRange.map((rangeIdx) => {
             const actualRowIdx = sortedIndices[rangeIdx]
             return {
-                kind: 'statistic' as const,
+                kind: 'statistic',
                 statval: col.value[actualRowIdx],
                 ordinal: col.ordinal[actualRowIdx],
                 percentileByPopulation: col.populationPercentile[actualRowIdx],
-                statname: col.name as StatName,
+                statname: col.name,
                 articleType: stat.articleType,
                 totalCountInClass: data.totalCountInClass,
                 totalCountOverall: data.totalCountOverall,
-                renderedStatname: col.name,
                 overallFirstLast: { isFirst: false, isLast: false },
                 unit: col.unit,
-            } satisfies ArticleRow
+            } satisfies StatisticCellRenderingInfo
         })
     })
 

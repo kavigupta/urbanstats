@@ -22,14 +22,14 @@ import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { pullRelevantPlotProps } from './comparison-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
-import { ArticleRow, ArticleTableRow, isArticleRow } from './load-article'
+import { ArticleStatisticRow, ArticleRow, isArticleRow } from './load-article'
 import { Related } from './related-button'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { CellSpec, PlotSpec, TableContents } from './supertable'
 import { ColumnIdentifier } from './table'
 
-export function ArticlePanel({ article, rows, universe }: { article: Article, rows: (settings: StatGroupSettings) => ArticleTableRow[][], universe: Universe }): ReactNode {
+export function ArticlePanel({ article, rows, universe }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][], universe: Universe }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
     const mapRef = useRef<HTMLDivElement>(null)
@@ -122,7 +122,7 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     )
 }
 
-type LoadedStatisticRow = ArticleRow & { statpath: StatPath }
+type LoadedStatisticRow = ArticleStatisticRow & { statpath: StatPath }
 type NameSpec = Omit<Extract<CellSpec, { type: 'statistic-name' }>, 'row'> & { row?: LoadedStatisticRow }
 
 function getGroupAndDisplayNames(nameSpec: NameSpec, nameSpecs: NameSpec[]): [string | undefined, string] {
@@ -131,12 +131,12 @@ function getGroupAndDisplayNames(nameSpec: NameSpec, nameSpecs: NameSpec[]): [st
     }
     const statParent = statParents.get(nameSpec.row.statpath)
 
-    const groupRows = nameSpecs.filter((s): s is NameSpec & { row: LoadedStatisticRow } => s.row !== undefined && statParents.get(s.row.statpath)?.group.id === statParent?.group.id)
+    const groupRows = nameSpecs.filter(s => s.row !== undefined && statParents.get(s.row.statpath)?.group.id === statParent?.group.id)
     const groupSize = groupRows.length
 
     const groupSourcesSet = new Set(
         groupRows
-            .map(s => statParents.get(s.row.statpath)?.source)
+            .map(s => statParents.get(s.row!.statpath)?.source)
             .filter(source => source !== null)
             .map(source => source!.name),
     )
@@ -170,12 +170,11 @@ export function computeNameSpecsWithGroups(nameSpecs: NameSpec[]): { updatedName
 }
 
 function ArticleTable(props: {
-    filteredRows: ArticleTableRow[]
+    filteredRows: ArticleRow[]
     article: Article
 }): ReactNode {
     const colors = useColors()
     const expandedKeys = props.filteredRows.map((row) => {
-        assert(row.statpath !== undefined, 'statpath missing for expanded setting')
         return rowExpandedKey(row.statpath)
     })
     const expandedSettings = useSettings(expandedKeys)
@@ -187,8 +186,7 @@ function ArticleTable(props: {
 
     const { widthLeftHeader, columnWidth } = useWidths()
 
-    function assertLoadedStatisticRow(row: ArticleRow): LoadedStatisticRow {
-        assert(row.statpath !== undefined, 'statpath missing for loaded statistic row')
+    function assertLoadedStatisticRow(row: ArticleStatisticRow): LoadedStatisticRow {
         return { ...row, statpath: row.statpath }
     }
 
@@ -206,7 +204,7 @@ function ArticleTable(props: {
     const cellSpecs: CellSpec[][] = props.filteredRows.map(row => [({
         type: 'statistic-row',
         longname: props.article.longname,
-        row,
+        row: {...row, unit: undefined},
         onNavigate: (newArticle) => {
             void navContext.navigate({
                 kind: 'article',

@@ -6,7 +6,7 @@ import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { Article } from '../utils/protos'
 
-import { ArticleRow, ArticleTableRow } from './load-article'
+import { ArticleStatisticRow, ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
 import { useScreenshotMode } from './screenshot'
 import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeDisclaimerFootnotes, computeSizesForRow, CommonLayoutInformation } from './table'
@@ -54,10 +54,10 @@ export function TableContents(props: TableContentsProps): ReactNode {
     assert(universe !== undefined, 'no universe')
 
     const rowsForFootnotes = useMemo(() => {
-        const fromLeft = props.leftHeaderSpec.leftHeaderSpecs.filter((s): s is CellSpec & { type: 'statistic-name', row: ArticleRow } =>
+        const fromLeft = props.leftHeaderSpec.leftHeaderSpecs.filter((s): s is CellSpec & { type: 'statistic-name', row: ArticleStatisticRow } =>
             s.type === 'statistic-name' && s.row !== undefined,
         ).map(s => s.row)
-        const fromSuper = (props.superHeaderSpec?.headerSpecs ?? []).filter((s): s is CellSpec & { type: 'statistic-name', row: ArticleRow } =>
+        const fromSuper = (props.superHeaderSpec?.headerSpecs ?? []).filter((s): s is CellSpec & { type: 'statistic-name', row: ArticleStatisticRow } =>
             s.type === 'statistic-name' && s.row !== undefined,
         ).map(s => s.row)
         return [...fromLeft, ...fromSuper]
@@ -283,7 +283,7 @@ export interface StatisticNameCellProps {
 export interface StatisticRowCellProps {
     longname: string
     statisticStyle?: CSSProperties
-    row: ArticleTableRow
+    row: StatisticCellRenderingInfo
     onlyColumns?: string[]
     blankColumns?: string[]
     onNavigate?: (newArticle: string) => void

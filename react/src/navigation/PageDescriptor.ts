@@ -4,7 +4,7 @@ import { applySettingsParamSettings, settingsConnectionConfig } from '../compone
 import type { ArticlePanel } from '../components/article-panel'
 import type { ComparisonPanel } from '../components/comparison-panel'
 import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
-import { ArticleTableRow, loadArticles } from '../components/load-article'
+import { ArticleRow, loadArticles } from '../components/load-article'
 import type { QuizPanel } from '../components/quiz-panel'
 import statnames from '../data/statistic_name_list'
 import type { DataCreditPanel } from '../data-credit'
@@ -208,13 +208,13 @@ export type ExceptionalPageDescriptor = PageDescriptor
     | { kind: 'error', url: URL }
 
 export type PageData =
-    { kind: 'article', article: Article, universe: Universe, rows: (settings: StatGroupSettings) => ArticleTableRow[][], statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
+    { kind: 'article', article: Article, universe: Universe, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
     | {
         kind: 'comparison'
         articles: Article[]
         universe: Universe
         universes: readonly Universe[]
-        rows: (settings: StatGroupSettings) => ArticleTableRow[][]
+        rows: (settings: StatGroupSettings) => ArticleRow[][]
         statPaths: StatPath[][]
         mapPartitions: number[][]
         comparisonPanel: typeof ComparisonPanel

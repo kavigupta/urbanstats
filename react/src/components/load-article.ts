@@ -33,52 +33,78 @@ export type StatCol = (typeof stats)[number]
 
 export interface FirstLastStatus { isFirst: boolean, isLast: boolean }
 
-export interface ArticleRow {
+export interface ArticleStatisticRow {
     kind: 'statistic'
+    statname: StatName
     statval: number
     ordinal: number
     percentileByPopulation: number
-    statcol?: StatCol
-    statname: StatName
-    statpath?: StatPath
-    explanationPage?: string
+    statcol: StatCol
+    statpath: StatPath
+    explanationPage: string
     articleType: string
     totalCountInClass: number
     totalCountOverall: number
-    index?: number
+    index: number
     renderedStatname: string
     extraStat?: ExtraStat
     disclaimer?: Disclaimer
     overallFirstLast: FirstLastStatus
-    unit?: UnitType
 }
 
 /** Metadata shown as an extra table row (same UI pipeline as statistics). */
 export interface MetadataArticleRow {
     kind: 'metadata'
+    statname: string
     statpath: StatPath
     renderedStatname: string
     articleType: string
-    statvalString: string
+    statval: string
+    extraStat: undefined
+    disclaimer: undefined
 }
 
-export type ArticleTableRow = ArticleRow | MetadataArticleRow
+export type ArticleRow = ArticleStatisticRow | MetadataArticleRow
 
-export function isArticleRow(row: ArticleTableRow): row is ArticleRow {
+interface StatisticCellRenderingInfoCommon {
+    totalCountInClass?: number
+    totalCountOverall?: number
+    percentileByPopulation?: number
+    articleType: string
+    statname: string
+    ordinal?: number
+    unit?: UnitType
+    statpath?: StatPath
+    overallFirstLast?: FirstLastStatus
+}
+
+interface StatisticCellRenderingInfoStatistic extends StatisticCellRenderingInfoCommon {
+    kind: 'statistic'
+    statval: number
+}
+
+interface StatisticCellRenderingInfoMetadata extends StatisticCellRenderingInfoCommon {
+    kind: 'metadata'
+    statval: string
+    unit: undefined
+}
+
+export type StatisticCellRenderingInfo = StatisticCellRenderingInfoStatistic | StatisticCellRenderingInfoMetadata
+
+export function isArticleRow(row: ArticleRow): row is ArticleStatisticRow {
     return row.kind === 'statistic'
 }
 
 /** One comparison table row: cells from each article at the same row index (aligned `statpath`s). */
-export type ComparisonArticlesSlice = readonly ArticleTableRow[]
+export type ComparisonArticlesSlice = readonly ArticleRow[]
 
-function firstCellInComparisonSlice(slice: ComparisonArticlesSlice): ArticleTableRow {
+function firstCellInComparisonSlice(slice: ComparisonArticlesSlice): ArticleRow {
     assert(slice.length > 0, 'empty comparison row slice')
     return slice[0]
 }
 
 export function statPathForComparisonRow(slice: ComparisonArticlesSlice): StatPath {
     const sp = firstCellInComparisonSlice(slice).statpath
-    assert(sp !== undefined, 'statpath missing for comparison row')
     return sp
 }
 
@@ -126,9 +152,12 @@ function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath
         return [{
             kind: 'metadata' as const,
             statpath: path,
+            statname: parent.groupYearName,
             renderedStatname: parent.groupYearName,
             articleType: article.articleType,
-            statvalString: values.get(parent.metadataIndex) ?? '',
+            statval: values.get(parent.metadataIndex) ?? '',
+            extraStat: undefined,
+            disclaimer: undefined,
         }]
     })
 }
@@ -146,7 +175,7 @@ function unpackBytes(bytes: Uint8Array): number[] {
     return result
 }
 
-function loadSingleArticle(data: Article, counts: CountsByUT, universe: string): ArticleRow[] {
+function loadSingleArticle(data: Article, counts: CountsByUT, universe: string): ArticleStatisticRow[] {
     // index of universe in data.universes
     const universeIndex = data.universes.indexOf(universe)
     const articleType = data.articleType
@@ -207,19 +236,18 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
                 isFirst: overallFirstLastThis.some((x: IFirstOrLast) => x.isFirst),
                 isLast: overallFirstLastThis.some((x: IFirstOrLast) => !x.isFirst),
             },
-        } satisfies ArticleRow
+        } satisfies ArticleStatisticRow
     })
 }
 
 export function loadArticles(datas: Article[], counts: CountsByUT, universe: string): {
-    rows: (settings: StatGroupSettings) => ArticleTableRow[][]
+    rows: (settings: StatGroupSettings) => ArticleRow[][]
     statPaths: StatPath[][]
 } {
     const availableRowsAll = datas.map(data => loadSingleArticle(data, counts, universe))
     const statPathsEach = availableRowsAll.map((availableRows) => {
         const statPathsThis = new Set<StatPath>()
         availableRows.forEach((row) => {
-            assert(row.statpath !== undefined, 'statpath missing for loaded statistics row')
             statPathsThis.add(row.statpath)
         })
         metadataStatPathsInTreeOrder.forEach((statPath) => {
@@ -234,9 +262,9 @@ export function loadArticles(datas: Article[], counts: CountsByUT, universe: str
         const enabledMetadataPaths = metadataStatPathsInTreeOrder.filter(path => statIsEnabled(path, settings, ambiguousSourcesAll))
         const rows = availableRowsAll.map((availableRows, articleIndex) => [
             ...availableRows
-                .filter(row => statIsEnabled(row.statpath!, settings, ambiguousSourcesAll))
+                .filter(row => statIsEnabled(row.statpath, settings, ambiguousSourcesAll))
                 // sort by order in statistics tree.
-                .sort((a, b) => statPathToOrder.get(a.statpath!)! - statPathToOrder.get(b.statpath!)!),
+                .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
             ...metadataRowsForArticle(datas[articleIndex], enabledMetadataPaths),
         ])
 
@@ -245,7 +273,7 @@ export function loadArticles(datas: Article[], counts: CountsByUT, universe: str
     }, statPaths: statPathsEach }
 }
 
-function insertMissing(rows: ArticleTableRow[][]): ArticleTableRow[][] {
+function insertMissing(rows: ArticleRow[][]): ArticleRow[][] {
     if (rows.length === 0) {
         return rows
     }
@@ -255,12 +283,9 @@ function insertMissing(rows: ArticleTableRow[][]): ArticleTableRow[][] {
 
     // Compute the global set of statpaths for these enabled rows, then align each article's
     // row list to that same ordered statpath list.
-    const statpathToExample = new Map<StatPath, ArticleTableRow>()
+    const statpathToExample = new Map<StatPath, ArticleRow>()
     for (const articleRows of rows) {
         for (const row of articleRows) {
-            if (row.statpath === undefined) {
-                throw new Error('Missing statpath for row; this should not happen for loaded articles')
-            }
             if (!statpathToExample.has(row.statpath)) {
                 statpathToExample.set(row.statpath, row)
             }
@@ -270,12 +295,12 @@ function insertMissing(rows: ArticleTableRow[][]): ArticleTableRow[][] {
     const orderedStatpaths = Array.from(statpathToExample.keys())
         .sort((a, b) => statPathToOrder.get(a)! - statPathToOrder.get(b)!)
 
-    const emptyRowExample = new Map<StatPath, ArticleTableRow>()
+    const emptyRowExample = new Map<StatPath, ArticleRow>()
     for (const statpath of orderedStatpaths) {
         const example = statpathToExample.get(statpath)!
         if (example.kind === 'statistic') {
-            const empty = JSON.parse(JSON.stringify(example)) as ArticleRow
-            for (const key of Object.keys(empty) as (keyof ArticleRow)[]) {
+            const empty = JSON.parse(JSON.stringify(example)) as ArticleStatisticRow
+            for (const key of Object.keys(empty) as (keyof ArticleStatisticRow)[]) {
                 if (typeof empty[key] === 'number') {
                     // @ts-expect-error -- Writing NaN into numeric fields
                     empty[key] = NaN
@@ -289,19 +314,19 @@ function insertMissing(rows: ArticleTableRow[][]): ArticleTableRow[][] {
         }
         else {
             const empty = JSON.parse(JSON.stringify(example)) as MetadataArticleRow
-            empty.statvalString = ''
+            empty.statval = ''
             empty.articleType = 'none' // doesn't matter since we are using simple mode
             emptyRowExample.set(statpath, empty)
         }
     }
 
     return rows.map((articleRows) => {
-        const byStatpath = new Map(articleRows.map(row => [row.statpath!, row] as const))
+        const byStatpath = new Map(articleRows.map(row => [row.statpath, row] as const))
         return orderedStatpaths.map(statpath => byStatpath.get(statpath) ?? emptyRowExample.get(statpath)!)
     })
 }
 
-function collapseAlternateSources(rows: ArticleTableRow[][]): ArticleTableRow[][] {
+function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     // collapses multiple rows if they
     // (1) have the same stat group and year
     // (2) no two rows apply to the same article
@@ -317,11 +342,10 @@ function collapseAlternateSources(rows: ArticleTableRow[][]): ArticleTableRow[][
     }
     // ts Map guarantees insertion order
     // rowsByStatGroupAndYear.get(key)[stat_column][article]
-    const rowsByStatGroupAndYear = new Map<string, ArticleTableRow[][]>()
+    const rowsByStatGroupAndYear = new Map<string, ArticleRow[][]>()
     const groupYearToName = new Map<string, string>()
     for (let i = 0; i < numRows; i++) {
         const statpath = rows[0][i].statpath
-        assert(statpath !== undefined, 'statpath must be defined for collapseAlternateSources')
         const { group, year, groupYearName } = statParents.get(statpath)!
         const key = `${group.id}_${year}`
         if (!rowsByStatGroupAndYear.has(key)) {
@@ -330,7 +354,7 @@ function collapseAlternateSources(rows: ArticleTableRow[][]): ArticleTableRow[][
         rowsByStatGroupAndYear.get(key)!.push(rows.map(row => row[i]))
         groupYearToName.set(key, groupYearName)
     }
-    const rowsCollapsed: ArticleTableRow[][] = []
+    const rowsCollapsed: ArticleRow[][] = []
     for (const key of rowsByStatGroupAndYear.keys()) {
         rowsCollapsed.push(...collapseAlternateSourcesSingleGroupYear(
             rowsByStatGroupAndYear.get(key)!,
@@ -340,7 +364,7 @@ function collapseAlternateSources(rows: ArticleTableRow[][]): ArticleTableRow[][
     return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
 }
 
-function collapseAlternateSourcesSingleGroupYear(rows: ArticleTableRow[][], groupYearName: string): ArticleTableRow[][] {
+function collapseAlternateSourcesSingleGroupYear(rows: ArticleRow[][], groupYearName: string): ArticleRow[][] {
     // rows[stat_column][article]
     if (rows.length === 1) {
         return rows
@@ -351,9 +375,9 @@ function collapseAlternateSourcesSingleGroupYear(rows: ArticleTableRow[][], grou
         return rows
     }
     // convert to a bitmap of whether each thing has a value (alternative is nan)
-    const statisticRows = rows as ArticleRow[][]
+    const statisticRows = rows as ArticleStatisticRow[][]
     const hasValue = statisticRows.map(row => row.map(x => !Number.isNaN(x.statval)))
-    const rowsC: ArticleTableRow[][] = []
+    const rowsC: ArticleRow[][] = []
     const collapsedRows = computeCollapsedRows(new Map(hasValue.map((x, i) => [i, x])))
     for (const collapsedRow of collapsedRows) {
         rowsC.push(collapse(collapsedRow.map(i => statisticRows[i]), groupYearName))
@@ -400,7 +424,7 @@ function computeCollapsedRows(hasValue: Map<number, boolean[]>): number[][] {
     return [rowIdxs, ...computeCollapsedRows(filtMap)]
 }
 
-function collapse(rows: ArticleRow[][], groupYearName: string): ArticleRow[] {
+function collapse(rows: ArticleStatisticRow[][], groupYearName: string): ArticleStatisticRow[] {
     // rows[stat_column][article]
     if (rows.length === 1) {
         return rows[0]

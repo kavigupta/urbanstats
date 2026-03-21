@@ -29,8 +29,8 @@ import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { computeNameSpecsWithGroups } from './article-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import {
+    ArticleStatisticRow,
     ArticleRow,
-    ArticleTableRow,
     comparisonOrdinalColumnsValid,
     comparisonSliceHasExpandableExtraStat,
     isArticleRow,
@@ -48,10 +48,10 @@ export function ComparisonPanel(props: {
     universe: Universe
     universes: readonly Universe[]
     articles: Article[]
-    rows: (settings: StatGroupSettings) => ArticleTableRow[][]
+    rows: (settings: StatGroupSettings) => ArticleRow[][]
     mapPartitions: number[][]
 }): ReactNode {
-    type LoadedStatisticRow = ArticleRow & { statpath: NonNullable<ArticleRow['statpath']> }
+    type LoadedStatisticRow = ArticleStatisticRow & { statpath: NonNullable<ArticleStatisticRow['statpath']> }
 
     const colors = useColors()
     const tableRef = useRef<HTMLDivElement>(null)
@@ -129,8 +129,8 @@ export function ComparisonPanel(props: {
 
     const settings = useSettings(groupYearKeys())
 
-    const dataByArticleStat: ArticleTableRow[][] = props.rows(settings)
-    const dataByStatArticle: ArticleTableRow[][] = dataByArticleStat[0].map((_, statIndex) =>
+    const dataByArticleStat: ArticleRow[][] = props.rows(settings)
+    const dataByStatArticle: ArticleRow[][] = dataByArticleStat[0].map((_, statIndex) =>
         dataByArticleStat.map(articleData => articleData[statIndex]),
     )
     const totalRowsByDisplay = dataByStatArticle.length
@@ -213,7 +213,7 @@ export function ComparisonPanel(props: {
 
     const highlightArticleIndicesByStat = dataByStatArticle.map(articlesStatData => getHighlightIndex(articlesStatData))
 
-    const rowToDisplayForStat = (statIndex: number): ArticleRow => {
+    const rowToDisplayForStat = (statIndex: number): ArticleStatisticRow => {
         const rows = assertRowIsStatistics(dataByStatArticle[statIndex])
         return rows.find(r => r.extraStat !== undefined) ?? rows[0]
     }
@@ -258,7 +258,6 @@ export function ComparisonPanel(props: {
         }
 
         const rowToDisplay = rowToDisplayForStat(statIndex)
-        assert(rowToDisplay.statpath !== undefined, 'statpath missing for loaded statistic row')
         return {
             type: 'statistic-name',
             row: rowToDisplay as LoadedStatisticRow,
@@ -286,7 +285,7 @@ export function ComparisonPanel(props: {
             if (row.kind !== 'statistic') {
                 return {
                     type: 'statistic-row',
-                    row,
+                    row: { ...row, unit: undefined },
                     longname: names[articleIndex],
                     onlyColumns,
                     simpleOrdinals: true,
@@ -458,7 +457,7 @@ export function ComparisonPanel(props: {
     )
 }
 
-export function pullRelevantPlotProps(rows: ArticleTableRow[], rowIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
+export function pullRelevantPlotProps(rows: ArticleRow[], rowIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
     if (rows[rowIndex].kind !== 'statistic' || rows[rowIndex].extraStat === undefined) {
         return []
     }
@@ -511,21 +510,21 @@ export function pullRelevantPlotProps(rows: ArticleTableRow[], rowIndex: number,
     })
 }
 
-function assertRowIsStatistics(rows: readonly ArticleTableRow[]): ArticleRow[] {
+function assertRowIsStatistics(rows: readonly ArticleRow[]): ArticleStatisticRow[] {
     return rows.map((row) => {
         assert(isArticleRow(row), 'unreachable: expected statistic row')
         return row
     })
 }
 
-function getHighlightIndex(articlesStatData: readonly ArticleTableRow[]): number | undefined {
+function getHighlightIndex(articlesStatData: readonly ArticleRow[]): number | undefined {
     if (!articlesStatData.every(isArticleRow)) {
         return undefined
     }
     return highlightMaxStatvalArticleIndex(articlesStatData)
 }
 
-function highlightMaxStatvalArticleIndex(rows: readonly ArticleRow[]): number | undefined {
+function highlightMaxStatvalArticleIndex(rows: readonly ArticleStatisticRow[]): number | undefined {
     return rows.map(x => x.statval).reduce<number | undefined>((iMax, x, i, arr) => {
         if (isNaN(x)) {
             return iMax
