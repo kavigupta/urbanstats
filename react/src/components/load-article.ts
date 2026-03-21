@@ -86,7 +86,6 @@ interface StatisticCellRenderingInfoMetadata extends StatisticCellRenderingInfoC
     kind: 'metadata'
     statval: string
     statpath: StatPath
-    unit: undefined
 }
 
 export type StatisticCellRenderingInfo = StatisticCellRenderingInfoStatistic | StatisticCellRenderingInfoMetadata

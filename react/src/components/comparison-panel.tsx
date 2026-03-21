@@ -261,7 +261,7 @@ export function ComparisonPanel(props: {
             if (row.kind === 'metadata') {
                 return {
                     type: 'statistic-row',
-                    row: { ...row, unit: undefined },
+                    row,
                     longname: names[articleIndex],
                     onlyColumns,
                     simpleOrdinals: true,
