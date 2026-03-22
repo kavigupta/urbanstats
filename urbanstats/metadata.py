@@ -1,6 +1,6 @@
 import re
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, Type
 
 from urbanstats.protobuf import data_files_pb2
@@ -23,6 +23,7 @@ class DisplayedMetadata(MetadataColumn):
     name: str
     setting_key: Optional[str] = None
     show_in_metadata_table: bool = True
+    category: str = field(kw_only=True)
 
     def create(self, idx, value):
         assert isinstance(
@@ -44,13 +45,13 @@ class ExternalLinkMetadata(MetadataColumn):
 
 
 metadata_types = {
-    "geoid": DisplayedMetadata(str, "US Census GeoID"),
-    "scgc": DisplayedMetadata(str, "StatCan GeoCode"),
+    "geoid": DisplayedMetadata(str, "US Census GeoID", category="geoid"),
+    "scgc": DisplayedMetadata(str, "StatCan GeoCode", category="geoid"),
     "wikidata": ExternalLinkMetadata("Wikidata", "https://www.wikidata.org/wiki/"),
     "wikipedia_page": ExternalLinkMetadata(
         "Wikipedia", "https://en.wikipedia.org/wiki/", normalizer="wikipedia"
     ),
-    "iso": DisplayedMetadata(str, "ISO Code"),
+    "iso": DisplayedMetadata(str, "ISO Code", category="geoid"),
 }
 
 
@@ -66,6 +67,7 @@ def export_metadata_types():
                     name=v.name,
                     setting_key=setting_key,
                     show_in_metadata_table=v.show_in_metadata_table,
+                    category=v.category,
                 )
             )
         elif isinstance(v, ExternalLinkMetadata):

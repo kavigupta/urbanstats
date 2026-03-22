@@ -4,19 +4,22 @@ export default {
             "index": 0,
             "name": "US Census GeoID",
             "setting_key": "show_metadata_us_census_geoid",
-            "show_in_metadata_table": true
+            "show_in_metadata_table": true,
+            "category": "geoid"
         },
         {
             "index": 1,
             "name": "StatCan GeoCode",
             "setting_key": "show_metadata_statcan_geocode",
-            "show_in_metadata_table": true
+            "show_in_metadata_table": true,
+            "category": "geoid"
         },
         {
             "index": 4,
             "name": "ISO Code",
             "setting_key": "show_metadata_iso_code",
-            "show_in_metadata_table": true
+            "show_in_metadata_table": true,
+            "category": "geoid"
         }
     ],
     "external_link_metadata": [

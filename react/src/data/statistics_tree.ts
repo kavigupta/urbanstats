@@ -7627,8 +7627,8 @@ export const rawStatsTree = [
         ]
     },
     {
-        "id": "metadata",
-        "name": "Metadata",
+        "id": "geoid",
+        "name": "Geographic Identifiers",
         "contents": [
             {
                 "id": "metadata_show_metadata_us_census_geoid",

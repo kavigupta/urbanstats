@@ -1,5 +1,6 @@
 # pylint: disable=too-many-lines
 
+from collections import defaultdict
 from dataclasses import dataclass, field
 from types import NoneType
 
@@ -186,7 +187,7 @@ class StatisticCategory:
     contents: dict[str, StatisticGroup]
 
     def __post_init__(self):
-        assert isinstance(self.name, str)
+        assert isinstance(self.name, str), self
         assert isinstance(self.contents, dict)
         assert all(
             isinstance(value, StatisticGroup) for value in self.contents.values()
@@ -429,12 +430,13 @@ def census_basics_with_canada(col_name, canada_name=None, *, change):
 
 def metadata_statistics_category():
     metadata = export_metadata_types()
-    contents = {}
+    contents = defaultdict(dict)
     for entry in metadata["displayed_metadata"]:
         if not entry["show_in_metadata_table"]:
             continue
         metadata_path = get_statistic_column_path(f"metadata_{entry['setting_key']}")
-        contents[metadata_path] = StatisticGroup(
+        assert "category" in entry, f"Metadata entry {entry} is missing category"
+        contents[entry["category"]][metadata_path] = StatisticGroup(
             {
                 None: [
                     MetadataMultiSource(
@@ -448,7 +450,14 @@ def metadata_statistics_category():
             },
             group_name=entry["name"],
         )
-    return {"metadata": StatisticCategory(name="Metadata", contents=contents)}
+    category_names = {"geoid": "Geographic Identifiers"}
+    assert set(contents) == set(
+        category_names
+    ), f"Unexpected metadata categories: {set(contents)}"
+    return {
+        cat_internal: StatisticCategory(name=cat_name, contents=contents[cat_internal])
+        for cat_internal, cat_name in category_names.items()
+    }
 
 
 statistics_tree = StatisticTree(
