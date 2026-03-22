@@ -1,5 +1,5 @@
 import Color from 'color'
-import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
@@ -23,7 +23,7 @@ import { TextBox } from '../urban-stats-script/constants/text-box'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { USSOpaqueValue } from '../urban-stats-script/types-values'
-import { executeAsync } from '../urban-stats-script/workerManager'
+import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
 import { loadImage } from '../utils/Image'
 import { editIndex, EditSeq } from '../utils/array-edits'
 import { furthestColor, interpolateColor } from '../utils/color'
@@ -36,7 +36,6 @@ import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar
 import { InsetMap } from './components/InsetMap'
 import { AddTextBox, MapTextBoxComponent } from './components/MapTextBox'
 import { loadInsets } from './context'
-import { splitLayoutContext } from './settings/EditMapperPanel'
 import { Basemap, computeUSS, MapSettings } from './settings/utils'
 
 const mapUpdateInterval = 500
@@ -53,6 +52,7 @@ export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
             initial: {
                 ui: ({ loading }) => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
                 errors: [],
+                assignments: new Map(),
             },
             ui: (generator, loading) => ({
                 ...generator,
@@ -69,6 +69,7 @@ export interface MapGenerator<T = unknown> {
     exportGeoJSON?: () => string
     exportCSV?: CSVExportData
     errors: EditorError[]
+    assignments: AssignmentsResult
 }
 
 async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { mapSettings: MapSettings, cache: MapCache, previousGenerator: Promise<MapGenerator<{ loading: boolean }>> }): Promise<MapGenerator<{ loading: boolean }>> {
@@ -76,6 +77,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         return {
             ui: ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
             errors: [{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }],
+            assignments: new Map(),
         }
     }
 
@@ -103,7 +105,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
     const mapResultMain = execResult.resultingValue.value
 
     const csvExportCallback: CSVExportData = () => {
-        const csvData = generateMapperCSVData(mapResultMain, execResult.context)
+        const csvData = generateMapperCSVData(mapResultMain, execResult.assignments)
         const csvFilename = `${mapSettings.geographyKind}-${mapSettings.universe}-data.csv`
         return {
             csvData,
@@ -224,6 +226,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                 exportImage: () => exportImage(),
             }
         },
+        assignments: execResult.assignments,
     }
 }
 
@@ -436,6 +439,8 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
 const canonicalWidth = 1200
 
+export const transformContext = createContext({ selfDetermineHeight: false })
+
 function TransformConstantWidth({ children }: { children: ReactNode }): ReactNode {
     const [layout, setLayout] = useState({ scale: 1, top: 0, left: 0, selfDeterminedHeight: 0 })
     const ref = useRef<HTMLDivElement>(null)
@@ -468,7 +473,7 @@ function TransformConstantWidth({ children }: { children: ReactNode }): ReactNod
     }, [])
 
     return (
-        <div ref={ref} style={{ ...(useContext(splitLayoutContext) ? { position: 'absolute' } : { height: layout.selfDeterminedHeight }), inset: 0 }}>
+        <div ref={ref} style={{ ...(useContext(transformContext).selfDetermineHeight ? { height: layout.selfDeterminedHeight } : { position: 'absolute' }), inset: 0 }}>
             <div
                 ref={childRef}
                 style={{

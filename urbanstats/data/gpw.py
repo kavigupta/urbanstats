@@ -1,4 +1,5 @@
 import os
+from functools import lru_cache
 
 import dask.array
 import numpy as np
@@ -36,6 +37,7 @@ def load_full_ghs_30arcsec_zarr():
     )
 
 
+@lru_cache(maxsize=2)
 def load_full_ghs_zarr(resolution):
     if resolution == 1200:
         return load_full_ghs_3arcsec_zarr()

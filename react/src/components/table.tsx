@@ -63,13 +63,15 @@ export interface CommonLayoutInformation {
     ordinalColumnPadding: number
 }
 
+interface ColumnLayoutCell {
+    columnIdentifier: ColumnIdentifier
+    widthPercentage: number
+    content: () => ReactNode
+    style: CSSProperties
+}
+
 interface ColumnLayoutProps {
-    cells: {
-        columnIdentifier: ColumnIdentifier
-        widthPercentage: number
-        content: ReactNode
-        style: CSSProperties
-    }[]
+    cells: ColumnLayoutCell[]
     onlyColumns?: string[]
     blankColumns?: string[]
     totalWidth: number
@@ -78,14 +80,14 @@ interface ColumnLayoutProps {
 // Lays out column content
 function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     const cellPercentages: number[] = []
-    const cellContents = []
+    const cellContents: { content: () => ReactNode, style: CSSProperties }[] = []
     for (const { widthPercentage, columnIdentifier, content, style } of props.cells) {
         if (props.onlyColumns && !props.onlyColumns.includes(columnIdentifier)) {
             continue
         }
         cellPercentages.push(widthPercentage)
         if (props.blankColumns?.includes(columnIdentifier)) {
-            cellContents.push({ content: <span></span>, style })
+            cellContents.push({ content: () => <span></span>, style })
         }
         else {
             cellContents.push({ content, style })
@@ -103,7 +105,7 @@ function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
             const sty: React.CSSProperties = { width: `${cellPercentages[i]}%`, padding: '1px', ...style }
             return (
                 <div key={i} style={sty}>
-                    {content}
+                    {content()}
                 </div>
             )
         },
@@ -300,7 +302,7 @@ function StatisticHeaderCells(props: {
         {
             columnIdentifier: 'statval',
             widthPercentage: 15 + 10,
-            content: (
+            content: () => (
                 <span className="serif value">
                     Value
                 </span>
@@ -310,7 +312,7 @@ function StatisticHeaderCells(props: {
         {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
             columnIdentifier: 'statistic_percentile',
-            content: (
+            content: () => (
                 <div className="serif" key="ordinal" style={percentileStyle}>
                     {
                         (props.simpleOrdinals ? '%ile' : 'Percentile')
@@ -323,7 +325,7 @@ function StatisticHeaderCells(props: {
         {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
             columnIdentifier: 'statistic_ordinal',
-            content: (
+            content: () => (
                 <div className="serif" key="statistic_ordinal" style={ordinalStyle}>
                     {
                         (props.simpleOrdinals ? 'Ord' : 'Ordinal')
@@ -351,14 +353,14 @@ function PointerHeaderCells(props: { ordinalStyle: CSSProperties }): ColumnLayou
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_in_class',
-        content: <span className="serif" style={props.ordinalStyle}>Within Type</span>,
+        content: () => <span className="serif" style={props.ordinalStyle}>Within Type</span>,
         style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
 
     }
     const pointerOverallCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_overall',
-        content: <span className="serif" style={props.ordinalStyle}>Overall</span>,
+        content: () => <span className="serif" style={props.ordinalStyle}>Overall</span>,
         style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
     }
 
@@ -407,7 +409,7 @@ function PointerHeaderSelectorCell(): ColumnLayoutProps['cells'][number] {
     return {
         widthPercentage: 8,
         columnIdentifier: preferredPointerCell,
-        content: (
+        content: () => (
             <>
                 <select
                     style={selectStyle}
@@ -449,7 +451,7 @@ export function StatisticRowCells(props: {
         {
             widthPercentage: 15,
             columnIdentifier: 'statval',
-            content: (
+            content: () => (
                 <span className="serif value testing-statistic-value">
                     <Statistic
                         statname={props.row.statname}
@@ -465,7 +467,7 @@ export function StatisticRowCells(props: {
         {
             widthPercentage: 10,
             columnIdentifier: 'statval_unit',
-            content: (
+            content: () => (
                 <div className="value_unit">
                     <span className="serif value">
                         <Statistic
@@ -482,7 +484,7 @@ export function StatisticRowCells(props: {
         {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
             columnIdentifier: 'statistic_percentile',
-            content: (
+            content: () => (
                 <div className="serif" style={percentileStyle}>
                     <Percentile
                         ordinal={props.row.ordinal}
@@ -497,7 +499,7 @@ export function StatisticRowCells(props: {
         {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
             columnIdentifier: 'statistic_ordinal',
-            content: (
+            content: () => (
                 <div className="serif" style={ordinalStyle}>
                     <Ordinal
                         ordinal={props.row.ordinal}
@@ -542,7 +544,7 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: StatisticCel
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_in_class',
-        content: (
+        content: () => (
             <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
                 <PointerButtonsIndex
                     ordinal={props.row.ordinal}
@@ -559,7 +561,7 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: StatisticCel
     const pointerOverallCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_overall',
-        content: (
+        content: () => (
             <span className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
                 <PointerButtonsIndex
                     statpath={statpath}
