@@ -188,10 +188,6 @@ export const statPathToOrder = new Map<StatPath, number>(
     statParentsList.map(([statPath], i) => [statPath, i] as const),
 )
 
-export const statDataOrderToOrder = new Map<number, number>(
-    statPaths.map((statPath, i) => [i, statPathToOrder.get(statPath)!] as const),
-)
-
 export interface DataSourceCheckbox { name: SourceIdentifier, forcedOn: boolean }
 
 export type DataSourceCheckboxes = { category: SourceCategoryIdentifier, checkboxSpecs: DataSourceCheckbox[] }[]
