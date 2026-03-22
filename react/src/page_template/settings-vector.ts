@@ -479,6 +479,9 @@ const settingsVector = [
     new ActiveSetting({ key: 'expanded__density_2011_pw_16_canada', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__density_2011_pw_32_canada', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'expanded__density_2011_pw_64_canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_fips', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_statcan_geocode', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_iso_code', coder: booleanSettingCoder }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 

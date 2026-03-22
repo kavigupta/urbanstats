@@ -1,8 +1,12 @@
-from dataclasses import dataclass
+# pylint: disable=too-many-lines
+
+from collections import defaultdict
+from dataclasses import dataclass, field
 from types import NoneType
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.data.gpw import GPW_RADII
+from urbanstats.metadata import export_metadata_types
 
 from .stat_path import get_statistic_column_path
 
@@ -51,6 +55,7 @@ class MultiSource:
         for source, col in self.by_source.items():
             result.append(
                 {
+                    "kind": "data",
                     "source": source.json() if source is not None else None,
                     "column": names.index(col),
                 }
@@ -68,6 +73,39 @@ class MultiSource:
 
     def compute_name(self, name_map):
         return name_map[self.canonical_column()]
+
+
+@dataclass
+class MetadataMultiSource(MultiSource):
+    metadata_index: int = field(kw_only=True)
+    metadata_path: str = field(kw_only=True)
+    metadata_value_type: str = field(kw_only=True)
+    metadata_name: str = field(kw_only=True)
+
+    def internal_statistics(self):
+        return []
+
+    def name_to_category(self, category_id):
+        return {}
+
+    def flatten(self, name_map, names):
+        output = {
+            "name": self.metadata_name,
+            "stats": [
+                {
+                    "kind": "metadata",
+                    "source": None,
+                    "path": self.metadata_path,
+                    "metadata_index": self.metadata_index,
+                    "value_type": self.metadata_value_type,
+                }
+            ],
+        }
+        output["indentedName"] = self.indented_name
+        return output
+
+    def compute_name(self, name_map):
+        return self.metadata_name
 
 
 @dataclass
@@ -149,7 +187,7 @@ class StatisticCategory:
     contents: dict[str, StatisticGroup]
 
     def __post_init__(self):
-        assert isinstance(self.name, str)
+        assert isinstance(self.name, str), self
         assert isinstance(self.contents, dict)
         assert all(
             isinstance(value, StatisticGroup) for value in self.contents.values()
@@ -388,6 +426,38 @@ def census_basics_with_canada(col_name, canada_name=None, *, change):
     ]
     result[col_name].group_name_statcol = col_name
     return result
+
+
+def metadata_statistics_category():
+    metadata = export_metadata_types()
+    contents = defaultdict(dict)
+    for entry in metadata["displayed_metadata"]:
+        if not entry["show_in_metadata_table"]:
+            continue
+        metadata_path = get_statistic_column_path(f"metadata_{entry['setting_key']}")
+        assert "category" in entry, f"Metadata entry {entry} is missing category"
+        contents[entry["category"]][metadata_path] = StatisticGroup(
+            {
+                None: [
+                    MetadataMultiSource(
+                        by_source={None: metadata_path},
+                        metadata_index=entry["index"],
+                        metadata_path=metadata_path,
+                        metadata_value_type="string",
+                        metadata_name=entry["name"],
+                    )
+                ]
+            },
+            group_name=entry["name"],
+        )
+    category_names = {"geoid": "Geographic Identifiers"}
+    assert set(contents) == set(
+        category_names
+    ), f"Unexpected metadata categories: {set(contents)}"
+    return {
+        cat_internal: StatisticCategory(name=cat_name, contents=contents[cat_internal])
+        for cat_internal, cat_name in category_names.items()
+    }
 
 
 statistics_tree = StatisticTree(
@@ -918,6 +988,7 @@ statistics_tree = StatisticTree(
             "insurance_coverage_govt",
             "insurance_coverage_private",
         ),
+        **metadata_statistics_category(),
         "other_densities": StatisticCategory(
             name="Other Density Metrics",
             contents={
