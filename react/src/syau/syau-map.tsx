@@ -19,7 +19,9 @@ interface SYAUMapProps {
 }
 
 export function SYAUMap(props: SYAUMapProps): ReactNode {
-    const [polysOnScreen, setPolysOnScreen] = useState<{ name: string, isGuessed: boolean }[]>([])
+    const [polysOnScreen, setPolysOnScreen] = useState<{ name: string, category: number }[]>([])
+
+    const categoryColors = [props.notGuessedColor, props.guessedColor]
 
     const centroidsData = useMemo(() => {
         return {
@@ -28,11 +30,11 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
                 type: 'Feature',
                 properties: {
                     name: props.longnames[idx],
-                    population: props.population[idx],
-                    populationGuessed: props.isGuessed[idx] ? props.population[idx] : 0,
-                    isGuessed: props.isGuessed[idx] ? 1 : 0,
-                    existence: 1,
                     populationOrdinal: props.populationOrdinals[idx],
+                    populationCategory0: props.isGuessed[idx] ? 0 : props.population[idx],
+                    populationCategory1: props.isGuessed[idx] ? props.population[idx] : 0,
+                    countCategory0: props.isGuessed[idx] ? 0 : 1,
+                    countCategory1: props.isGuessed[idx] ? 1 : 0,
                 },
                 geometry: {
                     type: 'Point',
@@ -42,11 +44,11 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
         } satisfies GeoJSON.FeatureCollection
     }, [props.centroids, props.isGuessed, props.longnames, props.population, props.populationOrdinals])
 
-    const features = useMemo(() => polygonFeatureCollection(polysOnScreen.map(({ name, isGuessed }) => ({
+    const features = useMemo(() => polygonFeatureCollection(polysOnScreen.map(({ name, category }) => ({
         name,
-        fillColor: isGuessed ? props.guessedColor : props.notGuessedColor,
+        fillColor: categoryColors[category],
         fillOpacity: 0.5,
-        color: isGuessed ? props.guessedColor : props.notGuessedColor,
+        color: categoryColors[category],
         weight: 2,
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Only want to reload these when polys actually change
     }))), [stableStringify(polysOnScreen), props.guessedColor, props.notGuessedColor]).use()
@@ -57,8 +59,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
         <SyauClusterMap
             centroidsData={centroidsData}
             mapBoundsCentroids={props.centroids}
-            guessedColor={props.guessedColor}
-            notGuessedColor={props.notGuessedColor}
+            categoryColors={categoryColors}
             onVisibleUnclusteredChange={setPolysOnScreen}
         >
             <PolygonFeatureCollection features={readyFeatures} clickable={false} />

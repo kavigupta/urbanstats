@@ -3,9 +3,13 @@ import React, { CSSProperties, ReactNode, useEffect, useMemo, useState } from 'r
 import { FullscreenControl, Layer, LngLatLike, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
 import { Basemap, CommonMaplibreMap } from '../components/map-common'
+import { assert } from '../utils/defensive'
 import { ICoordinate } from '../utils/protos'
 
 const circleMarkerRadius = 20
+
+type PopulationCategoryKey = `populationCategory${number}`
+type CountCategoryKey = `countCategory${number}`
 
 /**
  * Props for the clustered centroid map (SYAU game map). Kept explicit so other
@@ -16,15 +20,14 @@ export interface SyauClusterMapProps {
     centroidsData: GeoJSON.FeatureCollection
     /** Same locations as `centroidsData`, used only for initial fitBounds. */
     mapBoundsCentroids: ICoordinate[]
-    guessedColor: string
-    notGuessedColor: string
+    categoryColors: string[]
     /** Outer map container style (default height 600px). */
     mapStyle?: CSSProperties
     /**
      * Fired whenever marker query results change — unclustered points currently visible
      * (used for Voronoi polygon highlights in SYAU).
      */
-    onVisibleUnclusteredChange?: (polys: { name: string, isGuessed: boolean }[]) => void
+    onVisibleUnclusteredChange?: (polys: { name: string, category: number }[]) => void
     /** Rendered inside the map (e.g. layers that need `useMap()`). */
     children?: ReactNode
 }
@@ -37,8 +40,7 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
     const {
         centroidsData,
         mapBoundsCentroids,
-        guessedColor,
-        notGuessedColor,
+        categoryColors,
         mapStyle,
         onVisibleUnclusteredChange,
         children,
@@ -53,14 +55,14 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
         }
 
         const newMarkers = new Map<string, maplibregl.Marker>()
-        const newPolys: { name: string, isGuessed: boolean }[] = []
+        const newPolys: { name: string, category: number }[] = []
 
         const features = mapRef.querySourceFeatures('centroids')
 
         for (const feature of features) {
             const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
             const featureProps = feature.properties as (
-                { populationGuessed: number, population: number, isGuessed: number, existence: number } &
+                { [key in PopulationCategoryKey]: number } & { [key in CountCategoryKey]: number } &
 
                 // eslint-disable-next-line no-restricted-syntax -- cluster_id comes from maplibre and is out of our control
                 ({ cluster: true, cluster_id: string } | { cluster: undefined, name: string, populationOrdinal: number }))
@@ -68,14 +70,18 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
 
             let text: string
             if (featureProps.cluster) {
-                text = `${featureProps.isGuessed}/${featureProps.existence}`
+                const countGuessed = featureProps.countCategory1
+                const countTotal = featureProps.countCategory0 + featureProps.countCategory1
+                text = `${countGuessed}/${countTotal}`
             }
             else {
+                const category = categoryColors.findIndex((_, idx) => featureProps[`populationCategory${idx}`] > 0)
+                assert(category !== -1, 'No category found')
                 newPolys.push({
                     name: featureProps.name,
-                    isGuessed: featureProps.isGuessed === 1,
+                    category,
                 })
-                if (featureProps.isGuessed) {
+                if (featureProps.countCategory1 > 0) {
                     text = `#${featureProps.populationOrdinal}`
                 }
                 else {
@@ -83,10 +89,10 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
                 }
             }
             const html = circleSector(
-                notGuessedColor,
-                guessedColor,
+                categoryColors[0],
+                categoryColors[1],
                 circleMarkerRadius,
-                2 * Math.PI * (featureProps.populationGuessed / featureProps.population),
+                2 * Math.PI * (featureProps.populationCategory1 / (featureProps.populationCategory0 + featureProps.populationCategory1)),
                 text,
             )
 
@@ -123,6 +129,12 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
         onVisibleUnclusteredChange?.(newPolys)
     }
 
+    const clusterProperties: Record<string, unknown> = {}
+    for (let i = 0; i < categoryColors.length; i++) {
+        clusterProperties[`countCategory${i}`] = ['+', ['get', `countCategory${i}`]]
+        clusterProperties[`populationCategory${i}`] = ['+', ['get', `populationCategory${i}`]]
+    }
+
     return (
         <CommonMaplibreMap
             ref={setMapRef}
@@ -139,25 +151,15 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
                 cluster={true}
                 clusterMaxZoom={14}
                 clusterRadius={circleMarkerRadius * 2.5}
-                clusterProperties={{
-                    population: ['+', ['get', 'population']],
-                    populationGuessed: ['+', ['get', 'populationGuessed']],
-                    isGuessed: ['+', ['get', 'isGuessed']],
-                    existence: ['+', ['get', 'existence']],
-                }}
+                clusterProperties={clusterProperties}
             />
+            {/* This layer only exists as a source for the clustering I think? */}
             <Layer
                 id="centroid_circle"
                 type="circle"
                 source="centroids"
                 filter={['!=', 'cluster', true]}
                 paint={{
-                    'circle-color': [
-                        'case',
-                        ['==', ['get', 'isGuessed'], 1],
-                        guessedColor,
-                        notGuessedColor,
-                    ],
                     'circle-radius': 0,
                 }}
             />
