@@ -167,7 +167,7 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, h
     return resultCanvas
 }
 
-export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors, setScreenshotMode: (on: boolean) => void): Promise<void> {
+export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors, setScreenshotMode: (on: boolean) => void, forceNonTesting: boolean = false): Promise<void> {
     setScreenshotMode(true)
     await new Promise(resolve => setTimeout(resolve))
 
@@ -177,7 +177,7 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
     const canvases = []
     for (const ref of config.elementsToRender) {
         try {
-            canvases.push(await screencapElement(ref, overallWidth, heightMultiplier))
+            canvases.push(await screencapElement(ref, overallWidth, heightMultiplier, { testing: !forceNonTesting && TestUtils.shared.isTesting }))
         }
         catch (e) {
             console.error(e)
