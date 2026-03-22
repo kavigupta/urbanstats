@@ -74,19 +74,10 @@ class MultiSource:
 
 @dataclass
 class MetadataMultiSource(MultiSource):
-    metadata_index: int = 0
-    metadata_path: str = ""
-    metadata_value_type: str = "string"
-    metadata_name: str = ""
-
-    def __post_init__(self):
-        super().__post_init__()
-        assert None in self.by_source
-        assert len(self.by_source) == 1
-        assert isinstance(self.metadata_index, int)
-        assert isinstance(self.metadata_path, str)
-        assert self.metadata_value_type == "string"
-        assert isinstance(self.metadata_name, str)
+    metadata_index: int
+    metadata_path: str
+    metadata_value_type: str
+    metadata_name: str
 
     def internal_statistics(self):
         return []
@@ -438,7 +429,7 @@ def metadata_statistics_category():
     metadata = export_metadata_types()
     contents = {}
     for entry in metadata["displayed_metadata"]:
-        if not entry.get("show_in_metadata_table", True):
+        if not entry["show_in_metadata_table"]:
             continue
         metadata_path = get_statistic_column_path(f"metadata_{entry['setting_key']}")
         contents[metadata_path] = StatisticGroup(
