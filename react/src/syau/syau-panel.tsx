@@ -16,6 +16,7 @@ import { pluralize } from '../utils/text'
 import { SelectType, SelectUniverse } from './EditableSelector'
 import { SYAULocalStorage } from './SYAULocalStorage'
 import { confirmMatch, SYAUData } from './load'
+import { syauCategoryNamed, syauCategoryUnnamed } from './syau-categories'
 import { SYAUMap } from './syau-map'
 
 export type Type = string
@@ -104,7 +105,9 @@ function SYAUGame(props: { typ: string, universe: Universe, syauData: SYAUData }
         return true
     }
 
-    const isGuessed = props.syauData.longnames.map(name => history.guessed.includes(name))
+    const memberCategory = props.syauData.longnames.map(name =>
+        history.guessed.includes(name) ? syauCategoryNamed : syauCategoryUnnamed,
+    )
     const indicatorColor = alreadyGuessed ? jColors.correct : colors.background
 
     return (
@@ -141,10 +144,8 @@ function SYAUGame(props: { typ: string, universe: Universe, syauData: SYAUData }
                 population={props.syauData.populations}
                 populationOrdinals={props.syauData.populationOrdinals}
                 centroids={props.syauData.centroids}
-                isGuessed={isGuessed}
-                guessedColor={jColors.correct}
-                notGuessedColor={jColors.incorrect}
-                voroniHighlightColor={colors.hueColors.blue}
+                memberCategory={memberCategory}
+                categoryColors={[jColors.incorrect, jColors.correct]}
             />
             <div style={{ marginBlockEnd: '1em' }} />
             <div style={{ display: 'flex', justifyContent: 'center', margin: 'auto' }}>
@@ -199,7 +200,8 @@ function SYAUGame(props: { typ: string, universe: Universe, syauData: SYAUData }
             <SYAUTable
                 longnames={props.syauData.longnames}
                 populationOrdinals={props.syauData.populationOrdinals}
-                isGuessed={isGuessed}
+                memberCategory={memberCategory}
+                categoryColors={[jColors.incorrect, jColors.correct]}
             />
         </div>
     )
@@ -222,9 +224,13 @@ function renderPct(frac: number): string {
     return `${pct.toFixed(0)}%`
 }
 
-function SYAUTable(props: { longnames: string[], populationOrdinals: number[], isGuessed: boolean[] }): ReactNode {
+function SYAUTable(props: {
+    longnames: string[]
+    populationOrdinals: number[]
+    memberCategory: number[]
+    categoryColors: readonly string[]
+}): ReactNode {
     const colors = useColors()
-    const jColors = useJuxtastatColors()
     const isMobile = useMobileLayout()
     const navContext = useContext(Navigator.Context)
 
@@ -235,10 +241,12 @@ function SYAUTable(props: { longnames: string[], populationOrdinals: number[], i
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: '1em' }}>
             {props.longnames.map((name, idx) => {
                 const ordinal = props.populationOrdinals[idx]
-                const guessed = props.isGuessed[idx]
-                const color = guessed ? colors.buttonTextWhite : colors.textMain
+                const category = props.memberCategory[idx] ?? syauCategoryUnnamed
+                const categoryColor = props.categoryColors[category] ?? props.categoryColors[syauCategoryUnnamed]
+                const isNamed = category !== syauCategoryUnnamed
+                const color = isNamed ? colors.buttonTextWhite : colors.textMain
 
-                const linkProps = guessed
+                const linkProps = isNamed
                     ? navContext.link({
                         kind: 'article',
                         longname: name,
@@ -248,12 +256,12 @@ function SYAUTable(props: { longnames: string[], populationOrdinals: number[], i
                 return (
                     <a
                         key={name}
-                        className={guessed ? 'testing-syau-named' : 'testing-syau-not-named'}
+                        className={isNamed ? 'testing-syau-named' : 'testing-syau-not-named'}
                         style={{
-                            backgroundColor: guessed ? jColors.correct : colors.background,
+                            backgroundColor: categoryColor,
                             padding: '1em',
                             borderRadius: '5px',
-                            boxShadow: guessed ? `0 0 10px ${jColors.correct}` : `0 0 10px ${colors.background}`,
+                            boxShadow: `0 0 10px ${categoryColor}`,
                             borderColor: colors.textMain,
                             borderWidth: '0.2em',
                             borderStyle: 'solid',
@@ -268,7 +276,7 @@ function SYAUTable(props: { longnames: string[], populationOrdinals: number[], i
                             {ordinal}
                             .
                             {' '}
-                            {guessed ? name.split(',')[0] : ''}
+                            {isNamed ? name.split(',')[0] : ''}
                         </div>
                     </a>
                 )
