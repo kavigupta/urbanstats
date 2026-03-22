@@ -1,4 +1,3 @@
-import maplibregl from 'maplibre-gl'
 import React, { ReactNode, useContext, useRef } from 'react'
 
 import '../common.css'
