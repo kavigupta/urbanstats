@@ -204,6 +204,10 @@ export function Editor(
 
             const range = getRange(editor)
 
+            /**
+             * Reimplementing many editing operations is the easiest way to get consistent operation across browsers.
+             */
+
             if (e.key === 'Enter' && range !== null) {
                 // Lots of browsers can't figure this out on their own, so let's just do it for them
                 e.preventDefault()
