@@ -227,12 +227,14 @@ function LazyNode({ node }: { node: Promise<ReactNode> }): ReactNode {
     }
 }
 
+const patKey = 'github-personal-access-token'
+
 function getPAT(): string {
-    let result = localStorage.getItem('github-personal-access-token')
+    let result = localStorage.getItem(patKey)
     while (result === null) {
         result = prompt('Github Personal Access Token')
     }
-    localStorage.setItem('github-personal-access-token', result)
+    localStorage.setItem(patKey, result)
     return result
 }
 
@@ -252,14 +254,25 @@ class CustomReader extends Reader<void> {
 
     override async init(): Promise<void> {
         await super.init?.()
-        const head = await fetch(`https://api.github.com/repos/kavigupta/urbanstats/actions/artifacts/${this.artifactId}/zip`, {
-            method: 'HEAD',
-            headers: {
-                Authorization: `Bearer ${getPAT()}`,
-            },
-        })
-        this.size = z.coerce.number().parse(head.headers.get('Content-Length'))
-        this.url = head.url
+        while (true) {
+            const head = await fetch(`https://api.github.com/repos/kavigupta/urbanstats/actions/artifacts/${this.artifactId}/zip`, {
+                method: 'HEAD',
+                headers: {
+                    Authorization: `Bearer ${getPAT()}`,
+                },
+            })
+
+            if (head.status !== 200) {
+                if (confirm(`${head.status} Accessing Github. Likely a problem with the acccess token. Cancel to rerty, OK to clear token and prompt for a new one`)) {
+                    localStorage.removeItem(patKey)
+                }
+                continue
+            }
+
+            this.size = z.coerce.number().parse(head.headers.get('Content-Length'))
+            this.url = head.url
+            break
+        }
     }
 
     blocks = new DefaultMap<number, Promise<Uint8Array>>(async (blockIndex) => {
