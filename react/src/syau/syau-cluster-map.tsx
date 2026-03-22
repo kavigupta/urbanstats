@@ -33,6 +33,7 @@ export interface SyauCentroidLeafProperties {
  */
 export interface SyauCentroidQueryProperties extends SyauCentroidLeafProperties {
     cluster?: boolean
+    // eslint-disable-next-line no-restricted-syntax -- not under our control
     cluster_id?: number | string
     namedCount?: number
     totalCount?: number
