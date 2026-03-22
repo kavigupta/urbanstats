@@ -199,21 +199,14 @@ function FirstZoom(props: { centroids: ICoordinate[] }): ReactNode {
 function circleSector(color1: string, color2: string, radius: number, startAngleClock: number, sizeAngle: number, text: string): string {
     let startAngle = startAngleClock - Math.PI / 2 // offset so 0% starts at top (12 o'clock)
     const singleSectors = []
-    const target = startAngle + sizeAngle
-    let endAngle = Math.min(target, startAngle + Math.PI / 2)
-    for (let i = 0; i < 4; i++) {
-        singleSectors.push(singleSector(radius, startAngle, endAngle, color2))
-        if (endAngle === target) {
-            break
-        }
-        startAngle = endAngle
-        endAngle = Math.min(target, startAngle + Math.PI / 2)
-    }
-
+    const [sectors, endAngle] = sectorsFor(radius, startAngle, sizeAngle, color2)
+    singleSectors.push(...sectors)
+    startAngle = endAngle
+    const [sectors2] = sectorsFor(radius, startAngle, 2 * Math.PI - sizeAngle, color1)
+    singleSectors.push(...sectors2)
     const result = [
         '<div>',
         `<svg xmlns="http://www.w3.org/2000/svg" width="${radius * 2}" height="${radius * 2}" viewBox="0 0 ${radius * 2} ${radius * 2}">`,
-        `<circle cx="${radius}" cy="${radius}" r="${radius}" fill="${color1}"></circle>`,
         ...singleSectors,
         '</svg>',
         '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width: 100%; text-align: center; font-weight: 500" class="serif">',
@@ -225,11 +218,28 @@ function circleSector(color1: string, color2: string, radius: number, startAngle
     return result.join('')
 }
 
+function sectorsFor(radius: number, startAngle: number, sizeAngle: number, color2: string): [string[], number] {
+    // pad by 1 degree to ensure no gaps
+    const singleSectors = []
+    const target = startAngle + sizeAngle
+    let endAngle = Math.min(target, startAngle + Math.PI / 1)
+    for (let i = 0; i < 2; i++) {
+        singleSectors.push(singleSector(radius, startAngle, endAngle, color2))
+        if (endAngle === target) {
+            break
+        }
+        startAngle = endAngle
+        endAngle = Math.min(target, startAngle + Math.PI / 1)
+    }
+    return [singleSectors, endAngle]
+}
+
 function singleSector(radius: number, startAngle: number, endAngle: number, color2: string): string {
-    const startx = radius + radius * Math.cos(startAngle)
-    const starty = radius + radius * Math.sin(startAngle)
-    const endx = radius + radius * Math.cos(endAngle)
-    const endy = radius + radius * Math.sin(endAngle)
+    const pad = (endAngle - startAngle) * 0.01
+    const startx = radius + radius * Math.cos(startAngle - pad)
+    const starty = radius + radius * Math.sin(startAngle - pad)
+    const endx = radius + radius * Math.cos(endAngle + pad)
+    const endy = radius + radius * Math.sin(endAngle + pad)
     return `<path d="M${radius},${radius} L${startx},${starty} A${radius},${radius} 1 0,1 ${endx},${endy} z" fill="${color2}"></path>`
 }
 
