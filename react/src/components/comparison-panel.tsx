@@ -552,7 +552,7 @@ function ComparisonMap({ longnames, colors, attribution }: { longnames: string[]
             >
                 <PolygonFeatureCollection features={readyFeatures} clickable={true} />
                 <FullscreenControl position="top-left" />
-                {attribution && <CustomAttributionControlComponent startShowingAttribution={true} />}
+                { attribution && <CustomAttributionControlComponent startShowingAttribution={true} />}
             </CommonMaplibreMap>
             <ComparisonMapButtons longnames={longnames} colors={colors} features={features} mapRef={mapRef} />
         </div>
