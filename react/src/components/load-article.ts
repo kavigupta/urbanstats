@@ -1,5 +1,6 @@
 import explanation_page from '../data/explanation_page'
 import extra_stats from '../data/extra_stats'
+import metadata from '../data/metadata'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
@@ -62,9 +63,14 @@ export interface MetadataArticleRow {
     statval: string
     extraStat: undefined
     disclaimer: undefined
+    dataCreditExplanationPage: string
 }
 
 export type ArticleRow = ArticleStatisticRow | MetadataArticleRow
+
+const dataCreditExplanationPageByMetadataIndex = new Map<number, string>(
+    metadata.displayed_metadata.map(e => [e.index, e.data_credit_explanation_page]),
+)
 
 interface StatisticCellRenderingInfoCommon {
     articleType: string
@@ -121,6 +127,8 @@ function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath
         if (statval === undefined) {
             return []
         }
+        const dataCreditExplanationPage = dataCreditExplanationPageByMetadataIndex.get(parent.metadataIndex)
+        assert(dataCreditExplanationPage !== undefined, `metadata index ${parent.metadataIndex} missing data_credit_explanation_page in metadata.ts`)
         return [{
             kind: 'metadata' as const,
             statpath: path,
@@ -130,6 +138,7 @@ function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath
             statval,
             extraStat: undefined,
             disclaimer: undefined,
+            dataCreditExplanationPage,
         }]
     })
 }

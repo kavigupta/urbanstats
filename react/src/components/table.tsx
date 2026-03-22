@@ -10,6 +10,7 @@ import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
+import { sanitize } from '../utils/paths'
 import { useComparisonHeadStyle, useMobileLayout } from '../utils/responsive'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 import { displayType } from '../utils/text'
@@ -874,14 +875,24 @@ function StatisticName(props: {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
 
-    const link = (
-        <a
-            style={{ textDecoration: 'none', color: colors.textMain }}
-            {
-                ...(
-                    props.row?.kind !== 'statistic'
-                        ? {}
-                        : navContext.link({
+    const link = props.row?.kind === 'metadata'
+        ? (
+                <a
+                    style={{ textDecoration: 'none', color: colors.textMain }}
+                    {...navContext.link(
+                        { kind: 'dataCredit', hash: `#explanation_${sanitize(props.row.dataCreditExplanationPage)}` },
+                        { scroll: { kind: 'none' } },
+                    )}
+                    data-test-id="statistic-link"
+                >
+                    {props.displayName}
+                </a>
+            )
+        : props.row?.kind === 'statistic'
+            ? (
+                    <a
+                        style={{ textDecoration: 'none', color: colors.textMain }}
+                        {...navContext.link({
                             kind: 'statistic',
                             universe: props.currentUniverse,
                             statname: props.row.statname,
@@ -891,14 +902,17 @@ function StatisticName(props: {
                             order: 'descending',
                             highlight: props.longname,
                             sort_column: 0,
-                        }, { scroll: { kind: 'position', top: 0 } })
+                        }, { scroll: { kind: 'position', top: 0 } })}
+                        data-test-id="statistic-link"
+                    >
+                        {props.displayName}
+                    </a>
                 )
-            }
-            data-test-id="statistic-link"
-        >
-            {props.displayName}
-        </a>
-    )
+            : (
+                    <span style={{ color: colors.textMain }} data-test-id="statistic-link">
+                        {props.displayName}
+                    </span>
+                )
     const screenshotMode = useScreenshotMode()
     const elements = [link]
     if (props.row?.extraStat !== undefined && !screenshotMode) {

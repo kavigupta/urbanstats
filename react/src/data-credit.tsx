@@ -1052,6 +1052,36 @@ export function DataCreditPanel(): ReactNode {
                             any circumstances, at least according to the Wikipedia page for the flag.
                         </div>
                     </div>
+
+                    <h1>Article metadata</h1>
+                    <div>
+                        <NRef name="geoid">Article metadata</NRef>
+                        <p>
+                            We include some metadata about articles.
+                            <ul>
+                                <li>
+                                    <b>FIPS</b>
+                                    {' '}
+                                    is a unique identifier for each census geography. These are &quot;summary-level&quot;
+                                    (geography kind) specific, and nested, i.e., California is 06, and Los Angeles County is 06037.
+                                </li>
+                                <li>
+                                    <b>StatCan GeoCode</b>
+                                    {' '}
+                                    is a unique identifier for each Canadian census geography. These are &quot;summary-level&quot;
+                                    (geography kind) specific, and nested, i.e., Ontario is 35, and Toronto is 3520005.
+                                </li>
+                                <li>
+                                    <b>ISO codes</b>
+                                    {' '}
+                                    are standard codes for countries and their subdivisions. We include ISO 3166-1
+                                    alpha-2 country codes for all countries, and ISO 3166-2 subdivision codes for some
+                                    countries (including US states and Canadian provinces).
+                                </li>
+                            </ul>
+                        </p>
+                    </div>
+
                     <Footnotes />
                 </FootnotesProvider>
             </PageTemplate>

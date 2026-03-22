@@ -5,21 +5,24 @@ export default {
             "name": "FIPS",
             "setting_key": "show_metadata_fips",
             "show_in_metadata_table": true,
-            "category": "geoid"
+            "category": "geoid",
+            "data_credit_explanation_page": "geoid"
         },
         {
             "index": 1,
             "name": "StatCan GeoCode",
             "setting_key": "show_metadata_statcan_geocode",
             "show_in_metadata_table": true,
-            "category": "geoid"
+            "category": "geoid",
+            "data_credit_explanation_page": "geoid"
         },
         {
             "index": 4,
             "name": "ISO Code",
             "setting_key": "show_metadata_iso_code",
             "show_in_metadata_table": true,
-            "category": "geoid"
+            "category": "geoid",
+            "data_credit_explanation_page": "geoid"
         }
     ],
     "external_link_metadata": [

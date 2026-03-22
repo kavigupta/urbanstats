@@ -24,6 +24,7 @@ class DisplayedMetadata(MetadataColumn):
     setting_key: Optional[str] = None
     show_in_metadata_table: bool = True
     category: str = field(kw_only=True)
+    data_credit_explanation_page: str = field(kw_only=True)
 
     def create(self, idx, value):
         assert isinstance(
@@ -45,13 +46,19 @@ class ExternalLinkMetadata(MetadataColumn):
 
 
 metadata_types = {
-    "geoid": DisplayedMetadata(str, "FIPS", category="geoid"),
-    "scgc": DisplayedMetadata(str, "StatCan GeoCode", category="geoid"),
+    "geoid": DisplayedMetadata(
+        str, "FIPS", category="geoid", data_credit_explanation_page="geoid"
+    ),
+    "scgc": DisplayedMetadata(
+        str, "StatCan GeoCode", category="geoid", data_credit_explanation_page="geoid"
+    ),
     "wikidata": ExternalLinkMetadata("Wikidata", "https://www.wikidata.org/wiki/"),
     "wikipedia_page": ExternalLinkMetadata(
         "Wikipedia", "https://en.wikipedia.org/wiki/", normalizer="wikipedia"
     ),
-    "iso": DisplayedMetadata(str, "ISO Code", category="geoid"),
+    "iso": DisplayedMetadata(
+        str, "ISO Code", category="geoid", data_credit_explanation_page="geoid"
+    ),
 }
 
 
@@ -68,6 +75,7 @@ def export_metadata_types():
                     setting_key=setting_key,
                     show_in_metadata_table=v.show_in_metadata_table,
                     category=v.category,
+                    data_credit_explanation_page=v.data_credit_explanation_page,
                 )
             )
         elif isinstance(v, ExternalLinkMetadata):
