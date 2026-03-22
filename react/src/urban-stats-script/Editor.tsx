@@ -268,7 +268,7 @@ export function Editor(
                     )
                 }
                 // length - 1 since we shouldn't try to delete the trailing newline
-                else if (range.end < script.uss.length - 1 && script.uss.charAt(range.start - 1) === '\n') {
+                else if (range.end < script.uss.length - 1 && script.uss.charAt(range.start) === '\n') {
                     // no selection case
                     e.preventDefault()
                     editScript(
