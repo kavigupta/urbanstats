@@ -398,10 +398,11 @@ function collapse(rows: ArticleRow[][], groupYearName: string): ArticleRow[] {
         if (rowsWithValues.length > 1) {
             throw new Error(`Cannot collapse rows with ${rowsWithValues.length} values (expected <= 1)`)
         }
-        assert(rowsWithValues[0].kind === 'statistic' && rowsForArticle[0].kind === 'statistic', 'We only support collapsing statistic rows right now')
+        const rowToUse = rowsWithValues.length > 0 ? rowsWithValues[0] : rowsForArticle[0]
+        assert(rowToUse.kind === 'statistic', 'We only support collapsing statistic rows right now')
         return {
             // If we can't find any rows with values, just use the first one
-            ...(rowsWithValues[0] ?? rowsForArticle[0]),
+            ...rowToUse,
             renderedStatname: groupYearName,
             disclaimer: 'heterogenous-sources',
         }
