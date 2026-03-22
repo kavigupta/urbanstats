@@ -92,7 +92,6 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
                 categoryColors[0],
                 categoryColors[1],
                 circleMarkerRadius,
-                0,
                 2 * Math.PI * (featureProps.populationCategory1 / (featureProps.populationCategory0 + featureProps.populationCategory1)),
                 text,
             )
@@ -196,8 +195,8 @@ function FirstZoom(props: { centroids: ICoordinate[] }): ReactNode {
     return null
 }
 
-function circleSector(color1: string, color2: string, radius: number, startAngleClock: number, sizeAngle: number, text: string): string {
-    let startAngle = startAngleClock - Math.PI / 2 // offset so 0% starts at top (12 o'clock)
+function circleSector(color1: string, color2: string, radius: number, sizeAngle: number, text: string): string {
+    let startAngle = -Math.PI / 2 // offset so 0% starts at top (12 o'clock)
     const singleSectors = []
     const [sectors, endAngle] = sectorsFor(radius, startAngle, sizeAngle, color2)
     singleSectors.push(...sectors)
