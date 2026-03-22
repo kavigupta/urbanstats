@@ -214,24 +214,12 @@ export function ComparisonPanel(props: {
         } satisfies CellSpec
     ))
 
-    const statisticNameHeaderSpecsOriginal: Parameters<typeof computeNameSpecsWithGroups>[0] = dataByStatArticle.map((articlesStatData, statIndex) => {
-        if (articlesStatData[0].kind !== 'statistic') {
-            return {
-                type: 'statistic-name',
-                row: undefined,
-                renderedStatname: articlesStatData[0].renderedStatname,
-                longname: names[0],
-                currentUniverse: props.universe,
-                center: transpose ? true : false,
-                transpose,
-            } satisfies CellSpec
-        }
-
-        const rowToDisplay = rowToDisplayForStat(statIndex)
+    const statisticNameHeaderSpecsOriginal: (CellSpec & { type: 'statistic-name' })[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => {
+        const row = rowToDisplayForStat(statIndex)
         return {
             type: 'statistic-name',
-            row: rowToDisplay,
-            renderedStatname: rowToDisplay.renderedStatname,
+            row,
+            renderedStatname: row.renderedStatname,
             longname: names[0],
             currentUniverse: props.universe,
             center: transpose ? true : false,
@@ -564,7 +552,7 @@ function ComparisonMap({ longnames, colors, attribution }: { longnames: string[]
             >
                 <PolygonFeatureCollection features={readyFeatures} clickable={true} />
                 <FullscreenControl position="top-left" />
-                { attribution && <CustomAttributionControlComponent startShowingAttribution={true} />}
+                {attribution && <CustomAttributionControlComponent startShowingAttribution={true} />}
             </CommonMaplibreMap>
             <ComparisonMapButtons longnames={longnames} colors={colors} features={features} mapRef={mapRef} />
         </div>
