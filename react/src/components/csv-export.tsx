@@ -49,6 +49,7 @@ export function generateCSVDataForArticles(
     const headerRow = ['Region', ...statNames]
 
     if (includeOrdinals) {
+        // using the 0th article because we assume all have the same stats in the same order.
         headerRow.push(...statNames.flatMap((statName, idx) => dataByArticleStat[0][idx].kind === 'statistic' ? [`${statName} (Rank)`, `${statName} (Percentile)`] : []))
     }
 
@@ -59,6 +60,7 @@ export function generateCSVDataForArticles(
 
         for (let statIndex = 0; statIndex < dataByArticleStat[0].length; statIndex++) {
             const rowData = dataByArticleStat[articleIndex][statIndex]
+            // works for either statistic or metadata, since both can be exported as a string
             row.push(rowData.statval.toString())
         }
 
