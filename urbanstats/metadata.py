@@ -45,7 +45,7 @@ class ExternalLinkMetadata(MetadataColumn):
 
 
 metadata_types = {
-    "geoid": DisplayedMetadata(str, "US Census GeoID", category="geoid"),
+    "geoid": DisplayedMetadata(str, "FIPS", category="geoid"),
     "scgc": DisplayedMetadata(str, "StatCan GeoCode", category="geoid"),
     "wikidata": ExternalLinkMetadata("Wikidata", "https://www.wikidata.org/wiki/"),
     "wikipedia_page": ExternalLinkMetadata(

@@ -2,8 +2,8 @@ export default {
     "displayed_metadata": [
         {
             "index": 0,
-            "name": "US Census GeoID",
-            "setting_key": "show_metadata_us_census_geoid",
+            "name": "FIPS",
+            "setting_key": "show_metadata_fips",
             "show_in_metadata_table": true,
             "category": "geoid"
         },

@@ -7631,19 +7631,19 @@ export const rawStatsTree = [
         "name": "Geographic Identifiers",
         "contents": [
             {
-                "id": "metadata_show_metadata_us_census_geoid",
-                "name": "US Census GeoID",
+                "id": "metadata_show_metadata_fips",
+                "name": "FIPS",
                 "contents": [
                     {
                         "year": null,
                         "stats_by_source": [
                             {
-                                "name": "US Census GeoID",
+                                "name": "FIPS",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
-                                        "path": "metadata_show_metadata_us_census_geoid",
+                                        "path": "metadata_show_metadata_fips",
                                         "metadata_index": 0,
                                         "value_type": "string"
                                     }
