@@ -11,7 +11,13 @@ export function compareArticleRows(a: ArticleRow, b: ArticleRow, direction: 'up'
     if (isNoValue(b.statval)) {
         return -1
     }
-    const directComparison = a.statval - b.statval
+    let directComparison
+    if (typeof a.statval === 'number' && typeof b.statval === 'number') {
+        directComparison = a.statval - b.statval
+    }
+    else {
+        directComparison = String(a.statval).localeCompare(String(b.statval))
+    }
     if (directComparison !== 0) {
         return direction === 'up' ? directComparison : -directComparison
     }

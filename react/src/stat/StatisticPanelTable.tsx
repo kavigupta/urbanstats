@@ -75,6 +75,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading }
         return indexRange.map((rangeIdx) => {
             const actualRowIdx = sortedIndices[rangeIdx]
             return {
+                kind: 'statistic',
                 statval: col.value[actualRowIdx],
                 ordinal: col.ordinal[actualRowIdx],
                 percentileByPopulation: col.populationPercentile[actualRowIdx],
