@@ -153,15 +153,17 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
                 clusterRadius={circleMarkerRadius * 2.5}
                 clusterProperties={clusterProperties}
             />
-            {/* This layer only exists as a source for the clustering I think? */}
+            {/*
+              * MapLibre needs at least one layer using this source for clustering to be computed and
+              * for querySourceFeatures to return features; this circle layer is invisible
+              * (radius 0) but keeps that pipeline active
+              */}
             <Layer
                 id="centroid_circle"
                 type="circle"
                 source="centroids"
                 filter={['!=', 'cluster', true]}
-                paint={{
-                    'circle-radius': 0,
-                }}
+                paint={{ 'circle-radius': 0 }}
             />
             <FirstZoom centroids={mapBoundsCentroids} />
             {children}
