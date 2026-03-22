@@ -243,57 +243,45 @@ export function loadArticles(datas: Article[], counts: CountsByUT, universe: str
 }
 
 function insertMissing(rows: ArticleRow[][]): ArticleRow[][] {
-    if (rows.length === 0) {
-        return rows
-    }
-    if (rows[0].length === 0) {
-        return rows
-    }
-
-    // Compute the global set of statpaths for these enabled rows, then align each article's
-    // row list to that same ordered statpath list.
-    const statpathToExample = new Map<StatPath, ArticleRow>()
-    for (const articleRows of rows) {
-        for (const row of articleRows) {
-            if (!statpathToExample.has(row.statpath)) {
-                statpathToExample.set(row.statpath, row)
-            }
-        }
-    }
-
-    const orderedStatpaths = Array.from(statpathToExample.keys())
-        .sort((a, b) => statPathToOrder.get(a)! - statPathToOrder.get(b)!)
+    const idxs = rows.map(row => row.map(x => x.statpath))
 
     const emptyRowExample = new Map<StatPath, ArticleRow>()
-    for (const statpath of orderedStatpaths) {
-        const example = statpathToExample.get(statpath)!
-        if (example.kind === 'statistic') {
-            const empty = JSON.parse(JSON.stringify(example)) as ArticleStatisticRow
-            for (const key of Object.keys(empty) as (keyof ArticleStatisticRow)[]) {
-                if (typeof empty[key] === 'number') {
-                    empty[key] = NaN as never
+    for (const dataI of rows.keys()) {
+        for (const rowI of rows[dataI].keys()) {
+            const idx = idxs[dataI][rowI]
+            emptyRowExample.set(idx, JSON.parse(JSON.stringify(rows[dataI][rowI])) as typeof rows[number][number])
+            for (const key of Object.keys(emptyRowExample.get(idx)!) as (keyof ArticleRow)[]) {
+                if (typeof emptyRowExample.get(idx)![key] === 'number') {
+                    // @ts-expect-error Typescript is fucking up this assignment
+                    emptyRowExample.get(idx)![key] = NaN
                 }
                 else if (key === 'extraStat') {
-                    empty[key] = undefined
+                    emptyRowExample.get(idx)![key] = undefined
                 }
             }
-            empty.articleType = 'none' // doesn't matter since we are using simple mode
-            emptyRowExample.set(statpath, empty)
-        }
-        else {
-            const empty = {
-                ...example,
-                statval: '',
-                articleType: 'none', // doesn't matter since we are using simple mode
-            }
-            emptyRowExample.set(statpath, empty)
+            emptyRowExample.get(idx)!.articleType = 'none' // doesn't matter since we are using simple mode
         }
     }
 
-    return rows.map((articleRows) => {
-        const byStatpath = new Map(articleRows.map(row => [row.statpath, row] as const))
-        return orderedStatpaths.map(statpath => byStatpath.get(statpath) ?? emptyRowExample.get(statpath)!)
-    })
+    const allIdxs = idxs.flat().filter((x, i, a) => a.indexOf(x) === i)
+    // sort all_idxs in ascending order numerically
+    allIdxs.sort((a, b) => statPathToOrder.get(a)! - statPathToOrder.get(b)!)
+
+    const newRowsAll = []
+    for (const dataI of rows.keys()) {
+        const newRows = []
+        for (const idx of allIdxs) {
+            if (idxs[dataI].includes(idx)) {
+                const indexToPull = idxs[dataI].findIndex(x => x === idx)
+                newRows.push(rows[dataI][indexToPull])
+            }
+            else {
+                newRows.push(emptyRowExample.get(idx)!)
+            }
+        }
+        newRowsAll.push(newRows)
+    }
+    return newRowsAll
 }
 
 function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
