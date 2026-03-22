@@ -7627,6 +7627,84 @@ export const rawStatsTree = [
         ]
     },
     {
+        "id": "metadata",
+        "name": "Metadata",
+        "contents": [
+            {
+                "id": "metadata_show_metadata_us_census_geoid",
+                "name": "US Census GeoID",
+                "contents": [
+                    {
+                        "year": null,
+                        "stats_by_source": [
+                            {
+                                "name": "US Census GeoID",
+                                "stats": [
+                                    {
+                                        "kind": "metadata",
+                                        "source": null,
+                                        "path": "metadata_show_metadata_us_census_geoid",
+                                        "metadata_index": 0,
+                                        "value_type": "string"
+                                    }
+                                ],
+                                "indentedName": null
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "metadata_show_metadata_statcan_geocode",
+                "name": "StatCan GeoCode",
+                "contents": [
+                    {
+                        "year": null,
+                        "stats_by_source": [
+                            {
+                                "name": "StatCan GeoCode",
+                                "stats": [
+                                    {
+                                        "kind": "metadata",
+                                        "source": null,
+                                        "path": "metadata_show_metadata_statcan_geocode",
+                                        "metadata_index": 1,
+                                        "value_type": "string"
+                                    }
+                                ],
+                                "indentedName": null
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "metadata_show_metadata_iso_code",
+                "name": "ISO Code",
+                "contents": [
+                    {
+                        "year": null,
+                        "stats_by_source": [
+                            {
+                                "name": "ISO Code",
+                                "stats": [
+                                    {
+                                        "kind": "metadata",
+                                        "source": null,
+                                        "path": "metadata_show_metadata_iso_code",
+                                        "metadata_index": 4,
+                                        "value_type": "string"
+                                    }
+                                ],
+                                "indentedName": null
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
         "id": "other_densities",
         "name": "Other Density Metrics",
         "contents": [
@@ -8866,84 +8944,6 @@ export const rawStatsTree = [
                                     }
                                 ],
                                 "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "id": "metadata",
-        "name": "Metadata",
-        "contents": [
-            {
-                "id": "metadata_show_metadata_us_census_geoid",
-                "name": "US Census GeoID",
-                "contents": [
-                    {
-                        "year": null,
-                        "stats_by_source": [
-                            {
-                                "name": "US Census GeoID",
-                                "stats": [
-                                    {
-                                        "kind": "metadata",
-                                        "source": null,
-                                        "path": "metadata_show_metadata_us_census_geoid",
-                                        "metadata_index": 0,
-                                        "value_type": "string"
-                                    }
-                                ],
-                                "indentedName": null
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "metadata_show_metadata_statcan_geocode",
-                "name": "StatCan GeoCode",
-                "contents": [
-                    {
-                        "year": null,
-                        "stats_by_source": [
-                            {
-                                "name": "StatCan GeoCode",
-                                "stats": [
-                                    {
-                                        "kind": "metadata",
-                                        "source": null,
-                                        "path": "metadata_show_metadata_statcan_geocode",
-                                        "metadata_index": 1,
-                                        "value_type": "string"
-                                    }
-                                ],
-                                "indentedName": null
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "metadata_show_metadata_iso_code",
-                "name": "ISO Code",
-                "contents": [
-                    {
-                        "year": null,
-                        "stats_by_source": [
-                            {
-                                "name": "ISO Code",
-                                "stats": [
-                                    {
-                                        "kind": "metadata",
-                                        "source": null,
-                                        "path": "metadata_show_metadata_iso_code",
-                                        "metadata_index": 4,
-                                        "value_type": "string"
-                                    }
-                                ],
-                                "indentedName": null
                             }
                         ]
                     }

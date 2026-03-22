@@ -986,6 +986,7 @@ statistics_tree = StatisticTree(
             "insurance_coverage_govt",
             "insurance_coverage_private",
         ),
+        **metadata_statistics_category(),
         "other_densities": StatisticCategory(
             name="Other Density Metrics",
             contents={
@@ -1016,6 +1017,5 @@ statistics_tree = StatisticTree(
             "transportation_means_transit",
             "transportation_means_worked_at_home",
         ),
-        **metadata_statistics_category(),
     }
 )
