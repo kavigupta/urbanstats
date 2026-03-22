@@ -2,7 +2,7 @@ import maplibregl from 'maplibre-gl'
 import React, { CSSProperties, ReactNode, useEffect, useMemo, useState } from 'react'
 import { FullscreenControl, Layer, LngLatLike, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
-import { Basemap, CommonMaplibreMap } from '../components/map-common'
+import { Basemap, CommonMaplibreMap, urbanStatsLayerPrefix } from '../components/map-common'
 import { assert } from '../utils/defensive'
 import { ICoordinate } from '../utils/protos'
 
@@ -159,7 +159,7 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
               * (radius 0) but keeps that pipeline active
               */}
             <Layer
-                id="centroid_circle"
+                id={`${urbanStatsLayerPrefix}-centroid-placeholders`}
                 type="circle"
                 source="centroids"
                 filter={['!=', 'cluster', true]}
