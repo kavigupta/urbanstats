@@ -23,7 +23,7 @@ import { TextBox } from '../urban-stats-script/constants/text-box'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { USSOpaqueValue } from '../urban-stats-script/types-values'
-import { executeAsync } from '../urban-stats-script/workerManager'
+import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
 import { loadImage } from '../utils/Image'
 import { editIndex, EditSeq } from '../utils/array-edits'
 import { furthestColor, interpolateColor } from '../utils/color'
@@ -52,6 +52,7 @@ export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
             initial: {
                 ui: ({ loading }) => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
                 errors: [],
+                assignments: new Map(),
             },
             ui: (generator, loading) => ({
                 ...generator,
@@ -68,6 +69,7 @@ export interface MapGenerator<T = unknown> {
     exportGeoJSON?: () => string
     exportCSV?: CSVExportData
     errors: EditorError[]
+    assignments: AssignmentsResult
 }
 
 async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { mapSettings: MapSettings, cache: MapCache, previousGenerator: Promise<MapGenerator<{ loading: boolean }>> }): Promise<MapGenerator<{ loading: boolean }>> {
@@ -75,6 +77,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         return {
             ui: ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
             errors: [{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }],
+            assignments: new Map(),
         }
     }
 
@@ -102,7 +105,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
     const mapResultMain = execResult.resultingValue.value
 
     const csvExportCallback: CSVExportData = () => {
-        const csvData = generateMapperCSVData(mapResultMain, execResult.context)
+        const csvData = generateMapperCSVData(mapResultMain, execResult.assignments)
         const csvFilename = `${mapSettings.geographyKind}-${mapSettings.universe}-data.csv`
         return {
             csvData,
@@ -223,6 +226,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                 exportImage: () => exportImage(),
             }
         },
+        assignments: execResult.assignments,
     }
 }
 

@@ -198,6 +198,7 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
                                     counts={counts}
                                     typeEnvironment={typeEnvironment}
                                     targetOutputTypes={validMapperOutputs}
+                                    assignments={mapGenerator.assignments}
                                 />
                             )}
                             right={(

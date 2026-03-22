@@ -1,5 +1,6 @@
 import { Colors } from '../page_template/color-themes'
 import { DefaultMap } from '../utils/DefaultMap'
+import { assert } from '../utils/defensive'
 
 import { renderLocInfo } from './interpreter'
 import { AnnotatedToken, lex } from './lexer'
@@ -104,7 +105,7 @@ export function getRange(editor: HTMLElement): Range | null {
     const selection = window.getSelection()
     if (selection?.rangeCount === 1) {
         const range = selection.getRangeAt(0)
-        if (editor.contains(range.startContainer) && editor.contains(range.endContainer)) {
+        if (editor.contains(range.startContainer) && editor.contains(range.endContainer) && isNodeContentEditable(range.startContainer) && isNodeContentEditable(range.endContainer)) {
             if (editor === range.startContainer || editor === range.endContainer) {
                 return { start: 0, end: 0 }
             }
@@ -113,6 +114,14 @@ export function getRange(editor: HTMLElement): Range | null {
     }
 
     return null
+}
+
+function isNodeContentEditable(node: Node): boolean {
+    if (node instanceof HTMLElement) {
+        return node.isContentEditable
+    }
+    assert(node.parentNode !== null, 'Node has no parent')
+    return isNodeContentEditable(node.parentNode)
 }
 
 // Traverse up the tree, counting text content of previous siblings along the way

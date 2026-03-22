@@ -71,7 +71,6 @@ export function createDocumentationPopover(colors: Colors, editor: HTMLPreElemen
         'position': 'absolute',
         'top': '100%',
         'left': '0%',
-        'user-select': 'none',
         'z-index': '3',
         'overflow': 'scroll',
         'max-height': `10lh`,
@@ -80,7 +79,6 @@ export function createDocumentationPopover(colors: Colors, editor: HTMLPreElemen
         'color': colors.textMain,
         'background-color': colors.slightlyDifferentBackground,
         'width': `${width}px`,
-        'padding': '0 1.33em',
         'transform': `translateX(${Math.min(0, editor.offsetWidth - (tokenOffset + width))}px)`,
     }
 
