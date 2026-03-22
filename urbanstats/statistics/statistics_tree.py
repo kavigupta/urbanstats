@@ -1,4 +1,6 @@
-from dataclasses import dataclass
+# pylint: disable=too-many-lines
+
+from dataclasses import dataclass, field
 from types import NoneType
 
 from urbanstats.data.census_blocks import RADII
@@ -74,10 +76,10 @@ class MultiSource:
 
 @dataclass
 class MetadataMultiSource(MultiSource):
-    metadata_index: int
-    metadata_path: str
-    metadata_value_type: str
-    metadata_name: str
+    metadata_index: int = field(kw_only=True)
+    metadata_path: str = field(kw_only=True)
+    metadata_value_type: str = field(kw_only=True)
+    metadata_name: str = field(kw_only=True)
 
     def internal_statistics(self):
         return []
