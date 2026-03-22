@@ -190,14 +190,12 @@ export function Editor(
                         setPopoverState(undefined)
                         return
                     case 'ArrowDown':
+                        e.preventDefault()
+                        setAutocompleteSelectionIdx(i => i + 1 >= popoverState.options.length ? 0 : i + 1)
+                        return
                     case 'ArrowUp':
                         e.preventDefault()
-                        if (e.key === 'ArrowDown') {
-                            setAutocompleteSelectionIdx(i => i + 1 >= popoverState.options.length ? 0 : i + 1)
-                        }
-                        else {
-                            setAutocompleteSelectionIdx(i => i - 1 < 0 ? popoverState.options.length - 1 : i - 1)
-                        }
+                        setAutocompleteSelectionIdx(i => i - 1 < 0 ? popoverState.options.length - 1 : i - 1)
                         return
                 }
             }
@@ -215,6 +213,7 @@ export function Editor(
                     `${script.uss.slice(0, range.start)}\n${script.uss.slice(range.end)}`,
                     { start: range.start + 1, end: range.start + 1 },
                 )
+                return
             }
 
             if (e.key === 'Tab' && range !== null) {
@@ -223,6 +222,7 @@ export function Editor(
                     `${script.uss.slice(0, range.start)}    ${script.uss.slice(range.end)}`,
                     { start: range.start + 4, end: range.start + 4 },
                 )
+                return
             }
 
             if (e.key === 'Backspace' && range !== null) {
@@ -233,27 +233,28 @@ export function Editor(
                         `${script.uss.slice(0, range.start - 4)}${script.uss.slice(range.start)}`,
                         { start: range.start - 4, end: range.start - 4 },
                     )
+                    return
                 }
 
                 // Newline cases, browsers have trouble with newlines
                 // Filter to only operations with newlines so we don't have to implement special functionality like control + backspace
-                else {
-                    if (range.start !== range.end && script.uss.slice(range.start, range.end).includes('\n')) {
-                        // selection case
-                        e.preventDefault()
-                        editScript(
-                            `${script.uss.slice(0, range.start)}${script.uss.slice(range.end)}`,
-                            { start: range.start, end: range.start },
-                        )
-                    }
-                    else if (range.start > 0 && script.uss.charAt(range.start - 1) === '\n') {
-                        // no selection case
-                        e.preventDefault()
-                        editScript(
-                            `${script.uss.slice(0, range.start - 1)}${script.uss.slice(range.end)}`,
-                            { start: range.start - 1, end: range.start - 1 },
-                        )
-                    }
+                if (range.start !== range.end && script.uss.slice(range.start, range.end).includes('\n')) {
+                    // selection case
+                    e.preventDefault()
+                    editScript(
+                        `${script.uss.slice(0, range.start)}${script.uss.slice(range.end)}`,
+                        { start: range.start, end: range.start },
+                    )
+                    return
+                }
+                if (range.start === range.end && range.start > 0 && script.uss.charAt(range.start - 1) === '\n') {
+                    // no selection case
+                    e.preventDefault()
+                    editScript(
+                        `${script.uss.slice(0, range.start - 1)}${script.uss.slice(range.end)}`,
+                        { start: range.start - 1, end: range.start - 1 },
+                    )
+                    return
                 }
             }
 
@@ -266,15 +267,17 @@ export function Editor(
                         `${script.uss.slice(0, range.start)}${script.uss.slice(range.end)}`,
                         { start: range.start, end: range.start },
                     )
+                    return
                 }
                 // length - 1 since we shouldn't try to delete the trailing newline
-                else if (range.end < script.uss.length - 1 && script.uss.charAt(range.start) === '\n') {
+                if (range.start === range.end && range.end < script.uss.length - 1 && script.uss.charAt(range.start) === '\n') {
                     // no selection case
                     e.preventDefault()
                     editScript(
                         `${script.uss.slice(0, range.start)}${script.uss.slice(range.end + 1)}`,
                         { start: range.start, end: range.start },
                     )
+                    return
                 }
             }
         }
