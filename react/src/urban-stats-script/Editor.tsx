@@ -190,36 +190,94 @@ export function Editor(
                         setPopoverState(undefined)
                         return
                     case 'ArrowDown':
+                        e.preventDefault()
+                        setAutocompleteSelectionIdx(i => i + 1 >= popoverState.options.length ? 0 : i + 1)
+                        return
                     case 'ArrowUp':
                         e.preventDefault()
-                        if (e.key === 'ArrowDown') {
-                            setAutocompleteSelectionIdx(i => i + 1 >= popoverState.options.length ? 0 : i + 1)
-                        }
-                        else {
-                            setAutocompleteSelectionIdx(i => i - 1 < 0 ? popoverState.options.length - 1 : i - 1)
-                        }
+                        setAutocompleteSelectionIdx(i => i - 1 < 0 ? popoverState.options.length - 1 : i - 1)
                         return
                 }
             }
 
-            if (e.key === 'Tab') {
+            const range = getRange(editor)
+
+            /**
+             * Reimplementing many editing operations involving newlines is the easiest way to get consistent operation across browsers.
+             */
+
+            if (e.key === 'Enter' && range !== null) {
+                // Lots of browsers can't figure this out on their own, so let's just do it for them
                 e.preventDefault()
-                const range = getRange(editor)
-                if (range !== null) {
-                    editScript(
-                        `${script.uss.slice(0, range.start)}    ${script.uss.slice(range.end)}`,
-                        { start: range.start + 4, end: range.start + 4 },
-                    )
-                }
+                editScript(
+                    `${script.uss.slice(0, range.start)}\n${script.uss.slice(range.end)}`,
+                    { start: range.start + 1, end: range.start + 1 },
+                )
+                return
             }
-            else if (e.key === 'Backspace') {
-                const range = getRange(editor)
-                if (range !== null && range.start === range.end && range.start >= 4 && script.uss.slice(range.start - 4, range.start) === '    ') {
+
+            if (e.key === 'Tab' && range !== null) {
+                e.preventDefault()
+                editScript(
+                    `${script.uss.slice(0, range.start)}    ${script.uss.slice(range.end)}`,
+                    { start: range.start + 4, end: range.start + 4 },
+                )
+                return
+            }
+
+            if (e.key === 'Backspace' && range !== null) {
+                // Special case for getting rid of tabs
+                if (range.start === range.end && range.start >= 4 && script.uss.slice(range.start - 4, range.start) === '    ') {
                     e.preventDefault()
                     editScript(
                         `${script.uss.slice(0, range.start - 4)}${script.uss.slice(range.start)}`,
                         { start: range.start - 4, end: range.start - 4 },
                     )
+                    return
+                }
+
+                // Newline cases, browsers have trouble with newlines
+                // Filter to only operations with newlines so we don't have to implement special functionality like control + backspace
+                if (range.start !== range.end && script.uss.slice(range.start, range.end).includes('\n')) {
+                    // selection case
+                    e.preventDefault()
+                    editScript(
+                        `${script.uss.slice(0, range.start)}${script.uss.slice(range.end)}`,
+                        { start: range.start, end: range.start },
+                    )
+                    return
+                }
+                if (range.start === range.end && range.start > 0 && script.uss.charAt(range.start - 1) === '\n') {
+                    // no selection case
+                    e.preventDefault()
+                    editScript(
+                        `${script.uss.slice(0, range.start - 1)}${script.uss.slice(range.end)}`,
+                        { start: range.start - 1, end: range.start - 1 },
+                    )
+                    return
+                }
+            }
+
+            // Filter to only operations with newlines (which browsers have trouble with) so we don't have to implement special functionality like control + delete
+            if (e.key === 'Delete' && range !== null) {
+                if (range.start !== range.end && script.uss.slice(range.start, range.end).includes('\n')) {
+                    // selection case
+                    e.preventDefault()
+                    editScript(
+                        `${script.uss.slice(0, range.start)}${script.uss.slice(range.end)}`,
+                        { start: range.start, end: range.start },
+                    )
+                    return
+                }
+                // length - 1 since we shouldn't try to delete the trailing newline
+                if (range.start === range.end && range.end < script.uss.length - 1 && script.uss.charAt(range.start) === '\n') {
+                    // no selection case
+                    e.preventDefault()
+                    editScript(
+                        `${script.uss.slice(0, range.start)}${script.uss.slice(range.end + 1)}`,
+                        { start: range.start, end: range.start },
+                    )
+                    return
                 }
             }
         }
