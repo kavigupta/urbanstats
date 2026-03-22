@@ -1,25 +1,25 @@
-import { ArticleRow } from './components/load-article'
-import { assert } from './utils/defensive'
+import { ArticleRow, isNoValue } from './components/load-article'
 
 export function compareArticleRows(a: ArticleRow, b: ArticleRow, direction: 'up' | 'down'): number {
-    if (a.kind === 'metadata' || b.kind === 'metadata') {
-        assert(a.kind === 'metadata' && b.kind === 'metadata', 'Cannot compare a metadata row with a non-metadata row')
-        const comparison = a.statval.localeCompare(b.statval)
-        if (comparison !== 0) {
-            return direction === 'up' ? comparison : -comparison
-        }
+    const nameCompared = direction === 'up' ? a.renderedStatname.localeCompare(b.renderedStatname) : b.renderedStatname.localeCompare(a.renderedStatname)
+    if (isNoValue(a.statval) && isNoValue(b.statval)) {
+        return nameCompared
+    }
+    if (isNoValue(a.statval)) {
+        return 1
+    }
+    if (isNoValue(b.statval)) {
+        return -1
+    }
+    let directComparison
+    if (typeof a.statval === 'number' && typeof b.statval === 'number') {
+        directComparison = a.statval - b.statval
     }
     else {
-        if (!isNaN(a.statval) && !isNaN(b.statval)) {
-            return direction === 'up' ? a.statval - b.statval : b.statval - a.statval
-        }
-        // always put NaN values at the end
-        if (isNaN(a.statval)) {
-            return 1
-        }
-        if (isNaN(b.statval)) {
-            return -1
-        }
+        directComparison = String(a.statval).localeCompare(String(b.statval))
     }
-    return direction === 'up' ? a.renderedStatname.localeCompare(b.renderedStatname) : b.renderedStatname.localeCompare(a.renderedStatname)
+    if (directComparison !== 0) {
+        return direction === 'up' ? directComparison : -directComparison
+    }
+    return nameCompared
 }
