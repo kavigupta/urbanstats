@@ -185,7 +185,7 @@ function ArticleTable(props: {
     const statNameSpecs: Extract<CellSpec, { type: 'statistic-name' }>[] = props.filteredRows.map(row => ({
         type: 'statistic-name',
         longname: props.article.longname,
-        row: row.kind === 'statistic' ? row : undefined,
+        row,
         renderedStatname: row.renderedStatname,
         currentUniverse,
     }))
