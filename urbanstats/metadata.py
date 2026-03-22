@@ -1,6 +1,6 @@
+import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-import re
 from typing import Optional, Type
 
 from urbanstats.protobuf import data_files_pb2
