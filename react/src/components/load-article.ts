@@ -271,8 +271,7 @@ function insertMissing(rows: ArticleRow[][]): ArticleRow[][] {
             const empty = JSON.parse(JSON.stringify(example)) as ArticleStatisticRow
             for (const key of Object.keys(empty) as (keyof ArticleStatisticRow)[]) {
                 if (typeof empty[key] === 'number') {
-                    // @ts-expect-error -- Writing NaN into numeric fields
-                    empty[key] = NaN
+                    empty[key] = NaN as never
                 }
                 else if (key === 'extraStat') {
                     empty[key] = undefined
@@ -282,9 +281,11 @@ function insertMissing(rows: ArticleRow[][]): ArticleRow[][] {
             emptyRowExample.set(statpath, empty)
         }
         else {
-            const empty = JSON.parse(JSON.stringify(example)) as MetadataArticleRow
-            empty.statval = ''
-            empty.articleType = 'none' // doesn't matter since we are using simple mode
+            const empty = {
+                ...example,
+                statval: '',
+                articleType: 'none', // doesn't matter since we are using simple mode
+            }
             emptyRowExample.set(statpath, empty)
         }
     }
