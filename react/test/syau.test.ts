@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { withMockedClipboard } from './quiz_test_utils'
-import { safeReload, screencap, urbanstatsFixture } from './test_utils'
+import { downloadImage, safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 const syauInput = Selector('input[id="syau-input"]')
 
@@ -97,6 +97,7 @@ test('oakland-require-enter', async (t) => {
 test('oak-partial', async (t) => {
     await addInputText(t, 'Oak', '')
     await screencap(t)
+    await downloadImage(t)
     await t.expect(await allSyauPredictions()).eql([
         '421. Oak Park CDP',
         '510. Oak Hills CDP',
@@ -106,6 +107,7 @@ test('oak-partial', async (t) => {
     ])
     await addInputText(t, 'Oak', 'Oak')
     await screencap(t)
+    await downloadImage(t)
 })
 
 test('la-canada', async (t) => {
@@ -129,6 +131,7 @@ test('round-down', async (t) => {
     await addInputText(t, 'san diego', '')
     await addInputText(t, 'fresno', '')
     await screencap(t)
+    await downloadImage(t)
     await assertCopy(t, [
         'I named 3/1607 Cities in California, USA\n'
         + '(7% of the population)\n'
@@ -141,6 +144,7 @@ test('round-down', async (t) => {
     await safeReload(t)
     await addInputText(t, 'los angeles', '')
     await screencap(t)
+    await downloadImage(t)
     await assertCopy(t, [
         'I named 4/1607 Cities in California, USA\n'
         + '(18% of the population)\n'
