@@ -88,11 +88,11 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
                     text = `?`
                 }
             }
+            const totalPopulation = categoryColors.reduce((sum, _, idx) => sum + featureProps[`populationCategory${idx}`], 0)
             const html = circleSector(
-                categoryColors[0],
-                categoryColors[1],
+                categoryColors,
+                categoryColors.map((_, idx) => featureProps[`populationCategory${idx}`] / totalPopulation * 2 * Math.PI),
                 circleMarkerRadius,
-                2 * Math.PI * (featureProps.populationCategory1 / (featureProps.populationCategory0 + featureProps.populationCategory1)),
                 text,
             )
 
@@ -195,14 +195,14 @@ function FirstZoom(props: { centroids: ICoordinate[] }): ReactNode {
     return null
 }
 
-function circleSector(color1: string, color2: string, radius: number, sizeAngle: number, text: string): string {
+function circleSector(colors: string[], sizeAngleEach: number[], radius: number, text: string): string {
     let startAngle = -Math.PI / 2 // offset so 0% starts at top (12 o'clock)
     const singleSectors = []
-    const [sectors, endAngle] = sectorsFor(radius, startAngle, sizeAngle, color2)
-    singleSectors.push(...sectors)
-    startAngle = endAngle
-    const [sectors2] = sectorsFor(radius, startAngle, 2 * Math.PI - sizeAngle, color1)
-    singleSectors.push(...sectors2)
+    for (let i = 0; i < colors.length; i++) {
+        const [sectors, endAngle] = sectorsFor(radius, startAngle, sizeAngleEach[i], colors[i])
+        singleSectors.push(...sectors)
+        startAngle = endAngle
+    }
     const result = [
         '<div>',
         `<svg xmlns="http://www.w3.org/2000/svg" width="${radius * 2}" height="${radius * 2}" viewBox="0 0 ${radius * 2} ${radius * 2}">`,
