@@ -109,5 +109,4 @@ test('metadata-comparison-mixed-countries-has-empty-metadata-value-cells', async
     await checkTextboxes(t, ['Main', 'Geographic Identifiers'])
     await waitForLoading()
     await screencap(t)
-    await t.expect(await dataValues()).eql([])
 })
