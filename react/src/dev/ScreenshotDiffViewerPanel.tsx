@@ -263,7 +263,7 @@ class CustomReader extends Reader<void> {
             })
 
             if (head.status !== 200) {
-                if (confirm(`${head.status} Accessing Github. Likely a problem with the acccess token. Cancel to rerty, OK to clear token and prompt for a new one`)) {
+                if (confirm(`${head.status} Accessing Github. Likely a problem with the access token. Cancel to retry, OK to clear token and prompt for a new one`)) {
                     localStorage.removeItem(patKey)
                 }
                 continue
