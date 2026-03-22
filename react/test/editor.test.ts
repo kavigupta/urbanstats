@@ -78,6 +78,51 @@ test('deletes whole indent', async (t) => {
     await t.expect(nthEditor(0).textContent).eql('if (true) {\n"hello"\n}\n')
 })
 
+test('enter inserts newline', async (t) => {
+    await t.click(nthEditor(0))
+    await typeTextWithKeys(t, '1 + 2\n3 + 4')
+    await t.expect(nthEditor(0).textContent).eql('1 + 2\n3 + 4\n')
+    await t.expect(result.textContent).eql('7')
+})
+
+test('backspace deletes newline', async (t) => {
+    await t.click(nthEditor(0))
+    await typeTextWithKeys(t, '"hi"\n"there"')
+    await t.expect(nthEditor(0).textContent).eql('"hi"\n"there"\n')
+    // Move to start of second line and backspace to join lines
+    await t.pressKey('home')
+    await t.pressKey('backspace')
+    await t.expect(nthEditor(0).textContent).eql('"hi""there"\n')
+})
+
+test('backspace deletes selection spanning newline', async (t) => {
+    await t.click(nthEditor(0))
+    await typeTextWithKeys(t, '"ab"\n"cd"')
+    // Chaining doesn't work correctly here
+    for (const key of 'left left shift+left shift+left shift+left shift+left shift+left backspace'.split(' ')) {
+        await t.pressKey(key)
+    }
+    await t.expect(nthEditor(0).textContent).eql('"ad"\n')
+})
+
+test('delete removes newline forward', async (t) => {
+    await t.click(nthEditor(0))
+    await typeTextWithKeys(t, '"ab"\n"cd"')
+    // Move to end of first line and press delete
+    await typeTextWithKeys(t, '⌂⬆␃⌦')
+    await t.expect(nthEditor(0).textContent).eql('"ab""cd"\n')
+})
+
+test('delete removes selection spanning newline', async (t) => {
+    await t.click(nthEditor(0))
+    await typeTextWithKeys(t, '"ab"\n"cd"')
+    // Chaining doesn't work correctly here
+    for (const key of 'left left shift+left shift+left shift+left shift+left shift+left delete'.split(' ')) {
+        await t.pressKey(key)
+    }
+    await t.expect(nthEditor(0).textContent).eql('"ad"\n')
+})
+
 test('autocomplete pi with enter', async (t) => {
     await t.click(nthEditor(0))
     await typeTextWithKeys(t, 'p\n')

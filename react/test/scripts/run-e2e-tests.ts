@@ -22,6 +22,7 @@ const options = argumentParser({
         timeLimitSeconds: z.optional(z.coerce.number().int()), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
         tries: z.optional(z.coerce.number().int()).default(1), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
         baseRef: z.optional(z.string()),
+        live: booleanArgument({ defaultValue: false }),
     }).strict(),
 }).parse(process.argv.slice(2))
 
@@ -141,7 +142,7 @@ async function testFileDidChange(test: string): Promise<boolean> {
 }
 
 async function runTest(test: string): Promise<TestResult> {
-    let runner = testcafe.createRunner()
+    let runner = testcafe[options.live ? 'createLiveModeRunner' : 'createRunner']()
         .src(testFile(test))
         // Refs https://source.chromium.org/chromium/chromium/src/+/main:content/web_test/browser/web_test_browser_main_runner.cc;l=295
         .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen --disable-skia-runtime-opts --disable-renderer-backgrounding --disable-features=LocalNetworkAccessChecks`])
