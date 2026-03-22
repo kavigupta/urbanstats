@@ -1,4 +1,4 @@
-import { Basemap } from '../../mapper/settings/utils'
+import type { Basemap } from '../../mapper/basemap-types'
 import { assert } from '../../utils/defensive'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
@@ -55,6 +55,13 @@ export interface PMap extends CommonMap {
     relativeArea: number[]
 }
 
+export interface ClusterMap extends CommonMap {
+    maxRadius: number
+    relativeArea: number[]
+    clusterRadius: number
+    clusterMaxZoom: number
+}
+
 const cMapType = {
     type: 'opaque',
     name: 'cMap',
@@ -68,6 +75,11 @@ const cMapRGBType = {
 const pMapType = {
     type: 'opaque',
     name: 'pMap',
+} satisfies USSType
+
+const clusterMapType = {
+    type: 'opaque',
+    name: 'clusterMap',
 } satisfies USSType
 
 export const constructOutline = {
@@ -287,30 +299,7 @@ export const pMap: USSValue = {
         const relativeArea = namedArgs.relativeArea as number[] | null
 
         const commonMap = computeCommonMap(true, namedArgs, originalArgs, ctx)
-
-        const amount = commonMap.data.length
-
-        // Handle relativeArea: fill with 1s if not present, normalize to max 1
-        let normalizedRelativeArea: number[]
-        if (relativeArea === null) {
-            // If relativeArea is null, fill with 1s
-            normalizedRelativeArea = Array.from({ length: amount }, () => 1)
-        }
-        else if (relativeArea.length !== amount) {
-            throw new Error(`relativeArea must have the same length as geo: ${relativeArea.length} and ${amount}`)
-        }
-        else {
-            // Replace negative values with 0
-            const sanitizedRelativeArea = relativeArea.map(area => Math.max(0, area))
-            // Normalize relativeArea so max value is 1
-            const maxRelativeArea = Math.max(...sanitizedRelativeArea)
-            if (maxRelativeArea > 0) {
-                normalizedRelativeArea = sanitizedRelativeArea.map((area: number) => area / maxRelativeArea)
-            }
-            else {
-                normalizedRelativeArea = Array.from({ length: amount }, () => 1)
-            }
-        }
+        const normalizedRelativeArea = normalizeRelativeArea(relativeArea, commonMap.data.length)
 
         return {
             type: 'opaque',
@@ -331,6 +320,76 @@ export const pMap: USSValue = {
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
+
+export const clusterMap: USSValue = {
+    type: {
+        type: 'function',
+        posArgs: [],
+        namedArgs: mapConstructorArguments(true, false, {
+            maxRadius: {
+                type: { type: 'concrete', value: { type: 'number' } },
+                defaultValue: parseNoErrorAsExpression('10', ''),
+            },
+            relativeArea: {
+                type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } },
+                defaultValue: createConstantExpression(null),
+            },
+            clusterRadius: {
+                type: { type: 'concrete', value: { type: 'number' } },
+                defaultValue: parseNoErrorAsExpression('40', ''),
+            },
+            clusterMaxZoom: {
+                type: { type: 'concrete', value: { type: 'number' } },
+                defaultValue: parseNoErrorAsExpression('14', ''),
+            },
+        }),
+        returnType: { type: 'concrete', value: clusterMapType },
+    },
+    value: (ctx, posArgs, namedArgs, originalArgs) => {
+        const maxRadius = namedArgs.maxRadius as number
+        const relativeArea = namedArgs.relativeArea as number[] | null
+        const clusterRadius = Math.max(1, namedArgs.clusterRadius as number)
+        const clusterMaxZoom = Math.max(0, namedArgs.clusterMaxZoom as number)
+
+        const commonMap = computeCommonMap(true, namedArgs, originalArgs, ctx)
+        const normalizedRelativeArea = normalizeRelativeArea(relativeArea, commonMap.data.length)
+
+        return {
+            type: 'opaque',
+            opaqueType: 'clusterMap',
+            value: { ...commonMap, maxRadius, relativeArea: normalizedRelativeArea, clusterRadius, clusterMaxZoom } satisfies ClusterMap,
+        }
+    },
+    documentation: {
+        humanReadableName: 'Clustered Point Map',
+        category: 'map',
+        isDefault: true,
+        namedArgs: {
+            ...namedArgDocumentation,
+            maxRadius: 'Max Radius',
+            relativeArea: 'Relative Area',
+            clusterRadius: 'Cluster Radius',
+            clusterMaxZoom: 'Cluster Max Zoom',
+        },
+        longDescription: 'Creates a point map that clusters nearby points at lower zoom levels and expands to individual points when zoomed in. Uses the same data and styling parameters as pMap, with additional clustering controls.',
+        selectorRendering: { kind: 'subtitleLongDescription' },
+    },
+} satisfies USSValue
+
+function normalizeRelativeArea(relativeArea: number[] | null, amount: number): number[] {
+    if (relativeArea === null) {
+        return Array.from({ length: amount }, () => 1)
+    }
+    if (relativeArea.length !== amount) {
+        throw new Error(`relativeArea must have the same length as geo: ${relativeArea.length} and ${amount}`)
+    }
+    const sanitizedRelativeArea = relativeArea.map(area => Math.max(0, area))
+    const maxRelativeArea = Math.max(...sanitizedRelativeArea)
+    if (maxRelativeArea > 0) {
+        return sanitizedRelativeArea.map((area: number) => area / maxRelativeArea)
+    }
+    return Array.from({ length: amount }, () => 1)
+}
 
 export const cMapRGB: USSValue = {
     type: {

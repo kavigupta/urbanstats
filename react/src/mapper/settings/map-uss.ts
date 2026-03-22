@@ -29,8 +29,9 @@ export type MapUSS = UrbanStatsASTExpression & { type: 'customNode' } |
 const cMap = { type: 'opaque', name: 'cMap', allowCustomExpression: false } satisfies USSType
 const cMapRGB = { type: 'opaque', name: 'cMapRGB', allowCustomExpression: false } satisfies USSType
 const pMap = { type: 'opaque', name: 'pMap', allowCustomExpression: false } satisfies USSType
+const clusterMap = { type: 'opaque', name: 'clusterMap', allowCustomExpression: false } satisfies USSType
 
-export const validMapperOutputs = [cMap, cMapRGB, pMap] satisfies USSType[]
+export const validMapperOutputs = [cMap, cMapRGB, pMap, clusterMap] satisfies USSType[]
 
 function parsePreambleCustomNodeAsMapUSS(stmt: UrbanStatsASTStatement): PreambleNode | undefined {
     if (stmt.type !== 'expression') {

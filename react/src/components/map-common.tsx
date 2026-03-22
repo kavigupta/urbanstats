@@ -1,21 +1,28 @@
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import React, { ReactNode, useContext, useEffect, useId, useMemo } from 'react'
+import React, { ReactNode, useCallback, useContext, useEffect, useId, useMemo } from 'react'
 import { Layer, Map, MapProps, MapRef, Source, useControl, useMap } from 'react-map-gl/maplibre'
 
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
-import { Basemap } from '../mapper/settings/utils'
+import type { Basemap } from '../mapper/basemap-types'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { useUniverse } from '../universe'
 import { TestUtils } from '../utils/TestUtils'
 import { assert } from '../utils/defensive'
+import { wrapPointFeaturesForClustering } from '../utils/idl-longitude-wrap'
 import { promiseStream, waiting } from '../utils/promiseStream'
 import { Feature } from '../utils/protos'
 import { loadFeatureFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
+import {
+    getClusterLeavesAsync,
+    isClusterMapFeature,
+    segmentsFromLeavesByFillColor,
+    useClusterPieMarkers,
+} from './cluster-pie-markers'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
 
 import './map.css'
@@ -197,6 +204,50 @@ function pointsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
     return `${urbanStatsLayerPrefix}-points-${kind}-${id}`
 }
 
+function clusteredPointsId(id: string, kind: 'source' | 'cluster' | 'cluster-count' | 'unclustered'): string {
+    return `${urbanStatsLayerPrefix}-clustered-points-${kind}-${id}`
+}
+
+/** Same IDL longitude rule as SYAU / mapper cluster maps; memoize once per raw feature list. */
+export function useWrappedClusterPointFeatures(features: GeoJSON.Feature[]): GeoJSON.Feature[] {
+    return useMemo(() => wrapPointFeaturesForClustering(features), [features])
+}
+
+/**
+ * Shared MapLibre clustered GeoJSON source (IDL-wrapped points). Used by {@link ClusteredPointFeatureCollection}
+ * and SYAU — SYAU adds HTML markers via `querySourceFeatures` on `id`.
+ */
+export function ClusteredGeoJsonSource({
+    id,
+    wrappedFeatures,
+    clusterRadius,
+    clusterMaxZoom,
+    clusterProperties,
+}: {
+    id: string
+    wrappedFeatures: GeoJSON.Feature[]
+    clusterRadius: number
+    clusterMaxZoom: number
+    clusterProperties?: maplibregl.GeoJSONSourceSpecification['clusterProperties']
+}): ReactNode {
+    const collection: GeoJSON.FeatureCollection = useMemo(() => ({
+        type: 'FeatureCollection',
+        features: wrappedFeatures,
+    }), [wrappedFeatures])
+
+    return (
+        <Source
+            id={id}
+            type="geojson"
+            data={collection}
+            cluster={true}
+            clusterRadius={clusterRadius}
+            clusterMaxZoom={clusterMaxZoom}
+            clusterProperties={clusterProperties}
+        />
+    )
+}
+
 export function PointFeatureCollection({ features, clickable }: { features: GeoJSON.Feature[], clickable: boolean }): ReactNode {
     const { current: map } = useMap()
     const id = useId()
@@ -225,6 +276,156 @@ export function PointFeatureCollection({ features, clickable }: { features: GeoJ
                 beforeId={labelId}
             />
         </>
+    )
+}
+
+export function ClusteredPointFeatureCollection({
+    features,
+    clickable,
+    clusterRadius,
+    clusterMaxZoom,
+    markerPixelRadius,
+    markerFillOpacity,
+    debugClusterRendering,
+}: {
+    features: GeoJSON.Feature[]
+    clickable: boolean
+    clusterRadius: number
+    clusterMaxZoom: number
+    /** Max pixel radius for pie markers (matches former circle `maxRadius`). */
+    markerPixelRadius: number
+    markerFillOpacity: number
+    debugClusterRendering?: boolean
+}): ReactNode {
+    const { current: map } = useMap()
+    const id = useId()
+
+    const wrappedFeatures = useWrappedClusterPointFeatures(features)
+
+    const sourceIdStr = clusteredPointsId(id, 'source')
+
+    const getKey = useCallback((f: maplibregl.MapGeoJSONFeature) => {
+        const p = f.properties as Record<string, unknown>
+        return isClusterMapFeature(f) ? String(p.cluster_id) : String(p.name)
+    }, [])
+
+    const buildSpec = useCallback(async (f: maplibregl.MapGeoJSONFeature, geoSource: maplibregl.GeoJSONSource) => {
+        if (isClusterMapFeature(f)) {
+            const cidRaw = (f.properties as Record<string, unknown>).cluster_id
+            const cid = typeof cidRaw === 'number' ? cidRaw : Number(cidRaw)
+            if (!Number.isFinite(cid)) {
+                return null
+            }
+            let leaves: GeoJSON.Feature[]
+            try {
+                leaves = await getClusterLeavesAsync(geoSource, cid)
+            }
+            catch {
+                leaves = []
+            }
+            const segments = segmentsFromLeavesByFillColor(leaves)
+            const pc = (f.properties as Record<string, unknown>).point_count
+            return { segments, label: pc !== undefined ? String(pc) : '' }
+        }
+        const p = f.properties as Record<string, unknown>
+        const fillColor = typeof p.fillColor === 'string' ? p.fillColor : '#888888'
+        const radiusRaw = p.radius
+        const radiusPx = typeof radiusRaw === 'number' && Number.isFinite(radiusRaw) ? radiusRaw : markerPixelRadius
+        return { segments: [{ color: fillColor, fraction: 1 }], label: '', radiusPx }
+    }, [markerPixelRadius])
+
+    useClusterPieMarkers({
+        map,
+        sourceId: sourceIdStr,
+        defaultRadiusPx: markerPixelRadius,
+        fillOpacity: markerFillOpacity,
+        markerClassName: 'mapper-cluster-marker',
+        getKey,
+        buildSpec,
+        clickable,
+    })
+
+    // Debugging helper (HTML markers — no circle layers).
+    const didDebugLogRef = React.useRef(false)
+    React.useEffect(() => {
+        didDebugLogRef.current = false
+    }, [wrappedFeatures])
+    React.useEffect(() => {
+        if (!debugClusterRendering || map === undefined) {
+            return
+        }
+        const maxAttempts = 80
+        const attemptEveryMs = 200
+        let attempts = 0
+
+        const tryLog = (): void => {
+            if (didDebugLogRef.current) {
+                return
+            }
+            attempts++
+            const hasSource = map.getSource(sourceIdStr) !== undefined
+
+            if (!hasSource) {
+                if (attempts < maxAttempts) {
+                    setTimeout(tryLog, attemptEveryMs)
+                }
+                else {
+                    console.warn('[clusterMap debug] giving up waiting for source', JSON.stringify({ sourceId: sourceIdStr }))
+                    didDebugLogRef.current = true
+                }
+                return
+            }
+
+            try {
+                const clusterFeatures = map.querySourceFeatures(sourceIdStr, {
+                    filter: ['has', 'point_count'],
+                })
+                const unclusteredFeatures = map.querySourceFeatures(sourceIdStr, {
+                    filter: ['!', ['has', 'point_count']],
+                })
+                const allVisibleFeatures = map.querySourceFeatures(sourceIdStr)
+
+                if (allVisibleFeatures.length === 0 && attempts < maxAttempts) {
+                    setTimeout(tryLog, attemptEveryMs)
+                    return
+                }
+
+                console.warn(
+                    '[clusterMap debug]',
+                    JSON.stringify({
+                        mapZoom: map.getZoom(),
+                        inputFeatures: features.length,
+                        clusterFeatures: clusterFeatures.length,
+                        unclusteredFeatures: unclusteredFeatures.length,
+                        allVisibleFeatures: allVisibleFeatures.length,
+                        clusterRadius,
+                        clusterMaxZoom,
+                    }),
+                )
+                didDebugLogRef.current = true
+            }
+            catch {
+                // Ignore query errors until later attempts.
+            }
+        }
+
+        void map.once('idle', tryLog)
+        tryLog()
+    }, [debugClusterRendering, map, wrappedFeatures, features.length, id, clusterRadius, clusterMaxZoom, sourceIdStr])
+
+    const clusterProperties = {
+        sumStat: ['+', ['get', 'statistic']],
+        sumWeight: ['+', ['get', 'clusterWeight']],
+    }
+
+    return (
+        <ClusteredGeoJsonSource
+            id={sourceIdStr}
+            wrappedFeatures={wrappedFeatures}
+            clusterRadius={clusterRadius}
+            clusterMaxZoom={clusterMaxZoom}
+            clusterProperties={clusterProperties}
+        />
     )
 }
 

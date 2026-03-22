@@ -1,9 +1,10 @@
 import Color from 'color'
+import type { ExpressionSpecification } from 'maplibre-gl'
 import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
-import { Basemap as BasemapComponent, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
+import { Basemap as BasemapComponent, ClusteredPointFeatureCollection, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
 import { screencapElement, ScreenshotContext } from '../components/screenshot'
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
@@ -346,7 +347,7 @@ function EmptyMapLayout({ universe, loading }: { universe?: Universe, loading: b
 
 async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, geographyKind, cache }:
 {
-    mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' }
+    mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' | 'clusterMap' }
     universe: Universe
     geographyKind: typeof valid_geographies[number]
     cache: MapCache
@@ -355,6 +356,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     let colors: string[]
     switch (opaqueType) {
         case 'pMap':
+        case 'clusterMap':
         case 'cMap':
             const scale = instantiate(value.scale)
             const furthest = furthestColor(value.ramp.map(x => x[1]))
@@ -377,19 +379,27 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     let mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode
     switch (opaqueType) {
         case 'pMap':
-            const points: Point[] = Array.from(value.data.entries()).map(([i, dataValue]) => {
-                return {
-                    name: value.geo[i],
-                    fillColor: colors[i],
-                    fillOpacity: value.opacity,
-                    radius: Math.sqrt(value.relativeArea[i]) * value.maxRadius,
-                    statistic: dataValue,
-                }
-            })
+        case 'clusterMap':
+            const points = pointsFromMapValue(value, colors)
 
             features = await pointsGeojson(geographyKind, universe, points, cache)
 
-            mapChildren = (fs, clickable) => <PointFeatureCollection features={fs} clickable={clickable} />
+            if (opaqueType === 'pMap') {
+                mapChildren = (fs, clickable) => <PointFeatureCollection features={fs} clickable={clickable} />
+            }
+            else {
+                mapChildren = (fs, clickable) => (
+                    <ClusteredPointFeatureCollection
+                        features={fs}
+                        clickable={clickable}
+                        clusterRadius={value.clusterRadius}
+                        clusterMaxZoom={value.clusterMaxZoom}
+                        markerPixelRadius={value.maxRadius}
+                        markerFillOpacity={value.opacity}
+                        debugClusterRendering={false}
+                    />
+                )
+            }
 
             break
         case 'cMap':
@@ -432,6 +442,28 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
         ),
         ramp,
     }
+}
+
+function pointsFromMapValue(
+    value: (USSOpaqueValue & { opaqueType: 'pMap' })['value'] | (USSOpaqueValue & { opaqueType: 'clusterMap' })['value'],
+    colors: string[],
+): Point[] {
+    return Array.from(value.data.entries()).map(([i, dataValue]) => {
+        // MapLibre cluster aggregation will propagate NaN and can break interpolate expressions.
+        // We sanitize here so clusters remain renderable even if some points' data are invalid.
+        const statisticFinite = Number.isFinite(dataValue)
+        const statisticSafe = statisticFinite ? dataValue : 0
+        const clusterWeightSafe = statisticFinite ? value.relativeArea[i] : 0
+
+        return {
+            name: value.geo[i],
+            fillColor: colors[i],
+            fillOpacity: value.opacity,
+            radius: Math.sqrt(value.relativeArea[i]) * value.maxRadius,
+            statistic: statisticSafe,
+            clusterWeight: clusterWeightSafe,
+        }
+    })
 }
 
 const canonicalWidth = 1200
