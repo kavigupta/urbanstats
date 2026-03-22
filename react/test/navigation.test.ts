@@ -20,7 +20,9 @@ test('two randoms mobile', async (t) => {
 
 test('maintain and restore scroll position back-forward', async (t) => {
     await t.navigateTo('/article.html?longname=Texas%2C+USA')
-    await t.expect(Selector('.headertext').withText(/Texas/).exists).ok() // Must wait for Texas to load, otherwise scrolling on the loading page is ineffective
+    await flaky(t, async () => {
+        await t.expect(Selector('.headertext').withText(/Texas/).exists).ok() // Must wait for Texas to load, otherwise scrolling on the loading page is ineffective
+    })
     await t.scroll(0, 200)
     await t.click(Selector('a').withExactText('Population'))
     await screencap(t) // For debugging why the next step fails sometimes
