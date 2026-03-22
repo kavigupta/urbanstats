@@ -14,6 +14,7 @@ import { DisplayResults } from '../urban-stats-script/Editor'
 import { tableType } from '../urban-stats-script/constants/table'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
+import { AssignmentsResult } from '../urban-stats-script/workerManager'
 import { tableToMapper } from '../utils/page-conversion'
 import { sanitize } from '../utils/paths'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
@@ -25,7 +26,7 @@ import { StatisticPanelTable } from './StatisticPanelTable'
 import { StatData, Statistic, StatSetter, View } from './types'
 import { mapUSSFromStat, variable } from './utils'
 
-export function StatisticPanelPage({ view, stat, data, set, loading, counts, errors }: {
+export function StatisticPanelPage({ view, stat, data, set, loading, counts, errors, assignments }: {
     view: View
     stat: Statistic
     data: StatData | undefined
@@ -33,6 +34,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
     loading: boolean
     counts: CountsByUT
     errors: EditorError[]
+    assignments: AssignmentsResult
 }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
@@ -61,7 +63,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
                 {!view.edit && <ViewHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} />}
             </div>
             <div style={{ marginBlockEnd: '16px' }}></div>
-            {view.edit && <EditPreamble stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} counts={counts} errors={errors} />}
+            {view.edit && <EditPreamble stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} counts={counts} errors={errors} assignments={assignments} />}
             {!view.edit && <DisplayResults results={errors.filter(error => error.kind === 'error')} editor={false} />}
             {data
                 ? <StatisticPanelTable view={view} stat={stat} data={data} set={set} tableRef={tableRef} loading={loading} />
@@ -161,13 +163,14 @@ function ViewHeader({ stat, set, typeEnvironment, view }: { stat: Statistic, set
     )
 }
 
-function EditPreamble({ stat, set, errors, counts, typeEnvironment, view }: {
+function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, assignments }: {
     stat: Statistic
     set: StatSetter
     errors: EditorError[]
     counts: CountsByUT
     typeEnvironment: TypeEnvironment
     view: View
+    assignments: AssignmentsResult
 }): ReactNode {
     const mapSettings = useMemo((): MapSettings => ({
         universe: stat.universe,
@@ -200,6 +203,7 @@ function EditPreamble({ stat, set, errors, counts, typeEnvironment, view }: {
                 counts={counts}
                 typeEnvironment={typeEnvironment}
                 targetOutputTypes={[tableType]}
+                assignments={assignments}
             />
             <div style={{ display: 'flex', gap: '0.5em', width: '100%' }}>
                 <button

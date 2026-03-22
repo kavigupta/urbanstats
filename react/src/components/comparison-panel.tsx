@@ -28,7 +28,7 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { computeNameSpecsWithGroups } from './article-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
-import { ArticleRow } from './load-article'
+import { ArticleRow, isNoValue } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
@@ -464,7 +464,7 @@ function getHighlightIndex(rows: readonly ArticleRow[]): number | undefined {
         return undefined
     }
     return rows.map(x => x.statval).reduce<number | undefined>((iMax, x, i, arr) => {
-        if (isNaN(x)) {
+        if (isNoValue(x)) {
             return iMax
         }
         if (iMax === undefined) {

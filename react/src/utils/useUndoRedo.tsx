@@ -217,7 +217,7 @@ function UndoRedoControls({ doUndo, doRedo, canUndo, canRedo }: { doUndo: () => 
     const buttonStyle: CSSProperties = { flex: 1, touchAction: 'manipulation', zIndex: zIndex.mobileUndoRedoControls }
 
     return (
-        <div ref={outer} style={{ position: 'absolute' }}>
+        <div ref={outer} style={{ position: 'absolute' }} data-test="mobile-undo-redo">
             <div
                 ref={inner}
                 style={{

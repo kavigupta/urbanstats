@@ -13,7 +13,8 @@ import { createAutocompleteMenu, createDocumentationPopover, getAutocompleteOpti
 import { renderCode, getRange, nodeContent, Range, setRange, EditorResult, longMessage, Script, makeScript, createPlaceholder } from './editor-utils'
 import { AnnotatedToken } from './lexer'
 import { LocInfo } from './location'
-import { TypeEnvironment, USSDocumentedType } from './types-values'
+import { renderValue, TypeEnvironment, USSDocumentedType, USSValue } from './types-values'
+import { AssignmentsResult } from './workerManager'
 
 interface AutocompleteState {
     kind: 'autocomplete'
@@ -23,18 +24,19 @@ interface AutocompleteState {
     apply: (optionIdx: number) => void
 }
 
-interface DocumentationState {
-    kind: 'documentation'
+interface InspectState {
+    kind: 'inspect'
     location: LocInfo
     name: string
-    value: USSDocumentedType
+    documentation: USSDocumentedType | undefined
+    value: USSValue | undefined
     element: HTMLElement
 }
 
-type PopoverState = AutocompleteState | DocumentationState | undefined
+type PopoverState = AutocompleteState | InspectState | undefined
 
 export function Editor(
-    { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, eRef }: {
+    { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, eRef, assignments }: {
         uss: string
         setUss: (newScript: string) => void
         typeEnvironment: TypeEnvironment
@@ -43,6 +45,7 @@ export function Editor(
         selection: Range | null
         setSelection: (newRange: Range | null) => void
         eRef?: React.MutableRefObject<HTMLPreElement | null>
+        assignments: AssignmentsResult
     },
 ): ReactNode {
     const setSelectionRef = useRef(setSelection)
@@ -66,7 +69,7 @@ export function Editor(
             newScript, colors, results.filter(r => r.kind !== 'success'),
             (token, content) => {
                 if (popoverState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
-                    if (popoverState.kind === 'documentation') {
+                    if (popoverState.kind === 'inspect') {
                         // put the text node in a span that has a background so we hightlight the token we're popovering
                         const text = content[0]
                         const span = document.createElement('span')
@@ -237,39 +240,45 @@ export function Editor(
         let hoveredToken: AnnotatedToken | undefined
         const listener = (event: MouseEvent): void => {
             for (const elem of document.elementsFromPoint(event.clientX, event.clientY)) {
-                let token: AnnotatedToken | undefined, name, value
-                if ((token = spanTokenMapRef.current.get(elem)) !== undefined && token.token.type === 'identifier' && (name = token.token.value) && (value = typeEnvironment.get(name)) !== undefined) {
-                    hoveredToken = token
-                    const opts = {
-                        location: token.location,
-                        name,
-                        value,
-                    }
-                    const elemOffset = totalOffset(elem).left
-                    setTimeout(() => {
-                        if (hoveredToken === token) {
-                            setPopoverState({
-                                kind: 'documentation',
-                                ...opts,
-                                element: createDocumentationPopover(colors, editorRef.current!, elemOffset),
-                            })
+                const token = spanTokenMapRef.current.get(elem)
+                if (token?.token.type === 'identifier') {
+                    const name = token.token.value
+                    const documentation = typeEnvironment.get(name)
+                    const value = assignments.get(name)
+                    if (documentation !== undefined || value !== undefined) {
+                        hoveredToken = token
+                        const opts = {
+                            location: token.location,
+                            name,
+                            documentation,
+                            value,
                         }
-                    }, 500)
-                    return
+                        const elemOffset = totalOffset(elem).left
+                        setTimeout(() => {
+                            if (hoveredToken === token) {
+                                setPopoverState({
+                                    kind: 'inspect',
+                                    ...opts,
+                                    element: createDocumentationPopover(colors, editorRef.current!, elemOffset),
+                                })
+                            }
+                        }, 500)
+                        return
+                    }
                 }
-                if (popoverState?.kind === 'documentation' && popoverState.element === elem) {
+                if (popoverState?.kind === 'inspect' && popoverState.element === elem) {
                     hoveredToken = undefined
                     return
                 }
             }
             hoveredToken = undefined
-            if (popoverState?.kind === 'documentation') {
+            if (popoverState?.kind === 'inspect') {
                 setPopoverState(undefined)
             }
         }
         document.addEventListener('mousemove', listener)
         return () => { document.removeEventListener('mousemove', listener) }
-    }, [colors, typeEnvironment, popoverState])
+    }, [colors, typeEnvironment, popoverState, assignments])
 
     const borderColor = useResultsColor(colorKey(results))
 
@@ -306,9 +315,22 @@ export function Editor(
                                 />
                             )
                         : (
-                                <linkContext.Provider value="link">
-                                    <LongFormDocumentation name={popoverState.name} value={popoverState.value} />
-                                </linkContext.Provider>
+                                <>
+                                    {popoverState.documentation && (
+                                        <div style={{ padding: '0 1.33em',
+                                        }}
+                                        >
+                                            <linkContext.Provider value="link">
+                                                <LongFormDocumentation name={popoverState.name} value={popoverState.documentation} />
+                                            </linkContext.Provider>
+                                        </div>
+                                    )}
+                                    {popoverState.value && (
+                                        <pre style={{ ...codeStyle(colors) }}>
+                                            {renderValue(popoverState.value)}
+                                        </pre>
+                                    )}
+                                </>
                             ),
                     popoverState.element,
                 )}

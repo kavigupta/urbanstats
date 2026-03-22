@@ -58,12 +58,14 @@ jobs:
             ```json
             {
               "event": "COMMENT",
-              "body": "Summary of review",
+              "body": "",
               "comments": [
                 {"path": "file.py", "line": 10, "body": "comment text"}
               ]
             }
             ```
+            Only include content in `body` if there is an overarching issue with the PR. Do not summarize other comments. Do not provide praise.
+            If there are no comments, `body` should be "LGTM" to confirm that the review has run.
 
             2. Then submit it:
             ```

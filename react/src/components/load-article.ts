@@ -331,13 +331,24 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
 }
 
+export function isNoValue(statval: number | string): boolean {
+    switch (typeof statval) {
+        case 'number':
+            return Number.isNaN(statval)
+        case 'string':
+            return statval === ''
+        default:
+            throw new Error(`Unexpected type for statval: ${typeof statval}`)
+    }
+}
+
 function collapseAlternateSourcesSingleGroupYear(rows: ArticleRow[][], groupYearName: string): ArticleRow[][] {
     // rows[stat_column][article]
     if (rows.length === 1) {
         return rows
     }
     // convert to a bitmap of whether each thing has a value (alternative is nan)
-    const hasValue = rows.map(row => row.map(x => !Number.isNaN(x.statval)))
+    const hasValue = rows.map(row => row.map(x => !isNoValue(x.statval)))
     const rowsC: ArticleRow[][] = []
     const collapsedRows = computeCollapsedRows(new Map(hasValue.map((x, i) => [i, x])))
     for (const collapsedRow of collapsedRows) {
@@ -392,7 +403,7 @@ function collapse(rows: ArticleRow[][], groupYearName: string): ArticleRow[] {
     }
     const rowsByArticle = rows[0].map((_, i) => rows.map(row => row[i]))
     return rowsByArticle.map((rowsForArticle) => {
-        const rowsWithValues = rowsForArticle.filter(row => !Number.isNaN(row.statval))
+        const rowsWithValues = rowsForArticle.filter(row => !isNoValue(row.statval))
         if (rowsWithValues.length > 1) {
             throw new Error(`Cannot collapse rows with ${rowsWithValues.length} values (expected <= 1)`)
         }

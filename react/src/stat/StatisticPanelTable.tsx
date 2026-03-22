@@ -1,6 +1,6 @@
 import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
-import { StatisticCellRenderingInfo } from '../components/load-article'
+import { isNoValue, StatisticCellRenderingInfo } from '../components/load-article'
 import { PointerArrow } from '../components/pointer-cell'
 import { computeComparisonWidthColumns, MaybeScroll } from '../components/scrollable'
 import { CellSpec, SuperHeaderSpec, TableContents } from '../components/supertable'
@@ -33,7 +33,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading }
         }
         const sortColumnIndex = Math.max(0, Math.min(view.sortColumn, data.table.length - 1))
         const sortByColumn = data.table[sortColumnIndex]
-        const indices = sortByColumn.value.map((_, i) => i).filter(i => !isNaN(sortByColumn.value[i]))
+        const indices = sortByColumn.value.map((_, i) => i).filter(i => !isNoValue(sortByColumn.value[i]))
         indices.sort((a, b) => {
             const va = sortByColumn.value[a]
             const vb = sortByColumn.value[b]
