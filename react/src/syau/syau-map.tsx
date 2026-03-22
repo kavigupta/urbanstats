@@ -159,7 +159,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
                 }}
             />
             <Layer
-                id="centroid_circle"
+                id={`${urbanStatsLayerPrefix}-centroid-placeholders`}
                 type="circle"
                 source="centroids"
                 filter={['!=', 'cluster', true]}
