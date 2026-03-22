@@ -88,9 +88,6 @@ export function renderCode(
 }
 
 export function nodeContent(node: Node): string {
-    if (node instanceof HTMLBRElement) {
-        return '\n'
-    }
     if (node instanceof HTMLElement) {
         if (!node.isContentEditable) {
             return ''
