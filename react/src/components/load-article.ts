@@ -117,13 +117,17 @@ function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath
         if (parent?.kind !== 'metadata' || parent.metadataIndex === undefined) {
             return []
         }
+        const statval = values.get(parent.metadataIndex)
+        if (statval === undefined) {
+            return []
+        }
         return [{
             kind: 'metadata' as const,
             statpath: path,
             statname: parent.groupYearName,
             renderedStatname: parent.groupYearName,
             articleType: article.articleType,
-            statval: values.get(parent.metadataIndex) ?? '',
+            statval,
             extraStat: undefined,
             disclaimer: undefined,
         }]
@@ -255,6 +259,10 @@ function insertMissing(rows: ArticleRow[][]): ArticleRow[][] {
                     // @ts-expect-error Typescript is fucking up this assignment
                     emptyRowExample.get(idx)![key] = NaN
                 }
+                else if (key === 'statval') {
+                    assert(emptyRowExample.get(idx)!.kind === 'metadata', 'if statval is not a numbre, it\'s metadata')
+                    emptyRowExample.get(idx)![key] = ''
+                }
                 else if (key === 'extraStat') {
                     emptyRowExample.get(idx)![key] = undefined
                 }
@@ -303,7 +311,9 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     const rowsByStatGroupAndYear = new Map<string, ArticleRow[][]>()
     const groupYearToName = new Map<string, string>()
     for (let i = 0; i < numRows; i++) {
-        const { group, year, groupYearName } = statParents.get(rows[0][i].statpath)!
+        const statParent = statParents.get(rows[0][i].statpath)
+        assert(statParent !== undefined, `stat parent not found for statpath ${rows[0][i].statpath}`)
+        const { group, year, groupYearName } = statParent
         const key = `${group.id}_${year}`
         if (!rowsByStatGroupAndYear.has(key)) {
             rowsByStatGroupAndYear.set(key, [])
