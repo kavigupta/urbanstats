@@ -234,9 +234,6 @@ export function Editor(
                 // Generic case, implement this for browsers since deleting newlines confuses them often
                 else {
                     e.preventDefault()
-                    if (range.end === 0) {
-                        return // Nothing to backspace
-                    }
                     if (range.start !== range.end) {
                         // selection case
                         editScript(
@@ -246,6 +243,9 @@ export function Editor(
                     }
                     else {
                         // no selection case
+                        if (range.end === 0) {
+                            return // Nothing to backspace
+                        }
                         editScript(
                             `${script.uss.slice(0, range.start - 1)}${script.uss.slice(range.end)}`,
                             { start: range.start - 1, end: range.start - 1 },
@@ -256,9 +256,6 @@ export function Editor(
 
             if (e.key === 'Delete' && range !== null) {
                 e.preventDefault()
-                if (range.end === script.uss.length - 1) {
-                    return // Nothing to delete
-                }
                 if (range.start !== range.end) {
                     // selection case
                     editScript(
@@ -268,6 +265,9 @@ export function Editor(
                 }
                 else {
                     // no selection case
+                    if (range.end === script.uss.length - 1) {
+                        return // Nothing to delete (implicit \n at the end of the uss is not rendered)
+                    }
                     editScript(
                         `${script.uss.slice(0, range.start)}${script.uss.slice(range.end + 1)}`,
                         { start: range.start, end: range.start },
