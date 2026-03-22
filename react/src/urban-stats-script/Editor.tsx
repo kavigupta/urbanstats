@@ -202,6 +202,18 @@ export function Editor(
                 }
             }
 
+            if (e.key === 'Enter') {
+                // Lots of browsers can't figure this out on their own, so let's just do it for them
+                e.preventDefault()
+                const range = getRange(editor)
+                if (range !== null) {
+                    editScript(
+                        `${script.uss.slice(0, range.start)}\n${script.uss.slice(range.end)}`,
+                        { start: range.start + 1, end: range.start + 1 },
+                    )
+                }
+            }
+
             if (e.key === 'Tab') {
                 e.preventDefault()
                 const range = getRange(editor)
