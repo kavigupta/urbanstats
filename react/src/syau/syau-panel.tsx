@@ -47,7 +47,7 @@ export function SYAUPanel(props: { typ?: string, universe?: Universe, counts: Co
                             path: `syau-${sanitize(`${props.typ!}-${props.universe!}`)}.png`,
                             overallWidth: el.offsetWidth * 4,
                             elementsToRender: [el],
-                        }, ...args)
+                        }, ...args, true)
                     }
                 : undefined}
         >
