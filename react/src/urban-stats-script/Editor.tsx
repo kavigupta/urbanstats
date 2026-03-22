@@ -202,35 +202,75 @@ export function Editor(
                 }
             }
 
-            if (e.key === 'Enter') {
+            const range = getRange(editor)
+
+            if (e.key === 'Enter' && range !== null) {
                 // Lots of browsers can't figure this out on their own, so let's just do it for them
                 e.preventDefault()
-                const range = getRange(editor)
-                if (range !== null) {
-                    editScript(
-                        `${script.uss.slice(0, range.start)}\n${script.uss.slice(range.end)}`,
-                        { start: range.start + 1, end: range.start + 1 },
-                    )
-                }
+                editScript(
+                    `${script.uss.slice(0, range.start)}\n${script.uss.slice(range.end)}`,
+                    { start: range.start + 1, end: range.start + 1 },
+                )
             }
 
-            if (e.key === 'Tab') {
+            if (e.key === 'Tab' && range !== null) {
                 e.preventDefault()
-                const range = getRange(editor)
-                if (range !== null) {
-                    editScript(
-                        `${script.uss.slice(0, range.start)}    ${script.uss.slice(range.end)}`,
-                        { start: range.start + 4, end: range.start + 4 },
-                    )
-                }
+                editScript(
+                    `${script.uss.slice(0, range.start)}    ${script.uss.slice(range.end)}`,
+                    { start: range.start + 4, end: range.start + 4 },
+                )
             }
-            else if (e.key === 'Backspace') {
-                const range = getRange(editor)
-                if (range !== null && range.start === range.end && range.start >= 4 && script.uss.slice(range.start - 4, range.start) === '    ') {
+
+            if (e.key === 'Backspace' && range !== null) {
+                // Special case for getting rid of tabs
+                if (range.start === range.end && range.start >= 4 && script.uss.slice(range.start - 4, range.start) === '    ') {
                     e.preventDefault()
                     editScript(
                         `${script.uss.slice(0, range.start - 4)}${script.uss.slice(range.start)}`,
                         { start: range.start - 4, end: range.start - 4 },
+                    )
+                }
+
+                // Generic case, implement this for browsers since deleting newlines confuses them often
+                else {
+                    e.preventDefault()
+                    if (range.end === 0) {
+                        return // Nothing to backspace
+                    }
+                    if (range.start !== range.end) {
+                        // selection case
+                        editScript(
+                            `${script.uss.slice(0, range.start)}${script.uss.slice(range.end)}`,
+                            { start: range.start, end: range.start },
+                        )
+                    }
+                    else {
+                        // no selection case
+                        editScript(
+                            `${script.uss.slice(0, range.start - 1)}${script.uss.slice(range.end)}`,
+                            { start: range.start - 1, end: range.start - 1 },
+                        )
+                    }
+                }
+            }
+
+            if (e.key === 'Delete' && range !== null) {
+                e.preventDefault()
+                if (range.end === script.uss.length - 1) {
+                    return // Nothing to delete
+                }
+                if (range.start !== range.end) {
+                    // selection case
+                    editScript(
+                        `${script.uss.slice(0, range.start)}${script.uss.slice(range.end)}`,
+                        { start: range.start, end: range.start },
+                    )
+                }
+                else {
+                    // no selection case
+                    editScript(
+                        `${script.uss.slice(0, range.start)}${script.uss.slice(range.end + 1)}`,
+                        { start: range.start, end: range.start },
                     )
                 }
             }
