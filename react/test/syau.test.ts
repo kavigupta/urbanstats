@@ -126,7 +126,7 @@ test('oakland-simulate-autocomplete', async (t) => {
     await t.expect(await allSyauPredictions()).eql(['8. Oakland city'])
 })
 
-test.only('round-down', async (t) => {
+test('round-down', async (t) => {
     await addInputText(t, 'san francisco', '')
     await addInputText(t, 'san diego', '')
     await addInputText(t, 'fresno', '')
