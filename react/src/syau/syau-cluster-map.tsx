@@ -34,6 +34,13 @@ export interface SyauClusterMapProps {
     children?: ReactNode
 }
 
+type ClusterFeatureProperties = (
+    { [key in PopulationCategoryKey]: number } &
+    { [key in CountCategoryKey]: number } &
+    // eslint-disable-next-line no-restricted-syntax -- cluster_id comes from maplibre and is out of our control
+    ({ cluster: true, cluster_id: string } | { cluster: undefined, name: string, populationOrdinal: number })
+)
+
 /**
  * Clustered GeoJSON centroids + HTML pie markers + invisible hit-test layer + first zoom.
  * Extracted from SYAU as a reusable map module.
@@ -51,6 +58,16 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
     const [mapRef, setMapRef] = useState<MapRef | null>(null)
     const [markersOnScreen, setMarkersOnScreen] = useState(new Map<string, maplibregl.Marker>())
 
+    function clusterDisplayText(featureProps: ClusterFeatureProperties & { cluster: true }): string {
+        const countGuessed = featureProps.countCategory1
+        const countTotal = featureProps.countCategory0 + featureProps.countCategory1
+        return `${countGuessed}/${countTotal}`
+    }
+
+    function unclusteredDisplayText(featureProps: ClusterFeatureProperties & { cluster: undefined }): string {
+        return `#${featureProps.populationOrdinal}`
+    }
+
     const updateMarkers = (): void => {
         if (mapRef === null) {
             return
@@ -63,18 +80,12 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
 
         for (const feature of features) {
             const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
-            const featureProps = feature.properties as (
-                { [key in PopulationCategoryKey]: number } & { [key in CountCategoryKey]: number } &
-
-                // eslint-disable-next-line no-restricted-syntax -- cluster_id comes from maplibre and is out of our control
-                ({ cluster: true, cluster_id: string } | { cluster: undefined, name: string, populationOrdinal: number }))
+            const featureProps = feature.properties as ClusterFeatureProperties
             const featureId = featureProps.cluster ? featureProps.cluster_id : featureProps.name
 
             let text: string
             if (featureProps.cluster) {
-                const countGuessed = featureProps.countCategory1
-                const countTotal = featureProps.countCategory0 + featureProps.countCategory1
-                text = `${countGuessed}/${countTotal}`
+                text = clusterDisplayText(featureProps)
             }
             else {
                 const category = categoryColors.findIndex((_, idx) => featureProps[`populationCategory${idx}`] > 0)
@@ -83,12 +94,7 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
                     name: featureProps.name,
                     category,
                 })
-                if (featureProps.countCategory1 > 0) {
-                    text = `#${featureProps.populationOrdinal}`
-                }
-                else {
-                    text = `?`
-                }
+                text = unclusteredDisplayText(featureProps)
             }
             const totalPopulation = categoryColors.reduce((sum, _, idx) => sum + featureProps[`populationCategory${idx}`], 0)
             const html = circleSector(
