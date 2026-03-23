@@ -81,3 +81,23 @@ def fetch_sparql(query):
 @permacache("urbanstats/data/wikipedia/wikidata/fetch_sparql_as_list")
 def fetch_sparql_as_list(query):
     return list(fetch_sparql(query))
+
+
+@permacache("urbanstats/data/wikipedia/wikidata/fetch_sparql_bindings")
+def fetch_sparql_bindings(query: str) -> list:
+    """
+    Run a SPARQL SELECT and return raw Wikidata result bindings (list of dicts).
+    """
+    sparql_url = "https://query.wikidata.org/sparql"
+    headers = {
+        "User-Agent": "urbanstats (https://github.com/kavigupta/urbanstats; contact@urbanstats.org)",
+        "Accept": "application/json",
+    }
+    response = requests.get(
+        sparql_url,
+        params={"query": query, "format": "json"},
+        headers=headers,
+        timeout=30,
+    )
+    response.raise_for_status()
+    return response.json().get("results", {}).get("bindings", [])

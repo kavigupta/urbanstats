@@ -23,6 +23,14 @@ export default {
             "show_in_metadata_table": true,
             "category": "geoid",
             "data_credit_explanation_page": "geoid"
+        },
+        {
+            "index": 5,
+            "name": "US House Members (by term)",
+            "setting_key": "show_metadata_us_house_members_by_term",
+            "show_in_metadata_table": true,
+            "category": "political",
+            "data_credit_explanation_page": "geoid"
         }
     ],
     "external_link_metadata": [

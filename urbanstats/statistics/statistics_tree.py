@@ -450,7 +450,10 @@ def metadata_statistics_category():
             },
             group_name=entry["name"],
         )
-    category_names = {"geoid": "Geographic Identifiers"}
+    category_names = {
+        "geoid": "Geographic Identifiers",
+        "political": "Political",
+    }
     assert set(contents) == set(
         category_names
     ), f"Unexpected metadata categories: {set(contents)}"

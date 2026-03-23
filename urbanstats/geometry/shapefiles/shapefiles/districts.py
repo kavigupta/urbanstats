@@ -10,6 +10,9 @@ from urbanstats.compatibility.compatibility import remapping_pickle
 from urbanstats.data.wikipedia.congressional_wikidata import (
     CongressionalDistrictWikidataSourcer,
 )
+from urbanstats.data.wikipedia.house_representatives_wikidata import (
+    representatives_string_for_district_shortname,
+)
 from urbanstats.geometry.districts import consistent_district_padding
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import SelfSubset
@@ -220,6 +223,8 @@ def districts(
     minimum_district_length,
     does_overlap_self,
     wikidata_sourcer=None,
+    metadata_columns=(),
+    additional_columns_computer=None,
 ):
     return Shapefile(
         hash_key=f"current_districts_{file_name}"
@@ -256,6 +261,8 @@ def districts(
         end_date_overall=2032,
         include_in_syau=False,
         wikidata_sourcer=wikidata_sourcer,
+        metadata_columns=metadata_columns,
+        additional_columns_computer=additional_columns_computer or {},
     )
 
 
@@ -271,6 +278,12 @@ CONGRESSIONAL_DISTRICTS = districts(
     minimum_district_length=2,
     does_overlap_self=False,
     wikidata_sourcer=CongressionalDistrictWikidataSourcer(),
+    metadata_columns=("congressional_representatives_by_term",),
+    additional_columns_computer=dict(
+        congressional_representatives_by_term=lambda row: representatives_string_for_district_shortname(
+            get_shortname("", row)
+        ),
+    ),
 )
 
 district_shapefiles = dict(

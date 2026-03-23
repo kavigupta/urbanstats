@@ -59,6 +59,12 @@ metadata_types = {
     "iso": DisplayedMetadata(
         str, "ISO Code", category="geoid", data_credit_explanation_page="geoid"
     ),
+    "congressional_representatives_by_term": DisplayedMetadata(
+        str,
+        "US House Members (by term)",
+        category="political",
+        data_credit_explanation_page="geoid",
+    ),
 }
 
 

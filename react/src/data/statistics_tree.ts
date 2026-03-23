@@ -7705,6 +7705,36 @@ export const rawStatsTree = [
         ]
     },
     {
+        "id": "political",
+        "name": "Political",
+        "contents": [
+            {
+                "id": "metadata_show_metadata_us_house_members_by_term",
+                "name": "US House Members (by term)",
+                "contents": [
+                    {
+                        "year": null,
+                        "stats_by_source": [
+                            {
+                                "name": "US House Members (by term)",
+                                "stats": [
+                                    {
+                                        "kind": "metadata",
+                                        "source": null,
+                                        "path": "metadata_show_metadata_us_house_members_by_term",
+                                        "metadata_index": 5,
+                                        "value_type": "string"
+                                    }
+                                ],
+                                "indentedName": null
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
         "id": "other_densities",
         "name": "Other Density Metrics",
         "contents": [

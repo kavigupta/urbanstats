@@ -1078,6 +1078,15 @@ export function DataCreditPanel(): ReactNode {
                                     alpha-2 country codes for all countries, and ISO 3166-2 subdivision codes for some
                                     countries (including US states and Canadian provinces).
                                 </li>
+                                <li>
+                                    <b>US House Members (by term)</b>
+                                    {' '}
+                                    lists the member of the U.S. House of Representatives for each two-year term, resolved from
+                                    {' '}
+                                    <a href="https://www.wikidata.org/">Wikidata</a>
+                                    {' '}
+                                    position-held statements on the district.
+                                </li>
                             </ul>
                         </p>
                     </div>
