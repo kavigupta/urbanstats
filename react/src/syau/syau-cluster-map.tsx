@@ -3,6 +3,8 @@ import React, { CSSProperties, ReactNode, useEffect, useMemo, useState } from 'r
 import { FullscreenControl, Layer, LngLatLike, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
 import { Basemap, CommonMaplibreMap, urbanStatsLayerPrefix } from '../components/map-common'
+import { Basemap as BasemapSpec } from '../mapper/settings/utils'
+import { TestUtils } from '../utils/TestUtils'
 import { assert } from '../utils/defensive'
 import { ICoordinate } from '../utils/protos'
 
@@ -135,6 +137,12 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
         clusterProperties[`populationCategory${i}`] = ['+', ['get', `populationCategory${i}`]]
     }
 
+    const basemap: BasemapSpec = useMemo(() => TestUtils.shared.isTesting
+        // eslint-disable-next-line no-restricted-syntax -- just for testing
+        ? { type: 'none', backgroundColor: 'white', textColor: 'black' } satisfies BasemapSpec
+        : { type: 'osm', noLabels: true } satisfies BasemapSpec,
+    [])
+
     return (
         <CommonMaplibreMap
             ref={setMapRef}
@@ -142,7 +150,7 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
             onData={updateMarkers}
             style={{ height: 600, ...mapStyle }}
         >
-            <Basemap basemap={useMemo(() => ({ type: 'osm', noLabels: true }), [])} />
+            <Basemap basemap={basemap} />
             <FullscreenControl position="top-left" />
             <Source
                 id="centroids"

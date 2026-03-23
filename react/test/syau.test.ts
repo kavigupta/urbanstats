@@ -96,7 +96,6 @@ test('oakland-require-enter', async (t) => {
 
 test('oak-partial', async (t) => {
     await addInputText(t, 'Oak', '')
-    await screencap(t)
     await downloadImage(t)
     await t.expect(await allSyauPredictions()).eql([
         '421. Oak Park CDP',
@@ -106,6 +105,7 @@ test('oak-partial', async (t) => {
         '1436. Oak Run CDP',
     ])
     await addInputText(t, 'Oak', 'Oak')
+    await downloadImage(t)
     await screencap(t)
     await downloadImage(t)
 })
@@ -130,7 +130,6 @@ test('round-down', async (t) => {
     await addInputText(t, 'san francisco', '')
     await addInputText(t, 'san diego', '')
     await addInputText(t, 'fresno', '')
-    await screencap(t)
     await downloadImage(t)
     await assertCopy(t, [
         'I named 3/1607 Cities in California, USA\n'
@@ -143,6 +142,7 @@ test('round-down', async (t) => {
     await assertText(t, '3/1607 Cities named, which is 7% of the total population.')
     await safeReload(t)
     await addInputText(t, 'los angeles', '')
+    await downloadImage(t)
     await screencap(t)
     await downloadImage(t)
     await assertCopy(t, [
