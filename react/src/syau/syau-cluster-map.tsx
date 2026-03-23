@@ -22,10 +22,12 @@ export type ClusterFeatureProperties = (
 )
 
 interface ClusterMapProps {
-    /** Point GeoJSON for the `centroids` source (SYAU feature properties on each point). */
-    centroidsData: GeoJSON.FeatureCollection
+    /** Categories for each centroid, indexed into `categoryColors`. */
+    categories: number[]
+    /** Population for each centroid, same order as `categories`. */
+    population: number[]
     /** Same locations as `centroidsData`, used only for initial fitBounds. */
-    mapBoundsCentroids: ICoordinate[]
+    centroids: ICoordinate[]
     categoryColors: string[]
     /** Outer map container style (default height 600px). */
     mapStyle?: CSSProperties
@@ -48,8 +50,9 @@ interface ClusterMapProps {
  */
 export function ClusterMap(props: ClusterMapProps): ReactNode {
     const {
-        centroidsData,
-        mapBoundsCentroids,
+        categories,
+        population,
+        centroids,
         categoryColors,
         mapStyle,
         onVisibleUnclusteredChange,
@@ -149,6 +152,29 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
         : { type: 'osm', noLabels: true } satisfies BasemapSpec,
     [])
 
+    const centroidsData = useMemo(() => {
+        return {
+            type: 'FeatureCollection',
+            features: centroids.map((c, idx) => {
+                const properties: Record<string, unknown> = {
+                    idxIntoCentroids: idx,
+                }
+                for (let i = 0; i < categoryColors.length; i++) {
+                    properties[`populationCategory${i}`] = categories[idx] === i ? population[idx] : 0
+                    properties[`countCategory${i}`] = categories[idx] === i ? 1 : 0
+                }
+                return {
+                    type: 'Feature',
+                    properties,
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [c.lon!, c.lat!],
+                    },
+                }
+            }),
+        } satisfies GeoJSON.FeatureCollection
+    }, [centroids, categories, population, categoryColors.length])
+
     return (
         <CommonMaplibreMap
             ref={setMapRef}
@@ -179,7 +205,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                 filter={['!=', 'cluster', true]}
                 paint={{ 'circle-radius': 0 }}
             />
-            <FirstZoom centroids={mapBoundsCentroids} />
+            <FirstZoom centroids={centroids} />
             {children}
         </CommonMaplibreMap>
     )
