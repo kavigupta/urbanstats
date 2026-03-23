@@ -59,6 +59,8 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
 
         const features = mapRef.querySourceFeatures('centroids')
 
+        const seen = new Set<string>()
+
         for (const feature of features) {
             const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
             const featureProps = feature.properties as (
@@ -67,6 +69,11 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
                         // eslint-disable-next-line no-restricted-syntax -- cluster_id comes from maplibre and is out of our control
                         ({ cluster: true, cluster_id: string } | { cluster: undefined, name: string, populationOrdinal: number }))
             const featureId = featureProps.cluster ? featureProps.cluster_id : featureProps.name
+
+            if (seen.has(featureId)) {
+                continue
+            }
+            seen.add(featureId)
 
             let text: string
             if (featureProps.cluster) {
