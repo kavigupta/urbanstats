@@ -29,7 +29,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
 
     const categoryColors = [props.guessedColor, props.notGuessedColor]
 
-    const categories = useMemo(() => props.isGuessed.map(isGuessed => isGuessed ? 1 : 0), [props.isGuessed])
+    const categories = useMemo(() => props.isGuessed.map(isGuessed => isGuessed ? 0 : 1), [props.isGuessed])
 
     const syauUnclusteredMarkerLabel = useCallback((featureProps: ClusterFeatureProperties & { cluster: undefined }): string => {
         return featureProps.countCategory0 === 1 ? `#${props.populationOrdinals[featureProps.idxIntoCentroids]}` : '?'
