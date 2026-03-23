@@ -5,7 +5,17 @@ import { PolygonFeatureCollection, polygonFeatureCollection } from '../component
 import { notWaiting } from '../utils/promiseStream'
 import { ICoordinate } from '../utils/protos'
 
-import { SyauClusterMap } from './syau-cluster-map'
+import { type ClusterFeatureProperties, SyauClusterMap } from './syau-cluster-map'
+
+function syauClusterMarkerLabel(featureProps: ClusterFeatureProperties & { cluster: true }): string {
+    const countGuessed = featureProps.countCategory0
+    const countTotal = featureProps.countCategory1 + featureProps.countCategory0
+    return `${countGuessed}/${countTotal}`
+}
+
+function syauUnclusteredMarkerLabel(featureProps: ClusterFeatureProperties & { cluster: undefined }): string {
+    return featureProps.countCategory0 === 1 ? `#${featureProps.populationOrdinal}` : '?'
+}
 
 interface SYAUMapProps {
     longnames: string[]
@@ -21,7 +31,7 @@ interface SYAUMapProps {
 export function SYAUMap(props: SYAUMapProps): ReactNode {
     const [polysOnScreen, setPolysOnScreen] = useState<{ name: string, category: number }[]>([])
 
-    const categoryColors = [props.notGuessedColor, props.guessedColor]
+    const categoryColors = [props.guessedColor, props.notGuessedColor]
 
     const centroidsData = useMemo(() => {
         return {
@@ -31,10 +41,10 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
                 properties: {
                     name: props.longnames[idx],
                     populationOrdinal: props.populationOrdinals[idx],
-                    populationCategory0: props.isGuessed[idx] ? 0 : props.population[idx],
-                    populationCategory1: props.isGuessed[idx] ? props.population[idx] : 0,
-                    countCategory0: props.isGuessed[idx] ? 0 : 1,
-                    countCategory1: props.isGuessed[idx] ? 1 : 0,
+                    populationCategory0: props.isGuessed[idx] ? props.population[idx] : 0,
+                    populationCategory1: props.isGuessed[idx] ? 0 : props.population[idx],
+                    countCategory0: props.isGuessed[idx] ? 1 : 0,
+                    countCategory1: props.isGuessed[idx] ? 0 : 1,
                 },
                 geometry: {
                     type: 'Point',
@@ -60,6 +70,8 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
             centroidsData={centroidsData}
             mapBoundsCentroids={props.centroids}
             categoryColors={categoryColors}
+            clusterMarkerLabel={syauClusterMarkerLabel}
+            unclusteredMarkerLabel={syauUnclusteredMarkerLabel}
             onVisibleUnclusteredChange={setPolysOnScreen}
         >
             <PolygonFeatureCollection features={readyFeatures} clickable={false} />

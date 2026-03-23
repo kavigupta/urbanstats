@@ -13,6 +13,14 @@ const circleMarkerRadius = 20
 type PopulationCategoryKey = `populationCategory${number}`
 type CountCategoryKey = `countCategory${number}`
 
+/** GeoJSON feature properties for clustered SYAU centroids (cluster aggregates + point props). */
+export type ClusterFeatureProperties = (
+    { [key in PopulationCategoryKey]: number } &
+    { [key in CountCategoryKey]: number } &
+    // eslint-disable-next-line no-restricted-syntax -- cluster_id comes from maplibre and is out of our control
+    ({ cluster: true, cluster_id: string } | { cluster: undefined, name: string, populationOrdinal: number })
+)
+
 /**
  * Props for the clustered centroid map (SYAU game map). Kept explicit so other
  * call sites can reuse the same map shell later.
@@ -30,16 +38,13 @@ export interface SyauClusterMapProps {
      * (used for Voronoi polygon highlights in SYAU).
      */
     onVisibleUnclusteredChange?: (polys: { name: string, category: number }[]) => void
+    /** Label for a cluster marker (aggregated counts). */
+    clusterMarkerLabel: (featureProps: ClusterFeatureProperties & { cluster: true }) => string
+    /** Label for an unclustered point marker. */
+    unclusteredMarkerLabel: (featureProps: ClusterFeatureProperties & { cluster: undefined }) => string
     /** Rendered inside the map (e.g. layers that need `useMap()`). */
     children?: ReactNode
 }
-
-type ClusterFeatureProperties = (
-    { [key in PopulationCategoryKey]: number } &
-    { [key in CountCategoryKey]: number } &
-    // eslint-disable-next-line no-restricted-syntax -- cluster_id comes from maplibre and is out of our control
-    ({ cluster: true, cluster_id: string } | { cluster: undefined, name: string, populationOrdinal: number })
-)
 
 /**
  * Clustered GeoJSON centroids + HTML pie markers + invisible hit-test layer + first zoom.
@@ -52,21 +57,13 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
         categoryColors,
         mapStyle,
         onVisibleUnclusteredChange,
+        clusterMarkerLabel,
+        unclusteredMarkerLabel,
         children,
     } = props
 
     const [mapRef, setMapRef] = useState<MapRef | null>(null)
     const [markersOnScreen, setMarkersOnScreen] = useState(new Map<string, maplibregl.Marker>())
-
-    function clusterDisplayText(featureProps: ClusterFeatureProperties & { cluster: true }): string {
-        const countGuessed = featureProps.countCategory1
-        const countTotal = featureProps.countCategory0 + featureProps.countCategory1
-        return `${countGuessed}/${countTotal}`
-    }
-
-    function unclusteredDisplayText(featureProps: ClusterFeatureProperties & { cluster: undefined }): string {
-        return `#${featureProps.populationOrdinal}`
-    }
 
     const updateMarkers = (): void => {
         if (mapRef === null) {
@@ -85,7 +82,7 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
 
             let text: string
             if (featureProps.cluster) {
-                text = clusterDisplayText(featureProps)
+                text = clusterMarkerLabel(featureProps)
             }
             else {
                 const category = categoryColors.findIndex((_, idx) => featureProps[`populationCategory${idx}`] > 0)
@@ -94,7 +91,7 @@ export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
                     name: featureProps.name,
                     category,
                 })
-                text = unclusteredDisplayText(featureProps)
+                text = unclusteredMarkerLabel(featureProps)
             }
             const totalPopulation = categoryColors.reduce((sum, _, idx) => sum + featureProps[`populationCategory${idx}`], 0)
             const html = circleSector(
