@@ -18,7 +18,7 @@ export type ClusterFeatureProperties = (
     { [key in PopulationCategoryKey]: number } &
     { [key in CountCategoryKey]: number } &
     // eslint-disable-next-line no-restricted-syntax -- cluster_id comes from maplibre and is out of our control
-    ({ cluster: true, cluster_id: string } | { cluster: undefined, name: string, populationOrdinal: number })
+    ({ cluster: true, cluster_id: string } | { cluster: undefined, idxIntoCentroids: number })
 )
 
 interface ClusterMapProps {
@@ -33,7 +33,7 @@ interface ClusterMapProps {
      * Fired whenever marker query results change — unclustered points currently visible
      * (used for Voronoi polygon highlights in SYAU).
      */
-    onVisibleUnclusteredChange?: (polys: { name: string, category: number }[]) => void
+    onVisibleUnclusteredChange?: (polys: { idxIntoCentroids: number, category: number }[]) => void
     /** Label for a cluster marker (aggregated counts). */
     clusterMarkerLabel: (featureProps: ClusterFeatureProperties & { cluster: true }) => string
     /** Label for an unclustered point marker. */
@@ -67,14 +67,14 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
         }
 
         const newMarkers = new Map<string, maplibregl.Marker>()
-        const newPolys: { name: string, category: number }[] = []
+        const newPolys: { idxIntoCentroids: number, category: number }[] = []
 
         const features = mapRef.querySourceFeatures('centroids')
 
         for (const feature of features) {
             const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
             const featureProps = feature.properties as ClusterFeatureProperties
-            const featureId = featureProps.cluster ? featureProps.cluster_id : featureProps.name
+            const featureId = featureProps.cluster ? featureProps.cluster_id : featureProps.idxIntoCentroids.toString()
 
             let text: string
             if (featureProps.cluster) {
@@ -84,7 +84,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                 const category = categoryColors.findIndex((_, idx) => featureProps[`populationCategory${idx}`] > 0)
                 assert(category !== -1, 'No category found')
                 newPolys.push({
-                    name: featureProps.name,
+                    idxIntoCentroids: featureProps.idxIntoCentroids,
                     category,
                 })
                 text = unclusteredMarkerLabel(featureProps)
@@ -123,8 +123,8 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
         }
         setMarkersOnScreen(newMarkers)
         newPolys.sort((a, b) => {
-            if (a.name < b.name) return -1
-            if (a.name > b.name) return 1
+            if (a.idxIntoCentroids < b.idxIntoCentroids) return -1
+            if (a.idxIntoCentroids > b.idxIntoCentroids) return 1
             return 0
         })
         onVisibleUnclusteredChange?.(newPolys)

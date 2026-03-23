@@ -1,5 +1,5 @@
 import stableStringify from 'json-stable-stringify'
-import React, { ReactNode, useMemo, useState } from 'react'
+import React, { ReactNode, useCallback, useMemo, useState } from 'react'
 
 import { PolygonFeatureCollection, polygonFeatureCollection } from '../components/map-common'
 import { notWaiting } from '../utils/promiseStream'
@@ -11,10 +11,6 @@ function syauClusterMarkerLabel(featureProps: ClusterFeatureProperties & { clust
     const countGuessed = featureProps.countCategory0
     const countTotal = featureProps.countCategory1 + featureProps.countCategory0
     return `${countGuessed}/${countTotal}`
-}
-
-function syauUnclusteredMarkerLabel(featureProps: ClusterFeatureProperties & { cluster: undefined }): string {
-    return featureProps.countCategory0 === 1 ? `#${featureProps.populationOrdinal}` : '?'
 }
 
 interface SYAUMapProps {
@@ -29,7 +25,7 @@ interface SYAUMapProps {
 }
 
 export function SYAUMap(props: SYAUMapProps): ReactNode {
-    const [polysOnScreen, setPolysOnScreen] = useState<{ name: string, category: number }[]>([])
+    const [polysOnScreen, setPolysOnScreen] = useState<{ idxIntoCentroids: number, category: number }[]>([])
 
     const categoryColors = [props.guessedColor, props.notGuessedColor]
 
@@ -39,7 +35,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
             features: props.centroids.map((c, idx) => ({
                 type: 'Feature',
                 properties: {
-                    name: props.longnames[idx],
+                    idxIntoCentroids: idx,
                     populationOrdinal: props.populationOrdinals[idx],
                     populationCategory0: props.isGuessed[idx] ? props.population[idx] : 0,
                     populationCategory1: props.isGuessed[idx] ? 0 : props.population[idx],
@@ -52,10 +48,14 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
                 },
             })),
         } satisfies GeoJSON.FeatureCollection
-    }, [props.centroids, props.isGuessed, props.longnames, props.population, props.populationOrdinals])
+    }, [props.centroids, props.isGuessed, props.population, props.populationOrdinals])
 
-    const features = useMemo(() => polygonFeatureCollection(polysOnScreen.map(({ name, category }) => ({
-        name,
+    const syauUnclusteredMarkerLabel = useCallback((featureProps: ClusterFeatureProperties & { cluster: undefined }): string => {
+        return featureProps.countCategory0 === 1 ? `#${props.populationOrdinals[featureProps.idxIntoCentroids]}` : '?'
+    }, [props.populationOrdinals])
+
+    const features = useMemo(() => polygonFeatureCollection(polysOnScreen.map(({ idxIntoCentroids, category }) => ({
+        name: props.longnames[idxIntoCentroids],
         fillColor: categoryColors[category],
         fillOpacity: 0.5,
         color: categoryColors[category],
