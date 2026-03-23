@@ -1,3 +1,15 @@
+/**
+ * Parses UrbanStatsScript AST expressions into a normalized form suitable for
+ * the mapper settings UI. Given a raw AST expression and an expected type,
+ * attempts to match the expression against the type environment (variables,
+ * functions, constants, vectors, objects) and produces a cleaned AST with
+ * block IDs assigned for UI location tracking. Expressions that don't match
+ * any expected type fall through to a fallback (typically rendered as custom
+ * code nodes). Also provides `possibilities` to enumerate valid completions
+ * for a given type, and `changeBlockId` to remap location block identifiers
+ * across an AST.
+ */
+
 import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement, LocInfo } from '../../urban-stats-script/location'
