@@ -235,14 +235,14 @@ function sectorsFor(radius: number, startAngle: number, sizeAngle: number, color
     // pad by 1 degree to ensure no gaps
     const singleSectors = []
     const target = startAngle + sizeAngle
-    let endAngle = Math.min(target, startAngle + Math.PI / 1)
-    for (let i = 0; i < 2; i++) {
+    let endAngle = Math.min(target, startAngle + Math.PI / 2)
+    for (let i = 0; i < 4; i++) {
         singleSectors.push(singleSector(radius, startAngle, endAngle, color2))
         if (endAngle === target) {
             break
         }
         startAngle = endAngle
-        endAngle = Math.min(target, startAngle + Math.PI / 1)
+        endAngle = Math.min(target, startAngle + Math.PI / 2)
     }
     return [singleSectors, endAngle]
 }
