@@ -22,12 +22,12 @@ export type ClusterFeatureProperties = (
 )
 
 interface ClusterMapProps {
+    /** Centroid long/lat coordinates. */
+    centroids: ICoordinate[]
     /** Categories for each centroid, indexed into `categoryColors`. */
     categories: number[]
     /** Population for each centroid, same order as `categories`. */
     population: number[]
-    /** Same locations as `centroidsData`, used only for initial fitBounds. */
-    centroids: ICoordinate[]
     categoryColors: string[]
     /** Outer map container style (default height 600px). */
     mapStyle?: CSSProperties
