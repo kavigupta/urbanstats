@@ -29,26 +29,30 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
 
     const categoryColors = [props.guessedColor, props.notGuessedColor]
 
+    const categories = useMemo(() => props.isGuessed.map(isGuessed => isGuessed ? 1 : 0), [props.isGuessed])
+
     const centroidsData = useMemo(() => {
         return {
             type: 'FeatureCollection',
-            features: props.centroids.map((c, idx) => ({
-                type: 'Feature',
-                properties: {
+            features: props.centroids.map((c, idx) => {
+                const properties: Record<string, unknown> = {
                     idxIntoCentroids: idx,
-                    populationOrdinal: props.populationOrdinals[idx],
-                    populationCategory0: props.isGuessed[idx] ? props.population[idx] : 0,
-                    populationCategory1: props.isGuessed[idx] ? 0 : props.population[idx],
-                    countCategory0: props.isGuessed[idx] ? 1 : 0,
-                    countCategory1: props.isGuessed[idx] ? 0 : 1,
-                },
-                geometry: {
-                    type: 'Point',
-                    coordinates: [c.lon!, c.lat!],
-                },
-            })),
+                }
+                for (let i = 0; i < categoryColors.length; i++) {
+                    properties[`populationCategory${i}`] = categories[idx] === i ? props.population[idx] : 0
+                    properties[`countCategory${i}`] = categories[idx] === i ? 1 : 0
+                }
+                return {
+                    type: 'Feature',
+                    properties,
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [c.lon!, c.lat!],
+                    },
+                }
+            }),
         } satisfies GeoJSON.FeatureCollection
-    }, [props.centroids, props.isGuessed, props.population, props.populationOrdinals])
+    }, [props.centroids, categories, props.population, categoryColors.length])
 
     const syauUnclusteredMarkerLabel = useCallback((featureProps: ClusterFeatureProperties & { cluster: undefined }): string => {
         return featureProps.countCategory0 === 1 ? `#${props.populationOrdinals[featureProps.idxIntoCentroids]}` : '?'
