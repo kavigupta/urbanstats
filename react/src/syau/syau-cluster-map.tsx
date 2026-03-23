@@ -68,7 +68,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
         }
 
         const newMarkers = new Map<string, maplibregl.Marker>()
-        const newPolys: { idxIntoCentroids: number, category: number }[] = []
+        const newUnclustered: { idxIntoCentroids: number, category: number }[] = []
 
         const features = mapRef.querySourceFeatures('centroids')
 
@@ -91,7 +91,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
             else {
                 const category = categoryColors.findIndex((_, idx) => featureProps[`pieChartSizeForCategory${idx}`] > 0)
                 assert(category !== -1, 'No category found')
-                newPolys.push({
+                newUnclustered.push({
                     idxIntoCentroids: featureProps.idxIntoCentroids,
                     category,
                 })
@@ -130,12 +130,12 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
             if (!newMarkers.has(oldMarkerId)) oldMarker.remove()
         }
         setMarkersOnScreen(newMarkers)
-        newPolys.sort((a, b) => {
+        newUnclustered.sort((a, b) => {
             if (a.idxIntoCentroids < b.idxIntoCentroids) return -1
             if (a.idxIntoCentroids > b.idxIntoCentroids) return 1
             return 0
         })
-        onVisibleUnclusteredChange?.(newPolys)
+        onVisibleUnclusteredChange?.(newUnclustered)
     }
 
     const clusterProperties: Record<string, unknown> = {}
