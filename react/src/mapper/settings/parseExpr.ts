@@ -1,12 +1,3 @@
-import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
-import { emptyLocation } from '../../urban-stats-script/lexer'
-import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement, LocInfo } from '../../urban-stats-script/location'
-import { Decorated, ParseError, parseNoErrorAsCustomNode, unparse } from '../../urban-stats-script/parser'
-import { renderType, TypeEnvironment, USSObjectType, USSType } from '../../urban-stats-script/types-values'
-import { assert } from '../../utils/defensive'
-
-import { parseToNumber, Selection, toNumberAST } from './selector-classifier'
-
 /**
  * Parses UrbanStatsScript AST expressions into a normalized form suitable for
  * the mapper settings UI. Given a raw AST expression and an expected type,
@@ -18,6 +9,15 @@ import { parseToNumber, Selection, toNumberAST } from './selector-classifier'
  * for a given type, and `changeBlockId` to remap location block identifiers
  * across an AST.
  */
+
+import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
+import { emptyLocation } from '../../urban-stats-script/lexer'
+import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement, LocInfo } from '../../urban-stats-script/location'
+import { Decorated, ParseError, parseNoErrorAsCustomNode, unparse } from '../../urban-stats-script/parser'
+import { renderType, TypeEnvironment, USSObjectType, USSType } from '../../urban-stats-script/types-values'
+import { assert } from '../../utils/defensive'
+
+import { parseToNumber, Selection, toNumberAST } from './selector-classifier'
 
 export function maybeParseExpr(
     expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
