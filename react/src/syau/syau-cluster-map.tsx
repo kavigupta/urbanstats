@@ -105,8 +105,8 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                 text,
             )
 
-            let existingMarker
-            if ((existingMarker = markersOnScreen.get(featureId)) !== undefined) {
+            const existingMarker = markersOnScreen.get(featureId)
+            if (existingMarker !== undefined) {
                 existingMarker.getElement().innerHTML = html
                 newMarkers.set(featureId, existingMarker)
             }
