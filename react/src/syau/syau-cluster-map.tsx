@@ -71,10 +71,17 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
 
         const features = mapRef.querySourceFeatures('centroids')
 
+        const seen = new Set<string>()
+
         for (const feature of features) {
             const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
             const featureProps = feature.properties as ClusterFeatureProperties
             const featureId = featureProps.cluster ? featureProps.cluster_id : featureProps.idxIntoCentroids.toString()
+
+            if (seen.has(featureId)) {
+                continue
+            }
+            seen.add(featureId)
 
             let text: string
             if (featureProps.cluster) {
