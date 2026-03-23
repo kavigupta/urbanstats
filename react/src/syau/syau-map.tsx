@@ -49,7 +49,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
     return (
         <ClusterMap
             categories={categories}
-            population={props.population}
+            pieChartSizeFor={props.population}
             centroids={props.centroids}
             categoryColors={categoryColors}
             clusterMarkerLabel={syauClusterMarkerLabel}
