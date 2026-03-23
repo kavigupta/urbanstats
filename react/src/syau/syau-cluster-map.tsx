@@ -1,5 +1,5 @@
 import maplibregl from 'maplibre-gl'
-import React, { CSSProperties, ReactNode, useEffect, useMemo, useState } from 'react'
+import React, { ReactNode, useEffect, useMemo, useState } from 'react'
 import { FullscreenControl, Layer, LngLatLike, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
 import { Basemap, CommonMaplibreMap, urbanStatsLayerPrefix } from '../components/map-common'
@@ -10,12 +10,12 @@ import { ICoordinate } from '../utils/protos'
 
 const circleMarkerRadius = 20
 
-type PopulationCategoryKey = `populationCategory${number}`
+type PieChartSizeCategoryKey = `pieChartSizeForCategory${number}`
 type CountCategoryKey = `countCategory${number}`
 
 /** GeoJSON feature properties for clustered SYAU centroids (cluster aggregates + point props). */
 export type ClusterFeatureProperties = (
-    { [key in PopulationCategoryKey]: number } &
+    { [key in PieChartSizeCategoryKey]: number } &
     { [key in CountCategoryKey]: number } &
     // eslint-disable-next-line no-restricted-syntax -- cluster_id comes from maplibre and is out of our control
     ({ cluster: true, cluster_id: string } | { cluster: undefined, idxIntoCentroids: number })
@@ -26,8 +26,8 @@ interface ClusterMapProps {
     centroids: ICoordinate[]
     /** Categories for each centroid, indexed into `categoryColors`. */
     categories: number[]
-    /** Population for each centroid, same order as `categories`. */
-    population: number[]
+    /** Pie chart sizes for each centroid, same order as `categories`. */
+    pieChartSizeFor: number[]
     categoryColors: string[]
     /** Outer map container style (default height 600px). */
     /**
@@ -50,7 +50,7 @@ interface ClusterMapProps {
 export function ClusterMap(props: ClusterMapProps): ReactNode {
     const {
         categories,
-        population,
+        pieChartSizeFor,
         centroids,
         categoryColors,
         onVisibleUnclusteredChange,
@@ -89,7 +89,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                 text = clusterMarkerLabel(featureProps)
             }
             else {
-                const category = categoryColors.findIndex((_, idx) => featureProps[`populationCategory${idx}`] > 0)
+                const category = categoryColors.findIndex((_, idx) => featureProps[`pieChartSizeForCategory${idx}`] > 0)
                 assert(category !== -1, 'No category found')
                 newPolys.push({
                     idxIntoCentroids: featureProps.idxIntoCentroids,
@@ -97,10 +97,10 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                 })
                 text = unclusteredMarkerLabel(featureProps)
             }
-            const totalPopulation = categoryColors.reduce((sum, _, idx) => sum + featureProps[`populationCategory${idx}`], 0)
+            const totalPieChartSize = categoryColors.reduce((sum, _, idx) => sum + featureProps[`pieChartSizeForCategory${idx}`], 0)
             const html = circleSector(
                 categoryColors,
-                categoryColors.map((_, idx) => featureProps[`populationCategory${idx}`] / totalPopulation * 2 * Math.PI),
+                categoryColors.map((_, idx) => featureProps[`pieChartSizeForCategory${idx}`] / totalPieChartSize * 2 * Math.PI),
                 circleMarkerRadius,
                 text,
             )
@@ -141,7 +141,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
     const clusterProperties: Record<string, unknown> = {}
     for (let i = 0; i < categoryColors.length; i++) {
         clusterProperties[`countCategory${i}`] = ['+', ['get', `countCategory${i}`]]
-        clusterProperties[`populationCategory${i}`] = ['+', ['get', `populationCategory${i}`]]
+        clusterProperties[`pieChartSizeForCategory${i}`] = ['+', ['get', `pieChartSizeForCategory${i}`]]
     }
 
     const basemap: BasemapSpec = useMemo(() => TestUtils.shared.isTesting
@@ -158,7 +158,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                     idxIntoCentroids: idx,
                 }
                 for (let i = 0; i < categoryColors.length; i++) {
-                    properties[`populationCategory${i}`] = categories[idx] === i ? population[idx] : 0
+                    properties[`pieChartSizeForCategory${i}`] = categories[idx] === i ? pieChartSizeFor[idx] : 0
                     properties[`countCategory${i}`] = categories[idx] === i ? 1 : 0
                 }
                 return {
@@ -171,7 +171,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                 }
             }),
         } satisfies GeoJSON.FeatureCollection
-    }, [centroids, categories, population, categoryColors.length])
+    }, [centroids, categories, pieChartSizeFor, categoryColors.length])
 
     return (
         <CommonMaplibreMap
