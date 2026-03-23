@@ -13,13 +13,18 @@ export function maybeParseExpr(
     type: USSType,
     typeEnvironment: TypeEnvironment,
 ): UrbanStatsASTExpression | undefined {
+    class ParsingFailed extends Error {}
     try {
         return parseExpr(expr, blockIdent, [type], typeEnvironment, () => {
-            throw new Error('parsing failed')
+            throw new ParsingFailed()
         }, false)
     }
-    catch {}
-    return
+    catch (e) {
+        if (e instanceof ParsingFailed) {
+            return
+        }
+        throw e
+    }
 }
 
 type Fallback = (uss: string, i: string, t: USSType[]) => UrbanStatsASTExpression
