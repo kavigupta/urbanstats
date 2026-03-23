@@ -30,7 +30,6 @@ interface ClusterMapProps {
     population: number[]
     categoryColors: string[]
     /** Outer map container style (default height 600px). */
-    mapStyle?: CSSProperties
     /**
      * Fired whenever marker query results change — unclustered points currently visible
      * (used for Voronoi polygon highlights in SYAU).
@@ -54,7 +53,6 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
         population,
         centroids,
         categoryColors,
-        mapStyle,
         onVisibleUnclusteredChange,
         clusterMarkerLabel,
         unclusteredMarkerLabel,
@@ -180,7 +178,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
             ref={setMapRef}
             onMove={updateMarkers}
             onData={updateMarkers}
-            style={{ height: 600, ...mapStyle }}
+            style={{ height: 600 }}
         >
             <Basemap basemap={basemap} />
             <FullscreenControl position="top-left" />
