@@ -5,7 +5,7 @@ import { PolygonFeatureCollection, polygonFeatureCollection } from '../component
 import { notWaiting } from '../utils/promiseStream'
 import { ICoordinate } from '../utils/protos'
 
-import { type ClusterFeatureProperties, SyauClusterMap } from './syau-cluster-map'
+import { type ClusterFeatureProperties, ClusterMap } from './syau-cluster-map'
 
 function syauClusterMarkerLabel(featureProps: ClusterFeatureProperties & { cluster: true }): string {
     const countGuessed = featureProps.countCategory0
@@ -66,7 +66,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
     const readyFeatures = useMemo(() => features.filter(notWaiting), [features])
 
     return (
-        <SyauClusterMap
+        <ClusterMap
             centroidsData={centroidsData}
             mapBoundsCentroids={props.centroids}
             categoryColors={categoryColors}
@@ -75,6 +75,6 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
             onVisibleUnclusteredChange={setPolysOnScreen}
         >
             <PolygonFeatureCollection features={readyFeatures} clickable={false} />
-        </SyauClusterMap>
+        </ClusterMap>
     )
 }

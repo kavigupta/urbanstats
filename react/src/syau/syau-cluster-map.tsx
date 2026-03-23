@@ -21,11 +21,7 @@ export type ClusterFeatureProperties = (
     ({ cluster: true, cluster_id: string } | { cluster: undefined, name: string, populationOrdinal: number })
 )
 
-/**
- * Props for the clustered centroid map (SYAU game map). Kept explicit so other
- * call sites can reuse the same map shell later.
- */
-export interface SyauClusterMapProps {
+interface ClusterMapProps {
     /** Point GeoJSON for the `centroids` source (SYAU feature properties on each point). */
     centroidsData: GeoJSON.FeatureCollection
     /** Same locations as `centroidsData`, used only for initial fitBounds. */
@@ -50,7 +46,7 @@ export interface SyauClusterMapProps {
  * Clustered GeoJSON centroids + HTML pie markers + invisible hit-test layer + first zoom.
  * Extracted from SYAU as a reusable map module.
  */
-export function SyauClusterMap(props: SyauClusterMapProps): ReactNode {
+export function ClusterMap(props: ClusterMapProps): ReactNode {
     const {
         centroidsData,
         mapBoundsCentroids,
