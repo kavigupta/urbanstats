@@ -84,18 +84,14 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
             }
             seen.add(featureId)
 
-            let text: string
-            if (featureProps.cluster) {
-                text = clusterMarkerLabel(featureProps)
-            }
-            else {
+            const text = featureProps.cluster ? clusterMarkerLabel(featureProps) : unclusteredMarkerLabel(featureProps)
+            if (!featureProps.cluster) {
                 const category = categoryColors.findIndex((_, idx) => featureProps[`pieChartSizeForCategory${idx}`] > 0)
                 assert(category !== -1, 'No category found')
                 newUnclustered.push({
                     idxIntoCentroids: featureProps.idxIntoCentroids,
                     category,
                 })
-                text = unclusteredMarkerLabel(featureProps)
             }
             const totalPieChartSize = categoryColors.reduce((sum, _, idx) => sum + featureProps[`pieChartSizeForCategory${idx}`], 0)
             const html = circleSector(
