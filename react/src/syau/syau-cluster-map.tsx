@@ -116,14 +116,17 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                     element: el,
                 }).setLngLat(coords)
 
-                marker.addTo(mapRef.getMap())
-
                 newMarkers.set(featureId, marker)
                 markersOnScreen.set(featureId, marker)
             }
         }
         for (const [oldMarkerId, oldMarker] of markersOnScreen.entries()) {
             if (!newMarkers.has(oldMarkerId)) oldMarker.remove()
+        }
+        for (const newMarker of newMarkers.values()) {
+            if (!markersOnScreen.has(newMarker.getElement().id)) {
+                newMarker.addTo(mapRef.getMap())
+            }
         }
         setMarkersOnScreen(newMarkers)
         newUnclustered.sort((a, b) => {
