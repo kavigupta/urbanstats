@@ -67,10 +67,11 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
             return
         }
 
-        const newMarkers = new Map<string, maplibregl.Marker>()
         const newUnclustered: { idxIntoCentroids: number, category: number }[] = []
 
         const features = mapRef.querySourceFeatures('centroids')
+
+        const elements = []
 
         const seen = new Set<string>()
 
@@ -101,25 +102,37 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                 text,
             )
 
-            const existingMarker = markersOnScreen.get(featureId)
+            const element = {
+                featureId,
+                html,
+                width: circleMarkerRadius * 2,
+                height: circleMarkerRadius * 2,
+                coords,
+            }
+            elements.push(element)
+        }
+        const newMarkers = new Map<string, maplibregl.Marker>()
+        for (const element of elements) {
+            const existingMarker = markersOnScreen.get(element.featureId)
             if (existingMarker !== undefined) {
-                existingMarker.getElement().innerHTML = html
-                newMarkers.set(featureId, existingMarker)
+                existingMarker.getElement().innerHTML = element.html
+                newMarkers.set(element.featureId, existingMarker)
             }
             else {
                 const el = document.createElement('div')
-                el.innerHTML = html
+                el.innerHTML = element.html
                 el.className = 'syau-marker'
-                el.style.width = `${circleMarkerRadius * 2}px`
-                el.style.height = `${circleMarkerRadius * 2}px`
+                el.style.width = `${element.width}px`
+                el.style.height = `${element.height}px`
                 const marker = new maplibregl.Marker({
                     element: el,
-                }).setLngLat(coords)
+                }).setLngLat(element.coords)
 
-                newMarkers.set(featureId, marker)
-                markersOnScreen.set(featureId, marker)
+                newMarkers.set(element.featureId, marker)
+                markersOnScreen.set(element.featureId, marker)
             }
         }
+
         for (const [oldMarkerId, oldMarker] of markersOnScreen.entries()) {
             if (!newMarkers.has(oldMarkerId)) oldMarker.remove()
         }
