@@ -28,7 +28,7 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { computeNameSpecsWithGroups } from './article-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
-import { ArticleRow } from './load-article'
+import { ArticleRow, isNoValue } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
@@ -154,7 +154,7 @@ export function ComparisonPanel(props: {
 
     const mobileLayout = useMobileLayout()
 
-    const validOrdinalsByStat = dataByStatArticle.map(statData => statData.every(value => value.disclaimer !== 'heterogenous-sources'))
+    const validOrdinalsByStat = dataByStatArticle.map(statData => statData.every(value => value.kind !== 'metadata' && value.disclaimer !== 'heterogenous-sources'))
 
     const includeOrdinals = (
         localArticlesToUse.every(article => article.articleType === localArticlesToUse[0].articleType)
@@ -237,22 +237,41 @@ export function ComparisonPanel(props: {
     const { updatedNameSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames } = computeNameSpecsWithGroups(statisticNameHeaderSpecsOriginal)
 
     const rowSpecsByStat: CellSpec[][] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => (
-        Array.from({ length: localArticlesToUse.length }).map((unused, articleIndex) => ({
-            type: 'statistic-row',
-            row: dataByArticleStat[articleIndex][statIndex],
-            longname: names[articleIndex],
-            onlyColumns,
-            blankColumns: validOrdinalsByStat[statIndex] ? [] : ['statistic_ordinal', 'statistic_percentile'],
-            simpleOrdinals: true,
-            statisticStyle: highlightArticleIndicesByStat[statIndex] === articleIndex ? { backgroundColor: mixWithBackground(colorFromCycle(colors.hueColors, articleIndex), colors.mixPct / 100, colors.background) } : {},
-            onNavigate: (x: string) => {
-                void navContext.navigate({
-                    kind: 'comparison',
-                    universe: props.universe,
-                    longnames: names.map((value, index) => index === articleIndex ? x : value),
-                }, { history: 'push', scroll: { kind: 'none' } })
-            },
-        }))
+        Array.from({ length: localArticlesToUse.length }).map((unused, articleIndex) => {
+            const row = dataByArticleStat[articleIndex][statIndex]
+
+            if (row.kind === 'metadata') {
+                return {
+                    type: 'statistic-row',
+                    row,
+                    longname: names[articleIndex],
+                    onlyColumns,
+                    simpleOrdinals: true,
+                    onNavigate: () => {
+                        throw new Error('Metadata rows cannot be navigated')
+                    },
+                } satisfies CellSpec
+            }
+
+            return {
+                type: 'statistic-row',
+                row,
+                longname: names[articleIndex],
+                onlyColumns,
+                blankColumns: validOrdinalsByStat[statIndex] ? [] : ['statistic_ordinal', 'statistic_percentile'],
+                simpleOrdinals: true,
+                statisticStyle: highlightArticleIndicesByStat[statIndex] === articleIndex
+                    ? { backgroundColor: mixWithBackground(colorFromCycle(colors.hueColors, articleIndex), colors.mixPct / 100, colors.background) }
+                    : {},
+                onNavigate: (x: string) => {
+                    void navContext.navigate({
+                        kind: 'comparison',
+                        universe: props.universe,
+                        longnames: names.map((value, index) => index === articleIndex ? x : value),
+                    }, { history: 'push', scroll: { kind: 'none' } })
+                },
+            } satisfies CellSpec
+        })
     ))
 
     const rowSpecsByStatTransposed = rowSpecsByStat.length === 0 ? [] : rowSpecsByStat[0].map((_, statIndex) => rowSpecsByStat.map(rowSpecs => rowSpecs[statIndex]))
@@ -393,13 +412,13 @@ export function ComparisonPanel(props: {
 }
 
 export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
-    if (rows[statIndex].extraStat === undefined) {
+    if (rows[statIndex].kind !== 'statistic' || rows[statIndex].extraStat === undefined) {
         return []
     }
     const sPs = rows.map(row => statParents.get(row.statpath)!).map((sP, i) => ({ sP, i }))
     const byYear = new Map<Year, number[]>()
     sPs.filter((
-        { sP, i }) => sP.group.id === sPs[statIndex].sP.group.id && rows[i].extraStat !== undefined,
+        { sP, i }) => sP.group.id === sPs[statIndex].sP.group.id && rows[i].kind === 'statistic' && rows[i].extraStat !== undefined,
     ).forEach(({ sP: { year }, i }) => {
         assert(year !== null, 'Year should not be null for plot data')
         byYear.set(year, [...(byYear.get(year) ?? []), i])
@@ -440,9 +459,12 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
     })
 }
 
-function getHighlightIndex(rows: ArticleRow[]): number | undefined {
+function getHighlightIndex(rows: readonly ArticleRow[]): number | undefined {
+    if (!rows.every(r => r.kind === 'statistic')) {
+        return undefined
+    }
     return rows.map(x => x.statval).reduce<number | undefined>((iMax, x, i, arr) => {
-        if (isNaN(x)) {
+        if (isNoValue(x)) {
             return iMax
         }
         if (iMax === undefined) {

@@ -11,6 +11,7 @@ import { emptyLocation } from '../../urban-stats-script/lexer'
 import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement } from '../../urban-stats-script/location'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
 import { USSType, USSFunctionArgType, renderType, USSFunctionType, TypeEnvironment } from '../../urban-stats-script/types-values'
+import { AssignmentsResult } from '../../urban-stats-script/workerManager'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { Property } from '../../utils/Property'
 import { assert } from '../../utils/defensive'
@@ -70,6 +71,7 @@ function ArgumentEditor(props: {
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
+    assignments: AssignmentsResult
 }): ReactNode {
     const arg = props.argWDefault.type
     assert(arg.type === 'concrete', `Named argument ${props.name} must be concrete`)
@@ -102,6 +104,7 @@ function ArgumentEditor(props: {
             blockIdent={subident}
             type={[arg.value]}
             margin={!collapsed}
+            assignments={props.assignments}
         />
     )
 
@@ -230,6 +233,7 @@ export function AutoUXEditor(props: {
     label?: string
     labelWidth?: string
     margin?: boolean
+    assignments: AssignmentsResult
 }): ReactNode {
     const ussLoc = locationOf(props.uss).start
     if (ussLoc.block.type !== 'single' || ussLoc.block.ident !== props.blockIdent) {
@@ -276,6 +280,7 @@ export function AutoUXEditor(props: {
                     typeEnvironment={props.typeEnvironment}
                     errors={props.errors}
                     blockIdent={props.blockIdent}
+                    assignments={props.assignments}
                 />
             )
             return [editor, 'consumes-errors']
@@ -305,6 +310,7 @@ export function AutoUXEditor(props: {
                         errors={props.errors}
                         blockIdent={extendBlockIdPositionalArg(props.blockIdent, i)}
                         type={[arg.value]}
+                        assignments={props.assignments}
                     />,
                 )
             })
@@ -321,6 +327,7 @@ export function AutoUXEditor(props: {
                             typeEnvironment={props.typeEnvironment}
                             errors={props.errors}
                             blockIdent={props.blockIdent}
+                            assignments={props.assignments}
                         />,
                     )
                 }
@@ -355,6 +362,7 @@ export function AutoUXEditor(props: {
                                 blockIdent={extendBlockIdVectorElement(props.blockIdent, i)}
                                 type={[elementType]}
                                 label={`${i + 1}`}
+                                assignments={props.assignments}
                             />
                             <button
                                 style={{ flexShrink: 0 }}
@@ -425,6 +433,7 @@ export function AutoUXEditor(props: {
                                 blockIdent={extendBlockIdObjectProperty(props.blockIdent, key)}
                                 type={[propertyType]}
                                 label={key}
+                                assignments={props.assignments}
                             />
                         )
                     })}

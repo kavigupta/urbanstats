@@ -10,12 +10,13 @@
 import compression from 'compression'
 import express from 'express'
 import proxy from 'express-http-proxy'
-import { Octokit } from 'octokit'
 import { z } from 'zod'
 
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
+import { github } from './github-utils'
 
 export async function startProxy(): Promise<void> {
+    const { octokit } = await github()
+
     /**
      * If the user is using a branch that also exists on densitydb, we should use it as well.
      *

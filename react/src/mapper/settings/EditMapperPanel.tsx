@@ -1,6 +1,6 @@
 import { gzipSync } from 'zlib'
 
-import React, { ReactNode, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import React, { ComponentProps, MutableRefObject, ReactNode, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { CountsByUT } from '../../components/countsByArticleType'
 import universes_ordered from '../../data/universes_ordered'
@@ -22,9 +22,10 @@ import { mapperToTable } from '../../utils/page-conversion'
 import { useMobileLayout } from '../../utils/responsive'
 import { saveAsFile } from '../../utils/saveAsFile'
 import { useUndoRedo } from '../../utils/useUndoRedo'
+import { zIndex } from '../../utils/zIndex'
 import { Selection as TextBoxesSelection, SelectionContext as TextBoxesSelectionContext } from '../components/MapTextBox'
 import { defaultTypeEnvironment, loadInsets } from '../context'
-import { MapGenerator, useMapGenerator } from '../map-generator'
+import { MapGenerator, transformContext, useMapGenerator } from '../map-generator'
 
 import { ImportExportCode } from './ImportExportCode'
 import { mapSettingsContext } from './MapSettingsContext'
@@ -185,41 +186,42 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
         }}
         >
             <mapSettingsContext.Provider value={{ mapSettings, typeEnvironment, setMapEditorMode }}>
-                <PageTemplate csvExportCallback={mapGenerator.exportCSV} screencap={exportPng} showFooter={false}>
-                    <MaybeSplitLayout
-                        error={mapGenerator.errors.some(e => e.kind === 'error')}
-                        left={(
-                            <MapperSettings
-                                mapSettings={mapSettings}
-                                setMapSettings={setMapSettings}
-                                errors={mapGenerator.errors}
-                                counts={counts}
-                                typeEnvironment={typeEnvironment}
-                                targetOutputTypes={validMapperOutputs}
-                            />
-                        )}
-                        right={(
-                            <>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
-                                    <Export pngExport={exportPng} geoJSONExport={mapGenerator.exportGeoJSON} mapSettings={mapSettings} typeEnvironment={typeEnvironment} />
-                                    <ImportExportCode
-                                        mapSettings={mapSettings}
-                                        setMapSettings={setMapSettings}
-                                    />
-                                </div>
-                                <div style={{ position: 'relative', flex: 1 }}>
-                                    {ui.node}
-                                </div>
-                            </>
-                        )}
-                    />
-                </PageTemplate>
+                <transformContext.Provider value={{ selfDetermineHeight: useMobileLayout() }}>
+                    <PageTemplate csvExportCallback={mapGenerator.exportCSV} screencap={exportPng} showFooter={false}>
+                        <MaybeSplitLayout
+                            error={mapGenerator.errors.some(e => e.kind === 'error')}
+                            left={(
+                                <MapperSettings
+                                    mapSettings={mapSettings}
+                                    setMapSettings={setMapSettings}
+                                    errors={mapGenerator.errors}
+                                    counts={counts}
+                                    typeEnvironment={typeEnvironment}
+                                    targetOutputTypes={validMapperOutputs}
+                                    assignments={mapGenerator.assignments}
+                                />
+                            )}
+                            right={(
+                                <>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5em' }}>
+                                        <Export pngExport={exportPng} geoJSONExport={mapGenerator.exportGeoJSON} mapSettings={mapSettings} typeEnvironment={typeEnvironment} />
+                                        <ImportExportCode
+                                            mapSettings={mapSettings}
+                                            setMapSettings={setMapSettings}
+                                        />
+                                    </div>
+                                    <div style={{ position: 'relative', flex: 1 }}>
+                                        {ui.node}
+                                    </div>
+                                </>
+                            )}
+                        />
+                    </PageTemplate>
+                </transformContext.Provider>
             </mapSettingsContext.Provider>
         </universeContext.Provider>
     )
 }
-
-export const splitLayoutContext = React.createContext(false)
 
 function MaybeSplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode, error: boolean }): ReactNode {
     const mobileLayout = useMobileLayout()
@@ -234,15 +236,15 @@ function MaybeSplitLayout({ left, right, error }: { left: ReactNode, right: Reac
         : <SplitLayout error={error} left={left} right={right} />
 }
 
-function SplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode, error: boolean }): ReactNode {
+function DivThatTakesUpTheRestOfThePage(props: ComponentProps<'div'> & { divRef?: MutableRefObject<HTMLDivElement | null> }): ReactNode {
     const [height, setHeight] = useState(0)
-    const splitRef = useRef<HTMLDivElement>(null)
-    const colors = useColors()
+    const ref = useRef<HTMLDivElement | null>(null)
 
     const updateHeight = useCallback(() => {
-        if (splitRef.current) {
-            const bounds = splitRef.current.getBoundingClientRect()
-            setHeight(window.innerHeight - bounds.top - 8)
+        if (ref.current) {
+            const bounds = ref.current.getBoundingClientRect()
+            // window.innerHeight appears to be a mess on Android Chrome, so use the root element client height
+            setHeight(document.documentElement.clientHeight - bounds.top - window.scrollY - 8)
         }
     }, [])
 
@@ -250,10 +252,30 @@ function SplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode
     useLayoutEffect(() => {
         updateHeight()
         window.addEventListener('resize', updateHeight)
+        window.addEventListener('scroll', updateHeight)
         return () => {
             window.removeEventListener('resize', updateHeight)
+            window.addEventListener('scroll', updateHeight)
         }
     }, [updateHeight])
+
+    return (
+        <div
+            {...props}
+            style={{ height: `${height}px`, ...props.style }}
+            ref={(thing) => {
+                ref.current = thing
+                if (props.divRef) {
+                    props.divRef.current = thing
+                }
+            }}
+        />
+    )
+}
+
+function SplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode, error: boolean }): ReactNode {
+    const splitRef = useRef<HTMLDivElement>(null)
+    const colors = useColors()
 
     const [leftColProp, setLeftColProp] = useSetting('mapperSettingsColumnProp')
 
@@ -278,69 +300,69 @@ function SplitLayout({ left, right, error }: { left: ReactNode, right: ReactNode
     const dividerWidth = '1em'
 
     return (
-        <splitLayoutContext.Provider value={true}>
-            <div style={{ display: 'flex', height, position: 'relative' }} ref={splitRef}>
-                {left && (
-                    <>
-                        <div data-test="split-left" style={{ width: leftPct, minWidth: minLeftWidth, overflowY: 'scroll', backgroundColor: mixWithBackground(colors.hueColors.red, error ? 0.8 : 1, colors.slightlyDifferentBackground), padding: '1em', borderRadius: '5px' }}>
-                            {left}
-                        </div>
-                        <div
-                            ref={dividerRef}
-                            style={{ width: dividerWidth, position: 'relative' }}
-                            onPointerDown={(e) => {
-                                if (drag === undefined) {
-                                    const div = e.target as HTMLDivElement
-                                    setDrag({
-                                        pointerId: e.pointerId,
-                                        startOffsetX: e.nativeEvent.offsetX + div.offsetLeft,
-                                        startProp: Math.max(minLeftColProp(), leftColProp),
-                                    })
-                                    div.setPointerCapture(e.pointerId)
-                                }
-                            }}
-                            onPointerMove={(e) => {
-                                if (e.pointerId === drag?.pointerId) {
-                                    const div = e.target as HTMLDivElement
-                                    const propChange = (div.offsetLeft + e.nativeEvent.offsetX - drag.startOffsetX) / splitRef.current!.offsetWidth
-                                    setLeftColProp(Math.max(minLeftColProp(), Math.min(drag.startProp + propChange, maxLeftColProp)))
-                                }
-                            }}
-                            onPointerCancel={(e) => {
-                                if (drag?.pointerId === e.pointerId) {
-                                    setDrag(undefined)
-                                }
-                            }}
-                            onPointerUp={(e) => {
-                                if (drag?.pointerId === e.pointerId) {
-                                    setDrag(undefined)
-                                }
-                            }}
-                        >
-                            <div style={{
-                                backgroundColor: colors.borderNonShadow,
-                                borderRadius: '5px',
-                                position: 'absolute',
-                                width: '5px',
-                                left: 'calc(50% - 2px)',
-                                height: '50%',
-                                top: '25%',
-                                pointerEvents: 'none',
-                            }}
-                            />
-                        </div>
-                    </>
-                )}
-                <div style={{ width: `calc(100% - max(${minLeftWidth}px, ${leftPct}) - ${dividerWidth})`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    {right}
-                </div>
+        <DivThatTakesUpTheRestOfThePage style={{ display: 'flex', position: 'relative' }} divRef={splitRef}>
+            {left && (
+                <>
+                    <div data-test="split-left" style={{ width: leftPct, minWidth: minLeftWidth, overflowY: 'scroll', backgroundColor: mixWithBackground(colors.hueColors.red, error ? 0.8 : 1, colors.slightlyDifferentBackground), padding: '1em', borderRadius: '5px' }}>
+                        {left}
+                    </div>
+                    <div
+                        ref={dividerRef}
+                        style={{ width: dividerWidth, position: 'relative' }}
+                        onPointerDown={(e) => {
+                            if (drag === undefined) {
+                                const div = e.target as HTMLDivElement
+                                setDrag({
+                                    pointerId: e.pointerId,
+                                    startOffsetX: e.nativeEvent.offsetX + div.offsetLeft,
+                                    startProp: Math.max(minLeftColProp(), leftColProp),
+                                })
+                                div.setPointerCapture(e.pointerId)
+                            }
+                        }}
+                        onPointerMove={(e) => {
+                            if (e.pointerId === drag?.pointerId) {
+                                const div = e.target as HTMLDivElement
+                                const propChange = (div.offsetLeft + e.nativeEvent.offsetX - drag.startOffsetX) / splitRef.current!.offsetWidth
+                                setLeftColProp(Math.max(minLeftColProp(), Math.min(drag.startProp + propChange, maxLeftColProp)))
+                            }
+                        }}
+                        onPointerCancel={(e) => {
+                            if (drag?.pointerId === e.pointerId) {
+                                setDrag(undefined)
+                            }
+                        }}
+                        onPointerUp={(e) => {
+                            if (drag?.pointerId === e.pointerId) {
+                                setDrag(undefined)
+                            }
+                        }}
+                    >
+                        <div style={{
+                            backgroundColor: colors.borderNonShadow,
+                            borderRadius: '5px',
+                            position: 'absolute',
+                            width: '5px',
+                            left: 'calc(50% - 2px)',
+                            height: '50%',
+                            top: '25%',
+                            pointerEvents: 'none',
+                        }}
+                        />
+                    </div>
+                </>
+            )}
+            <div style={{ width: `calc(100% - max(${minLeftWidth}px, ${leftPct}) - ${dividerWidth})`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                {right}
             </div>
-        </splitLayoutContext.Provider>
+        </DivThatTakesUpTheRestOfThePage>
     )
 }
 
 function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps): ReactNode {
     const colors = useColors()
+
+    const isMobile = useMobileLayout()
 
     const [insetEdits, setInsetEdits] = useState<InsetEdits>({
         ast: a => a,
@@ -390,7 +412,7 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
     })
 
     return (
-        <PageTemplate csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
+        <PageTemplate topPanel={!isMobile} csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
             <MaybeSplitLayout
                 left={undefined}
                 error={false}
@@ -400,23 +422,26 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                             backgroundColor: colors.slightlyDifferentBackgroundFocused,
                             borderRadius: '5px',
                             padding: '10px',
-                            margin: '10px 0',
+                            margin: isMobile ? 0 : '10px 0',
                             display: 'flex',
                             justifyContent: 'space-between',
                             gap: '0.5em',
+                            ...(isMobile ? { position: 'absolute', zIndex: zIndex.mobileUndoRedoControls, bottom: 0, left: 0 } : {}),
                         }}
                         >
-                            <div>
-                                <b>Editing Insets.</b>
-                                {' '}
-                                Pans and zooms to maps will be reflected permanently. Drag inset frames to reposition and resize.
-                            </div>
+                            {!isMobile && (
+                                <div>
+                                    <b>Editing Insets.</b>
+                                    {' '}
+                                    Pans and zooms to maps will be reflected permanently. Drag inset frames to reposition and resize.
+                                </div>
+                            )}
                             <div style={{ display: 'flex', gap: '10px' }}>
-
-                                <button onClick={() => { setMapEditorMode('uss') }}>
+                                <button style={{ height: isMobile ? 30 : undefined }} onClick={() => { setMapEditorMode('uss') }}>
                                     Cancel
                                 </button>
                                 <button
+                                    style={{ height: isMobile ? 30 : undefined }}
                                     onClick={() => {
                                         setMapSettings({ ...mapSettings, script: { uss: doEditInsets(mapSettings, insetEdits, typeEnvironment) } }, {})
                                         setMapEditorMode('uss')
@@ -427,9 +452,9 @@ function InsetsMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapE
                                 </button>
                             </div>
                         </div>
-                        <div style={{ flex: 1, position: 'relative' }}>
+                        <DivThatTakesUpTheRestOfThePage style={{ position: 'relative' }}>
                             {ui.node}
-                        </div>
+                        </DivThatTakesUpTheRestOfThePage>
                     </>
                 )}
             />
@@ -551,6 +576,8 @@ function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => 
 function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps): ReactNode {
     const colors = useColors()
 
+    const isMobile = useMobileLayout()
+
     const [textBoxes, setTextBoxes] = useState<TextBox[]>(() => getTextBoxes(mapSettings, typeEnvironment)!)
 
     const selectionProperty = useMemo(() => new Property<TextBoxesSelection | undefined>(undefined), [])
@@ -637,8 +664,7 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
     })
 
     return (
-        <PageTemplate csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
-
+        <PageTemplate topPanel={!isMobile} csvExportCallback={mapGenerator.exportCSV} showFooter={false}>
             <TextBoxesSelectionContext.Provider value={selectionProperty}>
                 <MaybeSplitLayout
                     left={undefined}
@@ -649,21 +675,24 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
                                 backgroundColor: colors.slightlyDifferentBackgroundFocused,
                                 borderRadius: '5px',
                                 padding: '10px',
-                                margin: '10px 0',
+                                margin: isMobile ? 0 : '10px 0',
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 gap: '0.5em',
+                                ...(isMobile ? { position: 'absolute', zIndex: zIndex.mobileUndoRedoControls, bottom: 0, left: 0 } : {}),
                             }}
                             >
-                                <div>
-                                    <b>Editing Text Boxes.</b>
-                                </div>
+                                {!isMobile && (
+                                    <div>
+                                        <b>Editing Text Boxes.</b>
+                                    </div>
+                                )}
                                 <div style={{ display: 'flex', gap: '10px' }}>
-
-                                    <button onClick={() => { setMapEditorMode('uss') }}>
+                                    <button style={{ height: isMobile ? 30 : undefined }} onClick={() => { setMapEditorMode('uss') }}>
                                         Cancel
                                     </button>
                                     <button
+                                        style={{ height: isMobile ? 30 : undefined }}
                                         onClick={() => {
                                             setMapSettings({ ...mapSettings, script: { uss: scriptWithNewTextBoxes(mapSettings, textBoxes, typeEnvironment) } }, {})
                                             setMapEditorMode('uss')
@@ -674,9 +703,9 @@ function TextBoxesMapEditor({ mapSettings, setMapSettings, typeEnvironment, setM
                                     </button>
                                 </div>
                             </div>
-                            <div style={{ flex: 1, position: 'relative' }}>
+                            <DivThatTakesUpTheRestOfThePage style={{ position: 'relative' }}>
                                 {ui.node}
-                            </div>
+                            </DivThatTakesUpTheRestOfThePage>
                         </>
                     )}
                 />

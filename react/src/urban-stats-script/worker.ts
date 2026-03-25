@@ -14,7 +14,7 @@ import { EditorError } from './editor-utils'
 import { Effect, execute, InterpretationError } from './interpreter'
 import { noLocation } from './location'
 import { renderType, USSRawValue, USSValue } from './types-values'
-import { USSExecutionRequest, USSExecutionResult } from './workerManager'
+import { AssignmentsResult, USSExecutionRequest, USSExecutionResult } from './workerManager'
 
 let mapperCache: {
     universe: Universe
@@ -49,7 +49,7 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
         return {
             resultingValue: { type: result.type, value: removeFunctions(result.value) },
             error: getWarnings(),
-            context: new Map([...context.variableEntries()].filter(([,v]) => v.documentation?.includedInOutputContext)),
+            assignments: assignments(context),
         }
     }
     catch (error) {
@@ -63,9 +63,16 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
         }
         return {
             error: [{ type: 'error', value: interpretationError.value, location: interpretationError.location, kind: 'error' }, ...(getWarnings?.() ?? [])],
-            context: new Map(),
+            assignments: assignments(context),
         }
     }
+}
+
+function assignments(context: Context | undefined): AssignmentsResult {
+    if (context === undefined) {
+        return new Map()
+    }
+    return new Map(Array.from(context.constantEntries()).concat(Array.from(context.variableEntries())).map(([k, v]) => [k, { ...v, value: removeFunctions(v.value) }]))
 }
 
 async function contextForRequest(request: USSExecutionRequest): Promise<[Context, () => EditorError[]]> {

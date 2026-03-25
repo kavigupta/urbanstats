@@ -3,7 +3,9 @@ import maplibregl from 'maplibre-gl'
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
 import { FullscreenControl, Layer, LngLatLike, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
-import { Basemap, CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection } from '../components/map-common'
+import { Basemap, CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, urbanStatsLayerPrefix } from '../components/map-common'
+import { Basemap as BasemapSpec } from '../mapper/settings/utils'
+import { TestUtils } from '../utils/TestUtils'
 import { notWaiting } from '../utils/promiseStream'
 import { ICoordinate } from '../utils/protos'
 
@@ -57,6 +59,8 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
 
         const features = mapRef.querySourceFeatures('centroids')
 
+        const seen = new Set<string>()
+
         for (const feature of features) {
             const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
             const featureProps = feature.properties as (
@@ -65,6 +69,11 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
                         // eslint-disable-next-line no-restricted-syntax -- cluster_id comes from maplibre and is out of our control
                         ({ cluster: true, cluster_id: string } | { cluster: undefined, name: string, populationOrdinal: number }))
             const featureId = featureProps.cluster ? featureProps.cluster_id : featureProps.name
+
+            if (seen.has(featureId)) {
+                continue
+            }
+            seen.add(featureId)
 
             let text: string
             if (featureProps.cluster) {
@@ -133,6 +142,10 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
     }))), [stableStringify(polysOnScreen), props.guessedColor, props.notGuessedColor]).use()
 
     const readyFeatures = useMemo(() => features.filter(notWaiting), [features])
+    const basemap = useMemo(() => TestUtils.shared.isTesting
+        // eslint-disable-next-line no-restricted-syntax -- just for testing
+        ? { type: 'none', backgroundColor: 'white', textColor: 'black' } satisfies BasemapSpec
+        : { type: 'osm', noLabels: true } satisfies BasemapSpec, [])
 
     return (
         <CommonMaplibreMap
@@ -141,7 +154,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
             onData={updateMarkers}
             style={{ height: 600 }}
         >
-            <Basemap basemap={useMemo(() => ({ type: 'osm', noLabels: true }), [])} />
+            <Basemap basemap={basemap} />
             <FullscreenControl position="top-left" />
             <Source
                 id="centroids"
@@ -159,7 +172,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
                 }}
             />
             <Layer
-                id="centroid_circle"
+                id={`${urbanStatsLayerPrefix}-centroid-placeholders`}
                 type="circle"
                 source="centroids"
                 filter={['!=', 'cluster', true]}

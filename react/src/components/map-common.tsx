@@ -96,7 +96,7 @@ export interface Polygon {
     [meta: string]: unknown
 }
 
-const urbanStatsLayerPrefix = 'urban-stats'
+export const urbanStatsLayerPrefix = 'urban-stats'
 
 function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
     return `${urbanStatsLayerPrefix}-polygons-${kind}-${id}`

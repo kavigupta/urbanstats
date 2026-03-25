@@ -184,11 +184,6 @@ export interface Documentation {
      */
     fromStatisticColumn?: boolean
     /**
-     * True if this should be outputted in the context returned by the worker. If this is true, the value
-     * should also be serializable to JSON.
-     */
-    includedInOutputContext?: boolean
-    /**
      * If present, indicates that this variable/function is deprecated.
      * The string should explain why it's deprecated and what alternatives to use.
      */
