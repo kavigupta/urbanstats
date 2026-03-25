@@ -148,8 +148,8 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
         for (const [oldMarkerId, oldMarker] of markersOnScreen.entries()) {
             if (!newMarkers.has(oldMarkerId)) oldMarker.remove()
         }
-        for (const newMarker of newMarkers.values()) {
-            if (!markersOnScreen.has(newMarker.getElement().id)) {
+        for (const [newMarkerId, newMarker] of newMarkers.entries()) {
+            if (!markersOnScreen.has(newMarkerId)) {
                 newMarker.addTo(mapRef.getMap())
             }
         }
