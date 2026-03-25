@@ -1,10 +1,10 @@
 import Color from 'color'
 import type { ExpressionSpecification } from 'maplibre-gl'
-import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
-import { Basemap as BasemapComponent, ClusteredPointFeatureCollection, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
+import { Basemap as BasemapComponent, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
 import { screencapElement, ScreenshotContext } from '../components/screenshot'
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
@@ -15,10 +15,12 @@ import { RelativeLoader } from '../navigation/loading'
 import { Colors, colorThemes } from '../page_template/color-themes'
 import { OverrideTheme, useColors } from '../page_template/colors'
 import { loadCentroids } from '../syau/load'
+import { type ClusterFeatureProperties, ClusterMapCore } from '../syau/syau-cluster-map'
 import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color-utils'
 import { Inset } from '../urban-stats-script/constants/insets'
+import type { ClusterMap as ClusterMapUSS } from '../urban-stats-script/constants/map'
 import { instantiate } from '../urban-stats-script/constants/scale'
 import { TextBox } from '../urban-stats-script/constants/text-box'
 import { EditorError } from '../urban-stats-script/editor-utils'
@@ -26,9 +28,11 @@ import { noLocation } from '../urban-stats-script/location'
 import { USSOpaqueValue } from '../urban-stats-script/types-values'
 import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
 import { loadImage } from '../utils/Image'
+import { assert } from '../utils/defensive'
 import { editIndex, EditSeq } from '../utils/array-edits'
-import { furthestColor, interpolateColor } from '../utils/color'
+import { binIndexForNormalizedRampValue, furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
+import { wrapPointFeaturesForClustering } from '../utils/idl-longitude-wrap'
 import { ConsolidatedShapes, Feature, ICoordinate } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
@@ -348,6 +352,127 @@ function EmptyMapLayout({ universe, loading }: { universe?: Universe, loading: b
     )
 }
 
+function MapperClusterMapView(props: {
+    features: GeoJSON.Feature[]
+    value: ClusterMapUSS
+    clickable: boolean
+}): ReactNode {
+    const { features, value, clickable } = props
+    const categoryColors = useMemo(() => value.ramp.map(([, c]) => c), [value.ramp])
+
+    /** Same Point coordinates as `features` — feed the clustered source directly (avoids lon/lat round-trip bugs). */
+    const geoJsonFeatureCollection = useMemo((): GeoJSON.FeatureCollection => ({
+        type: 'FeatureCollection',
+        features: features.map((f, idx) => {
+            const geom = f.geometry as GeoJSON.Point
+            const categoryIndex = f.properties!.categoryIndex as number
+            const pieSize = f.properties!.pieSize as number
+            const properties: Record<string, unknown> = {
+                idxIntoCentroids: idx,
+            }
+            const di = f.properties!.dataIndex
+            if (typeof di === 'number') {
+                properties.dataIndex = di
+            }
+            const nm = f.properties!.name
+            if (typeof nm === 'string') {
+                properties.name = nm
+            }
+            for (let i = 0; i < categoryColors.length; i++) {
+                properties[`pieChartSizeForCategory${i}`] = categoryIndex === i ? pieSize : 0
+                properties[`countCategory${i}`] = categoryIndex === i ? 1 : 0
+            }
+            return {
+                type: 'Feature',
+                properties,
+                geometry: {
+                    type: 'Point',
+                    coordinates: geom.coordinates.slice(0, 2) as [number, number],
+                },
+            }
+        }),
+    }), [features, categoryColors])
+
+    const clusterMarkerLabel = useCallback((fp: ClusterFeatureProperties & { cluster: true }) => {
+        const n = fp.point_count
+        return typeof n === 'number' ? String(n) : ''
+    }, [])
+
+    const unclusteredMarkerLabel = useCallback((fp: ClusterFeatureProperties & { cluster: undefined }) => {
+        const idx = fp.dataIndex ?? fp.idxIntoCentroids
+        const v = value.data[idx]
+        if (!Number.isFinite(v)) {
+            return ''
+        }
+        const m = Math.abs(v)
+        const s = m >= 1000 || (m > 0 && m < 0.01) ? v.toExponential(2) : v.toPrecision(3)
+        return s
+    }, [value.data])
+
+    return (
+        <ClusterMapCore
+            geoJsonFeatureCollection={geoJsonFeatureCollection}
+            categoryColors={categoryColors}
+            clusterMarkerLabel={clusterMarkerLabel}
+            unclusteredMarkerLabel={unclusteredMarkerLabel}
+            maxClusterRadius={value.maxRadius}
+            computeRelativeArea={(a, m) => (m === 0 ? 0 : a / m)}
+            clusterRadius={value.clusterRadius}
+            clusterMaxZoom={value.clusterMaxZoom}
+            clickable={clickable}
+            markerClassName="mapper-cluster-marker"
+        />
+    )
+}
+
+async function clusterMapPointsGeojson(
+    geographyKind: typeof valid_geographies[number],
+    universe: Universe,
+    value: ClusterMapUSS,
+    cache: MapCache,
+    scale: ReturnType<typeof instantiate>,
+): Promise<GeoJSON.Feature[]> {
+    if (cache.geo?.type !== 'points' || cache.geo.universe !== universe || cache.geo.geographyKind !== geographyKind) {
+        const idxLink = indexLink(universe, geographyKind)
+        const articles = await loadProtobuf(idxLink, 'ArticleOrderingList')
+        const centroids = await loadCentroids(universe, geographyKind, articles.longnames)
+        const centroidsByName = new Map(articles.longnames.map((r, i) => [r, centroids[i]]))
+        cache.geo = {
+            type: 'points',
+            universe,
+            geographyKind,
+            centroidsByName,
+        }
+    }
+    const geo = cache.geo
+    assert(geo.type === 'points', 'expected points cache')
+
+    const rawFeatures: GeoJSON.Feature[] = value.geo.map((name, i) => {
+        const centroid = geo.centroidsByName.get(name)!
+        const raw = value.data[i]
+        const t = Number.isFinite(raw) ? scale.forward(raw) : NaN
+        const categoryIndex = binIndexForNormalizedRampValue(t, value.ramp)
+        const fillColor = value.ramp[categoryIndex]![1]
+        return {
+            type: 'Feature' as const,
+            properties: {
+                name,
+                dataIndex: i,
+                categoryIndex,
+                pieSize: value.relativeArea[i]!,
+                fillColor,
+                fillOpacity: value.opacity,
+                statistic: raw,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [centroid.lon!, centroid.lat!],
+            },
+        }
+    })
+    return wrapPointFeaturesForClustering(rawFeatures)
+}
+
 async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, geographyKind, cache }:
 {
     mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' | 'clusterMap' }
@@ -356,17 +481,20 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     cache: MapCache
 }): Promise<{ features: GeoJSON.Feature[], mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode, ramp: RampToDisplay }> {
     let ramp: RampToDisplay
-    let colors: string[]
+    let colors: string[] = []
+    let scale: ReturnType<typeof instantiate> | undefined
     switch (opaqueType) {
         case 'pMap':
         case 'clusterMap':
-        case 'cMap':
-            const scale = instantiate(value.scale)
+        case 'cMap': {
+            const scaleInner = instantiate(value.scale)
+            scale = scaleInner
             const furthest = furthestColor(value.ramp.map(x => x[1]))
-            const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-            ramp = { type: 'ramp', value: { ramp: value.ramp, interpolations, scale, label: value.label, unit: value.unit } }
-            colors = value.data.map(val => interpolateColor(value.ramp, scale.forward(val), furthest))
+            const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scaleInner.inverse)
+            ramp = { type: 'ramp', value: { ramp: value.ramp, interpolations, scale: scaleInner, label: value.label, unit: value.unit } }
+            colors = value.data.map(val => interpolateColor(value.ramp, scaleInner.forward(val), furthest))
             break
+        }
         case 'cMapRGB':
             colors = value.dataR.map((r, i) => doRender({
                 r,
@@ -382,29 +510,19 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     let mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode
     switch (opaqueType) {
         case 'pMap':
-        case 'clusterMap':
             const points = pointsFromMapValue(value, colors)
 
             features = await pointsGeojson(geographyKind, universe, points, cache)
 
-            if (opaqueType === 'pMap') {
-                mapChildren = (fs, clickable) => <PointFeatureCollection features={fs} clickable={clickable} />
-            }
-            else {
-                mapChildren = (fs, clickable) => (
-                    <ClusteredPointFeatureCollection
-                        features={fs}
-                        clickable={clickable}
-                        clusterRadius={value.clusterRadius}
-                        clusterMaxZoom={value.clusterMaxZoom}
-                        markerPixelRadius={value.maxRadius}
-                        markerFillOpacity={value.opacity}
-                        debugClusterRendering={false}
-                    />
-                )
-            }
+            mapChildren = (fs, clickable) => <PointFeatureCollection features={fs} clickable={clickable} />
 
             break
+        case 'clusterMap': {
+            assert(scale !== undefined, 'clusterMap scale')
+            features = await clusterMapPointsGeojson(geographyKind, universe, value, cache, scale)
+            mapChildren = (fs, clickable) => <MapperClusterMapView features={fs} value={value} clickable={clickable} />
+            break
+        }
         case 'cMap':
         case 'cMapRGB':
             const polys: Polygon[] = Array.from(colors.entries()).map(([i, color]) => {
@@ -448,7 +566,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 }
 
 function pointsFromMapValue(
-    value: (USSOpaqueValue & { opaqueType: 'pMap' })['value'] | (USSOpaqueValue & { opaqueType: 'clusterMap' })['value'],
+    value: (USSOpaqueValue & { opaqueType: 'pMap' })['value'],
     colors: string[],
 ): Point[] {
     return Array.from(value.data.entries()).map(([i, dataValue]) => {
@@ -471,7 +589,7 @@ function pointsFromMapValue(
 
 const canonicalWidth = 1200
 
-export const transformContext = createContext({ selfDetermineHeight: false })
+export const transformContext = createContext<{ selfDetermineHeight: boolean }>({ selfDetermineHeight: false })
 
 function TransformConstantWidth({ children }: { children: ReactNode }): ReactNode {
     const [layout, setLayout] = useState({ scale: 1, top: 0, left: 0, selfDeterminedHeight: 0 })
