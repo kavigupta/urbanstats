@@ -8,8 +8,6 @@ import { TestUtils } from '../utils/TestUtils'
 import { assert } from '../utils/defensive'
 import { ICoordinate } from '../utils/protos'
 
-const circleMarkerRadius = 20
-
 type PieChartSizeCategoryKey = `pieChartSizeForCategory${number}`
 type CountCategoryKey = `countCategory${number}`
 
@@ -42,12 +40,17 @@ interface ClusterMapProps {
     unclusteredMarkerLabel: (featureProps: ClusterFeatureProperties & { cluster: undefined }) => string
     /** Rendered inside the map (e.g. layers that need `useMap()`). */
     children?: ReactNode
+    /** Maximum radius of each cluster, in pixels. */
+    maxClusterRadius: number
+    /** Compute relative area relative to the largest area */
+    computeRelativeArea: (area: number, maxArea: number) => number
 }
 
 interface ClusterMapElement {
     featureId: string
     html: (radius: number) => string
     coords: LngLatLike
+    totalPieChartSize: number
 }
 
 /**
@@ -64,6 +67,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
         clusterMarkerLabel,
         unclusteredMarkerLabel,
         children,
+        maxClusterRadius,
     } = props
 
     const [mapRef, setMapRef] = useState<MapRef | null>(null)
@@ -112,13 +116,15 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                     text,
                 ),
                 coords,
+                totalPieChartSize,
             }
             elements.push(element)
         }
+        const maxPieChartSize = Math.max(...elements.map(e => e.totalPieChartSize), 0)
         const newMarkers = new Map<string, maplibregl.Marker>()
         for (const element of elements) {
             const existingMarker = markersOnScreen.get(element.featureId)
-            const radius = circleMarkerRadius
+            const radius = maxClusterRadius * Math.sqrt(props.computeRelativeArea(element.totalPieChartSize, maxPieChartSize))
             const html = element.html(radius)
             if (existingMarker !== undefined) {
                 existingMarker.getElement().innerHTML = html
@@ -206,7 +212,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                 data={centroidsData}
                 cluster={true}
                 clusterMaxZoom={14}
-                clusterRadius={circleMarkerRadius * 2.5}
+                clusterRadius={maxClusterRadius * 2.5}
                 clusterProperties={clusterProperties}
             />
             {/*

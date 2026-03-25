@@ -55,6 +55,8 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
             clusterMarkerLabel={syauClusterMarkerLabel}
             unclusteredMarkerLabel={syauUnclusteredMarkerLabel}
             onVisibleUnclusteredChange={setPolysOnScreen}
+            maxClusterRadius={20}
+            computeRelativeArea={() => 1}
         >
             <PolygonFeatureCollection features={readyFeatures} clickable={false} />
         </ClusterMap>
