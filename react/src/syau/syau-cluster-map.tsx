@@ -28,6 +28,7 @@ interface ClusterMapProps {
     categories: number[]
     /** Pie chart sizes for each centroid, same order as `categories`. */
     pieChartSizeFor: number[]
+    /** Colors for each category, indexed by elements of `categories`. */
     categoryColors: string[]
     /** Outer map container style (default height 600px). */
     /**
