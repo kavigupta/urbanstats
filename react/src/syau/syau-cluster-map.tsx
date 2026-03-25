@@ -43,6 +43,12 @@ interface ClusterMapProps {
     children?: ReactNode
 }
 
+interface ClusterMapElement {
+    featureId: string
+    html: (radius: number) => string
+    coords: LngLatLike
+}
+
 /**
  * Clustered GeoJSON centroids + HTML pie markers + invisible hit-test layer + first zoom.
  * Extracted from SYAU as a reusable map module.
@@ -95,18 +101,15 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                 })
             }
             const totalPieChartSize = categoryColors.reduce((sum, _, idx) => sum + featureProps[`pieChartSizeForCategory${idx}`], 0)
-            const html = circleSector(
-                categoryColors,
-                categoryColors.map((_, idx) => featureProps[`pieChartSizeForCategory${idx}`] / totalPieChartSize * 2 * Math.PI),
-                circleMarkerRadius,
-                text,
-            )
 
-            const element = {
+            const element: ClusterMapElement = {
                 featureId,
-                html,
-                width: circleMarkerRadius * 2,
-                height: circleMarkerRadius * 2,
+                html: (r: number) => circleSector(
+                    categoryColors,
+                    categoryColors.map((_, idx) => featureProps[`pieChartSizeForCategory${idx}`] / totalPieChartSize * 2 * Math.PI),
+                    r,
+                    text,
+                ),
                 coords,
             }
             elements.push(element)
@@ -114,16 +117,18 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
         const newMarkers = new Map<string, maplibregl.Marker>()
         for (const element of elements) {
             const existingMarker = markersOnScreen.get(element.featureId)
+            const radius = circleMarkerRadius
+            const html = element.html(radius)
             if (existingMarker !== undefined) {
-                existingMarker.getElement().innerHTML = element.html
+                existingMarker.getElement().innerHTML = html
                 newMarkers.set(element.featureId, existingMarker)
             }
             else {
                 const el = document.createElement('div')
-                el.innerHTML = element.html
+                el.innerHTML = html
                 el.className = 'syau-marker'
-                el.style.width = `${element.width}px`
-                el.style.height = `${element.height}px`
+                el.style.width = `${2 * radius}px`
+                el.style.height = `${2 * radius}px`
                 const marker = new maplibregl.Marker({
                     element: el,
                 }).setLngLat(element.coords)
