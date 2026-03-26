@@ -283,3 +283,14 @@ void test('autoUXNode', () => {
     assert.equal(unparse(l.maybeAutoUXNode(l.edit(l.identifier('x'))).parse(parseExpr('autoUXNode(x, "{\\"collapsed\\":true}")'), defaultConstants).expr.edit(parseExpr('autoUXNode(y, "{\\"collapsed\\":false}")'))!), 'autoUXNode(y, "{\\"collapsed\\":false}")')
     assert.equal(unparse(l.vector(l.maybeAutoUXNode(l.edit(l.identifier('x')))).parse(parseExpr('[autoUXNode(x, "{\\"collapsed\\":true}")]'), defaultConstants)[0].expr.edit(parseExpr('autoUXNode(y, "{\\"collapsed\\":false}")'))!), '[autoUXNode(y, "{\\"collapsed\\":false}")]')
 })
+
+void test('lastExpression', () => {
+    assert.deepEqual(l.lastExpression(l.number()).parse(parseProgram('1\n2\n3\n'), defaultConstants), 3)
+    assert.deepEqual(unparse(l.lastExpression(l.edit(l.number())).parse(parseProgram('1\n2\n3\n'), defaultConstants).edit(parseExpr('4'))!), '1;\n2;\n4')
+    assert.deepEqual(unparse(l.lastExpression(l.edit(l.optional(l.number()))).parse(parseProgram(''), defaultConstants).edit(parseExpr('0'))!), '0')
+    assert.throws(() => { l.lastExpression(l.number()).parse(parseProgram(''), defaultConstants) })
+    assert.throws(() => { l.lastExpression(l.number()).parse(parseProgram('condition (true)'), defaultConstants) })
+    assert.deepEqual(l.lastExpression(l.number()).parse(parseProgram('condition (true); 1; 2'), defaultConstants), 2)
+    assert.deepEqual(l.lastExpression(l.number()).parse(parseProgram('condition (true); condition (false); 1; 2'), defaultConstants), 2)
+    assert.deepEqual(l.lastExpression(l.number()).parse(parseProgram('condition (true); a = 2'), defaultConstants), 2)
+})

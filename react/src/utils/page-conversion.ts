@@ -21,7 +21,7 @@ export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): Ur
     const labelSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
     const unitSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
 
-    const mapCallSchema = l.maybeCustomNodeExpr(l.reparse(idOutput, [tableType], l.edit(l.union([
+    const mapCallSchema = l.reparse(idOutput, [tableType], l.edit(l.union([
         l.transformExpr(l.call({
             fn: l.union([l.identifier('cMap'), l.identifier('pMap')]),
             namedArgs: {
@@ -40,7 +40,7 @@ export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): Ur
             },
             unnamedArgs: [],
         }), x => ({ data: x.namedArgs.dataR, label: x.namedArgs.label, unit: x.namedArgs.unit })),
-    ]))))
+    ])))
 
     const mapSchema = l.transformStmt(l.statements([
         l.ignore(),
@@ -153,7 +153,7 @@ export function tableToMapper(uss: MapUSS): string | undefined {
         unnamedArgs: [],
     }), x => x.namedArgs.columns)
 
-    const tableExprSchema = l.maybeCustomNodeExpr(l.edit(tableCallSchema))
+    const tableExprSchema = l.edit(tableCallSchema)
 
     // Match the structure like mapperToTable does
     const tableSchema = l.transformStmt(l.statements([
