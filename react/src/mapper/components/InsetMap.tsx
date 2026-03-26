@@ -20,7 +20,7 @@ interface InsetMapProps {
 
 // eslint-disable-next-line no-restricted-syntax -- Forward Ref
 function _InsetMap({ inset, children, editInset, container, i, numInsets, interactive }: InsetMapProps & {
-    children: ReactNode
+    children: (mapLibreProps: Partial<MapProps>, mapChildren: ReactNode, subRef: React.Ref<MapRef>) => ReactNode
 }, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
 
@@ -62,13 +62,7 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets, intera
                 width: `${(inset.topRight[0] - inset.bottomLeft[0]) * 100}%`,
                 height: `${(inset.topRight[1] - inset.bottomLeft[1]) * 100}%` }}
         >
-            <CommonMaplibreMap
-                ref={ref}
-                {...mapLibreProps}
-            >
-                {children}
-                {mapChildren}
-            </CommonMaplibreMap>
+            {children(mapLibreProps, mapChildren, ref)}
             { editInset && (
                 <EditInsetsHandles
                     frame={[...inset.bottomLeft, ...inset.topRight]}

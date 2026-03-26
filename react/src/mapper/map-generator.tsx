@@ -3,7 +3,7 @@ import React, { createContext, ReactNode, useCallback, useContext, useEffect, us
 import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
-import { Basemap as BasemapComponent, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
+import { Basemap as BasemapComponent, CommonMaplibreMap, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
 import { screencapElement, ScreenshotContext } from '../components/screenshot'
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
@@ -146,7 +146,15 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                         : undefined}
                     interactive={props.mode !== 'textBoxes'}
                 >
-                    {mapChildren(insetFeatures, ['uss', 'view'].includes(props.mode))}
+                    {(mapLibreProps, mC, ref) => (
+                        <CommonMaplibreMap
+                            ref={ref}
+                            {...mapLibreProps}
+                        >
+                            {mapChildren(insetFeatures, ['uss', 'view'].includes(props.mode))}
+                            {mC}
+                        </CommonMaplibreMap>
+                    )}
                 </InsetMap>
             )
         })
@@ -336,7 +344,14 @@ function EmptyMapLayout({ universe, loading }: { universe?: Universe, loading: b
                     numInsets={insets.length}
                     interactive={false}
                 >
-                    {null}
+                    {(mapLibreProps, mC, ref) => (
+                        <CommonMaplibreMap
+                            ref={ref}
+                            {...mapLibreProps}
+                        >
+                            {mC}
+                        </CommonMaplibreMap>
+                    )}
                 </InsetMap>
             ))}
             textBoxes={null}
