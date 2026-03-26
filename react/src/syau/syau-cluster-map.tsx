@@ -141,15 +141,15 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                 }).setLngLat(element.coords)
 
                 newMarkers.set(element.featureId, marker)
-                markersOnScreen.set(element.featureId, marker)
             }
         }
-
+        // synchronize
         for (const [oldMarkerId, oldMarker] of markersOnScreen.entries()) {
             if (!newMarkers.has(oldMarkerId)) oldMarker.remove()
         }
         for (const [newMarkerId, newMarker] of newMarkers.entries()) {
             if (!markersOnScreen.has(newMarkerId)) {
+                markersOnScreen.set(newMarkerId, newMarker)
                 newMarker.addTo(mapRef.getMap())
             }
         }
