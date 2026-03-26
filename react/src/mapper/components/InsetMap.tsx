@@ -1,7 +1,7 @@
 import React, { HTMLAttributes, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
 import { MapProps, MapRef, useMap } from 'react-map-gl/maplibre'
 
-import { CommonMaplibreMap, CustomAttributionControlComponent, insetBorderWidth } from '../../components/map-common'
+import { CustomAttributionControlComponent, insetBorderWidth } from '../../components/map-common'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from '../../components/screenshot'
 import { useColors } from '../../page_template/colors'
 import { Inset } from '../../urban-stats-script/constants/insets'
