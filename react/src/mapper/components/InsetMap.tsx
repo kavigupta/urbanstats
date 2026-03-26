@@ -1,5 +1,5 @@
 import React, { HTMLAttributes, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
-import { MapRef, useMap } from 'react-map-gl/maplibre'
+import { MapProps, MapRef, useMap } from 'react-map-gl/maplibre'
 
 import { CommonMaplibreMap, CustomAttributionControlComponent, insetBorderWidth } from '../../components/map-common'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from '../../components/screenshot'
@@ -41,6 +41,18 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets, intera
         </>
     )
 
+    const mapLibreProps: Partial<MapProps> = {
+        style: {
+            position: 'absolute',
+            inset: 0,
+            border: !inset.mainMap ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+            borderRadius: !inset.mainMap || screenshotMode ? '0px' : `${defaultMapBorderRadius}px`,
+            width: undefined,
+            height: undefined,
+        },
+        attributionControl: false,
+        interactive,
+    }
     return (
         <div
             id={id}
@@ -52,16 +64,7 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets, intera
         >
             <CommonMaplibreMap
                 ref={ref}
-                style={{
-                    position: 'absolute',
-                    inset: 0,
-                    border: !inset.mainMap ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
-                    borderRadius: !inset.mainMap || screenshotMode ? '0px' : `${defaultMapBorderRadius}px`,
-                    width: undefined,
-                    height: undefined,
-                }}
-                attributionControl={false}
-                interactive={interactive}
+                {...mapLibreProps}
             >
                 {children}
                 {mapChildren}
