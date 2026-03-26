@@ -9,21 +9,37 @@ import { TestUtils } from '../../utils/TestUtils'
 import { Edit } from '../../utils/array-edits'
 import { useMobileLayout } from '../../utils/responsive'
 
-// eslint-disable-next-line no-restricted-syntax -- Forward Ref
-function _InsetMap({ inset, children, editInset, container, i, numInsets, interactive }: {
+interface InsetMapProps {
     inset: Inset
-    children: ReactNode
     container: RefObject<HTMLDivElement>
     editInset?: Edit<Inset>
     i: number
     numInsets: number
     interactive: boolean
+}
+
+// eslint-disable-next-line no-restricted-syntax -- Forward Ref
+function _InsetMap({ inset, children, editInset, container, i, numInsets, interactive }: InsetMapProps & {
+    children: ReactNode
 }, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
 
     const id = `map-${i}`
 
     const screenshotMode = useScreenshotMode()
+
+    const mapChildren = (
+        <>
+            <HandleInsets
+                inset={inset}
+                setCoordBox={(newBox) => {
+                    editInset?.modify({ coordBox: newBox })
+                }}
+            />
+            <ExposeMapForTesting id={id} />
+            {inset.mainMap && <CustomAttributionControlComponent startShowingAttribution={true} />}
+        </>
+    )
 
     return (
         <div
@@ -48,14 +64,7 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets, intera
                 interactive={interactive}
             >
                 {children}
-                <HandleInsets
-                    inset={inset}
-                    setCoordBox={(newBox) => {
-                        editInset?.modify({ coordBox: newBox })
-                    }}
-                />
-                <ExposeMapForTesting id={id} />
-                { inset.mainMap && <CustomAttributionControlComponent startShowingAttribution={true} />}
+                {mapChildren}
             </CommonMaplibreMap>
             { editInset && (
                 <EditInsetsHandles
