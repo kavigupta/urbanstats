@@ -47,7 +47,6 @@ function parsePreambleCustomNodeAsMapUSS(stmt: UrbanStatsASTStatement): Preamble
 }
 
 export function convertToMapUss(uss: UrbanStatsASTStatement): MapUSS {
-    console.log({ uss })
     if (uss.type === 'expression' && uss.value.type === 'customNode') {
         return uss.value
     }
@@ -113,7 +112,6 @@ function attemptParseCondition(conditionStmt: UrbanStatsASTStatement | undefined
 }
 
 export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment, preserveCustomNodes: boolean, targetOutputTypes: USSType[]): MapUSS {
-    console.log({ stmt })
     /**
      * Splits up the statements into a preamble and a condition statement. Make the body of the condition a custom node.
      */

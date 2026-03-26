@@ -12,48 +12,35 @@ const tableCallSchema = l.call({
     namedArgs: {
         columns: l.editableVector(l.ignore()),
     },
-}),
+})
 
-const tableSchema = l.statements([
-    l.ignore(),
-    l.condition({
-        condition: l.ignore(),
-        rest: [
-            l.expression(l.reparse(idOutput, [tableType],
-                tableCallSchema,
-            )),
-        ],
-    }),
-])
+const statementsSchema = l.lastExpression(l.reparse(idOutput, [tableType], tableCallSchema))
+
+const customNodeSchema = l.reparse(idOutput, [tableType], l.customNode(l.lastExpression(tableCallSchema)))
 
 export function addColumn(uss: MapUSS, typeEnvironment: TypeEnvironment): ((stat: string) => MapUSS) | undefined {
-    console.log({ uss })
-    if (uss.type === 'statements') {
-        try {
-            const parsed = tableSchema.parse(uss, typeEnvironment)
-            return (stat) => {
-                const newColumn: UrbanStatsASTExpression = {
-                    type: 'call',
-                    fn: {
-                        type: 'identifier',
-                        name: { node: 'column', location: noLocation },
-                    },
-                    args: [{ type: 'named', name: { node: 'values', location: noLocation }, value: {
-                        type: 'identifier',
-                        name: { node: stat, location: noLocation },
-                    } }],
-                    entireLoc: noLocation,
-                }
-                return parsed[1].rest[0].namedArgs.columns.edit(c => [...c, newColumn]) as MapUSS
+    try {
+        const parsed = uss.type === 'statements' ? statementsSchema.parse(uss, typeEnvironment) : customNodeSchema.parse(uss, typeEnvironment)
+        return (stat) => {
+            const newColumn: UrbanStatsASTExpression = {
+                type: 'call',
+                fn: {
+                    type: 'identifier',
+                    name: { node: 'column', location: noLocation },
+                },
+                args: [{ type: 'named', name: { node: 'values', location: noLocation }, value: {
+                    type: 'identifier',
+                    name: { node: stat, location: noLocation },
+                } }],
+                entireLoc: noLocation,
             }
-        }
-        catch (e) {
-            if (e instanceof l.LiteralParseError) {
-                return undefined
-            }
-            throw e
+            return parsed.namedArgs.columns.edit(c => [...c, newColumn]) as MapUSS
         }
     }
-
-    return undefined
+    catch (e) {
+        if (e instanceof l.LiteralParseError) {
+            return undefined
+        }
+        throw e
+    }
 }

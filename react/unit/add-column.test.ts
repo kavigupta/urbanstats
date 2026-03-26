@@ -22,10 +22,16 @@ void test('simple table call adds column correctly', (): void => {
 })
 
 void test('table call with multiple columns adds column correctly', (): void => {
-    const ast = parseStatUSS(`${standardPrefix}table(columns=[population, density_pw_1km])`, universe)
+    const ast = parseStatUSS(`${standardPrefix}table(columns=[column(values=population), column(values=density_pw_1km)])`, universe)
     const colAdder = addColumn(ast, typeEnvironment)
     assert.ok(colAdder, 'addColumn should return a function for table call')
-    assert.strictEqual(unparse(colAdder('area')), `${standardPrefix}table(columns=[population, density_pw_1km, area])`)
+    assert.strictEqual(unparse(colAdder('area')), `${standardPrefix}table(
+    columns=[
+        column(values=population),
+        column(values=density_pw_1km),
+        column(values=area)
+    ]
+)`)
 })
 
 void test('table call without columns argument returns undefined', (): void => {
@@ -47,23 +53,23 @@ void test('non-table call returns undefined', (): void => {
 })
 
 void test('customNode wrapping table call adds column correctly', (): void => {
-    const customNodeAst = parseNoErrorAsCustomNode('table(columns=[population])', 'test')
+    const customNodeAst = parseStatUSS('1; table(columns=[column(values=population)])', universe)
     const colAdder = addColumn(customNodeAst, typeEnvironment)
     assert.ok(colAdder, 'addColumn should work through customNode')
 
     const result = colAdder('density_pw_1km')
     const unparsed = unparse(result)
-    assert.strictEqual(unparsed, unparse(parseNoErrorAsCustomNode('table(columns=[population, density_pw_1km])', 'test')))
+    assert.strictEqual(unparsed, unparse(parseStatUSS('1;table(columns=[column(values=population), column(values=density_pw_1km)])', universe)))
 })
 
 void test('statements with table call as last statement adds column correctly', (): void => {
-    const ast = parseNoErrorAsCustomNode('population; table(columns=[density_pw_1km])', 'test')
+    const ast = parseNoErrorAsCustomNode('population; table(columns=[column(values=density_pw_1km)])', 'test')
     const colAdder = addColumn(ast, typeEnvironment)
     assert.ok(colAdder, 'addColumn should work on last statement in statements')
 
     const result = colAdder('area')
     const unparsed = unparse(result)
-    assert.strictEqual(unparsed, 'population;\ntable(columns=[density_pw_1km, area])')
+    assert.strictEqual(unparsed, 'customNode("population;\\ntable(columns=[column(values=density_pw_1km), column(values=area)])")')
 })
 
 void test('empty statements returns undefined', (): void => {
@@ -84,11 +90,14 @@ void test('condition with table call in rest adds column correctly', (): void =>
 })
 
 void test('table call with other named arguments preserves them', (): void => {
-    const ast = parseStatUSS('table(columns=[population], population=[100, 200, 300])', universe)
+    const ast = parseStatUSS(`${standardPrefix}table(columns=[column(values=population)], population=[100, 200, 300])`, universe)
     const colAdder = addColumn(ast, typeEnvironment)
     assert.ok(colAdder, 'addColumn should return a function for table call')
 
     const result = colAdder('density_pw_1km')
     const unparsed = unparse(result)
-    assert.strictEqual(unparsed, 'table(columns=[population, density_pw_1km], population=[100, 200, 300])')
+    assert.strictEqual(unparsed, `${standardPrefix}table(
+    columns=[column(values=population), column(values=density_pw_1km)],
+    population=[100, 200, 300]
+)`)
 })
