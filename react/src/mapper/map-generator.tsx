@@ -3,7 +3,7 @@ import React, { createContext, ReactNode, useCallback, useContext, useEffect, us
 import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
-import { Basemap as BasemapComponent, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
+import { Basemap as BasemapComponent, CommonMaplibreMap, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
 import { screencapElement, ScreenshotContext } from '../components/screenshot'
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
@@ -113,7 +113,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         }
     }
 
-    const { features, mapChildren, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache })
+    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache })
 
     function MapComponent({ props, exportImageRef }: { props: MapUIProps<{ loading: boolean }>, exportImageRef: (fn: () => Promise<HTMLCanvasElement>) => void }): ReactNode {
         const mapsRef: (MapRef | null)[] = []
@@ -146,7 +146,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                         : undefined}
                     interactive={props.mode !== 'textBoxes'}
                 >
-                    {mapChildren(insetFeatures, ['uss', 'view'].includes(props.mode))}
+                    {(mapLibreProps, mC, ref) => mapComponentCreator(mapLibreProps, mC, ref, insetFeatures, ['uss', 'view'].includes(props.mode))}
                 </InsetMap>
             )
         })
@@ -336,7 +336,14 @@ function EmptyMapLayout({ universe, loading }: { universe?: Universe, loading: b
                     numInsets={insets.length}
                     interactive={false}
                 >
-                    {null}
+                    {(mapLibreProps, mC, ref) => (
+                        <CommonMaplibreMap
+                            ref={ref}
+                            {...mapLibreProps}
+                        >
+                            {mC}
+                        </CommonMaplibreMap>
+                    )}
                 </InsetMap>
             ))}
             textBoxes={null}
@@ -347,13 +354,21 @@ function EmptyMapLayout({ universe, loading }: { universe?: Universe, loading: b
     )
 }
 
+type MapComponentCreator = (
+    mapLibreProps: React.ComponentProps<typeof CommonMaplibreMap>,
+    otherMapChildren: ReactNode,
+    ref: React.Ref<MapRef>,
+    fs: GeoJSON.Feature[],
+    clickable: boolean
+) => ReactNode
+
 async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, geographyKind, cache }:
 {
     mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' }
     universe: Universe
     geographyKind: typeof valid_geographies[number]
     cache: MapCache
-}): Promise<{ features: GeoJSON.Feature[], mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode, ramp: RampToDisplay }> {
+}): Promise<{ features: GeoJSON.Feature[], mapComponentCreator: MapComponentCreator, ramp: RampToDisplay }> {
     let ramp: RampToDisplay
     let colors: string[]
     switch (opaqueType) {
@@ -427,11 +442,19 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
     return {
         features,
-        mapChildren: (fs, clickable) => (
-            <>
-                {mapChildren(fs, clickable)}
-                <BasemapComponent basemap={value.basemap} />
-            </>
+        mapComponentCreator: (mapLibreProps, otherMapChildren, ref, fs, clickable) => (
+
+            <CommonMaplibreMap
+                ref={ref}
+                {...mapLibreProps}
+            >
+                <>
+                    {mapChildren(fs, clickable)}
+                    <BasemapComponent basemap={value.basemap} />
+                </>
+                {otherMapChildren}
+            </CommonMaplibreMap>
+
         ),
         ramp,
     }
