@@ -20,7 +20,7 @@ from urbanstats.geometry.shapefiles.shapefiles_list import (
     shapefiles,
 )
 from urbanstats.mapper.ramp import output_ramps
-from urbanstats.metadata import export_metadata_types
+from urbanstats.metadata.export import export_metadata_types
 from urbanstats.ordinals.ordering_info_outputter import output_ordering
 from urbanstats.protobuf.data_files_pb2_hash import proto_hash
 from urbanstats.protobuf.utils import save_universes_list_all
