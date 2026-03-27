@@ -1,4 +1,4 @@
-import type { LineStyle } from '../../mapper/basemap-types'
+import { LineStyle } from '../../mapper/settings/utils'
 import { Context } from '../context'
 import { parseNoErrorAsExpression } from '../parser'
 import { USSType, USSValue, createConstantExpression, USSRawValue, OriginalFunctionArgs } from '../types-values'

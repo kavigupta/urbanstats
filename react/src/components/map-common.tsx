@@ -4,7 +4,7 @@ import React, { ReactNode, useContext, useEffect, useId, useMemo } from 'react'
 import { Layer, Map, MapProps, MapRef, Source, useControl, useMap } from 'react-map-gl/maplibre'
 
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
-import type { Basemap } from '../mapper/basemap-types'
+import { Basemap } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { useUniverse } from '../universe'

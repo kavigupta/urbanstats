@@ -7,7 +7,6 @@ import universes_ordered from '../../data/universes_ordered'
 import { Universe } from '../../universe'
 import { toStatement, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
-import type { Basemap as BasemapType, LineStyle as LineStyleType } from '../basemap-types'
 import { defaultTypeEnvironment } from '../context'
 
 import { attemptParseAsTopLevel, MapUSS, mapUSSFromString, rootBlockIdent, validMapperOutputs } from './map-uss'
@@ -32,8 +31,16 @@ export type ColorStatDescriptor = (
     { type: 'function', value: 'Function', name?: string, uss?: string }
 )
 
-export type LineStyle = LineStyleType
-export type Basemap = BasemapType
+export interface LineStyle {
+    color: string
+    weight: number
+}
+
+export type Basemap = {
+    type: 'osm'
+    noLabels?: boolean
+    subnationalOutlines?: LineStyle
+} | { type: 'none', backgroundColor: string, textColor: string }
 
 export interface FilterSettings {
     enabled: boolean

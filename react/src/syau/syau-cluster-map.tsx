@@ -1,11 +1,9 @@
 import maplibregl from 'maplibre-gl'
-import React, { CSSProperties, ReactNode, useCallback, useContext, useEffect, useMemo, useRef } from 'react'
-import { FullscreenControl, Layer, LngLatLike, Source, useMap } from 'react-map-gl/maplibre'
+import React, { ReactNode, useEffect, useMemo, useState } from 'react'
+import { FullscreenControl, Layer, LngLatLike, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
 import { Basemap, CommonMaplibreMap, urbanStatsLayerPrefix } from '../components/map-common'
 import { Basemap as BasemapSpec } from '../mapper/settings/utils'
-import { Navigator } from '../navigation/Navigator'
-import { useUniverse } from '../universe'
 import { TestUtils } from '../utils/TestUtils'
 import { assert } from '../utils/defensive'
 import { ICoordinate } from '../utils/protos'
@@ -13,57 +11,39 @@ import { ICoordinate } from '../utils/protos'
 type PieChartSizeCategoryKey = `pieChartSizeForCategory${number}`
 type CountCategoryKey = `countCategory${number}`
 
-/** GeoJSON feature properties for clustered centroids (SYAU + mapper clusterMap). */
+/** GeoJSON feature properties for clustered SYAU centroids (cluster aggregates + point props). */
 export type ClusterFeatureProperties = (
     { [key in PieChartSizeCategoryKey]: number } &
     { [key in CountCategoryKey]: number } &
     // eslint-disable-next-line no-restricted-syntax -- cluster_id comes from maplibre and is out of our control
-    ({ cluster: true, cluster_id: string, point_count?: number } | {
-        cluster: undefined
-        idxIntoCentroids: number
-        dataIndex?: number
-        name?: string
-    })
+    ({ cluster: true, cluster_id: string } | { cluster: undefined, idxIntoCentroids: number })
 )
 
-export interface ClusterMapCoreProps {
-    /**
-     * Mapper: pass a pre-built collection so Point coordinates match `features` exactly (no lon/lat round-trip).
-     * When set, `centroids` / `categories` / `pieChartSizeFor` / `globalDataIndex` / `pointNames` are ignored for the source.
-     */
-    geoJsonFeatureCollection?: GeoJSON.FeatureCollection
-    centroids?: ICoordinate[]
-    categories?: number[]
-    pieChartSizeFor?: number[]
+interface ClusterMapProps {
+    /** Centroid long/lat coordinates. */
+    centroids: ICoordinate[]
+    /** Categories for each centroid, indexed into `categoryColors`. */
+    categories: number[]
+    /** Pie chart sizes for each centroid, same order as `categories`. */
+    pieChartSizeFor: number[]
+    /** Colors for each category, indexed by elements of `categories`. */
     categoryColors: string[]
-    onVisibleUnclusteredChange?: (polys: { idxIntoCentroids: number, category: number }[]) => void
-    clusterMarkerLabel: (featureProps: ClusterFeatureProperties & { cluster: true }) => string
-    unclusteredMarkerLabel: (featureProps: ClusterFeatureProperties & { cluster: undefined }) => string
-    children?: ReactNode
-    maxClusterRadius: number
-    computeRelativeArea: (area: number, maxArea: number) => number
-    /** GeoJSON source id (default `centroids`). */
-    sourceId?: string
-    /** MapLibre cluster radius in pixels (defaults to `maxClusterRadius * 2.5`). */
-    clusterRadius?: number
-    clusterMaxZoom?: number
-    markerClassName?: string
+    /** Outer map container style (default height 600px). */
     /**
-     * When set, each point gets `properties.dataIndex` for labels (mapper: index into USS `value.data` / `value.geo`).
-     * If omitted, SYAU uses `idxIntoCentroids` only.
+     * Fired whenever marker query results change — unclustered points currently visible
+     * (used for Voronoi polygon highlights in SYAU).
      */
-    globalDataIndex?: number[]
-    /** When set with `clickable`, marker clicks navigate to this longname per point. */
-    pointNames?: string[]
-    /** Unclustered points navigate to article (mapper). */
-    clickable?: boolean
-}
-
-export interface ClusterMapProps extends ClusterMapCoreProps {
-    /** SYAU default: OSM no labels; mapper can pass `value.basemap`. */
-    basemap?: BasemapSpec
-    containerStyle?: CSSProperties
-    showFullscreenControl?: boolean
+    onVisibleUnclusteredChange?: (polys: { idxIntoCentroids: number, category: number }[]) => void
+    /** Label for a cluster marker (aggregated counts). */
+    clusterMarkerLabel: (featureProps: ClusterFeatureProperties & { cluster: true }) => string
+    /** Label for an unclustered point marker. */
+    unclusteredMarkerLabel: (featureProps: ClusterFeatureProperties & { cluster: undefined }) => string
+    /** Rendered inside the map (e.g. layers that need `useMap()`). */
+    children?: ReactNode
+    /** Maximum radius of each cluster, in pixels. */
+    maxClusterRadius: number
+    /** Compute relative area relative to the largest area */
+    computeRelativeArea: (area: number, maxArea: number) => number
 }
 
 interface ClusterMapElement {
@@ -74,12 +54,11 @@ interface ClusterMapElement {
 }
 
 /**
- * Clustered GeoJSON centroids + HTML pie markers + invisible layer (keeps clustering queryable).
- * Renders **inside** an existing `react-map-gl` `Map` (e.g. mapper inset); use {@link ClusterMap} for a standalone map.
+ * Clustered GeoJSON centroids + HTML pie markers + invisible hit-test layer + first zoom.
+ * Extracted from SYAU as a reusable map module.
  */
-export function ClusterMapCore(props: ClusterMapCoreProps): ReactNode {
+export function ClusterMap(props: ClusterMapProps): ReactNode {
     const {
-        geoJsonFeatureCollection,
         categories,
         pieChartSizeFor,
         centroids,
@@ -89,109 +68,35 @@ export function ClusterMapCore(props: ClusterMapCoreProps): ReactNode {
         unclusteredMarkerLabel,
         children,
         maxClusterRadius,
-        computeRelativeArea,
-        sourceId = 'centroids',
-        clusterRadius: clusterRadiusProp,
-        clusterMaxZoom = 14,
-        markerClassName = 'syau-marker',
-        globalDataIndex,
-        pointNames,
-        clickable,
     } = props
 
-    const { current: map } = useMap()
-    const markersRef = useRef(new Map<string, maplibregl.Marker>())
-    const navigator = useContext(Navigator.Context)
-    const universe = useUniverse()
-    const navigatorRef = useRef(navigator)
-    const universeRef = useRef(universe)
-    navigatorRef.current = navigator
-    universeRef.current = universe
+    const [mapRef, setMapRef] = useState<MapRef | null>(null)
+    const [markersOnScreen, setMarkersOnScreen] = useState(new Map<string, maplibregl.Marker>())
 
-    const clusterRadiusPx = clusterRadiusProp ?? maxClusterRadius * 2.5
-
-    const clusterProperties: Record<string, unknown> = {}
-    for (let i = 0; i < categoryColors.length; i++) {
-        clusterProperties[`countCategory${i}`] = ['+', ['get', `countCategory${i}`]]
-        clusterProperties[`pieChartSizeForCategory${i}`] = ['+', ['get', `pieChartSizeForCategory${i}`]]
-    }
-
-    const centroidsData = useMemo(() => {
-        if (geoJsonFeatureCollection !== undefined) {
-            return geoJsonFeatureCollection
-        }
-        assert(centroids !== undefined && categories !== undefined && pieChartSizeFor !== undefined, 'ClusterMapCore: centroids+categories+pieChartSizeFor or geoJsonFeatureCollection')
-        return {
-            type: 'FeatureCollection',
-            features: centroids.map((c, idx) => {
-                const properties: Record<string, unknown> = {
-                    idxIntoCentroids: idx,
-                }
-                if (globalDataIndex !== undefined) {
-                    properties.dataIndex = globalDataIndex[idx]!
-                }
-                const pn = pointNames?.[idx]
-                if (pn !== undefined) {
-                    properties.name = pn
-                }
-                for (let i = 0; i < categoryColors.length; i++) {
-                    properties[`pieChartSizeForCategory${i}`] = categories[idx] === i ? pieChartSizeFor[idx] : 0
-                    properties[`countCategory${i}`] = categories[idx] === i ? 1 : 0
-                }
-                return {
-                    type: 'Feature',
-                    properties,
-                    geometry: {
-                        type: 'Point',
-                        coordinates: [c.lon!, c.lat!],
-                    },
-                }
-            }),
-        } satisfies GeoJSON.FeatureCollection
-    }, [geoJsonFeatureCollection, centroids, categories, pieChartSizeFor, categoryColors.length, globalDataIndex, pointNames])
-
-    const centroidsForFirstZoom = useMemo((): ICoordinate[] => {
-        if (geoJsonFeatureCollection !== undefined) {
-            return geoJsonFeatureCollection.features.map((f) => {
-                const g = f.geometry as GeoJSON.Point
-                const [lon, lat] = g.coordinates
-                return { lon, lat }
-            })
-        }
-        assert(centroids !== undefined, 'ClusterMapCore: centroids for FirstZoom')
-        return centroids
-    }, [geoJsonFeatureCollection, centroids])
-
-    const updateMarkers = useCallback((): void => {
-        if (map === undefined) {
+    const updateMarkers = (): void => {
+        if (mapRef === null) {
             return
         }
 
         const newUnclustered: { idxIntoCentroids: number, category: number }[] = []
 
-        let features: maplibregl.MapGeoJSONFeature[]
-        try {
-            features = map.querySourceFeatures(sourceId) as maplibregl.MapGeoJSONFeature[]
-        }
-        catch {
-            return
-        }
+        const features = mapRef.querySourceFeatures('centroids')
 
-        const elements: ClusterMapElement[] = []
+        const elements = []
 
         const seen = new Set<string>()
 
         for (const feature of features) {
             const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
             const featureProps = feature.properties as ClusterFeatureProperties
-            const featureId = featureProps.cluster ? String(featureProps.cluster_id) : featureProps.idxIntoCentroids.toString()
+            const featureId = featureProps.cluster ? featureProps.cluster_id : featureProps.idxIntoCentroids.toString()
 
             if (seen.has(featureId)) {
                 continue
             }
             seen.add(featureId)
 
-            const text = featureProps.cluster ? clusterMarkerLabel(featureProps as ClusterFeatureProperties & { cluster: true }) : unclusteredMarkerLabel(featureProps as ClusterFeatureProperties & { cluster: undefined })
+            const text = featureProps.cluster ? clusterMarkerLabel(featureProps) : unclusteredMarkerLabel(featureProps)
             if (!featureProps.cluster) {
                 const category = categoryColors.findIndex((_, idx) => featureProps[`pieChartSizeForCategory${idx}`] > 0)
                 assert(category !== -1, 'No category found')
@@ -200,7 +105,7 @@ export function ClusterMapCore(props: ClusterMapCoreProps): ReactNode {
                     category,
                 })
             }
-            const totalPieChartSize = categoryColors.reduce((sum, _, idx) => sum + featureProps[`pieChartSizeForCategory${idx}`], 0) || 1
+            const totalPieChartSize = categoryColors.reduce((sum, _, idx) => sum + featureProps[`pieChartSizeForCategory${idx}`], 0)
 
             const element: ClusterMapElement = {
                 featureId,
@@ -217,24 +122,18 @@ export function ClusterMapCore(props: ClusterMapCoreProps): ReactNode {
         }
         const maxPieChartSize = Math.max(...elements.map(e => e.totalPieChartSize), 0)
         const newMarkers = new Map<string, maplibregl.Marker>()
-        const prev = markersRef.current
         for (const element of elements) {
-            const existingMarker = prev.get(element.featureId)
-            const radius = maxClusterRadius * Math.sqrt(computeRelativeArea(element.totalPieChartSize, maxPieChartSize))
+            const existingMarker = markersOnScreen.get(element.featureId)
+            const radius = maxClusterRadius * Math.sqrt(props.computeRelativeArea(element.totalPieChartSize, maxPieChartSize))
             const html = element.html(radius)
             if (existingMarker !== undefined) {
-                const el = existingMarker.getElement()
-                el.innerHTML = html
-                el.className = markerClassName
-                el.style.width = `${2 * radius}px`
-                el.style.height = `${2 * radius}px`
-                existingMarker.setLngLat(element.coords)
+                existingMarker.getElement().innerHTML = html
                 newMarkers.set(element.featureId, existingMarker)
             }
             else {
                 const el = document.createElement('div')
                 el.innerHTML = html
-                el.className = markerClassName
+                el.className = 'syau-marker'
                 el.style.width = `${2 * radius}px`
                 el.style.height = `${2 * radius}px`
                 const marker = new maplibregl.Marker({
@@ -254,143 +153,82 @@ export function ClusterMapCore(props: ClusterMapCoreProps): ReactNode {
                 newMarker.addTo(mapRef.getMap())
             }
         }
-        for (const [id, marker] of newMarkers.entries()) {
-            if (!prev.has(id)) {
-                marker.addTo(map.getMap())
-            }
-        }
-        markersRef.current = newMarkers
-
-        const featureByFeatureId = new Map<string, maplibregl.MapGeoJSONFeature>()
-        for (const feature of features) {
-            const p = feature.properties as ClusterFeatureProperties
-            const fid = p.cluster ? String(p.cluster_id) : p.idxIntoCentroids.toString()
-            if (!featureByFeatureId.has(fid)) {
-                featureByFeatureId.set(fid, feature)
-            }
-        }
-        for (const element of elements) {
-            const marker = newMarkers.get(element.featureId)
-            if (marker === undefined) {
-                continue
-            }
-            const el = marker.getElement()
-            const feature = featureByFeatureId.get(element.featureId)
-            const fp = feature?.properties as ClusterFeatureProperties | undefined
-            if (clickable === true && fp !== undefined && fp.cluster !== true && typeof fp.name === 'string') {
-                el.style.cursor = 'pointer'
-                const longname = fp.name
-                el.onclick = (e) => {
-                    e.stopPropagation()
-                    void navigatorRef.current.navigate({
-                        kind: 'article',
-                        universe: universeRef.current,
-                        longname,
-                    }, { history: 'push', scroll: { kind: 'element', element: map.getMap().getContainer() } })
-                }
-            }
-            else {
-                el.style.cursor = ''
-                el.onclick = null
-            }
-        }
-
+        setMarkersOnScreen(newMarkers)
         newUnclustered.sort((a, b) => {
             if (a.idxIntoCentroids < b.idxIntoCentroids) return -1
             if (a.idxIntoCentroids > b.idxIntoCentroids) return 1
             return 0
         })
         onVisibleUnclusteredChange?.(newUnclustered)
-    }, [
-        map,
-        sourceId,
-        categoryColors,
-        onVisibleUnclusteredChange,
-        clusterMarkerLabel,
-        unclusteredMarkerLabel,
-        maxClusterRadius,
-        computeRelativeArea,
-        markerClassName,
-        clickable,
-    ])
+    }
 
-    useEffect(() => {
-        if (map === undefined) {
-            return
-        }
-        const raw = map.getMap()
-        updateMarkers()
-        raw.on('move', updateMarkers)
-        raw.on('data', updateMarkers)
-        raw.on('idle', updateMarkers)
-        raw.on('styledata', updateMarkers)
-        raw.on('sourcedata', updateMarkers)
-        return () => {
-            raw.off('move', updateMarkers)
-            raw.off('data', updateMarkers)
-            raw.off('idle', updateMarkers)
-            raw.off('styledata', updateMarkers)
-            raw.off('sourcedata', updateMarkers)
-            for (const m of markersRef.current.values()) {
-                m.remove()
-            }
-            markersRef.current = new Map()
-        }
-    }, [map, updateMarkers, centroidsData])
+    const clusterProperties: Record<string, unknown> = {}
+    for (let i = 0; i < categoryColors.length; i++) {
+        clusterProperties[`countCategory${i}`] = ['+', ['get', `countCategory${i}`]]
+        clusterProperties[`pieChartSizeForCategory${i}`] = ['+', ['get', `pieChartSizeForCategory${i}`]]
+    }
 
-    const layerId = `${urbanStatsLayerPrefix}-centroid-placeholders-${sourceId}`
-
-    return (
-        <>
-            <Source
-                id={sourceId}
-                type="geojson"
-                data={centroidsData}
-                cluster={true}
-                clusterMaxZoom={clusterMaxZoom}
-                clusterRadius={clusterRadiusPx}
-                clusterProperties={clusterProperties}
-            />
-            <Layer
-                id={layerId}
-                type="circle"
-                source={sourceId}
-                filter={['!=', 'cluster', true]}
-                paint={{ 'circle-radius': 0 }}
-            />
-            <FirstZoom centroids={centroidsForFirstZoom} />
-            {children}
-        </>
-    )
-}
-
-/**
- * Standalone clustered centroid map (SYAU): wraps {@link ClusterMapCore} in {@link CommonMaplibreMap} + basemap.
- */
-export function ClusterMap(props: ClusterMapProps): ReactNode {
     const basemap: BasemapSpec = useMemo(() => TestUtils.shared.isTesting
         // eslint-disable-next-line no-restricted-syntax -- just for testing
         ? { type: 'none', backgroundColor: 'white', textColor: 'black' } satisfies BasemapSpec
         : { type: 'osm', noLabels: true } satisfies BasemapSpec,
     [])
 
-    const {
-        basemap: basemapProp,
-        containerStyle,
-        showFullscreenControl = true,
-        children,
-        ...coreProps
-    } = props
+    const centroidsData = useMemo(() => {
+        return {
+            type: 'FeatureCollection',
+            features: centroids.map((c, idx) => {
+                const properties: Record<string, unknown> = {
+                    idxIntoCentroids: idx,
+                }
+                for (let i = 0; i < categoryColors.length; i++) {
+                    properties[`pieChartSizeForCategory${i}`] = categories[idx] === i ? pieChartSizeFor[idx] : 0
+                    properties[`countCategory${i}`] = categories[idx] === i ? 1 : 0
+                }
+                return {
+                    type: 'Feature',
+                    properties,
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [c.lon!, c.lat!],
+                    },
+                }
+            }),
+        } satisfies GeoJSON.FeatureCollection
+    }, [centroids, categories, pieChartSizeFor, categoryColors.length])
 
     return (
         <CommonMaplibreMap
-            style={{ height: 600, ...containerStyle }}
+            ref={setMapRef}
+            onMove={updateMarkers}
+            onData={updateMarkers}
+            style={{ height: 600 }}
         >
-            <Basemap basemap={basemapProp ?? basemap} />
-            {showFullscreenControl ? <FullscreenControl position="top-left" /> : null}
-            <ClusterMapCore {...coreProps}>
-                {children}
-            </ClusterMapCore>
+            <Basemap basemap={basemap} />
+            <FullscreenControl position="top-left" />
+            <Source
+                id="centroids"
+                type="geojson"
+                data={centroidsData}
+                cluster={true}
+                clusterMaxZoom={14}
+                clusterRadius={maxClusterRadius * 2.5}
+                clusterProperties={clusterProperties}
+            />
+            {/*
+              * MapLibre needs at least one layer using this source for clustering to be computed and
+              * for querySourceFeatures to return features; this circle layer is invisible
+              * (radius 0) but keeps that pipeline active
+              */}
+            <Layer
+                id={`${urbanStatsLayerPrefix}-centroid-placeholders`}
+                type="circle"
+                source="centroids"
+                filter={['!=', 'cluster', true]}
+                paint={{ 'circle-radius': 0 }}
+            />
+            <FirstZoom centroids={centroids} />
+            {children}
         </CommonMaplibreMap>
     )
 }
