@@ -6,7 +6,7 @@ from types import NoneType
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.data.gpw import GPW_RADII
-from urbanstats.metadata import export_metadata_types
+from urbanstats.metadata.export import export_metadata_types
 
 from .stat_path import get_statistic_column_path
 

@@ -4,7 +4,7 @@ from functools import lru_cache
 import numpy as np
 
 from urbanstats.geometry.relationship import full_relationships, ordering_idx
-from urbanstats.metadata import metadata_types
+from urbanstats.metadata.metadata_list import metadata_types
 from urbanstats.ordinals.flat_ordinals import compute_flat_ordinals
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.statistics.collections_list import statistic_collections
