@@ -1,8 +1,8 @@
 import maplibregl from 'maplibre-gl'
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
-import { FullscreenControl, Layer, LngLatLike, MapRef, Source, useMap } from 'react-map-gl/maplibre'
+import { FullscreenControl, Layer, LngLatLike, Map as MapGL, MapProps, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
-import { Basemap, CommonMaplibreMap, urbanStatsLayerPrefix } from '../components/map-common'
+import { Basemap, urbanStatsLayerPrefix } from '../components/map-common'
 import { Basemap as BasemapSpec } from '../mapper/settings/utils'
 import { TestUtils } from '../utils/TestUtils'
 import { assert } from '../utils/defensive'
@@ -44,6 +44,15 @@ interface ClusterMapProps {
     maxClusterRadius: number
     /** Compute relative area relative to the largest area */
     computeRelativeArea: (area: number, maxArea: number) => number
+    /** Optional map props for embedding in other layouts. */
+    mapLibreProps?: Partial<MapProps>
+    /** Optional map ref passthrough. */
+    mapRef?: React.Ref<MapRef>
+    /** Optional basemap override. */
+    basemap?: BasemapSpec
+    /** Optional cluster controls. */
+    clusterRadius?: number
+    clusterMaxZoom?: number
 }
 
 interface ClusterMapElement {
@@ -168,11 +177,12 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
         clusterProperties[`pieChartSizeForCategory${i}`] = ['+', ['get', `pieChartSizeForCategory${i}`]]
     }
 
-    const basemap: BasemapSpec = useMemo(() => TestUtils.shared.isTesting
+    const defaultBasemap: BasemapSpec = useMemo(() => TestUtils.shared.isTesting
         // eslint-disable-next-line no-restricted-syntax -- just for testing
         ? { type: 'none', backgroundColor: 'white', textColor: 'black' } satisfies BasemapSpec
         : { type: 'osm', noLabels: true } satisfies BasemapSpec,
     [])
+    const basemap = props.basemap ?? defaultBasemap
 
     const centroidsData = useMemo(() => {
         return {
@@ -198,11 +208,21 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
     }, [centroids, categories, pieChartSizeFor, categoryColors.length])
 
     return (
-        <CommonMaplibreMap
-            ref={setMapRef}
+        <MapGL
+            ref={(instance) => {
+                setMapRef(instance)
+                if (typeof props.mapRef === 'function') {
+                    props.mapRef(instance)
+                }
+            }}
+            mapStyle="https://tiles.openfreemap.org/styles/bright"
+            canvasContextAttributes={{
+                preserveDrawingBuffer: true,
+            }}
             onMove={updateMarkers}
             onData={updateMarkers}
-            style={{ height: 600 }}
+            {...props.mapLibreProps}
+            style={{ height: 600, ...props.mapLibreProps?.style }}
         >
             <Basemap basemap={basemap} />
             <FullscreenControl position="top-left" />
@@ -211,8 +231,8 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                 type="geojson"
                 data={centroidsData}
                 cluster={true}
-                clusterMaxZoom={14}
-                clusterRadius={maxClusterRadius * 2.5}
+                clusterMaxZoom={props.clusterMaxZoom ?? 14}
+                clusterRadius={props.clusterRadius ?? maxClusterRadius * 2.5}
                 clusterProperties={clusterProperties}
             />
             {/*
@@ -229,7 +249,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
             />
             <FirstZoom centroids={centroids} />
             {children}
-        </CommonMaplibreMap>
+        </MapGL>
     )
 }
 

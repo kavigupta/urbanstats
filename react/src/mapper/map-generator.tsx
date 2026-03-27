@@ -14,6 +14,7 @@ import { RelativeLoader } from '../navigation/loading'
 import { Colors, colorThemes } from '../page_template/color-themes'
 import { OverrideTheme, useColors } from '../page_template/colors'
 import { loadCentroids } from '../syau/load'
+import { ClusterMap as SyauClusterMap, type ClusterFeatureProperties } from '../syau/syau-cluster-map'
 import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color-utils'
@@ -364,7 +365,7 @@ type MapComponentCreator = (
 
 async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, geographyKind, cache }:
 {
-    mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' }
+    mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' | 'clusterMap' }
     universe: Universe
     geographyKind: typeof valid_geographies[number]
     cache: MapCache
@@ -380,6 +381,13 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
             ramp = { type: 'ramp', value: { ramp: value.ramp, interpolations, scale, label: value.label, unit: value.unit } }
             colors = value.data.map(val => interpolateColor(value.ramp, scale.forward(val), furthest))
             break
+        case 'clusterMap':
+            const clusterScale = instantiate(value.scale)
+            const clusterFurthest = furthestColor(value.ramp.map(x => x[1]))
+            const clusterInterpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(clusterScale.inverse)
+            ramp = { type: 'ramp', value: { ramp: value.ramp, interpolations: clusterInterpolations, scale: clusterScale, label: value.label, unit: value.unit } }
+            colors = value.data.map(val => interpolateColor(value.ramp, clusterScale.forward(val), clusterFurthest))
+            break
         case 'cMapRGB':
             colors = value.dataR.map((r, i) => doRender({
                 r,
@@ -394,6 +402,57 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     let features: GeoJSON.Feature[]
     let mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode
     switch (opaqueType) {
+        case 'clusterMap':
+            const clusterPoints: Point[] = Array.from(value.data.entries()).map(([i, dataValue]) => {
+                return {
+                    name: value.geo[i],
+                    fillColor: colors[i],
+                    fillOpacity: value.opacity,
+                    radius: Math.sqrt(value.relativeArea[i]) * value.maxRadius,
+                    statistic: dataValue,
+                }
+            })
+
+            features = await pointsGeojson(geographyKind, universe, clusterPoints, cache)
+
+            return {
+                features,
+                mapComponentCreator: (mapLibreProps, otherMapChildren, ref, fs, clickable) => {
+                    void clickable
+                    return (
+                        <SyauClusterMap
+                            centroids={fs.map((f) => {
+                                const [lon, lat] = (f.geometry as GeoJSON.Point).coordinates
+                                return { lon, lat } satisfies ICoordinate
+                            })}
+                            categories={(() => {
+                                const categoryColors = [...new Set(fs.map(f => f.properties!.fillColor as string))]
+                                return fs.map(f => categoryColors.indexOf(f.properties!.fillColor as string))
+                            })()}
+                            pieChartSizeFor={fs.map((f) => {
+                                const radius = f.properties?.radius as number | undefined
+                                return radius === undefined ? 1 : radius ** 2
+                            })}
+                            categoryColors={[...new Set(fs.map(f => f.properties!.fillColor as string))]}
+                            clusterMarkerLabel={(featureProps: ClusterFeatureProperties & { cluster: true }) => {
+                                const categoryColors = [...new Set(fs.map(f => f.properties!.fillColor as string))]
+                                return String(categoryColors.reduce((sum, _, idx) => sum + featureProps[`countCategory${idx}`], 0))
+                            }}
+                            unclusteredMarkerLabel={() => ''}
+                            maxClusterRadius={value.maxRadius}
+                            computeRelativeArea={(area, maxArea) => (maxArea > 0 ? area / maxArea : 1)}
+                            clusterRadius={value.clusterRadius}
+                            clusterMaxZoom={value.clusterMaxZoom}
+                            mapLibreProps={mapLibreProps}
+                            mapRef={ref}
+                            basemap={value.basemap}
+                        >
+                            {otherMapChildren}
+                        </SyauClusterMap>
+                    )
+                },
+                ramp,
+            }
         case 'pMap':
             const points: Point[] = Array.from(value.data.entries()).map(([i, dataValue]) => {
                 return {
