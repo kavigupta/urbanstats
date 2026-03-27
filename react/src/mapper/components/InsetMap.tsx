@@ -1,7 +1,7 @@
 import React, { HTMLAttributes, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
-import { MapRef, useMap } from 'react-map-gl/maplibre'
+import { MapProps, MapRef, useMap } from 'react-map-gl/maplibre'
 
-import { CommonMaplibreMap, CustomAttributionControlComponent, insetBorderWidth } from '../../components/map-common'
+import { CustomAttributionControlComponent, insetBorderWidth } from '../../components/map-common'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from '../../components/screenshot'
 import { useColors } from '../../page_template/colors'
 import { Inset } from '../../urban-stats-script/constants/insets'
@@ -9,15 +9,18 @@ import { TestUtils } from '../../utils/TestUtils'
 import { Edit } from '../../utils/array-edits'
 import { useMobileLayout } from '../../utils/responsive'
 
-// eslint-disable-next-line no-restricted-syntax -- Forward Ref
-function _InsetMap({ inset, children, editInset, container, i, numInsets, interactive }: {
+interface InsetMapProps {
     inset: Inset
-    children: ReactNode
     container: RefObject<HTMLDivElement>
     editInset?: Edit<Inset>
     i: number
     numInsets: number
     interactive: boolean
+}
+
+// eslint-disable-next-line no-restricted-syntax -- Forward Ref
+function _InsetMap({ inset, children, editInset, container, i, numInsets, interactive }: InsetMapProps & {
+    children: (mapLibreProps: Partial<MapProps>, mapChildren: ReactNode, subRef: React.Ref<MapRef>) => ReactNode
 }, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
 
@@ -25,6 +28,31 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets, intera
 
     const screenshotMode = useScreenshotMode()
 
+    const mapChildren = (
+        <>
+            <HandleInsets
+                inset={inset}
+                setCoordBox={(newBox) => {
+                    editInset?.modify({ coordBox: newBox })
+                }}
+            />
+            <ExposeMapForTesting id={id} />
+            {inset.mainMap && <CustomAttributionControlComponent startShowingAttribution={true} />}
+        </>
+    )
+
+    const mapLibreProps: Partial<MapProps> = {
+        style: {
+            position: 'absolute',
+            inset: 0,
+            border: !inset.mainMap ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+            borderRadius: !inset.mainMap || screenshotMode ? '0px' : `${defaultMapBorderRadius}px`,
+            width: undefined,
+            height: undefined,
+        },
+        attributionControl: false,
+        interactive,
+    }
     return (
         <div
             id={id}
@@ -34,29 +62,7 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets, intera
                 width: `${(inset.topRight[0] - inset.bottomLeft[0]) * 100}%`,
                 height: `${(inset.topRight[1] - inset.bottomLeft[1]) * 100}%` }}
         >
-            <CommonMaplibreMap
-                ref={ref}
-                style={{
-                    position: 'absolute',
-                    inset: 0,
-                    border: !inset.mainMap ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
-                    borderRadius: !inset.mainMap || screenshotMode ? '0px' : `${defaultMapBorderRadius}px`,
-                    width: undefined,
-                    height: undefined,
-                }}
-                attributionControl={false}
-                interactive={interactive}
-            >
-                {children}
-                <HandleInsets
-                    inset={inset}
-                    setCoordBox={(newBox) => {
-                        editInset?.modify({ coordBox: newBox })
-                    }}
-                />
-                <ExposeMapForTesting id={id} />
-                { inset.mainMap && <CustomAttributionControlComponent startShowingAttribution={true} />}
-            </CommonMaplibreMap>
+            {children(mapLibreProps, mapChildren, ref)}
             { editInset && (
                 <EditInsetsHandles
                     frame={[...inset.bottomLeft, ...inset.topRight]}

@@ -244,10 +244,14 @@ export function ClusterMapCore(props: ClusterMapCoreProps): ReactNode {
                 newMarkers.set(element.featureId, marker)
             }
         }
-
-        for (const [oldMarkerId, oldMarker] of prev.entries()) {
-            if (!newMarkers.has(oldMarkerId)) {
-                oldMarker.remove()
+        // synchronize
+        for (const [oldMarkerId, oldMarker] of markersOnScreen.entries()) {
+            if (!newMarkers.has(oldMarkerId)) oldMarker.remove()
+        }
+        for (const [newMarkerId, newMarker] of newMarkers.entries()) {
+            if (!markersOnScreen.has(newMarkerId)) {
+                markersOnScreen.set(newMarkerId, newMarker)
+                newMarker.addTo(mapRef.getMap())
             }
         }
         for (const [id, marker] of newMarkers.entries()) {
