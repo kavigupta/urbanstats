@@ -8,7 +8,7 @@
  * intact and only swaps the final output expression.
  */
 
-import { MapUSS, mapUssParser } from '../mapper/settings/map-uss'
+import { MapUSS, mapUssParser, validMapperOutputs } from '../mapper/settings/map-uss'
 import { UrbanStatsASTExpression } from '../urban-stats-script/ast'
 import { tableType } from '../urban-stats-script/constants/table'
 import * as l from '../urban-stats-script/literal-parser'
@@ -103,7 +103,7 @@ export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): Ur
  * Replaces table(columns=[column(values=X)]) with cMap(data=X, scale=linearScale(), ramp=rampUridis).
  * Returns undefined if conversion is not possible.
  */
-export function tableToMapper(uss: MapUSS): string | undefined {
+export function tableToMapper(uss: MapUSS, typeEnvironment: TypeEnvironment): string | undefined {
     const mapSchema = mapUssParser(l.edit(l.transformExpr(l.call({
         fn: l.identifier('table'),
         namedArgs: {
@@ -127,10 +127,10 @@ export function tableToMapper(uss: MapUSS): string | undefined {
             }),
         },
         unnamedArgs: [],
-    }), x => x.namedArgs.columns)), [tableType])
+    }), x => x.namedArgs.columns)), validMapperOutputs)
 
     try {
-        const { currentValue, edit } = mapSchema(uss, {} as TypeEnvironment)
+        const { currentValue, edit } = mapSchema(uss, typeEnvironment)
         const { values: dataExpr, name: nameExpr, unit: unitExpr } = currentValue
         if (dataExpr === undefined) {
             return undefined

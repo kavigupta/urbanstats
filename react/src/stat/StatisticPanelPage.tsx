@@ -85,13 +85,13 @@ function StatisticPanelHead(props: { articleType: string, universe: string }): R
     )
 }
 
-function ConvertToMapButton({ stat, flexWidth }: { stat: Statistic, flexWidth?: string }): ReactNode {
+function ConvertToMapButton({ stat, flexWidth, typeEnvironment }: { stat: Statistic, flexWidth?: string, typeEnvironment: TypeEnvironment }): ReactNode {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
 
     const mapperExpression = useMemo(
-        () => tableToMapper(mapUSSFromStat(stat)),
-        [stat],
+        () => tableToMapper(mapUSSFromStat(stat), typeEnvironment),
+        [stat, typeEnvironment],
     )
     const handleConvertToMap = useCallback((): void => {
         if (!mapperExpression) return
@@ -158,7 +158,7 @@ function ViewHeader({ stat, set, typeEnvironment, view }: { stat: Statistic, set
             >
                 Filter / Edit Table
             </button>
-            <ConvertToMapButton stat={stat} />
+            <ConvertToMapButton stat={stat} typeEnvironment={typeEnvironment} />
         </div>
     )
 }
@@ -179,8 +179,8 @@ function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, assign
     }), [stat])
 
     const hasConvertButton = useMemo(
-        () => tableToMapper(mapUSSFromStat(stat)) !== undefined,
-        [stat],
+        () => tableToMapper(mapUSSFromStat(stat), typeEnvironment) !== undefined,
+        [stat, typeEnvironment],
     )
 
     const colors = useColors()
@@ -226,6 +226,7 @@ function EditPreamble({ stat, set, errors, counts, typeEnvironment, view, assign
                     <ConvertToMapButton
                         stat={stat}
                         flexWidth="15%"
+                        typeEnvironment={typeEnvironment}
                     />
                 )}
             </div>
