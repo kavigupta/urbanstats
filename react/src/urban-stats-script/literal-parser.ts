@@ -282,7 +282,7 @@ export function reparse<T>(blockIdent: string, types: USSType[], schema: Literal
     return {
         parse(expr, env, doEdit = e => e) {
             return schema.parse(expr, env,
-                newExpr => doEdit(newExpr === undefined ? undefined : parseExpr(newExpr, blockIdent, types, env, () => { throw new Error('should not happen') }, true)),
+                newExpr => doEdit(newExpr === undefined ? undefined : parseExpr(newExpr, blockIdent, types, env, (e) => { throw new Error(`should not happen ${e}`) }, true)),
             )
         },
     }
