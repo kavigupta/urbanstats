@@ -2,6 +2,7 @@ import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode, useContext, useEffect, useId, useMemo } from 'react'
 import { Layer, Map, MapProps, MapRef, Source, useControl, useMap } from 'react-map-gl/maplibre'
+import { z } from 'zod'
 
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
 import { Basemap } from '../mapper/settings/utils'
@@ -25,6 +26,8 @@ export const insetBorderWidth = 2
 
 void maplibregl.setRTLTextPlugin('https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js', true)
 
+const osmStyleUrl = 'https://tiles.openfreemap.org/styles/bright'
+
 // eslint-disable-next-line no-restricted-syntax -- Forwarded ref
 function _CommonMaplibreMap(props: MapProps, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
@@ -33,7 +36,7 @@ function _CommonMaplibreMap(props: MapProps, ref: React.Ref<MapRef>): ReactNode 
     return (
         <Map
             ref={ref}
-            mapStyle="https://tiles.openfreemap.org/styles/bright"
+            mapStyle={osmStyleUrl}
             canvasContextAttributes={{
                 preserveDrawingBuffer: true, // Allows screenshots
             }}
@@ -89,6 +92,7 @@ export interface Polygon {
     [meta: string]: unknown
 }
 
+// Probably useful to make sure we don't collide with premade layers
 export const urbanStatsLayerPrefix = 'urban-stats'
 
 function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
@@ -290,19 +294,18 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
         return true
     }, [map]), 'BaseMap.mapLoaded').result ?? false
 
+    const osmStyle = useOrderedResolve(useMemo(getOsmStyle, []), 'BaseMap.getOsmStyle')
+
     useEffect(() => {
-        if (mapLoaded) {
+        if (mapLoaded && osmStyle.result) {
             for (const layerId of map.getLayersOrder()) {
-                if (layerId === 'background' || layerId.startsWith(urbanStatsLayerPrefix)) {
-                    continue
-                }
                 const layer = map.getLayer(layerId)!
-                map.getMap().setLayoutProperty(layerId, 'visibility', isVisible(basemap, layer) ? 'visible' : 'none')
+                map.getMap().setLayoutProperty(layerId, 'visibility', isVisible(basemap, osmStyle.result, layer) ? 'visible' : 'none')
             }
             map.getMap().setPaintProperty('background', 'background-color', basemap.type === 'none' ? basemap.backgroundColor : defaultBackgroundColor)
             map.getMap().setPaintProperty('background', 'background-color-transition', { duration: 0, delay: 0 })
         }
-    }, [map, basemap, mapLoaded])
+    }, [map, basemap, mapLoaded, osmStyle.result])
 
     const labelId = useOrderedResolve(useMemo(() => firstLabelId(map), [map]), 'Basemap.firstLabel').result
 
@@ -332,14 +335,35 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
     return null
 }
 
-function isVisible(basemap: Basemap, layer: { type: string }): boolean {
+function isVisible(basemap: Basemap, osmStyle: OSMStyle, layer: { id: string, type: string, source: string }): boolean {
     switch (basemap.type) {
         case 'none':
-            return false
+            return layer.id === 'background' || !isOsmLayer(osmStyle, layer)
         case 'osm':
-            if (basemap.noLabels && layer.type === 'symbol') {
-                return false
-            }
-            return true
+            return !(basemap.noLabels && layer.type === 'symbol')
     }
+}
+
+function isOsmLayer(osmStyle: OSMStyle, layer: { source: string }): boolean {
+    const sources = Object.keys(osmStyle.sources)
+    return sources.includes(layer.source)
+}
+
+const osmStyleSchema = z.object({
+    sources: z.record(z.unknown()),
+})
+
+type OSMStyle = z.infer<typeof osmStyleSchema>
+
+// store the promise so we don't start a bunch of racing requests
+let cachedOsmStyle: Promise<OSMStyle> | undefined
+
+function getOsmStyle(): Promise<OSMStyle> {
+    if (cachedOsmStyle === undefined) {
+        cachedOsmStyle = (async () => {
+            const res = await fetch(osmStyleUrl)
+            return osmStyleSchema.parse(await res.json())
+        })()
+    }
+    return cachedOsmStyle
 }
