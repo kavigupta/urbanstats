@@ -38,10 +38,6 @@ export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): Ur
         }), x => ({ data: x.namedArgs.dataR, label: x.namedArgs.label, unit: x.namedArgs.unit })),
     ])), [tableType])
 
-    if (uss.type !== 'statements') {
-        return undefined
-    }
-
     try {
         const { currentValue, edit } = mapSchema(uss, typeEnvironment)
         const { data: dataExpr, label: labelExpr, unit: unitExpr } = currentValue
@@ -108,7 +104,7 @@ export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): Ur
  * Returns undefined if conversion is not possible.
  */
 export function tableToMapper(uss: MapUSS): string | undefined {
-    const tableSchema = l.lastExpression(l.edit(l.transformExpr(l.call({
+    const mapSchema = mapUssParser(l.edit(l.transformExpr(l.call({
         fn: l.identifier('table'),
         namedArgs: {
             columns: l.transformExpr(l.vector(l.call({
@@ -131,14 +127,10 @@ export function tableToMapper(uss: MapUSS): string | undefined {
             }),
         },
         unnamedArgs: [],
-    }), x => x.namedArgs.columns)))
-
-    if (uss.type !== 'statements') {
-        return undefined
-    }
+    }), x => x.namedArgs.columns)), [tableType])
 
     try {
-        const { currentValue, edit } = tableSchema.parse(uss, {} as TypeEnvironment)
+        const { currentValue, edit } = mapSchema(uss, {} as TypeEnvironment)
         const { values: dataExpr, name: nameExpr, unit: unitExpr } = currentValue
         if (dataExpr === undefined) {
             return undefined
