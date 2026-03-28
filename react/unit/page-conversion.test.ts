@@ -142,13 +142,8 @@ void describe('mapperToTable', () => {
 
 void describe('tableToMapper', () => {
     void test('converts simple table to mapper', () => {
-        const fullInput = `customNode("");\ncondition (true)\ntable(columns=[column(values=density_pw_1km)])`
-        const parsed = parse(fullInput, { type: 'multi' })
-        if (parsed.type === 'error') {
-            throw new Error(`Failed to parse: ${fullInput}`)
-        }
-        const result = tableToMapper(parsed as MapUSS)
-        assert(result !== undefined, 'Should convert successfully')
+        const uss = mapUSSFromString(`customNode("");\ncondition (true)\ntable(columns=[column(values=density_pw_1km)])`)
+        const result = tableToMapper(uss, getTypeEnvironment())
         assert.equal(result, 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)')
     })
 
@@ -158,9 +153,9 @@ void describe('tableToMapper', () => {
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = tableToMapper(parsed as MapUSS)
+        const result = tableToMapper(parsed as MapUSS, getTypeEnvironment())
         assert(result !== undefined, 'Should convert successfully')
-        assert.equal(result, 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km * 2, scale=linearScale(), ramp=rampUridis)')
+        assert.equal(result, 'customNode("");\ncondition (true)\ncMap(\n    data=customNode("density_pw_1km * 2"),\n    scale=linearScale(),\n    ramp=rampUridis\n)')
     })
 
     void test('converts table with preamble to mapper', () => {
@@ -169,7 +164,7 @@ void describe('tableToMapper', () => {
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = tableToMapper(parsed as MapUSS)
+        const result = tableToMapper(parsed as MapUSS, getTypeEnvironment())
         assert(result !== undefined, 'Should convert successfully')
         assert.equal(result, 'customNode("let x = 5");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)')
     })
@@ -180,7 +175,7 @@ void describe('tableToMapper', () => {
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = tableToMapper(parsed as MapUSS)
+        const result = tableToMapper(parsed as MapUSS, getTypeEnvironment())
         assert(result !== undefined, 'Should convert successfully')
         assert.equal(result, 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)')
     })
@@ -191,7 +186,7 @@ void describe('tableToMapper', () => {
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = tableToMapper(parsed as MapUSS)
+        const result = tableToMapper(parsed as MapUSS, getTypeEnvironment())
         assert.equal(result, undefined, 'Should return undefined for table without columns')
     })
 
@@ -201,7 +196,7 @@ void describe('tableToMapper', () => {
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = tableToMapper(parsed as MapUSS)
+        const result = tableToMapper(parsed as MapUSS, getTypeEnvironment())
         assert.equal(result, undefined, 'Should return undefined for table with empty columns')
     })
 
@@ -211,7 +206,7 @@ void describe('tableToMapper', () => {
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = tableToMapper(parsed as MapUSS)
+        const result = tableToMapper(parsed as MapUSS, getTypeEnvironment())
         assert.equal(result, undefined, 'Should return undefined for non-table expression')
     })
 
@@ -221,24 +216,24 @@ void describe('tableToMapper', () => {
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = tableToMapper(parsed as MapUSS)
+        const result = tableToMapper(parsed as MapUSS, getTypeEnvironment())
         assert.equal(result, undefined, 'Should return undefined for column without values')
     })
 
     void test('transfers name and unit from table to mapper', () => {
-        const fullInput = `customNode("");\ncondition (true)\ntable(columns=[column(values=density_pw_1km, name="Population Density", unit=unitPeoplePerSquareKilometer)])`
+        const fullInput = `customNode("");\ncondition (true)\ntable(columns=[column(values=density_pw_1km, name="Population Density", unit=unitDensity)])`
         const parsed = parse(fullInput, { type: 'multi' })
         if (parsed.type === 'error') {
             throw new Error(`Failed to parse: ${fullInput}`)
         }
-        const result = tableToMapper(parsed as MapUSS)
+        const result = tableToMapper(parsed as MapUSS, getTypeEnvironment())
         assert(result !== undefined, 'Should convert successfully')
-        assert.equal(result, 'customNode("");\ncondition (true)\ncMap(\n    data=density_pw_1km,\n    scale=linearScale(),\n    ramp=rampUridis,\n    label="Population Density",\n    unit=unitPeoplePerSquareKilometer\n)')
+        assert.equal(result, 'customNode("");\ncondition (true)\ncMap(\n    data=density_pw_1km,\n    scale=linearScale(),\n    ramp=rampUridis,\n    label="Population Density",\n    unit=unitDensity\n)')
     })
 
     void test('customNode', () => {
         const uss = mapUSSFromString(`customNode("table(columns=[column(values=density_pw_1km)])")`)
-        const result = tableToMapper(uss)
+        const result = tableToMapper(uss, getTypeEnvironment())
         assert.equal(result, 'customNode("cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)")')
     })
 })
