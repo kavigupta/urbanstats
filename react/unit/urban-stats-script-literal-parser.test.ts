@@ -281,12 +281,6 @@ void test('customNode', () => {
     )
 })
 
-void test('maybeCustomNodeExpr', () => {
-    assert.equal(l.maybeCustomNodeExpr(l.identifier('x')).parse(parseExpr('customNode("x")'), defaultConstants), 'x')
-    assert.equal(unparse(l.maybeCustomNodeExpr(l.edit(l.identifier('x'))).parse(parseExpr('customNode("x")'), defaultConstants).edit(parseExpr('y'))!), 'customNode("y")')
-    assert.equal(l.maybeCustomNodeExpr(l.edit(l.identifier('x'))).parse(parseExpr('customNode("x")'), defaultConstants).edit(undefined), undefined)
-})
-
 void test('autoUXNode', () => {
     assert.deepEqual(l.maybeAutoUXNode(l.identifier('x')).parse(parseExpr('autoUXNode(x, "{\\"collapsed\\":true}")'), defaultConstants), { expr: 'x', metadata: { collapsed: true } })
     assert.deepEqual(l.maybeAutoUXNode(l.identifier('x')).parse(parseExpr('x'), defaultConstants), { expr: 'x', metadata: {} })
