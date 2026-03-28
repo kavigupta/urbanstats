@@ -89,6 +89,7 @@ export interface Polygon {
     [meta: string]: unknown
 }
 
+// Probably useful to make sure we don't collide with premade layers
 export const urbanStatsLayerPrefix = 'urban-stats'
 
 function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
@@ -293,9 +294,6 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
     useEffect(() => {
         if (mapLoaded) {
             for (const layerId of map.getLayersOrder()) {
-                if (layerId === 'background' || layerId.startsWith(urbanStatsLayerPrefix)) {
-                    continue
-                }
                 const layer = map.getLayer(layerId)!
                 map.getMap().setLayoutProperty(layerId, 'visibility', isVisible(basemap, layer) ? 'visible' : 'none')
             }
@@ -332,14 +330,11 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
     return null
 }
 
-function isVisible(basemap: Basemap, layer: { type: string }): boolean {
+function isVisible(basemap: Basemap, layer: { id: string, type: string, source: string }): boolean {
     switch (basemap.type) {
         case 'none':
-            return false
+            return layer.id === 'background' || layer.source !== 'openmaptiles'
         case 'osm':
-            if (basemap.noLabels && layer.type === 'symbol') {
-                return false
-            }
-            return true
+            return !(basemap.noLabels && layer.type === 'symbol')
     }
 }
