@@ -424,13 +424,6 @@ export function transformStmt<T, U>(schema: LiteralStmtParser<T>, map: (t: T) =>
     }
 }
 
-export function maybeCustomNodeExpr<T>(schema: LiteralExprParser<T>): LiteralExprParser<T> {
-    return union([
-        schema,
-        customNode(expression(schema)),
-    ])
-}
-
 export function customNode<T>(schema: LiteralStmtParser<T>): LiteralExprParser<T> {
     return {
         parse(expr, typeEnvironment, doEdit = e => e) {

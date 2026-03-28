@@ -210,11 +210,16 @@ function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection)
     }
 }
 
-export const colorSchema = l.transformExpr(l.maybeCustomNodeExpr(l.deconstruct(l.call({
+const colorConstructorSchema = l.deconstruct(l.call({
     fn: l.union([l.identifier('rgb'), l.identifier('hsv')]),
     unnamedArgs: [l.number(), l.number(), l.number()],
     namedArgs: { a: l.optional(l.number()) },
-}))), (call) => {
+}))
+
+export const colorSchema = l.transformExpr(l.union([
+    colorConstructorSchema,
+    l.customNode(l.expression(colorConstructorSchema)),
+]), (call) => {
     let color: Color | undefined
     switch (call.fn) {
         case 'rgb':
