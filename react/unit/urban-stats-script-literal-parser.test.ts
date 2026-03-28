@@ -306,3 +306,21 @@ void test('lastExpression', () => {
     assert.deepEqual(l.lastExpression(l.number()).parse(parseProgram('condition (true); a = 2'), defaultConstants), 2)
     assert.deepEqual(unparse(l.lastExpression(l.edit(l.number())).parse(parseProgram('1; customNode("2; 3")'), defaultConstants).edit(parseExpr('4'))!), '1;\ncustomNode("2;\\n4")')
 })
+
+void test('passthrough', () => {
+    const expr = parseExpr('42')
+    assert.equal(l.passthrough().parse(expr, defaultConstants), expr)
+    assert.equal(l.passthrough().parse(undefined, defaultConstants), undefined)
+
+    // Inside edit, the underlying node can be swapped for another
+    const newExpr = parseExpr('99')
+    assert.equal(
+        l.edit(l.passthrough()).parse(expr, defaultConstants).edit(newExpr),
+        newExpr,
+    )
+    // Removing (edit with undefined) yields undefined
+    assert.equal(
+        l.edit(l.passthrough()).parse(expr, defaultConstants).edit(undefined),
+        undefined,
+    )
+})

@@ -2,7 +2,7 @@ import assert from 'assert/strict'
 import { describe, test } from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
-import { idOutput, type MapUSS } from '../src/mapper/settings/map-uss'
+import { idOutput, mapUSSFromString, type MapUSS } from '../src/mapper/settings/map-uss'
 import { parse, unparse } from '../src/urban-stats-script/parser'
 import type { TypeEnvironment } from '../src/urban-stats-script/types-values'
 import { mapperToTable, tableToMapper } from '../src/utils/page-conversion'
@@ -126,6 +126,18 @@ void describe('mapperToTable', () => {
         const unparsed = unparse(result)
         assert.equal(unparsed, 'customNode("");\ncondition (true)\ntable(\n    columns=[\n        column(\n            values=density_pw_1km,\n            name="Population Density",\n            unit=customNode("unitPeoplePerSquareKilometer")\n        )\n    ]\n)')
     })
+
+    void test('from customNode', () => {
+        const uss = mapUSSFromString(`customNode("cMap(data=density_pw_1km)")`)
+        const typeEnvironment = getTypeEnvironment()
+
+        const result = mapperToTable(uss, typeEnvironment)
+
+        assert(result !== undefined, 'Should convert successfully')
+
+        const unparsed = unparse(result)
+        assert.equal(unparsed, 'customNode("table(columns=[column(values=density_pw_1km)])")')
+    })
 })
 
 void describe('tableToMapper', () => {
@@ -222,5 +234,11 @@ void describe('tableToMapper', () => {
         const result = tableToMapper(parsed as MapUSS)
         assert(result !== undefined, 'Should convert successfully')
         assert.equal(result, 'customNode("");\ncondition (true)\ncMap(\n    data=density_pw_1km,\n    scale=linearScale(),\n    ramp=rampUridis,\n    label="Population Density",\n    unit=unitPeoplePerSquareKilometer\n)')
+    })
+
+    void test('customNode', () => {
+        const uss = mapUSSFromString(`customNode("table(columns=[column(values=density_pw_1km)])")`)
+        const result = tableToMapper(uss)
+        assert.equal(result, 'customNode("cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)")')
     })
 })
