@@ -1,15 +1,10 @@
 import React, { ReactNode, useMemo } from 'react'
 
 import { GenericSearchBox } from '../components/search-generic'
-import { convertToMapUss } from '../mapper/settings/map-uss'
 import { possibilities } from '../mapper/settings/parseExpr'
 import { Selection } from '../mapper/settings/selector-classifier'
 import { addColumn } from '../urban-stats-script/add-column'
-import { toStatement, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../urban-stats-script/ast'
-import { emptyLocation } from '../urban-stats-script/lexer'
-import { extendBlockIdKwarg } from '../urban-stats-script/location'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
-import { assert } from '../utils/defensive'
 
 import { Statistic, StatSetter } from './types'
 import { mapUSSFromStat } from './utils'
@@ -34,22 +29,19 @@ export function AddColumnSearchBox({ stat, set, typeEnvironment }: {
         }
     }, [allVariables])
 
-    const colAdder = useMemo(() => addColumn(toStatement(mapUSSFromStat(stat))), [stat])
+    const colAdder = useMemo(() => addColumn(mapUSSFromStat(stat), typeEnvironment), [stat, typeEnvironment])
 
     if (colAdder === undefined) {
         return
     }
 
     const handleAddColumn = (variable: VariableSearchResult): void => {
-        // Add the column using addColumn
-        const newAST = colAdder(locInfo => createCall(variable.name, locInfo)) as UrbanStatsASTStatement
-        const newUSS = convertToMapUss(newAST)
         set({
             stat: {
                 universe: stat.universe,
                 articleType: stat.articleType,
                 type: 'uss',
-                uss: newUSS,
+                uss: colAdder(variable.name),
             },
         }, { })
     }
@@ -99,23 +91,4 @@ function relevantSelections(typeEnvironment: TypeEnvironment): VariableSearchRes
             const displayName = varDoc?.documentation?.humanReadableName ?? selection.name
             return { name: selection.name, displayName }
         })
-}
-
-function createCall(vn: string, blockId: string | undefined): UrbanStatsASTExpression {
-    assert(blockId !== undefined, 'blockId is undefined in createCall')
-    const location = emptyLocation(blockId)
-    const ident: UrbanStatsASTExpression = {
-        type: 'identifier',
-        name: { node: vn, location: emptyLocation(extendBlockIdKwarg(blockId, 'values')) },
-    }
-    const call: UrbanStatsASTExpression = {
-        type: 'call',
-        fn: {
-            type: 'identifier',
-            name: { node: 'column', location },
-        },
-        args: [{ type: 'named', name: { node: 'values', location }, value: ident }],
-        entireLoc: location,
-    }
-    return call
 }
