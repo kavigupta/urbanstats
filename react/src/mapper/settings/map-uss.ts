@@ -2,6 +2,7 @@ import { UrbanStatsASTExpression, UrbanStatsASTStatement, locationOf, unify } fr
 import type { AutoUXNodeMetadata } from '../../urban-stats-script/autoux-node-metadata'
 import { longMessage } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
+import * as l from '../../urban-stats-script/literal-parser'
 import { parse, parseNoErrorAsCustomNode, unparse } from '../../urban-stats-script/parser'
 import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 
@@ -141,4 +142,14 @@ export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, ty
         ] as const,
         entireLoc: locationOf(stmt),
     } satisfies UrbanStatsASTStatement
+}
+
+export function mapUssParser<T>(lastExpr: l.LiteralExprParser<T>, types: USSType[]) {
+    return (uss: MapUSS, typeEnvironment: TypeEnvironment): T => {
+        const statementsSchema = l.lastExpression(l.reparse(idOutput, types, lastExpr))
+
+        const customNodeSchema = l.reparse(idOutput, types, l.customNode(l.lastExpression(lastExpr)))
+
+        return uss.type === 'statements' ? statementsSchema.parse(uss, typeEnvironment) : customNodeSchema.parse(uss, typeEnvironment)
+    }
 }

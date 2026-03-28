@@ -7,7 +7,7 @@ import { ArrayEdits, replace, swap } from '../../utils/array-edits'
 import { assert } from '../../utils/defensive'
 import { loadInsetExpression, loadInsets } from '../context'
 
-import { MapUSS, idOutput, validMapperOutputs } from './map-uss'
+import { MapUSS, mapUssParser, validMapperOutputs } from './map-uss'
 import { MapSettings } from './utils'
 
 export const neswSchema = l.object({
@@ -33,27 +33,18 @@ const insetSchema = l.transformExpr(l.deconstruct(l.call({ fn: l.identifier('con
 
 const constructInsetsSchema = l.transformExpr(l.maybeAutoUXNode(l.call({ fn: l.identifier('constructInsets'), namedArgs: {}, unnamedArgs: [l.editableVector(insetSchema)] })), call => call.expr.unnamedArgs[0])
 
-const mapSchema = l.transformStmt(l.statements([
-    l.ignore(),
-    l.condition({
-        condition: l.ignore(),
-        rest: [
-            l.expression(l.reparse(idOutput, validMapperOutputs,
-                l.call({
-                    fn: l.ignore(),
-                    unnamedArgs: [],
-                    namedArgs: {
-                        insets: l.edit(l.optional(l.deconstruct(constructInsetsSchema))),
-                    },
-                }))),
-        ],
-    }),
-]), uss => uss[1].rest[0].namedArgs.insets)
+const mapSchema = mapUssParser(l.call({
+    fn: l.ignore(),
+    unnamedArgs: [],
+    namedArgs: {
+        insets: l.edit(l.optional(l.deconstruct(constructInsetsSchema))),
+    },
+}), validMapperOutputs)
 
 export function getInsets(settings: MapSettings, typeEnvironment: TypeEnvironment): Inset[] | undefined {
     if (settings.script.uss.type === 'statements') {
         try {
-            const parseResult = mapSchema.parse(settings.script.uss, typeEnvironment)
+            const parseResult = mapSchema(settings.script.uss, typeEnvironment).namedArgs.insets
             if (parseResult.currentValue === undefined && settings.universe !== undefined) {
                 return loadInsets(settings.universe)
             }
@@ -92,7 +83,7 @@ export function swapInsets(edits: InsetEdits, indexA: number, indexB: number): I
 
 export function doEditInsets(settings: MapSettings, edits: InsetEdits, typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an inset edit on USS that is not inset editable')
-    const mapInsets = mapSchema.parse(settings.script.uss, typeEnvironment)
+    const mapInsets = mapSchema(settings.script.uss, typeEnvironment).namedArgs.insets
     assert(settings.universe !== undefined, 'Trying to do an inset edit on USS that is not inset editable')
 
     let currentInsetsAst: UrbanStatsASTExpression
