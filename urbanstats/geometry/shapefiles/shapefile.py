@@ -90,7 +90,9 @@ class Shapefile:
         s["shortname"] = s.apply(self.shortname_extractor, axis=1)
         s["longname"] = s.apply(self.longname_extractor, axis=1)
         if self.longname_sans_date_extractor is not None:
-            s["longname_sans_date"] = s.apply(self.longname_sans_date_extractor, axis=1)
+            s["longname_sans_date"] = s.apply(
+                self.longname_sans_date_extractor, axis=1
+            ).fillna(s["longname"])
         else:
             s["longname_sans_date"] = s["longname"]
         s = gpd.GeoDataFrame(
