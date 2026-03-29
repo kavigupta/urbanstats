@@ -1,4 +1,3 @@
-import stableStringify from 'json-stable-stringify'
 import React, { AnchorHTMLAttributes, ReactNode, useContext, useEffect, useId, useState } from 'react'
 
 import relatedButtonColors from '../data/relatedButtonColors'
@@ -126,7 +125,7 @@ function RelationshipGroup(props: {
     useEffect(() => {
         setExpanded(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- It's all the props
-    }, [stableStringify(props)])
+    }, [props.relationshipType])
 
     const colors = useColors()
 
@@ -169,6 +168,14 @@ function RelationshipGroup(props: {
                         cursor: 'pointer',
                         border: `1px solid ${colors.borderShadow}`,
                         backgroundColor: colors.slightlyDifferentBackground,
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault()
+                            setExpanded(e => !e)
+                        }
                     }}
                 >
                     {expanded ? 'Less' : 'More...'}

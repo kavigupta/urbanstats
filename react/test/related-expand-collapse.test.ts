@@ -12,6 +12,7 @@ const lessButton = Selector('a').withExactText('Less')
 test('related group with more than 10 regions shows More button initially', async (t) => {
     await t.expect(moreButton.exists).ok()
     await t.expect(lessButton.exists).notOk()
+    await t.expect(Selector('a').withExactText('Yuba County').exists).notOk()
 })
 
 test('clicking More shows all regions and Less button', async (t) => {
@@ -19,6 +20,7 @@ test('clicking More shows all regions and Less button', async (t) => {
     await t.click(moreButton)
     await t.expect(lessButton.exists).ok()
     await t.expect(moreButton.count).eql(initialMoreButtonCount - 1)
+    await t.expect(Selector('a').withExactText('Yuba County').exists).ok()
 })
 
 test('clicking Less collapses back to initial state', async (t) => {
@@ -26,14 +28,14 @@ test('clicking Less collapses back to initial state', async (t) => {
     await t.click(lessButton)
     await t.expect(moreButton.exists).ok()
     await t.expect(lessButton.exists).notOk()
+    await t.expect(Selector('a').withExactText('Yuba County').exists).notOk()
 })
 
-test('navigating to a new article resets expanded state', async (t) => {
+test('navigating to a new article does not reset expanded state', async (t) => {
     await t.click(moreButton)
     await t.expect(lessButton.exists).ok()
-    // Texas also has many counties (254), so More button should appear again
     await t.click('button[data-test-id="1"]')
     await waitForLoading()
-    await t.expect(moreButton.exists).ok()
-    await t.expect(lessButton.exists).notOk()
+    await t.expect(lessButton.exists).ok()
+    await t.expect(Selector('a').withExactText('Zavala County').exists).ok()
 })
