@@ -82,6 +82,5 @@ CANADIAN_CENSUS_METROPOLITAN_AREAS = Shapefile(
         link="https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcma000a21a_e.zip",
     ),
     include_in_syau=True,
-    metadata_columns=["scgc"],
     wikidata_sourcer=None,
 )

@@ -36,7 +36,7 @@ def compute_statistics_for_shapefile(
     result = sf_fr[
         ["shortname", "longname", "longname_sans_date", "start_date", "end_date"]
         + sf.subset_mask_keys
-        + list(sf.metadata_columns)
+        + list(sf.additional_columns_computer.keys())
     ].copy()
 
     longname_to_universes = compute_universes_for_shapefile(shapefiles, sf)
