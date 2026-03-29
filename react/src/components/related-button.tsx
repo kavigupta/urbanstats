@@ -1,4 +1,4 @@
-import React, { AnchorHTMLAttributes, ReactNode, useContext, useEffect, useId, useState } from 'react'
+import React, { AnchorHTMLAttributes, ReactNode, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 
 import relatedButtonColors from '../data/relatedButtonColors'
 import type_ordering_idx from '../data/type_ordering_idx'
@@ -100,6 +100,48 @@ function Label(props: { checkId: string, children: ReactNode, fontWeight: number
 
 const maxRegions = 10
 
+function ExpandButton(props: { rowType: string, expanded: boolean, onToggle: () => void }): ReactNode {
+    const colors = useColors()
+    // Want to maintain vertical position relative to the button
+    const scrollAdjustRef = useRef<{ element: Element, top: number } | null>(null)
+
+    useLayoutEffect(() => {
+        if (scrollAdjustRef.current) {
+            const { element, top } = scrollAdjustRef.current
+            scrollAdjustRef.current = null
+            window.scrollBy(0, element.getBoundingClientRect().top - top)
+        }
+    })
+
+    const handleToggle = (event: React.MouseEvent | React.KeyboardEvent): void => {
+        const target = event.currentTarget as Element
+        scrollAdjustRef.current = { element: target, top: target.getBoundingClientRect().top }
+        props.onToggle()
+    }
+
+    return (
+        <RelatedButtonLayout
+            rowType={props.rowType}
+            onClick={handleToggle}
+            style={{
+                cursor: 'pointer',
+                border: `1px solid ${colors.borderShadow}`,
+                backgroundColor: colors.slightlyDifferentBackground,
+            }}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    handleToggle(event)
+                }
+            }}
+        >
+            {props.expanded ? 'Less' : 'More...'}
+        </RelatedButtonLayout>
+    )
+}
+
 function RelationshipGroup(props: { regions: Region[], checkId: string, relationshipType: string, groupIndex: number, buttonType: string, numGroups: number }): ReactNode {
     function displayName(name: string): string {
         name = name.replaceAll('_', ' ')
@@ -117,8 +159,6 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
     useEffect(() => {
         setExpanded(false)
     }, [props.relationshipType])
-
-    const colors = useColors()
 
     return (
         <ul
@@ -152,25 +192,11 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
                 )
             }
             {props.regions.length > maxRegions && (
-                <RelatedButtonLayout
+                <ExpandButton
                     rowType={props.regions[0].rowType}
-                    onClick={() => { setExpanded(e => !e) }}
-                    style={{
-                        cursor: 'pointer',
-                        border: `1px solid ${colors.borderShadow}`,
-                        backgroundColor: colors.slightlyDifferentBackground,
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                            event.preventDefault()
-                            setExpanded(e => !e)
-                        }
-                    }}
-                >
-                    {expanded ? 'Less' : 'More...'}
-                </RelatedButtonLayout>
+                    expanded={expanded}
+                    onToggle={() => { setExpanded(e => !e) }}
+                />
             )}
         </ul>
     )
