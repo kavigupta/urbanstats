@@ -142,16 +142,24 @@ function ExpandButton(props: { rowType: string, expanded: boolean, onToggle: () 
     )
 }
 
-function RelationshipGroup(props: { regions: Region[], checkId: string, relationshipType: string, groupIndex: number, buttonType: string, numGroups: number }): ReactNode {
-    function displayName(name: string): string {
-        name = name.replaceAll('_', ' ')
-        // title case
-        name = name.replace(/\w\S*/g, function (txt) {
-            return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase()
-        })
-        return name
-    }
+function displayName(name: string): string {
+    name = name.replaceAll('_', ' ')
+    // title case
+    name = name.replace(/\w\S*/g, function (txt) {
+        return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase()
+    })
+    return name
+}
 
+function RelationshipGroup(props: {
+    regions: Region[]
+    checkId: string
+    relationshipType: string
+    groupIndex: number
+    buttonType: string
+    numGroups: number
+    isSearching: boolean
+}): ReactNode {
     const backgroundColor = useRelatedColor(props.buttonType, props.groupIndex % 2 === 0 ? 0.3 : 0.4)
 
     const [expanded, setExpanded] = useState(false)
@@ -183,7 +191,7 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
                 {displayName(props.relationshipType)}
             </Label>
             {
-                (expanded ? props.regions : props.regions.slice(0, maxRegions)).map((row, i) => (
+                (expanded || props.isSearching ? props.regions : props.regions.slice(0, maxRegions)).map((row, i) => (
                     <RelatedButton
                         key={i}
                         region={row}
@@ -191,7 +199,7 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
                 ),
                 )
             }
-            {props.regions.length > maxRegions && (
+            {props.regions.length > maxRegions && !props.isSearching && (
                 <ExpandButton
                     rowType={props.regions[0].rowType}
                     expanded={expanded}
@@ -208,6 +216,7 @@ function Row(props: {
     regions: Map<string, Region[]>
     rowIndex: number
     totalRows: number
+    isSearching: boolean
 }): ReactNode {
     const settingKey = relationshipKey(props.articleType, props.buttonType)
 
@@ -267,6 +276,7 @@ function Row(props: {
                                 groupIndex={i}
                                 buttonType={props.buttonType}
                                 numGroups={props.regions.size}
+                                isSearching={props.isSearching}
                             />
                         )
                     })
@@ -280,9 +290,20 @@ export function Related(props: { articleType: string, related: { relationshipTyp
     // buttons[rowType][relationshipType] = <list of buttons>
     const showSettings = useSettings(['show_historical_cds', 'show_person_circles'])
     const buttons = new DefaultMap<string, DefaultMap<string, Region[]>>(() => new DefaultMap(() => []))
+
+    const universe = useUniverse()
+    assert(universe !== undefined, 'no universe')
+
+    const [searchTerm, setSearchTerm] = useState('')
+
+    const searchMatch = (target: string): boolean => target.toLowerCase().includes(searchTerm.toLowerCase())
+
     for (const relateds of props.related) {
+        const relationshipMatches = searchMatch(displayName(relateds.relationshipType))
         for (const button of relateds.buttons) {
-            buttons.get(button.rowType).get(relateds.relationshipType).push(button)
+            if (relationshipMatches || searchMatch(displayType(universe, button.rowType)) || searchMatch(button.longname) || searchMatch(button.shortname)) {
+                buttons.get(button.rowType).get(relateds.relationshipType).push(button)
+            }
         }
     }
 
@@ -299,17 +320,39 @@ export function Related(props: { articleType: string, related: { relationshipTyp
             articleType={props.articleType}
             rowIndex={i}
             totalRows={buttonKeys.length}
+            isSearching={searchTerm !== ''}
         />
     ))
 
     return (
-        <ul style={{
-            margin: '1em 0',
-            paddingInlineStart: '0px',
-            listStyleType: 'none',
-        }}
-        >
-            {elements}
-        </ul>
+        <>
+            <input
+                type="text"
+                placeholder="Filter Related Regions"
+                className="serif"
+                style={{
+                    paddingLeft: '1.25em',
+                    marginBottom: '0.5em',
+                    marginTop: '1em',
+                    fontSize: '16px',
+                    width: '100%',
+                }}
+                onFocus={e => setTimeout(() => {
+                    e.target.select()
+                }, 0)}
+                value={searchTerm}
+                onChange={(e) => { setSearchTerm(e.target.value) }}
+                data-test-id="related-search"
+            />
+            <ul style={{
+                marginBottom: '1em',
+                marginTop: 0,
+                paddingInlineStart: '0px',
+                listStyleType: 'none',
+            }}
+            >
+                {elements}
+            </ul>
+        </>
     )
 }
