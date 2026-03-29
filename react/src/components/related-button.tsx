@@ -110,7 +110,15 @@ function displayName(name: string): string {
     return name
 }
 
-function RelationshipGroup(props: { regions: Region[], checkId: string, relationshipType: string, groupIndex: number, buttonType: string, numGroups: number }): ReactNode {
+function RelationshipGroup(props: {
+    regions: Region[]
+    checkId: string
+    relationshipType: string
+    groupIndex: number
+    buttonType: string
+    numGroups: number
+    isSearching: boolean
+}): ReactNode {
     const backgroundColor = useRelatedColor(props.buttonType, props.groupIndex % 2 === 0 ? 0.3 : 0.4)
 
     const [expanded, setExpanded] = useState(false)
@@ -145,7 +153,7 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
                 {displayName(props.relationshipType)}
             </Label>
             {
-                (expanded ? props.regions : props.regions.slice(0, maxRegions)).map((row, i) => (
+                (expanded || props.isSearching ? props.regions : props.regions.slice(0, maxRegions)).map((row, i) => (
                     <RelatedButton
                         key={i}
                         region={row}
@@ -153,7 +161,7 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
                 ),
                 )
             }
-            {props.regions.length > maxRegions && (
+            {props.regions.length > maxRegions && !props.isSearching && (
                 <RelatedButtonLayout
                     rowType={props.regions[0].rowType}
                     onClick={() => { setExpanded(e => !e) }}
@@ -176,6 +184,7 @@ function Row(props: {
     regions: Map<string, Region[]>
     rowIndex: number
     totalRows: number
+    isSearching: boolean
 }): ReactNode {
     const settingKey = relationshipKey(props.articleType, props.buttonType)
 
@@ -235,6 +244,7 @@ function Row(props: {
                                 groupIndex={i}
                                 buttonType={props.buttonType}
                                 numGroups={props.regions.size}
+                                isSearching={props.isSearching}
                             />
                         )
                     })
@@ -278,6 +288,7 @@ export function Related(props: { articleType: string, related: { relationshipTyp
             articleType={props.articleType}
             rowIndex={i}
             totalRows={buttonKeys.length}
+            isSearching={searchTerm !== ''}
         />
     ))
 
@@ -301,7 +312,7 @@ export function Related(props: { articleType: string, related: { relationshipTyp
                 }, 0)}
                 value={searchTerm}
                 onChange={(e) => { setSearchTerm(e.target.value) }}
-                data-test-id="stats-search"
+                data-test-id="related-search"
             />
             <ul style={{
                 marginBottom: '1em',
