@@ -64,6 +64,7 @@ export default env => ({
         static: {
             directory: env.directory,
         },
+        server: 'http2',
         compress: true,
         port: 8000,
         devMiddleware: {
