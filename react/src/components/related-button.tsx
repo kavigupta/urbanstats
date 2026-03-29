@@ -127,6 +127,8 @@ function ExpandButton(props: { rowType: string, expanded: boolean, onToggle: () 
                 cursor: 'pointer',
                 border: `1px solid ${colors.borderShadow}`,
                 backgroundColor: colors.slightlyDifferentBackground,
+                position: 'relative',
+                display: 'flex',
             }}
             role="button"
             tabIndex={0}
@@ -137,7 +139,28 @@ function ExpandButton(props: { rowType: string, expanded: boolean, onToggle: () 
                 }
             }}
         >
-            {props.expanded ? '◀ Less' : 'More ▶'}
+            {!props.expanded && (
+                <div style={{ marginRight: '0.5em' }}>
+                    More
+                </div>
+            )}
+            <div style={{
+                height: '100%',
+                aspectRatio: 1,
+                backgroundImage: 'url("./arrow-right.png")',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '100%',
+                transform: props.expanded ? `rotate(180deg)` : `rotate(0deg)`,
+                transition: 'transform 0.25s',
+
+            }}
+            />
+            {props.expanded && (
+                <div style={{ marginLeft: '0.5em' }}>
+                    Less
+                </div>
+            )}
         </RelatedButtonLayout>
     )
 }
