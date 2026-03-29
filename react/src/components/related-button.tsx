@@ -1,4 +1,3 @@
-import stableStringify from 'json-stable-stringify'
 import React, { AnchorHTMLAttributes, ReactNode, useContext, useEffect, useId, useState } from 'react'
 
 import relatedButtonColors from '../data/relatedButtonColors'
@@ -118,7 +117,7 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
     useEffect(() => {
         setExpanded(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- It's all the props
-    }, [stableStringify(props)])
+    }, [props.relationshipType])
 
     const colors = useColors()
 
