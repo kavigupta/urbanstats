@@ -1,4 +1,4 @@
-import { Selector } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
 import { urbanstatsFixture, waitForLoading } from './test_utils'
 
@@ -29,6 +29,25 @@ test('clicking Less collapses back to initial state', async (t) => {
     await t.expect(moreButton.exists).ok()
     await t.expect(lessButton.exists).notOk()
     await t.expect(Selector('a').withExactText('Yuba County').exists).notOk()
+})
+
+test('clicking More/Less maintains button position in viewport', async (t) => {
+    await t.scrollIntoView(moreButton)
+
+    const getButtonTop = ClientFunction((text: string) => {
+        const el = Array.from(document.querySelectorAll('a')).find(a => a.textContent === text)
+        return el?.getBoundingClientRect().top ?? null
+    })
+
+    const topBeforeExpand = await getButtonTop('More...')
+    await t.click(moreButton)
+    const topAfterExpand = await getButtonTop('Less')
+    await t.expect(topAfterExpand).eql(topBeforeExpand)
+
+    const topBeforeCollapse = await getButtonTop('Less')
+    await t.click(lessButton)
+    const topAfterCollapse = await getButtonTop('More...')
+    await t.expect(topAfterCollapse).eql(topBeforeCollapse)
 })
 
 test('navigating to a new article does not reset expanded state', async (t) => {
