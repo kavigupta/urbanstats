@@ -1,4 +1,5 @@
-import React, { ReactNode, useContext, useId } from 'react'
+import stableStringify from 'json-stable-stringify'
+import React, { AnchorHTMLAttributes, ReactNode, useContext, useEffect, useId, useState } from 'react'
 
 import relatedButtonColors from '../data/relatedButtonColors'
 import type_ordering_idx from '../data/type_ordering_idx'
@@ -38,8 +39,22 @@ function useRelatedColor(rowType: string, colorIntensity: number): string {
 
 function RelatedButton(props: { region: Region }): ReactNode {
     const currentUniverse = useUniverse()
-    const colors = useColors()
     const navContext = useContext(Navigator.Context)
+    return (
+        <RelatedButtonLayout
+            rowType={props.region.rowType}
+            {...navContext.link(
+                { kind: 'article', longname: props.region.longname, universe: currentUniverse },
+                { scroll: { kind: 'position', top: 0 } },
+            )}
+        >
+            {props.region.shortname}
+        </RelatedButtonLayout>
+    )
+}
+
+function RelatedButtonLayout({ rowType, children, ...anchorProps }: { rowType: string, children: ReactNode } & AnchorHTMLAttributes<HTMLAnchorElement>): ReactNode {
+    const colors = useColors()
     return (
         <li style={{
             display: 'flex',
@@ -48,21 +63,19 @@ function RelatedButton(props: { region: Region }): ReactNode {
         >
             <a
                 className="serif"
+                {...anchorProps}
                 style={{
                     color: colors.textMain,
-                    backgroundColor: useRelatedColor(props.region.rowType, 1),
+                    backgroundColor: useRelatedColor(rowType, 1),
                     textDecoration: 'none',
                     padding: '2px 6px 2px 6px',
                     borderRadius: '5px',
                     fontWeight: 400,
                     fontSize: useMobileLayout() ? '12pt' : '8pt',
+                    ...anchorProps.style,
                 }}
-                {...navContext.link(
-                    { kind: 'article', longname: props.region.longname, universe: currentUniverse },
-                    { scroll: { kind: 'position', top: 0 } },
-                )}
             >
-                {props.region.shortname}
+                {children}
             </a>
         </li>
     )
@@ -86,6 +99,8 @@ function Label(props: { checkId: string, children: ReactNode, fontWeight: number
     )
 }
 
+const maxRegions = 10
+
 function RelationshipGroup(props: { regions: Region[], checkId: string, relationshipType: string, groupIndex: number, buttonType: string, numGroups: number }): ReactNode {
     function displayName(name: string): string {
         name = name.replaceAll('_', ' ')
@@ -97,6 +112,15 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
     }
 
     const backgroundColor = useRelatedColor(props.buttonType, props.groupIndex % 2 === 0 ? 0.3 : 0.4)
+
+    const [expanded, setExpanded] = useState(false)
+
+    useEffect(() => {
+        setExpanded(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- It's all the props
+    }, [stableStringify(props)])
+
+    const colors = useColors()
 
     return (
         <ul
@@ -121,7 +145,7 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
                 {displayName(props.relationshipType)}
             </Label>
             {
-                props.regions.map((row, i) => (
+                (expanded ? props.regions : props.regions.slice(0, maxRegions)).map((row, i) => (
                     <RelatedButton
                         key={i}
                         region={row}
@@ -129,6 +153,19 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
                 ),
                 )
             }
+            {props.regions.length > maxRegions && (
+                <RelatedButtonLayout
+                    rowType={props.regions[0].rowType}
+                    onClick={() => { setExpanded(e => !e) }}
+                    style={{
+                        cursor: 'pointer',
+                        border: `1px solid ${colors.borderShadow}`,
+                        backgroundColor: colors.slightlyDifferentBackground,
+                    }}
+                >
+                    {expanded ? 'Less' : 'More...'}
+                </RelatedButtonLayout>
+            )}
         </ul>
     )
 }
