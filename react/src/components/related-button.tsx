@@ -127,7 +127,6 @@ function ExpandButton(props: { rowType: string, expanded: boolean, onToggle: () 
                 cursor: 'pointer',
                 border: `1px solid ${colors.borderShadow}`,
                 backgroundColor: colors.slightlyDifferentBackground,
-                position: 'relative',
                 display: 'flex',
             }}
             role="button"
@@ -145,14 +144,13 @@ function ExpandButton(props: { rowType: string, expanded: boolean, onToggle: () 
                 </div>
             )}
             <div style={{
-                height: '100%',
+                width: '1em',
                 aspectRatio: 1,
                 backgroundImage: 'url("./arrow-right.png")',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
                 backgroundSize: '100%',
                 transform: props.expanded ? `rotate(180deg)` : `rotate(0deg)`,
-                transition: 'transform 0.25s',
 
             }}
             />
