@@ -67,11 +67,12 @@ test('more button is not shown when any search term is active', async (t) => {
 })
 
 test('filter persists when navigating to a new article', async (t) => {
-    await t.click(relatedSearchInput).typeText(relatedSearchInput, 'San Francisco')
-    await t.expect(relatedButton('Alameda County').exists).notOk()
+    await t.click(relatedSearchInput).typeText(relatedSearchInput, 'Counties')
+    await t.expect(relatedButton('Yuba County').exists).ok()
     // Navigate to Texas
     await t.click('button[data-test-id="1"]')
     await waitForLoading()
     // Filter value should be preserved after navigation
-    await t.expect(relatedSearchInput.value).eql('San Francisco')
+    await t.expect(relatedSearchInput.value).eql('Counties')
+    await t.expect(relatedButton('Zavala County').exists).ok()
 })
