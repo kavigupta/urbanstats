@@ -87,17 +87,12 @@ class Shapefile:
             s.end_date
         ), f"{self.end_date_overall} != {max(s.end_date)}"
 
+        s["shortname"] = s.apply(self.shortname_extractor, axis=1)
+        s["longname"] = s.apply(self.longname_extractor, axis=1)
+        if self.longname_sans_date_extractor is not None:
+            s["longname_sans_date"] = s.apply(self.longname_sans_date_extractor, axis=1)
         s = gpd.GeoDataFrame(
-            {
-                "shortname": s.apply(self.shortname_extractor, axis=1),
-                "longname": s.apply(self.longname_extractor, axis=1),
-                "longname_sans_date": (
-                    s.apply(self.longname_sans_date_extractor, axis=1)
-                    if self.longname_sans_date_extractor is not None
-                    else None
-                ),
-                **{col: s[col] for col in self.available_columns},
-            },
+            {col: s[col] for col in self.available_columns(include_intermediates=True)},
             geometry=s.geometry,
         )
         if self.drop_dup:
@@ -135,13 +130,15 @@ class Shapefile:
             for subset_name, subset in self.subset_masks.items()
         }
 
-    @property
-    def available_columns(self):
+    def available_columns(self, *, include_intermediates):
         return [
+            "longname",
+            "shortname",
+            "longname_sans_date",
             "start_date",
             "end_date",
             *self.additional_columns_computer,
-            *self.intermediate_computation_columns,
+            *(self.intermediate_computation_columns if include_intermediates else []),
             *self.subset_mask_keys,
         ]
 
