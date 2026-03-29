@@ -161,6 +161,14 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
                         border: `1px solid ${colors.borderShadow}`,
                         backgroundColor: colors.slightlyDifferentBackground,
                     }}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault()
+                            setExpanded(e => !e)
+                        }
+                    }}
                 >
                     {expanded ? 'Less' : 'More...'}
                 </RelatedButtonLayout>
