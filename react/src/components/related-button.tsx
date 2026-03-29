@@ -116,7 +116,6 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
 
     useEffect(() => {
         setExpanded(false)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- It's all the props
     }, [props.relationshipType])
 
     const colors = useColors()
