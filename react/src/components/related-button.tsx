@@ -101,16 +101,16 @@ function Label(props: { checkId: string, children: ReactNode, fontWeight: number
 
 const maxRegions = 10
 
-function RelationshipGroup(props: { regions: Region[], checkId: string, relationshipType: string, groupIndex: number, buttonType: string, numGroups: number }): ReactNode {
-    function displayName(name: string): string {
-        name = name.replaceAll('_', ' ')
-        // title case
-        name = name.replace(/\w\S*/g, function (txt) {
-            return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase()
-        })
-        return name
-    }
+function displayName(name: string): string {
+    name = name.replaceAll('_', ' ')
+    // title case
+    name = name.replace(/\w\S*/g, function (txt) {
+        return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase()
+    })
+    return name
+}
 
+function RelationshipGroup(props: { regions: Region[], checkId: string, relationshipType: string, groupIndex: number, buttonType: string, numGroups: number }): ReactNode {
     const backgroundColor = useRelatedColor(props.buttonType, props.groupIndex % 2 === 0 ? 0.3 : 0.4)
 
     const [expanded, setExpanded] = useState(false)
@@ -248,9 +248,20 @@ export function Related(props: { articleType: string, related: { relationshipTyp
     // buttons[rowType][relationshipType] = <list of buttons>
     const showSettings = useSettings(['show_historical_cds', 'show_person_circles'])
     const buttons = new DefaultMap<string, DefaultMap<string, Region[]>>(() => new DefaultMap(() => []))
+
+    const universe = useUniverse()
+    assert(universe !== undefined, 'no universe')
+
+    const [searchTerm, setSearchTerm] = useState('')
+
+    const searchMatch = (target: string): boolean => target.toLowerCase().includes(searchTerm.toLowerCase())
+
     for (const relateds of props.related) {
+        const relationshipMatches = searchMatch(displayName(relateds.relationshipType))
         for (const button of relateds.buttons) {
-            buttons.get(button.rowType).get(relateds.relationshipType).push(button)
+            if (relationshipMatches || searchMatch(displayType(universe, button.rowType)) || searchMatch(button.longname) || searchMatch(button.shortname)) {
+                buttons.get(button.rowType).get(relateds.relationshipType).push(button)
+            }
         }
     }
 
@@ -270,14 +281,37 @@ export function Related(props: { articleType: string, related: { relationshipTyp
         />
     ))
 
+    const isMobile = useMobileLayout()
+
     return (
-        <ul style={{
-            margin: '1em 0',
-            paddingInlineStart: '0px',
-            listStyleType: 'none',
-        }}
-        >
-            {elements}
-        </ul>
+        <>
+            <input
+                type="text"
+                placeholder="Filter Related Regions"
+                className="serif"
+                style={{
+                    paddingLeft: '1.25em',
+                    marginBottom: '0.5em',
+                    marginTop: '1em',
+                    fontSize: '16px',
+                    width: isMobile ? 'calc(100% / var(--mobile-sidebar-input-scale))' : '100%',
+                }}
+                onFocus={e => setTimeout(() => {
+                    e.target.select()
+                }, 0)}
+                value={searchTerm}
+                onChange={(e) => { setSearchTerm(e.target.value) }}
+                data-test-id="stats-search"
+            />
+            <ul style={{
+                marginBottom: '1em',
+                marginTop: 0,
+                paddingInlineStart: '0px',
+                listStyleType: 'none',
+            }}
+            >
+                {elements}
+            </ul>
+        </>
     )
 }
