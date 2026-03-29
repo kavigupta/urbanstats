@@ -298,8 +298,6 @@ export function Related(props: { articleType: string, related: { relationshipTyp
         />
     ))
 
-    const isMobile = useMobileLayout()
-
     return (
         <>
             <input
@@ -311,7 +309,7 @@ export function Related(props: { articleType: string, related: { relationshipTyp
                     marginBottom: '0.5em',
                     marginTop: '1em',
                     fontSize: '16px',
-                    width: isMobile ? 'calc(100% / var(--mobile-sidebar-input-scale))' : '100%',
+                    width: '100%',
                 }}
                 onFocus={e => setTimeout(() => {
                     e.target.select()
