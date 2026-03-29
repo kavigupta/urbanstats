@@ -6,7 +6,7 @@ import { urbanstatsFixture, waitForLoading } from './test_utils'
 // will have >10 regions and show the expand/collapse button.
 urbanstatsFixture('related expand collapse', '/article.html?longname=California%2C+USA')
 
-const moreButton = Selector('a').withExactText('More...')
+const moreButton = Selector('a').withExactText('More')
 const lessButton = Selector('a').withExactText('Less')
 
 test('related group with more than 10 regions shows More button initially', async (t) => {
@@ -35,18 +35,18 @@ test('clicking More/Less maintains button position in viewport', async (t) => {
     await t.scrollIntoView(moreButton)
 
     const getButtonTop = ClientFunction((text: string) => {
-        const el = Array.from(document.querySelectorAll('a')).find(a => a.textContent === text)
-        return el?.getBoundingClientRect().top ?? null
+        const el = Array.from(document.querySelectorAll('a')).find(a => a.textContent === text)!
+        return el.getBoundingClientRect().top
     })
 
-    const topBeforeExpand = await getButtonTop('More...')
+    const topBeforeExpand = await getButtonTop('More')
     await t.click(moreButton)
     const topAfterExpand = await getButtonTop('Less')
     await t.expect(topAfterExpand).eql(topBeforeExpand)
 
     const topBeforeCollapse = await getButtonTop('Less')
     await t.click(lessButton)
-    const topAfterCollapse = await getButtonTop('More...')
+    const topAfterCollapse = await getButtonTop('More')
     await t.expect(topAfterCollapse).eql(topBeforeCollapse)
 })
 
