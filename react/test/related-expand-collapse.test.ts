@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { screencap, urbanstatsFixture, waitForLoading } from './test_utils'
+import { urbanstatsFixture, waitForLoading } from './test_utils'
 
 // California has 58 counties, so the "County" relationship group
 // will have >10 regions and show the expand/collapse button.
