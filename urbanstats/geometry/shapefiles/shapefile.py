@@ -91,6 +91,8 @@ class Shapefile:
         s["longname"] = s.apply(self.longname_extractor, axis=1)
         if self.longname_sans_date_extractor is not None:
             s["longname_sans_date"] = s.apply(self.longname_sans_date_extractor, axis=1)
+        else:
+            s["longname_sans_date"] = s["longname"]
         s = gpd.GeoDataFrame(
             {col: s[col] for col in self.available_columns(include_intermediates=True)},
             geometry=s.geometry,
@@ -113,7 +115,6 @@ class Shapefile:
         if s.crs is None:
             s.crs = "EPSG:4326"
         s = s.to_crs("EPSG:4326")
-        s.longname_sans_date = s.longname_sans_date.fillna(s.longname)
         return s
 
     def subset_shapefile(self, subset_name):
