@@ -137,7 +137,7 @@ function ExpandButton(props: { rowType: string, expanded: boolean, onToggle: () 
                 }
             }}
         >
-            {props.expanded ? 'Less' : 'More...'}
+            {props.expanded ? '◀ Less' : 'More ▶'}
         </RelatedButtonLayout>
     )
 }
