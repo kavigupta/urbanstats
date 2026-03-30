@@ -2,7 +2,7 @@ import maplibregl from 'maplibre-gl'
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
 import { FullscreenControl, Layer, LngLatLike, Map as MapGL, MapProps, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
-import { Basemap, urbanStatsLayerPrefix } from '../components/map-common'
+import { Basemap, CommonMaplibreMap, urbanStatsLayerPrefix } from '../components/map-common'
 import { Basemap as BasemapSpec } from '../mapper/settings/utils'
 import { TestUtils } from '../utils/TestUtils'
 import { assert } from '../utils/defensive'
@@ -208,14 +208,13 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
     }, [centroids, categories, pieChartSizeFor, categoryColors.length])
 
     return (
-        <MapGL
+        <CommonMaplibreMap
             ref={(instance) => {
                 setMapRef(instance)
                 if (typeof props.mapRef === 'function') {
                     props.mapRef(instance)
                 }
             }}
-            mapStyle="https://tiles.openfreemap.org/styles/bright"
             canvasContextAttributes={{
                 preserveDrawingBuffer: true,
             }}
@@ -249,7 +248,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
             />
             <FirstZoom centroids={centroids} />
             {children}
-        </MapGL>
+        </CommonMaplibreMap>
     )
 }
 
