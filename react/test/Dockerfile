@@ -2,30 +2,28 @@
 # This version for compatibility with pandas
 FROM python:3.10
 
-# 😭
-RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
-RUN apt-get install -y nodejs
+# Using as few layers (run commands) as possible makes image checkout faster
 
-RUN pip3 install --upgrade pip virtualenv
-RUN pip3 cache purge
+# libc6/libx11/fluxbox: needed for window resizing in Testcafe
+# xdg-user-dirs: needed for downloads directory in TestCafe
+# fonts-noto-color-emoji/core: needed for emoji display in tests
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+    && dpkg --add-architecture i386 \
+    && apt-get -y update \
+    && apt-get -y install \
+    nodejs \
+    chromium=146.* \
+    xvfb \
+    sqlite3 \
+    libc6:i386 \
+    libx11-6:i386 \
+    fluxbox \
+    xdg-user-dirs \
+    fonts-noto-color-emoji \
+    fonts-noto-core \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN dpkg --add-architecture i386
-RUN apt-get -y update
-
-RUN apt-get -y install chromium=143.*
-RUN apt-get -y install xvfb
-
-RUN apt-get -y install sqlite3
-
-# needed for window resizing in Testcafe
-RUN apt-get -y install libc6:i386
-RUN apt-get -y install libx11-6:i386
-RUN apt-get -y install fluxbox
-
-# needed for downloads directory in TestCafe
-RUN apt-get -y install xdg-user-dirs
-
-# needed for emoji display in tests
-RUN apt-get -y install fonts-noto-color-emoji fonts-noto-core
+RUN pip3 install --upgrade pip virtualenv \
+    && pip3 cache purge
 
 ENTRYPOINT [ "/bin/bash" ] 
