@@ -7,12 +7,13 @@ import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
 import xmlFormat from 'xml-formatter'
 
+import { port } from '../port'
 import type { TestWindow } from '../src/utils/TestUtils'
 import { checkString } from '../src/utils/checkString'
 
 import { urlFromCode } from './mapper-utils'
 
-export const target = process.env.URBANSTATS_TEST_TARGET ?? 'http://localhost:8000'
+export const target = process.env.URBANSTATS_TEST_TARGET ?? `http://localhost:${port()}`
 export const searchField = Selector('input').withAttribute('placeholder', 'Search Urban Stats')
 export const getLocation = ClientFunction(() => document.location.href)
 export const getLocationWithoutSettings = ClientFunction(() => {
