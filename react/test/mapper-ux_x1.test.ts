@@ -204,7 +204,7 @@ mapper(() => test)('label resize sync', { code: `cMap(
     await t.resizeWindow(400, 800)
     await toggleCustomScript(t)
     await t.eval(() => {
-        const textArea: HTMLButtonElement = document.querySelector('textarea:not([inert] *)')!
+        const textArea: HTMLTextAreaElement = document.querySelector('textarea:not([inert] *)')!
         textArea.style.height = '200px'
     })
     await t.expect(ClientFunction(() => {

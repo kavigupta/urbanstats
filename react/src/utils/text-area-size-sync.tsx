@@ -34,6 +34,8 @@ export function useTextAreaSizeSync(textAreaRef: React.RefObject<HTMLTextAreaEle
             textArea.style.height = `${newHeight}px`
         }
 
+        const animationFrameRequests = new Set<number>()
+
         const resizeObserver = new ResizeObserver(() => {
             if (ignore > 0) {
                 ignore--
@@ -41,18 +43,21 @@ export function useTextAreaSizeSync(textAreaRef: React.RefObject<HTMLTextAreaEle
             }
             const height = textArea.offsetHeight
             // prevent the browser from firing a warning... we prevent recursion via ignore
-            requestAnimationFrame(() => {
+            const animationFrameRequestId = requestAnimationFrame(() => {
+                animationFrameRequests.delete(animationFrameRequestId)
                 for (const callback of sizeContext.get(identifier)) {
                     if (callback !== myCallback) {
                         callback(height)
                     }
                 }
             })
+            animationFrameRequests.add(animationFrameRequestId)
         })
         resizeObserver.observe(textArea)
         sizeContext.get(identifier).add(myCallback)
 
         return () => {
+            animationFrameRequests.forEach(cancelAnimationFrame)
             resizeObserver.disconnect()
             sizeContext.get(identifier).delete(myCallback)
         }
