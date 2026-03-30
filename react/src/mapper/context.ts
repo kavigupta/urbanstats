@@ -11,6 +11,7 @@ import { allIdentifiers } from '../urban-stats-script/parser'
 import { TypeEnvironment, USSValue } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { firstNonNan } from '../utils/math'
+import { classifyStatistic } from '../utils/unit'
 
 export async function mapperContext(stmts: UrbanStatsASTStatement, getVariable: (name: string) => Promise<USSValue | undefined>, effects: Effect[], universe: Universe): Promise<Context> {
     const ctx = new Context(
@@ -93,7 +94,6 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvi
             humanReadableName: 'Default Universe Geography Names',
             category: 'mapper',
             longDescription: 'A vector containing the names of geographic units for the current universe. Each element represents a geographic unit (e.g., census block, county) and can be used for labeling and identification purposes in mapping and spatial analysis.',
-            includedInOutputContext: true,
         },
     })
 
@@ -136,8 +136,9 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvi
                 category: 'mapper',
                 longDescription: `Data from ${variableInfo.humanReadableName}`,
                 documentationTable: 'mapper-data-variables',
-                includedInOutputContext: true,
                 fromStatisticColumn: true,
+                deprecated: (variableInfo as { deprecated: string | null }).deprecated ?? undefined,
+                unit: classifyStatistic(variableInfo.humanReadableName),
             },
         })
     }
@@ -160,8 +161,8 @@ export const defaultTypeEnvironment = (universe: Universe | undefined): TypeEnvi
                 documentationTable: 'mapper-data-variables',
                 isDefault: name === 'density_pw_1km',
                 selectorRendering: { kind: 'subtitleLongDescription' },
-                includedInOutputContext: true,
                 fromStatisticColumn: true,
+                unit: classifyStatistic(info.humanReadableName),
             },
         })
     }

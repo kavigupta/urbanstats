@@ -15,7 +15,7 @@ export function statIsEnabled(statId: StatPath, settings: StatGroupSettings, sou
         && (source !== null ? sourceApplies(source, settings, sourcesByCategory) : true)
 }
 
-export function sourceApplies(source: DataSource, settings: StatGroupSettings, sourcesByCategory: AmbiguousSources): boolean {
+function sourceApplies(source: DataSource, settings: StatGroupSettings, sourcesByCategory: AmbiguousSources): boolean {
     if (!sourcesByCategory.has(source.category)) {
         return true
     }
@@ -178,7 +178,7 @@ export function useStatPathsAll(): StatPath[][] {
     return useContext(Navigator.Context).useStatPathsAll() ?? (() => { throw new Error('Current page does not have StatPath information') })()
 }
 
-export function useStatPaths(): StatPath[] {
+function useStatPaths(): StatPath[] {
     return useStatPathsAll().flat()
 }
 
@@ -193,7 +193,7 @@ export function useAvailableGroups(category?: Category): Group[] {
     return getAvailableGroups(contextStatPaths, category)
 }
 
-export function getAvailableCategories(contextStatPaths: StatPath[]): Category[] {
+function getAvailableCategories(contextStatPaths: StatPath[]): Category[] {
     // Find the intersection between the stat paths we have loaded in the context and the categories that are available
     // This is so we can show the user only the categories that will actually show up
     return statsTree.filter(category => contextStatPaths.some(statPath => category.statPaths.has(statPath)))

@@ -4,21 +4,23 @@ import data_links from './data/data_links'
 import order_links from './data/order_links'
 import statistic_path_list from './data/statistic_path_list'
 import universes_ordered from './data/universes_ordered'
-import { indexLink, orderingDataLink, orderingLink } from './navigation/links'
+import { dataLink, indexLink, orderingDataLink, orderingLink, shapeLink } from './navigation/links'
 import { debugPerformance } from './search'
 import { Universe } from './universe'
 import { assert } from './utils/defensive'
 import {
-    Article, ConsolidatedShapes, CountsByArticleUniverseAndType, DataLists,
+    Article, ConsolidatedArticles, ConsolidatedShapes, CountsByArticleUniverseAndType, DataLists,
     Feature, IOrderList, OrderList,
     OrderLists,
     QuizFullData,
     QuizQuestionTronche,
     SearchIndex,
     ArticleOrderingList,
+    ShardIndex,
     Symlinks,
     PointSeries,
     ArticleUniverseList,
+    DefaultUniverseTable,
 } from './utils/protos'
 import { NormalizeProto } from './utils/types'
 
@@ -40,6 +42,9 @@ export async function loadProtobuf(filePath: string, name: 'ArticleOrderingList'
 export async function loadProtobuf(filePath: string, name: 'OrderLists'): Promise<OrderLists>
 export async function loadProtobuf(filePath: string, name: 'DataLists'): Promise<DataLists>
 export async function loadProtobuf(filePath: string, name: 'ConsolidatedShapes'): Promise<ConsolidatedShapes>
+export async function loadProtobuf(filePath: string, name: 'ConsolidatedShapes', errorOnMissing: boolean): Promise<ConsolidatedShapes | undefined>
+export async function loadProtobuf(filePath: string, name: 'ConsolidatedArticles'): Promise<ConsolidatedArticles>
+export async function loadProtobuf(filePath: string, name: 'ConsolidatedArticles', errorOnMissing: boolean): Promise<ConsolidatedArticles | undefined>
 export async function loadProtobuf(filePath: string, name: 'SearchIndex'): Promise<SearchIndex>
 export async function loadProtobuf(filePath: string, name: 'QuizQuestionTronche'): Promise<QuizQuestionTronche>
 export async function loadProtobuf(filePath: string, name: 'QuizFullData'): Promise<QuizFullData>
@@ -47,7 +52,9 @@ export async function loadProtobuf(filePath: string, name: 'CountsByArticleUnive
 export async function loadProtobuf(filePath: string, name: 'Symlinks'): Promise<Symlinks>
 export async function loadProtobuf(filePath: string, name: 'PointSeries'): Promise<PointSeries>
 export async function loadProtobuf(filePath: string, name: 'ArticleUniverseList'): Promise<ArticleUniverseList>
-export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | ArticleUniverseList | undefined> {
+export async function loadProtobuf(filePath: string, name: 'DefaultUniverseTable'): Promise<DefaultUniverseTable>
+export async function loadProtobuf(filePath: string, name: 'ShardIndex'): Promise<ShardIndex>
+export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedArticles | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | ArticleUniverseList | DefaultUniverseTable | ShardIndex | undefined> {
     let perfCheckpoint = performance.now()
 
     const response = await fetch(filePath)
@@ -91,6 +98,9 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     else if (name === 'ConsolidatedShapes') {
         return ConsolidatedShapes.decode(arr)
     }
+    else if (name === 'ConsolidatedArticles') {
+        return ConsolidatedArticles.decode(arr)
+    }
     else if (name === 'SearchIndex') {
         const result = SearchIndex.decode(arr)
         debugPerformance(`Took ${performance.now() - perfCheckpoint}ms to decode search index`)
@@ -114,9 +124,52 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     else if (name === 'ArticleUniverseList') {
         return ArticleUniverseList.decode(arr)
     }
+    else if (name === 'DefaultUniverseTable') {
+        return DefaultUniverseTable.decode(arr)
+    }
+    else if (name === 'ShardIndex') {
+        return ShardIndex.decode(arr)
+    }
     else {
         throw new Error('protobuf type not recognized (see load_json.ts)')
     }
+}
+
+// Consolidated shard: one gzipped proto (ConsolidatedArticles or ConsolidatedShapes). Not cached.
+async function getConsolidatedArticlesShard(shardUrl: string): Promise<ConsolidatedArticles | undefined> {
+    return loadProtobuf(shardUrl, 'ConsolidatedArticles', false)
+}
+
+async function getConsolidatedShapesShard(shardUrl: string): Promise<ConsolidatedShapes | undefined> {
+    return loadProtobuf(shardUrl, 'ConsolidatedShapes', false)
+}
+
+/** Load one article from a consolidated shard (fetch whole .gz via loadProtobuf, find by longname). Resolves symlinks to target. */
+export async function loadArticleFromConsolidatedShard(shardUrl: string, longname: string): Promise<Article | undefined> {
+    const shard = await getConsolidatedArticlesShard(shardUrl)
+    if (!shard) return undefined
+    const idx = shard.longnames.indexOf(longname)
+    if (idx >= 0) return shard.articles[idx] as Article
+    const symIdx = shard.symlinkLinkNames.indexOf(longname)
+    if (symIdx >= 0) {
+        const target = shard.symlinkTargetNames[symIdx]
+        return loadArticleFromConsolidatedShard(await dataLink(target), target)
+    }
+    return undefined
+}
+
+/** Load one shape from a consolidated shard (fetch whole .gz via loadProtobuf, find by longname). Resolves symlinks to target. */
+export async function loadFeatureFromConsolidatedShard(shardUrl: string, longname: string): Promise<Feature | undefined> {
+    const shard = await getConsolidatedShapesShard(shardUrl)
+    if (!shard) return undefined
+    const idx = shard.longnames.indexOf(longname)
+    if (idx >= 0) return shard.shapes[idx] as Feature
+    const symIdx = shard.symlinkLinkNames.indexOf(longname)
+    if (symIdx >= 0) {
+        const target = shard.symlinkTargetNames[symIdx]
+        return loadFeatureFromConsolidatedShard(await shapeLink(target), target)
+    }
+    return undefined
 }
 
 function pullKey(arr: number[], key: string): number {
@@ -134,7 +187,7 @@ function pullKey(arr: number[], key: string): number {
     throw new Error('index not found')
 }
 
-export async function loadUniverses(type: string): Promise<ArticleUniverseList> {
+async function loadUniverses(type: string): Promise<ArticleUniverseList> {
     return loadProtobuf(`/universes/${type}.gz`, 'ArticleUniverseList')
 }
 
@@ -173,13 +226,6 @@ export async function loadOrderingDataProtobuf(universe: Universe, statpath: str
             return [res.populationPercentileByUniverse![i].populationPercentile![universeIndex]]
         }),
     }
-}
-
-export async function loadDataInIndexOrder(
-    universe: Universe, statpath: string, type: string,
-): Promise<[number[], number[]]> {
-    const dataPromise = await loadOrderingDataProtobuf(universe, statpath, type)
-    return [dataPromise.value, dataPromise.populationPercentile]
 }
 
 export interface ArticleOrderingListInternal {

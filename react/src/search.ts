@@ -1,16 +1,23 @@
 import * as idb from 'idb'
 
+import { AllUniverses, createStatsIndex } from './components/search-statistic'
 import type_to_priority from './data/type_to_priority'
 import { loadProtobuf } from './load_json'
+import { Universe } from './universe'
 import { DefaultMap } from './utils/DefaultMap'
 import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
+import { assert } from './utils/defensive'
 import { ISearchIndexMetadata } from './utils/protos'
 import { isAllowedToBeShown, ShowGeographySettings } from './utils/restricted-types'
+import { concatenate } from './utils/typed-array-concat'
 
-export interface SearchResult {
-    longname: string
-    typeIndex: number
-}
+export type SearchResult =
+    | { type: 'article', longname: string, typeIndex: number }
+    | { type: 'statistic'
+        longname: string
+        statisticIndex: number
+        typeIndex: number
+        universeIndex: number }
 
 const debugSearch: boolean = false
 
@@ -41,21 +48,148 @@ export function normalize(a: string, handlePunctuation = true): string {
     return a
 }
 
-interface NormalizedSearchIndex {
-    entries: {
-        longname: string
-        tokens: Haystack[]
-        priority: number
-        signature: number
-        typeIndex: number
-    }[]
+type Entry = {
+    priority: number
+    longname: string
+    typeIndex: number
+} & (
+            {
+                type: 'article'
+            } | {
+                type: 'statistic'
+                statisticIndex: number
+                universeIndex: number
+            }
+        )
+
+export interface NormalizedSearchIndex {
+    size: number
+
+    numTokens: Uint8Array
+    tokenHaystacks: string[]
+    tokenSignatures: Uint32Array
+
+    priorities: Uint8Array
+    signatures: Uint32Array
+    longnames: string[]
+    typeIndicies: Uint8Array
+
+    entryTypes: Uint8Array // 0 for article, 1 for statistic
+
+    statisticIndices: Uint16Array
+    universeIndices: Uint16Array
+
     lengthOfLongestToken: number
     maxPriority: number
     mostTokens: number
 }
 
+function concatIndices(firstIndex: NormalizedSearchIndex, secondIndex: NormalizedSearchIndex): NormalizedSearchIndex {
+    return {
+        size: firstIndex.size + secondIndex.size,
+
+        numTokens: concatenate(Uint8Array, firstIndex.numTokens, secondIndex.numTokens),
+        tokenHaystacks: firstIndex.tokenHaystacks.concat(secondIndex.tokenHaystacks),
+        tokenSignatures: concatenate(Uint32Array, firstIndex.tokenSignatures, secondIndex.tokenSignatures),
+
+        priorities: concatenate(Uint8Array, firstIndex.priorities, secondIndex.priorities),
+        signatures: concatenate(Uint32Array, firstIndex.signatures, secondIndex.signatures),
+        longnames: firstIndex.longnames.concat(secondIndex.longnames),
+        typeIndicies: concatenate(Uint8Array, firstIndex.typeIndicies, secondIndex.typeIndicies),
+
+        entryTypes: concatenate(Uint8Array, firstIndex.entryTypes, secondIndex.entryTypes),
+
+        statisticIndices: concatenate(Uint16Array, firstIndex.statisticIndices, secondIndex.statisticIndices),
+        universeIndices: concatenate(Uint16Array, firstIndex.universeIndices, secondIndex.universeIndices),
+
+        lengthOfLongestToken: Math.max(firstIndex.lengthOfLongestToken, secondIndex.lengthOfLongestToken),
+        mostTokens: Math.max(firstIndex.mostTokens, secondIndex.mostTokens),
+        maxPriority: Math.max(firstIndex.maxPriority, secondIndex.maxPriority),
+    }
+}
+
+export function buildSearchIndex(entries: Entry[]): NormalizedSearchIndex {
+    const result: Omit<NormalizedSearchIndex, 'tokenSignatures'> = {
+        size: entries.length,
+
+        numTokens: new Uint8Array(entries.length),
+        tokenHaystacks: [],
+
+        priorities: new Uint8Array(entries.length),
+        signatures: new Uint32Array(entries.length),
+        longnames: [],
+        typeIndicies: new Uint8Array(entries.length),
+
+        entryTypes: new Uint8Array(entries.length),
+
+        statisticIndices: new Uint16Array(entries.length),
+        universeIndices: new Uint16Array(entries.length),
+
+        lengthOfLongestToken: 0,
+        maxPriority: 0,
+        mostTokens: 0,
+    }
+
+    const haystackCache = new DefaultMap<string, Haystack>((token) => {
+        if (token.length > result.lengthOfLongestToken) {
+            result.lengthOfLongestToken = token.length
+        }
+        return toHaystack(token)
+    })
+
+    const tokenSignatures: number[] = []
+
+    for (const [i, entry] of entries.entries()) {
+        const normalizedLongname = normalize(entry.longname)
+        const entryTokens = tokenize(normalizedLongname)
+        const tokens = entryTokens.map(token => haystackCache.get(token))
+        if (tokens.length > result.mostTokens) {
+            result.mostTokens = tokens.length
+        }
+
+        assert(tokens.length <= 255, 'overflow')
+        result.numTokens[i] = tokens.length
+
+        for (const token of tokens) {
+            result.tokenHaystacks.push(token.haystack)
+
+            assert(token.signature <= 4294967295, 'overflow')
+            tokenSignatures.push(token.signature)
+        }
+
+        assert(entry.priority <= 255, 'overflow')
+        result.priorities[i] = entry.priority
+
+        const signature = toSignature(normalizedLongname)
+        assert(signature <= 4294967295, 'overflow')
+        result.signatures[i] = signature
+
+        result.longnames.push(entry.longname)
+
+        assert(entry.typeIndex <= 255, 'overflow')
+        result.typeIndicies[i] = entry.typeIndex
+
+        result.entryTypes[i] = entry.type === 'statistic' ? 1 : 0
+
+        assert(entry.type === 'article' || entry.statisticIndex <= 65535, 'overflow')
+        result.statisticIndices[i] = entry.type === 'statistic' ? entry.statisticIndex : 0
+
+        assert(entry.type === 'article' || entry.universeIndex <= 65535, 'overflow')
+        result.universeIndices[i] = entry.type === 'statistic' ? entry.universeIndex : 0
+
+        if (entry.priority > result.maxPriority) {
+            result.maxPriority = entry.priority
+        }
+    }
+
+    return {
+        ...result,
+        tokenSignatures: new Uint32Array(tokenSignatures),
+    }
+}
+
 interface Result {
-    entry: NormalizedSearchIndex['entries'][number]
+    i: number
     normalizedMatchScore: number // Lower is better ([0,1], where 0 is perfect match, and 1 is no matches)
     normalizedPopulationRank: number // Lower is higher population (better) ([0,1], where 0 is highest population and 1 is lowest population)
     normalizedPriority: number // Lower is better ([0,1] where 1 is least prioritized)
@@ -109,6 +243,11 @@ export interface SearchParams {
     prioritizeTypeIndex?: number
 }
 
+export interface SearchIndexConfig {
+    cacheKey: string | undefined // Pre-specificed for performance reasons
+    statsUniverse: Universe | AllUniverses | undefined
+}
+
 function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxResults, showSettings, prioritizeTypeIndex }: SearchParams): SearchResult[] {
     const start = performance.now()
 
@@ -140,30 +279,32 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
     let entriesPatternSkips = 0
     let entriesPatternChecks = 0
 
-    entries: for (const [populationRank, entry] of searchIndex.entries.entries()) {
-        if (!isAllowedToBeShown(entry.typeIndex, showSettings)) {
+    let tokenIndex = 0
+    entries: for (let i = 0; i < searchIndex.size; i++) {
+        tokenIndex += searchIndex.numTokens[i]
+        if (!isAllowedToBeShown(searchIndex.typeIndicies[i], showSettings)) {
             continue
         }
 
         entriesPatternChecks++
-        if (bitCount(patternSignature ^ (patternSignature & entry.signature)) > maxErrors) {
+        if (bitCount(patternSignature ^ (patternSignature & searchIndex.signatures[i])) > maxErrors) {
             // This element doesn't have the correct letters to match this pattern
             entriesPatternSkips++
             continue
         }
 
-        const normalizedPopulationRank = (populationRank / searchIndex.entries.length)
+        const normalizedPopulationRank = (i / searchIndex.size)
 
         // If this entry wouldn't make it into the results even with a perfect match because of priority or population, continue
         if (results.length === maxResults && compareSearchResults({
-            entry,
+            i,
             normalizedMatchScore: 0,
             normalizedPositionScore: 0,
-            normalizedPriority: entry.priority / searchIndex.maxPriority,
+            normalizedPriority: searchIndex.priorities[i] / searchIndex.maxPriority,
             normalizedPopulationRank,
             normalizedTokensWithIncompleteMatch: 0,
             normalizedTokenSwapOrOverlap: 0,
-            normalizedPriorityType: entry.typeIndex === prioritizeTypeIndex ? 0 : 1,
+            normalizedPriorityType: searchIndex.typeIndicies[i] === prioritizeTypeIndex ? 0 : 1,
         }, results[results.length - 1]) > 0) {
             continue
         }
@@ -181,10 +322,12 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
             let tokenIncompleteMatch = true
             let tokenEntryTokenIndex: undefined | number
 
-            for (const [entryTokenIndex, entryToken] of entry.tokens.entries()) {
-                const searchResult = bitap(entryToken, needle, maxErrors, bitapBuffers)
+            for (let j = tokenIndex - searchIndex.numTokens[i]; j < tokenIndex; j++) {
+                const entryTokenIndex = j - (tokenIndex - searchIndex.numTokens[i])
+                const haystack = searchIndex.tokenHaystacks[j]
+                const searchResult = bitap({ haystack, signature: searchIndex.tokenSignatures[j] }, needle, maxErrors, bitapBuffers)
                 const positionResult = Math.abs(patternTokenIndex - entryTokenIndex)
-                const incompleteMatchResult = Math.abs(entryToken.haystack.length - needle.length) - searchResult !== 0
+                const incompleteMatchResult = Math.abs(haystack.length - needle.length) - searchResult !== 0
                 if (searchResult < tokenMatchScore || (searchResult <= tokenMatchScore && positionResult < tokenPositionScore) || (searchResult <= tokenMatchScore && positionResult <= tokenPositionScore && incompleteMatchResult < tokenIncompleteMatch)) {
                     tokenMatchScore = searchResult
                     tokenPositionScore = positionResult
@@ -203,14 +346,14 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
 
             // If our match score is so high that we would not make it into the results, we can move on to the next entry
             if (results.length === maxResults && compareSearchResults({
-                entry,
+                i,
                 normalizedMatchScore: matchScore / maxMatchScore,
                 normalizedPositionScore: positionScore / maxPositionScore,
-                normalizedPriority: entry.priority / searchIndex.maxPriority,
+                normalizedPriority: searchIndex.priorities[i] / searchIndex.maxPriority,
                 normalizedPopulationRank,
                 normalizedTokensWithIncompleteMatch: incompleteMatches / patternTokens.length,
                 normalizedTokenSwapOrOverlap: numSwapsOverlaps / patternTokens.length,
-                normalizedPriorityType: entry.typeIndex === prioritizeTypeIndex ? 0 : 1,
+                normalizedPriorityType: searchIndex.typeIndicies[i] === prioritizeTypeIndex ? 0 : 1,
             }, results[results.length - 1]) > 0) {
                 continue entries
             }
@@ -222,14 +365,14 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
         }
 
         const result: Result = {
-            entry,
+            i,
             normalizedMatchScore: matchScore / maxMatchScore,
             normalizedPositionScore: positionScore / maxPositionScore,
-            normalizedPriority: entry.priority / searchIndex.maxPriority,
+            normalizedPriority: searchIndex.priorities[i] / searchIndex.maxPriority,
             normalizedPopulationRank,
             normalizedTokensWithIncompleteMatch: incompleteMatches / patternTokens.length,
             normalizedTokenSwapOrOverlap: numSwapsOverlaps / patternTokens.length,
-            normalizedPriorityType: entry.typeIndex === prioritizeTypeIndex ? 0 : 1,
+            normalizedPriorityType: searchIndex.typeIndicies[i] === prioritizeTypeIndex ? 0 : 1,
         }
 
         let spliceIndex: number | undefined
@@ -259,13 +402,23 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
 
     debugPerformance(`Took ${performance.now() - start} ms to execute search`)
 
-    return results.map(result => result.entry)
+    // Convert results to SearchResult format, preserving order
+    return results.slice(0, maxResults).map((r) => {
+        return {
+            longname: searchIndex.longnames[r.i],
+            typeIndex: searchIndex.typeIndicies[r.i],
+            ...(searchIndex.entryTypes[r.i] === 0 ? { type: 'article' } : { type: 'statistic', statisticIndex: searchIndex.statisticIndices[r.i], universeIndex: searchIndex.universeIndices[r.i] }),
+        }
+    })
 }
 
 // Potentially cached
-export async function createIndex(cacheKey: string | undefined): Promise<(params: SearchParams) => SearchResult[]> {
+export async function createIndex(config: SearchIndexConfig): Promise<(params: SearchParams) => SearchResult[]> {
+    const statsIndexPromise = config.statsUniverse && createStatsIndex(config.statsUniverse)
+
     let index: NormalizedSearchIndex | undefined
     try {
+        const cacheKey = config.cacheKey
         if (cacheKey === undefined) {
             throw new Error('No cache key specified')
         }
@@ -308,7 +461,24 @@ export async function createIndex(cacheKey: string | undefined): Promise<(params
         console.warn('Getting cached search index failed', error)
         index = await createIndexNoCache()
     }
-    return params => search(index, params)
+
+    let modifiedIndex = index // Don't want to store this one back to the cache
+
+    if (statsIndexPromise) {
+        const checkpoint = performance.now()
+        // stats go first so they are prioritized if all other things are equal
+        modifiedIndex = concatIndices(await statsIndexPromise, index)
+        debugPerformance(`Waited ${performance.now() - checkpoint}ms for stats index`)
+    }
+
+    return makeSearchFunction(modifiedIndex)
+}
+
+// We use a separate function here so a closure doesn't capture unnecessary objects
+function makeSearchFunction(searchIndex: NormalizedSearchIndex): (params: SearchParams) => SearchResult[] {
+    return (params) => {
+        return search(searchIndex, params)
+    }
 }
 
 async function createIndexNoCache(): Promise<NormalizedSearchIndex> {
@@ -318,36 +488,17 @@ async function createIndexNoCache(): Promise<NormalizedSearchIndex> {
 
 function processRawSearchIndex(searchIndex: { elements: string[], metadata: ISearchIndexMetadata[] }): NormalizedSearchIndex {
     const start = performance.now()
-    let lengthOfLongestToken = 0
-    let maxPriority = 0
-    let mostTokens = 0
     const priorities = searchIndex.metadata.map(({ type }) => type_to_priority[type!])
-    const haystackCache = new DefaultMap<string, Haystack>((token) => {
-        if (token.length > lengthOfLongestToken) {
-            lengthOfLongestToken = token.length
-        }
-        return toHaystack(token)
-    })
-    const entries = searchIndex.elements.map((longname, index) => {
-        const normalizedLongname = normalize(longname)
-        const entryTokens = tokenize(normalizedLongname)
-        const tokens = entryTokens.map(token => haystackCache.get(token))
-        if (priorities[index] > maxPriority) {
-            maxPriority = priorities[index]
-        }
-        if (tokens.length > mostTokens) {
-            mostTokens = tokens.length
-        }
-        return {
+    const result = buildSearchIndex(searchIndex.elements.map((longname, index) =>
+        ({
+            type: 'article' as const,
             longname,
-            tokens,
             priority: priorities[index],
-            signature: toSignature(normalizedLongname),
             typeIndex: searchIndex.metadata[index].type!,
-        }
-    })
+        }),
+    ))
     debugPerformance(`Took ${performance.now() - start}ms to process search index`)
-    return { entries, lengthOfLongestToken, maxPriority, mostTokens }
+    return result
 }
 
 export async function getIndexCacheKey(): Promise<string | undefined> {

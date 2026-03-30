@@ -6,7 +6,7 @@ import type { ComparisonPanel } from '../components/comparison-panel'
 import { CountsByUT, getCountsByArticleType } from '../components/countsByArticleType'
 import { ArticleRow, loadArticles } from '../components/load-article'
 import type { QuizPanel } from '../components/quiz-panel'
-import type { StatisticPanel, StatisticPanelProps } from '../components/statistic-panel'
+import statnames from '../data/statistic_name_list'
 import type { DataCreditPanel } from '../data-credit'
 import type { ScreenshotDiffViewerPanel } from '../dev/ScreenshotDiffViewerPanel'
 import { loadJSON } from '../load_json'
@@ -16,12 +16,15 @@ import type { MapSettings } from '../mapper/settings/utils'
 import { Settings } from '../page_template/settings'
 import { activeVectorKeys, fromVector, getVector } from '../page_template/settings-vector'
 import { StatGroupSettings } from '../page_template/statistic-settings'
-import { allGroups, CategoryIdentifier, StatName, StatPath, statsTree } from '../page_template/statistic-tree'
+import { allGroups, CategoryIdentifier, StatPath, statsTree } from '../page_template/statistic-tree'
 import { OauthCallbackPanel } from '../quiz/OauthCallbackPanel'
+import { getDailyOffsetNumber, getRetrostatOffsetNumber } from '../quiz/dates'
 import type {
     QuizQuestionsModel, CustomQuizContent, JuxtaQuestionJSON,
     QuizDescriptor, RetroQuestionJSON, QuizHistory,
 } from '../quiz/quiz'
+import type { StatisticPanel } from '../stat/StatisticPanel'
+import type { StatSettings } from '../stat/types'
 import { loadSYAUData, SYAUData } from '../syau/load'
 import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse, Universe, universeSchema } from '../universe'
@@ -67,8 +70,6 @@ const comparisonSchemaFromParams = z.object({
 
 const statisticSchema = z.object({
     article_type: z.string(),
-    statname: z.optional(z.string() as z.ZodType<StatName, z.ZodTypeDef, StatName>),
-    uss: z.optional(z.string()),
     start: z.number().int(),
     amount: z.union([z.literal('All'), z.number().int()]),
     order: z.union([z.literal('descending'), z.literal('ascending')]),
@@ -76,15 +77,20 @@ const statisticSchema = z.object({
     universe: z.optional(universeSchema),
     edit: z.optional(z.boolean()),
     sort_column: z.optional(z.number().int()),
-}).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
-    message: 'Either statname or uss must be provided, but not both',
-})
+}).and(
+    z.union([
+        z.object({
+            statname: z.enum(statnames),
+        }),
+        z.object({
+            uss: z.string(),
+        }),
+    ]),
+)
 
 const statisticSchemaFromParams = z.union([
     z.object({
         article_type: z.string(),
-        statname: z.optional(z.string().transform(s => s.replaceAll('__PCT__', '%') as StatName)),
-        uss: z.optional(z.string()),
         start: z.optional(z.coerce.number().int()).default(1),
         amount: z.union([z.literal('All'), z.coerce.number().int(), z.undefined().transform(() => 10)]),
         order: z.union([z.undefined().transform(() => 'descending' as const), z.literal('descending'), z.literal('ascending')]),
@@ -92,10 +98,24 @@ const statisticSchemaFromParams = z.union([
         universe: z.optional(universeSchema).catch(undefined),
         edit: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.undefined().transform(() => false)]),
         sort_column: z.optional(z.coerce.number().int()).default(0),
-    }).refine(data => (data.statname !== undefined) !== (data.uss !== undefined), {
-        message: 'Either statname or uss must be provided, but not both',
-    }),
-    z.object({}),
+    }).and(z.union([
+        z.object({
+            statname: z.string().transform(s => s.replaceAll('__PCT__', '%')).pipe(z.enum(statnames)),
+        }),
+        z.object({
+            uss: z.string(),
+        }),
+    ])),
+    z.object({}).transform(() => ({
+        article_type: 'Subnational Region',
+        uss: 'customNode(""); condition (true); table(columns=[column(values=density_pw_1km)])',
+        start: 1,
+        amount: 20,
+        order: 'descending' as const,
+        universe: 'USA' as const,
+        edit: true,
+        sort_column: 0,
+    })),
 ])
 
 const randomSchema = z.object({
@@ -199,7 +219,7 @@ export type PageData =
         mapPartitions: number[][]
         comparisonPanel: typeof ComparisonPanel
     }
-    | { kind: 'statistic', universe: Universe, statisticPanel: typeof StatisticPanel } & StatisticPanelProps
+    | { kind: 'statistic', settings: StatSettings, statisticPanel: typeof StatisticPanel, counts: CountsByUT }
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit', dataCreditPanel: typeof DataCreditPanel }
@@ -230,21 +250,7 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
         case '/comparison.html':
             return { kind: 'comparison', ...comparisonSchemaFromParams.parse(params) }
         case '/statistic.html':
-            const statisticParams = statisticSchemaFromParams.parse(params)
-            if ('article_type' in statisticParams) {
-                return { kind: 'statistic', ...statisticParams }
-            }
-            return {
-                kind: 'statistic',
-                article_type: 'Subnational Region',
-                uss: 'customNode(""); condition (true); table(columns=[column(values=density_pw_1km)])',
-                start: 1,
-                amount: 20,
-                order: 'descending',
-                universe: 'USA',
-                edit: true,
-                sort_column: 0,
-            }
+            return { kind: 'statistic', ...statisticSchemaFromParams.parse(params) }
         case '/random.html':
             return { kind: 'random', ...randomSchemaForParams.parse(params) }
         case '/':
@@ -298,8 +304,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
         case 'statistic':
             pathname = '/statistic.html'
             searchParams = {
-                statname: pageDescriptor.statname?.replaceAll('%', '__PCT__'),
-                uss: pageDescriptor.uss,
+                ...('uss' in pageDescriptor ? { uss: pageDescriptor.uss } : { statname: pageDescriptor.statname.replaceAll('%', '__PCT__') }),
                 article_type: pageDescriptor.article_type,
                 start: pageDescriptor.start.toString(),
                 amount: pageDescriptor.amount.toString(),
@@ -509,40 +514,53 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             }
         }
         case 'statistic': {
+            const counts = getCountsByArticleType()
+            const panel = import('../stat/StatisticPanel')
+            const utils = import('../stat/utils')
+
             const statUniverse = newDescriptor.universe ?? 'world'
             const displayStatUniverse = statUniverse !== 'world' ? statUniverse : undefined
 
-            const [countsByArticleType, panel] = await Promise.all([
-                getCountsByArticleType(),
-                import('../components/statistic-panel'),
-            ])
+            // Pin the start position correctly to the beginning of the page
+            let start = newDescriptor.start
+            if (newDescriptor.amount !== 'All') {
+                start = start - 1
+                start = start - (start % newDescriptor.amount)
+                start = start + 1
+            }
 
             return {
                 pageData: {
                     kind: 'statistic',
-                    descriptor: newDescriptor.statname !== undefined
-                        ? {
-                                type: 'simple-statistic',
-                                statname: newDescriptor.statname,
-                            }
-                        : {
-                                type: 'uss-statistic',
-                                uss: newDescriptor.uss!,
-                            },
-                    order: newDescriptor.order,
-                    highlight: newDescriptor.highlight ?? undefined,
-                    articleType: newDescriptor.article_type,
-                    start: newDescriptor.start,
-                    amount: newDescriptor.amount,
-                    universe: statUniverse,
-                    edit: newDescriptor.edit ?? false,
-                    sortColumn: newDescriptor.sort_column ?? 0,
-                    // StatisticPanel needs this to compute the set of universes to display
-                    counts: countsByArticleType,
-                    statisticPanel: panel.StatisticPanel,
+                    statisticPanel: (await panel).StatisticPanel,
+                    settings: {
+                        stat: {
+                            universe: statUniverse,
+                            articleType: newDescriptor.article_type,
+                            ...('uss' in newDescriptor
+                                ? {
+                                        type: 'uss',
+                                        uss: (await utils).parseStatUSS(newDescriptor.uss, statUniverse),
+                                    }
+                                : {
+                                        type: 'simple',
+                                        statName: newDescriptor.statname,
+                                    }),
+                        },
+                        view: {
+                            start,
+                            amount: newDescriptor.amount,
+                            order: newDescriptor.order,
+                            highlight: newDescriptor.highlight,
+                            edit: newDescriptor.edit ?? false,
+                            sortColumn: newDescriptor.sort_column ?? 0,
+                        },
+                    },
+                    counts: await counts,
                 },
                 newPageDescriptor: {
                     ...newDescriptor,
+                    start,
                     universe: displayStatUniverse,
                     highlight: undefined,
                 },
@@ -607,7 +625,6 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             let todayName: string | undefined
             const updatedDescriptor: PageDescriptor = { ...newDescriptor }
             const panel = import('../components/quiz-panel')
-            const dates = import('../quiz/dates')
             const quizImport = import('../quiz/quiz')
             switch (newDescriptor.mode) {
                 case 'custom': {
@@ -622,7 +639,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     break
                 }
                 case 'retro': {
-                    const retro = newDescriptor.date ?? (await dates).getRetrostatOffsetNumber()
+                    const retro = newDescriptor.date ?? getRetrostatOffsetNumber()
                     quizDescriptor = {
                         kind: 'retrostat',
                         name: `W${retro}`,
@@ -658,7 +675,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                     break
                 }
                 case undefined:
-                    const today = newDescriptor.date ?? (await dates).getDailyOffsetNumber()
+                    const today = newDescriptor.date ?? getDailyOffsetNumber()
                     quizDescriptor = { kind: 'juxtastat', name: today }
                     const [json, { wrapQuestionsModel, loadJuxta }] = await Promise.all([
                         loadJSON(`/quiz/${today}`),
@@ -794,7 +811,7 @@ export function pageTitle(pageData: PageData): string {
         case 'article':
             return pageData.article.shortname
         case 'statistic':
-            return pageData.descriptor.type === 'simple-statistic' ? pageData.descriptor.statname : 'Urban Stats: Custom Table'
+            return pageData.settings.stat.type === 'simple' ? pageData.settings.stat.statName : 'Urban Stats: Custom Table'
         case 'comparison':
             return pageData.articles.map(x => x.shortname).join(' vs ')
         case 'editor':

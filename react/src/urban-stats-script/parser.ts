@@ -1,3 +1,4 @@
+import { applyRewriteRules } from '../mapper/settings/auto-ux-rewrite'
 import { assert } from '../utils/defensive'
 
 import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
@@ -6,7 +7,7 @@ import { Context } from './context'
 import { AnnotatedToken, AnnotatedTokenWithValue, lex, Keyword, emptyLocation } from './lexer'
 import { noLocation, LocInfo, Block } from './location'
 import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
-import { USSType } from './types-values'
+import type { USSType } from './types-values'
 
 export interface Decorated<T> {
     node: T
@@ -14,6 +15,14 @@ export interface Decorated<T> {
 }
 
 export interface ParseError { type: 'error', value: string, location: LocInfo }
+
+export interface UnparseOptions {
+    indent?: number
+    inline?: boolean
+    simplify?: 'basic' | 'auto-ux'
+    expressionalContext?: boolean
+    wrap?: boolean
+}
 
 type USSInfixSequenceElement = { type: 'operator', operatorType: 'unary' | 'binary', value: Decorated<string> } | UrbanStatsASTExpression
 
@@ -635,7 +644,7 @@ class ParseState {
     }
 }
 
-export function mergeStatements(statements: UrbanStatsASTStatement[], fallbackLocation?: LocInfo): UrbanStatsASTStatement {
+function mergeStatements(statements: UrbanStatsASTStatement[], fallbackLocation?: LocInfo): UrbanStatsASTStatement {
     statements = gulpRestForConditions(statements)
     if (statements.length === 1) {
         return statements[0]
@@ -670,7 +679,7 @@ export function parse(code: string, block?: Block, returnParseErrorNode: boolean
     return parseTokens(tokens, code, returnParseErrorNode)
 }
 
-export function parseTokens(tokens: AnnotatedToken[], originalCode: string, returnParseErrorNode: boolean = false): UrbanStatsASTStatement | { type: 'error', errors: ParseError[] } {
+function parseTokens(tokens: AnnotatedToken[], originalCode: string, returnParseErrorNode: boolean = false): UrbanStatsASTStatement | { type: 'error', errors: ParseError[] } {
     const lexErrors = tokens.filter(token => token.token.type === 'error')
     if (lexErrors.length > 0) {
         const errors: ParseError[] = lexErrors.map(token => ({ type: 'error' as const, value: `Unrecognized token: ${token.token.value}`, location: token.location }))
@@ -814,12 +823,17 @@ export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpre
     return identifiers
 }
 
-export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, opts: { indent?: number, inline?: boolean, simplify?: boolean, expressionalContext?: boolean, wrap?: boolean } = {}): string {
+export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, opts: UnparseOptions = {}): string {
     if (opts.inline) {
         assert(opts.expressionalContext ?? false, 'expressionalContext must be true if inline is true')
     }
     opts.indent = opts.indent ?? 0
     opts.wrap = opts.wrap ?? true
+
+    if (opts.simplify === 'auto-ux') {
+        node = applyRewriteRules(node)
+    }
+
     function isSimpleExpression(expr: UrbanStatsASTExpression): boolean {
         return expr.type === 'identifier' || expr.type === 'vectorLiteral' || expr.type === 'constant' || expr.type === 'autoUXNode' || expr.type === 'customNode'
     }
@@ -831,13 +845,13 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
 
     switch (node.type) {
         case 'autoUXNode':
-            if (opts.simplify) {
+            if (opts.simplify !== undefined) {
                 return unparse(node.expr, opts)
             }
             return `autoUXNode(${unparse(node.expr, { ...opts, inline: true, expressionalContext: true })}, ${JSON.stringify(JSON.stringify(node.metadata))})`
         case 'customNode':
-            if (!opts.simplify) {
-                return `customNode(${JSON.stringify(node.originalCode.trim())})`
+            if (opts.simplify === undefined) {
+                return `customNode(${JSON.stringify(node.originalCode)})`
             }
             if (opts.expressionalContext && node.expr.type !== 'expression') {
                 return unparse({ type: 'do', statements: [node.expr], entireLoc: locationOf(node.expr) }, { ...opts, inline: true })
@@ -979,7 +993,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
             const restStatements = { type: 'statements' as const, result: node.rest, entireLoc: node.entireLoc }
             const restStr = unparse(restStatements, opts)
             // If condition is literal "true", elide it
-            if (opts.simplify && node.condition.type === 'identifier' && node.condition.name.node === 'true') {
+            if (opts.simplify !== undefined && node.condition.type === 'identifier' && node.condition.name.node === 'true') {
                 return restStr
             }
             return `${indentSpaces(opts.indent)}condition (${condStr})\n${restStr}`

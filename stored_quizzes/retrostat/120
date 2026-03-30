@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household Income > $100k %",
+      "stat_path": "household_income_over_100k",
+      "question": "higher % of households who have household income over $100k",
+      "longname_a": "Springfield MO Media Market, USA",
+      "longname_b": "Beaumont-Port Arthur TX Media Market, USA",
+      "stat_a": 0.1835178199657806,
+      "stat_b": 0.26255476712067705
+    },
+    "b": {
+      "stat_column": "High temperature Above 90\u00b0F %",
+      "stat_path": "days_above_90_4",
+      "question": "higher % of hot days (days with high temp over 90\u00b0F, population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Kafr ash Shaykh, Egypt",
+      "longname_b": "Maranh\u00e3o, Brazil",
+      "stat_a": 0.12019128942108323,
+      "stat_b": 0.4032145168184218
+    },
+    "a_ease": 0.732753938077132,
+    "b_ease": 0.29595827900912647
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Gen Z %",
+      "stat_path": "generation_genz",
+      "question": "higher % of people who are gen z!TOOLTIP born between 1997 and 2011",
+      "longname_a": "USA",
+      "longname_b": "Canada",
+      "stat_a": 0.19677868418278088,
+      "stat_b": 0.17152107147858825
+    },
+    "b": {
+      "stat_column": "PW Mean % of parkland within 1km",
+      "stat_path": "park_percent_1km_v2",
+      "question": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
+      "longname_a": "Bangor ME Media Market, USA",
+      "longname_b": "Lansing MI Media Market, USA",
+      "stat_a": 0.006048541419983314,
+      "stat_b": 0.027415466786226205
+    },
+    "a_ease": 0.7831265508684864,
+    "b_ease": 0.38237243207422134
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Employed in Accommodation and food services %",
+      "stat_path": "industry_accommodation_and_food_services",
+      "question": "higher % of workers employed in the accommodation and food services industry!TOOLTIP hotels, restaurants, bars, caterers, food services contractors, etc.",
+      "longname_a": "Baltimore County, Maryland, USA",
+      "longname_b": "Horry County, South Carolina, USA",
+      "stat_a": 0.05474095265906048,
+      "stat_b": 0.15784768434496177
+    },
+    "b": {
+      "stat_column": "Binge drinking among adults %",
+      "stat_path": "BINGE_cdc_2",
+      "question": "higher % of adults who binge drink",
+      "longname_a": "Oregon, USA",
+      "longname_b": "Nevada, USA",
+      "stat_a": 0.17239596205933086,
+      "stat_b": 0.1444241713065475
+    },
+    "a_ease": 0.6109181141439206,
+    "b_ease": 0.2046936114732725
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2BR Rent > $1500 %",
+      "stat_path": "rent_2br_over_1500",
+      "question": "higher % of units with 2br rent over $1500",
+      "longname_a": "Butler County, Ohio, USA",
+      "longname_b": "El Paso County, Colorado, USA",
+      "stat_a": 0.0658929651834332,
+      "stat_b": 0.295640166872318
+    },
+    "b": {
+      "stat_column": "PW Mean Elevation",
+      "stat_path": "gridded_elevation",
+      "question": "higher population-weighted mean elevation !TOOLTIP Population weighted elevation/hilliness statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Yobe, Nigeria",
+      "longname_b": "Liaoning Sheng, China",
+      "stat_a": 354.22540283203125,
+      "stat_b": 88.02820587158203
+    },
+    "a_ease": 0.7946768060836502,
+    "b_ease": 0.3771712158808933
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Transportation occupations %",
+      "stat_path": "occupation_transportation_occupations",
+      "question": "higher % of workers employed in transportation occupations!TOOLTIP truck drivers, bus drivers, taxi drivers, pilots, flight attendants, sailors, etc.",
+      "longname_a": "District of Columbia, USA",
+      "longname_b": "Alaska, USA",
+      "stat_a": 0.018721107440650985,
+      "stat_b": 0.046616015884551956
+    },
+    "b": {
+      "stat_column": "2012-2016 Swing",
+      "stat_path": "2012-2016 Swing-margin",
+      "question": "!FULL Which swung less towards Republicans from 2012 to 2016?",
+      "longname_a": "South Carolina, USA",
+      "longname_b": "District of Columbia, USA",
+      "stat_a": -0.03662062050348941,
+      "stat_b": 0.02536560996646564
+    },
+    "a_ease": 0.3711066931742876,
+    "b_ease": 0.80078125
+  }
+]

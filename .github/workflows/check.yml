@@ -2,7 +2,7 @@ name: check
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 env:
   # This is used in ci_proxy, do not remove. It is necessary so that
@@ -26,13 +26,14 @@ jobs:
         name: Checkout repository
         uses: nick-fields/retry@v3
         with:
-          max_attempts: 2
-          timeout_minutes: 2
+          max_attempts: 5
+          timeout_seconds: 30
           shell: bash
           command: |
             rm -rf $GITHUB_WORKSPACE/*
 
             git config --global --add safe.directory $GITHUB_WORKSPACE
+            git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $(echo -n x-access-token:$GITHUB_TOKEN | base64 -w0)"
 
             # Clone the repo
             git clone --no-checkout --filter=blob:none ${{ github.server_url }}/${{ github.repository }}.git $GITHUB_WORKSPACE
@@ -102,6 +103,9 @@ jobs:
       - run: npm run lint:ci
         working-directory: react
         if: "!cancelled()"
+      - run: npm run unused-exports
+        working-directory: react
+        if: "!cancelled()"
 
   build-frontend:
     runs-on: ubuntu-22.04
@@ -112,7 +116,7 @@ jobs:
       - *checkout
       - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
-      - run: python3 create_website.py react/test/density-db --no-data --no-geo --no-juxta --mode=ci
+      - run: python3 create_website.py --mode ci --target scripts --site-folder react/test/density-db
       - uses: actions/upload-artifact@v4
         with:
           name: frontend-build
@@ -166,6 +170,7 @@ jobs:
         env:
           URBAN_STATS_TEST_PASSWORD: ${{ secrets.URBAN_STATS_TEST_PASSWORD }}
           URBAN_STATS_TEST_TOTP: ${{ secrets.URBAN_STATS_TEST_TOTP }}
+          CHECK_RUN_ID: ${{ job.check_run_id }}
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
@@ -177,9 +182,10 @@ jobs:
           name: changed_screenshots-${{ matrix.test-file }}
           path: react/changed_screenshots
       - uses: actions/upload-artifact@v4
+        if: "!cancelled()"
         with:
-          name: durations-${{ matrix.test-file }}
-          path: react/durations
+          name: test_histories-${{ matrix.test-file }}
+          path: react/test_histories
 
   merge-screenshots:
     runs-on: ubuntu-22.04
@@ -203,17 +209,20 @@ jobs:
           pattern: "{delta,changed_screenshots}"
           separate-directories: true
         continue-on-error: true
-      - if: ${{ steps.upload-combined.outputs.artifact-id != '' && github.event_name == 'pull_request' }}
-        uses: actions/github-script@v7
+      - *checkout
+      - uses: ./.github/actions/node_modules
+      - uses: actions/download-artifact@v4
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '[Screenshots merge ${{ github.event.pull_request.head.sha }}](https://urbanstats.org/screenshot-diff-viewer.html?artifactId=${{ steps.upload-combined.outputs.artifact-id }}&hash=${{ github.sha }})\n\n`!updateScreenshots` to update'
-            })
+          pattern: "test_histories-*"
+          path: react/test_histories
+          merge-multiple: true
+      - run: |
+          npx tsx test/scripts/post-comment.ts
+        working-directory: react
+        env:
+          ARTIFACT_ID: ${{ steps.upload-combined.outputs.artifact-id }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
   merge-and-save-durations:
     runs-on: ubuntu-22.04
@@ -224,8 +233,8 @@ jobs:
       - uses: ./.github/actions/node_modules
       - uses: actions/download-artifact@v4
         with:
-          pattern: "durations-*"
-          path: react/durations
+          pattern: "test_histories-*"
+          path: react/test_histories
           merge-multiple: true
       - run: |
           npx tsx test/scripts/save-durations.ts
@@ -249,7 +258,7 @@ jobs:
       - uses: ./.github/actions/node_modules
       - name: Run js tests
         run: |
-          npm run test:unit:ci -- \
+          npm run test:unit -- \
             --proxy=true \
             --test='unit/*.test.ts'
         working-directory: react

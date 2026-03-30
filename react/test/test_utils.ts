@@ -87,12 +87,12 @@ export async function waitForQuizLoading(t: TestController): Promise<void> {
 }
 
 export async function waitForLoading(): Promise<void> {
-    return ClientFunction(() => (window as unknown as TestWindow).testUtils.waitForLoading())()
+    return ClientFunction(() => (window as unknown as TestWindow).testUtils.waitForLoading('test_utils'))()
 }
 
 async function prepForImage(t: TestController, options: { hover: boolean }): Promise<void> {
     if (options.hover) {
-        await t.hover('#searchbox') // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
+        await t.hover('body', { offsetX: 0, offsetY: 0 }) // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
     }
     await t.eval(() => {
         // disable the map, so that we're not testing the tiles
@@ -398,10 +398,6 @@ export async function createComparison(t: TestController, searchTerm: string, ex
     await t.pressKey('enter')
 }
 
-export async function getAllElements(selector: Selector): Promise<NodeSnapshot[]> {
-    return Promise.all(Array.from({ length: await selector.count }).map((_, i) => selector.nth(i)()))
-}
-
 export function mapFeatureName(r: RegExp): Promise<string | undefined> {
     return ClientFunction(() => {
         for (const { features } of (window as unknown as TestWindow).testUtils.clickableMaps.values()) {
@@ -482,3 +478,7 @@ export const mapper = (testFn: () => TestFn) => (
     urbanstatsFixture(`quick-${code}`, urlFromCode(geo, universe, code))
     testFn()(name, testBlock)
 }
+
+export const goBack = ClientFunction(() => { window.history.back() })
+export const goForward = ClientFunction(() => { window.history.forward() })
+export const getScroll = ClientFunction(() => window.scrollY)

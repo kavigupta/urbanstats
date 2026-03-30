@@ -5,7 +5,12 @@ import statPaths from '../data/statistic_path_list'
 import { rawStatsTree, dataSources } from '../data/statistics_tree'
 import { DefaultMap } from '../utils/DefaultMap'
 
-export type StatPath = (typeof statPaths)[number]
+type RawStatEntry = (typeof rawStatsTree)[number]['contents'][number]['contents'][number]['stats_by_source'][number]['stats'][number]
+type RawMetadataStatEntry = Extract<RawStatEntry, { kind: 'metadata' }>
+
+export type DataStatPath = (typeof statPaths)[number]
+export type MetadataStatPath = RawMetadataStatEntry['path']
+export type StatPath = DataStatPath | MetadataStatPath
 export type StatName = (typeof statNames)[number]
 
 export type CategoryIdentifier = (typeof rawStatsTree)[number]['id']
@@ -47,13 +52,27 @@ export interface MultiSourceStatistic {
     bySource: Statistic[]
 }
 
-export interface Statistic {
+interface BaseStatistic {
     source: DataSource | null
     path: StatPath
     name: string
-    statcol: StatCol
     parent: GroupYear
 }
+
+export interface DataStatistic extends BaseStatistic {
+    kind: 'data'
+    path: DataStatPath
+    name: StatName
+    statcol: StatCol
+}
+
+export interface MetadataStatistic extends BaseStatistic {
+    kind: 'metadata'
+    path: MetadataStatPath
+    metadataIndex: number
+}
+
+export type Statistic = DataStatistic | MetadataStatistic
 
 export const statsTree: StatsTree = rawStatsTree.map(category => (
     {
@@ -67,13 +86,28 @@ export const statsTree: StatsTree = rawStatsTree.map(category => (
                 stats: stats_by_source.map(({ name, indentedName, stats: s }) => ({
                     name,
                     indentedName: indentedName ?? undefined,
-                    bySource: s.map(({ source, column }) => ({
-                        source,
-                        path: statPaths[column],
-                        name: statNames[column],
-                        statcol: stats[column],
-                        parent: undefined as unknown as GroupYear, // set below
-                    } satisfies Statistic)),
+                    bySource: s.map((stat) => {
+                        switch (stat.kind) {
+                            case 'data':
+                                return {
+                                    kind: 'data',
+                                    source: stat.source,
+                                    path: statPaths[stat.column],
+                                    name: statNames[stat.column],
+                                    statcol: stats[stat.column],
+                                    parent: undefined as unknown as GroupYear, // set below
+                                } satisfies DataStatistic
+                            case 'metadata':
+                                return {
+                                    kind: 'metadata',
+                                    source: stat.source,
+                                    path: stat.path,
+                                    name,
+                                    metadataIndex: stat.metadata_index,
+                                    parent: undefined as unknown as GroupYear, // set below
+                                } satisfies MetadataStatistic
+                        }
+                    }),
                 } satisfies MultiSourceStatistic)),
                 parent: undefined as unknown as Group, // set below
             } satisfies GroupYear)),
@@ -127,14 +161,24 @@ interface StatParent {
     groupYearName: string
     indentedName?: string
     source: DataSource | null
+    kind: Statistic['kind']
+    metadataIndex?: number
 }
 
 const statParentsList: [StatPath, StatParent][] = allGroups
     .flatMap(group => group.contents
         .flatMap(({ year, stats: s }) => s
             .flatMap(stat => stat.bySource
-                .map(({ source, path }) =>
-                    [path, { group, year, groupYearName: stat.name, indentedName: stat.indentedName, source }] satisfies [StatPath, StatParent]))))
+                .map(statBySource =>
+                    [statBySource.path, {
+                        group,
+                        year,
+                        groupYearName: stat.name,
+                        indentedName: stat.indentedName,
+                        source: statBySource.source,
+                        kind: statBySource.kind,
+                        metadataIndex: statBySource.kind === 'metadata' ? statBySource.metadataIndex : undefined,
+                    }] satisfies [StatPath, StatParent]))))
 
 export const statParents = new Map<StatPath, StatParent>(
     statParentsList,
@@ -142,10 +186,6 @@ export const statParents = new Map<StatPath, StatParent>(
 
 export const statPathToOrder = new Map<StatPath, number>(
     statParentsList.map(([statPath], i) => [statPath, i] as const),
-)
-
-export const statDataOrderToOrder = new Map<number, number>(
-    statPaths.map((statPath, i) => [i, statPathToOrder.get(statPath)!] as const),
 )
 
 export interface DataSourceCheckbox { name: SourceIdentifier, forcedOn: boolean }

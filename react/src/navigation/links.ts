@@ -1,72 +1,77 @@
-import type { StatisticDescriptor } from '../components/statistic-panel'
 import type_ordering_idx from '../data/type_ordering_idx'
-import { Universe } from '../universe'
+import { loadProtobuf } from '../load_json'
+import { sanitize } from '../utils/paths'
+import { shardBytesFullNum } from '../utils/shardHash'
 
-import { PageDescriptor } from './PageDescriptor'
-
-const typesInOrder = Object.fromEntries(Object.entries(type_ordering_idx).map(([k, v]) => [v, k]))
-
-function shardBytes(longname: string): [string, string] {
-    // as bytes, in utf-8
-    const bytes = new TextEncoder().encode(longname)
-    const hash = new Uint32Array([0])
-    for (const byte of bytes) {
-        hash[0] = (hash[0] * 31 + byte) & 0xffffffff
-    }
-    // last 4 hex digits
-    let string = ''
-    for (let i = 0; i < 4; i++) {
-        string += (hash[0] & 0xf).toString(16)
-        hash[0] = hash[0] >> 4
-    }
-    // get first two and last two
-    return [
-        string.slice(0, 2),
-        string.slice(2, 3),
-    ]
+// Shard indices (gzipped proto, int32): store as Int32Array; interpret as unsigned when comparing. Not cached.
+async function getShardIndexShape(): Promise<Int32Array> {
+    const idx = await loadProtobuf('/shape/shard_index_shape.gz', 'ShardIndex')
+    return new Int32Array(idx.startingHashes)
 }
 
-function shardedFolderName(longname: string): string {
-    const sanitizedName = sanitize(longname)
-    const [a, b] = shardBytes(sanitizedName)
+async function getShardIndexData(): Promise<Int32Array> {
+    const idx = await loadProtobuf('/data/shard_index_data.gz', 'ShardIndex')
+    return new Int32Array(idx.startingHashes)
+}
+
+export const typesInOrder = Object.fromEntries(Object.entries(type_ordering_idx).map(([k, v]) => [v, k]))
+
+/** Binary search: largest i such that (index[i] >>> 0) <= hash. Index stores signed int32; compare as unsigned. */
+function findShardIndex(hash: number, index: Int32Array): number {
+    if (index.length === 0) return 0
+    const h = hash >>> 0
+    let lo = 0
+    let hi = index.length - 1
+    while (lo < hi) {
+        const mid = (lo + hi + 1) >> 1
+        if ((index[mid] >>> 0) <= h) {
+            lo = mid
+        }
+        else {
+            hi = mid - 1
+        }
+    }
+    return (index[lo] >>> 0) <= h ? lo : 0
+}
+
+/** Nested path for shard index: A/B (second-last and last hex digit). 256 -> 0/0. Must match Python shard_subfolder. */
+function shardPathPrefix(shardIdx: number): string {
+    const s = shardIdx.toString(16)
+    const a = s.length >= 2 ? s[s.length - 2] : '0'
+    const b = s[s.length - 1]
     return `${a}/${b}`
 }
 
-export function shardedName(longname: string): string {
-    const sanitizedName = sanitize(longname)
-    return `${shardedFolderName(longname)}/${sanitizedName}`
+async function dataOrShapeLink(longname: string, dataOrShape: 'data' | 'shape'): Promise<string> {
+    const sanitized = sanitize(longname)
+    const hash = shardBytesFullNum(sanitized)
+    const index = dataOrShape === 'shape' ? getShardIndexShape() : getShardIndexData()
+    const shardIdx = findShardIndex(hash, await index)
+    return `/${dataOrShape}/${shardPathPrefix(shardIdx)}/shard_${shardIdx}.gz`
 }
 
-export function shapeLink(longname: string): string {
-    return `/shape/${encodeURIComponent(shardedName(longname))}.gz`
+export function shapeLink(longname: string): Promise<string> {
+    return dataOrShapeLink(longname, 'shape')
 }
 
-export function dataLink(longname: string): string {
-    return `/data/${encodeURIComponent(shardedName(longname))}.gz`
-}
-
-export function symlinksLink(longname: string): string {
-    return `/data/${shardedFolderName(longname)}.symlinks.gz`
+export function dataLink(longname: string): Promise<string> {
+    return dataOrShapeLink(longname, 'data')
 }
 
 export function indexLink(universe: string, typ: string): string {
-    return `/index/${universe}/${encodeURIComponent(sanitize(typ, false))}.gz`
+    return `/index/${universe}/${encodeURIComponent(typ)}.gz`
 }
 
 export function orderingLink(type: string, idx: number): string {
-    return `/order/${encodeURIComponent(sanitize(type, false))}_${idx}.gz`
+    return `/order/${encodeURIComponent(type)}_${idx}.gz`
 }
 
 export function orderingDataLink(type: string, idx: number): string {
-    return `/order/${encodeURIComponent(sanitize(type, false))}_${idx}_data.gz`
+    return `/order/${encodeURIComponent(type)}_${idx}_data.gz`
 }
 
 export function consolidatedShapeLink(typ: string): string {
     return `/consolidated/shapes__${encodeURIComponent(sanitize(typ))}.gz`
-}
-
-export function consolidatedStatsLink(typ: string): string {
-    return `/consolidated/stats__${encodeURIComponent(sanitize(typ))}.gz`
 }
 
 export function searchIconLink(typeIdx: number): string {
@@ -75,50 +80,6 @@ export function searchIconLink(typeIdx: number): string {
 
 export function centroidsPath(universe: string, typ: string): string {
     return `/centroids/${encodeURIComponent(universe)}_${encodeURIComponent(sanitize(typ))}.gz`
-}
-
-export function statisticDescriptor(props: {
-    universe: Universe | undefined
-    statDesc: StatisticDescriptor
-    articleType: string
-    start: number
-    amount: number | 'All'
-    order: 'ascending' | 'descending'
-    highlight?: string
-    edit?: boolean
-    sortColumn: number
-}): PageDescriptor & { kind: 'statistic' } {
-    let start = props.start
-    // make start % amount == 0
-    if (props.amount !== 'All') {
-        start = start - 1
-        start = start - (start % props.amount)
-        start = start + 1
-    }
-    return {
-        kind: 'statistic',
-        ...(props.statDesc.type === 'simple-statistic' ? { statname: props.statDesc.statname } : { uss: props.statDesc.uss }),
-        article_type: props.articleType,
-        start,
-        amount: props.amount,
-        order: props.order,
-        highlight: props.highlight,
-        universe: props.universe,
-        edit: props.edit,
-        sort_column: props.sortColumn,
-    }
-}
-
-export function sanitize(longname: string, spaces_around_slash = true): string {
-    let x = longname
-    if (spaces_around_slash) {
-        x = x.replaceAll('/', ' slash ')
-    }
-    else {
-        x = x.replaceAll('/', 'slash')
-    }
-    x = x.replaceAll('%', '%25')
-    return x
 }
 
 export function universePath(universe: string): string {

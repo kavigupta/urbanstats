@@ -3,16 +3,18 @@ import '@fontsource/inconsolata/500.css'
 import React, { CSSProperties, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import { totalOffset } from '../components/screenshot'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { LongFormDocumentation, linkContext } from '../uss-documentation'
 import { TestUtils } from '../utils/TestUtils'
+import { totalOffset } from '../utils/layout'
 
-import { renderCode, getRange, nodeContent, Range, setRange, EditorResult, longMessage, Script, makeScript, getAutocompleteOptions, createAutocompleteMenu, createPlaceholder, createDocumentationPopover } from './editor-utils'
+import { createAutocompleteMenu, createDocumentationPopover, getAutocompleteOptions } from './autocomplete'
+import { renderCode, getRange, nodeContent, Range, setRange, EditorResult, longMessage, Script, makeScript, createPlaceholder } from './editor-utils'
 import { AnnotatedToken } from './lexer'
 import { LocInfo } from './location'
-import { TypeEnvironment, USSDocumentedType } from './types-values'
+import { renderValue, TypeEnvironment, USSDocumentedType, USSValue } from './types-values'
+import { AssignmentsResult } from './workerManager'
 
 interface AutocompleteState {
     kind: 'autocomplete'
@@ -22,18 +24,19 @@ interface AutocompleteState {
     apply: (optionIdx: number) => void
 }
 
-interface DocumentationState {
-    kind: 'documentation'
+interface InspectState {
+    kind: 'inspect'
     location: LocInfo
     name: string
-    value: USSDocumentedType
+    documentation: USSDocumentedType | undefined
+    value: USSValue | undefined
     element: HTMLElement
 }
 
-type PopoverState = AutocompleteState | DocumentationState | undefined
+type PopoverState = AutocompleteState | InspectState | undefined
 
 export function Editor(
-    { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, eRef }: {
+    { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, eRef, assignments }: {
         uss: string
         setUss: (newScript: string) => void
         typeEnvironment: TypeEnvironment
@@ -42,6 +45,7 @@ export function Editor(
         selection: Range | null
         setSelection: (newRange: Range | null) => void
         eRef?: React.MutableRefObject<HTMLPreElement | null>
+        assignments: AssignmentsResult
     },
 ): ReactNode {
     const setSelectionRef = useRef(setSelection)
@@ -65,7 +69,7 @@ export function Editor(
             newScript, colors, results.filter(r => r.kind !== 'success'),
             (token, content) => {
                 if (popoverState?.location.end.charIdx === token.location.end.charIdx && token.token.type === 'identifier') {
-                    if (popoverState.kind === 'documentation') {
+                    if (popoverState.kind === 'inspect') {
                         // put the text node in a span that has a background so we hightlight the token we're popovering
                         const text = content[0]
                         const span = document.createElement('span')
@@ -186,36 +190,94 @@ export function Editor(
                         setPopoverState(undefined)
                         return
                     case 'ArrowDown':
+                        e.preventDefault()
+                        setAutocompleteSelectionIdx(i => i + 1 >= popoverState.options.length ? 0 : i + 1)
+                        return
                     case 'ArrowUp':
                         e.preventDefault()
-                        if (e.key === 'ArrowDown') {
-                            setAutocompleteSelectionIdx(i => i + 1 >= popoverState.options.length ? 0 : i + 1)
-                        }
-                        else {
-                            setAutocompleteSelectionIdx(i => i - 1 < 0 ? popoverState.options.length - 1 : i - 1)
-                        }
+                        setAutocompleteSelectionIdx(i => i - 1 < 0 ? popoverState.options.length - 1 : i - 1)
                         return
                 }
             }
 
-            if (e.key === 'Tab') {
+            const range = getRange(editor)
+
+            /**
+             * Reimplementing many editing operations involving newlines is the easiest way to get consistent operation across browsers.
+             */
+
+            if (e.key === 'Enter' && range !== null) {
+                // Lots of browsers can't figure this out on their own, so let's just do it for them
                 e.preventDefault()
-                const range = getRange(editor)
-                if (range !== null) {
-                    editScript(
-                        `${script.uss.slice(0, range.start)}    ${script.uss.slice(range.end)}`,
-                        { start: range.start + 4, end: range.start + 4 },
-                    )
-                }
+                editScript(
+                    `${script.uss.slice(0, range.start)}\n${script.uss.slice(range.end)}`,
+                    { start: range.start + 1, end: range.start + 1 },
+                )
+                return
             }
-            else if (e.key === 'Backspace') {
-                const range = getRange(editor)
-                if (range !== null && range.start === range.end && range.start >= 4 && script.uss.slice(range.start - 4, range.start) === '    ') {
+
+            if (e.key === 'Tab' && range !== null) {
+                e.preventDefault()
+                editScript(
+                    `${script.uss.slice(0, range.start)}    ${script.uss.slice(range.end)}`,
+                    { start: range.start + 4, end: range.start + 4 },
+                )
+                return
+            }
+
+            if (e.key === 'Backspace' && range !== null) {
+                // Special case for getting rid of tabs
+                if (range.start === range.end && range.start >= 4 && script.uss.slice(range.start - 4, range.start) === '    ') {
                     e.preventDefault()
                     editScript(
                         `${script.uss.slice(0, range.start - 4)}${script.uss.slice(range.start)}`,
                         { start: range.start - 4, end: range.start - 4 },
                     )
+                    return
+                }
+
+                // Newline cases, browsers have trouble with newlines
+                // Filter to only operations with newlines so we don't have to implement special functionality like control + backspace
+                if (range.start !== range.end && script.uss.slice(range.start, range.end).includes('\n')) {
+                    // selection case
+                    e.preventDefault()
+                    editScript(
+                        `${script.uss.slice(0, range.start)}${script.uss.slice(range.end)}`,
+                        { start: range.start, end: range.start },
+                    )
+                    return
+                }
+                if (range.start === range.end && range.start > 0 && script.uss.charAt(range.start - 1) === '\n') {
+                    // no selection case
+                    e.preventDefault()
+                    editScript(
+                        `${script.uss.slice(0, range.start - 1)}${script.uss.slice(range.end)}`,
+                        { start: range.start - 1, end: range.start - 1 },
+                    )
+                    return
+                }
+            }
+
+            // Filter to only operations with newlines (which browsers have trouble with) so we don't have to implement special functionality like control + delete
+            if (e.key === 'Delete' && range !== null) {
+                if (range.start !== range.end && script.uss.slice(range.start, range.end).includes('\n')) {
+                    // selection case
+                    e.preventDefault()
+                    editScript(
+                        `${script.uss.slice(0, range.start)}${script.uss.slice(range.end)}`,
+                        { start: range.start, end: range.start },
+                    )
+                    return
+                }
+                // length - 1 since we shouldn't try to delete the trailing newline
+                if (range.start === range.end && range.end < script.uss.length - 1 && script.uss.charAt(range.start) === '\n') {
+                    // no selection case
+                    e.preventDefault()
+                    editScript(
+                        `${script.uss.slice(0, range.start)}${script.uss.slice(range.end + 1)}`,
+                        { start: range.start, end: range.start },
+                    )
+                    return
                 }
             }
         }
@@ -236,39 +298,45 @@ export function Editor(
         let hoveredToken: AnnotatedToken | undefined
         const listener = (event: MouseEvent): void => {
             for (const elem of document.elementsFromPoint(event.clientX, event.clientY)) {
-                let token: AnnotatedToken | undefined, name, value
-                if ((token = spanTokenMapRef.current.get(elem)) !== undefined && token.token.type === 'identifier' && (name = token.token.value) && (value = typeEnvironment.get(name)) !== undefined) {
-                    hoveredToken = token
-                    const opts = {
-                        location: token.location,
-                        name,
-                        value,
-                    }
-                    const elemOffset = totalOffset(elem).left
-                    setTimeout(() => {
-                        if (hoveredToken === token) {
-                            setPopoverState({
-                                kind: 'documentation',
-                                ...opts,
-                                element: createDocumentationPopover(colors, editorRef.current!, elemOffset),
-                            })
+                const token = spanTokenMapRef.current.get(elem)
+                if (token?.token.type === 'identifier') {
+                    const name = token.token.value
+                    const documentation = typeEnvironment.get(name)
+                    const value = assignments.get(name)
+                    if (documentation !== undefined || value !== undefined) {
+                        hoveredToken = token
+                        const opts = {
+                            location: token.location,
+                            name,
+                            documentation,
+                            value,
                         }
-                    }, 500)
-                    return
+                        const elemOffset = totalOffset(elem).left
+                        setTimeout(() => {
+                            if (hoveredToken === token) {
+                                setPopoverState({
+                                    kind: 'inspect',
+                                    ...opts,
+                                    element: createDocumentationPopover(colors, editorRef.current!, elemOffset),
+                                })
+                            }
+                        }, 500)
+                        return
+                    }
                 }
-                if (popoverState?.kind === 'documentation' && popoverState.element === elem) {
+                if (popoverState?.kind === 'inspect' && popoverState.element === elem) {
                     hoveredToken = undefined
                     return
                 }
             }
             hoveredToken = undefined
-            if (popoverState?.kind === 'documentation') {
+            if (popoverState?.kind === 'inspect') {
                 setPopoverState(undefined)
             }
         }
         document.addEventListener('mousemove', listener)
         return () => { document.removeEventListener('mousemove', listener) }
-    }, [colors, typeEnvironment, popoverState])
+    }, [colors, typeEnvironment, popoverState, assignments])
 
     const borderColor = useResultsColor(colorKey(results))
 
@@ -305,9 +373,22 @@ export function Editor(
                                 />
                             )
                         : (
-                                <linkContext.Provider value="link">
-                                    <LongFormDocumentation name={popoverState.name} value={popoverState.value} />
-                                </linkContext.Provider>
+                                <>
+                                    {popoverState.documentation && (
+                                        <div style={{ padding: '0 1.33em',
+                                        }}
+                                        >
+                                            <linkContext.Provider value="link">
+                                                <LongFormDocumentation name={popoverState.name} value={popoverState.documentation} />
+                                            </linkContext.Provider>
+                                        </div>
+                                    )}
+                                    {popoverState.value && (
+                                        <pre style={{ ...codeStyle(colors) }}>
+                                            {renderValue(popoverState.value)}
+                                        </pre>
+                                    )}
+                                </>
                             ),
                     popoverState.element,
                 )}
@@ -315,7 +396,7 @@ export function Editor(
     )
 }
 
-export function codeStyle(colors: Colors): CSSProperties {
+function codeStyle(colors: Colors): CSSProperties {
     return {
         whiteSpace: 'pre-wrap',
         fontFamily: 'Inconsolata, monospace',

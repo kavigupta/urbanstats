@@ -8,13 +8,14 @@ import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { unparse, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
 import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
+import { AssignmentsResult } from '../../urban-stats-script/workerManager'
 
 import { AutoUXEditor } from './AutoUXEditor'
 import { ConditionEditor } from './ConditionEditor'
 import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import { PreambleEditor } from './PreambleEditor'
-import { attemptParseAsTopLevel, idCondition, idOutput, idPreamble, makeStatements, MapUSS, rootBlockIdent } from './utils'
+import { MapUSS, makeStatements, idOutput, idCondition, idPreamble, rootBlockIdent, attemptParseAsTopLevel, type PreambleNode } from './map-uss'
 
 export function TopLevelEditor({
     uss,
@@ -22,12 +23,14 @@ export function TopLevelEditor({
     typeEnvironment,
     errors,
     targetOutputTypes,
+    assignments,
 }: {
     uss: MapUSS
     setUss: (u: MapUSS, o: ActionOptions) => void
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
     targetOutputTypes: USSType[]
+    assignments: AssignmentsResult
 }): ReactNode {
     const subcomponent = (): ReactNode => {
         if (uss.type === 'customNode') {
@@ -38,6 +41,7 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={rootBlockIdent}
+                    assignments={assignments}
                 />
             )
         }
@@ -47,7 +51,7 @@ export function TopLevelEditor({
                 {/* Preamble */}
                 <PreambleEditor
                     preamble={uss.result[0].value}
-                    setPreamble={(u: UrbanStatsASTExpression & { type: 'customNode' }) => {
+                    setPreamble={(u: PreambleNode) => {
                         const preamble = {
                             type: 'expression',
                             value: u,
@@ -57,6 +61,7 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idPreamble}
+                    assignments={assignments}
                 />
                 {/* Condition */}
                 <ConditionEditor
@@ -73,6 +78,7 @@ export function TopLevelEditor({
                     typeEnvironment={typeEnvironment}
                     errors={errors}
                     blockIdent={idCondition}
+                    assignments={assignments}
                 />
                 {/* Output */}
                 <AutoUXEditor
@@ -91,6 +97,7 @@ export function TopLevelEditor({
                     blockIdent={idOutput}
                     type={targetOutputTypes}
                     labelWidth="0px"
+                    assignments={assignments}
                 />
             </div>
         )
@@ -104,7 +111,7 @@ export function TopLevelEditor({
                 onChange={(checked) => {
                     if (checked) {
                         assert(uss.type === 'statements', 'USS should be statements when enabling custom script')
-                        setUss(parseNoErrorAsCustomNode(unparse(uss, { simplify: true }), rootBlockIdent), {})
+                        setUss(parseNoErrorAsCustomNode(unparse(uss, { simplify: 'auto-ux' }), rootBlockIdent), {})
                     }
                     else {
                         assert(uss.type === 'customNode', 'USS should not be a custom node when disabled')

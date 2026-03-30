@@ -1,9 +1,9 @@
 import React, { ReactNode } from 'react'
 
-import { separateNumber } from '../utils/text'
+import { formatToSignificantFigures, separateNumber } from '../utils/text'
 import { UnitType } from '../utils/unit'
 
-import { ElectionResult } from './display-stats'
+import { ElectionResult, GenericPartyChange, GenericPartyPercentage, LeftMargin } from './display-stats'
 
 export interface UnitDisplay {
     renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
@@ -19,6 +19,22 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                 renderValue: (value: number) => {
                     return {
                         value: <span>{(value * 100).toFixed(2)}</span>,
+                        unit: <span>%</span>,
+                    }
+                },
+            }
+        case 'percentageChange':
+            return {
+                renderValue: (value: number) => {
+                    const displayValue = (value * 100).toFixed(2)
+                    const sign = value >= 0 ? '+' : ''
+                    return {
+                        value: (
+                            <span>
+                                {sign}
+                                {displayValue}
+                            </span>
+                        ),
                         unit: <span>%</span>,
                     }
                 },
@@ -196,6 +212,47 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                     }
                 },
             }
+        case 'partyPctBlue':
+        case 'partyPctRed':
+        case 'partyPctOrange':
+        case 'partyPctTeal':
+        case 'partyPctGreen':
+        case 'partyPctPurple': {
+            const capturedUnitType = unitType
+            return {
+                renderValue: (value: number) => {
+                    return {
+                        value: <GenericPartyPercentage value={value} unitType={capturedUnitType} />,
+                        unit: <span>%</span>,
+                    }
+                },
+            }
+        }
+        case 'partyChangeBlue':
+        case 'partyChangeRed':
+        case 'partyChangeOrange':
+        case 'partyChangeTeal':
+        case 'partyChangeGreen':
+        case 'partyChangePurple': {
+            const capturedUnitType = unitType
+            return {
+                renderValue: (value: number) => {
+                    return {
+                        value: <GenericPartyChange value={value} unitType={capturedUnitType} />,
+                        unit: <span>%</span>,
+                    }
+                },
+            }
+        }
+        case 'leftMargin':
+            return {
+                renderValue: (value: number) => {
+                    return {
+                        value: <LeftMargin value={value} />,
+                        unit: <span>%</span>,
+                    }
+                },
+            }
         case 'temperature':
             return {
                 renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
@@ -266,7 +323,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
             return {
                 renderValue: (value: number) => {
                     return {
-                        value: <span>{value.toFixed(3)}</span>,
+                        value: <span>{formatToSignificantFigures(value, 3)}</span>,
                         unit: <span>&nbsp;</span>,
                     }
                 },
@@ -349,51 +406,75 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
     }
 }
 
-export function classifyStatistic(statname: string): UnitType {
-    if (statname.includes('%') || statname.includes('Change') || statname.includes('(Grade)')) {
-        return 'percentage'
+export function getUnit(unit: UnitType): ReactNode {
+    switch (unit) {
+        case 'percentage':
+        case 'percentageChange':
+            return <span>%</span>
+        case 'fatalities':
+            return <span>fatalities</span>
+        case 'fatalitiesPerCapita':
+            return <span>fatalities per capita</span>
+        case 'density':
+            return (
+                <span>
+                    people per&nbsp;km
+                    <sup>2</sup>
+                </span>
+            )
+        case 'population':
+            return <span>people</span>
+        case 'area':
+            return (
+                <span>
+                    km
+                    <sup>2</sup>
+                </span>
+            )
+        case 'distanceInKm':
+            return <span>km</span>
+        case 'distanceInM':
+            return <span>m</span>
+        case 'democraticMargin':
+            return <span>% margin</span>
+        case 'temperature':
+            return <span>&deg;F</span>
+        case 'time':
+            return <span>time</span>
+        case 'distancePerYear':
+            return (
+                <span>
+                    m/yr
+                </span>
+            )
+        case 'contaminantLevel':
+            return (
+                <span>
+                    &mu;g/m
+                    <sup>3</sup>
+                </span>
+            )
+        case 'number':
+            return <span>&nbsp;</span>
+        case 'usd':
+            return <span>$</span>
+        case 'minutes':
+            return <span>minutes</span>
+        case 'partyPctBlue':
+        case 'partyPctRed':
+        case 'partyPctOrange':
+        case 'partyPctTeal':
+        case 'partyPctGreen':
+        case 'partyPctPurple':
+            return <span>%</span>
+        case 'partyChangeBlue':
+        case 'partyChangeRed':
+        case 'partyChangeOrange':
+        case 'partyChangeTeal':
+        case 'partyChangeGreen':
+        case 'partyChangePurple':
+            return <span>% change</span>
+        case 'leftMargin':
+            return <span>% left margin</span>
     }
-    if (statname.includes('Total') && statname.includes('Fatalities')) {
-        return 'fatalities'
-    }
-    if (statname.includes('Fatalities Per Capita')) {
-        return 'fatalitiesPerCapita'
-    }
-    if (statname.includes('Density')) {
-        return 'density'
-    }
-    if (statname.includes('Elevation')) {
-        return 'distanceInM'
-    }
-    if (statname.startsWith('Population')) {
-        return 'population'
-    }
-    if (statname === 'Area') {
-        return 'area'
-    }
-    if (statname.includes('Mean distance')) {
-        return 'distanceInKm'
-    }
-    if (statname.includes('Election') || statname.includes('Swing')) {
-        return 'democraticMargin'
-    }
-    if (statname.includes('high temp') || statname.includes('low temp') || statname.includes('high heat index') || statname.includes('dewpt')) {
-        return 'temperature'
-    }
-    if (statname === 'Mean sunny hours') {
-        return 'time'
-    }
-    if (statname === 'Rainfall' || statname === 'Snowfall [rain-equivalent]') {
-        return 'distancePerYear'
-    }
-    if (statname.includes('Pollution')) {
-        return 'contaminantLevel'
-    }
-    if (statname.includes('(USD)')) {
-        return 'usd'
-    }
-    if (statname.includes('(min)')) {
-        return 'minutes'
-    }
-    return 'number'
 }

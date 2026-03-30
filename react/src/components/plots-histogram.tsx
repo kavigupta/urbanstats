@@ -312,6 +312,7 @@ function HistogramSettings(props: {
                         },
                         universe,
                         colors,
+                        () => undefined,
                     )
                     plot.remove()
                 }}

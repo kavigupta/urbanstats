@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Traffic Fatalities Per Capita Per Year",
+      "stat_path": "traffic_fatalities_last_decade_per_capita",
+      "question": "higher traffic fatalities per capita between 2013 and 2022!TOOLTIP traffic fatalities in the region, divided by the population of the region",
+      "longname_a": "Nashville Urban Center, USA",
+      "longname_b": "Syracuse Urban Center, USA",
+      "stat_a": 0.00014010169852510514,
+      "stat_b": 5.7328867440737266e-05
+    },
+    "b": {
+      "stat_column": "Private Insurance %",
+      "stat_path": "insurance_coverage_private",
+      "question": "higher % of people who are on private insurance!TOOLTIP The denominator for this statistic is the the total number of adults, including those without health insurance coverage.",
+      "longname_a": "Monterey County, California, USA",
+      "longname_b": "Montgomery County, Pennsylvania, USA",
+      "stat_a": 0.6263866297585209,
+      "stat_b": 0.8533316250038246
+    },
+    "a_ease": 0.8421309872922776,
+    "b_ease": 0.43050430504305043
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2016 Presidential Election",
+      "stat_path": "2016 Presidential Election-margin",
+      "question": "!FULL Which voted more for Clinton in the 2016 presidential election?",
+      "longname_a": "Richmond Urban Center, USA",
+      "longname_b": "Ogden Urban Center, USA",
+      "stat_a": 0.547551362235626,
+      "stat_b": -0.18287410707510446
+    },
+    "b": {
+      "stat_column": "Graduate degree [25-64] %",
+      "stat_path": "education_grad_canada",
+      "question": "higher % of people between 25 and 64 who have a graduate degree",
+      "longname_a": "Halifax Population Center, NS, Canada",
+      "longname_b": "Oshawa Population Center, ON, Canada",
+      "stat_a": 0.1243830347122601,
+      "stat_b": 0.06624779608168667
+    },
+    "a_ease": 0.8591549295774648,
+    "b_ease": 0.4246506986027944
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad Humanities %",
+      "stat_path": "education_field_humanities",
+      "question": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+      "longname_a": "New York County, New York, USA",
+      "longname_b": "Macomb County, Michigan, USA",
+      "stat_a": 0.2322085786682845,
+      "stat_b": 0.08010489853120235
+    },
+    "b": {
+      "stat_column": "Obesity %",
+      "stat_path": "OBESITY_cdc_2",
+      "question": "higher % of adults with obesity",
+      "longname_a": "Salem [Urban Area], OR, USA",
+      "longname_b": "Spokane [Urban Area], WA, USA",
+      "stat_a": 0.3647380211926219,
+      "stat_b": 0.2937446216716754
+    },
+    "a_ease": 0.8837638376383764,
+    "b_ease": 0.41333333333333333
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Gen X %",
+      "stat_path": "generation_genx",
+      "question": "higher % of people who are gen x!TOOLTIP born between 1967 and 1981",
+      "longname_a": "Nashville-Davidson--Murfreesboro--Franklin MSA, TN, USA",
+      "longname_b": "Waco MSA, TX, USA",
+      "stat_a": 0.19612638838742238,
+      "stat_b": 0.16514421766234716
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km)",
+      "stat_path": "ad_1",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Anchorage AK Media Market, USA",
+      "longname_b": "Santa Barbara-Santa Maria-San Luis Obispo CA Media Market, USA",
+      "stat_a": 1053.521832168316,
+      "stat_b": 1872.1630883725145
+    },
+    "a_ease": 0.5181422351233672,
+    "b_ease": 0.9188926663428849
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population Change (2000-2020)",
+      "stat_path": "population_change_2000",
+      "question": "higher % increase in population from 2000 to 2020",
+      "longname_a": "Cleveland [Urban Area], OH, USA",
+      "longname_b": "New Haven [Urban Area], CT, USA",
+      "stat_a": -0.03560783059103434,
+      "stat_b": 0.05347533379866255
+    },
+    "b": {
+      "stat_column": "Households With 1+ Vehicles %",
+      "stat_path": "vehicle_ownership_at_least_1",
+      "question": "higher % of households with at least 1 vehicle",
+      "longname_a": "Jackson County, Missouri, USA",
+      "longname_b": "New York County, New York, USA",
+      "stat_a": 0.9214590296185317,
+      "stat_b": 0.22654855952649416
+    },
+    "a_ease": 0.5096296296296297,
+    "b_ease": 0.9199057714958775
+  }
+]

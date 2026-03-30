@@ -216,7 +216,7 @@ function JuxtastatQuizQuestion(props: QuizQuestionProps & {
     )
 }
 
-export function questionString(question: string): string {
+function questionString(question: string): string {
     if (question.startsWith('!FULL ')) {
         return question.slice(6)
     }
@@ -237,7 +237,7 @@ export function renderQuestion(questionText: string): ReactNode {
     return q
 }
 
-export function Tooltip(props: { content: ReactNode }): ReactNode {
+function Tooltip(props: { content: ReactNode }): ReactNode {
     // create an image that looks like a little [?] text superscript that when you click on it
     // shows the tooltip
     const [show, setShow] = React.useState(false)

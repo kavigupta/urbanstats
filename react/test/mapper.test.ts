@@ -73,6 +73,78 @@ pMap(data=hilliness, scale=linearScale(), ramp=rampUridis, basemap=noBasemap())
 
 testCode(() => test, 'Urban Center', 'USA', pointMap, 'point-map')
 
+const cMapWithGlobalOpacity = `
+cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=constructRamp([
+        {value: 0, color: rgb(0.1, 0.2, 0.9, a=0)},
+        {value: 1, color: rgb(0.9, 0.2, 0.1, a=1)}
+    ]),
+    opacity=0.5,
+    outline=constructOutline(color=rgb(0, 0, 0, a=0.7), weight=2),
+    basemap=noBasemap()
+)
+`
+
+testCode(() => test, 'County', 'USA', cMapWithGlobalOpacity, 'cmap-global-opacity')
+
+const pMapWithGlobalOpacity = `
+pMap(
+    data=hilliness,
+    scale=linearScale(),
+    ramp=constructRamp([
+        {value: 0, color: rgb(0.05, 0.3, 0.8, a=0.35)},
+        {value: 1, color: rgb(0.95, 0.8, 0.2, a=0.9)}
+    ]),
+    opacity=0.4,
+    maxRadius=12,
+    basemap=noBasemap()
+)
+`
+
+testCode(() => test, 'Urban Center', 'USA', pMapWithGlobalOpacity, 'pmap-global-opacity')
+
+const cMapRGBWithGlobalOpacity = `
+cMapRGB(
+    dataR=commute_car,
+    dataG=commute_transit,
+    dataB=commute_walk,
+    opacity=0.45,
+    label="RGB Map with Opacity",
+    basemap=noBasemap()
+)
+`
+
+testCode(() => test, 'County', 'USA', cMapRGBWithGlobalOpacity, 'cmaprgb-global-opacity')
+
+const cMapRGBWithAlphaChannel = `
+cMapRGB(
+    dataR=commute_car,
+    dataG=commute_transit,
+    dataB=commute_walk,
+    dataA=population / (max(population)),
+    label="RGB Map with Alpha Channel",
+    basemap=noBasemap()
+)
+`
+
+testCode(() => test, 'County', 'USA', cMapRGBWithAlphaChannel, 'cmaprgb-alpha-channel')
+
+const cMapRGBWithAlphaChannelAndGlobalOpacity = `
+cMapRGB(
+    dataR=commute_car,
+    dataG=commute_transit,
+    dataB=commute_walk,
+    dataA=population / (max(population)),
+    label="RGB Map with Alpha Channel",
+    basemap=noBasemap(),
+    opacity=0.5
+)
+`
+
+testCode(() => test, 'County', 'USA', cMapRGBWithAlphaChannelAndGlobalOpacity, 'cmaprgb-alpha-channel-and-global-opacity')
+
 const translucentOutline = `
 cMap(
     data=density_pw_1km,

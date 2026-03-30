@@ -1,14 +1,17 @@
 import explanation_page from '../data/explanation_page'
 import extra_stats from '../data/extra_stats'
+import metadata from '../data/metadata'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
-import { findAmbiguousSourcesAll, statDataOrderToOrder, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
-import { Article, IFirstOrLast } from '../utils/protos'
+import { findAmbiguousSourcesAll, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
+import { assert } from '../utils/defensive'
+import { Article, IFirstOrLast, IMetadata } from '../utils/protos'
 import { UnitType } from '../utils/unit'
 
-import { CountsByUT } from './countsByArticleType'
+import { CountsByUT, forType } from './countsByArticleType'
+import { electionDisclaimerForRow, type Disclaimer } from './disclaimer-text'
 
 export interface HistogramExtraStat {
     type: 'histogram'
@@ -29,16 +32,15 @@ export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat
 
 export type StatCol = (typeof stats)[number]
 
-export type Disclaimer = 'heterogenous-sources'
-
 export interface FirstLastStatus { isFirst: boolean, isLast: boolean }
 
-export interface ArticleRow {
+export interface ArticleStatisticRow {
+    kind: 'statistic'
+    statname: StatName
     statval: number
     ordinal: number
     percentileByPopulation: number
     statcol: StatCol
-    statname: StatName
     statpath: StatPath
     explanationPage: string
     articleType: string
@@ -51,41 +53,94 @@ export interface ArticleRow {
     overallFirstLast: FirstLastStatus
 }
 
-export interface StatisticCellRenderingInfo {
+/** Metadata shown as an extra table row (same UI pipeline as statistics). */
+export interface MetadataArticleRow {
+    kind: 'metadata'
+    statname: string
+    statpath: StatPath
+    renderedStatname: string
+    articleType: string
+    statval: string
+    extraStat: undefined
+    disclaimer: undefined
+    dataCreditExplanationPage: string
+}
+
+export type ArticleRow = ArticleStatisticRow | MetadataArticleRow
+
+const dataCreditExplanationPageByMetadataIndex = new Map<number, string>(
+    metadata.displayed_metadata.map(e => [e.index, e.data_credit_explanation_page]),
+)
+
+interface StatisticCellRenderingInfoCommon {
+    articleType: string
+    statname: string
+    unit?: UnitType
+    statpath?: StatPath
+}
+
+interface StatisticCellRenderingInfoStatistic extends StatisticCellRenderingInfoCommon {
+    kind: 'statistic'
+    ordinal: number
     totalCountInClass: number
     totalCountOverall: number
     percentileByPopulation: number
-    articleType: string
-    statname: string
     statval: number
-    ordinal: number
-    unit?: UnitType
-    statpath?: StatPath
-    overallFirstLast?: FirstLastStatus
+    overallFirstLast: FirstLastStatus
 }
 
-function lookupInCompressedSequence(seq: [number, number][], idx: number): number {
-    // translation of sharding.py::lookup_in_compressed_sequence
-    for (const [value, length] of seq) {
-        if (idx < length) {
-            return value
+interface StatisticCellRenderingInfoMetadata extends StatisticCellRenderingInfoCommon {
+    kind: 'metadata'
+    statval: string
+    statpath: StatPath
+}
+
+export type StatisticCellRenderingInfo = StatisticCellRenderingInfoStatistic | StatisticCellRenderingInfoMetadata
+
+// statParents is built in statistic-tree order (via statParentsList),
+// so filtering preserves the desired UI ordering.
+const metadataStatPathsInTreeOrder = Array.from(statParents.entries())
+    .flatMap(([path, parent]) => parent.kind === 'metadata' ? [path] : [])
+
+function metadataValueByIndex(metadataProtos: IMetadata[] | null | undefined): Map<number, string> {
+    const values = new Map<number, string>()
+    for (const metadataProto of metadataProtos ?? []) {
+        if (metadataProto.metadataIndex === undefined || metadataProto.metadataIndex === null) {
+            continue
         }
-        idx -= length
+        if (metadataProto.stringValue === undefined || metadataProto.stringValue === null) {
+            continue
+        }
+        values.set(metadataProto.metadataIndex, metadataProto.stringValue)
     }
-    throw new Error('Index out of bounds')
+    return values
 }
 
-export function forType(counts: CountsByUT, universe: string, statcol: StatCol, typ: string): number {
-    const idx = stats.indexOf(statcol) // Works because `require` is global
-    if (!(universe in counts)) {
-        return 0
-    }
-    if (!(typ in counts[universe])) {
-        return 0
-    }
-    const countsByType = counts[universe][typ]
-
-    return lookupInCompressedSequence(countsByType, idx)
+function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath[]): MetadataArticleRow[] {
+    const values = metadataValueByIndex(article.metadata)
+    return enabledMetadataPaths.flatMap((path) => {
+        const parent = statParents.get(path)
+        if (parent?.kind !== 'metadata' || parent.metadataIndex === undefined) {
+            return []
+        }
+        const statval = values.get(parent.metadataIndex)
+        if (statval === undefined) {
+            return []
+        }
+        const dataCreditExplanationPage = dataCreditExplanationPageByMetadataIndex.get(parent.metadataIndex)
+        assert(dataCreditExplanationPage !== undefined, `metadata index ${parent.metadataIndex} missing data_credit_explanation_page in metadata.ts`)
+        return [{
+            kind: 'metadata' as const,
+            statpath: path,
+            statname: parent.groupYearName,
+            renderedStatname: parent.groupYearName,
+            articleType: article.articleType,
+            statval,
+            extraStat: undefined,
+            disclaimer: undefined,
+            dataCreditExplanationPage,
+        }]
+    })
 }
 
 function unpackBytes(bytes: Uint8Array): number[] {
@@ -101,7 +156,7 @@ function unpackBytes(bytes: Uint8Array): number[] {
     return result
 }
 
-export function loadSingleArticle(data: Article, counts: CountsByUT, universe: string): ArticleRow[] {
+function loadSingleArticle(data: Article, counts: CountsByUT, universe: string): ArticleStatisticRow[] {
     // index of universe in data.universes
     const universeIndex = data.universes.indexOf(universe)
     const articleType = data.articleType
@@ -111,6 +166,11 @@ export function loadSingleArticle(data: Article, counts: CountsByUT, universe: s
     const indices = unpackBytes(data.statisticIndicesPacked)
 
     const overallFirstOrLast = data.overallFirstOrLast.filter((x: IFirstOrLast) => x.articleUniversesIdx === universeIndex)
+
+    // Find population value if available
+    const populationIndex = paths.indexOf('population')
+    const populationRowIndex = populationIndex >= 0 ? indices.indexOf(populationIndex) : -1
+    const population = populationRowIndex >= 0 && data.rows[populationRowIndex]?.statval ? data.rows[populationRowIndex].statval : null
 
     return data.rows.map((rowOriginal, rowIndex) => {
         const i = indices[rowIndex]
@@ -133,7 +193,12 @@ export function loadSingleArticle(data: Article, counts: CountsByUT, universe: s
             }
         }
         const overallFirstLastThis = overallFirstOrLast.filter((x: IFirstOrLast) => x.articleRowIdx === rowIndex)
+
+        // Determine disclaimer for election statistics
+        const disclaimer = electionDisclaimerForRow(paths[i], population)
+
         return {
+            kind: 'statistic' as const,
             statval: rowOriginal.statval!,
             ordinal: rowOriginal.ordinalByUniverse![universeIndex],
             percentileByPopulation: rowOriginal.percentileByPopulationByUniverse![universeIndex],
@@ -147,11 +212,12 @@ export function loadSingleArticle(data: Article, counts: CountsByUT, universe: s
             index: i,
             renderedStatname: names[i],
             extraStat,
+            disclaimer,
             overallFirstLast: {
                 isFirst: overallFirstLastThis.some((x: IFirstOrLast) => x.isFirst),
                 isLast: overallFirstLastThis.some((x: IFirstOrLast) => !x.isFirst),
             },
-        } satisfies ArticleRow
+        } satisfies ArticleStatisticRow
     })
 }
 
@@ -165,17 +231,24 @@ export function loadArticles(datas: Article[], counts: CountsByUT, universe: str
         availableRows.forEach((row) => {
             statPathsThis.add(row.statpath)
         })
+        metadataStatPathsInTreeOrder.forEach((statPath) => {
+            statPathsThis.add(statPath)
+        })
         return Array.from(statPathsThis)
     })
 
     const ambiguousSourcesAll = findAmbiguousSourcesAll(statPathsEach)
 
     return { rows: (settings: StatGroupSettings) => {
-        const rows = availableRowsAll.map(availableRows => availableRows
-            .filter(row => statIsEnabled(row.statpath, settings, ambiguousSourcesAll))
-            // sort by order in statistics tree.
-            .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
-        )
+        const enabledMetadataPaths = metadataStatPathsInTreeOrder.filter(path => statIsEnabled(path, settings, ambiguousSourcesAll))
+        const rows = availableRowsAll.map((availableRows, articleIndex) => [
+            ...availableRows
+                .filter(row => statIsEnabled(row.statpath, settings, ambiguousSourcesAll))
+                // sort by order in statistics tree.
+                .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
+            ...metadataRowsForArticle(datas[articleIndex], enabledMetadataPaths),
+        ])
+
         const rowsNothingMissing = insertMissing(rows)
         const rowsCollapsed = collapseAlternateSources(rowsNothingMissing)
         return rowsCollapsed
@@ -183,29 +256,33 @@ export function loadArticles(datas: Article[], counts: CountsByUT, universe: str
 }
 
 function insertMissing(rows: ArticleRow[][]): ArticleRow[][] {
-    const idxs = rows.map(row => row.map(x => x.index))
+    const idxs = rows.map(row => row.map(x => x.statpath))
 
-    const emptyRowExample: Record<number, ArticleRow> = {}
+    const emptyRowExample = new Map<StatPath, ArticleRow>()
     for (const dataI of rows.keys()) {
         for (const rowI of rows[dataI].keys()) {
             const idx = idxs[dataI][rowI]
-            emptyRowExample[idx] = JSON.parse(JSON.stringify(rows[dataI][rowI])) as typeof rows[number][number]
-            for (const key of Object.keys(emptyRowExample[idx]) as (keyof ArticleRow)[]) {
-                if (typeof emptyRowExample[idx][key] === 'number') {
+            emptyRowExample.set(idx, JSON.parse(JSON.stringify(rows[dataI][rowI])) as typeof rows[number][number])
+            for (const key of Object.keys(emptyRowExample.get(idx)!) as (keyof ArticleRow)[]) {
+                if (typeof emptyRowExample.get(idx)![key] === 'number') {
                     // @ts-expect-error Typescript is fucking up this assignment
-                    emptyRowExample[idx][key] = NaN
+                    emptyRowExample.get(idx)![key] = NaN
+                }
+                else if (key === 'statval') {
+                    assert(emptyRowExample.get(idx)!.kind === 'metadata', 'if statval is not a numbre, it\'s metadata')
+                    emptyRowExample.get(idx)![key] = ''
                 }
                 else if (key === 'extraStat') {
-                    emptyRowExample[idx][key] = undefined
+                    emptyRowExample.get(idx)![key] = undefined
                 }
             }
-            emptyRowExample[idx].articleType = 'none' // doesn't matter since we are using simple mode
+            emptyRowExample.get(idx)!.articleType = 'none' // doesn't matter since we are using simple mode
         }
     }
 
     const allIdxs = idxs.flat().filter((x, i, a) => a.indexOf(x) === i)
     // sort all_idxs in ascending order numerically
-    allIdxs.sort((a, b) => statDataOrderToOrder.get(a)! - statDataOrderToOrder.get(b)!)
+    allIdxs.sort((a, b) => statPathToOrder.get(a)! - statPathToOrder.get(b)!)
 
     const newRowsAll = []
     for (const dataI of rows.keys()) {
@@ -216,7 +293,7 @@ function insertMissing(rows: ArticleRow[][]): ArticleRow[][] {
                 newRows.push(rows[dataI][indexToPull])
             }
             else {
-                newRows.push(emptyRowExample[idx])
+                newRows.push(emptyRowExample.get(idx)!)
             }
         }
         newRowsAll.push(newRows)
@@ -243,7 +320,9 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     const rowsByStatGroupAndYear = new Map<string, ArticleRow[][]>()
     const groupYearToName = new Map<string, string>()
     for (let i = 0; i < numRows; i++) {
-        const { group, year, groupYearName } = statParents.get(rows[0][i].statpath)!
+        const statParent = statParents.get(rows[0][i].statpath)
+        assert(statParent !== undefined, `stat parent not found for statpath ${rows[0][i].statpath}`)
+        const { group, year, groupYearName } = statParent
         const key = `${group.id}_${year}`
         if (!rowsByStatGroupAndYear.has(key)) {
             rowsByStatGroupAndYear.set(key, [])
@@ -261,13 +340,24 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
 }
 
+export function isNoValue(statval: number | string): boolean {
+    switch (typeof statval) {
+        case 'number':
+            return Number.isNaN(statval)
+        case 'string':
+            return statval === ''
+        default:
+            throw new Error(`Unexpected type for statval: ${typeof statval}`)
+    }
+}
+
 function collapseAlternateSourcesSingleGroupYear(rows: ArticleRow[][], groupYearName: string): ArticleRow[][] {
     // rows[stat_column][article]
     if (rows.length === 1) {
         return rows
     }
     // convert to a bitmap of whether each thing has a value (alternative is nan)
-    const hasValue = rows.map(row => row.map(x => !Number.isNaN(x.statval)))
+    const hasValue = rows.map(row => row.map(x => !isNoValue(x.statval)))
     const rowsC: ArticleRow[][] = []
     const collapsedRows = computeCollapsedRows(new Map(hasValue.map((x, i) => [i, x])))
     for (const collapsedRow of collapsedRows) {
@@ -322,13 +412,15 @@ function collapse(rows: ArticleRow[][], groupYearName: string): ArticleRow[] {
     }
     const rowsByArticle = rows[0].map((_, i) => rows.map(row => row[i]))
     return rowsByArticle.map((rowsForArticle) => {
-        const rowsWithValues = rowsForArticle.filter(row => !Number.isNaN(row.statval))
+        const rowsWithValues = rowsForArticle.filter(row => !isNoValue(row.statval))
         if (rowsWithValues.length > 1) {
             throw new Error(`Cannot collapse rows with ${rowsWithValues.length} values (expected <= 1)`)
         }
+        const rowToUse = rowsWithValues.length > 0 ? rowsWithValues[0] : rowsForArticle[0]
+        assert(rowToUse.kind === 'statistic', 'We only support collapsing statistic rows right now')
         return {
             // If we can't find any rows with values, just use the first one
-            ...(rowsWithValues[0] ?? rowsForArticle[0]),
+            ...rowToUse,
             renderedStatname: groupYearName,
             disclaimer: 'heterogenous-sources',
         }

@@ -1,14 +1,19 @@
-import { CountsByUT } from '../components/countsByArticleType'
-import { forType } from '../components/load-article'
+import { CountsByUT, forType } from '../components/countsByArticleType'
 import syau_suffixes from '../data/syau_suffixes'
 import { loadProtobuf, loadStatisticsPage } from '../load_json'
 import { centroidsPath } from '../navigation/links'
-import { Statistic, allGroups } from '../page_template/statistic-tree'
+import { DataStatistic, Statistic, allGroups } from '../page_template/statistic-tree'
 import { normalize } from '../search'
 import { Universe } from '../universe'
 import { ICoordinate } from '../utils/protos'
 
-export const populationStatcols: Statistic[] = allGroups.find(g => g.id === 'population')!.contents.find(g => g.year === 2020)!.stats[0].bySource
+const populationStatcols: DataStatistic[] = allGroups
+    .find(g => g.id === 'population')!
+    .contents
+    .find(g => g.year === 2020)!
+    .stats[0]
+    .bySource
+    .filter((stat): stat is DataStatistic => stat.kind === 'data')
 
 let sortedSuffixes: string[] | undefined
 
@@ -66,7 +71,7 @@ function computeMatchChunksAll(longnames: string[]): MatchInfo[] {
     return chunksAllCleaned
 }
 
-export function onlyKeepAlpanumeric(s: string): string {
+function onlyKeepAlpanumeric(s: string): string {
     // remove all non-alphanumeric characters
     return s.replace(/[^a-zA-Z0-9 ]/g, '').replace(/\s+/g, ' ').trim()
 }

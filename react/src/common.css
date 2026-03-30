@@ -64,6 +64,11 @@ button, select {
     border-radius: 5px;
     color: var(--text-main);
     border: 1px solid var(--ordinal-text-color);
+    cursor: pointer;
+}
+
+[role=button] {
+    cursor: pointer;
 }
 
 button:hover:not(:disabled) {

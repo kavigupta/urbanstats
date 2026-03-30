@@ -1,22 +1,26 @@
 import React, { HTMLAttributes, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
-import { MapRef, useMap } from 'react-map-gl/maplibre'
+import { MapProps, MapRef, useMap } from 'react-map-gl/maplibre'
 
-import { CommonMaplibreMap, CustomAttributionControlComponent, insetBorderWidth } from '../../components/map-common'
+import { CustomAttributionControlComponent, insetBorderWidth } from '../../components/map-common'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from '../../components/screenshot'
 import { useColors } from '../../page_template/colors'
 import { Inset } from '../../urban-stats-script/constants/insets'
 import { TestUtils } from '../../utils/TestUtils'
 import { Edit } from '../../utils/array-edits'
+import { useMobileLayout } from '../../utils/responsive'
 
-// eslint-disable-next-line no-restricted-syntax -- Forward Ref
-function _InsetMap({ inset, children, editInset, container, i, numInsets, interactive }: {
+interface InsetMapProps {
     inset: Inset
-    children: ReactNode
     container: RefObject<HTMLDivElement>
     editInset?: Edit<Inset>
     i: number
     numInsets: number
     interactive: boolean
+}
+
+// eslint-disable-next-line no-restricted-syntax -- Forward Ref
+function _InsetMap({ inset, children, editInset, container, i, numInsets, interactive }: InsetMapProps & {
+    children: (mapLibreProps: Partial<MapProps>, mapChildren: ReactNode, subRef: React.Ref<MapRef>) => ReactNode
 }, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
 
@@ -24,6 +28,31 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets, intera
 
     const screenshotMode = useScreenshotMode()
 
+    const mapChildren = (
+        <>
+            <HandleInsets
+                inset={inset}
+                setCoordBox={(newBox) => {
+                    editInset?.modify({ coordBox: newBox })
+                }}
+            />
+            <ExposeMapForTesting id={id} />
+            {inset.mainMap && <CustomAttributionControlComponent startShowingAttribution={true} />}
+        </>
+    )
+
+    const mapLibreProps: Partial<MapProps> = {
+        style: {
+            position: 'absolute',
+            inset: 0,
+            border: !inset.mainMap ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
+            borderRadius: !inset.mainMap || screenshotMode ? '0px' : `${defaultMapBorderRadius}px`,
+            width: undefined,
+            height: undefined,
+        },
+        attributionControl: false,
+        interactive,
+    }
     return (
         <div
             id={id}
@@ -33,29 +62,7 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets, intera
                 width: `${(inset.topRight[0] - inset.bottomLeft[0]) * 100}%`,
                 height: `${(inset.topRight[1] - inset.bottomLeft[1]) * 100}%` }}
         >
-            <CommonMaplibreMap
-                ref={ref}
-                style={{
-                    position: 'absolute',
-                    inset: 0,
-                    border: !inset.mainMap ? `${insetBorderWidth}px solid ${colors.mapInsetBorderColor}` : `${mapBorderWidth}px solid ${colors.borderNonShadow}`,
-                    borderRadius: !inset.mainMap || screenshotMode ? '0px' : `${defaultMapBorderRadius}px`,
-                    width: undefined,
-                    height: undefined,
-                }}
-                attributionControl={false}
-                interactive={interactive}
-            >
-                {children}
-                <HandleInsets
-                    inset={inset}
-                    setCoordBox={(newBox) => {
-                        editInset?.modify({ coordBox: newBox })
-                    }}
-                />
-                <ExposeMapForTesting id={id} />
-                { inset.mainMap && <CustomAttributionControlComponent startShowingAttribution={true} />}
-            </CommonMaplibreMap>
+            {children(mapLibreProps, mapChildren, ref)}
             { editInset && (
                 <EditInsetsHandles
                     frame={[...inset.bottomLeft, ...inset.topRight]}
@@ -184,10 +191,10 @@ export function EditInsetsHandles(props: {
             const rawMovementX = (e.clientX - drag.startX) / containerBounds.width
             const rawMovementY = -(e.clientY - drag.startY) / containerBounds.height
             const resizedFrame: Frame = [
-                Math.max(0, Math.min(drag.startFrame[0] + rawMovementX, drag.startFrame[2] - 0.05)),
-                Math.max(0, Math.min(drag.startFrame[1] + rawMovementY, drag.startFrame[3] - 0.1)),
-                Math.max(drag.startFrame[0] + 0.05, Math.min(drag.startFrame[2] + rawMovementX, 1)),
-                Math.max(drag.startFrame[1] + 0.1, Math.min(drag.startFrame[3] + rawMovementY, 1)),
+                Math.max(0, Math.min(drag.startFrame[0] + rawMovementX, drag.startFrame[2])),
+                Math.max(0, Math.min(drag.startFrame[1] + rawMovementY, drag.startFrame[3])),
+                Math.max(drag.startFrame[0], Math.min(drag.startFrame[2] + rawMovementX, 1)),
+                Math.max(drag.startFrame[1], Math.min(drag.startFrame[3] + rawMovementY, 1)),
             ]
             let newFrame: Frame
             switch (drag.kind) {
@@ -225,29 +232,31 @@ export function EditInsetsHandles(props: {
         },
     })
 
+    const mobileMultiplier = useMobileLayout() ? 2 : 1
+
     return (
         <>
-            {props.setFrame && <Handle handleSize={15} style={{ right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />}
-            {props.setFrame && <Handle handleSize={15} style={{ right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />}
-            {props.setFrame && <Handle handleSize={15} style={{ left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />}
-            {props.setFrame && <Handle handleSize={15} style={{ left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />}
-            {props.setFrame && props.shouldHaveCenterHandle && (
-                <Handle handleSize={20} style={{ margin: 'auto', left: `calc(50% - 10px)`, top: `calc(50% - 10px)`, cursor: 'move' }} {...pointerHandlers('move')} />
-            )}
-            {props.duplicate && (
-                <Handle handleSize={25} data-test="duplicate" style={{ margin: 'auto', left: `calc(66% - 12.5px)`, textAlign: 'center', lineHeight: '25px', top: -insetBorderWidth, cursor: 'copy' }} onClick={props.duplicate} img={{ src: '/duplicate.png', alt: 'Duplicate' }} />
-            )}
-            {props.delete && (
-                <Handle handleSize={25} data-test="delete" style={{ margin: 'auto', left: `calc(33% - 12.5px)`, textAlign: 'center', lineHeight: '25px', top: -insetBorderWidth, cursor: 'default' }} onClick={props.delete} img={{ src: '/close-red-small.png', alt: 'Delete' }} />
-            )}
-            {props.add && (
-                <Handle handleSize={25} data-test="add" style={{ margin: 'auto', left: `calc(50% - 12.5px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add} img={{ src: '/add-green-small.png', alt: 'Add' }} />
-            )}
             {props.moveUp && (
-                <Handle handleSize={25} data-test="moveUp" style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50% - 25px)`, cursor: 'default' }} onClick={props.moveUp} img={{ src: '/sort-up.png', alt: 'Move Up' }} />
+                <Handle handleSize={25 * mobileMultiplier} data-test="moveUp" style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50% - ${25 * mobileMultiplier}px)`, cursor: 'default' }} onClick={props.moveUp} img={{ src: '/sort-up.png', alt: 'Move Up' }} />
             )}
             {props.moveDown && (
-                <Handle handleSize={25} data-test="moveDown" style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50%)`, cursor: 'default' }} onClick={props.moveDown} img={{ src: '/sort-down.png', alt: 'Move Down' }} />
+                <Handle handleSize={25 * mobileMultiplier} data-test="moveDown" style={{ left: `-${insetBorderWidth}px`, textAlign: 'center', top: `calc(50%)`, cursor: 'default' }} onClick={props.moveDown} img={{ src: '/sort-down.png', alt: 'Move Down' }} />
+            )}
+            {props.duplicate && (
+                <Handle handleSize={25 * mobileMultiplier} data-test="duplicate" style={{ margin: 'auto', left: `calc(66% - ${12.5 * mobileMultiplier}px)`, textAlign: 'center', lineHeight: `${25 * mobileMultiplier}px`, top: -insetBorderWidth, cursor: 'copy' }} onClick={props.duplicate} img={{ src: '/duplicate.png', alt: 'Duplicate' }} />
+            )}
+            {props.delete && (
+                <Handle handleSize={25 * mobileMultiplier} data-test="delete" style={{ margin: 'auto', left: `calc(33% - ${12.5 * mobileMultiplier}px)`, textAlign: 'center', lineHeight: `${25 * mobileMultiplier}px`, top: -insetBorderWidth, cursor: 'default' }} onClick={props.delete} img={{ src: '/close-red-small.png', alt: 'Delete' }} />
+            )}
+            {props.add && (
+                <Handle handleSize={25 * mobileMultiplier} data-test="add" style={{ margin: 'auto', left: `calc(50% - ${12.5 * mobileMultiplier}px)`, textAlign: 'center', top: -insetBorderWidth, cursor: 'default' }} onClick={props.add} img={{ src: '/add-green-small.png', alt: 'Add' }} />
+            )}
+            {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ right: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('topRight')} />}
+            {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ right: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('bottomRight')} />}
+            {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ left: `-${insetBorderWidth}px`, bottom: `-${insetBorderWidth}px`, cursor: 'nesw-resize' }} {...pointerHandlers('bottomLeft')} />}
+            {props.setFrame && <Handle handleSize={15 * mobileMultiplier} style={{ left: `-${insetBorderWidth}px`, top: `-${insetBorderWidth}px`, cursor: 'nwse-resize' }} {...pointerHandlers('topLeft')} />}
+            {props.setFrame && props.shouldHaveCenterHandle && (
+                <Handle handleSize={20 * mobileMultiplier} style={{ margin: 'auto', left: `calc(50% - ${10 * mobileMultiplier}px)`, top: `calc(50% - ${10 * mobileMultiplier}px)`, cursor: 'move' }} {...pointerHandlers('move')} />
             )}
         </>
     )
@@ -289,6 +298,7 @@ function Handle({ handleSize, style, img, ...rest }: { handleSize: number, img?:
                 width: `${handleSize}px`,
                 height: `${handleSize}px`,
                 borderRadius: '2px',
+                touchAction: 'none',
                 ...style,
             }}
             {...rest}

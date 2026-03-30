@@ -11,6 +11,7 @@ import { emptyLocation } from '../../urban-stats-script/lexer'
 import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement } from '../../urban-stats-script/location'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
 import { USSType, USSFunctionArgType, renderType, USSFunctionType, TypeEnvironment } from '../../urban-stats-script/types-values'
+import { AssignmentsResult } from '../../urban-stats-script/workerManager'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { Property } from '../../utils/Property'
 import { assert } from '../../utils/defensive'
@@ -20,8 +21,9 @@ import * as ArgEditButtons from './ArgEditButtons'
 import { CustomEditor } from './CustomEditor'
 import { ActionOptions } from './EditMapperPanel'
 import { SelectionContext, Selection as ContextSelection } from './SelectionContext'
-import { Selector, classifyExpr, getColor, labelPadding } from './Selector'
-import { maybeParseExpr, parseExpr, Selection, possibilities, changeBlockId } from './parseExpr'
+import { Selector, getColor, labelPadding } from './Selector'
+import { maybeParseExpr, parseExpr, possibilities, changeBlockId } from './parseExpr'
+import { classifyExpr, maybeClassifyExpr, Selection } from './selector-classifier'
 
 function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression {
     if (type.type === 'number') {
@@ -48,6 +50,16 @@ function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironm
             elements: [],
         }
     }
+    if (type.type === 'object') {
+        return {
+            type: 'objectLiteral',
+            entireLoc: emptyLocation(blockIdent),
+            properties: Array.from(type.properties.entries()).map(([key, propertyType]) => [
+                key,
+                createDefaultExpression(propertyType, extendBlockIdObjectProperty(blockIdent, key), typeEnvironment),
+            ]),
+        }
+    }
     return parseNoErrorAsCustomNode('', blockIdent, [type])
 }
 
@@ -59,6 +71,7 @@ function ArgumentEditor(props: {
     typeEnvironment: TypeEnvironment
     errors: EditorError[]
     blockIdent: string
+    assignments: AssignmentsResult
 }): ReactNode {
     const arg = props.argWDefault.type
     assert(arg.type === 'concrete', `Named argument ${props.name} must be concrete`)
@@ -91,6 +104,7 @@ function ArgumentEditor(props: {
             blockIdent={subident}
             type={[arg.value]}
             margin={!collapsed}
+            assignments={props.assignments}
         />
     )
 
@@ -120,7 +134,7 @@ function ArgumentEditor(props: {
                                     : a) },
                             {
                                 undoable: false,
-                                updateMap: false,
+                                update: false,
                             },
                         )
                     }}
@@ -175,7 +189,7 @@ function ArgumentEditor(props: {
                                                     ...(renderArg.kind === 'hidden'
                                                         ? {
                                                                 opacity: 0,
-                                                                position: 'absolute',
+                                                                position: 'fixed',
                                                             }
                                                         : {
                                                                 maxHeight: collapsed ? 0 : renderArg.height,
@@ -219,6 +233,7 @@ export function AutoUXEditor(props: {
     label?: string
     labelWidth?: string
     margin?: boolean
+    assignments: AssignmentsResult
 }): ReactNode {
     const ussLoc = locationOf(props.uss).start
     if (ussLoc.block.type !== 'single' || ussLoc.block.ident !== props.blockIdent) {
@@ -253,7 +268,7 @@ export function AutoUXEditor(props: {
 
     const subcomponent = (): [ReactNode | undefined, 'consumes-errors' | 'does-not-consume-errors'] => {
         const uss = props.uss
-        if (uss.type === 'constant') {
+        if (maybeClassifyExpr(uss)?.type === 'constant') {
             return [undefined, 'does-not-consume-errors']
         }
         if (uss.type === 'customNode') {
@@ -265,6 +280,7 @@ export function AutoUXEditor(props: {
                     typeEnvironment={props.typeEnvironment}
                     errors={props.errors}
                     blockIdent={props.blockIdent}
+                    assignments={props.assignments}
                 />
             )
             return [editor, 'consumes-errors']
@@ -294,6 +310,7 @@ export function AutoUXEditor(props: {
                         errors={props.errors}
                         blockIdent={extendBlockIdPositionalArg(props.blockIdent, i)}
                         type={[arg.value]}
+                        assignments={props.assignments}
                     />,
                 )
             })
@@ -310,6 +327,7 @@ export function AutoUXEditor(props: {
                             typeEnvironment={props.typeEnvironment}
                             errors={props.errors}
                             blockIdent={props.blockIdent}
+                            assignments={props.assignments}
                         />,
                     )
                 }
@@ -321,8 +339,12 @@ export function AutoUXEditor(props: {
             // Determine the element type
             let elementType: USSType = { type: 'number' } // fallback
             if (props.type[0].type === 'vector') {
+                assert(
+                    props.type[0].elementType.type !== 'elementOfEmptyVector',
+                    'the provided type for an autoux editor shouldn\'t be an empty vector',
+                )
                 // something of a hack, but this really shouldn't be an issue because we don't support multiple types for vectors
-                elementType = props.type[0].elementType as USSType
+                elementType = props.type[0].elementType
             }
             const element = (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%' }}>
@@ -340,11 +362,24 @@ export function AutoUXEditor(props: {
                                 blockIdent={extendBlockIdVectorElement(props.blockIdent, i)}
                                 type={[elementType]}
                                 label={`${i + 1}`}
+                                assignments={props.assignments}
                             />
                             <button
                                 style={{ flexShrink: 0 }}
                                 onClick={() => {
-                                    const newElements = uss.elements.filter((_, j) => j !== i)
+                                    const newElements = uss.elements.flatMap((vectorElement, j) => {
+                                        if (j === i) {
+                                            return []
+                                        }
+                                        if (j < i) {
+                                            return [vectorElement]
+                                        }
+                                        return [changeBlockId(
+                                            vectorElement,
+                                            extendBlockIdVectorElement(props.blockIdent, j),
+                                            extendBlockIdVectorElement(props.blockIdent, j - 1),
+                                        )]
+                                    })
                                     props.setUss({ ...uss, elements: newElements }, {})
                                 }}
                                 title="Remove element"
@@ -398,6 +433,7 @@ export function AutoUXEditor(props: {
                                 blockIdent={extendBlockIdObjectProperty(props.blockIdent, key)}
                                 type={[propertyType]}
                                 label={key}
+                                assignments={props.assignments}
                             />
                         )
                     })}
@@ -623,7 +659,7 @@ function defaultForSelection(
 
     switch (selection.type) {
         case 'custom':
-            return parseNoErrorAsCustomNode(unparse(current, { simplify: true }), blockIdent, [type])
+            return parseNoErrorAsCustomNode(unparse(current, { simplify: 'auto-ux' }), blockIdent, [type])
         case 'constant':
             return createDefaultExpression(type, blockIdent, typeEnvironment)
         case 'variable':
@@ -639,10 +675,6 @@ function defaultForSelection(
             }
         }
         case 'object':
-            return {
-                type: 'objectLiteral',
-                entireLoc: emptyLocation(blockIdent),
-                properties: [],
-            }
+            return createDefaultExpression(type, blockIdent, typeEnvironment)
     }
 }

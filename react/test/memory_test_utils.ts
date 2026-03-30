@@ -34,6 +34,6 @@ export async function memoryUsage(t: TestController): Promise<number> {
     return bytesUsed
 }
 
-export const homePageSize = 13_000_000
-export const californiaArticleSize = 61_000_000
-export const searchSize = 40_000_000
+export const homePageSize = 10_000_000
+export const californiaArticleSize = 68_000_000
+export const searchSize = 53_000_000

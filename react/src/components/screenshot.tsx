@@ -7,6 +7,7 @@ import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { loadImage } from '../utils/Image'
 import { TestUtils } from '../utils/TestUtils'
+import { totalOffset } from '../utils/layout'
 import { zIndex } from '../utils/zIndex'
 
 export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
@@ -71,14 +72,6 @@ export interface ScreencapElements {
     overallWidth: number
     elementsToRender: HTMLElement[]
     heightMultiplier?: number
-}
-
-export function totalOffset(element: Element | null): { top: number, left: number } {
-    if (!(element instanceof HTMLElement)) {
-        return { top: 0, left: 0 }
-    }
-    const parentOffset = totalOffset(element.offsetParent)
-    return { top: element.offsetTop + parentOffset.top, left: element.offsetLeft + parentOffset.left }
 }
 
 function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number, image: CanvasImageSource, x: number, y: number, w: number, h: number, testing: boolean): void {
@@ -174,14 +167,17 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, h
     return resultCanvas
 }
 
-export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors): Promise<void> {
+export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors, setScreenshotMode: (on: boolean) => void, forceNonTesting: boolean = false): Promise<void> {
+    setScreenshotMode(true)
+    await new Promise(resolve => setTimeout(resolve))
+
     const overallWidth = config.overallWidth
     const heightMultiplier = config.heightMultiplier ?? 1
 
     const canvases = []
     for (const ref of config.elementsToRender) {
         try {
-            canvases.push(await screencapElement(ref, overallWidth, heightMultiplier))
+            canvases.push(await screencapElement(ref, overallWidth, heightMultiplier, { testing: !forceNonTesting && TestUtils.shared.isTesting }))
         }
         catch (e) {
             console.error(e)
@@ -232,6 +228,8 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
     canvas.toBlob(function (blob) {
         saveAs(blob!, config.path)
     })
+
+    setScreenshotMode(false)
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Context declaration

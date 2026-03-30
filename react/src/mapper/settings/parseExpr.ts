@@ -1,3 +1,15 @@
+/**
+ * Parses UrbanStatsScript AST expressions into a normalized form suitable for
+ * the mapper settings UI. Given a raw AST expression and an expected type,
+ * attempts to match the expression against the type environment (variables,
+ * functions, constants, vectors, objects) and produces a cleaned AST with
+ * block IDs assigned for UI location tracking. Expressions that don't match
+ * any expected type fall through to a fallback (typically rendered as custom
+ * code nodes). Also provides `possibilities` to enumerate valid completions
+ * for a given type, and `changeBlockId` to remap location block identifiers
+ * across an AST.
+ */
+
 import { UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement, LocInfo } from '../../urban-stats-script/location'
@@ -5,19 +17,26 @@ import { Decorated, ParseError, parseNoErrorAsCustomNode, unparse } from '../../
 import { renderType, TypeEnvironment, USSObjectType, USSType } from '../../urban-stats-script/types-values'
 import { assert } from '../../utils/defensive'
 
+import { parseToNumber, Selection, toNumberAST } from './selector-classifier'
+
 export function maybeParseExpr(
     expr: UrbanStatsASTExpression | UrbanStatsASTStatement,
     blockIdent: string,
     type: USSType,
     typeEnvironment: TypeEnvironment,
 ): UrbanStatsASTExpression | undefined {
+    class ParsingFailed extends Error {}
     try {
         return parseExpr(expr, blockIdent, [type], typeEnvironment, () => {
-            throw new Error('parsing failed')
+            throw new ParsingFailed()
         }, false)
     }
-    catch {}
-    return
+    catch (e) {
+        if (e instanceof ParsingFailed) {
+            return
+        }
+        throw e
+    }
 }
 
 type Fallback = (uss: string, i: string, t: USSType[]) => UrbanStatsASTExpression
@@ -99,7 +118,7 @@ function attemptParseExpr(
             return attemptParseExpr(stmts, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes) ?? fallback(unparse(stmts), blockIdent, types)
         case 'customNode':
             if (preserveCustomNodes) {
-                return parseNoErrorAsCustomNode(unparse(expr, { simplify: true }), blockIdent, types)
+                return parseNoErrorAsCustomNode(unparse(expr, { simplify: 'basic' }), blockIdent, types)
             }
             else {
                 return parseExpr(expr.expr, blockIdent, types, typeEnvironment, fallback, preserveCustomNodes)
@@ -138,6 +157,10 @@ function attemptParseExpr(
             }
             return undefined
         case 'call':
+            const toNumberCallStr = parseToNumber(expr)
+            if (toNumberCallStr !== undefined && types.some(t => t.type === 'number')) {
+                return toNumberAST(toNumberCallStr, blockIdent)
+            }
             const fn = expr.fn
             if (fn.type !== 'identifier') {
                 return undefined
@@ -184,8 +207,6 @@ function attemptParseExpr(
             }
     }
 }
-
-export type Selection = { type: 'variable' | 'function', name: string } | { type: 'custom' } | { type: 'constant' } | { type: 'vector' } | { type: 'object' }
 
 function shouldShowConstant(type: USSType): boolean {
     return type.type === 'number' || type.type === 'string'
@@ -241,7 +262,9 @@ export function possibilities(target: USSType[], env: TypeEnvironment): Selectio
         results.push(...variables)
     }
     return results
-} export function changeBlockId(expr: UrbanStatsASTExpression, a: string, b: string): UrbanStatsASTExpression {
+}
+
+export function changeBlockId(expr: UrbanStatsASTExpression, a: string, b: string): UrbanStatsASTExpression {
     function recD<T>(e: Decorated<T>): Decorated<T> {
         return {
             node: e.node,

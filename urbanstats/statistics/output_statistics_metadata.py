@@ -15,20 +15,31 @@ def statistic_internal_to_display_name():
     An ordered dictionary mapping internal statistic names to display names. The order used here is the order in which
     the statistics are stored in each row of the database.
     """
+    internal_to_source = {}
     internal_to_display = {}
 
     for statistic_collection in statistic_collections:
         internal_to_display.update(statistic_collection.name_for_each_statistic())
+        internal_to_source.update(
+            {
+                k: statistic_collection
+                for k in statistic_collection.name_for_each_statistic()
+            }
+        )
 
     all_stats = set(internal_to_display.keys())
     extra_in_this_list = all_stats - set(internal_statistic_names())
-    if extra_in_this_list:
-        raise ValueError(f"Missing stats in tree: {extra_in_this_list}")
     extra_in_tree = set(internal_statistic_names()) - all_stats
-    if extra_in_tree:
-        raise ValueError(
-            f"Extra stats in tree: {[x for x in internal_statistic_names() if x in extra_in_tree]}"
-        )
+    if extra_in_this_list or extra_in_tree:
+        if extra_in_this_list:
+            print("Statistics in collections but not in tree:")
+            for stat in extra_in_this_list:
+                print(f"  {stat} [from {internal_to_source[stat].__class__.__name__}]")
+        if extra_in_tree:
+            print("Statistics in tree but not in collections:")
+            for stat in extra_in_tree:
+                print(f"  {stat}")
+        raise ValueError("Mismatch between statistics in collections and tree")
     return {k: internal_to_display[k] for k in internal_statistic_names()}
 
 
@@ -70,6 +81,29 @@ def get_explanation_page():
         result.update(statistic_collection.explanation_page_for_each_statistic())
 
     result = {k: result[k] for k in statistic_internal_to_display_name()}
+    return result
+
+
+def get_deprecation_messages():
+    result = {}
+
+    for statistic_collection in statistic_collections:
+        result.update(statistic_collection.deprecation_for_each_statistic())
+
+    with_deprecation_message = {k for k, v in result.items() if v is not None}
+    from_deprecation_category = {
+        k for k, v in get_statistic_categories().items() if v == "deprecated"
+    }
+    if with_deprecation_message != from_deprecation_category:
+        print("Statistics with deprecation messages but not in deprecated category:")
+        for stat in with_deprecation_message - from_deprecation_category:
+            print(f"  {stat}")
+        print("Statistics in deprecated category but without deprecation messages:")
+        for stat in from_deprecation_category - with_deprecation_message:
+            print(f"  {stat}")
+        raise ValueError(
+            "Mismatch between statistics with deprecation messages and deprecated category"
+        )
     return result
 
 
@@ -131,6 +165,8 @@ def statistic_variables_info():
         internal_to_actual_variable, multi_source_variable_names, multi_source_stats
     )
 
+    _verify_no_deprecated_multi_source(multi_source, variable_objects)
+
     result = {
         "variableNames": variable_objects,
         "multiSourceVariables": list(multi_source.items()),
@@ -138,9 +174,25 @@ def statistic_variables_info():
     return result
 
 
+def _verify_no_deprecated_multi_source(multi_source, variable_objects):
+    deprecation_map = {
+        var_obj["varName"]: var_obj["deprecated"]
+        for var_obj in variable_objects
+        if var_obj["deprecated"] is not None
+    }
+
+    for ms_name, ms_info in multi_source.items():
+        if any(var in deprecation_map for var in ms_info["individualVariables"]):
+            raise ValueError(
+                f"Multi-source variable {ms_name} includes deprecated individual variables: "
+                f"{[var for var in ms_info['individualVariables'] if var in deprecation_map]}"
+            )
+
+
 def construct_variable_objects(
     internal_to_actual_variable, multi_source_variable_names, multi_source_stats
 ):
+    deprecation_messages = get_deprecation_messages()
     variable_objects = []
     for i, stat in enumerate(internal_statistic_names_in_tree_order()):
         lexicographic_index = internal_statistic_names().index(stat)
@@ -157,6 +209,7 @@ def construct_variable_objects(
                 in multi_source_variable_names,
                 "order": i,
                 "index": lexicographic_index,
+                "deprecated": deprecation_messages[stat],
             }
         )
 

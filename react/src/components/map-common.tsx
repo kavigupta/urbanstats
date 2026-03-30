@@ -89,7 +89,8 @@ export interface Polygon {
     [meta: string]: unknown
 }
 
-const urbanStatsLayerPrefix = 'urban-stats'
+// Probably useful to make sure we don't collide with premade layers
+export const urbanStatsLayerPrefix = 'urban-stats'
 
 function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
     return `${urbanStatsLayerPrefix}-polygons-${kind}-${id}`
@@ -98,7 +99,7 @@ function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
 export function PolygonFeatureCollection({ features, clickable }: { features: GeoJSON.Feature[], clickable: boolean }): ReactNode {
     const { current: map } = useMap()
 
-    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map])).result
+    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]), 'PolygonFeatureCollection.firstLabel').result
 
     const collection: GeoJSON.FeatureCollection = useMemo(() => ({
         type: 'FeatureCollection',
@@ -146,7 +147,8 @@ async function polygonGeojson(polygon: Polygon): Promise<GeoJSON.Feature> {
 }
 
 export function polygonFeatureCollection(polygons: Polygon[]): { use: () => (GeoJSON.Feature | typeof waiting)[] } {
-    return promiseStream(polygons.map(polygonGeojson))
+    const result = promiseStream(polygons.map(polygonGeojson), 'polygonFeatureCollection')
+    return result
 }
 
 async function waitForMapLoadedOrRemoved(map: MapRef): Promise<void> {
@@ -200,7 +202,7 @@ export function PointFeatureCollection({ features, clickable }: { features: GeoJ
     const { current: map } = useMap()
     const id = useId()
 
-    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map])).result
+    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]), 'PointFeatureCollection').result
 
     const collection: GeoJSON.FeatureCollection = useMemo(() => ({
         type: 'FeatureCollection',
@@ -287,14 +289,11 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
     const mapLoaded = useOrderedResolve(useMemo(async () => {
         await waitForMapLoadedOrRemoved(map)
         return true
-    }, [map])).result ?? false
+    }, [map]), 'BaseMap.mapLoaded').result ?? false
 
     useEffect(() => {
         if (mapLoaded) {
             for (const layerId of map.getLayersOrder()) {
-                if (layerId === 'background' || layerId.startsWith(urbanStatsLayerPrefix)) {
-                    continue
-                }
                 const layer = map.getLayer(layerId)!
                 map.getMap().setLayoutProperty(layerId, 'visibility', isVisible(basemap, layer) ? 'visible' : 'none')
             }
@@ -303,7 +302,7 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
         }
     }, [map, basemap, mapLoaded])
 
-    const labelId = useOrderedResolve(useMemo(() => firstLabelId(map), [map])).result
+    const labelId = useOrderedResolve(useMemo(() => firstLabelId(map), [map]), 'Basemap.firstLabel').result
 
     if (basemap.type === 'osm' && basemap.subnationalOutlines !== undefined) {
         return (
@@ -331,14 +330,11 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
     return null
 }
 
-function isVisible(basemap: Basemap, layer: { type: string }): boolean {
+function isVisible(basemap: Basemap, layer: { id: string, type: string, source: string }): boolean {
     switch (basemap.type) {
         case 'none':
-            return false
+            return layer.id === 'background' || layer.source !== 'openmaptiles'
         case 'osm':
-            if (basemap.noLabels && layer.type === 'symbol') {
-                return false
-            }
-            return true
+            return !(basemap.noLabels && layer.type === 'symbol')
     }
 }

@@ -7,6 +7,7 @@ import { Settings, SettingsDictionary, sourceEnabledKey, statPathsWithExtra } fr
 import { useVector, VectorSettingKey, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { getAvailableGroups, getAvailableYears, getDataSourceCheckboxes, groupYearKeys, statIsEnabled, useStatPathsAll } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, StatPath } from '../page_template/statistic-tree'
+import { assert } from '../utils/defensive'
 
 import { isSinglePointerCell } from './pointer-cell'
 
@@ -34,7 +35,9 @@ export function QuerySettingsConnection(): null {
     const settingsVector = useVector()
 
     useEffect(() => {
-        navContext.setSettingsVector(settingsVector)
+        const kind = navContext.currentDescriptor.kind
+        assert(kind === 'article' || kind === 'comparison', 'query settings connection may not be used on this page type')
+        navContext.unsafeUpdateCurrentDescriptor({ s: settingsVector, kind }, { history: 'replaceState' })
     }, [settingsVector, navContext])
 
     useEffect(() => {
@@ -52,11 +55,11 @@ export function QuerySettingsConnection(): null {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No non-histogram extras yet
-export const statPathsWithHistogram = extra_stats.filter(([,{ type }]) => type === 'histogram').map(([index]) => stat_path_list[index])
+const statPathsWithHistogram = extra_stats.filter(([,{ type }]) => type === 'histogram').map(([index]) => stat_path_list[index])
 
 interface SettingsConnectionConfig { stagedSettingsKeys: readonly VectorSettingKey[], applySettingsKeys: (visibleStatPaths: StatPath[]) => readonly VectorSettingKey[] }
 
-export function getStagedSettingsKeys(statPaths: StatPath[][]): readonly VectorSettingKey[] {
+function getStagedSettingsKeys(statPaths: StatPath[][]): readonly VectorSettingKey[] {
     const flatStatPaths = statPaths.flat()
     return [
         'use_imperial',

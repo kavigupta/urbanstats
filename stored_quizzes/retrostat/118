@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Arthritis %",
+      "stat_path": "ARTHRITIS_cdc_2",
+      "question": "higher % of adults with arthritis",
+      "longname_a": "Yakima-Pasco-Richland-Kennewick WA Media Market, USA",
+      "longname_b": "Honolulu HI Media Market, USA",
+      "stat_a": 0.23925642076727524,
+      "stat_b": 0.1899143944395251
+    },
+    "b": {
+      "stat_column": "Racial Homogeneity Change (2010-2020) %",
+      "stat_path": "homogeneity_250_diff_2010",
+      "question": "!FULL Which diversified less between 2010 and 2020?!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "Indianapolis city (balance), Indiana, USA",
+      "longname_b": "Los Angeles city, California, USA",
+      "stat_a": -0.10421719803028262,
+      "stat_b": -0.0459036490876053
+    },
+    "a_ease": 0.7343153300600109,
+    "b_ease": 0.3241344706472654
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Private Insurance %",
+      "stat_path": "insurance_coverage_private",
+      "question": "higher % of people who are on private insurance!TOOLTIP The denominator for this statistic is the the total number of adults, including those without health insurance coverage.",
+      "longname_a": "Milwaukee County, Wisconsin, USA",
+      "longname_b": "San Francisco County, California, USA",
+      "stat_a": 0.6726588792797036,
+      "stat_b": 0.8040363885800579
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km) Change (2010-2020)",
+      "stat_path": "ad_1_change_2010",
+      "question": "higher % increase in population-weighted density (r=1km) from 2010 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Richland County, South Carolina, USA",
+      "longname_b": "Macomb County, Michigan, USA",
+      "stat_a": 0.004766676853299089,
+      "stat_b": 0.025208518635710192
+    },
+    "a_ease": 0.7084607543323139,
+    "b_ease": 0.2933723196881092
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High School %",
+      "stat_path": "education_high_school",
+      "question": "higher % of people who have at least a high school diploma",
+      "longname_a": "Oklahoma City [Urban Area], OK, USA",
+      "longname_b": "Ogden-Layton [Urban Area], UT, USA",
+      "stat_a": 0.8952070025033959,
+      "stat_b": 0.9408392093787566
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km)",
+      "stat_path": "ad_1",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Columbus city, Ohio, USA",
+      "longname_b": "Markham City, York Regional municipality, Ontario, Canada",
+      "stat_a": 2221.808205205469,
+      "stat_b": 3378.2434410316955
+    },
+    "a_ease": 0.6262183235867447,
+    "b_ease": 0.22428499749121927
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Renter %",
+      "stat_path": "rent_or_own_rent",
+      "question": "higher % of people who are renters",
+      "longname_a": "CA-22 (2023), USA",
+      "longname_b": "NY-01 (2025), USA",
+      "stat_a": 0.479133542522748,
+      "stat_b": 0.1619009242186356
+    },
+    "b": {
+      "stat_column": "Employed in Health care and social assistance %",
+      "stat_path": "industry_health_care_and_social_assistance",
+      "question": "higher % of workers employed in the health care and social assistance industry!TOOLTIP hospitals, nursing care facilities, offices of physicians, dentists, day care centers, etc.",
+      "longname_a": "NY-26 (2025), USA",
+      "longname_b": "CO-03 (2023), USA",
+      "stat_a": 0.17364783371723816,
+      "stat_b": 0.14780759306068134
+    },
+    "a_ease": 0.3385122410546139,
+    "b_ease": 0.7768361581920904
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "% units built pre-1970",
+      "stat_path": "year_built_1969_or_earlier",
+      "question": "higher % of housing units built before 1970",
+      "longname_a": "Akron MSA, OH, USA",
+      "longname_b": "Palm Bay-Melbourne-Titusville MSA, FL, USA",
+      "stat_a": 0.5329410130450687,
+      "stat_b": 0.2094297671528851
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Airport",
+      "stat_path": "mean_dist_Airport_updated",
+      "question": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+      "longname_a": "Fayetteville MSA, NC, USA",
+      "longname_b": "Vallejo-Fairfield MSA, CA, USA",
+      "stat_a": 14.818797640545895,
+      "stat_b": 50.02615679410499
+    },
+    "a_ease": 0.8304093567251462,
+    "b_ease": 0.40468909276248727
+  }
+]

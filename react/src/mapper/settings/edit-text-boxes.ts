@@ -7,7 +7,8 @@ import { assert } from '../../utils/defensive'
 
 import { colorSchema } from './Selector'
 import { neswSchema } from './edit-insets'
-import { MapSettings, idOutput, MapUSS, validMapperOutputs } from './utils'
+import { MapUSS, mapUssParser, validMapperOutputs } from './map-uss'
+import { MapSettings } from './utils'
 
 const attributesArgs = {
     size: l.optional(l.number()),
@@ -46,30 +47,26 @@ const textBoxSchema = l.transformExpr(l.call({ fn: l.identifier('textBox'), unna
     ...rest,
 } satisfies TextBox))
 
-const mapSchema = l.transformStmt(l.statements([
-    l.ignore(),
-    l.condition({
-        condition: l.ignore(),
-        rest: [
-            l.expression(l.reparse(idOutput, validMapperOutputs,
-                l.call({
-                    fn: l.ignore(),
-                    unnamedArgs: [],
-                    namedArgs: {
-                        textBoxes: l.edit(l.optional(l.maybeAutoUXNode(l.vector(textBoxSchema)))),
-                    },
-                }))),
-        ],
-    }),
-]), uss => uss[1].rest[0].namedArgs.textBoxes)
+const mapSchema = mapUssParser(l.call({
+    fn: l.ignore(),
+    unnamedArgs: [],
+    namedArgs: {
+        textBoxes: l.edit(l.optional(l.maybeAutoUXNode(l.vector(textBoxSchema)))),
+    },
+}), validMapperOutputs)
 
 export function getTextBoxes(settings: MapSettings, typeEnvironment: TypeEnvironment): TextBox[] | undefined {
     if (settings.script.uss.type === 'statements') {
         try {
-            return mapSchema.parse(settings.script.uss, typeEnvironment).currentValue?.expr ?? []
+            return mapSchema(settings.script.uss, typeEnvironment).namedArgs.textBoxes.currentValue?.expr ?? []
         }
-        catch {
-            return undefined
+        catch (err) {
+            if (err instanceof l.LiteralParseError) {
+                return undefined
+            }
+            else {
+                throw err
+            }
         }
     }
     return undefined
@@ -77,7 +74,7 @@ export function getTextBoxes(settings: MapSettings, typeEnvironment: TypeEnviron
 
 export function scriptWithNewTextBoxes(settings: MapSettings, textBoxes: TextBox[], typeEnvironment: TypeEnvironment): MapUSS {
     assert(settings.script.uss.type === 'statements', 'Trying to do an text boxes edit on USS that is not text boxes editable')
-    const parsed = mapSchema.parse(settings.script.uss, typeEnvironment)
+    const parsed = mapSchema(settings.script.uss, typeEnvironment).namedArgs.textBoxes
     const result = parsed.edit(textBoxes.length === 0
         ? undefined
         : {

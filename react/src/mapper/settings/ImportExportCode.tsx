@@ -7,7 +7,8 @@ import { parse, unparse } from '../../urban-stats-script/parser'
 import { cancelled, uploadFile } from '../../utils/upload'
 
 import { ActionOptions } from './EditMapperPanel'
-import { convertToMapUss, defaultSettings, mapperMetaFields, MapSettings } from './utils'
+import { convertToMapUss } from './map-uss'
+import { defaultSettings, mapperMetaFields, MapSettings } from './utils'
 
 export function ImportExportCode({ mapSettings, setMapSettings }: { mapSettings: MapSettings, setMapSettings: (v: MapSettings, o: ActionOptions) => void }): ReactNode {
     return (

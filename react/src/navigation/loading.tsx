@@ -84,6 +84,7 @@ export function RelativeLoader({ loading }: { loading: boolean }): ReactNode {
             transition: 'opacity 0.25s',
             opacity: loading ? 1 : 0,
             pointerEvents: 'none',
+            zIndex: zIndex.mapLoading,
         }}
         />
     )
