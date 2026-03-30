@@ -9,6 +9,7 @@ import { EditorError } from '../../urban-stats-script/editor-utils'
 import { unparse, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
 import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 import { AssignmentsResult } from '../../urban-stats-script/workerManager'
+import { TextAreaSizeContextProvider } from '../../utils/text-area-size-sync'
 
 import { AutoUXEditor } from './AutoUXEditor'
 import { ConditionEditor } from './ConditionEditor'
@@ -103,7 +104,7 @@ export function TopLevelEditor({
         )
     }
     return (
-        <div>
+        <TextAreaSizeContextProvider>
             <div style={{ margin: '0.5em 0px' }} />
             <CheckboxSettingCustom
                 name="Enable custom script"
@@ -124,6 +125,6 @@ export function TopLevelEditor({
                 editor={false}
                 results={errors.filter(e => e.location.start.block.type === 'multi')}
             />
-        </div>
+        </TextAreaSizeContextProvider>
     )
 }
