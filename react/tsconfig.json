@@ -15,6 +15,9 @@
         "noFallthroughCasesInSwitch": true,
         "allowUnreachableCode": false,
         "skipLibCheck": true,
-        "moduleResolution": "bundler"
-    }
+        "moduleResolution": "bundler",
+        "allowJs": true,
+        "checkJs": false
+    },
+    "exclude": ["*.mjs", "*.js"]
 }

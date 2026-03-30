@@ -3,6 +3,7 @@ import path from 'path'
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import NodePolyfillPlugin from 'node-polyfill-webpack-plugin'
 import { rspack } from "@rspack/core"
+import { port } from "./port.js"
 
 const isProduction = process.env.NODE_ENV === 'production'
 
@@ -65,7 +66,7 @@ export default env => ({
             directory: env.directory,
         },
         compress: true,
-        port: 8000,
+        port: port(),
         devMiddleware: {
             writeToDisk: true,
         },
