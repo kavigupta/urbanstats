@@ -6,6 +6,6 @@
  */
 export function port() {
     return process.env.PORT
-        ? parseInt(process.env.PORT, 10) || (() => { throw new Error(`Invalid Port Number ${process.env.port}`) })() 
+        ? parseInt(process.env.PORT, 10) || (() => { throw new Error(`Invalid Port Number ${process.env.PORT}`) })() 
         : 8000
 }
