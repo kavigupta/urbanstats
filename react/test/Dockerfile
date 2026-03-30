@@ -10,7 +10,7 @@ FROM python:3.10
 RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
     && dpkg --add-architecture i386 \
     && apt-get -y update \
-    && apt-get -y install \
+    && apt-get -y install --no-install-recommends \
     nodejs \
     chromium=146.* \
     xvfb \
