@@ -19,6 +19,7 @@ import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color-utils'
 import { Inset } from '../urban-stats-script/constants/insets'
+import { CommonMap } from '../urban-stats-script/constants/map'
 import { instantiate } from '../urban-stats-script/constants/scale'
 import { TextBox } from '../urban-stats-script/constants/text-box'
 import { EditorError } from '../urban-stats-script/editor-utils'
@@ -363,6 +364,12 @@ type MapComponentCreator = (
     clickable: boolean
 ) => ReactNode
 
+function computeRampToDisplay(value: CommonMap): RampToDisplay & { type: 'ramp' } {
+    const scale = instantiate(value.scale)
+    const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
+    return { type: 'ramp', value: { ramp: value.ramp, interpolations, scale, label: value.label, unit: value.unit } }
+}
+
 async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, geographyKind, cache }:
 {
     mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' | 'clusterMap' }
@@ -372,21 +379,29 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 }): Promise<{ features: GeoJSON.Feature[], mapComponentCreator: MapComponentCreator, ramp: RampToDisplay }> {
     let ramp: RampToDisplay
     let colors: string[]
+    let clusterCategoryColors: string[] = []
+    let clusterRampBins: number[] = []
     switch (opaqueType) {
         case 'pMap':
         case 'cMap':
-            const scale = instantiate(value.scale)
             const furthest = furthestColor(value.ramp.map(x => x[1]))
-            const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-            ramp = { type: 'ramp', value: { ramp: value.ramp, interpolations, scale, label: value.label, unit: value.unit } }
-            colors = value.data.map(val => interpolateColor(value.ramp, scale.forward(val), furthest))
+            const pcMapRamp = computeRampToDisplay(value)
+            ramp = pcMapRamp
+            colors = value.data.map(val => interpolateColor(value.ramp, pcMapRamp.value.scale.forward(val), furthest))
             break
         case 'clusterMap':
-            const clusterScale = instantiate(value.scale)
-            const clusterFurthest = furthestColor(value.ramp.map(x => x[1]))
-            const clusterInterpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(clusterScale.inverse)
-            ramp = { type: 'ramp', value: { ramp: value.ramp, interpolations: clusterInterpolations, scale: clusterScale, label: value.label, unit: value.unit } }
-            colors = value.data.map(val => interpolateColor(value.ramp, clusterScale.forward(val), clusterFurthest))
+            const clusterRamp = computeRampToDisplay(value)
+            ramp = clusterRamp
+
+            // Discretize by scaled values to match the same bins used in legend interpolations.
+            clusterCategoryColors = clusterRamp.value.interpolations.map(x => interpolateColor(value.ramp, clusterRamp.value.scale.forward(x)))
+            clusterRampBins = value.data.map((val) => {
+                const t = clusterRamp.value.scale.forward(val) * (clusterRamp.value.interpolations.length - 1)
+                const roundedT = Math.round(t)
+                const clamped = Math.max(0, Math.min(clusterRamp.value.interpolations.length - 1, roundedT))
+                return clamped
+            })
+            colors = clusterRampBins.map(binIdx => clusterCategoryColors[binIdx])
             break
         case 'cMapRGB':
             colors = value.dataR.map((r, i) => doRender({
@@ -409,6 +424,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                     fillColor: colors[i],
                     fillOpacity: value.opacity,
                     radius: Math.sqrt(value.relativeArea[i]) * value.maxRadius,
+                    rampBin: clusterRampBins[i],
                     statistic: dataValue,
                 }
             })
@@ -425,18 +441,14 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                                 const [lon, lat] = (f.geometry as GeoJSON.Point).coordinates
                                 return { lon, lat } satisfies ICoordinate
                             })}
-                            categories={(() => {
-                                const categoryColors = [...new Set(fs.map(f => f.properties!.fillColor as string))]
-                                return fs.map(f => categoryColors.indexOf(f.properties!.fillColor as string))
-                            })()}
+                            categories={fs.map(f => f.properties!.rampBin as number)}
                             pieChartSizeFor={fs.map((f) => {
                                 const radius = f.properties?.radius as number | undefined
                                 return radius === undefined ? 1 : radius ** 2
                             })}
-                            categoryColors={[...new Set(fs.map(f => f.properties!.fillColor as string))]}
+                            categoryColors={clusterCategoryColors}
                             clusterMarkerLabel={(featureProps: ClusterFeatureProperties & { cluster: true }) => {
-                                const categoryColors = [...new Set(fs.map(f => f.properties!.fillColor as string))]
-                                return String(categoryColors.reduce((sum, _, idx) => sum + featureProps[`countCategory${idx}`], 0))
+                                return String(clusterCategoryColors.reduce((sum, _, idx) => sum + featureProps[`countCategory${idx}`], 0))
                             }}
                             unclusteredMarkerLabel={() => ''}
                             maxClusterRadius={value.maxRadius}
@@ -599,6 +611,7 @@ interface Point {
     fillColor: string
     fillOpacity: number
     radius: number
+    rampBin?: number
 
     [meta: string]: unknown
 

@@ -18,7 +18,7 @@ export interface Outline {
     weight: number
 }
 
-interface CommonMap {
+export interface CommonMap {
     geo: string[]
     data: number[]
     scale: ScaleDescriptor
