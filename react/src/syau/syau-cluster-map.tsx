@@ -255,6 +255,9 @@ function FirstZoom(props: { centroids: ICoordinate[] }): ReactNode {
     const map = useMap().current!
 
     useEffect(() => {
+        if (props.centroids.length === 0) {
+            return
+        }
         const longs = optimizeWrapping(props.centroids.map(c => c.lon!))
         const lats = props.centroids.map(c => c.lat!)
         let minLon = Math.min(...longs)
