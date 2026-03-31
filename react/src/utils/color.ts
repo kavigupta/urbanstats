@@ -4,31 +4,6 @@ import { Keypoints } from '../mapper/ramps'
 
 import { assert } from './defensive'
 
-/**
- * Map a normalized value `t` (typically `scale.forward(rawData)`) onto a discrete ramp bin index.
- * Uses the same bracketing rule as {@link interpolateColor}: bin `i` corresponds to the segment
- * between `ramp[i][0]` and `ramp[i + 1][0]`, with endpoints clamped.
- */
-export function binIndexForNormalizedRampValue(t: number, ramp: Keypoints): number {
-    if (ramp.length === 0) {
-        return 0
-    }
-    if (Number.isNaN(t)) {
-        return 0
-    }
-    let i = 0
-    while (i < ramp.length && t > ramp[i][0]) {
-        i++
-    }
-    if (i === 0) {
-        return 0
-    }
-    if (i === ramp.length) {
-        return ramp.length - 1
-    }
-    return i - 1
-}
-
 export function randomColor(name: string): string {
     // randomly choose a color hex code where H is between 0 and 360,
     // S is between 50 and 100, and L is between 20 and 50
