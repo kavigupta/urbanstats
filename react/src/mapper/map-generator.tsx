@@ -443,7 +443,6 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                             maxClusterRadius={value.maxRadius}
                             computeRelativeArea={(area, maxArea) => (maxArea > 0 ? area / maxArea : 1)}
                             clusterRadiusSpacing={value.clusterRadiusSpacing}
-                            clusterMaxZoom={value.clusterMaxZoom}
                             mapLibreProps={mapLibreProps}
                             mapRef={ref}
                             basemap={value.basemap}

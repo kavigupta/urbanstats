@@ -59,7 +59,6 @@ export interface ClusterMap extends CommonMap {
     maxRadius: number
     relativeArea: number[]
     clusterRadiusSpacing: number
-    clusterMaxZoom: number
 }
 
 const cMapType = {
@@ -338,17 +337,12 @@ export const clusterMap: USSValue = {
                 type: { type: 'concrete', value: { type: 'number' } },
                 defaultValue: parseNoErrorAsExpression('0', ''),
             },
-            clusterMaxZoom: {
-                type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: parseNoErrorAsExpression('14', ''),
-            },
         }),
         returnType: { type: 'concrete', value: clusterMapType },
     },
     value: (ctx, posArgs, namedArgs, originalArgs) => {
         const maxRadius = namedArgs.maxRadius as number
         const relativeArea = namedArgs.relativeArea as number[] | null
-        const clusterMaxZoom = Math.max(0, namedArgs.clusterMaxZoom as number)
         const clusterRadiusSpacing = namedArgs.clusterRadiusSpacing as number
         if (clusterRadiusSpacing < 0) {
             throw new Error(`clusterRadiusSpacing must be non-negative: ${clusterRadiusSpacing}`)
@@ -360,7 +354,7 @@ export const clusterMap: USSValue = {
         return {
             type: 'opaque',
             opaqueType: 'clusterMap',
-            value: { ...commonMap, maxRadius, relativeArea: normalizedRelativeArea, clusterRadiusSpacing, clusterMaxZoom } satisfies ClusterMap,
+            value: { ...commonMap, maxRadius, relativeArea: normalizedRelativeArea, clusterRadiusSpacing } satisfies ClusterMap,
         }
     },
     documentation: {
@@ -372,7 +366,6 @@ export const clusterMap: USSValue = {
             maxRadius: 'Max Radius',
             relativeArea: 'Relative Area',
             clusterRadiusSpacing: 'Spacing between Cluster circles (%)',
-            clusterMaxZoom: 'Cluster Max Zoom',
         },
         longDescription: 'Creates a point map that clusters nearby points at lower zoom levels and expands to individual points when zoomed in. Uses the same data and styling parameters as pMap, with additional clustering controls.',
         selectorRendering: { kind: 'subtitleLongDescription' },

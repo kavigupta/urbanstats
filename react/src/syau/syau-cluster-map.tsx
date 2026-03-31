@@ -52,7 +52,6 @@ interface ClusterMapProps {
     basemap?: BasemapSpec
     /** Optional cluster controls. */
     clusterRadiusSpacing: number
-    clusterMaxZoom?: number
 }
 
 interface ClusterMapElement {
@@ -230,7 +229,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                 type="geojson"
                 data={centroidsData}
                 cluster={true}
-                clusterMaxZoom={props.clusterMaxZoom ?? 14}
+                clusterMaxZoom={14}
                 clusterRadius={maxClusterRadius * (1 + props.clusterRadiusSpacing / 100)}
                 clusterProperties={clusterProperties}
             />
