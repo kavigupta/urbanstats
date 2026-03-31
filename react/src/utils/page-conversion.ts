@@ -8,7 +8,7 @@
  * intact and only swaps the final output expression.
  */
 
-import { idOutput, MapUSS } from '../mapper/settings/map-uss'
+import { MapUSS, mapUssParser, validMapperOutputs } from '../mapper/settings/map-uss'
 import { UrbanStatsASTExpression } from '../urban-stats-script/ast'
 import { tableType } from '../urban-stats-script/constants/table'
 import * as l from '../urban-stats-script/literal-parser'
@@ -17,47 +17,29 @@ import { unparse } from '../urban-stats-script/parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 
 export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression | undefined {
-    const dataSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
-    const labelSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
-    const unitSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
-
-    const mapCallSchema = l.maybeCustomNodeExpr(l.reparse(idOutput, [tableType], l.edit(l.union([
+    const mapSchema = mapUssParser(l.edit(l.union([
         l.transformExpr(l.call({
             fn: l.union([l.identifier('cMap'), l.identifier('pMap')]),
             namedArgs: {
-                data: dataSchema,
-                label: labelSchema,
-                unit: unitSchema,
+                data: l.passthrough(),
+                label: l.passthrough(),
+                unit: l.passthrough(),
             },
             unnamedArgs: [],
         }), x => ({ data: x.namedArgs.data, label: x.namedArgs.label, unit: x.namedArgs.unit })),
         l.transformExpr(l.call({
             fn: l.identifier('cMapRGB'),
             namedArgs: {
-                dataR: dataSchema,
-                label: labelSchema,
-                unit: unitSchema,
+                dataR: l.passthrough(),
+                label: l.passthrough(),
+                unit: l.passthrough(),
             },
             unnamedArgs: [],
         }), x => ({ data: x.namedArgs.dataR, label: x.namedArgs.label, unit: x.namedArgs.unit })),
-    ]))))
-
-    const mapSchema = l.transformStmt(l.statements([
-        l.ignore(),
-        l.condition({
-            condition: l.ignore(),
-            rest: [
-                l.expression(mapCallSchema),
-            ],
-        }),
-    ]), r => r[1].rest[0])
-
-    if (uss.type !== 'statements') {
-        return undefined
-    }
+    ])), [tableType])
 
     try {
-        const { currentValue, edit } = mapSchema.parse(uss, typeEnvironment)
+        const { currentValue, edit } = mapSchema(uss, typeEnvironment)
         const { data: dataExpr, label: labelExpr, unit: unitExpr } = currentValue
         if (dataExpr === undefined) {
             return undefined
@@ -121,22 +103,16 @@ export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): Ur
  * Replaces table(columns=[column(values=X)]) with cMap(data=X, scale=linearScale(), ramp=rampUridis).
  * Returns undefined if conversion is not possible.
  */
-export function tableToMapper(uss: MapUSS): string | undefined {
-    // Schema to match table(columns=[column(values=dataExpr, name=..., unit=...)])
-    // Extract the dataExpr, name, and unit using the same pattern as mapperToTable
-    const dataSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
-    const nameSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
-    const unitSchema = l.transformExpr(l.edit(l.ignore()), ({ expr }) => expr)
-
-    const tableCallSchema = l.transformExpr(l.call({
+export function tableToMapper(uss: MapUSS, typeEnvironment: TypeEnvironment): string | undefined {
+    const mapSchema = mapUssParser(l.edit(l.transformExpr(l.call({
         fn: l.identifier('table'),
         namedArgs: {
             columns: l.transformExpr(l.vector(l.call({
                 fn: l.identifier('column'),
                 namedArgs: {
-                    values: dataSchema,
-                    name: nameSchema,
-                    unit: unitSchema,
+                    values: l.passthrough(),
+                    name: l.passthrough(),
+                    unit: l.passthrough(),
                 },
                 unnamedArgs: [],
             })), (columns) => {
@@ -151,27 +127,10 @@ export function tableToMapper(uss: MapUSS): string | undefined {
             }),
         },
         unnamedArgs: [],
-    }), x => x.namedArgs.columns)
-
-    const tableExprSchema = l.maybeCustomNodeExpr(l.edit(tableCallSchema))
-
-    // Match the structure like mapperToTable does
-    const tableSchema = l.transformStmt(l.statements([
-        l.ignore(),
-        l.condition({
-            condition: l.ignore(),
-            rest: [
-                l.expression(tableExprSchema),
-            ],
-        }),
-    ]), r => r[1].rest[0])
-
-    if (uss.type !== 'statements') {
-        return undefined
-    }
+    }), x => x.namedArgs.columns)), validMapperOutputs)
 
     try {
-        const { currentValue, edit } = tableSchema.parse(uss, {} as TypeEnvironment)
+        const { currentValue, edit } = mapSchema(uss, typeEnvironment)
         const { values: dataExpr, name: nameExpr, unit: unitExpr } = currentValue
         if (dataExpr === undefined) {
             return undefined

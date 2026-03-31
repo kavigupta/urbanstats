@@ -290,27 +290,7 @@ export const pMap: USSValue = {
 
         const amount = commonMap.data.length
 
-        // Handle relativeArea: fill with 1s if not present, normalize to max 1
-        let normalizedRelativeArea: number[]
-        if (relativeArea === null) {
-            // If relativeArea is null, fill with 1s
-            normalizedRelativeArea = Array.from({ length: amount }, () => 1)
-        }
-        else if (relativeArea.length !== amount) {
-            throw new Error(`relativeArea must have the same length as geo: ${relativeArea.length} and ${amount}`)
-        }
-        else {
-            // Replace negative values with 0
-            const sanitizedRelativeArea = relativeArea.map(area => Math.max(0, area))
-            // Normalize relativeArea so max value is 1
-            const maxRelativeArea = Math.max(...sanitizedRelativeArea)
-            if (maxRelativeArea > 0) {
-                normalizedRelativeArea = sanitizedRelativeArea.map((area: number) => area / maxRelativeArea)
-            }
-            else {
-                normalizedRelativeArea = Array.from({ length: amount }, () => 1)
-            }
-        }
+        const normalizedRelativeArea = normalizeRelativeArea(relativeArea, amount)
 
         return {
             type: 'opaque',
@@ -331,6 +311,21 @@ export const pMap: USSValue = {
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
+
+function normalizeRelativeArea(relativeArea: number[] | null, amount: number): number[] {
+    if (relativeArea === null) {
+        return Array.from({ length: amount }, () => 1)
+    }
+    if (relativeArea.length !== amount) {
+        throw new Error(`relativeArea must have the same length as geo: ${relativeArea.length} and ${amount}`)
+    }
+    const sanitizedRelativeArea = relativeArea.map(area => Math.max(0, area))
+    const maxRelativeArea = Math.max(...sanitizedRelativeArea)
+    if (maxRelativeArea > 0) {
+        return sanitizedRelativeArea.map((area: number) => area / maxRelativeArea)
+    }
+    return Array.from({ length: amount }, () => 1)
+}
 
 export const cMapRGB: USSValue = {
     type: {

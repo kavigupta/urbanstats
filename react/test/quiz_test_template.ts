@@ -600,7 +600,7 @@ export function quizTestImportExport({ platform }: { platform: 'desktop' | 'mobi
                 + '\n'
                 + 'Are you sure you want to merge them? (The lowest score will be used)',
                 type: 'confirm',
-                url: 'http://localhost:8000/quiz.html#date=91',
+                url: `${target}/quiz.html#date=91`,
             },
         ])
 

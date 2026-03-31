@@ -47,7 +47,7 @@ function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironm
         return {
             type: 'vectorLiteral',
             entireLoc: emptyLocation(blockIdent),
-            elements: [],
+            elements: type.elementType.type === 'elementOfEmptyVector' ? [] : [createDefaultExpression(type.elementType, extendBlockIdVectorElement(blockIdent, 0), typeEnvironment)],
         }
     }
     if (type.type === 'object') {

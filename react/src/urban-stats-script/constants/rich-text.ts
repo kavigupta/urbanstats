@@ -99,6 +99,7 @@ const constructRichTextDocumentValue: USSValue = {
         longDescription: 'Creates a rich text document from a list of rich text segments.',
         selectorRendering: { kind: 'subtitleLongDescription' },
         customConstructor: true,
+        isDefault: true,
     },
 } satisfies USSValue
 
@@ -207,6 +208,7 @@ const constructRichTextStringSegmentValue: USSValue = {
         longDescription: 'Creates a rich text segment containing a plain string. The string can have optional formatting attributes.',
         selectorRendering: { kind: 'subtitleLongDescription' },
         customConstructor: true,
+        isDefault: true,
     },
 } satisfies USSValue
 
@@ -280,6 +282,7 @@ function alignConstant(value: RichTextAttributes['align']): USSValue {
             longDescription: `Specifies the alignment of the text as ${value === '' ? 'left' : value}.`,
             selectorRendering: { kind: 'subtitleLongDescription' },
             customConstructor: false,
+            isDefault: value === '',
         },
     }
 }
@@ -306,6 +309,7 @@ function listConstant(value: RichTextAttributes['list']): USSValue {
             longDescription: `Specifies the list type as ${value || 'none'}.`,
             selectorRendering: { kind: 'subtitleLongDescription' },
             customConstructor: false,
+            isDefault: value === 'bullet',
         },
     }
 }

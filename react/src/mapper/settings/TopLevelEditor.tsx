@@ -9,6 +9,7 @@ import { EditorError } from '../../urban-stats-script/editor-utils'
 import { unparse, parseNoErrorAsCustomNode } from '../../urban-stats-script/parser'
 import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 import { AssignmentsResult } from '../../urban-stats-script/workerManager'
+import { TextAreaSizeContextProvider } from '../../utils/text-area-size-sync'
 
 import { AutoUXEditor } from './AutoUXEditor'
 import { ConditionEditor } from './ConditionEditor'
@@ -103,27 +104,29 @@ export function TopLevelEditor({
         )
     }
     return (
-        <div>
-            <div style={{ margin: '0.5em 0px' }} />
-            <CheckboxSettingCustom
-                name="Enable custom script"
-                checked={uss.type === 'customNode'}
-                onChange={(checked) => {
-                    if (checked) {
-                        assert(uss.type === 'statements', 'USS should be statements when enabling custom script')
-                        setUss(parseNoErrorAsCustomNode(unparse(uss, { simplify: 'auto-ux' }), rootBlockIdent), {})
-                    }
-                    else {
-                        assert(uss.type === 'customNode', 'USS should not be a custom node when disabled')
-                        setUss(attemptParseAsTopLevel(uss.expr, typeEnvironment, false, targetOutputTypes), {})
-                    }
-                }}
-            />
-            { subcomponent() }
-            <DisplayResults
-                editor={false}
-                results={errors.filter(e => e.location.start.block.type === 'multi')}
-            />
-        </div>
+        <TextAreaSizeContextProvider>
+            <div>
+                <div style={{ margin: '0.5em 0px' }} />
+                <CheckboxSettingCustom
+                    name="Enable custom script"
+                    checked={uss.type === 'customNode'}
+                    onChange={(checked) => {
+                        if (checked) {
+                            assert(uss.type === 'statements', 'USS should be statements when enabling custom script')
+                            setUss(parseNoErrorAsCustomNode(unparse(uss, { simplify: 'auto-ux' }), rootBlockIdent), {})
+                        }
+                        else {
+                            assert(uss.type === 'customNode', 'USS should not be a custom node when disabled')
+                            setUss(attemptParseAsTopLevel(uss.expr, typeEnvironment, false, targetOutputTypes), {})
+                        }
+                    }}
+                />
+                { subcomponent() }
+                <DisplayResults
+                    editor={false}
+                    results={errors.filter(e => e.location.start.block.type === 'multi')}
+                />
+            </div>
+        </TextAreaSizeContextProvider>
     )
 }

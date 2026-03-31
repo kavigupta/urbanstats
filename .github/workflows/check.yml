@@ -30,42 +30,22 @@ jobs:
           timeout_seconds: 30
           shell: bash
           command: |
-            set -x
-
-            echo "::group::Cleanup"
-            echo "Starting cleanup at $(date -u +%T)"
             rm -rf $GITHUB_WORKSPACE/*
-            echo "Cleanup done at $(date -u +%T)"
-            echo "::endgroup::"
 
             git config --global --add safe.directory $GITHUB_WORKSPACE
             git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $(echo -n x-access-token:$GITHUB_TOKEN | base64 -w0)"
 
-            echo "::group::Clone"
-            echo "Starting clone at $(date -u +%T)"
-            GIT_TRACE=1 GIT_TRACE_PACKET=1 GIT_TRACE_PERFORMANCE=1 GIT_CURL_VERBOSE=1 \
-              git clone --no-checkout --filter=blob:none --verbose --progress \
-              ${{ github.server_url }}/${{ github.repository }}.git $GITHUB_WORKSPACE
-            echo "Clone done at $(date -u +%T)"
-            echo "::endgroup::"
+            # Clone the repo
+            git clone --no-checkout --filter=blob:none ${{ github.server_url }}/${{ github.repository }}.git $GITHUB_WORKSPACE
 
-            echo "::group::Sparse checkout config"
-            echo "Starting sparse checkout config at $(date -u +%T)"
+            # Enable sparse checkout
             git config core.sparseCheckout true
+
+            # Configure sparse checkout
             echo "$SPARSE_CHECKOUT" > .git/info/sparse-checkout
-            echo "Sparse checkout patterns:"
-            cat .git/info/sparse-checkout
-            echo "Sparse checkout config done at $(date -u +%T)"
-            echo "::endgroup::"
 
-            echo "::group::Checkout"
-            echo "Starting checkout at $(date -u +%T)"
-            GIT_TRACE=1 GIT_TRACE_PERFORMANCE=1 GIT_CURL_VERBOSE=1 \
-              git checkout --progress --force ${{ github.sha }}
-            echo "Checkout done at $(date -u +%T)"
-            echo "::endgroup::"
-
-            echo "All steps completed at $(date -u +%T)"
+            # Check out the ref
+            git checkout --progress --force ${{ github.sha }}
 
       - uses: ./.github/actions/docker_image
         with:
@@ -278,7 +258,7 @@ jobs:
       - uses: ./.github/actions/node_modules
       - name: Run js tests
         run: |
-          npm run test:unit:ci -- \
+          npm run test:unit -- \
             --proxy=true \
             --test='unit/*.test.ts'
         working-directory: react
