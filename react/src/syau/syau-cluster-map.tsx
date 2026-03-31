@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl'
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
-import { FullscreenControl, Layer, LngLatLike, MapRef, Source, useMap } from 'react-map-gl/maplibre'
+import { FullscreenControl, Layer, LngLatLike, Map as MapGL, MapProps, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
 import { Basemap, CommonMaplibreMap, urbanStatsLayerPrefix } from '../components/map-common'
 import { Basemap as BasemapSpec } from '../mapper/settings/utils'
@@ -44,6 +44,14 @@ interface ClusterMapProps {
     maxClusterRadius: number
     /** Compute relative area relative to the largest area */
     computeRelativeArea: (area: number, maxArea: number) => number
+    /** Optional map props for embedding in other layouts. */
+    mapLibreProps?: Partial<MapProps>
+    /** Optional map ref passthrough. */
+    mapRef?: React.Ref<MapRef>
+    /** Optional basemap override. */
+    basemap?: BasemapSpec
+    /** Optional cluster controls. */
+    clusterRadiusSpacing: number
 }
 
 interface ClusterMapElement {
@@ -168,11 +176,12 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
         clusterProperties[`pieChartSizeForCategory${i}`] = ['+', ['get', `pieChartSizeForCategory${i}`]]
     }
 
-    const basemap: BasemapSpec = useMemo(() => TestUtils.shared.isTesting
+    const defaultBasemap: BasemapSpec = useMemo(() => TestUtils.shared.isTesting
         // eslint-disable-next-line no-restricted-syntax -- just for testing
         ? { type: 'none', backgroundColor: 'white', textColor: 'black' } satisfies BasemapSpec
         : { type: 'osm', noLabels: true } satisfies BasemapSpec,
     [])
+    const basemap = props.basemap ?? defaultBasemap
 
     const centroidsData = useMemo(() => {
         return {
@@ -199,10 +208,19 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
 
     return (
         <CommonMaplibreMap
-            ref={setMapRef}
+            ref={(instance) => {
+                setMapRef(instance)
+                if (typeof props.mapRef === 'function') {
+                    props.mapRef(instance)
+                }
+            }}
+            canvasContextAttributes={{
+                preserveDrawingBuffer: true,
+            }}
             onMove={updateMarkers}
             onData={updateMarkers}
-            style={{ height: 600 }}
+            {...props.mapLibreProps}
+            style={{ height: 600, ...props.mapLibreProps?.style }}
         >
             <Basemap basemap={basemap} />
             <FullscreenControl position="top-left" />
@@ -212,7 +230,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                 data={centroidsData}
                 cluster={true}
                 clusterMaxZoom={14}
-                clusterRadius={maxClusterRadius * 2.5}
+                clusterRadius={maxClusterRadius * (1 + props.clusterRadiusSpacing / 100)}
                 clusterProperties={clusterProperties}
             />
             {/*
@@ -237,6 +255,9 @@ function FirstZoom(props: { centroids: ICoordinate[] }): ReactNode {
     const map = useMap().current!
 
     useEffect(() => {
+        if (props.centroids.length === 0) {
+            return
+        }
         const longs = optimizeWrapping(props.centroids.map(c => c.lon!))
         const lats = props.centroids.map(c => c.lat!)
         let minLon = Math.min(...longs)
