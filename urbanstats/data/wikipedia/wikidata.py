@@ -1,7 +1,7 @@
 from typing import Optional
 
 import requests
-from permacache import permacache
+from permacache import drop_if_equal, permacache
 
 
 @permacache("election_data_by_county/historic_wiki/wikidata_to_wikipage")
@@ -58,6 +58,20 @@ def query_sparlql(column, value):
 
 
 def fetch_sparql(query):
+    bindings = fetch_sparql_bindings(query)
+    for binding in bindings:
+        entity_uri = binding.get("item", {}).get("value", "")
+        if "/entity/" in entity_uri:
+            entity_id = entity_uri.split("/entity/")[-1]
+            yield entity_id
+
+
+@permacache(
+    "urbanstats/data/wikipedia/wikidata/fetch_sparql_bindings",
+    key_function=dict(version=drop_if_equal(0)),
+)
+def fetch_sparql_bindings(query, version=0):
+    del version
     sparql_url = "https://query.wikidata.org/sparql"
     headers = {
         "User-Agent": "urbanstats (https://github.com/kavigupta/urbanstats; contact@urbanstats.org)",
@@ -71,11 +85,7 @@ def fetch_sparql(query):
     data = response.json()
 
     bindings = data.get("results", {}).get("bindings", [])
-    for binding in bindings:
-        entity_uri = binding.get("item", {}).get("value", "")
-        if "/entity/" in entity_uri:
-            entity_id = entity_uri.split("/entity/")[-1]
-            yield entity_id
+    return bindings
 
 
 @permacache("urbanstats/data/wikipedia/wikidata/fetch_sparql_as_list")

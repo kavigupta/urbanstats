@@ -5,7 +5,7 @@ import attr
 import geopandas as gpd
 import pandas as pd
 
-from urbanstats.metadata import metadata_types
+from urbanstats.metadata.metadata_list import metadata_types
 
 
 @attr.s

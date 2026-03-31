@@ -1,6 +1,6 @@
 import ColorLib from 'color'
 import stableStringify from 'json-stable-stringify'
-import React, { ReactNode, useMemo, useCallback } from 'react'
+import React, { ReactNode, useMemo, useCallback, useRef } from 'react'
 
 import { colorThemes } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
@@ -14,6 +14,7 @@ import { emptyLocation } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 import { Documentation, TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 import { TestUtils } from '../../utils/TestUtils'
+import { useTextAreaSizeSync } from '../../utils/text-area-size-sync'
 
 import * as l from './../../urban-stats-script/literal-parser'
 import { BetterSelector, SelectorRenderResult } from './BetterSelector'
@@ -143,8 +144,13 @@ export function Selector(props: {
 }
 
 function TextInput({ currentValue, blockIdent, setUss }: { currentValue: string, blockIdent: string, setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void }): ReactNode {
+    const textAreaRef = useRef<HTMLTextAreaElement>(null)
+
+    useTextAreaSizeSync(textAreaRef, blockIdent)
+
     return (
         <textarea
+            ref={textAreaRef}
             value={currentValue}
             onChange={(e) => {
                 const value = e.target.value
@@ -210,11 +216,16 @@ function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection)
     }
 }
 
-export const colorSchema = l.transformExpr(l.maybeCustomNodeExpr(l.deconstruct(l.call({
+const colorConstructorSchema = l.deconstruct(l.call({
     fn: l.union([l.identifier('rgb'), l.identifier('hsv')]),
     unnamedArgs: [l.number(), l.number(), l.number()],
     namedArgs: { a: l.optional(l.number()) },
-}))), (call) => {
+}))
+
+export const colorSchema = l.transformExpr(l.union([
+    colorConstructorSchema,
+    l.customNode(l.expression(colorConstructorSchema)),
+]), (call) => {
     let color: Color | undefined
     switch (call.fn) {
         case 'rgb':
