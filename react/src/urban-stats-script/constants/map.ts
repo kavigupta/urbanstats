@@ -331,7 +331,7 @@ export const clusterMap: USSValue = {
             },
             relativeArea: {
                 type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } },
-                defaultValue: createConstantExpression(null),
+                defaultValue: parseNoErrorAsExpression('population', ''),
             },
             clusterRadiusSpacing: {
                 type: { type: 'concrete', value: { type: 'number' } },
