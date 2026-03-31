@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl'
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
-import { FullscreenControl, Layer, LngLatLike, Map as MapGL, MapProps, MapRef, Source, useMap } from 'react-map-gl/maplibre'
+import { FullscreenControl, Layer, LngLatLike, MapProps, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
 import { Basemap, CommonMaplibreMap, urbanStatsLayerPrefix } from '../components/map-common'
 import { Basemap as BasemapSpec } from '../mapper/settings/utils'
