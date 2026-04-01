@@ -14,7 +14,7 @@ import { RelativeLoader } from '../navigation/loading'
 import { Colors, colorThemes } from '../page_template/color-themes'
 import { OverrideTheme, useColors } from '../page_template/colors'
 import { loadCentroids } from '../syau/load'
-import { ClusterMap as SyauClusterMap, type ClusterFeatureProperties } from '../syau/syau-cluster-map'
+import { ClusterMap as SyauClusterMap } from '../syau/syau-cluster-map'
 import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color-utils'
@@ -436,9 +436,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                                 return radius === undefined ? 1 : radius ** 2
                             })}
                             categoryColors={clusterCategoryColors}
-                            clusterMarkerLabel={(featureProps: ClusterFeatureProperties & { cluster: true }) => {
-                                return String(clusterCategoryColors.reduce((sum, _, idx) => sum + featureProps[`countCategory${idx}`], 0))
-                            }}
+                            clusterMarkerLabel={() => ''}
                             unclusteredMarkerLabel={() => ''}
                             maxClusterRadius={value.maxRadius}
                             computeRelativeArea={(area, maxArea) => (maxArea > 0 ? area / maxArea : 1)}
