@@ -1,9 +1,7 @@
-import { Selector } from 'testcafe'
-
 import { constantCategories } from '../src/urban-stats-script/documentation-category'
 
 import { nthEditor, selectionNotPoint } from './editor_test_utils'
-import { downloadOrCheckString, screencap, target, urbanstatsFixture, waitForLoading } from './test_utils'
+import { screencap, target, urbanstatsFixture } from './test_utils'
 
 urbanstatsFixture('uss documentation', '/uss-documentation.html')
 
