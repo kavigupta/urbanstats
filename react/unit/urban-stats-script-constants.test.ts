@@ -560,6 +560,9 @@ void test('constant listing', (): void => {
             '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = null, opacity: number = 1, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> pMap': [
                 'pMap',
             ],
+            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = population, clusterRadiusSpacing: number = 0, opacity: number = 1, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> clusterMap': [
+                'clusterMap',
+            ],
             '(; color: color = rgb(0, 0, 0), weight: number = 0.5) -> outline': [
                 'constructOutline',
             ],
