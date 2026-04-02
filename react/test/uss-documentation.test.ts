@@ -28,20 +28,6 @@ test('undo is scoped by editor', async (t) => {
     await t.expect(nthEditor(0).textContent).notEql('Enter Urban Stats Script\n')
 })
 
-async function colorsOfResults(t: TestController): Promise<Set<string>> {
-    // get all nodes with id test-editor-result and return classes of the form color-${cKey} for each
-    const results = Selector('#test-editor-result')
-    const count = await results.count
-    const colors: string[] = []
-    for (let i = 0; i < count; i++) {
-        let classNames = (await results.nth(i).getAttribute('class'))?.split(' ') ?? []
-        classNames = classNames.filter(c => c.startsWith('color-'))
-        await t.expect(classNames.length).eql(1)
-        colors.push(classNames[0])
-    }
-    return new Set(colors)
-}
-
 test('documentation screenshot collapsed', async (t) => {
     await screencap(t)
 })
