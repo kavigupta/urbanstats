@@ -37,7 +37,6 @@ CCDs = Shapefile(
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/cartographic-boundary.html",
     ),
     include_in_syau=True,
-    metadata_columns=["geoid"],
-    additional_columns_to_keep=["STATEFP", "COUSUBFP"],
+    intermediate_computation_columns=["STATEFP", "COUSUBFP"],
     wikidata_sourcer=CCDWikidataSourcer(),
 )

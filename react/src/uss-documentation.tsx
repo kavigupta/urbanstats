@@ -1,24 +1,60 @@
 import { MathJaxContext } from 'better-react-mathjax'
-import React, { ReactNode, useContext, useEffect, useState } from 'react'
+import React, { ReactNode, useContext, useEffect } from 'react'
 import { Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 
 import './style.css'
 import './common.css'
 import { getUnit } from './components/unit-display'
-import { defaultTypeEnvironment } from './mapper/context'
+import { Navigator } from './navigation/Navigator'
 import { urlFromPageDescriptor } from './navigation/PageDescriptor'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
 import { StandaloneEditor } from './urban-stats-script/StandaloneEditor'
-import { defaultConstants } from './urban-stats-script/constants/constants'
+import { ConstantCategory } from './urban-stats-script/documentation-category'
 import { expressionOperatorMap } from './urban-stats-script/operators'
-import { constantCategories, ConstantCategory, DocumentationTable, renderType, USSDocumentedType, USSValue } from './urban-stats-script/types-values'
-import { DefaultMap } from './utils/DefaultMap'
+import { DocumentationTable, renderType, USSDocumentedType } from './urban-stats-script/types-values'
+import { constantsDocumentationData } from './uss-documentation-routing'
 import { assert } from './utils/defensive'
 import { useHeaderTextClass } from './utils/responsive'
 
-export function USSDocumentationPanel({ hash }: { hash: string }): ReactNode {
+function useScrollToUssDocumentationFragment(hash: string | undefined, contentKey: string | undefined): void {
+    useEffect(() => {
+        if (hash === undefined || hash === '') {
+            return
+        }
+        const fragment = hash.startsWith('#') ? hash.slice(1) : hash
+        const id = decodeURIComponent(fragment)
+        const scroll = (): void => {
+            document.getElementById(id)?.scrollIntoView({ behavior: 'instant', block: 'start' })
+        }
+        requestAnimationFrame(() => {
+            requestAnimationFrame(scroll)
+        })
+    }, [hash, contentKey])
+}
+
+export function USSDocumentationPanel(props: { doc?: ConstantCategory, hash?: string }): ReactNode {
+    const { doc, hash } = props
     const textHeaderClass = useHeaderTextClass()
+    const docData = constantsDocumentationData()
+    useScrollToUssDocumentationFragment(hash, doc)
+
+    if (doc !== undefined) {
+        return (
+            <MathJaxContext>
+                <PageTemplate>
+                    <FootnotesProvider>
+                        <ConstantsCategoryPageView
+                            category={doc}
+                            sortedCategories={docData.sortedCategories}
+                            textHeaderClass={textHeaderClass}
+                        />
+                        <Footnotes />
+                    </FootnotesProvider>
+                </PageTemplate>
+            </MathJaxContext>
+        )
+    }
 
     return (
         <MathJaxContext>
@@ -194,20 +230,19 @@ export function USSDocumentationPanel({ hash }: { hash: string }): ReactNode {
                                     <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = [50, 61, 70]' + '\n' + 'if (y > 65) { x = mean(x) } else { x = mean(x) }' + '\n' + 'x'} />
                                 </Header>
                             </Header>
-                            <Header title="Detailed Tables" header="h2" ident="detailed-tables">
-                                <Header title="All Operators" header="h3" ident="all-operators">
-                                    <p>
-                                        The following is a list of all operators that are available in USS.
-                                    </p>
-                                    <OperatorTable />
-                                </Header>
+                            <Header title="All Operators" header="h2" ident="all-operators">
+                                <p>
+                                    The following is a list of all operators that are available in USS.
+                                </p>
+                                <OperatorTable />
                             </Header>
                             <Header title="Constants and Functions" header="h2" ident="constants">
                                 <p>
                                     USS provides several built-in constants and functions for mathematical operations,
-                                    data visualization, and data analysis. These are organized by category below.
+                                    data visualization, and data analysis. Each category has its own page; use the links
+                                    below or the previous/next arrows on each page to browse.
                                 </p>
-                                <ConstantsDocumentation hash={hash} />
+                                <ConstantsAndFunctionsIndex sortedCategories={docData.sortedCategories} />
                             </Header>
                         </Header>
                     </div>
@@ -318,116 +353,112 @@ function OperatorTable(): ReactNode {
     return createTable(colors, headers, cells)
 }
 
-function ConstantsDocumentation({ hash }: { hash: string }): ReactNode {
-    const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set(constantCategories))
+function ConstantsAndFunctionsIndex(props: { sortedCategories: [ConstantCategory, [string, USSDocumentedType][]][] }): ReactNode {
+    const nav = useContext(Navigator.Context)
+    const colors = useColors()
+    return (
+        <ul style={{ marginLeft: '20px', marginTop: '12px' }}>
+            {props.sortedCategories.map(([category]) => (
+                <li key={category} style={{ marginBottom: '8px' }}>
+                    <a
+                        style={{ color: colors.textMain }}
+                        {...nav.link(
+                            { kind: 'ussDocumentation', doc: category },
+                            { scroll: { kind: 'position', top: 0 } },
+                        )}
+                    >
+                        {getCategoryTitle(category)}
+                    </a>
+                </li>
+            ))}
+        </ul>
+    )
+}
 
-    const mapperContext = defaultTypeEnvironment('world')
+function ConstantsCategoryPageView(props: {
+    category: ConstantCategory
+    sortedCategories: [ConstantCategory, [string, USSDocumentedType][]][]
+    textHeaderClass: string
+}): ReactNode {
+    const nav = useContext(Navigator.Context)
+    const colors = useColors()
+    const entry = props.sortedCategories.find(([c]) => c === props.category)
+    assert(entry !== undefined, 'Category not found in documentation data')
+    const constants = entry[1]
 
-    // Group constants by category
-    const constantsByCategory = new DefaultMap<ConstantCategory, [string, USSDocumentedType][]>(() => [])
-    const constantToCategory = new Map<string, ConstantCategory>()
+    const categorySlugs = props.sortedCategories.map(([c]) => c)
+    const idx = categorySlugs.indexOf(props.category)
+    const prevCategory = idx > 0 ? categorySlugs[idx - 1] : null
+    const nextCategory = idx >= 0 && idx < categorySlugs.length - 1 ? categorySlugs[idx + 1] : null
 
-    // Add default constants
-    for (const [name, value] of defaultConstants) {
-        const category = value.documentation?.category
-        assert(category !== undefined, `Constant ${name} does not have a category defined.`)
-        constantsByCategory.get(category).push([name, value])
-        constantToCategory.set(name, category)
+    const navRowStyle: React.CSSProperties = {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '16px',
+        marginTop: '28px',
+        paddingTop: '20px',
+        borderTop: `1px solid ${colors.borderNonShadow}`,
     }
 
-    // Add mapper context elements
-    for (const [name, value] of mapperContext) {
-        // Skip if already added from default constants
-        if (defaultConstants.has(name)) continue
-
-        const category = value.documentation?.category
-        assert(category !== undefined, `Constant ${name} does not have a category defined.`)
-        if (constantCategories.includes(category)) {
-            constantsByCategory.get(category).push([name, value])
-            constantToCategory.set(name, category)
-        }
+    const disabledArrowStyle: React.CSSProperties = {
+        color: colors.textMain,
+        opacity: 0.4,
+        userSelect: 'none',
     }
-
-    // Group constants by documentationTable for table display
-    const constantsByTable = new DefaultMap<DocumentationTable, [string, USSValue][]>(() => [])
-    for (const [name, value] of defaultConstants) {
-        const tableName = value.documentation?.documentationTable
-        if (tableName !== undefined) {
-            constantsByTable.get(tableName).push([name, value])
-        }
-    }
-
-    // Sort categories for consistent display
-    const categoryOrder = constantCategories
-    const sortedCategories = Array.from(constantsByCategory.entries()).sort((a, b) => {
-        const aIndex = categoryOrder.indexOf(a[0])
-        const bIndex = categoryOrder.indexOf(b[0])
-        return aIndex - bIndex
-    })
-
-    const toggleCategory = (category: ConstantCategory): void => {
-        setCollapsedCategories((prev) => {
-            const newSet = new Set(prev)
-            if (newSet.has(category)) {
-                newSet.delete(category)
-            }
-            else {
-                newSet.add(category)
-            }
-            return newSet
-        })
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- This doesn't inf loop since a new value is only returned in the set conditionally
-    useEffect(() => {
-        if (hash.startsWith(`#${constantPrefix}`)) {
-            const constantIdentifier = hash.slice(`#${constantPrefix}`.length)
-            const category = constantToCategory.get(constantIdentifier)
-            assert(category !== undefined, 'Constant does not have a category')
-            setCollapsedCategories((prev) => {
-                if (prev.has(category)) {
-                    const newSet = new Set(prev)
-                    newSet.delete(category)
-                    return newSet
-                }
-                return prev
-            })
-        }
-    })
 
     return (
-        <div>
-            {sortedCategories.map(([category, constants]) => {
-                const isCollapsed = collapsedCategories.has(category)
-                return (
-                    <div key={category}>
-                        <div
-                            style={{
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
-                                marginBottom: '10px',
-                            }}
-                            onClick={() => { toggleCategory(category) }}
-                        >
-                            <span style={{
-                                fontSize: '16px',
-                                transition: 'transform 0.2s',
-                                transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
-                            }}
-                            >
-                                ▶
-                            </span>
-                            <h3 id={`constants-${category}`} style={{ margin: 0 }}>
-                                {getCategoryTitle(category)}
-                            </h3>
-                        </div>
-                        {!isCollapsed && (<DocumentationForCategory category={category} constants={constants} />)}
-                    </div>
-                )
-            })}
-
+        <div className="serif uss-documentation">
+            <div className={props.textHeaderClass}>USS Documentation</div>
+            <p style={{ marginTop: '8px', marginBottom: '20px' }}>
+                <a
+                    style={{ color: colors.textMain }}
+                    {...nav.link({ kind: 'ussDocumentation' }, { scroll: { kind: 'position', top: 0 } })}
+                >
+                    ← Back to full documentation
+                </a>
+            </p>
+            <h2 style={{ marginBottom: '12px' }}>
+                {getCategoryTitle(props.category)}
+            </h2>
+            <DocumentationForCategory category={props.category} constants={constants} />
+            <nav aria-label="Constants and functions pages" style={navRowStyle}>
+                <div>
+                    {prevCategory !== null
+                        ? (
+                                <a
+                                    style={{ color: colors.textMain }}
+                                    {...nav.link(
+                                        { kind: 'ussDocumentation', doc: prevCategory },
+                                        { scroll: { kind: 'position', top: 0 } },
+                                    )}
+                                >
+                                    ←
+                                    {' '}
+                                    {getCategoryTitle(prevCategory)}
+                                </a>
+                            )
+                        : <span style={disabledArrowStyle}>←</span>}
+                </div>
+                <div>
+                    {nextCategory !== null
+                        ? (
+                                <a
+                                    style={{ color: colors.textMain }}
+                                    {...nav.link(
+                                        { kind: 'ussDocumentation', doc: nextCategory },
+                                        { scroll: { kind: 'position', top: 0 } },
+                                    )}
+                                >
+                                    {getCategoryTitle(nextCategory)}
+                                    {' '}
+                                    →
+                                </a>
+                            )
+                        : <span style={disabledArrowStyle}>→</span>}
+                </div>
+            </nav>
         </div>
     )
 }
@@ -467,12 +498,10 @@ function DocumentationForCategory(props: { category: ConstantCategory, constants
     )
 }
 
-const constantPrefix = 'constant-'
-
 export function LongFormDocumentation(props: { name: string, value: USSDocumentedType }): ReactNode {
     const colors = useColors()
     return (
-        <Header key={props.name} title={props.name} header="h4" ident={`${constantPrefix}${props.name}`}>
+        <Header key={props.name} title={props.name} header="h4" ident={props.name} docQuery={props.value.documentation!.category}>
             <div style={{ marginBottom: '20px', marginLeft: '20px' }}>
                 <div style={{ marginBottom: '10px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
                     <div>
@@ -544,7 +573,7 @@ function ShortFormTableDocumentation(props: { tableName: DocumentationTable, tab
     const colors = useColors()
     const headers = ['Name', 'Type', 'Description']
     const cells = props.tableConstants.map(([name, value]) => ({
-        id: `${constantPrefix}${name}`,
+        id: name,
         row: [
             <span key="name" style={{ fontFamily: '\'Courier New\', monospace' }}>{name}</span>,
             <code
@@ -676,15 +705,29 @@ function getTableDescription(tableName: DocumentationTable): string {
     }
 }
 
-function Header(props: { title: string, header: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6', ident: string, children: ReactNode }): ReactNode {
+function Header(props: {
+    title: string
+    header: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+    ident: string
+    docQuery?: ConstantCategory
+    children: ReactNode
+}): ReactNode {
     const linkKind = useContext(linkContext)
 
     return (
         <>
             <props.header id={props.ident}>
-                {linkKind === 'link'
+                {linkKind === 'link' && props.docQuery !== undefined
                     ? (
-                            <a href={urlFromPageDescriptor({ kind: 'ussDocumentation', hash: props.ident }).toString()} target="_blank" rel="noreferrer">
+                            <a
+                                href={urlFromPageDescriptor({
+                                    kind: 'ussDocumentation',
+                                    doc: props.docQuery,
+                                    hash: `#${encodeURIComponent(props.ident)}`,
+                                }).toString()}
+                                target="_blank"
+                                rel="noreferrer"
+                            >
                                 {props.title}
                             </a>
                         )

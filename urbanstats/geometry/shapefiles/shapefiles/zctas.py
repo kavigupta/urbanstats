@@ -20,6 +20,5 @@ ZCTAs = Shapefile(
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
     ),
     include_in_syau=False,
-    metadata_columns=["geoid"],
     wikidata_sourcer=None,
 )
