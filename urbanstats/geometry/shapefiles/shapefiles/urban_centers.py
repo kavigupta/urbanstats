@@ -15,7 +15,7 @@ def create_urban_center_like_shapefile(**kwargs):
     return Shapefile(
         shortname_extractor=lambda x: x["shortname"],
         longname_extractor=lambda x: x["longname"],
-        additional_columns_to_keep=["subnationals_ISO_CODE"],
+        intermediate_computation_columns=["subnationals_ISO_CODE"],
         filter=lambda x: True,
         does_overlap_self=False,
         special_data_sources=["international_gridded_data"],

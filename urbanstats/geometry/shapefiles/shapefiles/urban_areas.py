@@ -34,6 +34,5 @@ URBAN_AREAS = Shapefile(
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
     ),
     include_in_syau=True,
-    metadata_columns=["geoid"],
     wikidata_sourcer=SimpleWikidataSourcer("wdt:P12704", "geoid"),
 )

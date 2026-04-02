@@ -12,6 +12,7 @@ import { Scale } from './constants/scale'
 import { Table, TableColumn } from './constants/table'
 import { TextBox } from './constants/text-box'
 import { Context } from './context'
+import { ConstantCategory } from './documentation-category'
 import { noLocation } from './location'
 import { unparse } from './parser'
 
@@ -135,10 +136,6 @@ export type USSRawValue = (
     ) |
     USSOpaqueValue
 )
-
-export const constantCategories = ['basic', 'color', 'math', 'regression', 'mapper', 'logic', 'map', 'scale', 'ramp', 'unit', 'inset', 'richText'] as const
-
-export type ConstantCategory = typeof constantCategories[number]
 
 export type DocumentationTable = 'mapper-data-variables' | 'predefined-colors' | 'unit-types' | 'predefined-ramps' | 'predefined-insets' | 'logarithm-functions' | 'trigonometric-functions'
 
