@@ -1022,6 +1022,7 @@ test('forward back navigation works', async (t) => {
     async function assertStates(): Promise<void> {
         await t.expect(Selector('.headertext').textContent).eql('States')
         await t.expect(Selector('.subheadertext').textContent).eql('Area')
+        await waitForLoading()
         await t.expect(await getElements()).eql([
             'Georgia, USA',
             'Michigan, USA',
@@ -1103,6 +1104,7 @@ test('forward back navigation works', async (t) => {
     async function assertCounties(): Promise<void> {
         await t.expect(Selector('.headertext').textContent).eql('Counties')
         await t.expect(Selector('.subheadertext').textContent).eql('Population [US Census]')
+        await waitForLoading()
         await t.expect(await getElements()).eql([
             'Los Angeles County, California, USA',
             'Cook County, Illinois, USA',
