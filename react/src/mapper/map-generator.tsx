@@ -444,6 +444,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                             mapLibreProps={mapLibreProps}
                             mapRef={ref}
                             basemap={value.basemap}
+                            doZoom={false}
                         >
                             {otherMapChildren}
                         </SyauClusterMap>

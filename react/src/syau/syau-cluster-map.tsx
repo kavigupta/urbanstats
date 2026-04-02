@@ -52,6 +52,8 @@ interface ClusterMapProps {
     basemap?: BasemapSpec
     /** Optional cluster controls. */
     clusterRadiusSpacing: number
+    /** Whether to zoom to fit on first load. */
+    doZoom: boolean
 }
 
 interface ClusterMapElement {
@@ -245,16 +247,19 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                 filter={['!=', 'cluster', true]}
                 paint={{ 'circle-radius': 0 }}
             />
-            <FirstZoom centroids={centroids} />
+            <FirstZoom centroids={centroids} doZoom={props.doZoom} />
             {children}
         </CommonMaplibreMap>
     )
 }
 
-function FirstZoom(props: { centroids: ICoordinate[] }): ReactNode {
+function FirstZoom(props: { centroids: ICoordinate[], doZoom: boolean }): ReactNode {
     const map = useMap().current!
 
     useEffect(() => {
+        if (!props.doZoom) {
+            return
+        }
         if (props.centroids.length === 0) {
             return
         }
@@ -273,7 +278,7 @@ function FirstZoom(props: { centroids: ICoordinate[] }): ReactNode {
         maxLat += latRange * padPct
         const bounds = [[minLon, minLat], [maxLon, maxLat]] as [[number, number], [number, number]]
         map.fitBounds(bounds, { animate: false })
-    }, [props.centroids, map])
+    }, [props.centroids, map, props.doZoom])
 
     return null
 }
