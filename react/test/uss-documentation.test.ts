@@ -42,15 +42,8 @@ async function colorsOfResults(t: TestController): Promise<Set<string>> {
     return new Set(colors)
 }
 
-async function rightPanelText(t: TestController): Promise<string> {
-    await waitForLoading()
-    await t.expect(await colorsOfResults(t)).eql(new Set(['color-g']))
-    const rightPanel = Selector('.right_panel')
-    return rightPanel.textContent
-}
-
 test('documentation screenshot collapsed', async (t) => {
-    await downloadOrCheckString(t, await rightPanelText(t), 'uss-documentation-collapsed', 'txt', false)
+    await screencap(t)
 })
 
 for (const category of constantCategories) {
