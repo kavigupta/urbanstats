@@ -5,8 +5,6 @@ import attr
 import geopandas as gpd
 import pandas as pd
 
-from urbanstats.metadata.metadata_list import metadata_types
-
 
 @attr.s
 class Shapefile:
