@@ -229,7 +229,12 @@ cMapRGB(
 testCode(() => test, 'County', 'USA', rgbMap, 'rgb-map')
 
 const clusterMapBasic = `
-clusterMap(data=hilliness, scale=linearScale(), ramp=rampUridis, basemap=noBasemap())
+clusterMap(
+    data=hilliness,
+    scale=linearScale(),
+    ramp=rampUridis,
+    basemap=noBasemap()
+)
 `
 
 testCode(() => test, 'Urban Center', 'USA', clusterMapBasic, 'cluster-map-basic')
@@ -247,13 +252,23 @@ clusterMap(
 testCode(() => test, 'Urban Center', 'USA', clusterMapWeightedByArea, 'cluster-map-weight-by-area')
 
 const clusterMapRampBone = `
-clusterMap(data=hilliness, scale=linearScale(), ramp=rampBone, basemap=noBasemap())
+clusterMap(
+    data=hilliness,
+    scale=linearScale(),
+    ramp=rampBone,
+    basemap=noBasemap()
+)
 `
 
 testCode(() => test, 'Urban Center', 'USA', clusterMapRampBone, 'cluster-map-ramp-bone')
 
 const clusterMapRampViridis = `
-clusterMap(data=hilliness, scale=linearScale(), ramp=rampViridis, basemap=noBasemap())
+clusterMap(
+    data=hilliness,
+    scale=linearScale(),
+    ramp=rampViridis,
+    basemap=noBasemap()
+)
 `
 
 testCode(() => test, 'Urban Center', 'USA', clusterMapRampViridis, 'cluster-map-ramp-viridis')
