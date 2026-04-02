@@ -713,6 +713,7 @@ function Header(props: {
     children: ReactNode
 }): ReactNode {
     const linkKind = useContext(linkContext)
+    const colors = useColors()
 
     return (
         <>
@@ -727,7 +728,13 @@ function Header(props: {
                                 }).toString()}
                                 target="_blank"
                                 rel="noreferrer"
-                                style={{ color: 'inherit', textDecoration: 'none' }}
+                                style={{
+                                    /* Popover host sets color: textMain; inherit would stay black. */
+                                    color: colors.blueLink,
+                                    textDecoration: 'none',
+                                    font: 'inherit',
+                                    cursor: 'pointer',
+                                }}
                             >
                                 {props.title}
                             </a>
