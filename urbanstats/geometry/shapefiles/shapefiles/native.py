@@ -30,7 +30,6 @@ NATIVE_AREAS = Shapefile(
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
     ),
     include_in_syau=True,
-    metadata_columns=["geoid"],
     wikidata_sourcer=None,
 )
 NATIVE_STATISTICAL_AREAS = Shapefile(
@@ -50,7 +49,6 @@ NATIVE_STATISTICAL_AREAS = Shapefile(
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
     ),
     include_in_syau=True,
-    metadata_columns=["geoid"],
     wikidata_sourcer=None,
 )
 NATIVE_SUBDIVISIONS = Shapefile(
@@ -70,7 +68,6 @@ NATIVE_SUBDIVISIONS = Shapefile(
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
     ),
     include_in_syau=True,
-    metadata_columns=["geoid"],
     wikidata_sourcer=None,
 )
 

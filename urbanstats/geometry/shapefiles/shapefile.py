@@ -5,8 +5,6 @@ import attr
 import geopandas as gpd
 import pandas as pd
 
-from urbanstats.metadata.metadata_list import metadata_types
-
 
 @attr.s
 class Shapefile:
@@ -18,7 +16,8 @@ class Shapefile:
     meta = attr.ib()
     does_overlap_self = attr.ib()
     additional_columns_computer = attr.ib(default=attr.Factory(dict))
-    additional_columns_to_keep = attr.ib(default=())
+    # Used in computation of additional_columns, wikidata, etc.
+    intermediate_computation_columns = attr.ib(default=())
     drop_dup = attr.ib(default=False)
     chunk_size = attr.ib(default=None)
     special_data_sources = attr.ib(default=attr.Factory(dict))
@@ -32,12 +31,7 @@ class Shapefile:
     end_date_overall = attr.ib(kw_only=True, default=float("inf"))
     longname_sans_date_extractor = attr.ib(kw_only=True, default=None)
     include_in_syau = attr.ib(kw_only=True)
-    metadata_columns = attr.ib(kw_only=True, default=())
     wikidata_sourcer = attr.ib(kw_only=True)
-
-    def __attrs_post_init__(self):
-        assert set(self.metadata_columns) <= set(self.available_columns)
-        assert set(self.metadata_columns) <= set(metadata_types)
 
     def load_file(self):
         """
@@ -91,17 +85,14 @@ class Shapefile:
             s.end_date
         ), f"{self.end_date_overall} != {max(s.end_date)}"
 
+        s["shortname"] = s.apply(self.shortname_extractor, axis=1)
+        s["longname"] = s.apply(self.longname_extractor, axis=1)
+        if self.longname_sans_date_extractor is not None:
+            s["longname_sans_date"] = s.apply(self.longname_sans_date_extractor, axis=1)
+        else:
+            s["longname_sans_date"] = None
         s = gpd.GeoDataFrame(
-            {
-                "shortname": s.apply(self.shortname_extractor, axis=1),
-                "longname": s.apply(self.longname_extractor, axis=1),
-                "longname_sans_date": (
-                    s.apply(self.longname_sans_date_extractor, axis=1)
-                    if self.longname_sans_date_extractor is not None
-                    else None
-                ),
-                **{col: s[col] for col in self.available_columns},
-            },
+            {col: s[col] for col in self.available_columns(include_intermediates=True)},
             geometry=s.geometry,
         )
         if self.drop_dup:
@@ -122,6 +113,9 @@ class Shapefile:
         if s.crs is None:
             s.crs = "EPSG:4326"
         s = s.to_crs("EPSG:4326")
+        # Handles both situations where longname_sans_date_extractor is None
+        # (we do this here so we can get the updated longnames)
+        # and ones where it produces NaNs for some entries (we want to fill those with longname)
         s.longname_sans_date = s.longname_sans_date.fillna(s.longname)
         return s
 
@@ -139,13 +133,15 @@ class Shapefile:
             for subset_name, subset in self.subset_masks.items()
         }
 
-    @property
-    def available_columns(self):
+    def available_columns(self, *, include_intermediates):
         return [
+            "longname",
+            "shortname",
+            "longname_sans_date",
             "start_date",
             "end_date",
             *self.additional_columns_computer,
-            *self.additional_columns_to_keep,
+            *(self.intermediate_computation_columns if include_intermediates else []),
             *self.subset_mask_keys,
         ]
 
