@@ -29,6 +29,7 @@ import { loadSYAUData, SYAUData } from '../syau/load'
 import type { SYAUPanel } from '../syau/syau-panel'
 import { defaultArticleUniverse, defaultComparisonUniverse, Universe, universeSchema } from '../universe'
 import type { DebugEditorPanel } from '../urban-stats-script/DebugEditorPanel'
+import { constantCategories, type ConstantCategory } from '../urban-stats-script/documentation-category'
 import type { USSDocumentationPanel } from '../uss-documentation'
 import type { Article } from '../utils/protos'
 import { randomBase62ID } from '../utils/random'
@@ -159,6 +160,12 @@ const quizSchema = z.intersection(
     }),
 )
 
+const ussDocumentationSchema = z.object({
+    doc: z.optional(z.enum(constantCategories)),
+    /** URL fragment for in-page anchors (e.g. `#linearScale`), same shape as `URL.hash`. */
+    hash: z.optional(z.string()),
+})
+
 const syauSchema = z.object({
     typ: z.optional(z.string()),
     universe: z.optional(universeSchema),
@@ -193,7 +200,7 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('index') }),
     z.object({ kind: z.literal('about') }),
     z.object({ kind: z.literal('dataCredit'), hash: z.string() }),
-    z.object({ kind: z.literal('ussDocumentation'), hash: z.string() }),
+    z.object({ kind: z.literal('ussDocumentation') }).and(ussDocumentationSchema),
     z.object({ kind: z.literal('quiz') }).and(quizSchema),
     z.object({ kind: z.literal('syau') }).and(syauSchema),
     z.object({ kind: z.literal('mapper') }).and(mapperSchema),
@@ -223,7 +230,7 @@ export type PageData =
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit', dataCreditPanel: typeof DataCreditPanel }
-    | { kind: 'ussDocumentation', ussDocumentationPanel: typeof USSDocumentationPanel, hash: string }
+    | { kind: 'ussDocumentation', ussDocumentationPanel: typeof USSDocumentationPanel, doc?: ConstantCategory, hash?: string }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: Universe | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
     | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel, counts: CountsByUT }
@@ -268,7 +275,11 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
         case '/data-credit.html':
             return { kind: 'dataCredit', hash: url.hash }
         case '/uss-documentation.html':
-            return { kind: 'ussDocumentation', hash: url.hash }
+            return {
+                kind: 'ussDocumentation',
+                ...ussDocumentationSchema.parse(params),
+                ...(url.hash !== '' ? { hash: url.hash } : {}),
+            }
         case '/editor.html':
             return { kind: 'editor', ...editorSchema.parse(params) }
         case '/oauth-callback.html':
@@ -339,8 +350,8 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             break
         case 'ussDocumentation':
             pathname = '/uss-documentation.html'
-            searchParams = {}
-            hash = pageDescriptor.hash
+            searchParams = { doc: pageDescriptor.doc }
+            hash = pageDescriptor.hash ?? ''
             break
         case 'quiz':
             /**
