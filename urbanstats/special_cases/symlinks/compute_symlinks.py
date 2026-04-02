@@ -29,7 +29,10 @@ def symlinks_most_recent_year():
         == table.longname_sans_date.apply(sans_date_to_last_start_date.get)
     ]
     sans_date_to_longname = dict(zip(table.longname_sans_date, table.longname))
-    assert table.shape[0] == len(sans_date_to_longname)
+    assert table.shape[0] == len(sans_date_to_longname), (
+        f"Expected 1 longname per longname_sans_date, but got {table.shape[0]}"
+        f" rows and {len(sans_date_to_longname)} unique longname_sans_date"
+    )
     return sans_date_to_longname
 
 

@@ -26,7 +26,6 @@ def csa_or_msa(hash_key, typ, census_name, wikidata_sourcer, path):
         ),
         include_in_syau=True,
         special_data_sources=["composed_of_counties", ("census", census_name)],
-        metadata_columns=["geoid"],
         wikidata_sourcer=wikidata_sourcer,
     )
 

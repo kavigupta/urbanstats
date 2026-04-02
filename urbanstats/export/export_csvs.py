@@ -15,7 +15,7 @@ shapefiles_by_type = {sh.meta["type"]: sh for sh in shapefiles.values()}
 
 def csv_for(typ, category):
     sh = shapefiles_by_type[typ]
-    if "geoid" in sh.available_columns:
+    if "geoid" in sh.available_columns(include_intermediates=True):
         table = sh.load_file()
         geoid_map = dict(zip(table.longname, table.geoid))
     else:
