@@ -58,6 +58,7 @@ export function SYAUMap(props: SYAUMapProps): ReactNode {
             maxClusterRadius={20}
             clusterRadiusSpacing={150}
             computeRelativeArea={() => 1}
+            doZoom={true}
         >
             <PolygonFeatureCollection features={readyFeatures} clickable={false} />
         </ClusterMap>
