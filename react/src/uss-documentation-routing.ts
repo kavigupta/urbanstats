@@ -1,6 +1,7 @@
 import { defaultTypeEnvironment } from './mapper/context'
 import { defaultConstants } from './urban-stats-script/constants/constants'
-import { constantCategories, ConstantCategory, USSDocumentedType } from './urban-stats-script/types-values'
+import { constantCategories, ConstantCategory } from './urban-stats-script/documentation-category'
+import { USSDocumentedType } from './urban-stats-script/types-values'
 import { DefaultMap } from './utils/DefaultMap'
 import { assert } from './utils/defensive'
 

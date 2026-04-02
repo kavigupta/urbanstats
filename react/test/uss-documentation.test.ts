@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { constantCategories } from '../src/urban-stats-script/types-values'
+import { constantCategories } from '../src/urban-stats-script/documentation-category'
 
 import { nthEditor, selectionNotPoint } from './editor_test_utils'
 import { downloadOrCheckString, screencap, target, urbanstatsFixture, waitForLoading } from './test_utils'
