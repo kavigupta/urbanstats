@@ -1,7 +1,9 @@
 import { Selector } from 'testcafe'
 
+import { constantCategories } from '../src/urban-stats-script/types-values'
+
 import { nthEditor, selectionNotPoint } from './editor_test_utils'
-import { downloadOrCheckString, urbanstatsFixture, waitForLoading } from './test_utils'
+import { downloadOrCheckString, screencap, target, urbanstatsFixture, waitForLoading } from './test_utils'
 
 urbanstatsFixture('uss documentation', '/uss-documentation.html')
 
@@ -51,10 +53,9 @@ test('documentation screenshot collapsed', async (t) => {
     await downloadOrCheckString(t, await rightPanelText(t), 'uss-documentation-collapsed', 'txt', false)
 })
 
-test('documentation screenshot expanded', async (t) => {
-    const expand = Selector('span').withExactText('▶')
-    for (let i = 0; i < await expand.count; i++) {
-        await t.click(expand.nth(i))
-    }
-    await downloadOrCheckString(t, await rightPanelText(t), 'uss-documentation-expanded', 'txt', false)
-})
+for (const category of constantCategories) {
+    test(`documentation screenshot constants category page (${category})`, async (t) => {
+        await t.navigateTo(`${target}/uss-documentation.html?doc=${category}`)
+        await screencap(t)
+    })
+}
