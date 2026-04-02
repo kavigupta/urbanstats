@@ -48,7 +48,7 @@ for (const { constant, docSubpage } of [{ constant: 'linearScale', docSubpage: '
         await t.hover(Selector('span').withExactText(constant))
         await screencap(t, { fullPage: false })
         await t.click(Selector('a').withExactText(constant))
-        await t.expect(getLocation()).eql(`${target}/uss-documentation.html?doc=${docSubpage}`)
+        await t.expect(getLocation()).eql(`${target}/uss-documentation.html?doc=${docSubpage}#${constant}`)
         await screencap(t, { fullPage: false })
     })
 }

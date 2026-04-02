@@ -162,6 +162,8 @@ const quizSchema = z.intersection(
 
 const ussDocumentationSchema = z.object({
     doc: z.optional(z.enum(constantCategories)),
+    /** URL fragment for in-page anchors (e.g. `#linearScale`), same shape as `URL.hash`. */
+    hash: z.optional(z.string()),
 })
 
 const syauSchema = z.object({
@@ -228,7 +230,7 @@ export type PageData =
     | { kind: 'index' }
     | { kind: 'about' }
     | { kind: 'dataCredit', dataCreditPanel: typeof DataCreditPanel }
-    | { kind: 'ussDocumentation', ussDocumentationPanel: typeof USSDocumentationPanel, doc?: ConstantCategory }
+    | { kind: 'ussDocumentation', ussDocumentationPanel: typeof USSDocumentationPanel, doc?: ConstantCategory, hash?: string }
     | { kind: 'quiz', quizDescriptor: QuizDescriptor, quiz: QuizQuestionsModel, parameters: string, todayName?: string, quizPanel: typeof QuizPanel }
     | { kind: 'syau', typ: string | undefined, universe: Universe | undefined, counts: CountsByUT, syauData: SYAUData | undefined, syauPanel: typeof SYAUPanel }
     | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel, counts: CountsByUT }
@@ -273,7 +275,11 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
         case '/data-credit.html':
             return { kind: 'dataCredit', hash: url.hash }
         case '/uss-documentation.html':
-            return { kind: 'ussDocumentation', ...ussDocumentationSchema.parse(params) }
+            return {
+                kind: 'ussDocumentation',
+                ...ussDocumentationSchema.parse(params),
+                ...(url.hash !== '' ? { hash: url.hash } : {}),
+            }
         case '/editor.html':
             return { kind: 'editor', ...editorSchema.parse(params) }
         case '/oauth-callback.html':
@@ -345,6 +351,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
         case 'ussDocumentation':
             pathname = '/uss-documentation.html'
             searchParams = { doc: pageDescriptor.doc }
+            hash = pageDescriptor.hash ?? ''
             break
         case 'quiz':
             /**

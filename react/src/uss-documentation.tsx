@@ -1,5 +1,5 @@
 import { MathJaxContext } from 'better-react-mathjax'
-import React, { ReactNode, useContext } from 'react'
+import React, { ReactNode, useContext, useEffect } from 'react'
 import { Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 
 import './style.css'
@@ -16,9 +16,27 @@ import { constantsDocumentationData } from './uss-documentation-routing'
 import { assert } from './utils/defensive'
 import { useHeaderTextClass } from './utils/responsive'
 
-export function USSDocumentationPanel({ doc }: { doc?: ConstantCategory }): ReactNode {
+function useScrollToUssDocumentationFragment(hash: string | undefined, contentKey: string | undefined): void {
+    useEffect(() => {
+        if (hash === undefined || hash === '') {
+            return
+        }
+        const fragment = hash.startsWith('#') ? hash.slice(1) : hash
+        const id = decodeURIComponent(fragment)
+        const scroll = (): void => {
+            document.getElementById(id)?.scrollIntoView({ behavior: 'instant', block: 'start' })
+        }
+        requestAnimationFrame(() => {
+            requestAnimationFrame(scroll)
+        })
+    }, [hash, contentKey])
+}
+
+export function USSDocumentationPanel(props: { doc?: ConstantCategory, hash?: string }): ReactNode {
+    const { doc, hash } = props
     const textHeaderClass = useHeaderTextClass()
     const docData = constantsDocumentationData()
+    useScrollToUssDocumentationFragment(hash, doc)
 
     if (doc !== undefined) {
         return (
@@ -701,7 +719,11 @@ function Header(props: {
                 {linkKind === 'link' && props.docQuery !== undefined
                     ? (
                             <a
-                                href={urlFromPageDescriptor({ kind: 'ussDocumentation', doc: props.docQuery }).toString()}
+                                href={urlFromPageDescriptor({
+                                    kind: 'ussDocumentation',
+                                    doc: props.docQuery,
+                                    hash: `#${encodeURIComponent(props.ident)}`,
+                                }).toString()}
                                 target="_blank"
                                 rel="noreferrer"
                                 style={{ color: 'inherit', textDecoration: 'none' }}

@@ -155,7 +155,7 @@ function PageRouter({ pageData }: { pageData: PageData }): ReactNode {
         case 'dataCredit':
             return <pageData.dataCreditPanel />
         case 'ussDocumentation':
-            return <pageData.ussDocumentationPanel doc={pageData.doc} />
+            return <pageData.ussDocumentationPanel doc={pageData.doc} hash={pageData.hash} />
         case 'quiz':
             return (
                 <pageData.quizPanel
