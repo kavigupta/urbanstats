@@ -19,6 +19,7 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
 
 import './map.css'
+import { keptByNoBasemap } from './map-common-utils'
 
 export const defaultMapPadding = 20
 export const insetBorderWidth = 2
@@ -333,7 +334,7 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
 function isVisible(basemap: Basemap, layer: { id: string, type: string, source: string }): boolean {
     switch (basemap.type) {
         case 'none':
-            return layer.id === 'background' || layer.source !== 'openmaptiles'
+            return keptByNoBasemap(layer)
         case 'osm':
             return !(basemap.noLabels && layer.type === 'symbol')
     }

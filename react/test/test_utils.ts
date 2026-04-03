@@ -96,12 +96,8 @@ async function prepForImage(t: TestController, options: { hover: boolean }): Pro
         await t.hover('body', { offsetX: 0, offsetY: 0 }) // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
     }
     await t.eval(() => {
-        // disable the map, so that we're not testing the tiles
-        for (const x of Array.from(document.getElementsByClassName('maplibregl-canvas-container'))) {
-            if (x instanceof HTMLElement) {
-                x.style.visibility = 'hidden'
-            }
-        }
+        // disable the basemap layers, so that we're not testing the tiles
+        (window as unknown as TestWindow).testUtils.disableBasemapLayers()
 
         for (const x of Array.from(document.getElementsByClassName('juxtastat-user-id'))) {
             x.innerHTML = '&lt;USER ID&gt;'
