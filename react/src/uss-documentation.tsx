@@ -4,7 +4,6 @@ import { Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 
 import './style.css'
 import './common.css'
-import { StringValidation } from 'zod'
 
 import { getUnit } from './components/unit-display'
 import { Navigator } from './navigation/Navigator'
@@ -351,6 +350,7 @@ function TOCLinkToCategory(props: { category: ConstantCategory }): ReactNode {
 function Subsection(props: { section: DocumentationSection, nesting: number }): ReactNode {
     const colors = useColors()
     const nav = useContext(Navigator.Context)
+    // eslint-disable-next-line no-restricted-syntax -- needs to be a react tax
     const HeaderTag = `h${Math.min(6, props.nesting + 2)}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
     if (props.section.kind === 'link') {
         return (
