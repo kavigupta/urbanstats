@@ -386,7 +386,7 @@ function Subsection(props: { section: DocumentationSection, nesting: number }): 
         )
     }
     return (
-        <Header title={props.section.title} header={HeaderTag} ident={props.section.title.toLowerCase().replace(/\s+/g, '-')}>
+        <Header title={props.section.title} header={HeaderTag} ident={anchorFromTitle(props.section.title)}>
             {props.section.content?.()}
             {props.section.subentries?.map((subentry, index) => (
                 <Subsection key={index} section={subentry} nesting={props.nesting + 1} />
