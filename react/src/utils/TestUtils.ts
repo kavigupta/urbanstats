@@ -1,4 +1,5 @@
 import type maplibregl from 'maplibre-gl'
+import type { MapRef } from 'react-map-gl/maplibre'
 
 /**
  * Indicates whether we're e2e testing.
@@ -39,7 +40,11 @@ export class TestUtils {
         }
     }
 
-    readonly maps = new Map<string, WeakRef<maplibregl.Map>>()
+    // has to be a list, not a WeakSet. WeakSets cannot be iterated, defeating the purpose
+    // this is a bit of a memory leak, but not much of one, should add just a few
+    // bytes per user interaction.
+    allMaps: WeakRef<maplibregl.Map>[] = []
+    readonly mapsWithIDs = new Map<string, WeakRef<maplibregl.Map>>()
 
     readonly clickableMaps = new Map<string, {
         clickFeature: (name: string) => void
@@ -81,6 +86,15 @@ export class TestUtils {
                 this.loadingCallbacks.push(resolve)
             })
         }
+    }
+
+    addMapToAllMaps(map: MapRef): void {
+        this.allMaps = this.allMaps.filter(ref => ref.deref() !== undefined)
+        const mapObj = map.getMap()
+        if (this.allMaps.some(ref => ref.deref() === mapObj)) {
+            return
+        }
+        this.allMaps.push(new WeakRef(mapObj))
     }
 }
 

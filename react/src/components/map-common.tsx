@@ -236,6 +236,13 @@ function useClickable({ id, clickable, features }: { id: string, clickable: bool
     const { current: map } = useMap()
 
     useEffect(() => {
+        if (map === undefined) {
+            return
+        }
+        TestUtils.shared.addMapToAllMaps(map)
+    }, [map])
+
+    useEffect(() => {
         if (clickable) {
             assert(map !== undefined, 'map is undefined')
 
