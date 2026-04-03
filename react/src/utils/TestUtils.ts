@@ -1,5 +1,5 @@
 import type maplibregl from 'maplibre-gl'
-import { MapRef } from 'react-map-gl/maplibre'
+import type { MapRef } from 'react-map-gl/maplibre'
 
 /**
  * Indicates whether we're e2e testing.
