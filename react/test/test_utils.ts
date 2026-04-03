@@ -91,15 +91,17 @@ export async function waitForLoading(): Promise<void> {
     return ClientFunction(() => (window as unknown as TestWindow).testUtils.waitForLoading('test_utils'))()
 }
 
-async function prepForImage(t: TestController, options: { hover: boolean }): Promise<void> {
+async function prepForImage(t: TestController, options: { hover: boolean, disableMap: boolean }): Promise<void> {
     if (options.hover) {
         await t.hover('body', { offsetX: 0, offsetY: 0 }) // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
     }
     await t.eval(() => {
-        // disable the map, so that we're not testing the tiles
-        for (const x of Array.from(document.getElementsByClassName('maplibregl-canvas-container'))) {
-            if (x instanceof HTMLElement) {
-                x.style.visibility = 'hidden'
+        if (options.disableMap) {
+            // disable the map, so that we're not testing the tiles
+            for (const x of Array.from(document.getElementsByClassName('maplibregl-canvas-container'))) {
+                if (x instanceof HTMLElement) {
+                    x.style.visibility = 'hidden'
+                }
             }
         }
 
@@ -112,7 +114,7 @@ async function prepForImage(t: TestController, options: { hover: boolean }): Pro
 
         // stop all animations (intended for moving spinners)
         document.querySelectorAll('[style*=animation]').forEach((element) => { (element as HTMLElement).style.animation = 'none' })
-    })
+    }, { dependencies: { options } })
 }
 
 let screenshotNumber = 0
@@ -122,13 +124,13 @@ function screenshotPath(t: TestController): string {
     return `${t.browser.name}/${t.test.name}-${screenshotNumber}.png`
 }
 
-type ScreencapOptions = { wait?: boolean, fullPage?: boolean } & ({ selector?: undefined } | ({ selector?: Selector } & TakeElementScreenshotOptions))
+type ScreencapOptions = { wait?: boolean, fullPage?: boolean, disableMap?: boolean } & ({ selector?: undefined } | ({ selector?: Selector } & TakeElementScreenshotOptions))
 
-export async function screencap(t: TestController, { fullPage = true, wait = true, selector, ...options }: ScreencapOptions = {}): Promise<void> {
+export async function screencap(t: TestController, { fullPage = true, wait = true, disableMap = true, selector, ...options }: ScreencapOptions = {}): Promise<void> {
     if (wait) {
         await waitForLoading()
     }
-    await prepForImage(t, { hover: fullPage })
+    await prepForImage(t, { hover: fullPage, disableMap })
     if (selector !== undefined) {
         await t.takeElementScreenshot(selector, screenshotPath(t), options)
     }
