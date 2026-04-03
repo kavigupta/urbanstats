@@ -39,7 +39,7 @@ export class TestUtils {
         }
     }
 
-    readonly allMaps = new WeakSet<maplibregl.Map>()
+    readonly allMaps: WeakRef<maplibregl.Map>[] = []
     readonly mapsWithIDs = new Map<string, WeakRef<maplibregl.Map>>()
 
     readonly clickableMaps = new Map<string, {
