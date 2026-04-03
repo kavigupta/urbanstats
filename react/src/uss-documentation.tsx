@@ -38,6 +38,7 @@ function useScrollToUssDocumentationFragment(hash: string | undefined, contentKe
 type DocumentationSection = { kind: 'link', title: string, doc: ConstantCategory } | {
     kind: 'here'
     title: string
+    content?: () => ReactNode
     subentries?: DocumentationSection[]
 }
 
@@ -46,44 +47,227 @@ function documentationSection(sortedCategories: [ConstantCategory, [string, USSD
         {
             kind: 'here',
             title: 'Lists',
+            content: () => (
+                <>
+                    <p>
+                        The language also supports lists, which are denoted by square brackets. You can use operators on these as well:
+                    </p>
+                    <StandaloneEditor ident="lists" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = x + [4, 5, 6]' + '\n' + 'y'} />
+                    <p>
+                        For details on broadcasting, see the
+                        {' '}
+                        <a href="#broadcasting">broadcasting</a>
+                        {' '}
+                        section.
+                    </p>
+                </>
+            ),
+
         },
         {
             kind: 'here',
             title: 'Objects',
+            content: () => (
+                <>
+                    <p>
+                        The language also supports objects, which are denoted by curly braces. You can use operators on these as well:
+                    </p>
+                    <StandaloneEditor ident="objects" getCode={() => 'x = {a: 1, b: 2}' + '\n' + 'y = x.a + x.b' + '\n' + 'y'} />
+                </>
+            ),
         },
         {
             kind: 'here',
             title: 'Opaque Types',
+            content: () => (
+                <>
+                    <p>
+                        USS has several opaque types, which are types that you can only interact with via functions.
+                        For example, colors are opaque types, and you can only create them using functions like
+                        {' '}
+                        <code>rgb()</code>
+                        {', '}
+                        <code>hsv()</code>
+                        , or one of the predefined colors.
+                    </p>
+                    <StandaloneEditor ident="opaque-types" getCode={() => 'x = rgb(0, 0, 1)' + '\n' + 'y = hsv(0, 1, 1)' + '\n' + '[x, y, colorRed]'} />
+                    <p>
+                        And you can only interact with them using functions like
+                        {' '}
+                        <code>renderColor()</code>
+                        {' '}
+                        or in other contexts that use color objects.
+                    </p>
+                    <StandaloneEditor ident="opaque-types" getCode={() => 'x = rgb(0, 0, 1)' + '\n' + 'y = hsv(0, 1, 1)' + '\n' + 'renderColor([x, y, colorRed])'} />
+
+                </>
+            ),
         },
         {
             kind: 'here',
             title: 'Regressions',
+            content: () => (
+                <>
+                    <p>
+                        USS supports linear regression via the
+                        {' '}
+                        <code>regress(y, x1, x2, ..., weight)</code>
+                        {' '}
+                        function, which returns an object with several properties:
+                    </p>
+                    <ul>
+                        <li>
+                            <code>b</code>
+                            : The intercept of the regression line.
+                        </li>
+                        <li>
+                            <code>m1, m2, m3...</code>
+                            : The coefficients for each independent variable.
+                        </li>
+                        <li>
+                            <code>r2</code>
+                            : The R-squared value of the regression.
+                        </li>
+                        <li>
+                            <code>residuals</code>
+                            : The residuals of the regression.
+                        </li>
+                    </ul>
+                    <p>
+                        For example, to perform a regression of y on x1 and x2, with the last point weighted more heavily, you could do:
+                    </p>
+                    <StandaloneEditor
+                        ident="regression"
+                        getCode={
+                            () =>
+                                'x1 = [1, 2, 3, 4, 5]' + '\n'
+                                + 'x2 = [2, 3, 2, 3, 2]' + '\n'
+                                + 'y = [2.2, 2.8, 3.6, 4.5, 5.1]' + '\n'
+                                + 'w = [1, 1, 1, 1, 10]' + '\n'
+                                + 'model = regression(y=y, x1=x1, x2=x2, weight=w)' + '\n'
+                                + 'model'
+                        }
+                    />
+                    <p>
+                        Note that the inputs are all named arguments and the weight is optional.
+                    </p>
+                </>
+            ),
         },
         {
             kind: 'here',
             title: 'Aggregation',
+            content: () => (
+                <>
+                    <p>
+                        USS provides several functions for aggregating data, including mean, median, quantile, percentile,
+                        min, max, sum, and more.
+                    </p>
+                    <p>
+                        For example, to calculate the mean of a vector, you can do:
+                    </p>
+                    <StandaloneEditor ident="aggregation" getCode={() => 'mean([1, 2, 3, 4, 50])'} />
+                    <p>
+                        We can also weight the mean, for example:
+                    </p>
+                    <StandaloneEditor ident="aggregation" getCode={() => 'mean([1, 2, 3, 4, 50], weights=[1, 1, 1, 1, 10])'} />
+                    <p>
+                        The same works for median, quantile, and percentile.
+                    </p>
+                    <StandaloneEditor ident="aggregation" getCode={() => 'percentile([1, 2, 3, 4, 50], 10, weights=[1, 1, 1, 1, 10])'} />
+                    <p>
+                        On the other hand, min, max, and sum do not support weights.
+                    </p>
+                    <StandaloneEditor ident="aggregation" getCode={() => 'min([1, 2, 3, 4, 50])'} />
+                </>
+            ),
         },
         {
             kind: 'here',
             title: 'Broadcasting',
+            content: () => (
+                <>
+                    <p>
+                        Broadcasting is a feature of USS that allows you to operate on lists of values.
+                    </p>
+                </>
+            ),
             subentries: [
                 {
                     kind: 'here',
                     title: 'Forward Broadcasting',
+                    content: () => (
+                        <>
+                            <p>
+                                The main kind of broadcasting is
+                                forward broadcasting, where you can apply operations to lists of elements. For example, if you have a list of numbers
+                                and you want to add 1 to each of them, you can do:
+                            </p>
+                            <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = x + 1' + '\n' + 'y'} />
+                            <p>
+                                This will result in a list of numbers, where each element is 1 greater than the corresponding element in the original list.
+                            </p>
+                            <p>
+                                This also works with function calls, for example:
+                            </p>
+                            <StandaloneEditor ident="broadcasting-function" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = sin(x)' + '\n' + 'y'} />
+                            <p>
+                                Even when the list is of functions:
+                            </p>
+                            <StandaloneEditor ident="broadcasting-function-list" getCode={() => 'x = [sin, cos, tan]' + '\n' + 'y = x(pi)' + '\n' + 'y'} />
+                            <p>
+                                You can also apply broadcasting to objects, for example:
+                            </p>
+                            <StandaloneEditor ident="broadcasting-object" getCode={() => 'x = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}]' + '\n' + 'y = x.a' + '\n' + 'y'} />
+                            <p>
+                                And even assigning to a property:
+                            </p>
+                            <StandaloneEditor ident="broadcasting-object-property" getCode={() => 'x = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}]' + '\n' + 'x.a = [10, 20, 30]' + '\n' + 'x'} />
+                        </>
+                    ),
                 },
                 {
                     kind: 'here',
                     title: 'Split Broadcasting',
+                    content: () => (
+                        <>
+                            There is also split broadcasting, which is what happens when you use an if statement.
+                            For example, in the following code, the if statement is split into two branches, one for when y is greater than 65 and one for when it is not.
+                            <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = [50, 61, 70]' + '\n' + 'if (y > 65) { x = x * 10 } else { x = x + 1 }' + '\n' + 'x'} />
+                            <p>
+                                The if statement is split into two branches, one for when y is greater than 65 and one for when it is not.
+                            </p>
+                            <p>
+                                Keep in mind that this is exactly two cases, rather than one for each element. Using mean() reveals this:
+                            </p>
+                            <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = [50, 61, 70]' + '\n' + 'if (y > 65) { x = mean(x) } else { x = mean(x) }' + '\n' + 'x'} />
+                        </>
+                    ),
                 },
             ],
         },
         {
             kind: 'here',
             title: 'All Operators',
+            content: () => (
+                <>
+                    <p>
+                        The following is a list of all operators that are available in USS.
+                    </p>
+                    <OperatorTable />
+                </>
+            ),
         },
         {
             kind: 'here',
             title: 'Constants and Functions',
+            content: () => (
+                <p>
+                    USS provides several built-in constants and functions for mathematical operations,
+                    data visualization, and data analysis. Each category has its own page; use the links
+                    below or the previous/next arrows on each page to browse.
+                </p>
+            ),
             subentries: sortedCategories.map(([category]) => ({
                 kind: 'link',
                 title: getCategoryTitle(category),
@@ -164,10 +348,27 @@ function TOCLinkToCategory(props: { category: ConstantCategory }): ReactNode {
     )
 }
 
+function Subsection(props: { section: DocumentationSection, nesting: number }): ReactNode {
+    if (props.section.kind === 'link') {
+        return <TOCLinkToCategory category={props.section.doc} />
+    }
+    const headerTag = `h${Math.min(6, props.nesting + 2)}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+    return (
+        <Header title={props.section.title} header={headerTag} ident={props.section.title.toLowerCase().replace(/\s+/g, '-')}>
+            {props.section.content?.()}
+            {props.section.subentries?.map((subentry, index) => (
+                <Subsection key={index} section={subentry} nesting={props.nesting + 1} />
+            ))}
+        </Header>
+    )
+}
+
 export function USSDocumentationPanel(props: { doc?: ConstantCategory, hash?: string }): ReactNode {
     const { doc, hash } = props
     const textHeaderClass = useHeaderTextClass()
     const docData = constantsDocumentationData()
+
+    const section = useMemo(() => documentationSection(docData.sortedCategories), [docData.sortedCategories])
     useScrollToUssDocumentationFragment(hash, doc)
 
     if (doc !== undefined) {
@@ -213,170 +414,14 @@ export function USSDocumentationPanel(props: { doc?: ConstantCategory, hash?: st
                                 <a href="#all-operators">here</a>
                                 .
                             </p>
-                            <Header title="Lists" header="h2" ident="lists">
-                                <p>
-                                    The language also supports lists, which are denoted by square brackets. You can use operators on these as well:
-                                </p>
-                                <StandaloneEditor ident="lists" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = x + [4, 5, 6]' + '\n' + 'y'} />
-                                <p>
-                                    For details on broadcasting, see the
-                                    {' '}
-                                    <a href="#broadcasting">broadcasting</a>
-                                    {' '}
-                                    section.
-                                </p>
-                            </Header>
-                            <Header title="Objects" header="h2" ident="objects">
-                                <p>
-                                    The language also supports objects, which are denoted by curly braces. You can use operators on these as well:
-                                </p>
-                                <StandaloneEditor ident="objects" getCode={() => 'x = {a: 1, b: 2}' + '\n' + 'y = x.a + x.b' + '\n' + 'y'} />
-                            </Header>
-                            <Header title="Opaque Types" header="h2" ident="opaque-types">
-                                <p>
-                                    USS has several opaque types, which are types that you can only interact with via functions.
-                                    For example, colors are opaque types, and you can only create them using functions like
-                                    {' '}
-                                    <code>rgb()</code>
-                                    {', '}
-                                    <code>hsv()</code>
-                                    , or one of the predefined colors.
-                                </p>
-                                <StandaloneEditor ident="opaque-types" getCode={() => 'x = rgb(0, 0, 1)' + '\n' + 'y = hsv(0, 1, 1)' + '\n' + '[x, y, colorRed]'} />
-                                <p>
-                                    And you can only interact with them using functions like
-                                    {' '}
-                                    <code>renderColor()</code>
-                                    {' '}
-                                    or in other contexts that use color objects.
-                                </p>
-                                <StandaloneEditor ident="opaque-types" getCode={() => 'x = rgb(0, 0, 1)' + '\n' + 'y = hsv(0, 1, 1)' + '\n' + 'renderColor([x, y, colorRed])'} />
-                            </Header>
-                            <Header title="Regressions" header="h2" ident="regressions">
-                                <p>
-                                    USS supports linear regression via the
-                                    {' '}
-                                    <code>regress(y, x1, x2, ..., weight)</code>
-                                    {' '}
-                                    function, which returns an object with several properties:
-                                </p>
-                                <ul>
-                                    <li>
-                                        <code>b</code>
-                                        : The intercept of the regression line.
-                                    </li>
-                                    <li>
-                                        <code>m1, m2, m3...</code>
-                                        : The coefficients for each independent variable.
-                                    </li>
-                                    <li>
-                                        <code>r2</code>
-                                        : The R-squared value of the regression.
-                                    </li>
-                                    <li>
-                                        <code>residuals</code>
-                                        : The residuals of the regression.
-                                    </li>
-                                </ul>
-                                <p>
-                                    For example, to perform a regression of y on x1 and x2, with the last point weighted more heavily, you could do:
-                                </p>
-                                <StandaloneEditor
-                                    ident="regression"
-                                    getCode={
-                                        () =>
-                                            'x1 = [1, 2, 3, 4, 5]' + '\n'
-                                            + 'x2 = [2, 3, 2, 3, 2]' + '\n'
-                                            + 'y = [2.2, 2.8, 3.6, 4.5, 5.1]' + '\n'
-                                            + 'w = [1, 1, 1, 1, 10]' + '\n'
-                                            + 'model = regression(y=y, x1=x1, x2=x2, weight=w)' + '\n'
-                                            + 'model'
-                                    }
-                                />
-                                <p>
-                                    Note that the inputs are all named arguments and the weight is optional.
-                                </p>
-                            </Header>
-                            <Header title="Aggregation" header="h2" ident="aggregation">
-                                <p>
-                                    USS provides several functions for aggregating data, including mean, median, quantile, percentile,
-                                    min, max, sum, and more.
-                                </p>
-                                <p>
-                                    For example, to calculate the mean of a vector, you can do:
-                                </p>
-                                <StandaloneEditor ident="aggregation" getCode={() => 'mean([1, 2, 3, 4, 50])'} />
-                                <p>
-                                    We can also weight the mean, for example:
-                                </p>
-                                <StandaloneEditor ident="aggregation" getCode={() => 'mean([1, 2, 3, 4, 50], weights=[1, 1, 1, 1, 10])'} />
-                                <p>
-                                    The same works for median, quantile, and percentile.
-                                </p>
-                                <StandaloneEditor ident="aggregation" getCode={() => 'percentile([1, 2, 3, 4, 50], 10, weights=[1, 1, 1, 1, 10])'} />
-                                <p>
-                                    On the other hand, min, max, and sum do not support weights.
-                                </p>
-                                <StandaloneEditor ident="aggregation" getCode={() => 'min([1, 2, 3, 4, 50])'} />
-                            </Header>
-                            <Header title="Broadcasting" header="h2" ident="broadcasting">
-                                <p>
-                                    Broadcasting is a feature of USS that allows you to operate on lists of values.
-                                </p>
-                                <Header title="Forward Broadcasting" header="h3" ident="forward-broadcasting">
-                                    <p>
-                                        The main kind of broadcasting is
-                                        forward broadcasting, where you can apply operations to lists of elements. For example, if you have a list of numbers
-                                        and you want to add 1 to each of them, you can do:
-                                    </p>
-                                    <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = x + 1' + '\n' + 'y'} />
-                                    <p>
-                                        This will result in a list of numbers, where each element is 1 greater than the corresponding element in the original list.
-                                    </p>
-                                    <p>
-                                        This also works with function calls, for example:
-                                    </p>
-                                    <StandaloneEditor ident="broadcasting-function" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = sin(x)' + '\n' + 'y'} />
-                                    <p>
-                                        Even when the list is of functions:
-                                    </p>
-                                    <StandaloneEditor ident="broadcasting-function-list" getCode={() => 'x = [sin, cos, tan]' + '\n' + 'y = x(pi)' + '\n' + 'y'} />
-                                    <p>
-                                        You can also apply broadcasting to objects, for example:
-                                    </p>
-                                    <StandaloneEditor ident="broadcasting-object" getCode={() => 'x = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}]' + '\n' + 'y = x.a' + '\n' + 'y'} />
-                                    <p>
-                                        And even assigning to a property:
-                                    </p>
-                                    <StandaloneEditor ident="broadcasting-object-property" getCode={() => 'x = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}]' + '\n' + 'x.a = [10, 20, 30]' + '\n' + 'x'} />
-                                </Header>
-                                <Header title="Split Broadcasting" header="h3" ident="backward-broadcasting">
-                                    There is also split broadcasting, which is what happens when you use an if statement.
-                                    For example, in the following code, the if statement is split into two branches, one for when y is greater than 65 and one for when it is not.
-                                    <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = [50, 61, 70]' + '\n' + 'if (y > 65) { x = x * 10 } else { x = x + 1 }' + '\n' + 'x'} />
-                                    <p>
-                                        The if statement is split into two branches, one for when y is greater than 65 and one for when it is not.
-                                    </p>
-                                    <p>
-                                        Keep in mind that this is exactly two cases, rather than one for each element. Using mean() reveals this:
-                                    </p>
-                                    <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = [50, 61, 70]' + '\n' + 'if (y > 65) { x = mean(x) } else { x = mean(x) }' + '\n' + 'x'} />
-                                </Header>
-                            </Header>
-                            <Header title="All Operators" header="h2" ident="all-operators">
-                                <p>
-                                    The following is a list of all operators that are available in USS.
-                                </p>
-                                <OperatorTable />
-                            </Header>
-                            <Header title="Constants and Functions" header="h2" ident="constants">
-                                <p>
-                                    USS provides several built-in constants and functions for mathematical operations,
-                                    data visualization, and data analysis. Each category has its own page; use the links
-                                    below or the previous/next arrows on each page to browse.
-                                </p>
-                                <ConstantsAndFunctionsIndex sortedCategories={docData.sortedCategories} />
-                            </Header>
+                            <Subsection section={section[0]} nesting={0} />
+                            <Subsection section={section[1]} nesting={0} />
+                            <Subsection section={section[2]} nesting={0} />
+                            <Subsection section={section[3]} nesting={0} />
+                            <Subsection section={section[4]} nesting={0} />
+                            <Subsection section={section[5]} nesting={0} />
+                            <Subsection section={section[6]} nesting={0} />
+                            <Subsection section={section[7]} nesting={0} />
                         </Header>
                     </div>
                     <Footnotes />
@@ -486,27 +531,27 @@ function OperatorTable(): ReactNode {
     return createTable(colors, headers, cells)
 }
 
-function ConstantsAndFunctionsIndex(props: { sortedCategories: [ConstantCategory, [string, USSDocumentedType][]][] }): ReactNode {
-    const nav = useContext(Navigator.Context)
-    const colors = useColors()
-    return (
-        <ul style={{ marginLeft: '20px', marginTop: '12px' }}>
-            {props.sortedCategories.map(([category]) => (
-                <li key={category} style={{ marginBottom: '8px' }}>
-                    <a
-                        style={{ color: colors.textMain }}
-                        {...nav.link(
-                            { kind: 'ussDocumentation', doc: category },
-                            { scroll: { kind: 'position', top: 0 } },
-                        )}
-                    >
-                        {getCategoryTitle(category)}
-                    </a>
-                </li>
-            ))}
-        </ul>
-    )
-}
+// function ConstantsAndFunctionsIndex(props: { sortedCategories: [ConstantCategory, [string, USSDocumentedType][]][] }): ReactNode {
+//     const nav = useContext(Navigator.Context)
+//     const colors = useColors()
+//     return (
+//         <ul style={{ marginLeft: '20px', marginTop: '12px' }}>
+//             {props.sortedCategories.map(([category]) => (
+//                 <li key={category} style={{ marginBottom: '8px' }}>
+//                     <a
+//                         style={{ color: colors.textMain }}
+//                         {...nav.link(
+//                             { kind: 'ussDocumentation', doc: category },
+//                             { scroll: { kind: 'position', top: 0 } },
+//                         )}
+//                     >
+//                         {getCategoryTitle(category)}
+//                     </a>
+//                 </li>
+//             ))}
+//         </ul>
+//     )
+// }
 
 function ConstantsCategoryPageView(props: {
     category: ConstantCategory
