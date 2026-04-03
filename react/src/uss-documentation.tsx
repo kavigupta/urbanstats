@@ -45,6 +45,25 @@ function documentationSection(sortedCategories: [ConstantCategory, [string, USSD
     return [
         {
             kind: 'here',
+            title: 'Arithmetic',
+            content: () => (
+                <>
+                    <p>
+                        The basic syntax of USS should be familiar to any programmer. Arithmetic operations are
+                        written as you would expect. Feel free to edit the code below to see how the result changes:
+                    </p>
+                    <StandaloneEditor ident="aritmetic" getCode={() => 'x = 2 ** 3 + 3 * 4' + '\n' + 'y = x + 2' + '\n' + 'y'} />
+                    <p>
+                        A full list of operators is available
+                        {' '}
+                        <a href="#all-operators">here</a>
+                        .
+                    </p>
+                </>
+            ),
+        },
+        {
+            kind: 'here',
             title: 'Lists',
             content: () => (
                 <>
@@ -418,25 +437,7 @@ export function USSDocumentationPanel(props: { doc?: ConstantCategory, hash?: st
                                 data. It is designed to allow users to describe programs as if they refer to a
                                 single row of data, while simultaneously allowing global operations like regression.
                             </p>
-                            <p>
-                                The basic syntax of USS should be familiar to any programmer. Arithmetic operations are
-                                written as you would expect. Feel free to edit the code below to see how the result changes:
-                            </p>
-                            <StandaloneEditor ident="aritmetic" getCode={() => 'x = 2 ** 3 + 3 * 4' + '\n' + 'y = x + 2' + '\n' + 'y'} />
-                            <p>
-                                A full list of operators is available
-                                {' '}
-                                <a href="#all-operators">here</a>
-                                .
-                            </p>
-                            <Subsection section={section[0]} nesting={0} />
-                            <Subsection section={section[1]} nesting={0} />
-                            <Subsection section={section[2]} nesting={0} />
-                            <Subsection section={section[3]} nesting={0} />
-                            <Subsection section={section[4]} nesting={0} />
-                            <Subsection section={section[5]} nesting={0} />
-                            <Subsection section={section[6]} nesting={0} />
-                            <Subsection section={section[7]} nesting={0} />
+                            {section.map((s, index) => <Subsection key={index} section={s} nesting={0} />)}
                         </Header>
                     </div>
                     <Footnotes />
