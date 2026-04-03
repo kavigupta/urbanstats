@@ -349,12 +349,26 @@ function TOCLinkToCategory(props: { category: ConstantCategory }): ReactNode {
 }
 
 function Subsection(props: { section: DocumentationSection, nesting: number }): ReactNode {
+    const colors = useColors()
+    const nav = useContext(Navigator.Context)
+    const HeaderTag = `h${Math.min(6, props.nesting + 2)}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
     if (props.section.kind === 'link') {
-        return <TOCLinkToCategory category={props.section.doc} />
+        return (
+            <HeaderTag>
+                <a
+                    style={{ color: colors.blueLink, textDecoration: 'none' }}
+                    {...nav.link(
+                        { kind: 'ussDocumentation', doc: props.section.doc },
+                        { scroll: { kind: 'position', top: 0 } },
+                    )}
+                >
+                    {getCategoryTitle(props.section.doc)}
+                </a>
+            </HeaderTag>
+        )
     }
-    const headerTag = `h${Math.min(6, props.nesting + 2)}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
     return (
-        <Header title={props.section.title} header={headerTag} ident={props.section.title.toLowerCase().replace(/\s+/g, '-')}>
+        <Header title={props.section.title} header={HeaderTag} ident={props.section.title.toLowerCase().replace(/\s+/g, '-')}>
             {props.section.content?.()}
             {props.section.subentries?.map((subentry, index) => (
                 <Subsection key={index} section={subentry} nesting={props.nesting + 1} />
