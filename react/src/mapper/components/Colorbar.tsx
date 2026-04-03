@@ -15,8 +15,8 @@ interface EmpiricalRamp {
     interpolations: number[]
     label: string
     unit?: UnitType
-    hasValuesBelow: boolean
-    hasValuesAbove: boolean
+    hasValuesClampedToStart: boolean
+    hasValuesClampedToEnd: boolean
 }
 
 export type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: string }
@@ -80,12 +80,19 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
 
     const furthest = useMemo(() => furthestColor(ramp.ramp.map(x => x[1])), [ramp])
 
-    const { hasValuesBelow, hasValuesAbove } = ramp
+    const { hasValuesClampedToStart, hasValuesClampedToEnd } = ramp
+    const scaleAscending = ramp.scale.inverse(0) < ramp.scale.inverse(1)
 
     const createValue = (stat: number, index: number): ReactNode => {
         const isFirst = index === 0
         const isLast = index === ramp.interpolations.length - 1
-        const prefix = (isFirst && hasValuesBelow) ? '\u2264' /* ≤ */ : (isLast && hasValuesAbove) ? '\u2265' /* ≥ */ : undefined
+        let prefix: string | undefined
+        if (isFirst && hasValuesClampedToStart) {
+            prefix = scaleAscending ? '\u2264' /* ≤ */ : '\u2265' /* ≥ */
+        }
+        else if (isLast && hasValuesClampedToEnd) {
+            prefix = scaleAscending ? '\u2265' /* ≥ */ : '\u2264' /* ≤ */
+        }
         return (
             <div className="centered_text">
                 {prefix !== undefined && (
