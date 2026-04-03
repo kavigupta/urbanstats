@@ -39,7 +39,8 @@ export class TestUtils {
         }
     }
 
-    readonly maps = new Map<string, WeakRef<maplibregl.Map>>()
+    readonly allMaps: WeakRef<maplibregl.Map>[] = []
+    readonly mapsWithIDs = new Map<string, WeakRef<maplibregl.Map>>()
 
     readonly clickableMaps = new Map<string, {
         clickFeature: (name: string) => void

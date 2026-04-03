@@ -235,6 +235,15 @@ function useClickable({ id, clickable, features }: { id: string, clickable: bool
 
     const { current: map } = useMap()
 
+
+    useEffect(() => {
+        if (map === undefined) {
+            return
+        }
+        const mapCurrent = map.getMap()
+        TestUtils.shared.allMaps.push(new WeakRef(mapCurrent))
+    }, [map])
+
     useEffect(() => {
         if (clickable) {
             assert(map !== undefined, 'map is undefined')
