@@ -1,3 +1,3 @@
-export function keptByNoBasemap(layer: { type: string, source: string }): boolean {
-    return layer.type === 'background' || layer.source !== 'openmaptiles'
+export function keptByNoBasemap(layer: { id: string, source: string }): boolean {
+    return layer.id === 'background' || layer.source !== 'openmaptiles'
 }
