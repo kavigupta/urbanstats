@@ -240,8 +240,7 @@ function useClickable({ id, clickable, features }: { id: string, clickable: bool
         if (map === undefined) {
             return
         }
-        const mapCurrent = map.getMap()
-        TestUtils.shared.allMaps.add(mapCurrent)
+        TestUtils.shared.addMapToAllMaps(map)
     }, [map])
 
     useEffect(() => {

@@ -1,4 +1,5 @@
 import type maplibregl from 'maplibre-gl'
+import { MapRef } from 'react-map-gl/maplibre'
 
 import { keptByNoBasemap } from '../components/map-common-utils'
 
@@ -41,7 +42,10 @@ export class TestUtils {
         }
     }
 
-    readonly allMaps = new WeakSet<maplibregl.Map>()
+    // has to be a list, not a WeakSet. WeakSets cannot be iterated, defeating the purpose
+    // this is a bit of a memory leak, but not much of one, should add just a few
+    // bytes per user interaction.
+    allMaps: WeakRef<maplibregl.Map>[] = []
     readonly mapsWithIDs = new Map<string, WeakRef<maplibregl.Map>>()
 
     readonly clickableMaps = new Map<string, {
@@ -87,7 +91,7 @@ export class TestUtils {
     }
 
     disableBasemapLayers(): void {
-        this.maps.forEach((mapRef) => {
+        this.allMaps.forEach((mapRef) => {
             const map = mapRef.deref()
             if (map) {
                 for (const layerId of map.getLayersOrder()) {
@@ -98,6 +102,11 @@ export class TestUtils {
                 }
             }
         })
+    }
+
+    addMapToAllMaps(map: MapRef): void {
+        this.allMaps = this.allMaps.filter(ref => ref.deref() !== undefined)
+        this.allMaps.push(new WeakRef(map.getMap()))
     }
 }
 
