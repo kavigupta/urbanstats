@@ -1,5 +1,5 @@
 import type maplibregl from 'maplibre-gl'
-import { MapRef } from 'react-map-gl/maplibre'
+import type { MapRef } from 'react-map-gl/maplibre'
 
 import { keptByNoBasemap } from '../components/map-common-utils'
 
@@ -106,7 +106,11 @@ export class TestUtils {
 
     addMapToAllMaps(map: MapRef): void {
         this.allMaps = this.allMaps.filter(ref => ref.deref() !== undefined)
-        this.allMaps.push(new WeakRef(map.getMap()))
+        const mapObj = map.getMap()
+        if (this.allMaps.some(ref => ref.deref() === mapObj)) {
+            return
+        }
+        this.allMaps.push(new WeakRef(mapObj))
     }
 }
 
