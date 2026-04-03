@@ -1,9 +1,11 @@
 import { MathJaxContext } from 'better-react-mathjax'
-import React, { ReactNode, useContext, useEffect } from 'react'
+import React, { ReactNode, useContext, useEffect, useMemo } from 'react'
 import { Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 
 import './style.css'
 import './common.css'
+import { StringValidation } from 'zod'
+
 import { getUnit } from './components/unit-display'
 import { Navigator } from './navigation/Navigator'
 import { urlFromPageDescriptor } from './navigation/PageDescriptor'
@@ -33,8 +35,91 @@ function useScrollToUssDocumentationFragment(hash: string | undefined, contentKe
     }, [hash, contentKey])
 }
 
+type DocumentationSection = { kind: 'link', title: string, doc: ConstantCategory } | {
+    kind: 'here'
+    title: string
+    subentries?: DocumentationSection[]
+}
+
+function documentationSection(sortedCategories: [ConstantCategory, [string, USSDocumentedType][]][]): DocumentationSection[] {
+    return [
+        {
+            kind: 'here',
+            title: 'Lists',
+        },
+        {
+            kind: 'here',
+            title: 'Objects',
+        },
+        {
+            kind: 'here',
+            title: 'Opaque Types',
+        },
+        {
+            kind: 'here',
+            title: 'Regressions',
+        },
+        {
+            kind: 'here',
+            title: 'Aggregation',
+        },
+        {
+            kind: 'here',
+            title: 'Broadcasting',
+            subentries: [
+                {
+                    kind: 'here',
+                    title: 'Forward Broadcasting',
+                },
+                {
+                    kind: 'here',
+                    title: 'Split Broadcasting',
+                },
+            ],
+        },
+        {
+            kind: 'here',
+            title: 'All Operators',
+        },
+        {
+            kind: 'here',
+            title: 'Constants and Functions',
+            subentries: sortedCategories.map(([category]) => ({
+                kind: 'link',
+                title: getCategoryTitle(category),
+                doc: category,
+            })) satisfies DocumentationSection[],
+        },
+    ]
+}
+
+function TableOfContentsForSection(props: { section: DocumentationSection }): ReactNode {
+    if (props.section.kind === 'link') {
+        return <TOCLinkToCategory category={props.section.doc} />
+    }
+    const mainEntry = <TOCEntry href={`#${props.section.title.toLowerCase().replace(/\s+/g, '-')}`} title={props.section.title} />
+    const ul = props.section.subentries && props.section.subentries.length > 0
+        ? (
+                <ul style={{ listStyleType: 'none', paddingLeft: '20px' }}>
+                    {props.section.subentries.map((subentry, index) => (
+                        <li key={index} style={{ marginBottom: '4px' }}>
+                            <TableOfContentsForSection section={subentry} />
+                        </li>
+                    ))}
+                </ul>
+            )
+        : null
+    return (
+        <>
+            {mainEntry}
+            {ul}
+        </>
+    )
+}
+
 function TableOfContents(props: { sortedCategories: [ConstantCategory, [string, USSDocumentedType][]][] }): ReactNode {
     const colors = useColors()
+    const section = useMemo(() => documentationSection(props.sortedCategories), [props.sortedCategories])
     return (
         <div style={{
             margin: '20px 0',
@@ -45,33 +130,10 @@ function TableOfContents(props: { sortedCategories: [ConstantCategory, [string, 
         }}
         >
             <h2 style={{ marginTop: 0, marginBottom: '15px', fontWeight: 'normal' }}>Table of Contents</h2>
-            <ul style={{ listStyleType: 'none', paddingLeft: 0, margin: 0 }}>
-                <TOCEntry href="#uss-title" title="Urban Stats Script (USS)" />
-                <ul style={{ listStyleType: 'none', paddingLeft: '20px' }}>
-                    <TOCEntry href="#lists" title="Lists" />
-                    <TOCEntry href="#objects" title="Objects" />
-                    <TOCEntry href="#opaque-types" title="Opaque Types" />
-                    <TOCEntry href="#regressions" title="Regressions" />
-                    <TOCEntry href="#aggregation" title="Aggregation" />
-                    <TOCEntry href="#broadcasting" title="Broadcasting" />
-                    <ul style={{ listStyleType: 'none', paddingLeft: '20px' }}>
-                        <TOCEntry href="#forward-broadcasting" title="Forward Broadcasting" />
-                        <TOCEntry href="#backward-broadcasting" title="Split Broadcasting" />
-                    </ul>
-                    <TOCEntry href="#all-operators" title="All Operators" />
-                    <TOCEntry href="#constants" title="Constants and Functions" />
-                    <ul style={{
-                        listStyleType: 'none',
-                        paddingLeft: '20px',
-                    }}
-                    >
-                        {props.sortedCategories.map(([category]) => (
-                            <li key={category} style={{ marginBottom: '4px' }}>
-                                <TOCLinkToCategory category={category} />
-                            </li>
-                        ))}
-                    </ul>
-                </ul>
+            <ul style={{ listStyleType: 'none', paddingLeft: '0', margin: 0 }}>
+                {section.map((subentry, index) => (
+                    <TableOfContentsForSection key={index} section={subentry} />
+                ))}
             </ul>
         </div>
     )
