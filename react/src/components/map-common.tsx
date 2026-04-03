@@ -16,10 +16,10 @@ import { loadFeatureFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
+import { keptByNoBasemap } from './map-common-utils'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
 
 import './map.css'
-import { keptByNoBasemap } from './map-common-utils'
 
 export const defaultMapPadding = 20
 export const insetBorderWidth = 2
