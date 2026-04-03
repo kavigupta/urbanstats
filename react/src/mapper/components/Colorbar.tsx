@@ -85,7 +85,7 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
     const createValue = (stat: number, index: number): ReactNode => {
         const isFirst = index === 0
         const isLast = index === ramp.interpolations.length - 1
-        const prefix = (isFirst && hasValuesBelow) ? '\u2265' : (isLast && hasValuesAbove) ? '\u2264' : undefined
+        const prefix = (isFirst && hasValuesBelow) ? '\u2265' /* ≥ */ : (isLast && hasValuesAbove) ? '\u2264' /* ≤ */ : undefined
         return (
             <div className="centered_text">
                 {prefix !== undefined && <span>{prefix} </span>}
