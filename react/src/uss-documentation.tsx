@@ -306,9 +306,7 @@ function TableOfContentsForSection(props: { section: DocumentationSection }): Re
     }
     const href = `#${anchorFromTitle(props.section.title)}`
     const mainEntry = (
-        <li style={{ marginBottom: '8px' }}>
-            <a href={href} style={{ color: colors.blueLink, textDecoration: 'none' }}>{props.section.title}</a>
-        </li>
+        <a href={href} style={{ color: colors.blueLink, textDecoration: 'none' }}>{props.section.title}</a>
     )
     return (
         <>
@@ -323,7 +321,7 @@ function TableOfContentsForSections(props: { sections: DocumentationSection[] | 
         return null
     }
     return (
-        <ul style={{ listStyleType: 'none', paddingLeft: '20px', margin: 0 }}>
+        <ul style={{ listStyleType: 'none', paddingLeft: '20px', paddingTop: '10px', margin: 0 }}>
             {props.sections.map((section, index) => (
                 <li key={index} style={{ marginBottom: '8px' }}>
                     <TableOfContentsForSection section={section} />
@@ -345,7 +343,7 @@ function TableOfContents(props: { sortedCategories: [ConstantCategory, [string, 
             border: `1px solid ${colors.borderNonShadow}`,
         }}
         >
-            <h2 style={{ marginTop: 0, marginBottom: '15px', fontWeight: 'normal' }}>Table of Contents</h2>
+            <h2 style={{ marginTop: 0, marginBottom: 0, fontWeight: 'normal' }}>Table of Contents</h2>
             {TableOfContentsForSections({ sections: section })}
         </div>
     )
