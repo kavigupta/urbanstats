@@ -276,27 +276,41 @@ function documentationSection(sortedCategories: [ConstantCategory, [string, USSD
     ]
 }
 
+function anchorFromTitle(title: string): string {
+    return title.toLowerCase().replace(/\s+/g, '-')
+}
+
 function TableOfContentsForSection(props: { section: DocumentationSection }): ReactNode {
+    const colors = useColors()
     if (props.section.kind === 'link') {
         return <TOCLinkToCategory category={props.section.doc} />
     }
-    const mainEntry = <TOCEntry href={`#${props.section.title.toLowerCase().replace(/\s+/g, '-')}`} title={props.section.title} />
-    const ul = props.section.subentries && props.section.subentries.length > 0
-        ? (
-                <ul style={{ listStyleType: 'none', paddingLeft: '20px' }}>
-                    {props.section.subentries.map((subentry, index) => (
-                        <li key={index} style={{ marginBottom: '4px' }}>
-                            <TableOfContentsForSection section={subentry} />
-                        </li>
-                    ))}
-                </ul>
-            )
-        : null
+    const href = `#${anchorFromTitle(props.section.title)}`
+    const mainEntry = (
+        <li style={{ marginBottom: '8px' }}>
+            <a href={href} style={{ color: colors.blueLink, textDecoration: 'none' }}>{props.section.title}</a>
+        </li>
+    )
     return (
         <>
             {mainEntry}
-            {ul}
+            {TableOfContentsForSections({ sections: props.section.subentries })}
         </>
+    )
+}
+
+function TableOfContentsForSections(props: { sections: DocumentationSection[] | undefined }): ReactNode {
+    if (props.sections === undefined || props.sections.length === 0) {
+        return null
+    }
+    return (
+        <ul style={{ listStyleType: 'none', paddingLeft: '20px', margin: 0 }}>
+            {props.sections.map((section, index) => (
+                <li key={index} style={{ marginBottom: '8px' }}>
+                    <TableOfContentsForSection section={section} />
+                </li>
+            ))}
+        </ul>
     )
 }
 
@@ -313,21 +327,8 @@ function TableOfContents(props: { sortedCategories: [ConstantCategory, [string, 
         }}
         >
             <h2 style={{ marginTop: 0, marginBottom: '15px', fontWeight: 'normal' }}>Table of Contents</h2>
-            <ul style={{ listStyleType: 'none', paddingLeft: '0', margin: 0 }}>
-                {section.map((subentry, index) => (
-                    <TableOfContentsForSection key={index} section={subentry} />
-                ))}
-            </ul>
+            {TableOfContentsForSections({ sections: section })}
         </div>
-    )
-}
-
-function TOCEntry({ href, title }: { href: string, title: string }): ReactNode {
-    const colors = useColors()
-    return (
-        <li style={{ marginBottom: '8px' }}>
-            <a href={href} style={{ color: colors.blueLink, textDecoration: 'none' }}>{title}</a>
-        </li>
     )
 }
 
