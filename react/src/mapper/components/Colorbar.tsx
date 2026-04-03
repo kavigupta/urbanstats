@@ -15,7 +15,8 @@ interface EmpiricalRamp {
     interpolations: number[]
     label: string
     unit?: UnitType
-    rawData: number[]
+    hasValuesBelow: boolean
+    hasValuesAbove: boolean
 }
 
 export type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: string }
@@ -79,10 +80,7 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
 
     const furthest = useMemo(() => furthestColor(ramp.ramp.map(x => x[1])), [ramp])
 
-    const minBound = ramp.scale.inverse(0)
-    const maxBound = ramp.scale.inverse(1)
-    const hasValuesBelow = ramp.rawData.some(val => val < minBound)
-    const hasValuesAbove = ramp.rawData.some(val => val > maxBound)
+    const { hasValuesBelow, hasValuesAbove } = ramp
 
     const createValue = (stat: number, index: number): ReactNode => {
         const isFirst = index === 0
