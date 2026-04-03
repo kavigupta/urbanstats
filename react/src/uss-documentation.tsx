@@ -545,28 +545,6 @@ function OperatorTable(): ReactNode {
     return createTable(colors, headers, cells)
 }
 
-// function ConstantsAndFunctionsIndex(props: { sortedCategories: [ConstantCategory, [string, USSDocumentedType][]][] }): ReactNode {
-//     const nav = useContext(Navigator.Context)
-//     const colors = useColors()
-//     return (
-//         <ul style={{ marginLeft: '20px', marginTop: '12px' }}>
-//             {props.sortedCategories.map(([category]) => (
-//                 <li key={category} style={{ marginBottom: '8px' }}>
-//                     <a
-//                         style={{ color: colors.textMain }}
-//                         {...nav.link(
-//                             { kind: 'ussDocumentation', doc: category },
-//                             { scroll: { kind: 'position', top: 0 } },
-//                         )}
-//                     >
-//                         {getCategoryTitle(category)}
-//                     </a>
-//                 </li>
-//             ))}
-//         </ul>
-//     )
-// }
-
 function ConstantsCategoryPageView(props: {
     category: ConstantCategory
     sortedCategories: [ConstantCategory, [string, USSDocumentedType][]][]
