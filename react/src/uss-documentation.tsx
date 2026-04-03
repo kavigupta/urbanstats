@@ -33,6 +33,75 @@ function useScrollToUssDocumentationFragment(hash: string | undefined, contentKe
     }, [hash, contentKey])
 }
 
+function TableOfContents(props: { sortedCategories: [ConstantCategory, [string, USSDocumentedType][]][] }): ReactNode {
+    const colors = useColors()
+    return (
+        <div style={{
+            margin: '20px 0',
+            padding: '20px',
+            backgroundColor: colors.slightlyDifferentBackground,
+            borderRadius: '8px',
+            border: `1px solid ${colors.borderNonShadow}`,
+        }}
+        >
+            <h2 style={{ marginTop: 0, marginBottom: '15px', fontWeight: 'normal' }}>Table of Contents</h2>
+            <ul style={{ listStyleType: 'none', paddingLeft: 0, margin: 0 }}>
+                <TOCEntry href="#uss-title" title="Urban Stats Script (USS)" />
+                <ul style={{ listStyleType: 'none', paddingLeft: '20px' }}>
+                    <TOCEntry href="#lists" title="Lists" />
+                    <TOCEntry href="#objects" title="Objects" />
+                    <TOCEntry href="#opaque-types" title="Opaque Types" />
+                    <TOCEntry href="#regressions" title="Regressions" />
+                    <TOCEntry href="#aggregation" title="Aggregation" />
+                    <TOCEntry href="#broadcasting" title="Broadcasting" />
+                    <ul style={{ listStyleType: 'none', paddingLeft: '20px' }}>
+                        <TOCEntry href="#forward-broadcasting" title="Forward Broadcasting" />
+                        <TOCEntry href="#backward-broadcasting" title="Split Broadcasting" />
+                    </ul>
+                    <TOCEntry href="#all-operators" title="All Operators" />
+                    <TOCEntry href="#constants" title="Constants and Functions" />
+                    <ul style={{
+                        listStyleType: 'none',
+                        paddingLeft: '20px',
+                    }}
+                    >
+                        {props.sortedCategories.map(([category]) => (
+                            <li key={category} style={{ marginBottom: '4px' }}>
+                                <TOCLinkToCategory category={category} />
+                            </li>
+                        ))}
+                    </ul>
+                </ul>
+            </ul>
+        </div>
+    )
+}
+
+function TOCEntry({ href, title }: { href: string, title: string }): ReactNode {
+    const colors = useColors()
+    return (
+        <li style={{ marginBottom: '8px' }}>
+            <a href={href} style={{ color: colors.blueLink, textDecoration: 'none' }}>{title}</a>
+        </li>
+    )
+}
+
+function TOCLinkToCategory(props: { category: ConstantCategory }): ReactNode {
+    const nav = useContext(Navigator.Context)
+    const colors = useColors()
+    return (
+        <a
+            style={{ color: colors.blueLink, fontSize: '0.9em', textDecoration: 'none' }}
+            {...nav.link(
+                { kind: 'ussDocumentation', doc: props.category },
+                { scroll: { kind: 'position', top: 0 } },
+            )}
+        >
+            {getCategoryTitle(props.category)}
+        </a>
+    )
+}
+
 export function USSDocumentationPanel(props: { doc?: ConstantCategory, hash?: string }): ReactNode {
     const { doc, hash } = props
     const textHeaderClass = useHeaderTextClass()
@@ -62,6 +131,8 @@ export function USSDocumentationPanel(props: { doc?: ConstantCategory, hash?: st
                 <FootnotesProvider>
                     <div className="serif">
                         <div className={textHeaderClass}>USS Documentation</div>
+
+                        <TableOfContents sortedCategories={docData.sortedCategories} />
 
                         <Header title="Urban Stats Script (USS)" header="h1" ident="uss-title">
                             <p>
@@ -413,8 +484,14 @@ function ConstantsCategoryPageView(props: {
             <div className={props.textHeaderClass}>USS Documentation</div>
             <p style={{ marginTop: '8px', marginBottom: '20px' }}>
                 <a
-                    style={{ color: colors.textMain }}
+                    style={{ color: colors.textMain, cursor: 'pointer' }}
                     {...nav.link({ kind: 'ussDocumentation' }, { scroll: { kind: 'position', top: 0 } })}
+                    onClick={(e) => {
+                        if (e.button === 0 && !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+                            e.preventDefault()
+                            window.history.back()
+                        }
+                    }}
                 >
                     ← Back to full documentation
                 </a>
