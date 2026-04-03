@@ -1,5 +1,7 @@
 import type maplibregl from 'maplibre-gl'
 
+import { keptByNoBasemap } from '../components/map-common-utils'
+
 /**
  * Indicates whether we're e2e testing.
  *
@@ -81,6 +83,20 @@ export class TestUtils {
                 this.loadingCallbacks.push(resolve)
             })
         }
+    }
+
+    disableBasemapLayers(): void {
+        this.maps.forEach((mapRef) => {
+            const map = mapRef.deref()
+            if (map) {
+                for (const layerId of map.getLayersOrder()) {
+                    const layer = map.getLayer(layerId)
+                    if (layer && !keptByNoBasemap(layer)) {
+                        map.setLayoutProperty(layerId, 'visibility', 'none')
+                    }
+                }
+            }
+        })
     }
 }
 
