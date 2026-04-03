@@ -39,6 +39,9 @@ export class TestUtils {
         }
     }
 
+    // has to be a list, not a WeakSet. WeakSets cannot be iterated, defeating the purpose
+    // this is a bit of a memory leak, but not much of one, should add just a few
+    // bytes per user interaction.
     readonly allMaps: WeakRef<maplibregl.Map>[] = []
     readonly mapsWithIDs = new Map<string, WeakRef<maplibregl.Map>>()
 

@@ -235,7 +235,6 @@ function useClickable({ id, clickable, features }: { id: string, clickable: bool
 
     const { current: map } = useMap()
 
-
     useEffect(() => {
         if (map === undefined) {
             return
