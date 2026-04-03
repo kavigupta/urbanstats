@@ -377,7 +377,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
             const scale = instantiate(value.scale)
             const furthest = furthestColor(value.ramp.map(x => x[1]))
             const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-            ramp = { type: 'ramp', value: { ramp: value.ramp, interpolations, scale, label: value.label, unit: value.unit } }
+            ramp = { type: 'ramp', value: { ramp: value.ramp, interpolations, scale, label: value.label, unit: value.unit, rawData: value.data } }
             colors = value.data.map(val => interpolateColor(value.ramp, scale.forward(val), furthest))
             break
         case 'cMapRGB':

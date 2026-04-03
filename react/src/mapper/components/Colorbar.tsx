@@ -15,6 +15,7 @@ interface EmpiricalRamp {
     interpolations: number[]
     label: string
     unit?: UnitType
+    rawData: number[]
 }
 
 export type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: string }
@@ -78,9 +79,18 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
 
     const furthest = useMemo(() => furthestColor(ramp.ramp.map(x => x[1])), [ramp])
 
-    const createValue = (stat: number): ReactNode => {
+    const minBound = ramp.scale.inverse(0)
+    const maxBound = ramp.scale.inverse(1)
+    const hasValuesBelow = ramp.rawData.some(val => val < minBound)
+    const hasValuesAbove = ramp.rawData.some(val => val > maxBound)
+
+    const createValue = (stat: number, index: number): ReactNode => {
+        const isFirst = index === 0
+        const isLast = index === ramp.interpolations.length - 1
+        const prefix = (isFirst && hasValuesBelow) ? '\u2265' : (isLast && hasValuesAbove) ? '\u2264' : undefined
         return (
             <div className="centered_text">
+                {prefix !== undefined && <span>{prefix} </span>}
                 <Statistic
                     statname={ramp.label}
                     value={stat}
@@ -122,7 +132,7 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
                 }}
                 className="containedOfXticks"
             >
-                {createValue(x)}
+                {createValue(x, i)}
             </div>
         </div>
     ))
