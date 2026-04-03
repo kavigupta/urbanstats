@@ -585,14 +585,8 @@ function ConstantsCategoryPageView(props: {
             <div className={props.textHeaderClass}>USS Documentation</div>
             <p style={{ marginTop: '8px', marginBottom: '20px' }}>
                 <a
-                    style={{ color: colors.textMain, cursor: 'pointer' }}
+                    style={{ color: colors.textMain }}
                     {...nav.link({ kind: 'ussDocumentation' }, { scroll: { kind: 'position', top: 0 } })}
-                    onClick={(e) => {
-                        if (e.button === 0 && !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
-                            e.preventDefault()
-                            window.history.back()
-                        }
-                    }}
                 >
                     ← Back to full documentation
                 </a>
