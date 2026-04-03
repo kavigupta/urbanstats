@@ -90,7 +90,11 @@ export class TestUtils {
 
     addMapToAllMaps(map: MapRef): void {
         this.allMaps = this.allMaps.filter(ref => ref.deref() !== undefined)
-        this.allMaps.push(new WeakRef(map.getMap()))
+        const mapObj = map.getMap()
+        if (this.allMaps.some(ref => ref.deref() === mapObj)) {
+            return
+        }
+        this.allMaps.push(new WeakRef(mapObj))
     }
 }
 
