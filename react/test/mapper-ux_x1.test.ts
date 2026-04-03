@@ -1,4 +1,4 @@
-import { Selector } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
 import { nthEditor, typeInEditor } from './editor_test_utils'
 import { checkSelector, getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript, urlFromCode } from './mapper-utils'
@@ -42,13 +42,13 @@ test('change theme setting in sidebar menu', async (t) => {
     })
 })
 
-for (const constant of ['linearScale', 'rampUridis']) {
+for (const { constant, docSubpage } of [{ constant: 'linearScale', docSubpage: 'scale' }, { constant: 'rampUridis', docSubpage: 'ramp' }] as const) {
     test(`hover editor click link to documentation of constant ${constant}`, async (t) => {
         await toggleCustomScript(t)
         await t.hover(Selector('span').withExactText(constant))
         await screencap(t, { fullPage: false })
         await t.click(Selector('a').withExactText(constant))
-        await t.expect(getLocation()).eql(`${target}/uss-documentation.html#constant-${constant}`)
+        await t.expect(getLocation()).eql(`${target}/uss-documentation.html?doc=${docSubpage}#${constant}`)
         await screencap(t, { fullPage: false })
     })
 }
@@ -185,6 +185,33 @@ mapper(() => test)('custom ramp intermediate deletions keep code valid', { code:
 )
 `)
     await t.expect(getErrors()).eql([])
+})
+
+mapper(() => test)('label resize sync', { code: `cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampGistRainbow,
+    textBoxes=[
+        textBox(
+            screenBounds={north: 0.75, east: 0.75, south: 0.25, west: 0.25},
+            text=rtfDocument([rtfString("some text\\n")]),
+            backgroundColor=rgb(1, 0.973, 0.941),
+            borderColor=rgb(0.2, 0.2, 0.2),
+            borderWidth=1
+        )
+    ]
+)` }, async (t) => {
+    await t.resizeWindow(400, 800)
+    await toggleCustomScript(t)
+    await t.eval(() => {
+        const textArea: HTMLTextAreaElement = document.querySelector('textarea:not([inert] *)')!
+        textArea.style.height = '200px'
+    })
+    await t.expect(ClientFunction(() => {
+        const addElementButton = Array.from(document.querySelectorAll('[data-test-id="test-add-vector-element-button"]:not([inert] *)')).pop()!
+        const exportPngButton = Array.from(document.querySelectorAll('button:not([inert] *)')).find(button => button.textContent === 'Export as PNG')!
+        return addElementButton.getBoundingClientRect().bottom < exportPngButton.getBoundingClientRect().top
+    })()).ok()
 })
 
 // Tests for Convert to Table button

@@ -12,6 +12,8 @@ import express from 'express'
 import proxy from 'express-http-proxy'
 import { z } from 'zod'
 
+import { port } from '../../port'
+
 import { github } from './github-utils'
 
 export async function startProxy(): Promise<void> {
@@ -60,5 +62,5 @@ export async function startProxy(): Promise<void> {
         }),
     )
 
-    app.listen(8000)
+    app.listen(port())
 }

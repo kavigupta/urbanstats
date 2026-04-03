@@ -12,6 +12,7 @@ import { Scale } from './constants/scale'
 import { Table, TableColumn } from './constants/table'
 import { TextBox } from './constants/text-box'
 import { Context } from './context'
+import { ConstantCategory } from './documentation-category'
 import { noLocation } from './location'
 import { unparse } from './parser'
 
@@ -135,10 +136,6 @@ export type USSRawValue = (
     USSOpaqueValue
 )
 
-export const constantCategories = ['basic', 'color', 'math', 'regression', 'mapper', 'logic', 'map', 'scale', 'ramp', 'unit', 'inset', 'richText'] as const
-
-export type ConstantCategory = typeof constantCategories[number]
-
 export type DocumentationTable = 'mapper-data-variables' | 'predefined-colors' | 'unit-types' | 'predefined-ramps' | 'predefined-insets' | 'logarithm-functions' | 'trigonometric-functions'
 
 export type SelectorRendering = { kind: 'subtitleLongDescription' } | { kind: 'gradientBackground', ramp: RampT }
@@ -245,6 +242,10 @@ export function createConstantExpression(value: number | string | boolean | null
 
 export function unifyFunctionType(param: USSFunctionArgType, arg: USSType): boolean {
     if (param.type === 'concrete') {
+        if (param.value.type === 'vector' && arg.type === 'vector' && arg.elementType.type === 'elementOfEmptyVector') {
+            // Empty vector is valid for any vector params
+            return true
+        }
         return renderType(param.value) === renderType(arg)
     }
     return arg.type === 'number' || arg.type === 'string' || arg.type === 'boolean' || arg.type === 'null'

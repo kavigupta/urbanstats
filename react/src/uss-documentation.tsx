@@ -1,24 +1,424 @@
 import { MathJaxContext } from 'better-react-mathjax'
-import React, { ReactNode, useContext, useEffect, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useMemo } from 'react'
 import { Footnotes, FootnotesProvider } from 'react-a11y-footnotes'
 
 import './style.css'
 import './common.css'
+
 import { getUnit } from './components/unit-display'
-import { defaultTypeEnvironment } from './mapper/context'
+import { Navigator } from './navigation/Navigator'
 import { urlFromPageDescriptor } from './navigation/PageDescriptor'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
 import { StandaloneEditor } from './urban-stats-script/StandaloneEditor'
-import { defaultConstants } from './urban-stats-script/constants/constants'
+import { ConstantCategory } from './urban-stats-script/documentation-category'
 import { expressionOperatorMap } from './urban-stats-script/operators'
-import { constantCategories, ConstantCategory, DocumentationTable, renderType, USSDocumentedType, USSValue } from './urban-stats-script/types-values'
-import { DefaultMap } from './utils/DefaultMap'
+import { DocumentationTable, renderType, USSDocumentedType } from './urban-stats-script/types-values'
+import { constantsDocumentationData } from './uss-documentation-routing'
 import { assert } from './utils/defensive'
 import { useHeaderTextClass } from './utils/responsive'
 
-export function USSDocumentationPanel({ hash }: { hash: string }): ReactNode {
+function useScrollToUssDocumentationFragment(hash: string | undefined, contentKey: string | undefined): void {
+    useEffect(() => {
+        if (hash === undefined || hash === '') {
+            return
+        }
+        const fragment = hash.startsWith('#') ? hash.slice(1) : hash
+        const id = decodeURIComponent(fragment)
+        const scroll = (): void => {
+            document.getElementById(id)?.scrollIntoView({ behavior: 'instant', block: 'start' })
+        }
+        requestAnimationFrame(() => {
+            requestAnimationFrame(scroll)
+        })
+    }, [hash, contentKey])
+}
+
+type DocumentationSection = { kind: 'link', title: string, doc: ConstantCategory } | {
+    kind: 'here'
+    title: string
+    content?: () => ReactNode
+    subentries?: DocumentationSection[]
+}
+
+function documentationSection(sortedCategories: [ConstantCategory, [string, USSDocumentedType][]][]): DocumentationSection[] {
+    return [
+        {
+            kind: 'here',
+            title: 'Arithmetic',
+            content: () => (
+                <>
+                    <p>
+                        The basic syntax of USS should be familiar to any programmer. Arithmetic operations are
+                        written as you would expect. Feel free to edit the code below to see how the result changes:
+                    </p>
+                    <StandaloneEditor ident="aritmetic" getCode={() => 'x = 2 ** 3 + 3 * 4' + '\n' + 'y = x + 2' + '\n' + 'y'} />
+                    <p>
+                        A full list of operators is available
+                        {' '}
+                        <a href="#all-operators">here</a>
+                        .
+                    </p>
+                </>
+            ),
+        },
+        {
+            kind: 'here',
+            title: 'Lists',
+            content: () => (
+                <>
+                    <p>
+                        The language also supports lists, which are denoted by square brackets. You can use operators on these as well:
+                    </p>
+                    <StandaloneEditor ident="lists" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = x + [4, 5, 6]' + '\n' + 'y'} />
+                    <p>
+                        For details on broadcasting, see the
+                        {' '}
+                        <a href="#broadcasting">broadcasting</a>
+                        {' '}
+                        section.
+                    </p>
+                </>
+            ),
+
+        },
+        {
+            kind: 'here',
+            title: 'Objects',
+            content: () => (
+                <>
+                    <p>
+                        The language also supports objects, which are denoted by curly braces. You can use operators on these as well:
+                    </p>
+                    <StandaloneEditor ident="objects" getCode={() => 'x = {a: 1, b: 2}' + '\n' + 'y = x.a + x.b' + '\n' + 'y'} />
+                </>
+            ),
+        },
+        {
+            kind: 'here',
+            title: 'Opaque Types',
+            content: () => (
+                <>
+                    <p>
+                        USS has several opaque types, which are types that you can only interact with via functions.
+                        For example, colors are opaque types, and you can only create them using functions like
+                        {' '}
+                        <code>rgb()</code>
+                        {', '}
+                        <code>hsv()</code>
+                        , or one of the predefined colors.
+                    </p>
+                    <StandaloneEditor ident="opaque-types" getCode={() => 'x = rgb(0, 0, 1)' + '\n' + 'y = hsv(0, 1, 1)' + '\n' + '[x, y, colorRed]'} />
+                    <p>
+                        And you can only interact with them using functions like
+                        {' '}
+                        <code>renderColor()</code>
+                        {' '}
+                        or in other contexts that use color objects.
+                    </p>
+                    <StandaloneEditor ident="opaque-types" getCode={() => 'x = rgb(0, 0, 1)' + '\n' + 'y = hsv(0, 1, 1)' + '\n' + 'renderColor([x, y, colorRed])'} />
+
+                </>
+            ),
+        },
+        {
+            kind: 'here',
+            title: 'Regressions',
+            content: () => (
+                <>
+                    <p>
+                        USS supports linear regression via the
+                        {' '}
+                        <code>regress(y, x1, x2, ..., weight)</code>
+                        {' '}
+                        function, which returns an object with several properties:
+                    </p>
+                    <ul>
+                        <li>
+                            <code>b</code>
+                            : The intercept of the regression line.
+                        </li>
+                        <li>
+                            <code>m1, m2, m3...</code>
+                            : The coefficients for each independent variable.
+                        </li>
+                        <li>
+                            <code>r2</code>
+                            : The R-squared value of the regression.
+                        </li>
+                        <li>
+                            <code>residuals</code>
+                            : The residuals of the regression.
+                        </li>
+                    </ul>
+                    <p>
+                        For example, to perform a regression of y on x1 and x2, with the last point weighted more heavily, you could do:
+                    </p>
+                    <StandaloneEditor
+                        ident="regression"
+                        getCode={
+                            () =>
+                                'x1 = [1, 2, 3, 4, 5]' + '\n'
+                                + 'x2 = [2, 3, 2, 3, 2]' + '\n'
+                                + 'y = [2.2, 2.8, 3.6, 4.5, 5.1]' + '\n'
+                                + 'w = [1, 1, 1, 1, 10]' + '\n'
+                                + 'model = regression(y=y, x1=x1, x2=x2, weight=w)' + '\n'
+                                + 'model'
+                        }
+                    />
+                    <p>
+                        Note that the inputs are all named arguments and the weight is optional.
+                    </p>
+                </>
+            ),
+        },
+        {
+            kind: 'here',
+            title: 'Aggregation',
+            content: () => (
+                <>
+                    <p>
+                        USS provides several functions for aggregating data, including mean, median, quantile, percentile,
+                        min, max, sum, and more.
+                    </p>
+                    <p>
+                        For example, to calculate the mean of a vector, you can do:
+                    </p>
+                    <StandaloneEditor ident="aggregation" getCode={() => 'mean([1, 2, 3, 4, 50])'} />
+                    <p>
+                        We can also weight the mean, for example:
+                    </p>
+                    <StandaloneEditor ident="aggregation" getCode={() => 'mean([1, 2, 3, 4, 50], weights=[1, 1, 1, 1, 10])'} />
+                    <p>
+                        The same works for median, quantile, and percentile.
+                    </p>
+                    <StandaloneEditor ident="aggregation" getCode={() => 'percentile([1, 2, 3, 4, 50], 10, weights=[1, 1, 1, 1, 10])'} />
+                    <p>
+                        On the other hand, min, max, and sum do not support weights.
+                    </p>
+                    <StandaloneEditor ident="aggregation" getCode={() => 'min([1, 2, 3, 4, 50])'} />
+                </>
+            ),
+        },
+        {
+            kind: 'here',
+            title: 'Broadcasting',
+            content: () => (
+                <>
+                    <p>
+                        Broadcasting is a feature of USS that allows you to operate on lists of values.
+                    </p>
+                </>
+            ),
+            subentries: [
+                {
+                    kind: 'here',
+                    title: 'Forward Broadcasting',
+                    content: () => (
+                        <>
+                            <p>
+                                The main kind of broadcasting is
+                                forward broadcasting, where you can apply operations to lists of elements. For example, if you have a list of numbers
+                                and you want to add 1 to each of them, you can do:
+                            </p>
+                            <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = x + 1' + '\n' + 'y'} />
+                            <p>
+                                This will result in a list of numbers, where each element is 1 greater than the corresponding element in the original list.
+                            </p>
+                            <p>
+                                This also works with function calls, for example:
+                            </p>
+                            <StandaloneEditor ident="broadcasting-function" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = sin(x)' + '\n' + 'y'} />
+                            <p>
+                                Even when the list is of functions:
+                            </p>
+                            <StandaloneEditor ident="broadcasting-function-list" getCode={() => 'x = [sin, cos, tan]' + '\n' + 'y = x(pi)' + '\n' + 'y'} />
+                            <p>
+                                You can also apply broadcasting to objects, for example:
+                            </p>
+                            <StandaloneEditor ident="broadcasting-object" getCode={() => 'x = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}]' + '\n' + 'y = x.a' + '\n' + 'y'} />
+                            <p>
+                                And even assigning to a property:
+                            </p>
+                            <StandaloneEditor ident="broadcasting-object-property" getCode={() => 'x = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}]' + '\n' + 'x.a = [10, 20, 30]' + '\n' + 'x'} />
+                        </>
+                    ),
+                },
+                {
+                    kind: 'here',
+                    title: 'Split Broadcasting',
+                    content: () => (
+                        <>
+                            There is also split broadcasting, which is what happens when you use an if statement.
+                            For example, in the following code, the if statement is split into two branches, one for when y is greater than 65 and one for when it is not.
+                            <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = [50, 61, 70]' + '\n' + 'if (y > 65) { x = x * 10 } else { x = x + 1 }' + '\n' + 'x'} />
+                            <p>
+                                The if statement is split into two branches, one for when y is greater than 65 and one for when it is not.
+                            </p>
+                            <p>
+                                Keep in mind that this is exactly two cases, rather than one for each element. Using mean() reveals this:
+                            </p>
+                            <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = [50, 61, 70]' + '\n' + 'if (y > 65) { x = mean(x) } else { x = mean(x) }' + '\n' + 'x'} />
+                        </>
+                    ),
+                },
+            ],
+        },
+        {
+            kind: 'here',
+            title: 'All Operators',
+            content: () => (
+                <>
+                    <p>
+                        The following is a list of all operators that are available in USS.
+                    </p>
+                    <OperatorTable />
+                </>
+            ),
+        },
+        {
+            kind: 'here',
+            title: 'Constants and Functions',
+            content: () => (
+                <p>
+                    USS provides several built-in constants and functions for mathematical operations,
+                    data visualization, and data analysis. Each category has its own page; use the links
+                    below or the previous/next arrows on each page to browse.
+                </p>
+            ),
+            subentries: sortedCategories.map(([category]) => ({
+                kind: 'link',
+                title: getCategoryTitle(category),
+                doc: category,
+            })) satisfies DocumentationSection[],
+        },
+    ]
+}
+
+function anchorFromTitle(title: string): string {
+    return title.toLowerCase().replace(/\s+/g, '-')
+}
+
+function TableOfContentsForSection(props: { section: DocumentationSection }): ReactNode {
+    const colors = useColors()
+    if (props.section.kind === 'link') {
+        return <TOCLinkToCategory category={props.section.doc} />
+    }
+    const href = `#${anchorFromTitle(props.section.title)}`
+    const mainEntry = (
+        <a href={href} style={{ color: colors.blueLink, textDecoration: 'none' }}>{props.section.title}</a>
+    )
+    return (
+        <>
+            {mainEntry}
+            {TableOfContentsForSections({ sections: props.section.subentries })}
+        </>
+    )
+}
+
+function TableOfContentsForSections(props: { sections: DocumentationSection[] | undefined }): ReactNode {
+    if (props.sections === undefined || props.sections.length === 0) {
+        return null
+    }
+    return (
+        <ul style={{ listStyleType: 'none', paddingLeft: '20px', paddingTop: '10px', margin: 0 }}>
+            {props.sections.map((section, index) => (
+                <li key={index} style={{ marginBottom: '8px' }}>
+                    <TableOfContentsForSection section={section} />
+                </li>
+            ))}
+        </ul>
+    )
+}
+
+function TableOfContents(props: { sortedCategories: [ConstantCategory, [string, USSDocumentedType][]][] }): ReactNode {
+    const colors = useColors()
+    const section = useMemo(() => documentationSection(props.sortedCategories), [props.sortedCategories])
+    return (
+        <div style={{
+            margin: '20px 0',
+            padding: '20px',
+            backgroundColor: colors.slightlyDifferentBackground,
+            borderRadius: '8px',
+            border: `1px solid ${colors.borderNonShadow}`,
+        }}
+        >
+            <h2 style={{ marginTop: 0, marginBottom: 0, fontWeight: 'normal' }}>Table of Contents</h2>
+            {TableOfContentsForSections({ sections: section })}
+        </div>
+    )
+}
+
+function TOCLinkToCategory(props: { category: ConstantCategory }): ReactNode {
+    const nav = useContext(Navigator.Context)
+    const colors = useColors()
+    return (
+        <a
+            style={{ color: colors.blueLink, fontSize: '0.9em', textDecoration: 'none' }}
+            {...nav.link(
+                { kind: 'ussDocumentation', doc: props.category },
+                { scroll: { kind: 'position', top: 0 } },
+            )}
+        >
+            {getCategoryTitle(props.category)}
+        </a>
+    )
+}
+
+function Subsection(props: { section: DocumentationSection, nesting: number }): ReactNode {
+    const colors = useColors()
+    const nav = useContext(Navigator.Context)
+    // eslint-disable-next-line no-restricted-syntax -- needs to be a react tax
+    const HeaderTag = `h${Math.min(6, props.nesting + 2)}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+    if (props.section.kind === 'link') {
+        return (
+            <HeaderTag>
+                <a
+                    style={{ color: colors.blueLink, textDecoration: 'none' }}
+                    {...nav.link(
+                        { kind: 'ussDocumentation', doc: props.section.doc },
+                        { scroll: { kind: 'position', top: 0 } },
+                    )}
+                >
+                    {getCategoryTitle(props.section.doc)}
+                </a>
+            </HeaderTag>
+        )
+    }
+    return (
+        <Header title={props.section.title} header={HeaderTag} ident={anchorFromTitle(props.section.title)}>
+            {props.section.content?.()}
+            {props.section.subentries?.map((subentry, index) => (
+                <Subsection key={index} section={subentry} nesting={props.nesting + 1} />
+            ))}
+        </Header>
+    )
+}
+
+export function USSDocumentationPanel(props: { doc?: ConstantCategory, hash?: string }): ReactNode {
+    const { doc, hash } = props
     const textHeaderClass = useHeaderTextClass()
+    const docData = constantsDocumentationData()
+
+    const section = useMemo(() => documentationSection(docData.sortedCategories), [docData.sortedCategories])
+    useScrollToUssDocumentationFragment(hash, doc)
+
+    if (doc !== undefined) {
+        return (
+            <MathJaxContext>
+                <PageTemplate>
+                    <FootnotesProvider>
+                        <ConstantsCategoryPageView
+                            category={doc}
+                            sortedCategories={docData.sortedCategories}
+                            textHeaderClass={textHeaderClass}
+                        />
+                        <Footnotes />
+                    </FootnotesProvider>
+                </PageTemplate>
+            </MathJaxContext>
+        )
+    }
 
     return (
         <MathJaxContext>
@@ -27,188 +427,15 @@ export function USSDocumentationPanel({ hash }: { hash: string }): ReactNode {
                     <div className="serif">
                         <div className={textHeaderClass}>USS Documentation</div>
 
+                        <TableOfContents sortedCategories={docData.sortedCategories} />
+
                         <Header title="Urban Stats Script (USS)" header="h1" ident="uss-title">
                             <p>
                                 Urban Stats Script (USS) is a scripting language for describing operations on
                                 data. It is designed to allow users to describe programs as if they refer to a
                                 single row of data, while simultaneously allowing global operations like regression.
                             </p>
-                            <p>
-                                The basic syntax of USS should be familiar to any programmer. Arithmetic operations are
-                                written as you would expect. Feel free to edit the code below to see how the result changes:
-                            </p>
-                            <StandaloneEditor ident="aritmetic" getCode={() => 'x = 2 ** 3 + 3 * 4' + '\n' + 'y = x + 2' + '\n' + 'y'} />
-                            <p>
-                                A full list of operators is available
-                                {' '}
-                                <a href="#all-operators">here</a>
-                                .
-                            </p>
-                            <Header title="Lists" header="h2" ident="lists">
-                                <p>
-                                    The language also supports lists, which are denoted by square brackets. You can use operators on these as well:
-                                </p>
-                                <StandaloneEditor ident="lists" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = x + [4, 5, 6]' + '\n' + 'y'} />
-                                <p>
-                                    For details on broadcasting, see the
-                                    {' '}
-                                    <a href="#broadcasting">broadcasting</a>
-                                    {' '}
-                                    section.
-                                </p>
-                            </Header>
-                            <Header title="Objects" header="h2" ident="objects">
-                                <p>
-                                    The language also supports objects, which are denoted by curly braces. You can use operators on these as well:
-                                </p>
-                                <StandaloneEditor ident="objects" getCode={() => 'x = {a: 1, b: 2}' + '\n' + 'y = x.a + x.b' + '\n' + 'y'} />
-                            </Header>
-                            <Header title="Opaque Types" header="h2" ident="opaque-types">
-                                <p>
-                                    USS has several opaque types, which are types that you can only interact with via functions.
-                                    For example, colors are opaque types, and you can only create them using functions like
-                                    {' '}
-                                    <code>rgb()</code>
-                                    {', '}
-                                    <code>hsv()</code>
-                                    , or one of the predefined colors.
-                                </p>
-                                <StandaloneEditor ident="opaque-types" getCode={() => 'x = rgb(0, 0, 1)' + '\n' + 'y = hsv(0, 1, 1)' + '\n' + '[x, y, colorRed]'} />
-                                <p>
-                                    And you can only interact with them using functions like
-                                    {' '}
-                                    <code>renderColor()</code>
-                                    {' '}
-                                    or in other contexts that use color objects.
-                                </p>
-                                <StandaloneEditor ident="opaque-types" getCode={() => 'x = rgb(0, 0, 1)' + '\n' + 'y = hsv(0, 1, 1)' + '\n' + 'renderColor([x, y, colorRed])'} />
-                            </Header>
-                            <Header title="Regressions" header="h2" ident="regressions">
-                                <p>
-                                    USS supports linear regression via the
-                                    {' '}
-                                    <code>regress(y, x1, x2, ..., weight)</code>
-                                    {' '}
-                                    function, which returns an object with several properties:
-                                </p>
-                                <ul>
-                                    <li>
-                                        <code>b</code>
-                                        : The intercept of the regression line.
-                                    </li>
-                                    <li>
-                                        <code>m1, m2, m3...</code>
-                                        : The coefficients for each independent variable.
-                                    </li>
-                                    <li>
-                                        <code>r2</code>
-                                        : The R-squared value of the regression.
-                                    </li>
-                                    <li>
-                                        <code>residuals</code>
-                                        : The residuals of the regression.
-                                    </li>
-                                </ul>
-                                <p>
-                                    For example, to perform a regression of y on x1 and x2, with the last point weighted more heavily, you could do:
-                                </p>
-                                <StandaloneEditor
-                                    ident="regression"
-                                    getCode={
-                                        () =>
-                                            'x1 = [1, 2, 3, 4, 5]' + '\n'
-                                            + 'x2 = [2, 3, 2, 3, 2]' + '\n'
-                                            + 'y = [2.2, 2.8, 3.6, 4.5, 5.1]' + '\n'
-                                            + 'w = [1, 1, 1, 1, 10]' + '\n'
-                                            + 'model = regression(y=y, x1=x1, x2=x2, weight=w)' + '\n'
-                                            + 'model'
-                                    }
-                                />
-                                <p>
-                                    Note that the inputs are all named arguments and the weight is optional.
-                                </p>
-                            </Header>
-                            <Header title="Aggregation" header="h2" ident="aggregation">
-                                <p>
-                                    USS provides several functions for aggregating data, including mean, median, quantile, percentile,
-                                    min, max, sum, and more.
-                                </p>
-                                <p>
-                                    For example, to calculate the mean of a vector, you can do:
-                                </p>
-                                <StandaloneEditor ident="aggregation" getCode={() => 'mean([1, 2, 3, 4, 50])'} />
-                                <p>
-                                    We can also weight the mean, for example:
-                                </p>
-                                <StandaloneEditor ident="aggregation" getCode={() => 'mean([1, 2, 3, 4, 50], weights=[1, 1, 1, 1, 10])'} />
-                                <p>
-                                    The same works for median, quantile, and percentile.
-                                </p>
-                                <StandaloneEditor ident="aggregation" getCode={() => 'percentile([1, 2, 3, 4, 50], 10, weights=[1, 1, 1, 1, 10])'} />
-                                <p>
-                                    On the other hand, min, max, and sum do not support weights.
-                                </p>
-                                <StandaloneEditor ident="aggregation" getCode={() => 'min([1, 2, 3, 4, 50])'} />
-                            </Header>
-                            <Header title="Broadcasting" header="h2" ident="broadcasting">
-                                <p>
-                                    Broadcasting is a feature of USS that allows you to operate on lists of values.
-                                </p>
-                                <Header title="Forward Broadcasting" header="h3" ident="forward-broadcasting">
-                                    <p>
-                                        The main kind of broadcasting is
-                                        forward broadcasting, where you can apply operations to lists of elements. For example, if you have a list of numbers
-                                        and you want to add 1 to each of them, you can do:
-                                    </p>
-                                    <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = x + 1' + '\n' + 'y'} />
-                                    <p>
-                                        This will result in a list of numbers, where each element is 1 greater than the corresponding element in the original list.
-                                    </p>
-                                    <p>
-                                        This also works with function calls, for example:
-                                    </p>
-                                    <StandaloneEditor ident="broadcasting-function" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = sin(x)' + '\n' + 'y'} />
-                                    <p>
-                                        Even when the list is of functions:
-                                    </p>
-                                    <StandaloneEditor ident="broadcasting-function-list" getCode={() => 'x = [sin, cos, tan]' + '\n' + 'y = x(pi)' + '\n' + 'y'} />
-                                    <p>
-                                        You can also apply broadcasting to objects, for example:
-                                    </p>
-                                    <StandaloneEditor ident="broadcasting-object" getCode={() => 'x = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}]' + '\n' + 'y = x.a' + '\n' + 'y'} />
-                                    <p>
-                                        And even assigning to a property:
-                                    </p>
-                                    <StandaloneEditor ident="broadcasting-object-property" getCode={() => 'x = [{a: 1, b: 2}, {a: 3, b: 4}, {a: 5, b: 6}]' + '\n' + 'x.a = [10, 20, 30]' + '\n' + 'x'} />
-                                </Header>
-                                <Header title="Split Broadcasting" header="h3" ident="backward-broadcasting">
-                                    There is also split broadcasting, which is what happens when you use an if statement.
-                                    For example, in the following code, the if statement is split into two branches, one for when y is greater than 65 and one for when it is not.
-                                    <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = [50, 61, 70]' + '\n' + 'if (y > 65) { x = x * 10 } else { x = x + 1 }' + '\n' + 'x'} />
-                                    <p>
-                                        The if statement is split into two branches, one for when y is greater than 65 and one for when it is not.
-                                    </p>
-                                    <p>
-                                        Keep in mind that this is exactly two cases, rather than one for each element. Using mean() reveals this:
-                                    </p>
-                                    <StandaloneEditor ident="broadcasting" getCode={() => 'x = [1, 2, 3]' + '\n' + 'y = [50, 61, 70]' + '\n' + 'if (y > 65) { x = mean(x) } else { x = mean(x) }' + '\n' + 'x'} />
-                                </Header>
-                            </Header>
-                            <Header title="Detailed Tables" header="h2" ident="detailed-tables">
-                                <Header title="All Operators" header="h3" ident="all-operators">
-                                    <p>
-                                        The following is a list of all operators that are available in USS.
-                                    </p>
-                                    <OperatorTable />
-                                </Header>
-                            </Header>
-                            <Header title="Constants and Functions" header="h2" ident="constants">
-                                <p>
-                                    USS provides several built-in constants and functions for mathematical operations,
-                                    data visualization, and data analysis. These are organized by category below.
-                                </p>
-                                <ConstantsDocumentation hash={hash} />
-                            </Header>
+                            {section.map((s, index) => <Subsection key={index} section={s} nesting={0} />)}
                         </Header>
                     </div>
                     <Footnotes />
@@ -318,116 +545,90 @@ function OperatorTable(): ReactNode {
     return createTable(colors, headers, cells)
 }
 
-function ConstantsDocumentation({ hash }: { hash: string }): ReactNode {
-    const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set(constantCategories))
+function ConstantsCategoryPageView(props: {
+    category: ConstantCategory
+    sortedCategories: [ConstantCategory, [string, USSDocumentedType][]][]
+    textHeaderClass: string
+}): ReactNode {
+    const nav = useContext(Navigator.Context)
+    const colors = useColors()
+    const entry = props.sortedCategories.find(([c]) => c === props.category)
+    assert(entry !== undefined, 'Category not found in documentation data')
+    const constants = entry[1]
 
-    const mapperContext = defaultTypeEnvironment('world')
+    const categorySlugs = props.sortedCategories.map(([c]) => c)
+    const idx = categorySlugs.indexOf(props.category)
+    const prevCategory = idx > 0 ? categorySlugs[idx - 1] : null
+    const nextCategory = idx >= 0 && idx < categorySlugs.length - 1 ? categorySlugs[idx + 1] : null
 
-    // Group constants by category
-    const constantsByCategory = new DefaultMap<ConstantCategory, [string, USSDocumentedType][]>(() => [])
-    const constantToCategory = new Map<string, ConstantCategory>()
-
-    // Add default constants
-    for (const [name, value] of defaultConstants) {
-        const category = value.documentation?.category
-        assert(category !== undefined, `Constant ${name} does not have a category defined.`)
-        constantsByCategory.get(category).push([name, value])
-        constantToCategory.set(name, category)
+    const navRowStyle: React.CSSProperties = {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '16px',
+        marginTop: '28px',
+        paddingTop: '20px',
+        borderTop: `1px solid ${colors.borderNonShadow}`,
     }
 
-    // Add mapper context elements
-    for (const [name, value] of mapperContext) {
-        // Skip if already added from default constants
-        if (defaultConstants.has(name)) continue
-
-        const category = value.documentation?.category
-        assert(category !== undefined, `Constant ${name} does not have a category defined.`)
-        if (constantCategories.includes(category)) {
-            constantsByCategory.get(category).push([name, value])
-            constantToCategory.set(name, category)
-        }
+    const disabledArrowStyle: React.CSSProperties = {
+        color: colors.textMain,
+        opacity: 0.4,
+        userSelect: 'none',
     }
-
-    // Group constants by documentationTable for table display
-    const constantsByTable = new DefaultMap<DocumentationTable, [string, USSValue][]>(() => [])
-    for (const [name, value] of defaultConstants) {
-        const tableName = value.documentation?.documentationTable
-        if (tableName !== undefined) {
-            constantsByTable.get(tableName).push([name, value])
-        }
-    }
-
-    // Sort categories for consistent display
-    const categoryOrder = constantCategories
-    const sortedCategories = Array.from(constantsByCategory.entries()).sort((a, b) => {
-        const aIndex = categoryOrder.indexOf(a[0])
-        const bIndex = categoryOrder.indexOf(b[0])
-        return aIndex - bIndex
-    })
-
-    const toggleCategory = (category: ConstantCategory): void => {
-        setCollapsedCategories((prev) => {
-            const newSet = new Set(prev)
-            if (newSet.has(category)) {
-                newSet.delete(category)
-            }
-            else {
-                newSet.add(category)
-            }
-            return newSet
-        })
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- This doesn't inf loop since a new value is only returned in the set conditionally
-    useEffect(() => {
-        if (hash.startsWith(`#${constantPrefix}`)) {
-            const constantIdentifier = hash.slice(`#${constantPrefix}`.length)
-            const category = constantToCategory.get(constantIdentifier)
-            assert(category !== undefined, 'Constant does not have a category')
-            setCollapsedCategories((prev) => {
-                if (prev.has(category)) {
-                    const newSet = new Set(prev)
-                    newSet.delete(category)
-                    return newSet
-                }
-                return prev
-            })
-        }
-    })
 
     return (
-        <div>
-            {sortedCategories.map(([category, constants]) => {
-                const isCollapsed = collapsedCategories.has(category)
-                return (
-                    <div key={category}>
-                        <div
-                            style={{
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
-                                marginBottom: '10px',
-                            }}
-                            onClick={() => { toggleCategory(category) }}
-                        >
-                            <span style={{
-                                fontSize: '16px',
-                                transition: 'transform 0.2s',
-                                transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
-                            }}
-                            >
-                                ▶
-                            </span>
-                            <h3 id={`constants-${category}`} style={{ margin: 0 }}>
-                                {getCategoryTitle(category)}
-                            </h3>
-                        </div>
-                        {!isCollapsed && (<DocumentationForCategory category={category} constants={constants} />)}
-                    </div>
-                )
-            })}
-
+        <div className="serif uss-documentation">
+            <div className={props.textHeaderClass}>USS Documentation</div>
+            <p style={{ marginTop: '8px', marginBottom: '20px' }}>
+                <a
+                    style={{ color: colors.textMain }}
+                    {...nav.link({ kind: 'ussDocumentation' }, { scroll: { kind: 'position', top: 0 } })}
+                >
+                    ← Back to full documentation
+                </a>
+            </p>
+            <h2 style={{ marginBottom: '12px' }}>
+                {getCategoryTitle(props.category)}
+            </h2>
+            <DocumentationForCategory category={props.category} constants={constants} />
+            <nav aria-label="Constants and functions pages" style={navRowStyle}>
+                <div>
+                    {prevCategory !== null
+                        ? (
+                                <a
+                                    style={{ color: colors.textMain }}
+                                    {...nav.link(
+                                        { kind: 'ussDocumentation', doc: prevCategory },
+                                        { scroll: { kind: 'position', top: 0 } },
+                                    )}
+                                >
+                                    ←
+                                    {' '}
+                                    {getCategoryTitle(prevCategory)}
+                                </a>
+                            )
+                        : <span style={disabledArrowStyle}>←</span>}
+                </div>
+                <div>
+                    {nextCategory !== null
+                        ? (
+                                <a
+                                    style={{ color: colors.textMain }}
+                                    {...nav.link(
+                                        { kind: 'ussDocumentation', doc: nextCategory },
+                                        { scroll: { kind: 'position', top: 0 } },
+                                    )}
+                                >
+                                    {getCategoryTitle(nextCategory)}
+                                    {' '}
+                                    →
+                                </a>
+                            )
+                        : <span style={disabledArrowStyle}>→</span>}
+                </div>
+            </nav>
         </div>
     )
 }
@@ -467,12 +668,10 @@ function DocumentationForCategory(props: { category: ConstantCategory, constants
     )
 }
 
-const constantPrefix = 'constant-'
-
 export function LongFormDocumentation(props: { name: string, value: USSDocumentedType }): ReactNode {
     const colors = useColors()
     return (
-        <Header key={props.name} title={props.name} header="h4" ident={`${constantPrefix}${props.name}`}>
+        <Header key={props.name} title={props.name} header="h4" ident={props.name} docQuery={props.value.documentation!.category}>
             <div style={{ marginBottom: '20px', marginLeft: '20px' }}>
                 <div style={{ marginBottom: '10px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
                     <div>
@@ -544,7 +743,7 @@ function ShortFormTableDocumentation(props: { tableName: DocumentationTable, tab
     const colors = useColors()
     const headers = ['Name', 'Type', 'Description']
     const cells = props.tableConstants.map(([name, value]) => ({
-        id: `${constantPrefix}${name}`,
+        id: name,
         row: [
             <span key="name" style={{ fontFamily: '\'Courier New\', monospace' }}>{name}</span>,
             <code
@@ -676,15 +875,29 @@ function getTableDescription(tableName: DocumentationTable): string {
     }
 }
 
-function Header(props: { title: string, header: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6', ident: string, children: ReactNode }): ReactNode {
+function Header(props: {
+    title: string
+    header: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+    ident: string
+    docQuery?: ConstantCategory
+    children: ReactNode
+}): ReactNode {
     const linkKind = useContext(linkContext)
 
     return (
         <>
             <props.header id={props.ident}>
-                {linkKind === 'link'
+                {linkKind === 'link' && props.docQuery !== undefined
                     ? (
-                            <a href={urlFromPageDescriptor({ kind: 'ussDocumentation', hash: props.ident }).toString()} target="_blank" rel="noreferrer">
+                            <a
+                                href={urlFromPageDescriptor({
+                                    kind: 'ussDocumentation',
+                                    doc: props.docQuery,
+                                    hash: `#${encodeURIComponent(props.ident)}`,
+                                }).toString()}
+                                target="_blank"
+                                rel="noreferrer"
+                            >
                                 {props.title}
                             </a>
                         )

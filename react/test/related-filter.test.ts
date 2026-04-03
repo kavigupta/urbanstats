@@ -52,16 +52,16 @@ test('filtering by relationship type label shows only that relationship group', 
     await t.expect(relatedButton('Alameda County').exists).notOk()
 })
 
-// California has 58 counties, so the county group shows "More..." by default.
-// Any active search term should suppress all "More..." buttons regardless of
+// California has 58 counties, so the county group shows "More" by default.
+// Any active search term should suppress all "More" buttons regardless of
 // how many results remain.
 test('more button is not shown when any search term is active', async (t) => {
-    const moreButton = Selector('a').withExactText('More...')
+    const moreButton = Selector('a').withExactText('More')
     await t.expect(moreButton.exists).ok()
-    // "Counties" still matches all 58 counties, but More... should still be hidden
+    // "Counties" still matches all 58 counties, but More should still be hidden
     await t.click(relatedSearchInput).typeText(relatedSearchInput, 'Counties')
     await t.expect(moreButton.exists).notOk()
-    // Clearing the filter restores the More... button
+    // Clearing the filter restores the More button
     await t.selectText(relatedSearchInput).pressKey('delete')
     await t.expect(moreButton.exists).ok()
 })

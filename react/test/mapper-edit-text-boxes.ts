@@ -1,7 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 
 import { drag, getCodeFromMainField, getErrors, nastyDiff, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { screencap, urbanstatsFixture } from './test_utils'
+import { screencap, urbanstatsFixture, waitForLoading } from './test_utils'
 
 export function runTests(platform: 'desktop' | 'mobile'): void {
     urbanstatsFixture(`default map`, '/mapper.html', async (t) => {
@@ -198,6 +198,25 @@ export function runTests(platform: 'desktop' | 'mobile'): void {
         // Verify code is still the same
         await toggleCustomScript(t)
         nastyDiff(await getCodeFromMainField(), expected)
+    })
+
+    test('add new text box via autoux', async (t) => {
+        await t.click(Selector('label').withExactText('Text Boxes'))
+        await waitForLoading()
+        await t.expect(getErrors()).eql([])
+        await toggleCustomScript(t)
+        nastyDiff(await getCodeFromMainField(), `cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    textBoxes=[
+        textBox(
+            screenBounds={west: 0, east: 0, north: 0, south: 0},
+            text=rtfDocument([rtfString("")])
+        )
+    ]
+)
+`)
     })
 
     urbanstatsFixture('with previous text box', urlFromCode('Subnational Region', 'USA', expectedNewTextBoxCode), async (t) => {
