@@ -42,6 +42,8 @@ interface ClusterMapProps {
     children?: ReactNode
     /** Maximum radius of each cluster, in pixels. */
     maxClusterRadius: number
+    /** Apply a global opacity multiplier to marker HTML/SVG. */
+    markerOpacity?: number
     /** Compute relative area relative to the largest area */
     computeRelativeArea: (area: number, maxArea: number) => number
     /** Optional map props for embedding in other layouts. */
@@ -78,6 +80,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
         unclusteredMarkerLabel,
         children,
         maxClusterRadius,
+        markerOpacity = 1,
     } = props
 
     const [mapRef, setMapRef] = useState<MapRef | null>(null)
@@ -137,7 +140,9 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
             const radius = maxClusterRadius * Math.sqrt(props.computeRelativeArea(element.totalPieChartSize, maxPieChartSize))
             const html = element.html(radius)
             if (existingMarker !== undefined) {
-                existingMarker.getElement().innerHTML = html
+                const markerElement = existingMarker.getElement()
+                markerElement.innerHTML = html
+                markerElement.style.opacity = `${markerOpacity}`
                 newMarkers.set(element.featureId, existingMarker)
             }
             else {
@@ -146,6 +151,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                 el.className = 'syau-marker'
                 el.style.width = `${2 * radius}px`
                 el.style.height = `${2 * radius}px`
+                el.style.opacity = `${markerOpacity}`
                 const marker = new maplibregl.Marker({
                     element: el,
                 }).setLngLat(element.coords)

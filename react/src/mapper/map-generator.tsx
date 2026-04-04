@@ -439,6 +439,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                             clusterMarkerLabel={() => ''}
                             unclusteredMarkerLabel={() => ''}
                             maxClusterRadius={value.maxRadius}
+                            markerOpacity={value.opacity}
                             computeRelativeArea={(area, maxArea) => (maxArea > 0 ? area / maxArea : 1)}
                             clusterRadiusSpacing={value.clusterRadiusSpacing}
                             mapLibreProps={mapLibreProps}
