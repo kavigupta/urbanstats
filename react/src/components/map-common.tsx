@@ -16,6 +16,7 @@ import { loadFeatureFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
+import { keptByNoBasemap } from './map-common-utils'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
 
 import './map.css'
@@ -235,6 +236,13 @@ function useClickable({ id, clickable, features }: { id: string, clickable: bool
     const universe = useUniverse()
 
     const { current: map } = useMap()
+
+    useEffect(() => {
+        if (map === undefined) {
+            return
+        }
+        TestUtils.shared.addMapToAllMaps(map)
+    }, [map])
 
     useEffect(() => {
         if (clickable) {

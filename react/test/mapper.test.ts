@@ -22,7 +22,7 @@ export function testCode(testFn: () => TestFn, geographyKind: string, universe: 
         await toggleCustomScript(t)
         // back to custom mode
         await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
-        await screencap(t)
+        await screencap(t, { removeEntireMap: false })
         if (includeGeojson) {
             await checkGeojson(t, `mapping-geojson-${name}`)
         }

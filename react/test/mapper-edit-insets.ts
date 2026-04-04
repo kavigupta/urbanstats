@@ -33,7 +33,7 @@ export function runTests(platform: 'desktop' | 'mobile'): void {
             if (mapId === undefined) {
                 return undefined
             }
-            const mapObj = (window as unknown as TestWindow).testUtils.maps.get(mapId)!.deref()!
+            const mapObj = (window as unknown as TestWindow).testUtils.mapsWithIDs.get(mapId)!.deref()!
             const latLon = mapObj.getBounds()
             return {
                 n: Math.round(latLon.getNorth()),
@@ -288,7 +288,7 @@ export function runTests(platform: 'desktop' | 'mobile'): void {
 
     test('edit interface', async (t) => {
         await t.click(editInsetsButton)
-        await screencap(t)
+        await screencap(t, { removeEntireMap: false })
     })
 
     const populationConditionCode = `
@@ -306,6 +306,6 @@ cMap(data=density_pw_1km + density_aw, scale=linearScale(), ramp=rampUridis)
     test('insets page with population condition', async (t) => {
         await toggleCustomScript(t)
         await t.click(editInsetsButton)
-        await screencap(t)
+        await screencap(t, { removeEntireMap: false })
     })
 }
