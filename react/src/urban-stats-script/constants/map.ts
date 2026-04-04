@@ -327,7 +327,7 @@ export const clusterMap: USSValue = {
         namedArgs: mapConstructorArguments(true, false, {
             maxRadius: {
                 type: { type: 'concrete', value: { type: 'number' } },
-                defaultValue: parseNoErrorAsExpression('10', ''),
+                defaultValue: parseNoErrorAsExpression('30', ''),
             },
             relativeArea: {
                 type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } },
