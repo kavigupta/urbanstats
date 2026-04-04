@@ -1,4 +1,7 @@
 import type maplibregl from 'maplibre-gl'
+import type { MapRef } from 'react-map-gl/maplibre'
+
+import { keptByNoBasemap } from '../components/map-common-utils'
 
 /**
  * Indicates whether we're e2e testing.
@@ -39,7 +42,11 @@ export class TestUtils {
         }
     }
 
-    readonly maps = new Map<string, WeakRef<maplibregl.Map>>()
+    // has to be a list, not a WeakSet. WeakSets cannot be iterated, defeating the purpose
+    // this is a bit of a memory leak, but not much of one, should add just a few
+    // bytes per user interaction.
+    allMaps: WeakRef<maplibregl.Map>[] = []
+    readonly mapsWithIDs = new Map<string, WeakRef<maplibregl.Map>>()
 
     readonly clickableMaps = new Map<string, {
         clickFeature: (name: string) => void
@@ -81,6 +88,40 @@ export class TestUtils {
                 this.loadingCallbacks.push(resolve)
             })
         }
+    }
+
+    disableBasemapLayers(): void {
+        this.allMaps.forEach((mapRef) => {
+            const map = mapRef.deref()
+            if (map) {
+                let layers: string[]
+                try {
+                    layers = map.getLayersOrder()
+                }
+                catch (e) {
+                    console.warn(
+                        'Error getting layers order. '
+                        + 'TBH no idea why this is happening, I assume it\'s an internal state issue.'
+                        + ' Underlying error: ', e)
+                    layers = []
+                }
+                for (const layerId of layers) {
+                    const layer = map.getLayer(layerId)
+                    if (layer && !keptByNoBasemap(layer)) {
+                        map.setLayoutProperty(layerId, 'visibility', 'none')
+                    }
+                }
+            }
+        })
+    }
+
+    addMapToAllMaps(map: MapRef): void {
+        this.allMaps = this.allMaps.filter(ref => ref.deref() !== undefined)
+        const mapObj = map.getMap()
+        if (this.allMaps.some(ref => ref.deref() === mapObj)) {
+            return
+        }
+        this.allMaps.push(new WeakRef(mapObj))
     }
 }
 

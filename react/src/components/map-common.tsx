@@ -16,6 +16,7 @@ import { loadFeatureFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
+import { keptByNoBasemap } from './map-common-utils'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
 
 import './map.css'
@@ -236,6 +237,13 @@ function useClickable({ id, clickable, features }: { id: string, clickable: bool
     const { current: map } = useMap()
 
     useEffect(() => {
+        if (map === undefined) {
+            return
+        }
+        TestUtils.shared.addMapToAllMaps(map)
+    }, [map])
+
+    useEffect(() => {
         if (clickable) {
             assert(map !== undefined, 'map is undefined')
 
@@ -333,7 +341,7 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
 function isVisible(basemap: Basemap, layer: { id: string, type: string, source: string }): boolean {
     switch (basemap.type) {
         case 'none':
-            return layer.id === 'background' || layer.source !== 'openmaptiles'
+            return keptByNoBasemap(layer)
         case 'osm':
             return !(basemap.noLabels && layer.type === 'symbol')
     }

@@ -45,7 +45,7 @@ const errorInSubfield = (testFn: () => TestFn) => (category: string, errorCausin
         await replaceInput(t, 'Linear Scale', 'Custom Expression')
         await typeInEditor(t, 0, errorCausingCode, true)
         await t.expect(getErrors()).eql([error])
-        await screencap(t)
+        await screencap(t, { removeEntireMap: false })
     })
 }
 
@@ -60,7 +60,7 @@ const errorInSubsubfield = (testFn: () => TestFn) => (category: string, errorCau
         await replaceInput(t, 'Constant', 'Custom Expression')
         await typeInEditor(t, 0, errorCausingCode, true)
         await t.expect(getErrors()).eql([error])
-        await screencap(t)
+        await screencap(t, { removeEntireMap: false })
     })
 }
 
@@ -203,7 +203,7 @@ mapper(() => test)('custom ramp', { code: 'customNode("");\ncondition (true)\ncM
     // eslint-disable-next-line no-restricted-syntax -- Test color
     await t.typeText(Selector('input[type="color"]:not([inert] *)'), '#ff0000')
     await replaceInput(t, '0.353', '1')
-    await screencap(t, { selector: Selector('#auto-ux-editor-ro_ramp') })
+    await screencap(t, { selector: Selector('#auto-ux-editor-ro_ramp'), removeEntireMap: false })
     await replaceInput(t, 'Custom Ramp', 'Custom Expression')
     await t.expect(nthEditor(0).textContent).eql(`constructRamp([
     {value: 0, color: rgb(1, 0, 0)},
@@ -244,13 +244,13 @@ for (const [typedValue, errorCase, inCode, simplifiedValue] of [['0.001', false,
         await replaceInput(t, '0', typedValue)
         await t.expect(getErrors()).eql(messages)
         if (errorCase) {
-            await screencap(t)
+            await screencap(t, { removeEntireMap: false })
         }
         await toggleCustomScript(t)
         await t.expect(nthEditor(0).textContent).contains(inCode)
         await toggleCustomScript(t)
         if (errorCase) {
-            await screencap(t)
+            await screencap(t, { removeEntireMap: false })
         }
         await t.expect(getErrors()).eql(messages)
         await t.expect(getInput(simplifiedValue).exists).ok()
@@ -336,7 +336,7 @@ mapper(() => test)('custom rendering for selector options', { code: 'customNode(
     const inputSelector = getInput('Uridis')
     await t.typeText(inputSelector, 'Custom', { replace: true })
     await t.hover(Selector('div').withExactText('Autumn'))
-    await screencap(t, { fullPage: false, selector: Selector('#auto-ux-editor-ro_ramp:not([inert] *)') })
+    await screencap(t, { fullPage: false, selector: Selector('#auto-ux-editor-ro_ramp:not([inert] *)'), removeEntireMap: false })
 })
 
 const expectedExportOutput = `meta(kind="mapper", universe="USA", geographyKind="Urban Area")
