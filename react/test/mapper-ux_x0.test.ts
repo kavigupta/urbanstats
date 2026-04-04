@@ -43,7 +43,7 @@ mapper(() => test)('cluster map enable insets', { code: 'clusterMap(data=density
     await t.expect(getErrors()).eql([])
     await checkBox(t, /^Insets/)
     await t.expect(getErrors()).eql([])
-    await screencap(t)
+    await screencap(t, { removeEntireMap: false })
 })
 
 const errorInSubfield = (testFn: () => TestFn) => (category: string, errorCausingCode: string, error: string): void => {
