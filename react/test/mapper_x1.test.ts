@@ -39,7 +39,7 @@ clusterMap(
 )
 `
 
-testCode(() => test, 'Urban Center', 'USA', clusterMapBasic, 'cluster-map-basic')
+testCode(() => test, 'County', 'USA', clusterMapBasic, 'cluster-map-basic')
 
 const clusterMapWeightedByArea = `
 clusterMap(
@@ -51,7 +51,7 @@ clusterMap(
 )
 `
 
-testCode(() => test, 'Urban Center', 'USA', clusterMapWeightedByArea, 'cluster-map-weight-by-area')
+testCode(() => test, 'County', 'USA', clusterMapWeightedByArea, 'cluster-map-weight-by-area')
 
 const clusterMapRampBone = `
 clusterMap(
@@ -62,7 +62,7 @@ clusterMap(
 )
 `
 
-testCode(() => test, 'Urban Center', 'USA', clusterMapRampBone, 'cluster-map-ramp-bone')
+testCode(() => test, 'County', 'USA', clusterMapRampBone, 'cluster-map-ramp-bone')
 
 const clusterMapRampViridis = `
 clusterMap(
@@ -73,7 +73,7 @@ clusterMap(
 )
 `
 
-testCode(() => test, 'Urban Center', 'USA', clusterMapRampViridis, 'cluster-map-ramp-viridis')
+testCode(() => test, 'County', 'USA', clusterMapRampViridis, 'cluster-map-ramp-viridis')
 
 const clusterMapOpacity = `
 clusterMap(
@@ -85,7 +85,7 @@ clusterMap(
 )
 `
 
-testCode(() => test, 'Urban Center', 'USA', clusterMapOpacity, 'cluster-map-opacity')
+testCode(() => test, 'County', 'USA', clusterMapOpacity, 'cluster-map-opacity')
 
 const clusterMapMaxRadius = `
 clusterMap(
@@ -97,7 +97,7 @@ clusterMap(
 )
 `
 
-testCode(() => test, 'Urban Center', 'USA', clusterMapMaxRadius, 'cluster-map-max-radius')
+testCode(() => test, 'County', 'USA', clusterMapMaxRadius, 'cluster-map-max-radius')
 
 const clusterMapClusterSpacing = `
 clusterMap(
@@ -109,4 +109,4 @@ clusterMap(
 )
 `
 
-testCode(() => test, 'Urban Center', 'USA', clusterMapClusterSpacing, 'cluster-map-cluster-spacing')
+testCode(() => test, 'County', 'USA', clusterMapClusterSpacing, 'cluster-map-cluster-spacing')
