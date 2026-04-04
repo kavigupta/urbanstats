@@ -92,7 +92,7 @@ clusterMap(
     data=hilliness,
     scale=linearScale(),
     ramp=rampUridis,
-    maxRadius=26,
+    maxRadius=100,
     basemap=noBasemap()
 )
 `
@@ -104,7 +104,7 @@ clusterMap(
     data=hilliness,
     scale=linearScale(),
     ramp=rampUridis,
-    clusterRadiusSpacing=22,
+    clusterRadiusSpacing=100,
     basemap=noBasemap()
 )
 `
