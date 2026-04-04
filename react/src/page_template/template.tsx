@@ -151,7 +151,7 @@ function Version(): ReactNode {
 function LastUpdated(): ReactNode {
     return (
         <span id="last-updated">
-            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2026-04-02'}
+            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2026-04-04'}
         </span>
     )
 }
