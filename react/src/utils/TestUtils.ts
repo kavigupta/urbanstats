@@ -1,6 +1,8 @@
 import type maplibregl from 'maplibre-gl'
 import type { MapRef } from 'react-map-gl/maplibre'
 
+import { keptByNoBasemap } from '../components/map-common-utils'
+
 /**
  * Indicates whether we're e2e testing.
  *
@@ -86,6 +88,31 @@ export class TestUtils {
                 this.loadingCallbacks.push(resolve)
             })
         }
+    }
+
+    disableBasemapLayers(): void {
+        this.allMaps.forEach((mapRef) => {
+            const map = mapRef.deref()
+            if (map) {
+                let layers: string[]
+                try {
+                    layers = map.getLayersOrder()
+                }
+                catch (e) {
+                    console.warn(
+                        'Error getting layers order. '
+                        + 'TBH no idea why this is happening, I assume it\'s an internal state issue.'
+                        + ' Underlying error: ', e)
+                    layers = []
+                }
+                for (const layerId of layers) {
+                    const layer = map.getLayer(layerId)
+                    if (layer && !keptByNoBasemap(layer)) {
+                        map.setLayoutProperty(layerId, 'visibility', 'none')
+                    }
+                }
+            }
+        })
     }
 
     addMapToAllMaps(map: MapRef): void {
