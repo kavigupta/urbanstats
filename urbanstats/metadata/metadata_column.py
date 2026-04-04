@@ -29,6 +29,7 @@ class DisplayedMetadata(MetadataColumn):
     name: str
     setting_key: Optional[str] = None
     show_in_metadata_table: bool = True
+    value_kind: str = "string"
     category: str = field(kw_only=True)
     data_credit_explanation_page: str = field(kw_only=True)
 
@@ -42,6 +43,7 @@ class DisplayedMetadata(MetadataColumn):
 
 @dataclass
 class CongressionalRepresentativesMetadata(DisplayedMetadata):
+    value_kind: str = "congressional_representatives"
     term_start_year: Optional[int] = None
 
     def _representatives_for_value(self, value):

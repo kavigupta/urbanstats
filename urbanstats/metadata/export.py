@@ -21,6 +21,7 @@ def export_metadata_types():
                     name=v.name,
                     setting_key=setting_key,
                     show_in_metadata_table=v.show_in_metadata_table,
+                    value_kind=v.value_kind,
                     category=v.category,
                     data_credit_explanation_page=v.data_credit_explanation_page,
                 )

@@ -102,38 +102,59 @@ export type StatisticCellRenderingInfo = StatisticCellRenderingInfoStatistic | S
 const metadataStatPathsInTreeOrder = Array.from(statParents.entries())
     .flatMap(([path, parent]) => parent.kind === 'metadata' ? [path] : [])
 
-function metadataValueByIndex(metadataProtos: IMetadata[] | null | undefined): Map<number, string> {
-    const values = new Map<number, string>()
-    for (const metadataProto of metadataProtos ?? []) {
-        if (metadataProto.metadataIndex === undefined || metadataProto.metadataIndex === null) {
-            continue
+type MetadataValueKind = 'string' | 'congressional_representatives'
+
+const metadataValueKindByIndex = new Map<number, MetadataValueKind>(
+    metadata.displayed_metadata.map(entry => [entry.index, entry.value_kind!]),
+)
+
+function metadataValueFromProto(metadataProto: IMetadata): string | undefined {
+    if (metadataProto.metadataIndex === undefined || metadataProto.metadataIndex === null) {
+        return undefined
+    }
+
+    const valueKind = metadataValueKindByIndex.get(metadataProto.metadataIndex) ?? 'string'
+    switch (valueKind) {
+        case 'string': {
+            return metadataProto.stringValue ?? undefined
         }
-        if (metadataProto.stringValue === undefined || metadataProto.stringValue === null) {
+        case 'congressional_representatives': {
             const representatives = metadataProto.congressionalRepresentatives?.representatives ?? []
             if (representatives.length === 0) {
-                continue
+                return undefined
             }
             const representativeLabels = representatives
                 .map((representative) => {
                     const label = (representative.name ?? '').trim()
-                    return representative.party == null || representative.party === ''
+                    return representative.party === null || representative.party === ''
                         ? label
                         : `${label} (${representative.party})`
                 })
-                .filter((label) => label !== '')
+                .filter(label => label !== '')
 
             // Treat empty representative output the same way as missing metadata.
             if (representativeLabels.length === 0) {
-                continue
+                return undefined
             }
 
-            values.set(
-                metadataProto.metadataIndex,
-                representativeLabels.join(', '),
-            )
+            return representativeLabels.join(', ')
+        }
+    }
+}
+
+function metadataValueByIndex(metadataProtos: IMetadata[] | null | undefined): Map<number, string> {
+    const values = new Map<number, string>()
+    for (const metadataProto of metadataProtos ?? []) {
+        const metadataIndex = metadataProto.metadataIndex
+        if (metadataIndex === undefined || metadataIndex === null) {
             continue
         }
-        values.set(metadataProto.metadataIndex, metadataProto.stringValue)
+
+        const value = metadataValueFromProto(metadataProto)
+        if (value === undefined) {
+            continue
+        }
+        values.set(metadataIndex, value)
     }
     return values
 }
