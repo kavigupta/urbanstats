@@ -38,6 +38,14 @@ mapper(() => test)('manipulate insets', { code: 'cMap(data=density_pw_1km, scale
     )
 })
 
+mapper(() => test)('cluster map enable insets', { code: 'clusterMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    await toggleCustomScript(t)
+    await t.expect(getErrors()).eql([])
+    await checkBox(t, /^Insets/)
+    await t.expect(getErrors()).eql([])
+    await screencap(t, { removeEntireMap: false })
+})
+
 const errorInSubfield = (testFn: () => TestFn) => (category: string, errorCausingCode: string, error: string): void => {
     mapper(testFn)(`${category} error in subfield`, { code: 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
         await toggleCustomScript(t)

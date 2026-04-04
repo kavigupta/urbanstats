@@ -19,7 +19,7 @@ import { TypeEnvironment } from '../urban-stats-script/types-values'
 export function mapperToTable(uss: MapUSS, typeEnvironment: TypeEnvironment): UrbanStatsASTExpression | undefined {
     const mapSchema = mapUssParser(l.edit(l.union([
         l.transformExpr(l.call({
-            fn: l.union([l.identifier('cMap'), l.identifier('pMap')]),
+            fn: l.union([l.identifier('cMap'), l.identifier('pMap'), l.identifier('clusterMap')]),
             namedArgs: {
                 data: l.passthrough(),
                 label: l.passthrough(),

@@ -18,7 +18,7 @@ export interface Outline {
     weight: number
 }
 
-interface CommonMap {
+export interface CommonMap {
     geo: string[]
     data: number[]
     scale: ScaleDescriptor
@@ -55,6 +55,12 @@ export interface PMap extends CommonMap {
     relativeArea: number[]
 }
 
+export interface ClusterMap extends CommonMap {
+    maxRadius: number
+    relativeArea: number[]
+    clusterRadiusSpacing: number
+}
+
 const cMapType = {
     type: 'opaque',
     name: 'cMap',
@@ -68,6 +74,11 @@ const cMapRGBType = {
 const pMapType = {
     type: 'opaque',
     name: 'pMap',
+} satisfies USSType
+
+const clusterMapType = {
+    type: 'opaque',
+    name: 'clusterMap',
 } satisfies USSType
 
 export const constructOutline = {
@@ -287,10 +298,7 @@ export const pMap: USSValue = {
         const relativeArea = namedArgs.relativeArea as number[] | null
 
         const commonMap = computeCommonMap(true, namedArgs, originalArgs, ctx)
-
-        const amount = commonMap.data.length
-
-        const normalizedRelativeArea = normalizeRelativeArea(relativeArea, amount)
+        const normalizedRelativeArea = normalizeRelativeArea(relativeArea, commonMap.data.length)
 
         return {
             type: 'opaque',
@@ -308,6 +316,58 @@ export const pMap: USSValue = {
             relativeArea: 'Relative Area',
         },
         longDescription: 'Creates a point map that displays data using circles at geographic locations. This is like a choropleth map, but instead of coloring regions, it colors points centered on the geographic locations. The relativeArea parameter can be used to specify the area of the points, which is used to determine the radius of the points. If not specified, the areas are all equal.',
+        selectorRendering: { kind: 'subtitleLongDescription' },
+    },
+} satisfies USSValue
+
+export const clusterMap: USSValue = {
+    type: {
+        type: 'function',
+        posArgs: [],
+        namedArgs: mapConstructorArguments(true, false, {
+            maxRadius: {
+                type: { type: 'concrete', value: { type: 'number' } },
+                defaultValue: parseNoErrorAsExpression('30', ''),
+            },
+            relativeArea: {
+                type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } },
+                defaultValue: parseNoErrorAsExpression('population', ''),
+            },
+            clusterRadiusSpacing: {
+                type: { type: 'concrete', value: { type: 'number' } },
+                defaultValue: parseNoErrorAsExpression('0', ''),
+            },
+        }),
+        returnType: { type: 'concrete', value: clusterMapType },
+    },
+    value: (ctx, posArgs, namedArgs, originalArgs) => {
+        const maxRadius = namedArgs.maxRadius as number
+        const relativeArea = namedArgs.relativeArea as number[] | null
+        const clusterRadiusSpacing = namedArgs.clusterRadiusSpacing as number
+        if (clusterRadiusSpacing < 0) {
+            throw new Error(`clusterRadiusSpacing must be non-negative: ${clusterRadiusSpacing}`)
+        }
+
+        const commonMap = computeCommonMap(true, namedArgs, originalArgs, ctx)
+        const normalizedRelativeArea = normalizeRelativeArea(relativeArea, commonMap.data.length)
+
+        return {
+            type: 'opaque',
+            opaqueType: 'clusterMap',
+            value: { ...commonMap, maxRadius, relativeArea: normalizedRelativeArea, clusterRadiusSpacing } satisfies ClusterMap,
+        }
+    },
+    documentation: {
+        humanReadableName: 'Clustered Point Map',
+        category: 'map',
+        isDefault: true,
+        namedArgs: {
+            ...namedArgDocumentation,
+            maxRadius: 'Max Radius',
+            relativeArea: 'Relative Area',
+            clusterRadiusSpacing: 'Spacing between Cluster circles (%)',
+        },
+        longDescription: 'Creates a point map that clusters nearby points at lower zoom levels and expands to individual points when zoomed in. Uses the same data and styling parameters as pMap, with additional clustering controls.',
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue

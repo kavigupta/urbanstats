@@ -5,7 +5,7 @@ import { UnitType } from '../utils/unit'
 
 import { UrbanStatsASTExpression } from './ast'
 import { Color, deconstructColor, hexToColor } from './constants/color-utils'
-import { CMap, CMapRGB, Outline, PMap } from './constants/map'
+import { CMap, CMapRGB, ClusterMap, Outline, PMap } from './constants/map'
 import { RampT } from './constants/ramp'
 import { RichTextAttributes, RichTextDocument, RichTextSegment } from './constants/rich-text'
 import { Scale } from './constants/scale'
@@ -29,6 +29,7 @@ export type USSOpaqueValue =
     | { type: 'opaque', opaqueType: 'cMap', value: CMap }
     | { type: 'opaque', opaqueType: 'cMapRGB', value: CMapRGB }
     | { type: 'opaque', opaqueType: 'pMap', value: PMap }
+    | { type: 'opaque', opaqueType: 'clusterMap', value: ClusterMap }
     | { type: 'opaque', opaqueType: 'table', value: Table }
     | { type: 'opaque', opaqueType: 'column', value: TableColumn }
     | { type: 'opaque', opaqueType: 'outline', value: Outline }
@@ -381,6 +382,7 @@ export function renderValue(input: USSValue): string {
                     case 'pMap':
                     case 'cMap':
                     case 'cMapRGB':
+                    case 'clusterMap':
                     case 'table':
                     case 'column':
                     case 'basemap':

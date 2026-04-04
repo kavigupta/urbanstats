@@ -3,7 +3,7 @@ import { test } from 'node:test'
 
 import { getRamps } from '../src/mapper/ramps'
 import { colorType } from '../src/urban-stats-script/constants/color'
-import { CMap, CMapRGB, Outline, PMap } from '../src/urban-stats-script/constants/map'
+import { CMap, CMapRGB, ClusterMap, Outline, PMap } from '../src/urban-stats-script/constants/map'
 import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
 import { instantiate, ScaleDescriptor, Scale } from '../src/urban-stats-script/constants/scale'
 import { Table, TableColumn } from '../src/urban-stats-script/constants/table'
@@ -2214,6 +2214,20 @@ void test('test map opacity channel', () => {
     assert.deepStrictEqual(pMapResult.type, { type: 'opaque', name: 'pMap' })
     const pMapRaw = (pMapResult.value as { type: 'opaque', value: PMap }).value
     assert.deepStrictEqual(pMapRaw.opacity, 0.4)
+
+    const clusterMapOpacityResult = evaluate(parseExpr('clusterMap(data=[1, 2, 3, 4, 5], scale=linearScale(), ramp=rampBone, opacity=0.33, label="x")'), ctx)
+    assert.deepStrictEqual(clusterMapOpacityResult.type, { type: 'opaque', name: 'clusterMap' })
+    const clusterMapOpacityRaw = (clusterMapOpacityResult.value as { type: 'opaque', value: ClusterMap }).value
+    assert.deepStrictEqual(clusterMapOpacityRaw.opacity, 0.33)
+})
+
+void test('clusterMap relativeArea not population and clusterRadiusSpacing', () => {
+    const [ctx] = contextForTestIfStatement()
+    const r = evaluate(parseExpr('clusterMap(data=[1, 2, 3, 4, 5], scale=linearScale(), ramp=rampViridis, relativeArea=density_pw_1km, clusterRadiusSpacing=0.15, label="x")'), ctx)
+    assert.deepStrictEqual(r.type, { type: 'opaque', name: 'clusterMap' })
+    const raw = (r.value as { type: 'opaque', value: ClusterMap }).value
+    assert.deepStrictEqual(raw.clusterRadiusSpacing, 0.15)
+    assert.deepStrictEqual(raw.data, [1, 2, 3, 4, 5])
 })
 
 void test('test basic column with name', () => {
