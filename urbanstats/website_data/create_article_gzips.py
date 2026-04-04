@@ -23,9 +23,12 @@ def isnan(x):
 def metadata_for_article(row):
     metadata = []
     for i, (key, metadata_type) in enumerate(metadata_types.items()):
-        if row[key] != row[key] or row[key] is None:
+        if key not in row.index or row[key] != row[key] or row[key] is None:
             continue
-        metadata.append(metadata_type.create(i, row[key]))
+        metadata_value = metadata_type.create(i, row[key])
+        if metadata_value is None:
+            continue
+        metadata.append(metadata_value)
     return metadata
 
 

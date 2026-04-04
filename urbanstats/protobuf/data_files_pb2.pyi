@@ -99,6 +99,34 @@ class TemperatureHistogram(_message.Message):
     counts: _containers.RepeatedScalarFieldContainer[int]
     def __init__(self, counts: _Optional[_Iterable[int]] = ...) -> None: ...
 
+class CongressionalRepresentative(_message.Message):
+    __slots__ = ("name", "wikipedia_page", "party")
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    WIKIPEDIA_PAGE_FIELD_NUMBER: _ClassVar[int]
+    PARTY_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    wikipedia_page: str
+    party: str
+    def __init__(
+        self,
+        name: _Optional[str] = ...,
+        wikipedia_page: _Optional[str] = ...,
+        party: _Optional[str] = ...,
+    ) -> None: ...
+
+class CongressionalRepresentatives(_message.Message):
+    __slots__ = ("representatives",)
+    REPRESENTATIVES_FIELD_NUMBER: _ClassVar[int]
+    representatives: _containers.RepeatedCompositeFieldContainer[
+        CongressionalRepresentative
+    ]
+    def __init__(
+        self,
+        representatives: _Optional[
+            _Iterable[_Union[CongressionalRepresentative, _Mapping]]
+        ] = ...,
+    ) -> None: ...
+
 class ExtraStatistic(_message.Message):
     __slots__ = ("histogram", "timeseries", "temperature_histogram")
     HISTOGRAM_FIELD_NUMBER: _ClassVar[int]
@@ -115,13 +143,20 @@ class ExtraStatistic(_message.Message):
     ) -> None: ...
 
 class Metadata(_message.Message):
-    __slots__ = ("metadata_index", "string_value")
+    __slots__ = ("metadata_index", "string_value", "congressional_representatives")
     METADATA_INDEX_FIELD_NUMBER: _ClassVar[int]
     STRING_VALUE_FIELD_NUMBER: _ClassVar[int]
+    CONGRESSIONAL_REPRESENTATIVES_FIELD_NUMBER: _ClassVar[int]
     metadata_index: int
     string_value: str
+    congressional_representatives: CongressionalRepresentatives
     def __init__(
-        self, metadata_index: _Optional[int] = ..., string_value: _Optional[str] = ...
+        self,
+        metadata_index: _Optional[int] = ...,
+        string_value: _Optional[str] = ...,
+        congressional_representatives: _Optional[
+            _Union[CongressionalRepresentatives, _Mapping]
+        ] = ...,
     ) -> None: ...
 
 class Article(_message.Message):

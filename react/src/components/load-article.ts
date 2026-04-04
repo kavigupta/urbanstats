@@ -109,6 +109,28 @@ function metadataValueByIndex(metadataProtos: IMetadata[] | null | undefined): M
             continue
         }
         if (metadataProto.stringValue === undefined || metadataProto.stringValue === null) {
+            const representatives = metadataProto.congressionalRepresentatives?.representatives ?? []
+            if (representatives.length === 0) {
+                continue
+            }
+            const representativeLabels = representatives
+                .map((representative) => {
+                    const label = (representative.name ?? '').trim()
+                    return representative.party == null || representative.party === ''
+                        ? label
+                        : `${label} (${representative.party})`
+                })
+                .filter((label) => label !== '')
+
+            // Treat empty representative output the same way as missing metadata.
+            if (representativeLabels.length === 0) {
+                continue
+            }
+
+            values.set(
+                metadataProto.metadataIndex,
+                representativeLabels.join(', '),
+            )
             continue
         }
         values.set(metadataProto.metadataIndex, metadataProto.stringValue)
@@ -140,6 +162,16 @@ function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath
             disclaimer: undefined,
             dataCreditExplanationPage,
         }]
+    })
+}
+
+function availableMetadataPathsForArticle(article: Article): StatPath[] {
+    const values = metadataValueByIndex(article.metadata)
+    return metadataStatPathsInTreeOrder.filter((path) => {
+        const parent = statParents.get(path)
+        return parent?.kind === 'metadata'
+            && parent.metadataIndex !== undefined
+            && values.has(parent.metadataIndex)
     })
 }
 
@@ -226,12 +258,12 @@ export function loadArticles(datas: Article[], counts: CountsByUT, universe: str
     statPaths: StatPath[][]
 } {
     const availableRowsAll = datas.map(data => loadSingleArticle(data, counts, universe))
-    const statPathsEach = availableRowsAll.map((availableRows) => {
+    const statPathsEach = availableRowsAll.map((availableRows, articleIndex) => {
         const statPathsThis = new Set<StatPath>()
         availableRows.forEach((row) => {
             statPathsThis.add(row.statpath)
         })
-        metadataStatPathsInTreeOrder.forEach((statPath) => {
+        availableMetadataPathsForArticle(datas[articleIndex]).forEach((statPath) => {
             statPathsThis.add(statPath)
         })
         return Array.from(statPathsThis)

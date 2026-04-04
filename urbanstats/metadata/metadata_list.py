@@ -1,4 +1,9 @@
-from .metadata_column import DisplayedMetadata, ExternalLinkMetadata
+from .metadata_column import (
+    CongressionalRepresentativesMetadata,
+    DisplayedMetadata,
+    ExternalLinkMetadata,
+)
+from .congressional_representatives import TERM_START_YEARS, key_for_term_start_year
 
 metadata_types = {
     "geoid": DisplayedMetadata(
@@ -14,4 +19,14 @@ metadata_types = {
     "iso": DisplayedMetadata(
         str, "ISO Code", category="geoid", data_credit_explanation_page="geoid"
     ),
+    **{
+        key_for_term_start_year(term_start_year): CongressionalRepresentativesMetadata(
+            str,
+            f"Congressional Representatives ({term_start_year})",
+            category="geoid",
+            data_credit_explanation_page="geoid",
+            term_start_year=term_start_year,
+        )
+        for term_start_year in TERM_START_YEARS
+    },
 }

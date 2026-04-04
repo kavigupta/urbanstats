@@ -1,19 +1,26 @@
 from collections import defaultdict
 from dataclasses import dataclass
-import time
+import math
 from typing import List
 
-from permacache import permacache
-from requests import HTTPError
+import pandas as pd
+from permacache import permacache, stable_hash
 import tqdm.auto as tqdm
+import us
 
-from urbanstats.data.wikipedia.wikidata import fetch_sparql_bindings
-from urbanstats.data.wikipedia.wikidata_sourcer import (
-    WikidataSourcer,
-    compute_wikidata_and_wikipedia,
-)
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.historical_congressional import to_year
+from urbanstats.metadata.metadata_columns import (
+    MetadataColumnProvider,
+    MetadataColumnResult,
+)
+
+
+TERM_START_YEARS = [to_year(congress_number) for congress_number in range(1, 120)]
+
+
+def key_for_term_start_year(term_start_year: int) -> str:
+    return f"congressional_representatives_{term_start_year}"
 
 
 @dataclass
@@ -24,118 +31,142 @@ class Representative:
     party: str
 
 
-_US_HOUSE_POSITION = "wd:Q13218630"
+def district_shortname_to_state_and_district(shortname: str):
+    # `shortname` is formatted as "ST-DD (YYYY)" for congressional districts.
+    district_key = shortname.split(" ")[0]
+    state_abbr, district = district_key.split("-", 1)
+    return state_abbr, normalize_district(district)
 
 
-def term_label_to_start_year(term_label: str):
-    # Example term labels: "118th United States Congress"
-    first_token = term_label.split()[0]
-    congress_number_str = (
-        first_token.removesuffix("st")
-        .removesuffix("nd")
-        .removesuffix("rd")
-        .removesuffix("th")
+def normalize_district(district):
+    district = str(district).strip()
+    if not district:
+        return "AL"
+    if district.upper() in {"AL", "AT LARGE", "AT-LARGE"}:
+        return "AL"
+    if district.isdigit():
+        return f"{int(district):02d}"
+    return district
+
+
+def clean_optional_str(value):
+    if value is None:
+        return None
+    if isinstance(value, float) and math.isnan(value):
+        return None
+    return str(value)
+
+
+def to_bool(v):
+    if isinstance(v, bool):
+        return v
+    return str(v).strip().lower() in {"true", "1", "yes"}
+
+
+@permacache(
+    "urbanstats/metadata/congressional_representatives/load_representatives_by_district",
+    key_function=dict(version=str),
+)
+def load_representatives_by_district(*, version):
+    representatives_url = (
+        "https://raw.githubusercontent.com/kavigupta/"
+        f"all-congressional-representatives/{version}/representatives.csv"
     )
-    if not congress_number_str.isdigit():
-        raise ValueError(f"Unexpected term label format: {term_label}")
-    return to_year(int(congress_number_str))
+    table = pd.read_csv(representatives_url)
 
+    state_name_to_abbr = {state.name: state.abbr for state in us.states.STATES + [us.states.DC]}
+    table["state_abbr"] = table["state"].map(state_name_to_abbr)
+    table["district_norm"] = table["district"].map(normalize_district)
+    table["term_start_year"] = table["term"].astype(int).map(to_year)
 
-def query_wikipedia_page_and_party(wikidata_id, *, version):
-    query = f"""
-    SELECT ?rel_wikipedia_page ?rel_partyLabel WHERE {{
-      wd:{wikidata_id} wdt:P31 wd:Q5 .
-      OPTIONAL {{
-        ?rel_wikipedia_page <http://schema.org/about> wd:{wikidata_id} .
-        ?rel_wikipedia_page <http://schema.org/isPartOf> <https://en.wikipedia.org/> .
-      }}
-      OPTIONAL {{ wd:{wikidata_id} wdt:P102 ?rel_party . }}
-      SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en". }}
-    }}
-    """
-    bindings = fetch_sparql_bindings(query, version=version)
-    if bindings:
-        return (
-            bindings[0]
-            .get("rel_wikipedia_page", bindings[0].get("wikipedia_page", {}))
-            .get("value"),
-            bindings[0]
-            .get("rel_partyLabel", bindings[0].get("partyLabel", {}))
-            .get("value"),
+    result = defaultdict(lambda: defaultdict(list))
+    for row in table.itertuples(index=False):
+        if row.state_abbr is None:
+            continue
+        if to_bool(row.vacant):
+            continue
+        if isinstance(row.representative_name, float) and math.isnan(
+            row.representative_name
+        ):
+            continue
+        result[(row.state_abbr, row.district_norm)][row.term_start_year].append(
+            Representative(
+                name=clean_optional_str(row.representative_name),
+                wikidata_id="",
+                wikipedia_page=clean_optional_str(row.representative_wikipedia_page),
+                party=clean_optional_str(row.party),
+            )
         )
-    return None, None
+
+    return {
+        district_key: dict(sorted(representatives_by_year.items(), key=lambda x: x[0]))
+        for district_key, representatives_by_year in result.items()
+    }
 
 
 def representatives_for_district(
-    wikidata_district_id: str, start_year, end_year, *, sparlql_cache_version
+    state_abbr: str, district: str, start_year, end_year, *, representatives_csv_version
 ) -> List[Representative]:
-    query = f"""
-    SELECT ?person ?personLabel ?parliamentary_termLabel WHERE {{
-    ?person p:P39 ?st .
-    ?st ps:P39 {_US_HOUSE_POSITION} .
-    ?st pq:P768 wd:{wikidata_district_id} .
-    OPTIONAL {{ ?st pq:P2937 ?parliamentary_term }}
-    SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en". }}
-    }}
-    """
-    bindings = fetch_sparql_bindings(query, version=sparlql_cache_version)
-    representatives = defaultdict(list)
-    for b in bindings:
-        name = b["personLabel"]["value"]
-        wikidata_id = b["person"]["value"].split("/")[-1]
-        wikipedia_page, party = query_wikipedia_page_and_party(
-            wikidata_id, version=sparlql_cache_version
-        )
-        term_label = b.get("parliamentary_termLabel", {}).get("value")
-        term_start_year = term_label_to_start_year(term_label) if term_label else None
-        if term_start_year is None:
-            print(
-                f"Warning: Missing or unknown parliamentary term for representative {name} ({wikidata_id}), skipping"
-            )
-            continue
-        representatives[term_start_year].append(
-            Representative(
-                name=name,
-                wikidata_id=wikidata_id,
-                wikipedia_page=wikipedia_page,
-                party=party,
-            )
-        )
-    representatives = dict(sorted(representatives.items(), key=lambda x: x[0]))
-    return {k: v for k, v in representatives.items() if start_year <= k <= end_year}
-
-
-def representatives_for_district_with_backoff(*args, **kwargs):
-    for _ in range(3):
-        try:
-            return representatives_for_district(*args, **kwargs)
-        except HTTPError as e:
-            print(f"HTTP error {e.response.status_code} for district, retrying...")
-            time.sleep(1)
-    raise RuntimeError("Failed to fetch representatives after 3 attempts")
+    representatives = load_representatives_by_district(version=representatives_csv_version)
+    district_representatives = representatives.get((state_abbr, district), {})
+    return {
+        year: reps
+        for year, reps in district_representatives.items()
+        if start_year <= year <= end_year
+    }
 
 
 @permacache(
     "urbanstats/metadata/congressional_representatives/compute_representatives_for_shapefile",
-    key_function=dict(sf=lambda x: x.hash_key),
+    key_function=dict(sf=lambda x: x.hash_key, shortnames=stable_hash, start_dates=stable_hash, end_dates=stable_hash),
 )
 def compute_representatives_for_shapefile(
-    sf: Shapefile, wds: WikidataSourcer, *, sparlql_cache_version
+    sf: Shapefile, shortnames, start_dates, end_dates, *, representatives_csv_version
 ) -> List[dict]:
     table = sf.load_file()
-    wikidata_ids, _ = compute_wikidata_and_wikipedia(sf, wds)
+    if not (len(shortnames) == len(start_dates) == len(end_dates) == len(table)):
+        raise ValueError(
+            "Expected shortnames/start_dates/end_dates to match shapefile size"
+        )
     results = []
     pbar = tqdm.tqdm(total=len(table), desc="Computing representatives for districts")
-    for (_, row), wd_id in zip(table.iterrows(), wikidata_ids):
+    for (_, row), shortname, start_date, end_date in zip(
+        table.iterrows(), shortnames, start_dates, end_dates
+    ):
         pbar.set_postfix({"current_district": row["longname"]})
+        state_abbr, district = district_shortname_to_state_and_district(shortname)
         results.append(
-            representatives_for_district_with_backoff(
-                wd_id,
-                row.start_date,
-                row.end_date,
-                sparlql_cache_version=sparlql_cache_version,
+            representatives_for_district(
+                state_abbr,
+                district,
+                start_date,
+                end_date,
+                representatives_csv_version=representatives_csv_version,
             )
         )
         pbar.update(1)
     pbar.close()
     return results
+
+
+class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
+    representatives_csv_version = "75d536eb0406ed3f9c4e20afa34d9f0c77948d57"
+    version = f"congressional_representatives_structured_{representatives_csv_version}_v2"
+
+    def compute_metadata_columns(self, *, shapefile, shapefile_table):
+        if "congressional_representatives" not in shapefile.special_data_sources:
+            return []
+        representatives_by_row = compute_representatives_for_shapefile(
+            shapefile,
+            shapefile_table.shortname.tolist(),
+            shapefile_table.start_date.tolist(),
+            shapefile_table.end_date.tolist(),
+            representatives_csv_version=self.representatives_csv_version,
+        )
+        return [
+            MetadataColumnResult(
+                key=key_for_term_start_year(term_start_year),
+                values=[x.get(term_start_year, []) for x in representatives_by_row],
+            )
+            for term_start_year in TERM_START_YEARS
+        ]
