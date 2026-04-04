@@ -118,7 +118,7 @@ const metadataStatPathsInTreeOrder = Array.from(statParents.entries())
 type MetadataValueKind = 'string' | 'congressional_representatives'
 
 const metadataValueKindByIndex = new Map<number, MetadataValueKind>(
-    metadata.displayed_metadata.map(entry => [entry.index, entry.value_kind!]),
+    metadata.displayed_metadata.map(entry => [entry.index, entry.value_kind]),
 )
 
 function assertCongressionalRepresentativesView(value: ICongressionalRepresentatives): CongressionalRepresentativesView {
