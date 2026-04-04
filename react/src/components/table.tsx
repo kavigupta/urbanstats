@@ -23,12 +23,13 @@ import { computeDisclaimerText, type Disclaimer } from './disclaimer-text'
 import { Percentile, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
 import { footnoteSymbol } from './footnote-symbol'
-import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
+import { ArticleRow, CongressionalRepresentativeView, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
 import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
+import partyPages from '../data/party_pages'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -462,9 +463,8 @@ export function StatisticRowCells(props: {
                     return (
                         <span className="serif value testing-statistic-value">
                             {representatives.map((representative, index) => (
-                                <span key={`${representative.name}_${index}`}>
-                                    <span>{representative.name}</span>
-                                    <span>{` (${representative.party})`}</span>
+                                <span key={index}>
+                                    <Representative representative={representative} />
                                     {index < representatives.length - 1 ? ', ' : null}
                                 </span>
                             ))}
@@ -562,6 +562,26 @@ export function StatisticRowCells(props: {
             />
             <div style={{ width: `${props.extraSpaceRight}%` }} />
         </>
+    )
+}
+
+function Representative(props: { representative: CongressionalRepresentativeView }): ReactNode {
+    assert(props.representative.party in partyPages, `Party ${props.representative.party} not found in partyPages data`)
+    const partyPage = partyPages[props.representative.party as keyof typeof partyPages]
+    const colors = useColors()
+    // eslint-disable-next-line no-restricted-syntax -- not acutal colors, just remapping
+    const colorStr = partyPage.party_color === 'black' || partyPage.party_color === 'gray' ? 'grey' : partyPage.party_color
+    const color = colors.hueColors[colorStr]
+
+    return (
+        <span>
+            <a href={props.representative.wikipediaPage} style={{ textDecoration: 'none', color: 'inherit' }} target="_blank" rel="noopener noreferrer">
+                {props.representative.name}
+            </a>
+            <a href={partyPage.wikipedia_page} style={{ textDecoration: 'none', color }} target="_blank" rel="noopener noreferrer">
+                {` (${props.representative.party.slice(0, 1)})`}
+            </a>
+        </span>
     )
 }
 

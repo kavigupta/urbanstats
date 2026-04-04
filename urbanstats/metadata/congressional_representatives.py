@@ -1,7 +1,9 @@
 from collections import defaultdict
 from dataclasses import dataclass
+import json
 import math
 from typing import List
+import urllib.request
 
 import pandas as pd
 from permacache import permacache, stable_hash
@@ -61,6 +63,26 @@ def to_bool(v):
     if isinstance(v, bool):
         return v
     return str(v).strip().lower() in {"true", "1", "yes"}
+
+
+@permacache(
+    "urbanstats/metadata/congressional_representatives/load_party_pages",
+    key_function=dict(version=str),
+)
+def load_party_pages(*, version):
+    party_pages_url = (
+        "https://raw.githubusercontent.com/kavigupta/"
+        f"all-congressional-representatives/{version}/party_pages.json"
+    )
+    with urllib.request.urlopen(party_pages_url) as response:
+        party_pages = json.load(response)
+    return {
+        party: {
+            "party_color": page["party_color"],
+            "wikipedia_page": page["wikipedia_page"],
+        }
+        for party, page in party_pages.items()
+    }
 
 
 @permacache(
