@@ -94,7 +94,18 @@ export class TestUtils {
         this.allMaps.forEach((mapRef) => {
             const map = mapRef.deref()
             if (map) {
-                for (const layerId of map.getLayersOrder()) {
+                let layers: string[]
+                try {
+                    layers = map.getLayersOrder()
+                }
+                catch (e) {
+                    console.warn(
+                        'Error getting layers order. '
+                        + 'TBH no idea why this is happening, I assume it\'s an internal state issue.'
+                        + ' Underlying error: ', e)
+                    layers = []
+                }
+                for (const layerId of layers) {
                     const layer = map.getLayer(layerId)
                     if (layer && !keptByNoBasemap(layer)) {
                         map.setLayoutProperty(layerId, 'visibility', 'none')
