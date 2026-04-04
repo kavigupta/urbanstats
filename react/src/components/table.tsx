@@ -454,7 +454,22 @@ export function StatisticRowCells(props: {
             columnIdentifier: 'statval',
             content: () => {
                 if (props.row.kind === 'metadata') {
-                    return <span className="serif value testing-statistic-value">{props.row.statval}</span>
+                    const statval = props.row.statval
+                    if (typeof statval === 'string') {
+                        return <span className="serif value testing-statistic-value">{statval}</span>
+                    }
+                    const representatives = statval.representatives
+                    return (
+                        <span className="serif value testing-statistic-value">
+                            {representatives.map((representative, index) => (
+                                <span key={`${representative.name}_${index}`}>
+                                    <span>{representative.name}</span>
+                                    <span>{` (${representative.party})`}</span>
+                                    {index < representatives.length - 1 ? ', ' : null}
+                                </span>
+                            ))}
+                        </span>
+                    )
                 }
                 return (
                     <span className="serif value testing-statistic-value">

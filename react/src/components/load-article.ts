@@ -7,7 +7,7 @@ import paths from '../data/statistic_path_list'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { assert } from '../utils/defensive'
-import { Article, IFirstOrLast, IMetadata } from '../utils/protos'
+import { Article, ICongressionalRepresentatives, IFirstOrLast, IMetadata } from '../utils/protos'
 import { UnitType } from '../utils/unit'
 
 import { CountsByUT, forType } from './countsByArticleType'
@@ -33,6 +33,19 @@ export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat
 export type StatCol = (typeof stats)[number]
 
 export interface FirstLastStatus { isFirst: boolean, isLast: boolean }
+
+export interface CongressionalRepresentativeView {
+    name: string
+    wikipediaPage: string
+    party: string
+}
+
+export interface CongressionalRepresentativesView {
+    kind: 'congressional'
+    representatives: CongressionalRepresentativeView[]
+}
+
+export type MetadataStatValue = string | CongressionalRepresentativesView
 
 export interface ArticleStatisticRow {
     kind: 'statistic'
@@ -60,7 +73,7 @@ export interface MetadataArticleRow {
     statpath: StatPath
     renderedStatname: string
     articleType: string
-    statval: string
+    statval: MetadataStatValue
     extraStat: undefined
     disclaimer: undefined
     dataCreditExplanationPage: string
@@ -91,7 +104,7 @@ interface StatisticCellRenderingInfoStatistic extends StatisticCellRenderingInfo
 
 interface StatisticCellRenderingInfoMetadata extends StatisticCellRenderingInfoCommon {
     kind: 'metadata'
-    statval: string
+    statval: MetadataStatValue
     statpath: StatPath
 }
 
@@ -108,7 +121,23 @@ const metadataValueKindByIndex = new Map<number, MetadataValueKind>(
     metadata.displayed_metadata.map(entry => [entry.index, entry.value_kind!]),
 )
 
-function metadataValueFromProto(metadataProto: IMetadata): string | undefined {
+function assertCongressionalRepresentativesView(value: ICongressionalRepresentatives): CongressionalRepresentativesView {
+    return {
+        kind: 'congressional',
+        representatives: (value.representatives ?? []).map((representative) => {
+            assert(typeof representative.name === 'string', 'congressional representative name is missing')
+            assert(typeof representative.wikipediaPage === 'string', 'congressional representative wikipedia page is missing')
+            assert(typeof representative.party === 'string', 'congressional representative party is missing')
+            return {
+                name: representative.name,
+                wikipediaPage: representative.wikipediaPage,
+                party: representative.party,
+            } satisfies CongressionalRepresentativeView
+        }),
+    }
+}
+
+function metadataValueFromProto(metadataProto: IMetadata): MetadataStatValue | undefined {
     if (metadataProto.metadataIndex === undefined || metadataProto.metadataIndex === null) {
         return undefined
     }
@@ -119,31 +148,19 @@ function metadataValueFromProto(metadataProto: IMetadata): string | undefined {
             return metadataProto.stringValue ?? undefined
         }
         case 'congressional_representatives': {
-            const representatives = metadataProto.congressionalRepresentatives?.representatives ?? []
-            if (representatives.length === 0) {
+            const representativeValue = metadataProto.congressionalRepresentatives
+            if (!representativeValue || (representativeValue.representatives?.length ?? 0) === 0) {
                 return undefined
             }
-            const representativeLabels = representatives
-                .map((representative) => {
-                    const label = (representative.name ?? '').trim()
-                    return representative.party === null || representative.party === ''
-                        ? label
-                        : `${label} (${representative.party})`
-                })
-                .filter(label => label !== '')
-
-            // Treat empty representative output the same way as missing metadata.
-            if (representativeLabels.length === 0) {
-                return undefined
-            }
-
-            return representativeLabels.join(', ')
+            return assertCongressionalRepresentativesView(representativeValue)
         }
+        default:
+            return undefined
     }
 }
 
-function metadataValueByIndex(metadataProtos: IMetadata[] | null | undefined): Map<number, string> {
-    const values = new Map<number, string>()
+function metadataValueByIndex(metadataProtos: IMetadata[] | null | undefined): Map<number, MetadataStatValue> {
+    const values = new Map<number, MetadataStatValue>()
     for (const metadataProto of metadataProtos ?? []) {
         const metadataIndex = metadataProto.metadataIndex
         if (metadataIndex === undefined || metadataIndex === null) {
@@ -157,6 +174,13 @@ function metadataValueByIndex(metadataProtos: IMetadata[] | null | undefined): M
         values.set(metadataIndex, value)
     }
     return values
+}
+
+export function metadataStatValueToString(statval: MetadataStatValue): string {
+    if (typeof statval === 'string') {
+        return statval
+    }
+    return statval.representatives.map(representative => `${representative.name} (${representative.party})`).join(', ')
 }
 
 function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath[]): MetadataArticleRow[] {
@@ -393,14 +417,17 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
 }
 
-export function isNoValue(statval: number | string): boolean {
+export function isNoValue(statval: number | MetadataStatValue): boolean {
     switch (typeof statval) {
         case 'number':
             return Number.isNaN(statval)
         case 'string':
             return statval === ''
         default:
-            throw new Error(`Unexpected type for statval: ${typeof statval}`)
+            switch (statval.kind) {
+                case 'congressional':
+                    return statval.representatives.length === 0
+            }
     }
 }
 
