@@ -567,13 +567,17 @@ export function StatisticRowCells(props: {
     )
 }
 
+function getPartyPage(party: string): (typeof partyPages)[keyof typeof partyPages] {
+    assert(party in partyPages, `Party ${party} not found in partyPages data`)
+    return partyPages[party as keyof typeof partyPages]
+}
+
 function RepresentativeParty(props: {party?: string}): ReactNode {
     const colors = useColors()
-    if (!props.party) {
+    if (!props.party || props.party === 'Independent') {
         return null
     }
-    assert(props.party in partyPages, `Party ${props.party} not found in partyPages data`)
-    const partyPage = partyPages[props.party as keyof typeof partyPages]
+    const partyPage = getPartyPage(props.party)
     // eslint-disable-next-line no-restricted-syntax -- not acutal colors, just remapping
     const colorStr = partyPage.party_color === 'black' || partyPage.party_color === 'gray' ? 'grey' : partyPage.party_color
     const color = colors.hueColors[colorStr]
