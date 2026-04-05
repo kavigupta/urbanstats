@@ -57,6 +57,7 @@ export interface ArticleStatisticRow {
     statpath: StatPath
     explanationPage: string
     articleType: string
+    collapsible: boolean
     totalCountInClass: number
     totalCountOverall: number
     index: number
@@ -73,6 +74,7 @@ export interface MetadataArticleRow {
     statpath: StatPath
     renderedStatname: string
     articleType: string
+    collapsible: boolean
     statval: MetadataStatValue
     extraStat: undefined
     disclaimer: undefined
@@ -90,6 +92,7 @@ interface StatisticCellRenderingInfoCommon {
     statname: string
     unit?: UnitType
     statpath?: StatPath
+    collapsible?: boolean
 }
 
 interface StatisticCellRenderingInfoStatistic extends StatisticCellRenderingInfoCommon {
@@ -201,6 +204,7 @@ function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath
             statname: parent.groupYearName,
             renderedStatname: parent.groupYearName,
             articleType: article.articleType,
+            collapsible: parent.collapsible,
             statval,
             extraStat: undefined,
             disclaimer: undefined,
@@ -272,6 +276,7 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
 
         // Determine disclaimer for election statistics
         const disclaimer = electionDisclaimerForRow(paths[i], population)
+        const collapsible = statParents.get(paths[i])?.collapsible ?? false
 
         return {
             kind: 'statistic' as const,
@@ -283,6 +288,7 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
             statpath: paths[i],
             explanationPage: explanation_page[i],
             articleType,
+            collapsible,
             totalCountInClass: forType(counts, universe, stats[i], articleType),
             totalCountOverall: forType(counts, universe, stats[i], 'overall'),
             index: i,
@@ -398,8 +404,8 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     for (let i = 0; i < numRows; i++) {
         const statParent = statParents.get(rows[0][i].statpath)
         assert(statParent !== undefined, `stat parent not found for statpath ${rows[0][i].statpath}`)
-        const { group, year, groupYearName } = statParent
-        const key = `${group.id}_${year}`
+        const { group, year, groupYearName, collapsible } = statParent
+        const key = collapsible ? `${group.id}__collapsible` : `${group.id}_${year}`
         if (!rowsByStatGroupAndYear.has(key)) {
             rowsByStatGroupAndYear.set(key, [])
         }
@@ -408,10 +414,19 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     }
     const rowsCollapsed: ArticleRow[][] = []
     for (const key of rowsByStatGroupAndYear.keys()) {
-        rowsCollapsed.push(...collapseAlternateSourcesSingleGroupYear(
-            rowsByStatGroupAndYear.get(key)!,
-            groupYearToName.get(key)!,
-        ))
+        const rowsForGroupYear = rowsByStatGroupAndYear.get(key)!
+        const allCollapsible = rowsForGroupYear.every(rowByArticle =>
+            statParents.get(rowByArticle[0].statpath)?.collapsible ?? false,
+        )
+        if (allCollapsible) {
+            rowsCollapsed.push(...collapseCollapsibleRows(rowsForGroupYear))
+        }
+        else {
+            rowsCollapsed.push(...collapseAlternateSourcesSingleGroupYear(
+                rowsForGroupYear,
+                groupYearToName.get(key)!,
+            ))
+        }
     }
     return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
 }
@@ -446,6 +461,60 @@ function collapseAlternateSourcesSingleGroupYear(rows: ArticleRow[][], groupYear
         rowsC.push(collapse(collapsedRow.map(i => rows[i]), groupYearName))
     }
     return rowsC
+}
+
+function metadataValuesEqual(value1: MetadataStatValue | number, value2: MetadataStatValue | number): boolean {
+    return JSON.stringify(value1) === JSON.stringify(value2)
+}
+
+function columnsEquivalent(column1: ArticleRow[], column2: ArticleRow[]): boolean {
+    assert(column1.length === column2.length, 'Columns must have the same length')
+    return column1.every((row, index) => metadataValuesEqual(row.statval, column2[index].statval))
+}
+
+function parseRepresentativeRangeLabel(label: string): { prefix: string, startYear: string, endYear: string } {
+    const match = /^(.*)\((\d{4})-(\d{2,4})\)$/.exec(label)
+    assert(match !== null, `currently, we can only collapse representatives, got ${label}`)
+    const prefix = match[1].trimEnd()
+    return { prefix, startYear: match[2], endYear: match[3] }
+}
+
+function collapsedRenderedStatname(rowsForArticle: ArticleRow[]): string {
+    const { prefix: prefixStart, startYear } = parseRepresentativeRangeLabel(rowsForArticle[0].renderedStatname)
+    const { prefix: prefixEnd, endYear } = parseRepresentativeRangeLabel(rowsForArticle[rowsForArticle.length - 1].renderedStatname)
+    assert(prefixStart === prefixEnd, 'We can only collapse rows with the same prefix')
+    return `${prefixStart} (${startYear}-${endYear})`
+}
+
+function collapseCollapsibleRows(rows: ArticleRow[][]): ArticleRow[][] {
+    if (rows.length <= 1) {
+        return rows
+    }
+
+    const groupedColumns: ArticleRow[][][] = [[rows[0]]]
+    for (const rowByArticle of rows.slice(1)) {
+        const lastGroup = groupedColumns[groupedColumns.length - 1]
+        const previousColumn = lastGroup[lastGroup.length - 1]
+        if (columnsEquivalent(previousColumn, rowByArticle)) {
+            lastGroup.push(rowByArticle)
+        }
+        else {
+            groupedColumns.push([rowByArticle])
+        }
+    }
+
+    return groupedColumns.map((columnGroup) => {
+        if (columnGroup.length === 1) {
+            return columnGroup[0]
+        }
+        return columnGroup[0].map((_, articleIndex) => {
+            const rowsForArticle = columnGroup.map(column => column[articleIndex])
+            return {
+                ...rowsForArticle[0],
+                renderedStatname: collapsedRenderedStatname(rowsForArticle),
+            }
+        })
+    })
 }
 
 function computeCollapsedRows(hasValue: Map<number, boolean[]>): number[][] {

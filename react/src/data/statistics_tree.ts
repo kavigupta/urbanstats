@@ -39,7 +39,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 399
+                                        "column": 399,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -47,7 +48,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 403
+                                        "column": 403,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -55,7 +57,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 215
+                                        "column": 215,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -74,7 +77,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 401
+                                        "column": 401,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -82,7 +86,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 402
+                                        "column": 402,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -96,7 +101,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 405
+                                        "column": 405,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -104,7 +110,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 406
+                                        "column": 406,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -120,7 +127,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 400
+                                        "column": 400,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -131,7 +139,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 404
+                                        "column": 404,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -156,7 +165,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 92
+                                        "column": 92,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -164,7 +174,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 171
+                                        "column": 171,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -172,7 +183,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 216
+                                        "column": 216,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -191,7 +203,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 104
+                                        "column": 104,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -199,7 +212,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 161
+                                        "column": 161,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -213,7 +227,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 106
+                                        "column": 106,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -221,7 +236,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 181
+                                        "column": 181,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -237,7 +253,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 103
+                                        "column": 103,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -248,7 +265,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 105
+                                        "column": 105,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -273,7 +291,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 430
+                                        "column": 430,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -281,7 +300,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 434
+                                        "column": 434,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -289,7 +309,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 214
+                                        "column": 214,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -308,7 +329,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 432
+                                        "column": 432,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -316,7 +338,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 433
+                                        "column": 433,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -332,7 +355,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 431
+                                        "column": 431,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -354,7 +378,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 132
+                                        "column": 132,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": null
@@ -376,7 +401,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 150
+                                        "column": 150,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": null
@@ -404,7 +430,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 225
+                                        "column": 225,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -426,7 +453,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 224
+                                        "column": 224,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -457,7 +485,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 484
+                                        "column": 484,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -465,7 +494,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 487
+                                        "column": 487,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -481,7 +511,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 486
+                                        "column": 486,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -497,7 +528,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 485
+                                        "column": 485,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -522,7 +554,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 236
+                                        "column": 236,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -530,7 +563,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 239
+                                        "column": 239,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -546,7 +580,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 238
+                                        "column": 238,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -562,7 +597,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 237
+                                        "column": 237,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -587,7 +623,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 140
+                                        "column": 140,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -595,7 +632,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 143
+                                        "column": 143,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -611,7 +649,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 142
+                                        "column": 142,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -627,7 +666,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 141
+                                        "column": 141,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -652,7 +692,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 133
+                                        "column": 133,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -660,7 +701,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 136
+                                        "column": 136,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -676,7 +718,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 135
+                                        "column": 135,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -692,7 +735,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 134
+                                        "column": 134,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -717,7 +761,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 353
+                                        "column": 353,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -725,7 +770,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 356
+                                        "column": 356,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -741,7 +787,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 355
+                                        "column": 355,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -757,7 +804,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 354
+                                        "column": 354,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -782,7 +830,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 226
+                                        "column": 226,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -790,7 +839,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 229
+                                        "column": 229,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -806,7 +856,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 228
+                                        "column": 228,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -822,7 +873,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 227
+                                        "column": 227,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -847,7 +899,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 392
+                                        "column": 392,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -855,7 +908,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 395
+                                        "column": 395,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -871,7 +925,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 394
+                                        "column": 394,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -887,7 +942,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 393
+                                        "column": 393,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -909,7 +965,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 240
+                                        "column": 240,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -920,7 +977,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 243
+                                        "column": 243,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -936,7 +994,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 241
+                                        "column": 241,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -947,7 +1006,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 244
+                                        "column": 244,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -963,7 +1023,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 242
+                                        "column": 242,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -985,7 +1046,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 440
+                                        "column": 440,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -996,7 +1058,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 443
+                                        "column": 443,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -1012,7 +1075,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 441
+                                        "column": 441,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -1023,7 +1087,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 444
+                                        "column": 444,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -1039,7 +1104,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 442
+                                        "column": 442,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1061,7 +1127,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 435
+                                        "column": 435,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -1072,7 +1139,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 438
+                                        "column": 438,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -1088,7 +1156,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 436
+                                        "column": 436,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -1099,7 +1168,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 439
+                                        "column": 439,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -1115,7 +1185,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 437
+                                        "column": 437,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1146,7 +1217,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 144
+                                        "column": 144,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -1154,7 +1226,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 145
+                                        "column": 145,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1179,7 +1252,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 146
+                                        "column": 146,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -1187,7 +1261,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 147
+                                        "column": 147,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1212,7 +1287,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 148
+                                        "column": 148,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -1220,7 +1296,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 149
+                                        "column": 149,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1242,7 +1319,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 137
+                                        "column": 137,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1264,7 +1342,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 138
+                                        "column": 138,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1286,7 +1365,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 139
+                                        "column": 139,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1311,7 +1391,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 312
+                                        "column": 312,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -1319,7 +1400,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 313
+                                        "column": 313,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1344,7 +1426,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 317
+                                        "column": 317,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -1352,7 +1435,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 318
+                                        "column": 318,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1374,7 +1458,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 314
+                                        "column": 314,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1396,7 +1481,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 316
+                                        "column": 316,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1418,7 +1504,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 315
+                                        "column": 315,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1446,7 +1533,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 414
+                                        "column": 414,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1468,7 +1556,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 410
+                                        "column": 410,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1490,7 +1579,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 416
+                                        "column": 416,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1512,7 +1602,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 411
+                                        "column": 411,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1534,7 +1625,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 412
+                                        "column": 412,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1556,7 +1648,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 413
+                                        "column": 413,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1578,7 +1671,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 417
+                                        "column": 417,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1600,7 +1694,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 409
+                                        "column": 409,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1622,7 +1717,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 415
+                                        "column": 415,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1650,7 +1746,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 195
+                                        "column": 195,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1672,7 +1769,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 197
+                                        "column": 197,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1694,7 +1792,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 193
+                                        "column": 193,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1716,7 +1815,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 196
+                                        "column": 196,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1738,7 +1838,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 198
+                                        "column": 198,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1760,7 +1861,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 194
+                                        "column": 194,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1782,7 +1884,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 191
+                                        "column": 191,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1804,7 +1907,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 189
+                                        "column": 189,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1826,7 +1930,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 187
+                                        "column": 187,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1848,7 +1953,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 192
+                                        "column": 192,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1870,7 +1976,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 190
+                                        "column": 190,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1892,7 +1999,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 188
+                                        "column": 188,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1914,7 +2022,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 200
+                                        "column": 200,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1936,7 +2045,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 201
+                                        "column": 201,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1958,7 +2068,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 199
+                                        "column": 199,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1989,7 +2100,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 212
+                                        "column": 212,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -1997,7 +2109,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 213
+                                        "column": 213,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2022,7 +2135,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 202
+                                        "column": 202,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -2030,7 +2144,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 203
+                                        "column": 203,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2055,7 +2170,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 206
+                                        "column": 206,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -2063,7 +2179,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 207
+                                        "column": 207,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2088,7 +2205,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 210
+                                        "column": 210,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -2096,7 +2214,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 211
+                                        "column": 211,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2121,7 +2240,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 208
+                                        "column": 208,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -2129,7 +2249,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 209
+                                        "column": 209,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2154,7 +2275,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 204
+                                        "column": 204,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -2162,7 +2284,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 205
+                                        "column": 205,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2190,7 +2313,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 352
+                                        "column": 352,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2212,7 +2336,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 407
+                                        "column": 407,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2234,7 +2359,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 323
+                                        "column": 323,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2256,7 +2382,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 325
+                                        "column": 325,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2278,7 +2405,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 251
+                                        "column": 251,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2300,7 +2428,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 247
+                                        "column": 247,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2322,7 +2451,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 249
+                                        "column": 249,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2344,7 +2474,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 250
+                                        "column": 250,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2366,7 +2497,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 246
+                                        "column": 246,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2388,7 +2520,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 248
+                                        "column": 248,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2410,7 +2543,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 267
+                                        "column": 267,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2432,7 +2566,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 263
+                                        "column": 263,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2454,7 +2589,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 265
+                                        "column": 265,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2476,7 +2612,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 266
+                                        "column": 266,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2498,7 +2635,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 262
+                                        "column": 262,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2520,7 +2658,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 264
+                                        "column": 264,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2551,7 +2690,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 258
+                                        "column": 258,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -2559,7 +2699,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 261
+                                        "column": 261,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2575,7 +2716,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 260
+                                        "column": 260,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -2591,7 +2733,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 259
+                                        "column": 259,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -2616,7 +2759,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 254
+                                        "column": 254,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -2624,7 +2768,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 257
+                                        "column": 257,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2640,7 +2785,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 256
+                                        "column": 256,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -2656,7 +2802,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 255
+                                        "column": 255,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -2678,7 +2825,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 478
+                                        "column": 478,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2694,7 +2842,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 480
+                                        "column": 480,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -2710,7 +2859,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 479
+                                        "column": 479,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -2732,7 +2882,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 427
+                                        "column": 427,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2754,7 +2905,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 424
+                                        "column": 424,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2776,7 +2928,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 426
+                                        "column": 426,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2798,7 +2951,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 420
+                                        "column": 420,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2820,7 +2974,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 418
+                                        "column": 418,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2842,7 +2997,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 419
+                                        "column": 419,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2864,7 +3020,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 423
+                                        "column": 423,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2886,7 +3043,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 421
+                                        "column": 421,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2908,7 +3066,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 422
+                                        "column": 422,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2930,7 +3089,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 493
+                                        "column": 493,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2952,7 +3112,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 494
+                                        "column": 494,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2974,7 +3135,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 495
+                                        "column": 495,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2996,7 +3158,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 496
+                                        "column": 496,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3018,7 +3181,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 497
+                                        "column": 497,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3040,7 +3204,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 498
+                                        "column": 498,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3065,7 +3230,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 252
+                                        "column": 252,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -3073,7 +3239,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 253
+                                        "column": 253,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3098,7 +3265,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 428
+                                        "column": 428,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -3106,7 +3274,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 429
+                                        "column": 429,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3128,7 +3297,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 425
+                                        "column": 425,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3159,7 +3329,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 469
+                                        "column": 469,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -3167,7 +3338,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 470
+                                        "column": 470,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3192,7 +3364,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 466
+                                        "column": 466,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -3200,7 +3373,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 467
+                                        "column": 467,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3225,7 +3399,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 475
+                                        "column": 475,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -3233,7 +3408,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 476
+                                        "column": 476,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3258,7 +3434,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 472
+                                        "column": 472,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -3266,7 +3443,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 473
+                                        "column": 473,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3291,7 +3469,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 459
+                                        "column": 459,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -3299,7 +3478,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 460
+                                        "column": 460,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3324,7 +3504,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 463
+                                        "column": 463,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -3332,7 +3513,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 464
+                                        "column": 464,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3357,7 +3539,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 455
+                                        "column": 455,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -3365,7 +3548,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 456
+                                        "column": 456,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3390,7 +3574,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 457
+                                        "column": 457,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -3398,7 +3583,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 458
+                                        "column": 458,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3423,7 +3609,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 461
+                                        "column": 461,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -3431,7 +3618,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 462
+                                        "column": 462,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3453,7 +3641,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 483
+                                        "column": 483,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3475,7 +3664,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 481
+                                        "column": 481,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3497,7 +3687,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 482
+                                        "column": 482,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3519,7 +3710,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 452
+                                        "column": 452,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3541,7 +3733,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 454
+                                        "column": 454,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3563,7 +3756,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 451
+                                        "column": 451,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3585,7 +3779,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 453
+                                        "column": 453,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3613,7 +3808,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 70
+                                        "column": 70,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3635,7 +3831,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 77
+                                        "column": 77,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3657,7 +3854,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 56
+                                        "column": 56,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3679,7 +3877,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 60
+                                        "column": 60,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3701,7 +3900,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 58
+                                        "column": 58,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3723,7 +3923,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 59
+                                        "column": 59,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3745,7 +3946,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 73
+                                        "column": 73,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3767,7 +3969,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 65
+                                        "column": 65,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3789,7 +3992,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 61
+                                        "column": 61,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3811,7 +4015,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 68
+                                        "column": 68,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3833,7 +4038,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 76
+                                        "column": 76,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3855,7 +4061,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 80
+                                        "column": 80,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3877,7 +4084,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 69
+                                        "column": 69,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3899,7 +4107,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 71
+                                        "column": 71,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3921,7 +4130,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 81
+                                        "column": 81,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3943,7 +4153,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 64
+                                        "column": 64,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3965,7 +4176,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 75
+                                        "column": 75,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3987,7 +4199,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 78
+                                        "column": 78,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4009,7 +4222,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 72
+                                        "column": 72,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4031,7 +4245,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 57
+                                        "column": 57,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4053,7 +4268,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 66
+                                        "column": 66,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4075,7 +4291,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 74
+                                        "column": 74,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4097,7 +4314,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 79
+                                        "column": 79,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4119,7 +4337,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 62
+                                        "column": 62,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4141,7 +4360,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 67
+                                        "column": 67,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4163,7 +4383,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 63
+                                        "column": 63,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4185,7 +4406,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 324
+                                        "column": 324,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4207,7 +4429,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 397
+                                        "column": 397,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4235,7 +4458,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 398
+                                        "column": 398,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4257,7 +4481,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 235
+                                        "column": 235,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4279,7 +4504,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 231
+                                        "column": 231,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4301,7 +4527,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 230
+                                        "column": 230,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4323,7 +4550,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 232
+                                        "column": 232,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4345,7 +4573,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 234
+                                        "column": 234,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4367,7 +4596,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 233
+                                        "column": 233,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4398,7 +4628,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 272
+                                        "column": 272,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4406,7 +4637,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 273
+                                        "column": 273,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4431,7 +4663,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 290
+                                        "column": 290,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4439,7 +4672,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 291
+                                        "column": 291,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4464,7 +4698,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 268
+                                        "column": 268,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4472,7 +4707,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 269
+                                        "column": 269,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4497,7 +4733,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 274
+                                        "column": 274,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4505,7 +4742,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 275
+                                        "column": 275,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4530,7 +4768,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 276
+                                        "column": 276,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4538,7 +4777,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 277
+                                        "column": 277,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4563,7 +4803,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 278
+                                        "column": 278,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4571,7 +4812,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 279
+                                        "column": 279,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4596,7 +4838,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 282
+                                        "column": 282,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4604,7 +4847,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 283
+                                        "column": 283,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4629,7 +4873,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 280
+                                        "column": 280,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4637,7 +4882,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 281
+                                        "column": 281,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4662,7 +4908,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 298
+                                        "column": 298,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4670,7 +4917,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 299
+                                        "column": 299,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4695,7 +4943,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 284
+                                        "column": 284,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4703,7 +4952,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 285
+                                        "column": 285,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4728,7 +4978,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 288
+                                        "column": 288,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4736,7 +4987,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 289
+                                        "column": 289,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4761,7 +5013,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 292
+                                        "column": 292,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4769,7 +5022,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 293
+                                        "column": 293,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4794,7 +5048,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 270
+                                        "column": 270,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4802,7 +5057,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 271
+                                        "column": 271,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4827,7 +5083,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 286
+                                        "column": 286,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4835,7 +5092,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 287
+                                        "column": 287,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4860,7 +5118,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 294
+                                        "column": 294,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4868,7 +5127,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 295
+                                        "column": 295,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4893,7 +5153,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 296
+                                        "column": 296,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4901,7 +5162,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 297
+                                        "column": 297,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4926,7 +5188,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 300
+                                        "column": 300,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4934,7 +5197,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 301
+                                        "column": 301,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4959,7 +5223,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 302
+                                        "column": 302,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -4967,7 +5232,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 303
+                                        "column": 303,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4992,7 +5258,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 304
+                                        "column": 304,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -5000,7 +5267,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 305
+                                        "column": 305,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5025,7 +5293,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 306
+                                        "column": 306,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -5033,7 +5302,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 307
+                                        "column": 307,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5061,7 +5331,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 357
+                                        "column": 357,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5083,7 +5354,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 364
+                                        "column": 364,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5105,7 +5377,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 379
+                                        "column": 379,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5127,7 +5400,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 359
+                                        "column": 359,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5149,7 +5423,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 363
+                                        "column": 363,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5171,7 +5446,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 367
+                                        "column": 367,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5193,7 +5469,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 377
+                                        "column": 377,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5215,7 +5492,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 372
+                                        "column": 372,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5237,7 +5515,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 373
+                                        "column": 373,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5259,7 +5538,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 361
+                                        "column": 361,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5281,7 +5561,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 380
+                                        "column": 380,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5303,7 +5584,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 365
+                                        "column": 365,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5325,7 +5607,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 368
+                                        "column": 368,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5347,7 +5630,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 375
+                                        "column": 375,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5369,7 +5653,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 382
+                                        "column": 382,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5391,7 +5676,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 387
+                                        "column": 387,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5413,7 +5699,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 391
+                                        "column": 391,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5435,7 +5722,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 385
+                                        "column": 385,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5457,7 +5745,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 388
+                                        "column": 388,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5479,7 +5768,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 360
+                                        "column": 360,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5501,7 +5791,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 370
+                                        "column": 370,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5523,7 +5814,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 374
+                                        "column": 374,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5545,7 +5837,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 386
+                                        "column": 386,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5567,7 +5860,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 369
+                                        "column": 369,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5589,7 +5883,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 376
+                                        "column": 376,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5611,7 +5906,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 378
+                                        "column": 378,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5633,7 +5929,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 362
+                                        "column": 362,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5655,7 +5952,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 383
+                                        "column": 383,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5677,7 +5975,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 371
+                                        "column": 371,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5699,7 +5998,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 366
+                                        "column": 366,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5721,7 +6021,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 358
+                                        "column": 358,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5743,7 +6044,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 389
+                                        "column": 389,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5765,7 +6067,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 390
+                                        "column": 390,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5787,7 +6090,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 384
+                                        "column": 384,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5809,7 +6113,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 381
+                                        "column": 381,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5837,7 +6142,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 450
+                                        "column": 450,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5859,7 +6165,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 447
+                                        "column": 447,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5881,7 +6188,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 448
+                                        "column": 448,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5903,7 +6211,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 446
+                                        "column": 446,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5925,7 +6234,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 449
+                                        "column": 449,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5950,7 +6260,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 330
+                                        "column": 330,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -5958,7 +6269,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 331
+                                        "column": 331,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5983,7 +6295,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 328
+                                        "column": 328,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -5991,7 +6304,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 329
+                                        "column": 329,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6016,7 +6330,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 326
+                                        "column": 326,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -6024,7 +6339,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 327
+                                        "column": 327,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6052,7 +6368,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 0
+                                        "column": 0,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2008"
@@ -6063,7 +6380,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 1
+                                        "column": 1,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2008-2012 Swing"
@@ -6074,7 +6392,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 2
+                                        "column": 2,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2012"
@@ -6085,7 +6404,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 3
+                                        "column": 3,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2012-2016 Swing"
@@ -6101,7 +6421,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 16
+                                        "column": 16,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2016"
@@ -6112,7 +6433,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 17
+                                        "column": 17,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2016-2020 Swing"
@@ -6123,7 +6445,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 32
+                                        "column": 32,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6134,7 +6457,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 33
+                                        "column": 33,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020-2024 Swing"
@@ -6145,7 +6469,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 48
+                                        "column": 48,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2024"
@@ -6167,7 +6492,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 15
+                                        "column": 15,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2015"
@@ -6178,7 +6504,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 9
+                                        "column": 9,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2015-2019 Swing"
@@ -6189,7 +6516,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 31
+                                        "column": 31,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2019"
@@ -6200,7 +6528,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 24
+                                        "column": 24,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2019-2021 Swing"
@@ -6211,7 +6540,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 47
+                                        "column": 47,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2021"
@@ -6222,7 +6552,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 40
+                                        "column": 40,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2021-2025 Swing"
@@ -6233,7 +6564,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 55
+                                        "column": 55,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2025"
@@ -6255,7 +6587,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 13
+                                        "column": 13,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2015"
@@ -6266,7 +6599,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 7
+                                        "column": 7,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2015-2019 Swing"
@@ -6277,7 +6611,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 28
+                                        "column": 28,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2019"
@@ -6288,7 +6623,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 21
+                                        "column": 21,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2019-2021 Swing"
@@ -6299,7 +6635,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 44
+                                        "column": 44,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2021"
@@ -6310,7 +6647,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 37
+                                        "column": 37,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2021-2025 Swing"
@@ -6321,7 +6659,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 52
+                                        "column": 52,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2025"
@@ -6343,7 +6682,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 11
+                                        "column": 11,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2015"
@@ -6354,7 +6694,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 5
+                                        "column": 5,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2015-2019 Swing"
@@ -6365,7 +6706,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 26
+                                        "column": 26,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2019"
@@ -6376,7 +6718,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 19
+                                        "column": 19,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2019-2021 Swing"
@@ -6387,7 +6730,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 42
+                                        "column": 42,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2021"
@@ -6398,7 +6742,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 35
+                                        "column": 35,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2021-2025 Swing"
@@ -6409,7 +6754,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 50
+                                        "column": 50,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2025"
@@ -6431,7 +6777,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 14
+                                        "column": 14,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2015"
@@ -6442,7 +6789,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 8
+                                        "column": 8,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2015-2019 Swing"
@@ -6453,7 +6801,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 29
+                                        "column": 29,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2019"
@@ -6464,7 +6813,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 22
+                                        "column": 22,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2019-2021 Swing"
@@ -6475,7 +6825,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 45
+                                        "column": 45,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2021"
@@ -6486,7 +6837,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 38
+                                        "column": 38,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2021-2025 Swing"
@@ -6497,7 +6849,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 53
+                                        "column": 53,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2025"
@@ -6519,7 +6872,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 10
+                                        "column": 10,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2015"
@@ -6530,7 +6884,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 4
+                                        "column": 4,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2015-2019 Swing"
@@ -6541,7 +6896,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 25
+                                        "column": 25,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2019"
@@ -6552,7 +6908,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 18
+                                        "column": 18,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2019-2021 Swing"
@@ -6563,7 +6920,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 41
+                                        "column": 41,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2021"
@@ -6574,7 +6932,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 34
+                                        "column": 34,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2021-2025 Swing"
@@ -6585,7 +6944,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 49
+                                        "column": 49,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2025"
@@ -6607,7 +6967,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 12
+                                        "column": 12,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2015"
@@ -6618,7 +6979,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 6
+                                        "column": 6,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2015-2019 Swing"
@@ -6629,7 +6991,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 27
+                                        "column": 27,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2019"
@@ -6640,7 +7003,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 20
+                                        "column": 20,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2019-2021 Swing"
@@ -6651,7 +7015,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 43
+                                        "column": 43,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2021"
@@ -6662,7 +7027,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 36
+                                        "column": 36,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2021-2025 Swing"
@@ -6673,7 +7039,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 51
+                                        "column": 51,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2025"
@@ -6695,7 +7062,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 30
+                                        "column": 30,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2019"
@@ -6706,7 +7074,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 23
+                                        "column": 23,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2019-2021 Swing"
@@ -6717,7 +7086,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 46
+                                        "column": 46,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2021"
@@ -6728,7 +7098,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 39
+                                        "column": 39,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2021-2025 Swing"
@@ -6739,7 +7110,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 54
+                                        "column": 54,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2025"
@@ -6756,1340 +7128,1485 @@ export const rawStatsTree = [
                         "year": "pre-2000",
                         "stats_by_source": [
                             {
-                                "name": "Representative (1789-90)",
+                                "name": "Representative (1789-1790)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1789_90",
                                         "metadata_index": 5,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1791-92)",
+                                "name": "Representative (1791-1792)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1791_92",
                                         "metadata_index": 6,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1793-94)",
+                                "name": "Representative (1793-1794)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1793_94",
                                         "metadata_index": 7,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1795-96)",
+                                "name": "Representative (1795-1796)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1795_96",
                                         "metadata_index": 8,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1797-98)",
+                                "name": "Representative (1797-1798)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1797_98",
                                         "metadata_index": 9,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1799-00)",
+                                "name": "Representative (1799-1800)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1799_00",
                                         "metadata_index": 10,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1801-02)",
+                                "name": "Representative (1801-1802)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1801_02",
                                         "metadata_index": 11,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1803-04)",
+                                "name": "Representative (1803-1804)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1803_04",
                                         "metadata_index": 12,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1805-06)",
+                                "name": "Representative (1805-1806)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1805_06",
                                         "metadata_index": 13,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1807-08)",
+                                "name": "Representative (1807-1808)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1807_08",
                                         "metadata_index": 14,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1809-10)",
+                                "name": "Representative (1809-1810)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1809_10",
                                         "metadata_index": 15,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1811-12)",
+                                "name": "Representative (1811-1812)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1811_12",
                                         "metadata_index": 16,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1813-14)",
+                                "name": "Representative (1813-1814)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1813_14",
                                         "metadata_index": 17,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1815-16)",
+                                "name": "Representative (1815-1816)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1815_16",
                                         "metadata_index": 18,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1817-18)",
+                                "name": "Representative (1817-1818)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1817_18",
                                         "metadata_index": 19,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1819-20)",
+                                "name": "Representative (1819-1820)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1819_20",
                                         "metadata_index": 20,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1821-22)",
+                                "name": "Representative (1821-1822)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1821_22",
                                         "metadata_index": 21,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1823-24)",
+                                "name": "Representative (1823-1824)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1823_24",
                                         "metadata_index": 22,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1825-26)",
+                                "name": "Representative (1825-1826)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1825_26",
                                         "metadata_index": 23,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1827-28)",
+                                "name": "Representative (1827-1828)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1827_28",
                                         "metadata_index": 24,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1829-30)",
+                                "name": "Representative (1829-1830)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1829_30",
                                         "metadata_index": 25,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1831-32)",
+                                "name": "Representative (1831-1832)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1831_32",
                                         "metadata_index": 26,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1833-34)",
+                                "name": "Representative (1833-1834)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1833_34",
                                         "metadata_index": 27,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1835-36)",
+                                "name": "Representative (1835-1836)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1835_36",
                                         "metadata_index": 28,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1837-38)",
+                                "name": "Representative (1837-1838)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1837_38",
                                         "metadata_index": 29,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1839-40)",
+                                "name": "Representative (1839-1840)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1839_40",
                                         "metadata_index": 30,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1841-42)",
+                                "name": "Representative (1841-1842)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1841_42",
                                         "metadata_index": 31,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1843-44)",
+                                "name": "Representative (1843-1844)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1843_44",
                                         "metadata_index": 32,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1845-46)",
+                                "name": "Representative (1845-1846)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1845_46",
                                         "metadata_index": 33,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1847-48)",
+                                "name": "Representative (1847-1848)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1847_48",
                                         "metadata_index": 34,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1849-50)",
+                                "name": "Representative (1849-1850)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1849_50",
                                         "metadata_index": 35,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1851-52)",
+                                "name": "Representative (1851-1852)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1851_52",
                                         "metadata_index": 36,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1853-54)",
+                                "name": "Representative (1853-1854)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1853_54",
                                         "metadata_index": 37,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1855-56)",
+                                "name": "Representative (1855-1856)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1855_56",
                                         "metadata_index": 38,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1857-58)",
+                                "name": "Representative (1857-1858)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1857_58",
                                         "metadata_index": 39,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1859-60)",
+                                "name": "Representative (1859-1860)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1859_60",
                                         "metadata_index": 40,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1861-62)",
+                                "name": "Representative (1861-1862)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1861_62",
                                         "metadata_index": 41,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1863-64)",
+                                "name": "Representative (1863-1864)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1863_64",
                                         "metadata_index": 42,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1865-66)",
+                                "name": "Representative (1865-1866)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1865_66",
                                         "metadata_index": 43,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1867-68)",
+                                "name": "Representative (1867-1868)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1867_68",
                                         "metadata_index": 44,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1869-70)",
+                                "name": "Representative (1869-1870)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1869_70",
                                         "metadata_index": 45,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1871-72)",
+                                "name": "Representative (1871-1872)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1871_72",
                                         "metadata_index": 46,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1873-74)",
+                                "name": "Representative (1873-1874)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1873_74",
                                         "metadata_index": 47,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1875-76)",
+                                "name": "Representative (1875-1876)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1875_76",
                                         "metadata_index": 48,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1877-78)",
+                                "name": "Representative (1877-1878)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1877_78",
                                         "metadata_index": 49,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1879-80)",
+                                "name": "Representative (1879-1880)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1879_80",
                                         "metadata_index": 50,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1881-82)",
+                                "name": "Representative (1881-1882)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1881_82",
                                         "metadata_index": 51,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1883-84)",
+                                "name": "Representative (1883-1884)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1883_84",
                                         "metadata_index": 52,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1885-86)",
+                                "name": "Representative (1885-1886)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1885_86",
                                         "metadata_index": 53,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1887-88)",
+                                "name": "Representative (1887-1888)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1887_88",
                                         "metadata_index": 54,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1889-90)",
+                                "name": "Representative (1889-1890)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1889_90",
                                         "metadata_index": 55,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1891-92)",
+                                "name": "Representative (1891-1892)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1891_92",
                                         "metadata_index": 56,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1893-94)",
+                                "name": "Representative (1893-1894)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1893_94",
                                         "metadata_index": 57,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1895-96)",
+                                "name": "Representative (1895-1896)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1895_96",
                                         "metadata_index": 58,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1897-98)",
+                                "name": "Representative (1897-1898)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1897_98",
                                         "metadata_index": 59,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1899-00)",
+                                "name": "Representative (1899-1900)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1899_00",
                                         "metadata_index": 60,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1901-02)",
+                                "name": "Representative (1901-1902)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1901_02",
                                         "metadata_index": 61,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1903-04)",
+                                "name": "Representative (1903-1904)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1903_04",
                                         "metadata_index": 62,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1905-06)",
+                                "name": "Representative (1905-1906)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1905_06",
                                         "metadata_index": 63,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1907-08)",
+                                "name": "Representative (1907-1908)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1907_08",
                                         "metadata_index": 64,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1909-10)",
+                                "name": "Representative (1909-1910)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1909_10",
                                         "metadata_index": 65,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1911-12)",
+                                "name": "Representative (1911-1912)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1911_12",
                                         "metadata_index": 66,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1913-14)",
+                                "name": "Representative (1913-1914)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1913_14",
                                         "metadata_index": 67,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1915-16)",
+                                "name": "Representative (1915-1916)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1915_16",
                                         "metadata_index": 68,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1917-18)",
+                                "name": "Representative (1917-1918)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1917_18",
                                         "metadata_index": 69,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1919-20)",
+                                "name": "Representative (1919-1920)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1919_20",
                                         "metadata_index": 70,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1921-22)",
+                                "name": "Representative (1921-1922)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1921_22",
                                         "metadata_index": 71,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1923-24)",
+                                "name": "Representative (1923-1924)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1923_24",
                                         "metadata_index": 72,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1925-26)",
+                                "name": "Representative (1925-1926)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1925_26",
                                         "metadata_index": 73,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1927-28)",
+                                "name": "Representative (1927-1928)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1927_28",
                                         "metadata_index": 74,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1929-30)",
+                                "name": "Representative (1929-1930)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1929_30",
                                         "metadata_index": 75,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1931-32)",
+                                "name": "Representative (1931-1932)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1931_32",
                                         "metadata_index": 76,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1933-34)",
+                                "name": "Representative (1933-1934)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1933_34",
                                         "metadata_index": 77,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1935-36)",
+                                "name": "Representative (1935-1936)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1935_36",
                                         "metadata_index": 78,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1937-38)",
+                                "name": "Representative (1937-1938)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1937_38",
                                         "metadata_index": 79,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1939-40)",
+                                "name": "Representative (1939-1940)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1939_40",
                                         "metadata_index": 80,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1941-42)",
+                                "name": "Representative (1941-1942)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1941_42",
                                         "metadata_index": 81,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1943-44)",
+                                "name": "Representative (1943-1944)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1943_44",
                                         "metadata_index": 82,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1945-46)",
+                                "name": "Representative (1945-1946)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1945_46",
                                         "metadata_index": 83,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1947-48)",
+                                "name": "Representative (1947-1948)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1947_48",
                                         "metadata_index": 84,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1949-50)",
+                                "name": "Representative (1949-1950)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1949_50",
                                         "metadata_index": 85,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1951-52)",
+                                "name": "Representative (1951-1952)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1951_52",
                                         "metadata_index": 86,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1953-54)",
+                                "name": "Representative (1953-1954)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1953_54",
                                         "metadata_index": 87,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1955-56)",
+                                "name": "Representative (1955-1956)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1955_56",
                                         "metadata_index": 88,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1957-58)",
+                                "name": "Representative (1957-1958)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1957_58",
                                         "metadata_index": 89,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1959-60)",
+                                "name": "Representative (1959-1960)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1959_60",
                                         "metadata_index": 90,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1961-62)",
+                                "name": "Representative (1961-1962)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1961_62",
                                         "metadata_index": 91,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1963-64)",
+                                "name": "Representative (1963-1964)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1963_64",
                                         "metadata_index": 92,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1965-66)",
+                                "name": "Representative (1965-1966)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1965_66",
                                         "metadata_index": 93,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1967-68)",
+                                "name": "Representative (1967-1968)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1967_68",
                                         "metadata_index": 94,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1969-70)",
+                                "name": "Representative (1969-1970)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1969_70",
                                         "metadata_index": 95,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1971-72)",
+                                "name": "Representative (1971-1972)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1971_72",
                                         "metadata_index": 96,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1973-74)",
+                                "name": "Representative (1973-1974)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1973_74",
                                         "metadata_index": 97,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1975-76)",
+                                "name": "Representative (1975-1976)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1975_76",
                                         "metadata_index": 98,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1977-78)",
+                                "name": "Representative (1977-1978)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1977_78",
                                         "metadata_index": 99,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1979-80)",
+                                "name": "Representative (1979-1980)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1979_80",
                                         "metadata_index": 100,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1981-82)",
+                                "name": "Representative (1981-1982)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1981_82",
                                         "metadata_index": 101,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1983-84)",
+                                "name": "Representative (1983-1984)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1983_84",
                                         "metadata_index": 102,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1985-86)",
+                                "name": "Representative (1985-1986)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1985_86",
                                         "metadata_index": 103,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1987-88)",
+                                "name": "Representative (1987-1988)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1987_88",
                                         "metadata_index": 104,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1989-90)",
+                                "name": "Representative (1989-1990)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1989_90",
                                         "metadata_index": 105,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1991-92)",
+                                "name": "Representative (1991-1992)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1991_92",
                                         "metadata_index": 106,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (1993-94)",
+                                "name": "Representative (1993-1994)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_1993_94",
                                         "metadata_index": 107,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
+                                    }
+                                ],
+                                "indentedName": null
+                            },
+                            {
+                                "name": "Representative (1995-1996)",
+                                "stats": [
+                                    {
+                                        "kind": "metadata",
+                                        "source": null,
+                                        "path": "metadata_show_metadata_representative_1995_96",
+                                        "metadata_index": 108,
+                                        "value_type": "string",
+                                        "collapsible": true
+                                    }
+                                ],
+                                "indentedName": null
+                            },
+                            {
+                                "name": "Representative (1997-1998)",
+                                "stats": [
+                                    {
+                                        "kind": "metadata",
+                                        "source": null,
+                                        "path": "metadata_show_metadata_representative_1997_98",
+                                        "metadata_index": 109,
+                                        "value_type": "string",
+                                        "collapsible": true
+                                    }
+                                ],
+                                "indentedName": null
+                            },
+                            {
+                                "name": "Representative (1999-2000)",
+                                "stats": [
+                                    {
+                                        "kind": "metadata",
+                                        "source": null,
+                                        "path": "metadata_show_metadata_representative_1999_00",
+                                        "metadata_index": 110,
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
@@ -8100,79 +8617,43 @@ export const rawStatsTree = [
                         "year": 2000,
                         "stats_by_source": [
                             {
-                                "name": "Representative (1995-96)",
-                                "stats": [
-                                    {
-                                        "kind": "metadata",
-                                        "source": null,
-                                        "path": "metadata_show_metadata_representative_1995_96",
-                                        "metadata_index": 108,
-                                        "value_type": "string"
-                                    }
-                                ],
-                                "indentedName": null
-                            },
-                            {
-                                "name": "Representative (1997-98)",
-                                "stats": [
-                                    {
-                                        "kind": "metadata",
-                                        "source": null,
-                                        "path": "metadata_show_metadata_representative_1997_98",
-                                        "metadata_index": 109,
-                                        "value_type": "string"
-                                    }
-                                ],
-                                "indentedName": null
-                            },
-                            {
-                                "name": "Representative (1999-00)",
-                                "stats": [
-                                    {
-                                        "kind": "metadata",
-                                        "source": null,
-                                        "path": "metadata_show_metadata_representative_1999_00",
-                                        "metadata_index": 110,
-                                        "value_type": "string"
-                                    }
-                                ],
-                                "indentedName": null
-                            },
-                            {
-                                "name": "Representative (2001-02)",
+                                "name": "Representative (2001-2002)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_2001_02",
                                         "metadata_index": 111,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (2003-04)",
+                                "name": "Representative (2003-2004)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_2003_04",
                                         "metadata_index": 112,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (2005-06)",
+                                "name": "Representative (2005-2006)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_2005_06",
                                         "metadata_index": 113,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
@@ -8183,53 +8664,57 @@ export const rawStatsTree = [
                         "year": 2010,
                         "stats_by_source": [
                             {
-                                "name": "Representative (2007-08)",
+                                "name": "Representative (2007-2008)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_2007_08",
                                         "metadata_index": 114,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (2009-10)",
+                                "name": "Representative (2009-2010)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_2009_10",
                                         "metadata_index": 115,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (2011-12)",
+                                "name": "Representative (2011-2012)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_2011_12",
                                         "metadata_index": 116,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (2013-14)",
+                                "name": "Representative (2013-2014)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_2013_14",
                                         "metadata_index": 117,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
@@ -8240,79 +8725,85 @@ export const rawStatsTree = [
                         "year": 2020,
                         "stats_by_source": [
                             {
-                                "name": "Representative (2015-16)",
+                                "name": "Representative (2015-2016)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_2015_16",
                                         "metadata_index": 118,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (2017-18)",
+                                "name": "Representative (2017-2018)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_2017_18",
                                         "metadata_index": 119,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (2019-20)",
+                                "name": "Representative (2019-2020)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_2019_20",
                                         "metadata_index": 120,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (2021-22)",
+                                "name": "Representative (2021-2022)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_2021_22",
                                         "metadata_index": 121,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (2023-24)",
+                                "name": "Representative (2023-2024)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_2023_24",
                                         "metadata_index": 122,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
                             },
                             {
-                                "name": "Representative (2025-26)",
+                                "name": "Representative (2025-2026)",
                                 "stats": [
                                     {
                                         "kind": "metadata",
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_2025_26",
                                         "metadata_index": 123,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": true
                                     }
                                 ],
                                 "indentedName": null
@@ -8340,7 +8831,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 396
+                                        "column": 396,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8362,7 +8854,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 491
+                                        "column": 491,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8384,7 +8877,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 334
+                                        "column": 334,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8406,7 +8900,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 492
+                                        "column": 492,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8428,7 +8923,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 335
+                                        "column": 335,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8450,7 +8946,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 490
+                                        "column": 490,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8472,7 +8969,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 333
+                                        "column": 333,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8494,7 +8992,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 489
+                                        "column": 489,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8516,7 +9015,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 332
+                                        "column": 332,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8538,7 +9038,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 322
+                                        "column": 322,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8560,7 +9061,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 320
+                                        "column": 320,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8582,7 +9084,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 319
+                                        "column": 319,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8604,7 +9107,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 321
+                                        "column": 321,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8632,7 +9136,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 338
+                                        "column": 338,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8654,7 +9159,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 347
+                                        "column": 347,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8676,7 +9182,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 337
+                                        "column": 337,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8698,7 +9205,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 336
+                                        "column": 336,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8720,7 +9228,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 151
+                                        "column": 151,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8742,7 +9251,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 153
+                                        "column": 153,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8764,7 +9274,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 152
+                                        "column": 152,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8786,7 +9297,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 156
+                                        "column": 156,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8808,7 +9320,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 155
+                                        "column": 155,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8830,7 +9343,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 154
+                                        "column": 154,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8852,7 +9366,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 245
+                                        "column": 245,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8874,7 +9389,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 408
+                                        "column": 408,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8896,7 +9412,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 445
+                                        "column": 445,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8918,7 +9435,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 488
+                                        "column": 488,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8940,7 +9458,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 339
+                                        "column": 339,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8962,7 +9481,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 342
+                                        "column": 342,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8984,7 +9504,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 341
+                                        "column": 341,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9006,7 +9527,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 343
+                                        "column": 343,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9028,7 +9550,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 348
+                                        "column": 348,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9050,7 +9573,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 350
+                                        "column": 350,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9072,7 +9596,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 349
+                                        "column": 349,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9094,7 +9619,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 351
+                                        "column": 351,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9122,7 +9648,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 311
+                                        "column": 311,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9144,7 +9671,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 309
+                                        "column": 309,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9166,7 +9694,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 308
+                                        "column": 308,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9188,7 +9717,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 310
+                                        "column": 310,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9218,7 +9748,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "path": "metadata_show_metadata_fips",
                                         "metadata_index": 0,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": null
@@ -9242,7 +9773,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "path": "metadata_show_metadata_statcan_geocode",
                                         "metadata_index": 1,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": null
@@ -9266,7 +9798,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "path": "metadata_show_metadata_iso_code",
                                         "metadata_index": 4,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": null
@@ -9297,7 +9830,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 82
+                                        "column": 82,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9305,7 +9839,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 167
+                                        "column": 167,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9324,7 +9859,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 84
+                                        "column": 84,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9332,7 +9868,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 157
+                                        "column": 157,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -9346,7 +9883,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 86
+                                        "column": 86,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9354,7 +9892,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 177
+                                        "column": 177,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -9370,7 +9909,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 83
+                                        "column": 83,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -9381,7 +9921,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 85
+                                        "column": 85,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -9406,7 +9947,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 87
+                                        "column": 87,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9414,7 +9956,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 168
+                                        "column": 168,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9433,7 +9976,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 89
+                                        "column": 89,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9441,7 +9985,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 158
+                                        "column": 158,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -9455,7 +10000,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 91
+                                        "column": 91,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9463,7 +10009,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 178
+                                        "column": 178,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -9479,7 +10026,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 88
+                                        "column": 88,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -9490,7 +10038,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 90
+                                        "column": 90,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -9515,7 +10064,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 93
+                                        "column": 93,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9523,7 +10073,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 169
+                                        "column": 169,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9531,7 +10082,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 217
+                                        "column": 217,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9550,7 +10102,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 95
+                                        "column": 95,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9558,7 +10111,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 159
+                                        "column": 159,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -9572,7 +10126,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 97
+                                        "column": 97,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9580,7 +10135,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 179
+                                        "column": 179,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -9596,7 +10152,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 94
+                                        "column": 94,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -9607,7 +10164,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 96
+                                        "column": 96,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -9632,7 +10190,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 107
+                                        "column": 107,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9640,7 +10199,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 172
+                                        "column": 172,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9648,7 +10208,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 219
+                                        "column": 219,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9667,7 +10228,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 109
+                                        "column": 109,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9675,7 +10237,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 162
+                                        "column": 162,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -9689,7 +10252,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 111
+                                        "column": 111,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9697,7 +10261,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 182
+                                        "column": 182,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -9713,7 +10278,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 108
+                                        "column": 108,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -9724,7 +10290,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 110
+                                        "column": 110,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -9749,7 +10316,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 117
+                                        "column": 117,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9757,7 +10325,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 174
+                                        "column": 174,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9765,7 +10334,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 221
+                                        "column": 221,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9784,7 +10354,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 119
+                                        "column": 119,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9792,7 +10363,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 164
+                                        "column": 164,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -9806,7 +10378,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 121
+                                        "column": 121,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9814,7 +10387,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 184
+                                        "column": 184,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -9830,7 +10404,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 118
+                                        "column": 118,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -9841,7 +10416,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 120
+                                        "column": 120,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -9866,7 +10442,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 127
+                                        "column": 127,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9874,7 +10451,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 176
+                                        "column": 176,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9882,7 +10460,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 223
+                                        "column": 223,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -9901,7 +10480,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 129
+                                        "column": 129,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9909,7 +10489,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 166
+                                        "column": 166,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -9923,7 +10504,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 131
+                                        "column": 131,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9931,7 +10513,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 186
+                                        "column": 186,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -9947,7 +10530,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 128
+                                        "column": 128,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -9958,7 +10542,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 130
+                                        "column": 130,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -9983,7 +10568,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 98
+                                        "column": 98,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9991,7 +10577,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 170
+                                        "column": 170,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -9999,7 +10586,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 218
+                                        "column": 218,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10018,7 +10606,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 100
+                                        "column": 100,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -10026,7 +10615,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 160
+                                        "column": 160,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -10040,7 +10630,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 102
+                                        "column": 102,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -10048,7 +10639,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 180
+                                        "column": 180,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -10064,7 +10656,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 99
+                                        "column": 99,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -10075,7 +10668,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 101
+                                        "column": 101,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -10100,7 +10694,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 112
+                                        "column": 112,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -10108,7 +10703,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 173
+                                        "column": 173,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -10116,7 +10712,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 220
+                                        "column": 220,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10135,7 +10732,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 114
+                                        "column": 114,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -10143,7 +10741,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 163
+                                        "column": 163,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -10157,7 +10756,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 116
+                                        "column": 116,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -10165,7 +10765,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 183
+                                        "column": 183,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -10181,7 +10782,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 113
+                                        "column": 113,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -10192,7 +10794,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 115
+                                        "column": 115,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -10217,7 +10820,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 122
+                                        "column": 122,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -10225,7 +10829,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 175
+                                        "column": 175,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -10233,7 +10838,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 222
+                                        "column": 222,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10252,7 +10858,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 124
+                                        "column": 124,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -10260,7 +10867,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 165
+                                        "column": 165,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -10274,7 +10882,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 126
+                                        "column": 126,
+                                        "collapsible": false
                                     },
                                     {
                                         "kind": "data",
@@ -10282,7 +10891,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 185
+                                        "column": 185,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -10298,7 +10908,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 123
+                                        "column": 123,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -10309,7 +10920,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 125
+                                        "column": 125,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -10337,7 +10949,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 345
+                                        "column": 345,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10359,7 +10972,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 346
+                                        "column": 346,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10381,7 +10995,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 340
+                                        "column": 340,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10403,7 +11018,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 344
+                                        "column": 344,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10425,7 +11041,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 468
+                                        "column": 468,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10447,7 +11064,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 465
+                                        "column": 465,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10469,7 +11087,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 474
+                                        "column": 474,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10491,7 +11110,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 471
+                                        "column": 471,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -10513,7 +11133,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 477
+                                        "column": 477,
+                                        "collapsible": false
                                     }
                                 ],
                                 "indentedName": "2020"

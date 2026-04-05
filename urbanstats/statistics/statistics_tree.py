@@ -36,6 +36,7 @@ class MultiSource:
     by_source: dict[str | NoneType, str]
     multi_source_colname: str = None
     indented_name: str = None
+    collapsible: bool = False
 
     def __post_init__(self):
         if None in self.by_source:
@@ -58,6 +59,7 @@ class MultiSource:
                     "kind": "data",
                     "source": source.json() if source is not None else None,
                     "column": names.index(col),
+                    "collapsible": self.collapsible,
                 }
             )
         output = dict(name=self.compute_name(name_map), stats=result)
@@ -98,6 +100,7 @@ class MetadataMultiSource(MultiSource):
                     "path": self.metadata_path,
                     "metadata_index": self.metadata_index,
                     "value_type": self.metadata_value_type,
+                    "collapsible": self.collapsible,
                 }
             ],
         }
@@ -468,10 +471,9 @@ def congressional_representatives_metadata_group():
     congressional_group_stats_by_year = defaultdict(list)
 
     def representative_year_bucket(term_start_year: int):
-        decade = int(round(term_start_year / 10) * 10)
-        decade = min(max(decade, 1990), 2020)
-        if decade == 1990:
+        if term_start_year < 2000:
             return "pre-2000"
+        decade = int(round(term_start_year / 10) * 10)
         return decade
 
     def representative_term_start_year(setting_key: str) -> int:
@@ -484,12 +486,12 @@ def congressional_representatives_metadata_group():
         prefix = "show_metadata_representative_"
         if not setting_key.startswith(prefix):
             return fallback_name
-        year_text = setting_key[len(prefix) :]
+        year_text = setting_key[len(prefix) :].split("_", 1)[0]
         if not year_text.isdigit():
             return fallback_name
         start_year = int(year_text)
-        end_suffix = str(start_year + 1)[-2:]
-        return f"Representative ({start_year}-{end_suffix})"
+        end_year = start_year + 1
+        return f"Representative ({start_year}-{end_year})"
 
     for entry in metadata["displayed_metadata"]:
         if not entry["show_in_metadata_table"]:
@@ -508,6 +510,7 @@ def congressional_representatives_metadata_group():
                 metadata_index=entry["index"],
                 metadata_path=metadata_path,
                 metadata_value_type="string",
+                collapsible=True,
                 metadata_name=representative_term_name(
                     entry["setting_key"], entry["name"]
                 ),

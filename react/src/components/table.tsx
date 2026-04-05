@@ -2,6 +2,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
+import partyPages from '../data/party_pages'
 import { ArticleOrderingListInternal, loadOrdering } from '../load_json'
 import './table.css'
 import { Navigator } from '../navigation/Navigator'
@@ -29,7 +30,6 @@ import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
 import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
-import partyPages from '../data/party_pages'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -572,7 +572,7 @@ function getPartyPage(party: string): (typeof partyPages)[keyof typeof partyPage
     return partyPages[party as keyof typeof partyPages]
 }
 
-function RepresentativeParty(props: {party?: string}): ReactNode {
+function RepresentativeParty(props: { party?: string }): ReactNode {
     const colors = useColors()
     if (!props.party || props.party === 'Independent') {
         return null
