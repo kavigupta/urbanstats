@@ -33,7 +33,7 @@ export function runTests(platform: 'desktop' | 'mobile'): void {
             if (mapId === undefined) {
                 return undefined
             }
-            const mapObj = (window as unknown as TestWindow).testUtils.mapsWithIDs.get(mapId)!.deref()!
+            const mapObj = (window as unknown as TestWindow).testUtils.maps.get(mapId)!
             const latLon = mapObj.getBounds()
             return {
                 n: Math.round(latLon.getNorth()),

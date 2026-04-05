@@ -236,7 +236,7 @@ function MaybeSplitLayout({ left, right, error }: { left: ReactNode, right: Reac
         : <SplitLayout error={error} left={left} right={right} />
 }
 
-function DivThatTakesUpTheRestOfThePage(props: ComponentProps<'div'> & { divRef?: MutableRefObject<HTMLDivElement | null> }): ReactNode {
+function DivThatTakesUpTheRestOfThePage({ divRef, ...props }: ComponentProps<'div'> & { divRef?: MutableRefObject<HTMLDivElement | null> }): ReactNode {
     const [height, setHeight] = useState(0)
     const ref = useRef<HTMLDivElement | null>(null)
 
@@ -255,7 +255,7 @@ function DivThatTakesUpTheRestOfThePage(props: ComponentProps<'div'> & { divRef?
         window.addEventListener('scroll', updateHeight)
         return () => {
             window.removeEventListener('resize', updateHeight)
-            window.addEventListener('scroll', updateHeight)
+            window.removeEventListener('scroll', updateHeight)
         }
     }, [updateHeight])
 
@@ -265,8 +265,8 @@ function DivThatTakesUpTheRestOfThePage(props: ComponentProps<'div'> & { divRef?
             style={{ height: `${height}px`, ...props.style }}
             ref={(thing) => {
                 ref.current = thing
-                if (props.divRef) {
-                    props.divRef.current = thing
+                if (divRef) {
+                    divRef.current = thing
                 }
             }}
         />
