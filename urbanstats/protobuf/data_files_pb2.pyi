@@ -1,7 +1,7 @@
 # pylint: skip-file
+from collections.abc import Iterable as _Iterable
+from collections.abc import Mapping as _Mapping
 from typing import ClassVar as _ClassVar
-from typing import Iterable as _Iterable
-from typing import Mapping as _Mapping
 from typing import Optional as _Optional
 from typing import Union as _Union
 
@@ -42,7 +42,7 @@ class FirstOrLast(_message.Message):
         self,
         article_row_idx: _Optional[int] = ...,
         article_universes_idx: _Optional[int] = ...,
-        is_first: bool = ...,
+        is_first: _Optional[bool] = ...,
     ) -> None: ...
 
 class RelatedButton(_message.Message):
