@@ -8,7 +8,7 @@ urbanstatsFixture('mapper default', `${target}/mapper.html`)
 
 test('mobile appearance', async (t) => {
     await t.resizeWindow(400, 800)
-    await screencap(t, { selector: Selector('.content_panel_mobile'), removeEntireMap: false })
+    await screencap(t, { selector: Selector('.content_panel_mobile') })
 })
 
 test('showing a popover does not clip in split view', async (t) => {
@@ -18,7 +18,7 @@ test('showing a popover does not clip in split view', async (t) => {
     const doc = Selector('div').withText(/^Creates a linear scale/)
     const editor = Selector('#test-editor-body')
     await t.expect((await doc.boundingClientRect).right).lt((await editor.boundingClientRect).right)
-    await screencap(t, { fullPage: false, selector: Selector('[data-test=split-left]'), removeEntireMap: false }) // Fullpage false so we don't hover and close the popover
+    await screencap(t, { fullPage: false, selector: Selector('[data-test=split-left]') }) // Fullpage false so we don't hover and close the popover
 })
 
 for (const platform of ['desktop', 'mobile']) {
@@ -27,7 +27,7 @@ for (const platform of ['desktop', 'mobile']) {
             await t.resizeWindow(400, 800)
         }
         await withHamburgerMenu(t, async () => {
-            await screencap(t, { removeEntireMap: false })
+            await screencap(t)
             await t.click(Selector('a').withExactText('Home'))
             await t.expect(getLocation()).eql(`${target}/`)
         })
@@ -46,10 +46,10 @@ for (const { constant, docSubpage } of [{ constant: 'linearScale', docSubpage: '
     test(`hover editor click link to documentation of constant ${constant}`, async (t) => {
         await toggleCustomScript(t)
         await t.hover(Selector('span').withExactText(constant))
-        await screencap(t, { fullPage: false, removeEntireMap: false })
+        await screencap(t, { fullPage: false })
         await t.click(Selector('a').withExactText(constant))
         await t.expect(getLocation()).eql(`${target}/uss-documentation.html?doc=${docSubpage}#${constant}`)
-        await screencap(t, { fullPage: false, removeEntireMap: false })
+        await screencap(t, { fullPage: false })
     })
 }
 
@@ -78,7 +78,7 @@ mapper(() => test)('universe navigation', { code: `cMap(
     basemap=noBasemap()
 )` }, async (t) => {
     await waitForLoading()
-    await screencap(t, { removeEntireMap: false })
+    await screencap(t)
     await downloadImage(t)
     const universeSelector = Selector('.universe-selector')
     // assert the current universe in the mapper settings is Iceland
@@ -88,7 +88,7 @@ mapper(() => test)('universe navigation', { code: `cMap(
     // Step 1: change universe via universe selector in the mapper settings
     await replaceInput(t, 'Iceland', 'Denmark')
     await waitForLoading()
-    await screencap(t, { removeEntireMap: false })
+    await screencap(t)
     await downloadImage(t)
     await t.expect(universeSelector.getAttribute('alt')).eql('Denmark') // change reflected in universe selector
     await t.expect(getInput('Denmark').exists).ok() // change reflected in mapper settings
@@ -96,7 +96,7 @@ mapper(() => test)('universe navigation', { code: `cMap(
     await t.click(universeSelector)
     await t.click(Selector('div').withExactText('Ireland').nth(0))
     await waitForLoading()
-    await screencap(t, { removeEntireMap: false })
+    await screencap(t)
     await downloadImage(t)
     await t.expect(universeSelector.getAttribute('alt')).eql('Ireland') // change reflected in universe selector
     await t.expect(getInput('Ireland').exists).ok() // change reflected in mapper settings

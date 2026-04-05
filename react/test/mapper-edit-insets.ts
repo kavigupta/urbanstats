@@ -288,7 +288,7 @@ export function runTests(platform: 'desktop' | 'mobile'): void {
 
     test('edit interface', async (t) => {
         await t.click(editInsetsButton)
-        await screencap(t, { removeEntireMap: false })
+        await screencap(t)
     })
 
     const populationConditionCode = `
@@ -306,6 +306,6 @@ cMap(data=density_pw_1km + density_aw, scale=linearScale(), ramp=rampUridis)
     test('insets page with population condition', async (t) => {
         await toggleCustomScript(t)
         await t.click(editInsetsButton)
-        await screencap(t, { removeEntireMap: false })
+        await screencap(t)
     })
 }
