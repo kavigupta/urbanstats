@@ -1,6 +1,7 @@
 import maplibregl from 'maplibre-gl'
-import React, { ReactNode, useEffect, useMemo, useState } from 'react'
-import { FullscreenControl, Layer, LngLatLike, MapProps, MapRef, Source, useMap } from 'react-map-gl/maplibre'
+import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { FullscreenControl, Layer, MapProps, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
 import { Basemap, CommonMaplibreMap, urbanStatsLayerPrefix } from '../components/map-common'
 import { Basemap as BasemapSpec } from '../mapper/settings/utils'
@@ -58,11 +59,15 @@ interface ClusterMapProps {
     doZoom: boolean
 }
 
-interface ClusterMapElement {
+interface MarkerState {
     featureId: string
-    html: (radius: number) => HTMLElement
-    coords: LngLatLike
-    totalPieChartSize: number
+    lon: number
+    lat: number
+    /** Per-category slice angles in radians, summing to 2π. */
+    sliceAngles: number[]
+    label: string
+    /** Computed display radius in pixels. */
+    radius: number
 }
 
 /**
@@ -84,7 +89,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
     } = props
 
     const [mapRef, setMapRef] = useState<MapRef | null>(null)
-    const [markersOnScreen, setMarkersOnScreen] = useState(new Map<string, maplibregl.Marker>())
+    const [visibleMarkers, setVisibleMarkers] = useState<MarkerState[]>([])
 
     const updateMarkers = (): void => {
         if (mapRef === null) {
@@ -92,15 +97,18 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
         }
 
         const newUnclustered: { idxIntoCentroids: number, category: number }[] = []
-
-        const features = mapRef.querySourceFeatures('centroids')
-
-        const elements = []
-
         const seen = new Set<string>()
+        const rawList: {
+            featureId: string
+            lon: number
+            lat: number
+            sliceAngles: number[]
+            label: string
+            totalPieChartSize: number
+        }[] = []
 
-        for (const feature of features) {
-            const coords: LngLatLike = (feature.geometry as GeoJSON.Point).coordinates as LngLatLike
+        for (const feature of mapRef.querySourceFeatures('centroids')) {
+            const coords = (feature.geometry as GeoJSON.Point).coordinates
             const featureProps = feature.properties as ClusterFeatureProperties
             const featureId = featureProps.cluster ? featureProps.cluster_id : featureProps.idxIntoCentroids.toString()
 
@@ -109,7 +117,10 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
             }
             seen.add(featureId)
 
-            const text = featureProps.cluster ? clusterMarkerLabel(featureProps) : unclusteredMarkerLabel(featureProps)
+            const totalPieChartSize = categoryColors.reduce((sum, _, idx) => sum + featureProps[`pieChartSizeForCategory${idx}`], 0)
+            const sliceAngles = categoryColors.map((_, idx) => featureProps[`pieChartSizeForCategory${idx}`] / totalPieChartSize * 2 * Math.PI)
+            const label = featureProps.cluster ? clusterMarkerLabel(featureProps) : unclusteredMarkerLabel(featureProps)
+
             if (!featureProps.cluster) {
                 const category = categoryColors.findIndex((_, idx) => featureProps[`pieChartSizeForCategory${idx}`] > 0)
                 assert(category !== -1, 'No category found')
@@ -118,58 +129,19 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
                     category,
                 })
             }
-            const totalPieChartSize = categoryColors.reduce((sum, _, idx) => sum + featureProps[`pieChartSizeForCategory${idx}`], 0)
+            rawList.push({ featureId, lon: coords[0], lat: coords[1], sliceAngles, label, totalPieChartSize })
+        }
 
-            const element: ClusterMapElement = {
-                featureId,
-                html: (r: number) => circleSector(
-                    categoryColors,
-                    categoryColors.map((_, idx) => featureProps[`pieChartSizeForCategory${idx}`] / totalPieChartSize * 2 * Math.PI),
-                    r,
-                    text,
-                ),
-                coords,
-                totalPieChartSize,
-            }
-            elements.push(element)
-        }
-        const maxPieChartSize = Math.max(...elements.map(e => e.totalPieChartSize), 0)
-        const newMarkers = new Map<string, maplibregl.Marker>()
-        for (const element of elements) {
-            const existingMarker = markersOnScreen.get(element.featureId)
-            const radius = maxClusterRadius * Math.sqrt(props.computeRelativeArea(element.totalPieChartSize, maxPieChartSize))
-            const markerEl = element.html(radius)
-            if (existingMarker !== undefined) {
-                const markerElement = existingMarker.getElement()
-                markerElement.replaceChildren(markerEl)
-                markerElement.style.opacity = `${markerOpacity}`
-                newMarkers.set(element.featureId, existingMarker)
-            }
-            else {
-                const el = document.createElement('div')
-                el.appendChild(markerEl)
-                el.className = 'syau-marker'
-                el.style.width = `${2 * radius}px`
-                el.style.height = `${2 * radius}px`
-                el.style.opacity = `${markerOpacity}`
-                const marker = new maplibregl.Marker({
-                    element: el,
-                }).setLngLat(element.coords)
+        const maxPieChartSize = Math.max(...rawList.map(r => r.totalPieChartSize), 0)
+        setVisibleMarkers(rawList.map(raw => ({
+            featureId: raw.featureId,
+            lon: raw.lon,
+            lat: raw.lat,
+            sliceAngles: raw.sliceAngles,
+            label: raw.label,
+            radius: maxClusterRadius * Math.sqrt(props.computeRelativeArea(raw.totalPieChartSize, maxPieChartSize)),
+        })))
 
-                newMarkers.set(element.featureId, marker)
-            }
-        }
-        // synchronize
-        for (const [oldMarkerId, oldMarker] of markersOnScreen.entries()) {
-            if (!newMarkers.has(oldMarkerId)) oldMarker.remove()
-        }
-        for (const [newMarkerId, newMarker] of newMarkers.entries()) {
-            if (!markersOnScreen.has(newMarkerId)) {
-                markersOnScreen.set(newMarkerId, newMarker)
-                newMarker.addTo(mapRef.getMap())
-            }
-        }
-        setMarkersOnScreen(newMarkers)
         newUnclustered.sort((a, b) => {
             if (a.idxIntoCentroids < b.idxIntoCentroids) return -1
             if (a.idxIntoCentroids > b.idxIntoCentroids) return 1
@@ -255,6 +227,14 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
             />
             <FirstZoom centroids={centroids} doZoom={props.doZoom} />
             {children}
+            {visibleMarkers.map(state => (
+                <ClusterMarker
+                    key={state.featureId}
+                    state={state}
+                    categoryColors={categoryColors}
+                    markerOpacity={markerOpacity}
+                />
+            ))}
         </CommonMaplibreMap>
     )
 }
@@ -289,61 +269,89 @@ function FirstZoom(props: { centroids: ICoordinate[], doZoom: boolean }): ReactN
     return null
 }
 
-function circleSector(colors: string[], sizeAngleEach: number[], radius: number, text: string): HTMLElement {
-    let startAngle = -Math.PI / 2 // offset so 0% starts at top (12 o'clock)
-    const singleSectors: SVGPathElement[] = []
-    for (let i = 0; i < colors.length; i++) {
-        const [sectors, endAngle] = sectorsFor(radius, startAngle, sizeAngleEach[i], colors[i])
-        singleSectors.push(...sectors)
-        startAngle = endAngle
-    }
-
-    const container = document.createElement('div')
-
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    svg.setAttribute('width', String(radius * 2))
-    svg.setAttribute('height', String(radius * 2))
-    svg.setAttribute('viewBox', `0 0 ${radius * 2} ${radius * 2}`)
-    for (const sector of singleSectors) {
-        svg.appendChild(sector)
-    }
-    container.appendChild(svg)
-
-    const textDiv = document.createElement('div')
-    textDiv.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width: 100%; text-align: center; font-weight: 500'
-    textDiv.className = 'serif'
-    textDiv.textContent = text
-    container.appendChild(textDiv)
-
-    return container
+interface ClusterMarkerProps {
+    state: MarkerState
+    categoryColors: string[]
+    markerOpacity: number
 }
 
-function sectorsFor(radius: number, startAngle: number, sizeAngle: number, color2: string): [SVGPathElement[], number] {
-    // pad by 1 degree to ensure no gaps
-    const singleSectors: SVGPathElement[] = []
-    const target = startAngle + sizeAngle
-    let endAngle = Math.min(target, startAngle + Math.PI / 2)
-    for (let i = 0; i < 4; i++) {
-        singleSectors.push(singleSector(radius, startAngle, endAngle, color2))
-        if (endAngle === target) {
-            break
+function ClusterMarker({ state, categoryColors, markerOpacity }: ClusterMarkerProps): ReactNode {
+    const map = useMap().current!.getMap()
+
+    const [container] = useState<HTMLDivElement>(() => {
+        const el = document.createElement('div')
+        el.className = 'syau-marker'
+        return el
+    })
+    const markerRef = useRef<maplibregl.Marker | null>(null)
+
+    // Mount/unmount the maplibre Marker
+    useEffect(() => {
+        const marker = new maplibregl.Marker({ element: container })
+            .setLngLat([state.lon, state.lat])
+            .addTo(map)
+        markerRef.current = marker
+        return () => {
+            marker.remove()
+            markerRef.current = null
         }
-        startAngle = endAngle
-        endAngle = Math.min(target, startAngle + Math.PI / 2)
-    }
-    return [singleSectors, endAngle]
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally only runs on mount; state.lon/lat updates are handled by the effect below
+    }, [map, container])
+
+    // Update position when coords change
+    useEffect(() => {
+        markerRef.current?.setLngLat([state.lon, state.lat])
+    }, [state.lon, state.lat])
+
+    // Update container size and opacity
+    useEffect(() => {
+        container.style.width = `${2 * state.radius}px`
+        container.style.height = `${2 * state.radius}px`
+        container.style.opacity = `${markerOpacity}`
+    }, [container, state.radius, markerOpacity])
+
+    return createPortal(
+        <PieChart categoryColors={categoryColors} sliceAngles={state.sliceAngles} radius={state.radius} label={state.label} />,
+        container,
+    )
 }
 
-function singleSector(radius: number, startAngle: number, endAngle: number, color2: string): SVGPathElement {
+function PieChart({ categoryColors, sliceAngles, radius, label }: { categoryColors: string[], sliceAngles: number[], radius: number, label: string }): ReactNode {
+    let startAngle = -Math.PI / 2 // offset so 0% starts at top (12 o'clock)
+    const paths: ReactNode[] = []
+    for (let i = 0; i < categoryColors.length; i++) {
+        const target = startAngle + sliceAngles[i]
+        let segStart = startAngle
+        for (let seg = 0; seg < 4; seg++) {
+            const segEnd = Math.min(target, segStart + Math.PI / 2)
+            paths.push(<PieSlice key={`${i}-${seg}`} radius={radius} startAngle={segStart} endAngle={segEnd} color={categoryColors[i]} />)
+            if (segEnd === target) break
+            segStart = segEnd
+        }
+        startAngle = target
+    }
+    return (
+        <div style={{ position: 'relative' }}>
+            <svg width={radius * 2} height={radius * 2} viewBox={`0 0 ${radius * 2} ${radius * 2}`}>
+                {paths}
+            </svg>
+            <div
+                className="serif"
+                style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '100%', textAlign: 'center', fontWeight: 500 }}
+            >
+                {label}
+            </div>
+        </div>
+    )
+}
+
+function PieSlice({ radius, startAngle, endAngle, color }: { radius: number, startAngle: number, endAngle: number, color: string }): ReactNode {
     const pad = (endAngle - startAngle) * 0.01
     const startx = radius + radius * Math.cos(startAngle - pad)
     const starty = radius + radius * Math.sin(startAngle - pad)
     const endx = radius + radius * Math.cos(endAngle + pad)
     const endy = radius + radius * Math.sin(endAngle + pad)
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-    path.setAttribute('d', `M${radius},${radius} L${startx},${starty} A${radius},${radius} 1 0,1 ${endx},${endy} z`)
-    path.setAttribute('fill', color2)
-    return path
+    return <path d={`M${radius},${radius} L${startx},${starty} A${radius},${radius} 1 0,1 ${endx},${endy} z`} fill={color} />
 }
 
 function optimizeWrapping(lons: number[]): number[] {
