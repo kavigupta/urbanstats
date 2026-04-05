@@ -255,7 +255,7 @@ function DivThatTakesUpTheRestOfThePage({ divRef, ...props }: ComponentProps<'di
         window.addEventListener('scroll', updateHeight)
         return () => {
             window.removeEventListener('resize', updateHeight)
-            window.addEventListener('scroll', updateHeight)
+            window.removeEventListener('scroll', updateHeight)
         }
     }, [updateHeight])
 
