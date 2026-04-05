@@ -114,13 +114,13 @@ class StatisticGroup:
     Represents a statistic that is available for multiple years.
     """
 
-    by_year: dict[int | NoneType, list[MultiSource]]
+    by_year: dict[int | str | NoneType, list[MultiSource]]
     group_name_statcol: str = None
     group_name: str = None
 
     def __post_init__(self):
         for year, cols in self.by_year.items():
-            assert year in {2000, 2010, 2020, None}
+            assert isinstance(year, int) or year in {None, "pre-2000"}
             assert isinstance(cols, list)
             assert all(isinstance(col, MultiSource) for col in cols), cols
 
@@ -141,7 +141,7 @@ class StatisticGroup:
 
     @staticmethod
     def flatten_year(year, stats, name_map, names):
-        assert isinstance(year, int) or year is None, year
+        assert isinstance(year, int) or isinstance(year, str) or year is None, year
         stats_processed = []
         for stat in stats:
             stats_processed.append(stat.flatten(name_map, names))
@@ -465,7 +465,20 @@ def geographic_ids_metadata_category():
 
 def congressional_representatives_metadata_group():
     metadata = export_metadata_types()
-    congressional_group_stats = []
+    congressional_group_stats_by_year = defaultdict(list)
+
+    def representative_year_bucket(term_start_year: int):
+        decade = int(round(term_start_year / 10) * 10)
+        decade = min(max(decade, 1990), 2020)
+        if decade == 1990:
+            return "pre-2000"
+        return decade
+
+    def representative_term_start_year(setting_key: str) -> int:
+        prefix = "show_metadata_representative_"
+        assert setting_key.startswith(prefix), setting_key
+        year_text = setting_key[len(prefix) :].split("_", 1)[0]
+        return int(year_text)
 
     def representative_term_name(setting_key, fallback_name):
         prefix = "show_metadata_representative_"
@@ -485,7 +498,11 @@ def congressional_representatives_metadata_group():
             continue
 
         metadata_path = get_statistic_column_path(f"metadata_{entry['setting_key']}")
-        congressional_group_stats.append(
+        congressional_group_stats_by_year[
+            representative_year_bucket(
+                representative_term_start_year(entry["setting_key"])
+            )
+        ].append(
             MetadataMultiSource(
                 by_source={None: metadata_path},
                 metadata_index=entry["index"],
@@ -498,8 +515,7 @@ def congressional_representatives_metadata_group():
         )
 
     return StatisticGroup(
-        {None: congressional_group_stats},
-        group_name="Congressional Representatives",
+        congressional_group_stats_by_year, group_name="Congressional Representatives"
     )
 
 

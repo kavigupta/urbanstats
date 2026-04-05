@@ -6753,7 +6753,7 @@ export const rawStatsTree = [
                 "name": "Congressional Representatives",
                 "contents": [
                     {
-                        "year": null,
+                        "year": "pre-2000",
                         "stats_by_source": [
                             {
                                 "name": "Representative (1789-90)",
@@ -8093,7 +8093,12 @@ export const rawStatsTree = [
                                     }
                                 ],
                                 "indentedName": null
-                            },
+                            }
+                        ]
+                    },
+                    {
+                        "year": 2000,
+                        "stats_by_source": [
                             {
                                 "name": "Representative (1995-96)",
                                 "stats": [
@@ -8171,7 +8176,12 @@ export const rawStatsTree = [
                                     }
                                 ],
                                 "indentedName": null
-                            },
+                            }
+                        ]
+                    },
+                    {
+                        "year": 2010,
+                        "stats_by_source": [
                             {
                                 "name": "Representative (2007-08)",
                                 "stats": [
@@ -8223,7 +8233,12 @@ export const rawStatsTree = [
                                     }
                                 ],
                                 "indentedName": null
-                            },
+                            }
+                        ]
+                    },
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
                             {
                                 "name": "Representative (2015-16)",
                                 "stats": [

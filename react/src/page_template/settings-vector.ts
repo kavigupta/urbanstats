@@ -335,6 +335,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_year_2020', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_year_2010', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_year_2000', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_year_pre-2000', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_historical_cds', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'simple_ordinals', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'use_imperial', coder: booleanSettingCoder }),

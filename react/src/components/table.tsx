@@ -448,6 +448,7 @@ export function StatisticRowCells(props: {
 }): ReactNode {
     const colors = useColors()
     const [ordinalStyle, percentileStyle] = makeOrdinalStyle(colors, false, props.columnWidthsInfo)
+    const pointerCells = PointerRowCells({ ordinalStyle, row: props.row, longname: props.longname })
 
     const cells: ColumnLayoutProps['cells'] = []
 
@@ -549,7 +550,7 @@ export function StatisticRowCells(props: {
                 ),
                 style: { textAlign: 'right' },
             },
-            ...PointerRowCells({ ordinalStyle, row: statisticRow, longname: props.longname }),
+            ...pointerCells,
         )
     }
 

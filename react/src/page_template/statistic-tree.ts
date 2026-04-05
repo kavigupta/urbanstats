@@ -145,7 +145,9 @@ for (const category of statsTree) {
 }
 
 function sortYears(year1: Year, year2: Year): number {
-    return year2 - year1
+    const sortValue1 = year1 === 'pre-2000' ? 1990 : year1
+    const sortValue2 = year2 === 'pre-2000' ? 1990 : year2
+    return sortValue2 - sortValue1
 }
 
 export const allGroups = statsTree.flatMap(category => category.contents)
