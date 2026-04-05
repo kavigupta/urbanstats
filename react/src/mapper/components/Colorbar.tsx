@@ -1,11 +1,12 @@
 import React, { ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { Statistic } from '../../components/display-stats'
+import { getUnitDisplay } from '../../components/unit-display'
 import { Colors } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
 import { ScaleInstance } from '../../urban-stats-script/constants/scale'
 import { furthestColor, interpolateColor } from '../../utils/color'
-import { UnitType } from '../../utils/unit'
+import { classifyStatistic, UnitType } from '../../utils/unit'
 import { Keypoints } from '../ramps'
 import { Basemap } from '../settings/utils'
 
@@ -80,27 +81,10 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
 
     const furthest = useMemo(() => furthestColor(ramp.ramp.map(x => x[1])), [ramp])
 
-    const { hasValuesClampedToStart, hasValuesClampedToEnd } = ramp
-    const scaleAscending = ramp.scale.inverse(0) < ramp.scale.inverse(1)
-
     const createValue = (stat: number, index: number): ReactNode => {
-        const isFirst = index === 0
-        const isLast = index === ramp.interpolations.length - 1
-        let prefix: string | undefined
-        if (isFirst && hasValuesClampedToStart) {
-            prefix = scaleAscending ? '\u2264' /* ≤ */ : '\u2265' /* ≥ */
-        }
-        else if (isLast && hasValuesClampedToEnd) {
-            prefix = scaleAscending ? '\u2265' /* ≥ */ : '\u2264' /* ≤ */
-        }
         return (
             <div className="centered_text">
-                {prefix !== undefined && (
-                    <span>
-                        {prefix}
-                        {' '}
-                    </span>
-                )}
+                <MaybeInequality ramp={ramp} index={index} />
                 <Statistic
                     statname={ramp.label}
                     value={stat}
@@ -171,5 +155,28 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
                 {ramp.label}
             </div>
         </div>
+    )
+}
+
+// Show an inequality if the data goes over the scale
+function MaybeInequality({ ramp, index }: { ramp: EmpiricalRamp, index: number }): ReactNode {
+    const scaleAscending = ramp.scale.inverse(0) < ramp.scale.inverse(1)
+    // Similarly to how we do it with <Statistic/> above
+    const unitDisplay = getUnitDisplay(ramp.unit ?? classifyStatistic(ramp.label))
+    const isFirst = index === 0
+    const isLast = index === ramp.interpolations.length - 1
+    let prefix: string | undefined
+    if (isFirst && ramp.hasValuesClampedToStart) {
+        prefix = unitDisplay.renderInequality(ramp.scale.inverse(0), scaleAscending ? 'leq' : 'geq')
+    }
+    else if (isLast && ramp.hasValuesClampedToEnd) {
+        prefix = unitDisplay.renderInequality(ramp.scale.inverse(1), scaleAscending ? 'geq' : 'leq')
+    }
+
+    return prefix !== undefined && (
+        <span>
+            {prefix}
+            {' '}
+        </span>
     )
 }
