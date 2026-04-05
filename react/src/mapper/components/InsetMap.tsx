@@ -1,11 +1,10 @@
 import React, { HTMLAttributes, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
-import { MapProps, MapRef, useMap } from 'react-map-gl/maplibre'
+import { MapRef, useMap } from 'react-map-gl/maplibre'
 
-import { CustomAttributionControlComponent, insetBorderWidth } from '../../components/map-common'
+import { CommonMapProps, CustomAttributionControlComponent, insetBorderWidth } from '../../components/map-common'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from '../../components/screenshot'
 import { useColors } from '../../page_template/colors'
 import { Inset } from '../../urban-stats-script/constants/insets'
-import { TestUtils } from '../../utils/TestUtils'
 import { Edit } from '../../utils/array-edits'
 import { useMobileLayout } from '../../utils/responsive'
 
@@ -20,7 +19,7 @@ interface InsetMapProps {
 
 // eslint-disable-next-line no-restricted-syntax -- Forward Ref
 function _InsetMap({ inset, children, editInset, container, i, numInsets, interactive }: InsetMapProps & {
-    children: (mapLibreProps: Partial<MapProps>, mapChildren: ReactNode, subRef: React.Ref<MapRef>) => ReactNode
+    children: (mapLibreProps: Partial<CommonMapProps>, mapChildren: ReactNode, subRef: React.Ref<MapRef>) => ReactNode
 }, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
 
@@ -36,12 +35,11 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets, intera
                     editInset?.modify({ coordBox: newBox })
                 }}
             />
-            <ExposeMapForTesting id={id} />
             {inset.mainMap && <CustomAttributionControlComponent startShowingAttribution={true} />}
         </>
     )
 
-    const mapLibreProps: Partial<MapProps> = {
+    const mapLibreProps: Partial<CommonMapProps> = {
         style: {
             position: 'absolute',
             inset: 0,
@@ -52,6 +50,7 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets, intera
         },
         attributionControl: false,
         interactive,
+        testId: id,
     }
     return (
         <div
@@ -126,12 +125,6 @@ function HandleInsets({ inset, setCoordBox }: { inset: Inset, setCoordBox: (newB
         }
     }, [map, setCoordBox])
 
-    return null
-}
-
-function ExposeMapForTesting({ id }: { id: string }): ReactNode {
-    const map = useMap().current!.getMap()
-    TestUtils.shared.mapsWithIDs.set(id, new WeakRef(map))
     return null
 }
 

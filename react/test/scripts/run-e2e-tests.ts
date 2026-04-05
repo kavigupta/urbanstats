@@ -172,7 +172,7 @@ async function runTest(test: string): Promise<TestResult> {
         return { status: failed === 0 ? 'success' as const : 'failure' as const, duration: Date.now() - start }
     })()
 
-    const timeLimitSeconds = options.timeLimitSeconds === undefined ? 10_000 : options.timeLimitSeconds * (await testFileDidChange(test) ? 1 : 2)
+    const timeLimitSeconds = options.live ? 1_000_000 : (options.timeLimitSeconds ?? 10_000) * (await testFileDidChange(test) ? 1 : 2)
 
     const result = await withTimeout(runningTests, async () => timeLimitSeconds + await getTOTPWait(test))
 

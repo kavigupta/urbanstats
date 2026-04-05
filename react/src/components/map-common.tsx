@@ -26,10 +26,15 @@ export const insetBorderWidth = 2
 
 void maplibregl.setRTLTextPlugin('https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js', true)
 
+export type CommonMapProps = MapProps & { testId?: string }
+
 // eslint-disable-next-line no-restricted-syntax -- Forwarded ref
-function _CommonMaplibreMap(props: MapProps, ref: React.Ref<MapRef>): ReactNode {
+function _CommonMaplibreMap(props: CommonMapProps, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
     const isScreenshotMode = useScreenshotMode()
+
+    const fallbackTestId = useId()
+    const testId = props.testId ?? fallbackTestId
 
     return (
         <Map
@@ -48,8 +53,22 @@ function _CommonMaplibreMap(props: MapProps, ref: React.Ref<MapRef>): ReactNode 
                 backgroundColor: isScreenshotMode ? 'transparent' : colors.slightlyDifferentBackground,
                 ...props.style,
             }}
-        />
+        >
+            {props.children}
+            <ExposeMapForTesting id={testId} />
+        </Map>
     )
+}
+
+function ExposeMapForTesting({ id }: { id: string }): ReactNode {
+    const map = useMap().current!.getMap()
+    useEffect(() => {
+        TestUtils.shared.maps.set(id, map)
+        return () => {
+            TestUtils.shared.maps.delete(id)
+        }
+    }, [map, id])
+    return null
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Is a function component
@@ -235,13 +254,6 @@ function useClickable({ id, clickable, features }: { id: string, clickable: bool
     const universe = useUniverse()
 
     const { current: map } = useMap()
-
-    useEffect(() => {
-        if (map === undefined) {
-            return
-        }
-        TestUtils.shared.addMapToAllMaps(map)
-    }, [map])
 
     useEffect(() => {
         if (clickable) {
