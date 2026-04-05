@@ -345,7 +345,7 @@ const PieChart = memo(function PieChart({ categoryColors, sliceAngles, radius, l
         startAngle = target
     }
     return (
-        <div style={{ position: 'relative' }}>
+        <>
             <svg width={radius * 2} height={radius * 2} viewBox={`0 0 ${radius * 2} ${radius * 2}`}>
                 {paths}
             </svg>
@@ -355,7 +355,7 @@ const PieChart = memo(function PieChart({ categoryColors, sliceAngles, radius, l
             >
                 {label}
             </div>
-        </div>
+        </>
     )
 }, (prev, next) =>
     prev.radius === next.radius
