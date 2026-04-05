@@ -1,5 +1,5 @@
 import maplibregl from 'maplibre-gl'
-import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, memo, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { FullscreenControl, Layer, MapProps, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
@@ -269,13 +269,18 @@ function FirstZoom(props: { centroids: ICoordinate[], doZoom: boolean }): ReactN
     return null
 }
 
+function numArraysEqual(a: number[], b: number[]): boolean {
+    return a.length === b.length && a.every((v, i) => v === b[i])
+}
+
 interface ClusterMarkerProps {
     state: MarkerState
     categoryColors: string[]
     markerOpacity: number
 }
 
-function ClusterMarker({ state, categoryColors, markerOpacity }: ClusterMarkerProps): ReactNode {
+// eslint-disable-next-line no-restricted-syntax -- Memoed
+const ClusterMarker = memo(function ClusterMarker({ state, categoryColors, markerOpacity }: ClusterMarkerProps): ReactNode {
     const map = useMap().current!.getMap()
 
     const [container] = useState<HTMLDivElement>(() => {
@@ -314,9 +319,18 @@ function ClusterMarker({ state, categoryColors, markerOpacity }: ClusterMarkerPr
         <PieChart categoryColors={categoryColors} sliceAngles={state.sliceAngles} radius={state.radius} label={state.label} />,
         container,
     )
-}
+}, (prev, next) =>
+    prev.state.lon === next.state.lon
+    && prev.state.lat === next.state.lat
+    && prev.state.radius === next.state.radius
+    && prev.state.label === next.state.label
+    && numArraysEqual(prev.state.sliceAngles, next.state.sliceAngles)
+    && prev.categoryColors === next.categoryColors
+    && prev.markerOpacity === next.markerOpacity,
+)
 
-function PieChart({ categoryColors, sliceAngles, radius, label }: { categoryColors: string[], sliceAngles: number[], radius: number, label: string }): ReactNode {
+// eslint-disable-next-line no-restricted-syntax -- Memoed
+const PieChart = memo(function PieChart({ categoryColors, sliceAngles, radius, label }: { categoryColors: string[], sliceAngles: number[], radius: number, label: string }): ReactNode {
     let startAngle = -Math.PI / 2 // offset so 0% starts at top (12 o'clock)
     const paths: ReactNode[] = []
     for (let i = 0; i < categoryColors.length; i++) {
@@ -343,16 +357,22 @@ function PieChart({ categoryColors, sliceAngles, radius, label }: { categoryColo
             </div>
         </div>
     )
-}
+}, (prev, next) =>
+    prev.radius === next.radius
+    && prev.label === next.label
+    && prev.categoryColors === next.categoryColors
+    && numArraysEqual(prev.sliceAngles, next.sliceAngles),
+)
 
-function PieSlice({ radius, startAngle, endAngle, color }: { radius: number, startAngle: number, endAngle: number, color: string }): ReactNode {
+// eslint-disable-next-line no-restricted-syntax -- Memoed
+const PieSlice = memo(function PieSlice({ radius, startAngle, endAngle, color }: { radius: number, startAngle: number, endAngle: number, color: string }): ReactNode {
     const pad = (endAngle - startAngle) * 0.01
     const startx = radius + radius * Math.cos(startAngle - pad)
     const starty = radius + radius * Math.sin(startAngle - pad)
     const endx = radius + radius * Math.cos(endAngle + pad)
     const endy = radius + radius * Math.sin(endAngle + pad)
     return <path d={`M${radius},${radius} L${startx},${starty} A${radius},${radius} 1 0,1 ${endx},${endy} z`} fill={color} />
-}
+})
 
 function optimizeWrapping(lons: number[]): number[] {
     const lonsAboutIDL = lons.map(lon => lon > 0 ? lon - 360 : lon)
