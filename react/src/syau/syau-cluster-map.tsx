@@ -142,6 +142,8 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
             if (existingMarker !== undefined) {
                 const markerElement = existingMarker.getElement()
                 markerElement.innerHTML = html
+                markerElement.style.width = `${2 * radius}px`
+                markerElement.style.height = `${2 * radius}px`
                 markerElement.style.opacity = `${markerOpacity}`
                 newMarkers.set(element.featureId, existingMarker)
             }
