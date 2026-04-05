@@ -12,7 +12,7 @@ class MetadataColumnResult:
 
 class MetadataColumnProvider(ABC):
     @abstractmethod
-    def compute_metadata_columns(self, *, shapefile, shapefile_table):
+    def compute_metadata_columns(self, *, shapefile, shapefiles, shapefile_table):
         pass
 
     def __permacache_hash__(self):

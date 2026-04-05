@@ -37,7 +37,7 @@ export interface FirstLastStatus { isFirst: boolean, isLast: boolean }
 export interface CongressionalRepresentativeView {
     name: string
     wikipediaPage: string
-    party: string
+    party?: string
 }
 
 export interface CongressionalRepresentativesView {
@@ -127,11 +127,10 @@ function assertCongressionalRepresentativesView(value: ICongressionalRepresentat
         representatives: (value.representatives ?? []).map((representative) => {
             assert(typeof representative.name === 'string', 'congressional representative name is missing')
             assert(typeof representative.wikipediaPage === 'string', 'congressional representative wikipedia page is missing')
-            assert(typeof representative.party === 'string', 'congressional representative party is missing')
             return {
                 name: representative.name,
                 wikipediaPage: representative.wikipediaPage,
-                party: representative.party,
+                party: representative.party ?? undefined,
             } satisfies CongressionalRepresentativeView
         }),
     }

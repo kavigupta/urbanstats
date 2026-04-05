@@ -96,7 +96,9 @@ def load_representatives_by_district(*, version):
     )
     table = pd.read_csv(representatives_url)
 
-    state_name_to_abbr = {state.name: state.abbr for state in us.states.STATES + [us.states.DC]}
+    state_name_to_abbr = {
+        state.name: state.abbr for state in us.states.STATES + [us.states.DC]
+    }
     table["state_abbr"] = table["state"].map(state_name_to_abbr)
     table["district_norm"] = table["district"].map(normalize_district)
     table["term_start_year"] = table["term"].astype(int).map(to_year)
@@ -129,7 +131,9 @@ def load_representatives_by_district(*, version):
 def representatives_for_district(
     state_abbr: str, district: str, start_year, end_year, *, representatives_csv_version
 ) -> List[Representative]:
-    representatives = load_representatives_by_district(version=representatives_csv_version)
+    representatives = load_representatives_by_district(
+        version=representatives_csv_version
+    )
     district_representatives = representatives.get((state_abbr, district), {})
     return {
         year: reps
@@ -139,52 +143,51 @@ def representatives_for_district(
 
 
 @permacache(
-    "urbanstats/metadata/congressional_representatives/compute_representatives_for_shapefile",
-    key_function=dict(sf=lambda x: x.hash_key, shortnames=stable_hash, start_dates=stable_hash, end_dates=stable_hash),
+    "urbanstats/metadata/congressional_representatives/compute_representatives_for_shapefile_3",
+    key_function=dict(sf=lambda x: x.hash_key),
 )
 def compute_representatives_for_shapefile(
-    sf: Shapefile, shortnames, start_dates, end_dates, *, representatives_csv_version
+    sf: Shapefile, *, representatives_csv_version
 ) -> List[dict]:
     table = sf.load_file()
-    if not (len(shortnames) == len(start_dates) == len(end_dates) == len(table)):
-        raise ValueError(
-            "Expected shortnames/start_dates/end_dates to match shapefile size"
-        )
     results = []
     pbar = tqdm.tqdm(total=len(table), desc="Computing representatives for districts")
-    for (_, row), shortname, start_date, end_date in zip(
-        table.iterrows(), shortnames, start_dates, end_dates
-    ):
+    for _, row in table.iterrows():
         pbar.set_postfix({"current_district": row["longname"]})
-        state_abbr, district = district_shortname_to_state_and_district(shortname)
+        state_abbr, district = district_shortname_to_state_and_district(row.shortname)
         results.append(
             representatives_for_district(
                 state_abbr,
                 district,
-                start_date,
-                end_date,
+                row.start_date,
+                row.end_date,
                 representatives_csv_version=representatives_csv_version,
             )
         )
         pbar.update(1)
     pbar.close()
-    return results
+    return list(table.longname), results
 
 
 class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
     representatives_csv_version = "75d536eb0406ed3f9c4e20afa34d9f0c77948d57"
-    version = f"congressional_representatives_structured_{representatives_csv_version}_v2"
+    version = (
+        f"congressional_representatives_structured_{representatives_csv_version}_v48"
+    )
 
-    def compute_metadata_columns(self, *, shapefile, shapefile_table):
-        if "congressional_representatives" not in shapefile.special_data_sources:
-            return []
-        representatives_by_row = compute_representatives_for_shapefile(
-            shapefile,
-            shapefile_table.shortname.tolist(),
-            shapefile_table.start_date.tolist(),
-            shapefile_table.end_date.tolist(),
-            representatives_csv_version=self.representatives_csv_version,
-        )
+    def compute_metadata_columns(self, *, shapefile, shapefiles, shapefile_table):
+        if "congressional_representatives_indirect" in shapefile.special_data_sources:
+            assert (
+                "congressional_representatives" not in shapefile.special_data_sources
+            ), shapefile.hash_key
+            representatives_by_row = self.compute_metadata_columns_indirect(
+                shapefile, shapefile_table, shapefiles
+            )
+        else:
+            if "congressional_representatives" not in shapefile.special_data_sources:
+                return []
+
+            representatives_by_row = self.compute_metadata_columns_direct(shapefile)
         return [
             MetadataColumnResult(
                 key=key_for_term_start_year(term_start_year),
@@ -192,3 +195,49 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
             )
             for term_start_year in TERM_START_YEARS
         ]
+
+    def compute_metadata_columns_direct(self, shapefile):
+        _, representatives_by_row = compute_representatives_for_shapefile(
+            shapefile,
+            representatives_csv_version=self.representatives_csv_version,
+        )
+        return representatives_by_row
+
+    def compute_metadata_columns_indirect(self, shapefile, shapefile_table, shapefiles):
+        # pylint: disable=import-outside-toplevel,cyclic-import
+        from urbanstats.geometry.relationship import create_relationships_dispatch
+
+        [key_self] = [key for key, value in shapefiles.items() if value == shapefile]
+
+        other_keys = [
+            key
+            for key, sf_other in shapefiles.items()
+            if "congressional_representatives" in sf_other.special_data_sources
+        ]
+        results = defaultdict(lambda: defaultdict(list))
+        for key_other in other_keys:
+            (
+                a_contains_b,
+                b_contains_a,
+                a_intersects_b,
+                _,
+            ) = create_relationships_dispatch(shapefiles, key_self, key_other)
+            relationships = [*a_contains_b, *b_contains_a, *a_intersects_b]
+            if not relationships:
+                continue
+            names_other, representatives_direct_other = (
+                compute_representatives_for_shapefile(
+                    shapefiles[key_other],
+                    representatives_csv_version=self.representatives_csv_version,
+                )
+            )
+            name_to_representatives_other = dict(
+                zip(names_other, representatives_direct_other)
+            )
+            for name, name_other in relationships:
+                representatives_other = name_to_representatives_other.get(
+                    name_other, {}
+                )
+                for term_start_year, reps in representatives_other.items():
+                    results[name][term_start_year].extend(reps)
+        return [results[name] for name in shapefile_table.longname]

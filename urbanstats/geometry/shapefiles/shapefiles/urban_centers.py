@@ -18,7 +18,10 @@ def create_urban_center_like_shapefile(**kwargs):
         intermediate_computation_columns=["subnationals_ISO_CODE"],
         filter=lambda x: True,
         does_overlap_self=False,
-        special_data_sources=["international_gridded_data"],
+        special_data_sources=[
+            "international_gridded_data",
+            "congressional_representatives_indirect",
+        ],
         universe_provider=CombinedUniverseProvider(
             [*INTERNATIONAL_PROVIDERS, UrbanCenterlikeStateUniverseProvider()]
         ),

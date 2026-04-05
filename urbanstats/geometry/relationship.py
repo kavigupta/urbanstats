@@ -295,7 +295,7 @@ def compute_all_relationships(long_to_type, shapefiles_to_use):
             b_contains_a,
             a_intersects_b,
             a_borders_b,
-        ) = create_relationships_dispatch(shapefiles_to_use[k1], shapefiles_to_use[k2])
+        ) = create_relationships_dispatch(shapefiles_to_use, k1, k2)
 
         add(contains, a_contains_b)
         add(contains, [(big, small) for small, big in b_contains_a])
@@ -312,12 +312,26 @@ def compute_all_relationships(long_to_type, shapefiles_to_use):
     return contains, contained_by, intersects, borders
 
 
-def create_relationships_dispatch(shape1, shape2):
+def flip(edges):
+    return [(y, x) for (x, y) in edges]
+
+
+def create_relationships_dispatch(shapefiles_to_use, k1, k2):
+    if k1 < k2:
+        a_contains_b, b_contains_a, a_intersects_b, a_borders_b = create_relationships(
+            shapefiles_to_use[k2], shapefiles_to_use[k1]
+        )
+        return (
+            flip(a_contains_b),
+            flip(b_contains_a),
+            flip(a_intersects_b),
+            flip(a_borders_b),
+        )
     if not temporal_ranges_overlap(
-        shape1.start_date_overall,
-        shape1.end_date_overall,
-        shape2.start_date_overall,
-        shape2.end_date_overall,
+        shapefiles_to_use[k1].start_date_overall,
+        shapefiles_to_use[k1].end_date_overall,
+        shapefiles_to_use[k2].start_date_overall,
+        shapefiles_to_use[k2].end_date_overall,
     ):
         return set(), set(), set(), set()
     (
@@ -325,7 +339,7 @@ def create_relationships_dispatch(shape1, shape2):
         b_contains_a,
         a_intersects_b,
         a_borders_b,
-    ) = create_relationships(shape1, shape2)
+    ) = create_relationships(shapefiles_to_use[k1], shapefiles_to_use[k2])
 
     return a_contains_b, b_contains_a, a_intersects_b, a_borders_b
 

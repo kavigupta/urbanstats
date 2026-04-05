@@ -295,6 +295,7 @@ district_shapefiles = dict(
         ),
         minimum_district_length=0,
         does_overlap_self=False,
+        special_data_sources=["congressional_representatives_indirect"],
     ),
     state_senate=districts(
         "sldu",
@@ -308,5 +309,6 @@ district_shapefiles = dict(
         ),
         minimum_district_length=0,
         does_overlap_self=False,
+        special_data_sources=["congressional_representatives_indirect"],
     ),
 )

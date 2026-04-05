@@ -566,22 +566,31 @@ export function StatisticRowCells(props: {
     )
 }
 
-function Representative(props: { representative: CongressionalRepresentativeView }): ReactNode {
-    assert(props.representative.party in partyPages, `Party ${props.representative.party} not found in partyPages data`)
-    const partyPage = partyPages[props.representative.party as keyof typeof partyPages]
+function RepresentativeParty(props: {party?: string}): ReactNode {
     const colors = useColors()
+    if (!props.party) {
+        return null
+    }
+    assert(props.party in partyPages, `Party ${props.party} not found in partyPages data`)
+    const partyPage = partyPages[props.party as keyof typeof partyPages]
     // eslint-disable-next-line no-restricted-syntax -- not acutal colors, just remapping
     const colorStr = partyPage.party_color === 'black' || partyPage.party_color === 'gray' ? 'grey' : partyPage.party_color
     const color = colors.hueColors[colorStr]
 
     return (
+        <a href={partyPage.wikipedia_page} style={{ textDecoration: 'none', color }} target="_blank" rel="noopener noreferrer">
+            {` (${props.party.slice(0, 1)})`}
+        </a>
+    )
+}
+
+function Representative(props: { representative: CongressionalRepresentativeView }): ReactNode {
+    return (
         <span>
             <a href={props.representative.wikipediaPage} style={{ textDecoration: 'none', color: 'inherit' }} target="_blank" rel="noopener noreferrer">
                 {props.representative.name}
             </a>
-            <a href={partyPage.wikipedia_page} style={{ textDecoration: 'none', color }} target="_blank" rel="noopener noreferrer">
-                {` (${props.representative.party.slice(0, 1)})`}
-            </a>
+            <RepresentativeParty party={props.representative.party} />
         </span>
     )
 }

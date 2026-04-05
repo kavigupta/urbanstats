@@ -52,6 +52,7 @@ def compute_statistics_for_shapefile(
     for metadata_column_provider in metadata_column_providers:
         computed_columns = metadata_column_provider.compute_metadata_columns(
             shapefile=sf,
+            shapefiles=shapefiles,
             shapefile_table=result,
         )
         for computed_column in computed_columns:
