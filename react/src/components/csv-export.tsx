@@ -108,13 +108,13 @@ function processContextIntoMapping(context: Map<string, USSValue>): [string[], M
 }
 
 export function generateMapperCSVData(
-    result: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' },
+    result: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' | 'clusterMap' },
     context: Map<string, USSValue>,
 ): string[][] {
     const headerRow: string[] = []
 
     headerRow.push('Geography')
-    if (result.opaqueType === 'cMap' || result.opaqueType === 'pMap') {
+    if (result.opaqueType === 'cMap' || result.opaqueType === 'pMap' || result.opaqueType === 'clusterMap') {
         headerRow.push('Value')
     }
     else {
@@ -133,7 +133,7 @@ export function generateMapperCSVData(
         const row: string[] = []
 
         row.push(name)
-        if (result.opaqueType === 'cMap' || result.opaqueType === 'pMap') {
+        if (result.opaqueType === 'cMap' || result.opaqueType === 'pMap' || result.opaqueType === 'clusterMap') {
             const value = result.value.data[i]
             row.push(formatNumberForCSV(value))
         }

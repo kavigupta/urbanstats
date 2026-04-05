@@ -131,7 +131,7 @@ function HandleInsets({ inset, setCoordBox }: { inset: Inset, setCoordBox: (newB
 
 function ExposeMapForTesting({ id }: { id: string }): ReactNode {
     const map = useMap().current!.getMap()
-    TestUtils.shared.maps.set(id, new WeakRef(map))
+    TestUtils.shared.mapsWithIDs.set(id, new WeakRef(map))
     return null
 }
 

@@ -34,8 +34,8 @@ async function executeRequest(request: USSExecutionRequest): Promise<USSExecutio
                 break
             }
             case 'mapper': {
-                if (renderType(result.type) !== 'cMap' && renderType(result.type) !== 'cMapRGB' && renderType(result.type) !== 'pMap') {
-                    throw new InterpretationError(`USS expression did not return a cMap, cMapRGB, or pMap type, got: ${renderType(result.type)}`, locationOfLastExpression(request.stmts))
+                if (renderType(result.type) !== 'cMap' && renderType(result.type) !== 'cMapRGB' && renderType(result.type) !== 'pMap' && renderType(result.type) !== 'clusterMap') {
+                    throw new InterpretationError(`USS expression did not return a cMap, cMapRGB, pMap, or clusterMap type, got: ${renderType(result.type)}`, locationOfLastExpression(request.stmts))
                 }
                 break
             }
