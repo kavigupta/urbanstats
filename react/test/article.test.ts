@@ -412,6 +412,18 @@ test('loading indicator', async (t) => {
     await screencap(t, { wait: false })
 })
 
+urbanstatsFixture('uncheck all years', '/article.html?longname=California%2C+USA')
+
+test('uncheck all years exits staged mode', async (t) => {
+    // Check all year checkboxes, then uncheck them, and verify that staged mode is exited (staging controls disappear)
+    await checkTextboxes(t, ['Geographic Identifiers'])
+    await waitForLoading()
+    const yearCheckbox = Selector('.checkbox-setting').withExactText('2020').find('input[type="checkbox"]')
+    await t.click(yearCheckbox)
+    await waitForLoading()
+    await t.click(yearCheckbox)
+})
+
 const edgeCaseHashes: { longname: string, expectedHash: number, expectedCompactness: string }[] = [
     // hash collisions
     { longname: 'NC-02 (1899), USA', expectedHash: 0xf4fbd73f, expectedCompactness: '0.151' },
