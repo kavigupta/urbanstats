@@ -97,7 +97,7 @@ async function prepForImage(t: TestController, options: { hover: boolean, remove
     }
     await t.eval(() => {
         if (options.removeEntireMap) {
-        // disable the map, so that we're not testing the tiles
+            // disable the map, so that we're not testing the tiles
             for (const x of Array.from(document.getElementsByClassName('maplibregl-canvas-container'))) {
                 if (x instanceof HTMLElement) {
                     x.style.visibility = 'hidden'
@@ -105,7 +105,7 @@ async function prepForImage(t: TestController, options: { hover: boolean, remove
             }
         }
         else {
-        // disable the basemap layers, so that we're not testing the tiles
+            // disable the basemap layers, so that we're not testing the tiles
             (window as unknown as TestWindow).testUtils.disableBasemapLayers()
         }
 
@@ -118,6 +118,9 @@ async function prepForImage(t: TestController, options: { hover: boolean, remove
 
         // stop all animations (intended for moving spinners)
         document.querySelectorAll('[style*=animation]').forEach((element) => { (element as HTMLElement).style.animation = 'none' })
+
+        // hide corners on some elements where having corners causes screenshot comparison flakes
+        document.querySelectorAll('[data-test-hide-corners]').forEach((element) => { (element as HTMLElement).style.borderRadius = '0px' })
     }, { dependencies: { options } })
 }
 
