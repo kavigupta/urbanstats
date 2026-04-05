@@ -237,6 +237,7 @@ function UndoRedoControls({ doUndo, doRedo, canUndo, canRedo }: { doUndo: () => 
                     }}
                     disabled={!canUndo}
                     style={buttonStyle}
+                    data-test-hide-corners
                 >
                     Undo
                 </button>
@@ -248,6 +249,7 @@ function UndoRedoControls({ doUndo, doRedo, canUndo, canRedo }: { doUndo: () => 
                     }}
                     disabled={!canRedo}
                     style={buttonStyle}
+                    data-test-hide-corners
                 >
                     Redo
                 </button>
