@@ -292,7 +292,7 @@ const ClusterMarker = memo(function ClusterMarker({ state, categoryColors, marke
 
     // Mount/unmount the maplibre Marker
     useEffect(() => {
-        const marker = new maplibregl.Marker({ element: container })
+        const marker = new maplibregl.Marker({ element: container, opacity: `${markerOpacity}` })
             .setLngLat([state.lon, state.lat])
             .addTo(map)
         markerRef.current = marker
@@ -308,12 +308,16 @@ const ClusterMarker = memo(function ClusterMarker({ state, categoryColors, marke
         markerRef.current?.setLngLat([state.lon, state.lat])
     }, [state.lon, state.lat])
 
-    // Update container size and opacity
+    // Update container size
     useEffect(() => {
         container.style.width = `${2 * state.radius}px`
         container.style.height = `${2 * state.radius}px`
-        container.style.opacity = `${markerOpacity}`
-    }, [container, state.radius, markerOpacity])
+    }, [container, state.radius])
+
+    // update marker opacity
+    useEffect(() => {
+        markerRef.current?.setOpacity(`${markerOpacity}`)
+    }, [markerOpacity])
 
     return createPortal(
         <PieChart categoryColors={categoryColors} sliceAngles={state.sliceAngles} radius={state.radius} label={state.label} />,
