@@ -428,10 +428,43 @@ def census_basics_with_canada(col_name, canada_name=None, *, change):
     return result
 
 
-def metadata_statistics_category():
+def geographic_ids_metadata_category():
     metadata = export_metadata_types()
     contents = defaultdict(dict)
-    congressional_group_key = "metadata_show_metadata_congressional_representatives"
+
+    for entry in metadata["displayed_metadata"]:
+        if not entry["show_in_metadata_table"]:
+            continue
+        if entry["category"] != "geoid":
+            continue
+        if entry["setting_key"].startswith("show_metadata_representative_"):
+            continue
+        metadata_path = get_statistic_column_path(f"metadata_{entry['setting_key']}")
+        contents["geoid"][metadata_path] = StatisticGroup(
+            {
+                None: [
+                    MetadataMultiSource(
+                        by_source={None: metadata_path},
+                        metadata_index=entry["index"],
+                        metadata_path=metadata_path,
+                        metadata_value_type="string",
+                        metadata_name=entry["name"],
+                    )
+                ]
+            },
+            group_name=entry["name"],
+        )
+
+    return {
+        "geoid": StatisticCategory(
+            name="Geographic Identifiers",
+            contents=contents["geoid"],
+        )
+    }
+
+
+def congressional_representatives_metadata_group():
+    metadata = export_metadata_types()
     congressional_group_stats = []
 
     def representative_term_name(setting_key, fallback_name):
@@ -448,49 +481,30 @@ def metadata_statistics_category():
     for entry in metadata["displayed_metadata"]:
         if not entry["show_in_metadata_table"]:
             continue
-        metadata_path = get_statistic_column_path(f"metadata_{entry['setting_key']}")
-        assert "category" in entry, f"Metadata entry {entry} is missing category"
-        if entry["setting_key"].startswith("show_metadata_representative_"):
-            congressional_group_stats.append(
-                MetadataMultiSource(
-                    by_source={None: metadata_path},
-                    metadata_index=entry["index"],
-                    metadata_path=metadata_path,
-                    metadata_value_type="string",
-                    metadata_name=representative_term_name(
-                        entry["setting_key"], entry["name"]
-                    ),
-                )
-            )
-        else:
-            contents[entry["category"]][metadata_path] = StatisticGroup(
-                {
-                    None: [
-                        MetadataMultiSource(
-                            by_source={None: metadata_path},
-                            metadata_index=entry["index"],
-                            metadata_path=metadata_path,
-                            metadata_value_type="string",
-                            metadata_name=entry["name"],
-                        )
-                    ]
-                },
-                group_name=entry["name"],
-            )
+        if not entry["setting_key"].startswith("show_metadata_representative_"):
+            continue
 
-    if congressional_group_stats:
-        contents["geoid"][congressional_group_key] = StatisticGroup(
-            {None: congressional_group_stats},
-            group_name="Congressional Representatives",
+        metadata_path = get_statistic_column_path(f"metadata_{entry['setting_key']}")
+        congressional_group_stats.append(
+            MetadataMultiSource(
+                by_source={None: metadata_path},
+                metadata_index=entry["index"],
+                metadata_path=metadata_path,
+                metadata_value_type="string",
+                metadata_name=representative_term_name(
+                    entry["setting_key"], entry["name"]
+                ),
+            )
         )
-    category_names = {"geoid": "Geographic Identifiers"}
-    assert set(contents) == set(
-        category_names
-    ), f"Unexpected metadata categories: {set(contents)}"
-    return {
-        cat_internal: StatisticCategory(name=cat_name, contents=contents[cat_internal])
-        for cat_internal, cat_name in category_names.items()
-    }
+
+    return StatisticGroup(
+        {None: congressional_group_stats},
+        group_name="Congressional Representatives",
+    )
+
+
+metadata_categories = geographic_ids_metadata_category()
+congressional_representatives_group = congressional_representatives_metadata_group()
 
 
 statistics_tree = StatisticTree(
@@ -968,6 +982,7 @@ statistics_tree = StatisticTree(
                     },
                     group_name="Canadian GE: PPC",
                 ),
+                "metadata_show_metadata_congressional_representatives": congressional_representatives_group,
             },
         ),
         **just_2020_category(
@@ -1021,7 +1036,7 @@ statistics_tree = StatisticTree(
             "insurance_coverage_govt",
             "insurance_coverage_private",
         ),
-        **metadata_statistics_category(),
+        **metadata_categories,
         "other_densities": StatisticCategory(
             name="Other Density Metrics",
             contents={

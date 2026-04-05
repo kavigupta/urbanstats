@@ -6747,960 +6747,6 @@ export const rawStatsTree = [
                         ]
                     }
                 ]
-            }
-        ]
-    },
-    {
-        "id": "distance_from_features",
-        "name": "Distance from Features",
-        "contents": [
-            {
-                "id": "park_percent_1km_v2",
-                "name": "PW Mean % of parkland within 1km",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "PW Mean % of parkland within 1km",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 396
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "within_Hospital_10",
-                "name": "Within 10km of Hospital %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Within 10km of Hospital %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 491
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_dist_Hospital_updated",
-                "name": "Mean distance to nearest Hospital",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean distance to nearest Hospital",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 334
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "within_Public School_2",
-                "name": "Within 2km of Public School %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Within 2km of Public School %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 492
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_dist_Public School_updated",
-                "name": "Mean distance to nearest Public School",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean distance to nearest Public School",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 335
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "within_Airport_30",
-                "name": "Within 30km of Airport %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Within 30km of Airport %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 490
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_dist_Airport_updated",
-                "name": "Mean distance to nearest Airport",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean distance to nearest Airport",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 333
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "within_Active Superfund Site_10",
-                "name": "Within 10km of Active Superfund Site %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Within 10km of Active Superfund Site %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 489
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_dist_Active Superfund Site_updated",
-                "name": "Mean distance to nearest Active Superfund Site",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean distance to nearest Active Superfund Site",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 332
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "lapophalfshare_usda_fra_1",
-                "name": "Within 0.5mi of a grocery store %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Within 0.5mi of a grocery store %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 322
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "lapop1share_usda_fra_1",
-                "name": "Within 1mi of a grocery store %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Within 1mi of a grocery store %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 320
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "lapop10share_usda_fra_1",
-                "name": "Within 10mi of a grocery store %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Within 10mi of a grocery store %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 319
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "lapop20share_usda_fra_1",
-                "name": "Within 20mi of a grocery store %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Within 20mi of a grocery store %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 321
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "id": "weather",
-        "name": "Weather",
-        "contents": [
-            {
-                "id": "mean_high_temp_4",
-                "name": "Mean high temp",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean high temp",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 338
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_low_temp",
-                "name": "Mean low temp",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean low temp",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 347
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_high_heat_index_4",
-                "name": "Mean high heat index",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean high heat index",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 337
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_high_dewpoint_4",
-                "name": "Mean high dewpt",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean high dewpt",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 336
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "days_above_90_4",
-                "name": "High temperature Above 90\u00b0F %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "High temperature Above 90\u00b0F %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 151
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "days_between_40_and_90_4",
-                "name": "High temperature Between 40 and 90\u00b0F %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "High temperature Between 40 and 90\u00b0F %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 153
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "days_below_40_4",
-                "name": "High temperature Below 40\u00b0F %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "High temperature Below 40\u00b0F %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 152
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "days_dewpoint_70_inf_4",
-                "name": "Humid days (dewpt > 70\u00b0F) %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Humid days (dewpt > 70\u00b0F) %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 156
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "days_dewpoint_50_70_4",
-                "name": "Non-humid, Non-dry days (50\u00b0F < dewpt < 70\u00b0F) %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Non-humid, Non-dry days (50\u00b0F < dewpt < 70\u00b0F) %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 155
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "days_dewpoint_-inf_50_4",
-                "name": "Dry days (dewpt < 50\u00b0F) %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Dry days (dewpt < 50\u00b0F) %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 154
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "hours_sunny_4",
-                "name": "Mean sunny hours",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean sunny hours",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 245
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "rainfall_4",
-                "name": "Rainfall",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Rainfall",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 408
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "snowfall_4",
-                "name": "Snowfall [rain-equivalent]",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Snowfall [rain-equivalent]",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 445
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "wind_speed_over_10mph_4",
-                "name": "High windspeed (>10mph) days %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "High windspeed (>10mph) days %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 488
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_high_temp_djf",
-                "name": "Mean high temperature in Dec/Jan/Feb",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean high temperature in Dec/Jan/Feb",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 339
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_high_temp_mam",
-                "name": "Mean high temperature in Mar/Apr/May",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean high temperature in Mar/Apr/May",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 342
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_high_temp_jja",
-                "name": "Mean high temperature in Jun/Jul/Aug",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean high temperature in Jun/Jul/Aug",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 341
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_high_temp_son",
-                "name": "Mean high temperature in Sep/Oct/Nov",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean high temperature in Sep/Oct/Nov",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 343
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_low_temp_djf",
-                "name": "Mean low temperature in Dec/Jan/Feb",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean low temperature in Dec/Jan/Feb",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 348
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_low_temp_mam",
-                "name": "Mean low temperature in Mar/Apr/May",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean low temperature in Mar/Apr/May",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 350
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_low_temp_jja",
-                "name": "Mean low temperature in Jun/Jul/Aug",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean low temperature in Jun/Jul/Aug",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 349
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "mean_low_temp_son",
-                "name": "Mean low temperature in Sep/Oct/Nov",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Mean low temperature in Sep/Oct/Nov",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 351
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "id": "misc",
-        "name": "Miscellaneous",
-        "contents": [
-            {
-                "id": "internet_no_access",
-                "name": "No internet access %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "No internet access %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 311
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "insurance_coverage_none",
-                "name": "Uninsured %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Uninsured %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 309
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "insurance_coverage_govt",
-                "name": "Public Insurance %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Public Insurance %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 308
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "insurance_coverage_private",
-                "name": "Private Insurance %",
-                "contents": [
-                    {
-                        "year": 2020,
-                        "stats_by_source": [
-                            {
-                                "name": "Private Insurance %",
-                                "stats": [
-                                    {
-                                        "kind": "data",
-                                        "source": null,
-                                        "column": 310
-                                    }
-                                ],
-                                "indentedName": "2020"
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "id": "geoid",
-        "name": "Geographic Identifiers",
-        "contents": [
-            {
-                "id": "metadata_show_metadata_fips",
-                "name": "FIPS",
-                "contents": [
-                    {
-                        "year": null,
-                        "stats_by_source": [
-                            {
-                                "name": "FIPS",
-                                "stats": [
-                                    {
-                                        "kind": "metadata",
-                                        "source": null,
-                                        "path": "metadata_show_metadata_fips",
-                                        "metadata_index": 0,
-                                        "value_type": "string"
-                                    }
-                                ],
-                                "indentedName": null
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "metadata_show_metadata_statcan_geocode",
-                "name": "StatCan GeoCode",
-                "contents": [
-                    {
-                        "year": null,
-                        "stats_by_source": [
-                            {
-                                "name": "StatCan GeoCode",
-                                "stats": [
-                                    {
-                                        "kind": "metadata",
-                                        "source": null,
-                                        "path": "metadata_show_metadata_statcan_geocode",
-                                        "metadata_index": 1,
-                                        "value_type": "string"
-                                    }
-                                ],
-                                "indentedName": null
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "metadata_show_metadata_iso_code",
-                "name": "ISO Code",
-                "contents": [
-                    {
-                        "year": null,
-                        "stats_by_source": [
-                            {
-                                "name": "ISO Code",
-                                "stats": [
-                                    {
-                                        "kind": "metadata",
-                                        "source": null,
-                                        "path": "metadata_show_metadata_iso_code",
-                                        "metadata_index": 4,
-                                        "value_type": "string"
-                                    }
-                                ],
-                                "indentedName": null
-                            }
-                        ]
-                    }
-                ]
             },
             {
                 "id": "metadata_show_metadata_congressional_representatives",
@@ -9251,6 +8297,960 @@ export const rawStatsTree = [
                                         "source": null,
                                         "path": "metadata_show_metadata_representative_2025_26",
                                         "metadata_index": 123,
+                                        "value_type": "string"
+                                    }
+                                ],
+                                "indentedName": null
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "distance_from_features",
+        "name": "Distance from Features",
+        "contents": [
+            {
+                "id": "park_percent_1km_v2",
+                "name": "PW Mean % of parkland within 1km",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "PW Mean % of parkland within 1km",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 396
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "within_Hospital_10",
+                "name": "Within 10km of Hospital %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Within 10km of Hospital %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 491
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_dist_Hospital_updated",
+                "name": "Mean distance to nearest Hospital",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean distance to nearest Hospital",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 334
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "within_Public School_2",
+                "name": "Within 2km of Public School %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Within 2km of Public School %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 492
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_dist_Public School_updated",
+                "name": "Mean distance to nearest Public School",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean distance to nearest Public School",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 335
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "within_Airport_30",
+                "name": "Within 30km of Airport %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Within 30km of Airport %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 490
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_dist_Airport_updated",
+                "name": "Mean distance to nearest Airport",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean distance to nearest Airport",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 333
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "within_Active Superfund Site_10",
+                "name": "Within 10km of Active Superfund Site %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Within 10km of Active Superfund Site %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 489
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_dist_Active Superfund Site_updated",
+                "name": "Mean distance to nearest Active Superfund Site",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean distance to nearest Active Superfund Site",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 332
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "lapophalfshare_usda_fra_1",
+                "name": "Within 0.5mi of a grocery store %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Within 0.5mi of a grocery store %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 322
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "lapop1share_usda_fra_1",
+                "name": "Within 1mi of a grocery store %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Within 1mi of a grocery store %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 320
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "lapop10share_usda_fra_1",
+                "name": "Within 10mi of a grocery store %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Within 10mi of a grocery store %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 319
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "lapop20share_usda_fra_1",
+                "name": "Within 20mi of a grocery store %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Within 20mi of a grocery store %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 321
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "weather",
+        "name": "Weather",
+        "contents": [
+            {
+                "id": "mean_high_temp_4",
+                "name": "Mean high temp",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high temp",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 338
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_low_temp",
+                "name": "Mean low temp",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean low temp",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 347
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_high_heat_index_4",
+                "name": "Mean high heat index",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high heat index",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 337
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_high_dewpoint_4",
+                "name": "Mean high dewpt",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high dewpt",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 336
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "days_above_90_4",
+                "name": "High temperature Above 90\u00b0F %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "High temperature Above 90\u00b0F %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 151
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "days_between_40_and_90_4",
+                "name": "High temperature Between 40 and 90\u00b0F %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "High temperature Between 40 and 90\u00b0F %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 153
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "days_below_40_4",
+                "name": "High temperature Below 40\u00b0F %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "High temperature Below 40\u00b0F %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 152
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "days_dewpoint_70_inf_4",
+                "name": "Humid days (dewpt > 70\u00b0F) %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Humid days (dewpt > 70\u00b0F) %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 156
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "days_dewpoint_50_70_4",
+                "name": "Non-humid, Non-dry days (50\u00b0F < dewpt < 70\u00b0F) %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Non-humid, Non-dry days (50\u00b0F < dewpt < 70\u00b0F) %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 155
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "days_dewpoint_-inf_50_4",
+                "name": "Dry days (dewpt < 50\u00b0F) %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Dry days (dewpt < 50\u00b0F) %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 154
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "hours_sunny_4",
+                "name": "Mean sunny hours",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean sunny hours",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 245
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "rainfall_4",
+                "name": "Rainfall",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Rainfall",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 408
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "snowfall_4",
+                "name": "Snowfall [rain-equivalent]",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Snowfall [rain-equivalent]",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 445
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "wind_speed_over_10mph_4",
+                "name": "High windspeed (>10mph) days %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "High windspeed (>10mph) days %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 488
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_high_temp_djf",
+                "name": "Mean high temperature in Dec/Jan/Feb",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high temperature in Dec/Jan/Feb",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 339
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_high_temp_mam",
+                "name": "Mean high temperature in Mar/Apr/May",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high temperature in Mar/Apr/May",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 342
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_high_temp_jja",
+                "name": "Mean high temperature in Jun/Jul/Aug",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high temperature in Jun/Jul/Aug",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 341
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_high_temp_son",
+                "name": "Mean high temperature in Sep/Oct/Nov",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean high temperature in Sep/Oct/Nov",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 343
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_low_temp_djf",
+                "name": "Mean low temperature in Dec/Jan/Feb",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean low temperature in Dec/Jan/Feb",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 348
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_low_temp_mam",
+                "name": "Mean low temperature in Mar/Apr/May",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean low temperature in Mar/Apr/May",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 350
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_low_temp_jja",
+                "name": "Mean low temperature in Jun/Jul/Aug",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean low temperature in Jun/Jul/Aug",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 349
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mean_low_temp_son",
+                "name": "Mean low temperature in Sep/Oct/Nov",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Mean low temperature in Sep/Oct/Nov",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 351
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "misc",
+        "name": "Miscellaneous",
+        "contents": [
+            {
+                "id": "internet_no_access",
+                "name": "No internet access %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "No internet access %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 311
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "insurance_coverage_none",
+                "name": "Uninsured %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Uninsured %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 309
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "insurance_coverage_govt",
+                "name": "Public Insurance %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Public Insurance %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 308
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "insurance_coverage_private",
+                "name": "Private Insurance %",
+                "contents": [
+                    {
+                        "year": 2020,
+                        "stats_by_source": [
+                            {
+                                "name": "Private Insurance %",
+                                "stats": [
+                                    {
+                                        "kind": "data",
+                                        "source": null,
+                                        "column": 310
+                                    }
+                                ],
+                                "indentedName": "2020"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "geoid",
+        "name": "Geographic Identifiers",
+        "contents": [
+            {
+                "id": "metadata_show_metadata_fips",
+                "name": "FIPS",
+                "contents": [
+                    {
+                        "year": null,
+                        "stats_by_source": [
+                            {
+                                "name": "FIPS",
+                                "stats": [
+                                    {
+                                        "kind": "metadata",
+                                        "source": null,
+                                        "path": "metadata_show_metadata_fips",
+                                        "metadata_index": 0,
+                                        "value_type": "string"
+                                    }
+                                ],
+                                "indentedName": null
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "metadata_show_metadata_statcan_geocode",
+                "name": "StatCan GeoCode",
+                "contents": [
+                    {
+                        "year": null,
+                        "stats_by_source": [
+                            {
+                                "name": "StatCan GeoCode",
+                                "stats": [
+                                    {
+                                        "kind": "metadata",
+                                        "source": null,
+                                        "path": "metadata_show_metadata_statcan_geocode",
+                                        "metadata_index": 1,
+                                        "value_type": "string"
+                                    }
+                                ],
+                                "indentedName": null
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "metadata_show_metadata_iso_code",
+                "name": "ISO Code",
+                "contents": [
+                    {
+                        "year": null,
+                        "stats_by_source": [
+                            {
+                                "name": "ISO Code",
+                                "stats": [
+                                    {
+                                        "kind": "metadata",
+                                        "source": null,
+                                        "path": "metadata_show_metadata_iso_code",
+                                        "metadata_index": 4,
                                         "value_type": "string"
                                     }
                                 ],
