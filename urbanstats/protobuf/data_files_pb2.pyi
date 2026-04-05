@@ -42,7 +42,7 @@ class FirstOrLast(_message.Message):
         self,
         article_row_idx: _Optional[int] = ...,
         article_universes_idx: _Optional[int] = ...,
-        is_first: _Optional[bool] = ...,
+        is_first: bool = ...,
     ) -> None: ...
 
 class RelatedButton(_message.Message):
