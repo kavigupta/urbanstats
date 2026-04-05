@@ -19,9 +19,10 @@ class ExtraStatistic(ABC):
 
 def is_invalid_histogram(histogram):
     if isinstance(histogram, float):
+        assert histogram != histogram, f"Non nan float: {histogram}"
         # this is a check for nan
         # pylint: disable=comparison-with-itself
-        return histogram != histogram
+        return True
     if np.nansum(histogram) == 0:
         # I don't know when this would happen but it seems as though it can
         return True
