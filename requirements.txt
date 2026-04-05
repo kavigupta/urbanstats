@@ -30,6 +30,7 @@ netCDF4==1.6.5
 Pillow==9.5.0
 dask==2025.4.1
 scikit-learn
+protobuf==5.28.3
 
 # only for linting/testing
 pylint==3.3.1
