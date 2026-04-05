@@ -431,24 +431,57 @@ def census_basics_with_canada(col_name, canada_name=None, *, change):
 def metadata_statistics_category():
     metadata = export_metadata_types()
     contents = defaultdict(dict)
+    congressional_group_key = "metadata_show_metadata_congressional_representatives"
+    congressional_group_stats = []
+
+    def representative_term_name(setting_key, fallback_name):
+        prefix = "show_metadata_representative_"
+        if not setting_key.startswith(prefix):
+            return fallback_name
+        year_text = setting_key[len(prefix) :]
+        if not year_text.isdigit():
+            return fallback_name
+        start_year = int(year_text)
+        end_suffix = str(start_year + 1)[-2:]
+        return f"Representative ({start_year}-{end_suffix})"
+
     for entry in metadata["displayed_metadata"]:
         if not entry["show_in_metadata_table"]:
             continue
         metadata_path = get_statistic_column_path(f"metadata_{entry['setting_key']}")
         assert "category" in entry, f"Metadata entry {entry} is missing category"
-        contents[entry["category"]][metadata_path] = StatisticGroup(
-            {
-                None: [
-                    MetadataMultiSource(
-                        by_source={None: metadata_path},
-                        metadata_index=entry["index"],
-                        metadata_path=metadata_path,
-                        metadata_value_type="string",
-                        metadata_name=entry["name"],
-                    )
-                ]
-            },
-            group_name=entry["name"],
+        if entry["setting_key"].startswith("show_metadata_representative_"):
+            congressional_group_stats.append(
+                MetadataMultiSource(
+                    by_source={None: metadata_path},
+                    metadata_index=entry["index"],
+                    metadata_path=metadata_path,
+                    metadata_value_type="string",
+                    metadata_name=representative_term_name(
+                        entry["setting_key"], entry["name"]
+                    ),
+                )
+            )
+        else:
+            contents[entry["category"]][metadata_path] = StatisticGroup(
+                {
+                    None: [
+                        MetadataMultiSource(
+                            by_source={None: metadata_path},
+                            metadata_index=entry["index"],
+                            metadata_path=metadata_path,
+                            metadata_value_type="string",
+                            metadata_name=entry["name"],
+                        )
+                    ]
+                },
+                group_name=entry["name"],
+            )
+
+    if congressional_group_stats:
+        contents["geoid"][congressional_group_key] = StatisticGroup(
+            {None: congressional_group_stats},
+            group_name="Congressional Representatives",
         )
     category_names = {"geoid": "Geographic Identifiers"}
     assert set(contents) == set(

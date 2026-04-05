@@ -470,8 +470,7 @@ export function StatisticRowCells(props: {
                             </span>
                         ))}
                     </span>
-                ),
-                style: { textAlign: 'right' },
+                )
             },
             style: { textAlign: 'center' },
         })

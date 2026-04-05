@@ -436,6 +436,9 @@ function collapseAlternateSourcesSingleGroupYear(rows: ArticleRow[][], groupYear
     if (rows.length === 1) {
         return rows
     }
+    if (rows[0][0].kind !== 'statistic') {
+        return rows
+    }
     // convert to a bitmap of whether each thing has a value (alternative is nan)
     const hasValue = rows.map(row => row.map(x => !isNoValue(x.statval)))
     const rowsC: ArticleRow[][] = []
