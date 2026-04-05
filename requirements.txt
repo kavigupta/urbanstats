@@ -4,7 +4,7 @@ shapely==2.1.0
 cdsapi
 xarray
 suncalc
-protobuf==5.28.3
+protobuf==6.33.5
 geotiff
 imagecodecs
 git+https://github.com/kavigupta/python-us.git
@@ -30,7 +30,8 @@ netCDF4==1.6.5
 Pillow==9.5.0
 dask==2025.4.1
 scikit-learn
-protobuf==5.28.3
+protobuf==6.33.5
+grpcio-tools==1.78.0 # pinned to match protobuf version
 
 # only for linting/testing
 pylint==3.3.1
