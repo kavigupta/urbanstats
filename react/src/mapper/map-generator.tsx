@@ -96,10 +96,14 @@ function ClusterScaleAwareInsets({
 
     const setInsetMax = (insetIndex: number, maxValue: number): void => {
         setClusterMaxByInset((prev) => {
-            const next = prev.length === insetsFeatures.length ? [...prev] : Array.from({ length: insetsFeatures.length }, () => 0)
-            if (next[insetIndex] === maxValue) {
+            if (prev.length !== insetsFeatures.length) {
+                // in case stuff fires out of order
+                return Array.from({ length: insetsFeatures.length }, () => 0)
+            }
+            if (prev[insetIndex] === maxValue) {
                 return prev
             }
+            const next = [...prev]
             next[insetIndex] = maxValue
             return next
         })
