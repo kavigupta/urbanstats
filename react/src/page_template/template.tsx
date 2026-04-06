@@ -36,6 +36,9 @@ export function PageTemplate({
     const styleElement = useStyleElement()
     useEffect(() => {
         styleElement(document.documentElement)
+        if (TestUtils.shared.isTesting) {
+            document.documentElement.setAttribute('spellcheck', 'false')
+        }
         document.body.style.backgroundColor = colors.background
         document.body.style.color = colors.textMain
     }, [styleElement, colors.background, colors.textMain])
