@@ -528,8 +528,10 @@ function computeClusterRampBin(val: number, clusterRamp: RampToDisplay & { type:
 
 function computeRampToDisplay(value: CommonMap): RampToDisplay & { type: 'ramp' } {
     const scale = instantiate(value.scale)
+    const hasValuesClampedToStart = value.data.some(val => scale.forward(val) < 0)
+    const hasValuesClampedToEnd = value.data.some(val => scale.forward(val) > 1)
     const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-    return { type: 'ramp', value: { ramp: value.ramp, interpolations, scale, label: value.label, unit: value.unit } }
+    return { type: 'ramp', value: { ramp: value.ramp, interpolations, scale, label: value.label, unit: value.unit, hasValuesClampedToStart, hasValuesClampedToEnd } }
 }
 
 const canonicalWidth = 1200

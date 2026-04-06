@@ -15,6 +15,26 @@ export function useObserverSets(observerSets: Set<() => void>[]): void {
         return () => {
             observerSets.forEach(set => set.delete(observer))
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- That's fine
-    }, observerSets)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Signature reflects the set identities this hook subscribes to.
+    }, [hashObserverSets(observerSets)])
+}
+
+// we do this because we're not allowed to change the number of dependencies in a useEffect hook.
+// it was producing a warning otherwise.
+function hashObserverSets(observerSets: Set<() => void>[]): string {
+    return observerSets.map(getObserverSetId).join(',')
+}
+
+// identity hashing, using interning.
+const observerSetIds = new WeakMap<Set<() => void>, number>()
+let nextObserverSetId = 1
+
+function getObserverSetId(observerSet: Set<() => void>): number {
+    let id = observerSetIds.get(observerSet)
+    if (id === undefined) {
+        id = nextObserverSetId
+        nextObserverSetId += 1
+        observerSetIds.set(observerSet, id)
+    }
+    return id
 }

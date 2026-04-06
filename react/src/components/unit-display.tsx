@@ -5,11 +5,37 @@ import { UnitType } from '../utils/unit'
 
 import { ElectionResult, GenericPartyChange, GenericPartyPercentage, LeftMargin } from './display-stats'
 
+type RenderInequality = (value: number, inequality: 'leq' | 'geq') => string
+
 export interface UnitDisplay {
     renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
         value: ReactNode
         unit: ReactNode
     }
+    renderInequality: RenderInequality
+}
+
+// Default render inequality
+const renderInequality: RenderInequality = (value, inequality) => {
+    switch (inequality) {
+        case 'leq':
+            return '\u2264' /* ≤ */
+        case 'geq':
+            return '\u2265' /* ≥ */
+    }
+}
+
+const renderMarginInequality: RenderInequality = (value, inequality) => {
+    // Negative values actually display as positive for election results, and default to R for 0, which means that greater than 0 is less than R margin
+    if (value <= 0) {
+        switch (inequality) {
+            case 'geq':
+                return renderInequality(value, 'leq')
+            case 'leq':
+                return renderInequality(value, 'geq')
+        }
+    }
+    return renderInequality(value, inequality)
 }
 
 export function getUnitDisplay(unitType: UnitType): UnitDisplay {
@@ -22,6 +48,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>%</span>,
                     }
                 },
+                renderInequality,
             }
         case 'percentageChange':
             return {
@@ -38,6 +65,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>%</span>,
                     }
                 },
+                renderInequality,
             }
         case 'fatalities':
             return {
@@ -47,6 +75,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>&nbsp;</span>,
                     }
                 },
+                renderInequality,
             }
         case 'fatalitiesPerCapita':
             return {
@@ -56,6 +85,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>/100k</span>,
                     }
                 },
+                renderInequality,
             }
         case 'density':
             return {
@@ -84,6 +114,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         ),
                     }
                 },
+                renderInequality,
             }
         case 'population':
             return {
@@ -113,6 +144,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         }
                     }
                 },
+                renderInequality,
             }
         case 'area':
             return {
@@ -172,6 +204,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit,
                     }
                 },
+                renderInequality,
             }
         case 'distanceInKm':
             return {
@@ -187,6 +220,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit,
                     }
                 },
+                renderInequality,
             }
         case 'distanceInM':
             return {
@@ -202,6 +236,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>{unitName}</span>,
                     }
                 },
+                renderInequality,
             }
         case 'democraticMargin':
             return {
@@ -211,6 +246,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>%</span>,
                     }
                 },
+                renderInequality: renderMarginInequality,
             }
         case 'partyPctBlue':
         case 'partyPctRed':
@@ -226,6 +262,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>%</span>,
                     }
                 },
+                renderInequality,
             }
         }
         case 'partyChangeBlue':
@@ -242,6 +279,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>%</span>,
                     }
                 },
+                renderInequality,
             }
         }
         case 'leftMargin':
@@ -252,6 +290,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>%</span>,
                     }
                 },
+                renderInequality: renderMarginInequality,
             }
         case 'temperature':
             return {
@@ -267,6 +306,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit,
                     }
                 },
+                renderInequality,
             }
         case 'time':
             return {
@@ -284,6 +324,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>&nbsp;</span>,
                     }
                 },
+                renderInequality,
             }
         case 'distancePerYear':
             return {
@@ -304,6 +345,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         ),
                     }
                 },
+                renderInequality,
             }
         case 'contaminantLevel':
             return {
@@ -318,6 +360,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         ),
                     }
                 },
+                renderInequality,
             }
         case 'number':
             return {
@@ -327,6 +370,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>&nbsp;</span>,
                     }
                 },
+                renderInequality,
             }
         case 'usd':
             return {
@@ -376,6 +420,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         }
                     }
                 },
+                renderInequality,
             }
         case 'minutes':
             return {
@@ -402,6 +447,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         }
                     }
                 },
+                renderInequality,
             }
     }
 }
