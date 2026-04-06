@@ -81,23 +81,12 @@ function ClusterScaleAwareInsets({
     mapsContainerRef: React.RefObject<HTMLDivElement>
     mapComponentCreator: MapComponentCreator
 }): ReactNode {
-    const insetSetKey = JSON.stringify(insetsFeatures.map(({ inset }) => ({
-        name: inset.name,
-        mainMap: inset.mainMap,
-        bottomLeft: inset.bottomLeft,
-        topRight: inset.topRight,
-    })))
-
     const [clusterMaxByInset, setClusterMaxByInset] = useState<number[]>([])
-
-    useEffect(() => {
-        setClusterMaxByInset(Array.from({ length: insetsFeatures.length }, () => 0))
-    }, [insetSetKey, insetsFeatures.length])
 
     const setInsetMax = (insetIndex: number, maxValue: number): void => {
         setClusterMaxByInset((prev) => {
             if (prev.length !== insetsFeatures.length) {
-                // in case stuff fires out of order
+                // re-adjust the length of the features, if the number has changed. this also resets all of them
                 return Array.from({ length: insetsFeatures.length }, () => 0)
             }
             if (prev[insetIndex] === maxValue) {
