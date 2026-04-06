@@ -152,7 +152,7 @@ urbanstatsFixture(
     urlFromCode('County', 'USA', clusterMapPopulationFilterBase),
 )
 
-test.only('cluster-map-population-filter-steps', async (t) => {
+test('cluster-map-population-filter-steps', async (t) => {
     await t.expect(getErrors()).eql([])
     await toggleCustomScript(t) // switch to Auto UX (custom unchecked)
     await checkTextboxesDirect(t, ['Filter?'])
