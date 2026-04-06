@@ -1,14 +1,14 @@
-from collections import defaultdict
-from dataclasses import dataclass
 import json
 import math
-from typing import List
 import urllib.request
+from collections import defaultdict
+from dataclasses import dataclass
+from typing import List
 
 import pandas as pd
-from permacache import permacache, stable_hash
 import tqdm.auto as tqdm
 import us
+from permacache import permacache, stable_hash
 
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.historical_congressional import to_year
@@ -16,7 +16,6 @@ from urbanstats.metadata.metadata_columns import (
     MetadataColumnProvider,
     MetadataColumnResult,
 )
-
 
 TERM_START_YEARS = [to_year(congress_number) for congress_number in range(1, 120)]
 
@@ -225,11 +224,12 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
             relationships = [*a_contains_b, *b_contains_a, *a_intersects_b]
             if not relationships:
                 continue
-            names_other, representatives_direct_other = (
-                compute_representatives_for_shapefile(
-                    shapefiles[key_other],
-                    representatives_csv_version=self.representatives_csv_version,
-                )
+            (
+                names_other,
+                representatives_direct_other,
+            ) = compute_representatives_for_shapefile(
+                shapefiles[key_other],
+                representatives_csv_version=self.representatives_csv_version,
             )
             name_to_representatives_other = dict(
                 zip(names_other, representatives_direct_other)

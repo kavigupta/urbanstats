@@ -1,6 +1,6 @@
+import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-import math
 from typing import Optional, Type
 
 from urbanstats.protobuf import data_files_pb2
@@ -78,7 +78,9 @@ class CongressionalRepresentativesMetadata(DisplayedMetadata):
 
     def _representatives_for_value(self, value):
         if self.term_start_year is not None and isinstance(value, dict):
-            return value.get(self.term_start_year, value.get(str(self.term_start_year), []))
+            return value.get(
+                self.term_start_year, value.get(str(self.term_start_year), [])
+            )
         return value
 
     def create(self, idx, value, representative_table_builder=None):
@@ -100,4 +102,7 @@ class CongressionalRepresentativesMetadata(DisplayedMetadata):
 
     def representative_messages(self, value):
         representatives = self._representatives_for_value(value)
-        return [congressional_representative_proto(representative) for representative in representatives]
+        return [
+            congressional_representative_proto(representative)
+            for representative in representatives
+        ]

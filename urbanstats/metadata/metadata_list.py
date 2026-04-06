@@ -1,14 +1,15 @@
+from .congressional_representatives import TERM_START_YEARS, key_for_term_start_year
 from .metadata_column import (
     CongressionalRepresentativesMetadata,
     DisplayedMetadata,
     ExternalLinkMetadata,
 )
-from .congressional_representatives import TERM_START_YEARS, key_for_term_start_year
 
 
 def representative_display_name(term_start_year: int) -> str:
     term_end_suffix = str(term_start_year + 1)[-2:]
     return f"Representative ({term_start_year}-{term_end_suffix})"
+
 
 metadata_types = {
     "geoid": DisplayedMetadata(

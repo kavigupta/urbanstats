@@ -43,7 +43,9 @@ class RepresentativeTableBuilder:
     def index_for(self, representative):
         key = (
             representative.name,
-            representative.wikipedia_page if representative.HasField("wikipedia_page") else None,
+            representative.wikipedia_page
+            if representative.HasField("wikipedia_page")
+            else None,
             representative.party if representative.HasField("party") else None,
         )
         if key not in self._representative_key_to_index:
