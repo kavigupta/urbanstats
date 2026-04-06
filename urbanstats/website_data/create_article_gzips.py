@@ -79,6 +79,7 @@ def create_article_gzip(
     data.metadata.extend(metadata)
     # vulture: ignore -- not actually creating a field. this is from protobuf
     data.statistic_indices_packed = bytes(pack_index_vector(idxs))
+    data.shortname = long_to_short[row.longname]
     data.longname = row.longname
     data.source = row.source
     data.article_type = row.type
