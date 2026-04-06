@@ -89,7 +89,9 @@ function ClusterScaleAwareInsets({
                 // re-adjust the length of the features, if the number has changed. this also resets all of them
                 // resetting everything to 0 is fine, if insets have changed, there is no reason to trust
                 // any of them anyways.
-                return Array.from({ length: insetsFeatures.length }, () => 0)
+                const next = Array.from({ length: insetsFeatures.length }, () => 0)
+                next[insetIndex] = maxValue
+                return next
             }
             if (prev[insetIndex] === maxValue) {
                 return prev
