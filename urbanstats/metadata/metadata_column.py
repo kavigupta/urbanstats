@@ -52,14 +52,6 @@ def normalize_optional_string(value):
     return text
 
 
-def congressional_representative_key(representative):
-    return (
-        normalize_optional_string(representative.name) or "",
-        normalize_optional_string(representative.wikipedia_page),
-        normalize_optional_string(representative.party),
-    )
-
-
 def congressional_representative_proto(representative):
     message_kwargs = dict(name=normalize_optional_string(representative.name) or "")
     wikipedia_page = normalize_optional_string(representative.wikipedia_page)
