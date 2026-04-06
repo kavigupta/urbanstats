@@ -81,11 +81,31 @@ function ClusterScaleAwareInsets({
     mapsContainerRef: React.RefObject<HTMLDivElement>
     mapComponentCreator: MapComponentCreator
 }): ReactNode {
-    const [clusterMaxPieChartSize, setClusterMaxPieChartSize] = useState(0)
+    const insetSetKey = JSON.stringify(insetsFeatures.map(({ inset }) => ({
+        name: inset.name,
+        mainMap: inset.mainMap,
+        bottomLeft: inset.bottomLeft,
+        topRight: inset.topRight,
+    })))
 
-    const reportClusterMaxPieChartSize = (maxPieChartSize: number): void => {
-        setClusterMaxPieChartSize(prev => Math.max(prev, maxPieChartSize))
+    const [clusterMaxByInset, setClusterMaxByInset] = useState<number[]>([])
+
+    useEffect(() => {
+        setClusterMaxByInset(Array.from({ length: insetsFeatures.length }, () => 0))
+    }, [insetSetKey, insetsFeatures.length])
+
+    const setInsetMax = (insetIndex: number, maxValue: number): void => {
+        setClusterMaxByInset((prev) => {
+            const next = prev.length === insetsFeatures.length ? [...prev] : Array.from({ length: insetsFeatures.length }, () => 0)
+            if (next[insetIndex] === maxValue) {
+                return prev
+            }
+            next[insetIndex] = maxValue
+            return next
+        })
     }
+
+    const globalMaxPieChartSize = Math.max(...clusterMaxByInset, 0)
 
     return (
         <>
@@ -95,6 +115,7 @@ function ClusterScaleAwareInsets({
                         i={i}
                         key={i}
                         inset={inset}
+                        renderToken={globalMaxPieChartSize.toString()}
                         ref={e => mapsRef[i] = e}
                         container={mapsContainerRef}
                         numInsets={insets.length}
@@ -109,8 +130,10 @@ function ClusterScaleAwareInsets({
                             ref,
                             insetFeatures,
                             ['uss', 'view'].includes(mode),
-                            clusterMaxPieChartSize,
-                            reportClusterMaxPieChartSize,
+                            globalMaxPieChartSize,
+                            (maxPieChartSize) => {
+                                setInsetMax(i, maxPieChartSize)
+                            },
                         )}
                     </InsetMap>
                 )
@@ -187,17 +210,8 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             }]
         })
 
-        const clusterScaleResetKey = JSON.stringify(insetsFeatures.map(({ inset, insetFeatures }) => ({
-            name: inset.name,
-            mainMap: inset.mainMap,
-            bottomLeft: inset.bottomLeft,
-            topRight: inset.topRight,
-            featureNames: insetFeatures.map(feature => String((feature.properties as { name?: unknown } | undefined)?.name ?? '')),
-        })))
-
         const insetMaps = (
             <ClusterScaleAwareInsets
-                key={clusterScaleResetKey}
                 insetsFeatures={insetsFeatures}
                 mode={props.mode}
                 editInsets={props.mode === 'insets' ? props.editInsets : undefined}

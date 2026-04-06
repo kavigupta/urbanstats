@@ -15,10 +15,11 @@ interface InsetMapProps {
     i: number
     numInsets: number
     interactive: boolean
+    renderToken?: string
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Forward Ref
-function _InsetMap({ inset, children, editInset, container, i, numInsets, interactive }: InsetMapProps & {
+function _InsetMap({ inset, children, editInset, container, i, numInsets, interactive, renderToken }: InsetMapProps & {
     children: (mapLibreProps: Partial<CommonMapProps>, mapChildren: ReactNode, subRef: React.Ref<MapRef>) => ReactNode
 }, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
@@ -55,6 +56,7 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets, intera
     return (
         <div
             id={id}
+            data-render-token={renderToken}
             style={{ position: 'absolute',
                 left: `${inset.bottomLeft[0] * 100}%`,
                 bottom: `${inset.bottomLeft[1] * 100}%`,

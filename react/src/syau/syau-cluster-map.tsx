@@ -47,9 +47,9 @@ interface ClusterMapProps {
     markerOpacity?: number
     /** Compute relative area relative to the largest area */
     computeRelativeArea: (area: number, maxArea: number) => number
-    /** Global maximum pie chart size; if provided, used instead of computing max from visible markers. */
+    /** Global maximum pie chart size across all insets. */
     globalMaxPieChartSize?: number
-    /** Reports the maximum rendered pie size seen in the current view. */
+    /** Reports this inset map's current maximum pie chart size. */
     onVisiblePieChartSizeChange?: (maxPieChartSize: number) => void
     /** Optional map props for embedding in other layouts. */
     mapLibreProps?: Partial<MapProps>
@@ -155,6 +155,11 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
         })
         onVisibleUnclusteredChange?.(newUnclustered)
     }
+
+    useEffect(() => {
+        updateMarkers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- this is the only relevant dependency
+    }, [props.globalMaxPieChartSize])
 
     const clusterProperties: Record<string, unknown> = {}
     for (let i = 0; i < categoryColors.length; i++) {
