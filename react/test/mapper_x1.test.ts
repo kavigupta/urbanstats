@@ -58,7 +58,6 @@ clusterMap(
     data=commute_transit,
     scale=linearScale(max=0.25),
     ramp=rampUridis,
-    label="Commute Transit % for ZIPs with PW density between 3000 and 5000/ km^2",
     maxRadius=60,
     relativeArea=population
 )
@@ -71,7 +70,6 @@ clusterMap(
     data=commute_transit,
     scale=linearScale(max=0.25),
     ramp=rampUridis,
-    label="Commute Transit % for ZIPs with PW density between 3000 and 5000/ km^2",
     maxRadius=60,
     relativeArea=area
 )
