@@ -7125,7 +7125,7 @@ export const rawStatsTree = [
                 "name": "Congressional Representatives",
                 "contents": [
                     {
-                        "year": 2000,
+                        "year": "pre-2000",
                         "stats_by_source": [
                             {
                                 "name": "Representative (1789-1790)",
@@ -8610,7 +8610,12 @@ export const rawStatsTree = [
                                     }
                                 ],
                                 "indentedName": null
-                            },
+                            }
+                        ]
+                    },
+                    {
+                        "year": 2000,
+                        "stats_by_source": [
                             {
                                 "name": "Representative (2001-2002)",
                                 "stats": [

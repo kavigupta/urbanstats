@@ -482,6 +482,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_fips', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_statcan_geocode', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_iso_code', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_year_pre-2000', coder: booleanSettingCoder }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 
