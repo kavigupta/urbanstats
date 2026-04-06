@@ -1,6 +1,6 @@
 import { typeInEditor } from './editor_test_utils'
 import { checkGeojson, downloadPNG, getCodeFromMainField, getErrors, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { safeReload, screencap, urbanstatsFixture } from './test_utils'
+import { checkTextboxesDirect, safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 function testCode(testFn: () => TestFn, geographyKind: string, universe: string, code: string, name: string, includeGeojson: boolean = false): void {
     const url = urlFromCode(geographyKind, universe, code)
@@ -136,8 +136,7 @@ clusterMap(
 
 testCode(() => test, 'County', 'USA', clusterMapClusterSpacing, 'cluster-map-cluster-spacing')
 
-const clusterMapPopulationFilterScript = (threshold: number): string => `
-condition (population > ${threshold})
+const clusterMapPopulationFilterBase = `
 clusterMap(
     data=commute_transit,
     scale=linearScale(max=0.25),
@@ -150,16 +149,17 @@ clusterMap(
 
 urbanstatsFixture(
     'cluster-map-population-filter-steps',
-    urlFromCode('County', 'USA', clusterMapPopulationFilterScript(1000000)),
+    urlFromCode('County', 'USA', clusterMapPopulationFilterBase),
 )
 
-test('cluster-map-population-filter-steps', async (t) => {
+test.only('cluster-map-population-filter-steps', async (t) => {
     await t.expect(getErrors()).eql([])
-    await toggleCustomScript(t)
+    await toggleCustomScript(t) // switch to Auto UX (custom unchecked)
+    await checkTextboxesDirect(t, ['Filter?'])
 
-    const thresholds = [1000000, 100000, 10000]
+    const thresholds = [1000000, 100000, 10000, 1000, 100]
     for (const threshold of thresholds) {
-        await typeInEditor(t, 0, `${clusterMapPopulationFilterScript(threshold).trim()}\n`, true)
+        await typeInEditor(t, 0, `population < ${threshold}`, true)
         await t.expect(getErrors()).eql([])
         await screencap(t, { removeEntireMap: false })
     }
