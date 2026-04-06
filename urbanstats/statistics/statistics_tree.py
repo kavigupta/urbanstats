@@ -123,7 +123,7 @@ class StatisticGroup:
 
     def __post_init__(self):
         for year, cols in self.by_year.items():
-            assert isinstance(year, int) or year in {None, "pre-2000"}
+            assert isinstance(year, int) or year is None
             assert isinstance(cols, list)
             assert all(isinstance(col, MultiSource) for col in cols), cols
 
@@ -471,9 +471,8 @@ def congressional_representatives_metadata_group():
     congressional_group_stats_by_year = defaultdict(list)
 
     def representative_year_bucket(term_start_year: int):
-        if term_start_year < 2000:
-            return "pre-2000"
         decade = int(round(term_start_year / 10) * 10)
+        decade = max(decade, 2000)
         return decade
 
     def representative_term_start_year(setting_key: str) -> int:
