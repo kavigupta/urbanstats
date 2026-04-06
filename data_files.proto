@@ -53,6 +53,10 @@ message CongressionalRepresentatives {
     repeated CongressionalRepresentative representatives = 1;
 }
 
+message CongressionalRepresentativeTable {
+    repeated CongressionalRepresentative representatives = 1;
+}
+
 message ExtraStatistic {
     optional Histogram histogram = 1;
     optional TimeSeries timeseries = 2;
@@ -62,7 +66,7 @@ message ExtraStatistic {
 message Metadata {
     int32 metadata_index = 1;
     optional string string_value = 2;
-    optional CongressionalRepresentatives congressional_representatives = 3;
+    repeated int32 congressional_representatives = 3;
 }
 
 message Article {

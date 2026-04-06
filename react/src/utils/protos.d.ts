@@ -945,6 +945,103 @@ export class CongressionalRepresentatives implements ICongressionalRepresentativ
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
+/** Properties of a CongressionalRepresentativeTable. */
+export interface ICongressionalRepresentativeTable {
+
+    /** CongressionalRepresentativeTable representatives */
+    representatives?: (ICongressionalRepresentative[]|null);
+}
+
+/** Represents a CongressionalRepresentativeTable. */
+export class CongressionalRepresentativeTable implements ICongressionalRepresentativeTable {
+
+    /**
+     * Constructs a new CongressionalRepresentativeTable.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: ICongressionalRepresentativeTable);
+
+    /** CongressionalRepresentativeTable representatives. */
+    public representatives: ICongressionalRepresentative[];
+
+    /**
+     * Creates a new CongressionalRepresentativeTable instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns CongressionalRepresentativeTable instance
+     */
+    public static create(properties?: ICongressionalRepresentativeTable): CongressionalRepresentativeTable;
+
+    /**
+     * Encodes the specified CongressionalRepresentativeTable message. Does not implicitly {@link CongressionalRepresentativeTable.verify|verify} messages.
+     * @param message CongressionalRepresentativeTable message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: ICongressionalRepresentativeTable, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified CongressionalRepresentativeTable message, length delimited. Does not implicitly {@link CongressionalRepresentativeTable.verify|verify} messages.
+     * @param message CongressionalRepresentativeTable message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: ICongressionalRepresentativeTable, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a CongressionalRepresentativeTable message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns CongressionalRepresentativeTable
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): CongressionalRepresentativeTable;
+
+    /**
+     * Decodes a CongressionalRepresentativeTable message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns CongressionalRepresentativeTable
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): CongressionalRepresentativeTable;
+
+    /**
+     * Verifies a CongressionalRepresentativeTable message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a CongressionalRepresentativeTable message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns CongressionalRepresentativeTable
+     */
+    public static fromObject(object: { [k: string]: any }): CongressionalRepresentativeTable;
+
+    /**
+     * Creates a plain object from a CongressionalRepresentativeTable message. Also converts values to other types if specified.
+     * @param message CongressionalRepresentativeTable
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: CongressionalRepresentativeTable, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this CongressionalRepresentativeTable to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for CongressionalRepresentativeTable
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
 /** Properties of an ExtraStatistic. */
 export interface IExtraStatistic {
 
@@ -1073,7 +1170,7 @@ export interface IMetadata {
     stringValue?: (string|null);
 
     /** Metadata congressionalRepresentatives */
-    congressionalRepresentatives?: (ICongressionalRepresentatives|null);
+    congressionalRepresentatives?: (number[]|null);
 }
 
 /** Represents a Metadata. */
@@ -1092,13 +1189,10 @@ export class Metadata implements IMetadata {
     public stringValue?: (string|null);
 
     /** Metadata congressionalRepresentatives. */
-    public congressionalRepresentatives?: (ICongressionalRepresentatives|null);
+    public congressionalRepresentatives: number[];
 
     /** Metadata _stringValue. */
     public _stringValue?: "stringValue";
-
-    /** Metadata _congressionalRepresentatives. */
-    public _congressionalRepresentatives?: "congressionalRepresentatives";
 
     /**
      * Creates a new Metadata instance using the specified properties.

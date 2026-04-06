@@ -2290,6 +2290,230 @@ export const CongressionalRepresentatives = $root.CongressionalRepresentatives =
     return CongressionalRepresentatives;
 })();
 
+export const CongressionalRepresentativeTable = $root.CongressionalRepresentativeTable = (() => {
+
+    /**
+     * Properties of a CongressionalRepresentativeTable.
+     * @exports ICongressionalRepresentativeTable
+     * @interface ICongressionalRepresentativeTable
+     * @property {Array.<ICongressionalRepresentative>|null} [representatives] CongressionalRepresentativeTable representatives
+     */
+
+    /**
+     * Constructs a new CongressionalRepresentativeTable.
+     * @exports CongressionalRepresentativeTable
+     * @classdesc Represents a CongressionalRepresentativeTable.
+     * @implements ICongressionalRepresentativeTable
+     * @constructor
+     * @param {ICongressionalRepresentativeTable=} [properties] Properties to set
+     */
+    function CongressionalRepresentativeTable(properties) {
+        this.representatives = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * CongressionalRepresentativeTable representatives.
+     * @member {Array.<ICongressionalRepresentative>} representatives
+     * @memberof CongressionalRepresentativeTable
+     * @instance
+     */
+    CongressionalRepresentativeTable.prototype.representatives = $util.emptyArray;
+
+    /**
+     * Creates a new CongressionalRepresentativeTable instance using the specified properties.
+     * @function create
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {ICongressionalRepresentativeTable=} [properties] Properties to set
+     * @returns {CongressionalRepresentativeTable} CongressionalRepresentativeTable instance
+     */
+    CongressionalRepresentativeTable.create = function create(properties) {
+        return new CongressionalRepresentativeTable(properties);
+    };
+
+    /**
+     * Encodes the specified CongressionalRepresentativeTable message. Does not implicitly {@link CongressionalRepresentativeTable.verify|verify} messages.
+     * @function encode
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {ICongressionalRepresentativeTable} message CongressionalRepresentativeTable message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CongressionalRepresentativeTable.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.representatives != null && message.representatives.length)
+            for (let i = 0; i < message.representatives.length; ++i)
+                $root.CongressionalRepresentative.encode(message.representatives[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified CongressionalRepresentativeTable message, length delimited. Does not implicitly {@link CongressionalRepresentativeTable.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {ICongressionalRepresentativeTable} message CongressionalRepresentativeTable message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CongressionalRepresentativeTable.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a CongressionalRepresentativeTable message from the specified reader or buffer.
+     * @function decode
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {CongressionalRepresentativeTable} CongressionalRepresentativeTable
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CongressionalRepresentativeTable.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.CongressionalRepresentativeTable();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.representatives && message.representatives.length))
+                        message.representatives = [];
+                    message.representatives.push($root.CongressionalRepresentative.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a CongressionalRepresentativeTable message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {CongressionalRepresentativeTable} CongressionalRepresentativeTable
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CongressionalRepresentativeTable.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a CongressionalRepresentativeTable message.
+     * @function verify
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    CongressionalRepresentativeTable.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.representatives != null && message.hasOwnProperty("representatives")) {
+            if (!Array.isArray(message.representatives))
+                return "representatives: array expected";
+            for (let i = 0; i < message.representatives.length; ++i) {
+                let error = $root.CongressionalRepresentative.verify(message.representatives[i]);
+                if (error)
+                    return "representatives." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a CongressionalRepresentativeTable message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {CongressionalRepresentativeTable} CongressionalRepresentativeTable
+     */
+    CongressionalRepresentativeTable.fromObject = function fromObject(object) {
+        if (object instanceof $root.CongressionalRepresentativeTable)
+            return object;
+        let message = new $root.CongressionalRepresentativeTable();
+        if (object.representatives) {
+            if (!Array.isArray(object.representatives))
+                throw TypeError(".CongressionalRepresentativeTable.representatives: array expected");
+            message.representatives = [];
+            for (let i = 0; i < object.representatives.length; ++i) {
+                if (typeof object.representatives[i] !== "object")
+                    throw TypeError(".CongressionalRepresentativeTable.representatives: object expected");
+                message.representatives[i] = $root.CongressionalRepresentative.fromObject(object.representatives[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a CongressionalRepresentativeTable message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {CongressionalRepresentativeTable} message CongressionalRepresentativeTable
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    CongressionalRepresentativeTable.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults)
+            object.representatives = [];
+        if (message.representatives && message.representatives.length) {
+            object.representatives = [];
+            for (let j = 0; j < message.representatives.length; ++j)
+                object.representatives[j] = $root.CongressionalRepresentative.toObject(message.representatives[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this CongressionalRepresentativeTable to JSON.
+     * @function toJSON
+     * @memberof CongressionalRepresentativeTable
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    CongressionalRepresentativeTable.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for CongressionalRepresentativeTable
+     * @function getTypeUrl
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    CongressionalRepresentativeTable.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/CongressionalRepresentativeTable";
+    };
+
+    return CongressionalRepresentativeTable;
+})();
+
 export const ExtraStatistic = $root.ExtraStatistic = (() => {
 
     /**
@@ -2613,7 +2837,7 @@ export const Metadata = $root.Metadata = (() => {
      * @interface IMetadata
      * @property {number|null} [metadataIndex] Metadata metadataIndex
      * @property {string|null} [stringValue] Metadata stringValue
-     * @property {ICongressionalRepresentatives|null} [congressionalRepresentatives] Metadata congressionalRepresentatives
+     * @property {Array.<number>|null} [congressionalRepresentatives] Metadata congressionalRepresentatives
      */
 
     /**
@@ -2625,6 +2849,7 @@ export const Metadata = $root.Metadata = (() => {
      * @param {IMetadata=} [properties] Properties to set
      */
     function Metadata(properties) {
+        this.congressionalRepresentatives = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -2649,11 +2874,11 @@ export const Metadata = $root.Metadata = (() => {
 
     /**
      * Metadata congressionalRepresentatives.
-     * @member {ICongressionalRepresentatives|null|undefined} congressionalRepresentatives
+     * @member {Array.<number>} congressionalRepresentatives
      * @memberof Metadata
      * @instance
      */
-    Metadata.prototype.congressionalRepresentatives = null;
+    Metadata.prototype.congressionalRepresentatives = $util.emptyArray;
 
     // OneOf field names bound to virtual getters and setters
     let $oneOfFields;
@@ -2666,17 +2891,6 @@ export const Metadata = $root.Metadata = (() => {
      */
     Object.defineProperty(Metadata.prototype, "_stringValue", {
         get: $util.oneOfGetter($oneOfFields = ["stringValue"]),
-        set: $util.oneOfSetter($oneOfFields)
-    });
-
-    /**
-     * Metadata _congressionalRepresentatives.
-     * @member {"congressionalRepresentatives"|undefined} _congressionalRepresentatives
-     * @memberof Metadata
-     * @instance
-     */
-    Object.defineProperty(Metadata.prototype, "_congressionalRepresentatives", {
-        get: $util.oneOfGetter($oneOfFields = ["congressionalRepresentatives"]),
         set: $util.oneOfSetter($oneOfFields)
     });
 
@@ -2708,8 +2922,12 @@ export const Metadata = $root.Metadata = (() => {
             writer.uint32(/* id 1, wireType 0 =*/8).int32(message.metadataIndex);
         if (message.stringValue != null && Object.hasOwnProperty.call(message, "stringValue"))
             writer.uint32(/* id 2, wireType 2 =*/18).string(message.stringValue);
-        if (message.congressionalRepresentatives != null && Object.hasOwnProperty.call(message, "congressionalRepresentatives"))
-            $root.CongressionalRepresentatives.encode(message.congressionalRepresentatives, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+        if (message.congressionalRepresentatives != null && message.congressionalRepresentatives.length) {
+            writer.uint32(/* id 3, wireType 2 =*/26).fork();
+            for (let i = 0; i < message.congressionalRepresentatives.length; ++i)
+                writer.int32(message.congressionalRepresentatives[i]);
+            writer.ldelim();
+        }
         return writer;
     };
 
@@ -2753,7 +2971,14 @@ export const Metadata = $root.Metadata = (() => {
                     break;
                 }
             case 3: {
-                    message.congressionalRepresentatives = $root.CongressionalRepresentatives.decode(reader, reader.uint32());
+                    if (!(message.congressionalRepresentatives && message.congressionalRepresentatives.length))
+                        message.congressionalRepresentatives = [];
+                    if ((tag & 7) === 2) {
+                        let end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.congressionalRepresentatives.push(reader.int32());
+                    } else
+                        message.congressionalRepresentatives.push(reader.int32());
                     break;
                 }
             default:
@@ -2801,12 +3026,11 @@ export const Metadata = $root.Metadata = (() => {
                 return "stringValue: string expected";
         }
         if (message.congressionalRepresentatives != null && message.hasOwnProperty("congressionalRepresentatives")) {
-            properties._congressionalRepresentatives = 1;
-            {
-                let error = $root.CongressionalRepresentatives.verify(message.congressionalRepresentatives);
-                if (error)
-                    return "congressionalRepresentatives." + error;
-            }
+            if (!Array.isArray(message.congressionalRepresentatives))
+                return "congressionalRepresentatives: array expected";
+            for (let i = 0; i < message.congressionalRepresentatives.length; ++i)
+                if (!$util.isInteger(message.congressionalRepresentatives[i]))
+                    return "congressionalRepresentatives: integer[] expected";
         }
         return null;
     };
@@ -2827,10 +3051,12 @@ export const Metadata = $root.Metadata = (() => {
             message.metadataIndex = object.metadataIndex | 0;
         if (object.stringValue != null)
             message.stringValue = String(object.stringValue);
-        if (object.congressionalRepresentatives != null) {
-            if (typeof object.congressionalRepresentatives !== "object")
-                throw TypeError(".Metadata.congressionalRepresentatives: object expected");
-            message.congressionalRepresentatives = $root.CongressionalRepresentatives.fromObject(object.congressionalRepresentatives);
+        if (object.congressionalRepresentatives) {
+            if (!Array.isArray(object.congressionalRepresentatives))
+                throw TypeError(".Metadata.congressionalRepresentatives: array expected");
+            message.congressionalRepresentatives = [];
+            for (let i = 0; i < object.congressionalRepresentatives.length; ++i)
+                message.congressionalRepresentatives[i] = object.congressionalRepresentatives[i] | 0;
         }
         return message;
     };
@@ -2848,6 +3074,8 @@ export const Metadata = $root.Metadata = (() => {
         if (!options)
             options = {};
         let object = {};
+        if (options.arrays || options.defaults)
+            object.congressionalRepresentatives = [];
         if (options.defaults)
             object.metadataIndex = 0;
         if (message.metadataIndex != null && message.hasOwnProperty("metadataIndex"))
@@ -2857,10 +3085,10 @@ export const Metadata = $root.Metadata = (() => {
             if (options.oneofs)
                 object._stringValue = "stringValue";
         }
-        if (message.congressionalRepresentatives != null && message.hasOwnProperty("congressionalRepresentatives")) {
-            object.congressionalRepresentatives = $root.CongressionalRepresentatives.toObject(message.congressionalRepresentatives, options);
-            if (options.oneofs)
-                object._congressionalRepresentatives = "congressionalRepresentatives";
+        if (message.congressionalRepresentatives && message.congressionalRepresentatives.length) {
+            object.congressionalRepresentatives = [];
+            for (let j = 0; j < message.congressionalRepresentatives.length; ++j)
+                object.congressionalRepresentatives[j] = message.congressionalRepresentatives[j];
         }
         return object;
     };

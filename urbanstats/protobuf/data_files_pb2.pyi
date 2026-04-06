@@ -127,6 +127,19 @@ class CongressionalRepresentatives(_message.Message):
         ] = ...,
     ) -> None: ...
 
+class CongressionalRepresentativeTable(_message.Message):
+    __slots__ = ("representatives",)
+    REPRESENTATIVES_FIELD_NUMBER: _ClassVar[int]
+    representatives: _containers.RepeatedCompositeFieldContainer[
+        CongressionalRepresentative
+    ]
+    def __init__(
+        self,
+        representatives: _Optional[
+            _Iterable[_Union[CongressionalRepresentative, _Mapping]]
+        ] = ...,
+    ) -> None: ...
+
 class ExtraStatistic(_message.Message):
     __slots__ = ("histogram", "timeseries", "temperature_histogram")
     HISTOGRAM_FIELD_NUMBER: _ClassVar[int]
@@ -149,14 +162,12 @@ class Metadata(_message.Message):
     CONGRESSIONAL_REPRESENTATIVES_FIELD_NUMBER: _ClassVar[int]
     metadata_index: int
     string_value: str
-    congressional_representatives: CongressionalRepresentatives
+    congressional_representatives: _containers.RepeatedScalarFieldContainer[int]
     def __init__(
         self,
         metadata_index: _Optional[int] = ...,
         string_value: _Optional[str] = ...,
-        congressional_representatives: _Optional[
-            _Union[CongressionalRepresentatives, _Mapping]
-        ] = ...,
+        congressional_representatives: _Optional[_Iterable[int]] = ...,
     ) -> None: ...
 
 class Article(_message.Message):
