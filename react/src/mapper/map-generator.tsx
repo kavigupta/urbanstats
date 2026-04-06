@@ -187,13 +187,13 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             }]
         })
 
-        const clusterScaleResetKey = insetsFeatures.map(({ inset, insetFeatures }) => [
-            inset.name,
-            inset.mainMap ? '1' : '0',
-            inset.bottomLeft.join(','),
-            inset.topRight.join(','),
-            insetFeatures.map(feature => `${feature.properties?.name ?? ''}`).join(','),
-        ].join(':')).join('|')
+        const clusterScaleResetKey = JSON.stringify(insetsFeatures.map(({ inset, insetFeatures }) => ({
+            name: inset.name,
+            mainMap: inset.mainMap,
+            bottomLeft: inset.bottomLeft,
+            topRight: inset.topRight,
+            featureNames: insetFeatures.map(feature => String((feature.properties as { name?: unknown } | undefined)?.name ?? '')),
+        })))
 
         const insetMaps = (
             <ClusterScaleAwareInsets
