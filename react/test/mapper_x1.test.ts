@@ -53,6 +53,32 @@ clusterMap(
 
 testCode(() => test, 'County', 'USA', clusterMapWeightedByArea, 'cluster-map-weight-by-area')
 
+const clusterMapCommuteTransitPopulation = `
+clusterMap(
+    data=commute_transit,
+    scale=linearScale(max=0.25),
+    ramp=rampUridis,
+    label="Commute Transit % for ZIPs with PW density between 3000 and 5000/ km^2",
+    maxRadius=60,
+    relativeArea=population
+)
+`
+
+testCode(() => test, 'County', 'USA', clusterMapCommuteTransitPopulation, 'cluster-map-commute-transit-population')
+
+const clusterMapCommuteTransitArea = `
+clusterMap(
+    data=commute_transit,
+    scale=linearScale(max=0.25),
+    ramp=rampUridis,
+    label="Commute Transit % for ZIPs with PW density between 3000 and 5000/ km^2",
+    maxRadius=60,
+    relativeArea=area
+)
+`
+
+testCode(() => test, 'County', 'USA', clusterMapCommuteTransitArea, 'cluster-map-commute-transit-area')
+
 const clusterMapRampBone = `
 clusterMap(
     data=hilliness,

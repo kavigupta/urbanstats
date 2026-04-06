@@ -47,6 +47,10 @@ interface ClusterMapProps {
     markerOpacity?: number
     /** Compute relative area relative to the largest area */
     computeRelativeArea: (area: number, maxArea: number) => number
+    /** Global maximum pie chart size; if provided, used instead of computing max from visible markers. */
+    globalMaxPieChartSize?: number
+    /** Reports the maximum rendered pie size seen in the current view. */
+    onVisiblePieChartSizeChange?: (maxPieChartSize: number) => void
     /** Optional map props for embedding in other layouts. */
     mapLibreProps?: Partial<MapProps>
     /** Optional map ref passthrough. */
@@ -132,7 +136,9 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
             rawList.push({ featureId, lon: coords[0], lat: coords[1], sliceAngles, label, totalPieChartSize })
         }
 
-        const maxPieChartSize = Math.max(...rawList.map(r => r.totalPieChartSize), 0)
+        const localMaxPieChartSize = Math.max(...rawList.map(r => r.totalPieChartSize), 0)
+        const maxPieChartSize = props.globalMaxPieChartSize ?? localMaxPieChartSize
+        props.onVisiblePieChartSizeChange?.(localMaxPieChartSize)
         setVisibleMarkers(rawList.map(raw => ({
             featureId: raw.featureId,
             lon: raw.lon,
