@@ -335,7 +335,6 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_year_2020', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_year_2010', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_year_2000', coder: booleanSettingCoder }),
-    new ActiveSetting({ key: 'show_stat_year_pre-2000', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_historical_cds', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'simple_ordinals', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'use_imperial', coder: booleanSettingCoder }),
@@ -483,6 +482,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_fips', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_statcan_geocode', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_iso_code', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_year_pre-2000', coder: booleanSettingCoder }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 
