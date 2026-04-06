@@ -144,7 +144,7 @@ class StatisticGroup:
 
     @staticmethod
     def flatten_year(year, stats, name_map, names):
-        assert isinstance(year, int) or isinstance(year, str) or year is None, year
+        assert isinstance(year, (int, str)) or year is None, year
         stats_processed = []
         for stat in stats:
             stats_processed.append(stat.flatten(name_map, names))

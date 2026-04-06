@@ -9,9 +9,11 @@ from permacache import stable_hash
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.data.wikipedia.wikidata_sourcer import compute_wikidata_and_wikipedia
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles as shapefiles_list
-from urbanstats.metadata.metadata_columns_list import metadata_column_providers
+from urbanstats.metadata.metadata_columns_list import (
+    metadata_column_providers as default_metadata_column_providers,
+)
 from urbanstats.statistics.collections_list import (
-    statistic_collections as statistic_collections_list,
+    statistic_collections as default_statistic_collections,
 )
 from urbanstats.universe.universe_provider.compute_universes import (
     compute_universes_for_shapefile,
@@ -25,7 +27,7 @@ from urbanstats.universe.universe_provider.compute_universes import (
         shapefiles=lambda x: {
             k: (v.hash_key, v.universe_provider) for k, v in x.items()
         },
-        metadata_column_providers=stable_hash,
+        metadata_providers=stable_hash,
         statistic_collections=stable_hash,
     ),
     multiprocess_safe=True,
@@ -33,8 +35,8 @@ from urbanstats.universe.universe_provider.compute_universes import (
 def compute_statistics_for_shapefile(
     sf,
     shapefiles,
-    metadata_column_providers=metadata_column_providers,
-    statistic_collections=statistic_collections_list,
+    metadata_providers=default_metadata_column_providers,
+    statistic_collections=default_statistic_collections,
 ):
     print("Computing statistics for", sf.hash_key)
     sf_fr = sf.load_file()
@@ -49,7 +51,7 @@ def compute_statistics_for_shapefile(
         result["wikidata"] = wikidata
         result["wikipedia_page"] = wikipedia
 
-    for metadata_column_provider in metadata_column_providers:
+    for metadata_column_provider in metadata_providers:
         computed_columns = metadata_column_provider.compute_metadata_columns(
             shapefile=sf,
             shapefiles=shapefiles,
