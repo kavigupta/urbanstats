@@ -4,7 +4,7 @@
 
 import * as base58 from 'base58-js'
 
-import { defaultSettingsList, Settings, SettingsDictionary, useSettings } from './settings'
+import { defaultSettingsList, RelationshipKey, Settings, SettingsDictionary, StatCategoryExpandedKey, StatCategorySavedIndeterminateKey, useSettings } from './settings'
 
 const underflow = Symbol()
 
@@ -482,8 +482,17 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_fips', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_statcan_geocode', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_iso_code', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_congressional_representatives', coder: booleanSettingCoder }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
+
+type NotIncludedInSettingsVector = (
+    RelationshipKey
+    | StatCategorySavedIndeterminateKey
+    | StatCategoryExpandedKey
+    | 'theme' | 'colorblind_mode' | 'clean_background'
+    | 'juxtastatCompactEmoji' | 'syauRequireEnter' | 'mapperSettingsColumnProp'
+)
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
 export const activeVectorKeys = settingsVector.flatMap(setting => setting.deprecated ? [] : [setting.key])
@@ -491,9 +500,15 @@ export const activeVectorKeys = settingsVector.flatMap(setting => setting.deprec
 export type VectorSettingKey = typeof activeVectorKeys[number]
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Just for checking type
-function justForCheckingType(): (keyof SettingsDictionary)[] {
-    return (defaultSettingsList.map(([x]) => x) satisfies (keyof SettingsDictionary)[])
+function justForCheckingType(): (VectorSettingKey | NotIncludedInSettingsVector)[] {
+    return (defaultSettingsList.map(([x]) => x) satisfies (VectorSettingKey | NotIncludedInSettingsVector)[])
 }
+
+type Overlap = VectorSettingKey & NotIncludedInSettingsVector
+type CheckOverlap = [Overlap] extends [never] ? 'no overlap' : 'overlap'
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Just for checking type
+const checkOverlap: CheckOverlap = 'no overlap'
 
 export function useVector(): string {
     const settings = useSettings(activeVectorKeys)
