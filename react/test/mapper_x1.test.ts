@@ -1,3 +1,4 @@
+import { typeInEditor } from './editor_test_utils'
 import { checkGeojson, downloadPNG, getCodeFromMainField, getErrors, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { safeReload, screencap, urbanstatsFixture } from './test_utils'
 
@@ -134,3 +135,32 @@ clusterMap(
 `
 
 testCode(() => test, 'County', 'USA', clusterMapClusterSpacing, 'cluster-map-cluster-spacing')
+
+const clusterMapPopulationFilterScript = (threshold: number): string => `
+condition (population > ${threshold})
+clusterMap(
+    data=commute_transit,
+    scale=linearScale(max=0.25),
+    ramp=rampUridis,
+    maxRadius=60,
+    relativeArea=population,
+    basemap=noBasemap()
+)
+`
+
+urbanstatsFixture(
+    'cluster-map-population-filter-steps',
+    urlFromCode('County', 'USA', clusterMapPopulationFilterScript(1000000)),
+)
+
+test('cluster-map-population-filter-steps', async (t) => {
+    await t.expect(getErrors()).eql([])
+    await toggleCustomScript(t)
+
+    const thresholds = [1000000, 100000, 10000]
+    for (const threshold of thresholds) {
+        await typeInEditor(t, 0, `${clusterMapPopulationFilterScript(threshold).trim()}\n`, true)
+        await t.expect(getErrors()).eql([])
+        await screencap(t, { removeEntireMap: false })
+    }
+})

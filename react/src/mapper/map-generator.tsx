@@ -87,6 +87,8 @@ function ClusterScaleAwareInsets({
         setClusterMaxByInset((prev) => {
             if (prev.length !== insetsFeatures.length) {
                 // re-adjust the length of the features, if the number has changed. this also resets all of them
+                // resetting everything to 0 is fine, if insets have changed, there is no reason to trust
+                // any of them anyways.
                 return Array.from({ length: insetsFeatures.length }, () => 0)
             }
             if (prev[insetIndex] === maxValue) {
@@ -98,7 +100,11 @@ function ClusterScaleAwareInsets({
         })
     }
 
-    const globalMaxPieChartSize = Math.max(...clusterMaxByInset, 0)
+    let globalMaxPieChartSize: number | undefined = Math.max(...clusterMaxByInset, 0)
+    if (globalMaxPieChartSize === 0) {
+        // set it to undefined so we don't get float errors by dividing by 0
+        globalMaxPieChartSize = undefined
+    }
 
     return (
         <>
@@ -108,7 +114,7 @@ function ClusterScaleAwareInsets({
                         i={i}
                         key={i}
                         inset={inset}
-                        renderToken={globalMaxPieChartSize.toString()}
+                        renderToken={String(globalMaxPieChartSize)}
                         ref={e => mapsRef[i] = e}
                         container={mapsContainerRef}
                         numInsets={insets.length}
