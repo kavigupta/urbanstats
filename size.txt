@@ -492,3 +492,12 @@ compute relations via run-length encoding (#1816)
 775     order
 1314    data
 3194    total
+
+fix nan handling in protobuf; pin protobuf (#1927)
+
+125     consolidated
+167     quiz_sampling_info
+685     shape
+775     order
+1314    data
+3194    total
