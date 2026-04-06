@@ -1,5 +1,6 @@
+import { typeInEditor } from './editor_test_utils'
 import { checkGeojson, downloadPNG, getCodeFromMainField, getErrors, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { safeReload, screencap, urbanstatsFixture } from './test_utils'
+import { checkTextboxesDirect, safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 function testCode(testFn: () => TestFn, geographyKind: string, universe: string, code: string, name: string, includeGeojson: boolean = false): void {
     const url = urlFromCode(geographyKind, universe, code)
@@ -52,6 +53,30 @@ clusterMap(
 `
 
 testCode(() => test, 'County', 'USA', clusterMapWeightedByArea, 'cluster-map-weight-by-area')
+
+const clusterMapCommuteTransitPopulation = `
+clusterMap(
+    data=commute_transit,
+    scale=linearScale(max=0.25),
+    ramp=rampUridis,
+    maxRadius=60,
+    relativeArea=population
+)
+`
+
+testCode(() => test, 'County', 'USA', clusterMapCommuteTransitPopulation, 'cluster-map-commute-transit-population')
+
+const clusterMapCommuteTransitArea = `
+clusterMap(
+    data=commute_transit,
+    scale=linearScale(max=0.25),
+    ramp=rampUridis,
+    maxRadius=60,
+    relativeArea=area
+)
+`
+
+testCode(() => test, 'County', 'USA', clusterMapCommuteTransitArea, 'cluster-map-commute-transit-area')
 
 const clusterMapRampBone = `
 clusterMap(
@@ -110,3 +135,32 @@ clusterMap(
 `
 
 testCode(() => test, 'County', 'USA', clusterMapClusterSpacing, 'cluster-map-cluster-spacing')
+
+const clusterMapPopulationFilterBase = `
+clusterMap(
+    data=commute_transit,
+    scale=linearScale(max=0.25),
+    ramp=rampUridis,
+    maxRadius=60,
+    relativeArea=population,
+    basemap=noBasemap()
+)
+`
+
+urbanstatsFixture(
+    'cluster-map-population-filter-steps',
+    urlFromCode('County', 'USA', clusterMapPopulationFilterBase),
+)
+
+test('cluster-map-population-filter-steps', async (t) => {
+    await t.expect(getErrors()).eql([])
+    await toggleCustomScript(t) // switch to Auto UX (custom unchecked)
+    await checkTextboxesDirect(t, ['Filter?'])
+
+    const thresholds = [1000000, 100000, 10000, 1000, 100]
+    for (const threshold of thresholds) {
+        await typeInEditor(t, 0, `population < ${threshold}`, true)
+        await t.expect(getErrors()).eql([])
+        await screencap(t, { removeEntireMap: false })
+    }
+})
