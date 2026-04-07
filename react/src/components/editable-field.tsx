@@ -1,6 +1,8 @@
 import React, { CSSProperties, ReactNode, useRef, useState, useEffect } from 'react'
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
+import { useColors } from '../page_template/colors'
+
 export function EditableString(props: { content: string, onNewContent: (content: string) => void, style: CSSProperties, inputMode: 'text' | 'decimal' }): ReactNode {
     /*
      * This code is weird because the `ContentEditable` needs to use refs.
@@ -63,6 +65,7 @@ export function EditableString(props: { content: string, onNewContent: (content:
 }
 
 export function EditableNumber(props: { number: number, onNewNumber: (number: number) => void }): ReactNode {
+    const colors = useColors()
     const onNewContent = (content: string): void => {
         const number = parseInt(content)
         if (!Number.isNaN(number) && number !== props.number) {
@@ -73,7 +76,7 @@ export function EditableNumber(props: { number: number, onNewNumber: (number: nu
         <EditableString
             content={props.number.toString()}
             onNewContent={onNewContent}
-            style={{ minWidth: '2em', display: 'inline-block' }}
+            style={{ minWidth: '2em', display: 'inline-block', border: `1px solid ${colors.borderNonShadow}`, borderRadius: 3, padding: '0 2px' }}
             inputMode="decimal"
         />
     )
