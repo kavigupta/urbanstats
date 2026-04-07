@@ -1231,20 +1231,15 @@ function PointerButtonIndex(props: {
     const navigation = useContext(Navigator.Context)
     const showSettings = useSettings(['show_historical_cds', 'show_person_circles'])
     const onClick = async (): Promise<void> => {
-        /* eslint-disable no-console -- Debugging test failure */
-        console.log(`Click on pointer button! props=${JSON.stringify(props)}`)
         const data = await props.getData()
         let pos = data.longnames.indexOf(props.longname) + props.direction
-        console.log(`Starting position=${pos}`)
         while (pos >= 0 && pos < props.total) {
             const name = data.longnames[pos]
             const type = data.typeIndices[pos]
-            console.log(`name=${name}`)
             if (!isAllowedToBeShown(type, showSettings)) {
                 pos += props.direction
                 continue
             }
-            console.log(`navigate to ${name}`)
             void navigation.navigate({
                 kind: 'article',
                 longname: name,
@@ -1252,7 +1247,6 @@ function PointerButtonIndex(props: {
             }, { history: 'push', scroll: { kind: 'element', element: buttonRef.current! } })
             return
         }
-        /* eslint-enable no-console */
     }
 
     const buttonStyle: React.CSSProperties = {
