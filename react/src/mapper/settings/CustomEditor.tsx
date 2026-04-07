@@ -60,7 +60,7 @@ export function CustomEditor({
     )
 }
 
-export function USSDocumentationButton(): ReactNode {
+function USSDocumentationButton(): ReactNode {
     const colors = useColors()
     return (
         <a
