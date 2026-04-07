@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, useRef, useState, useEffect } from 'react'
+import React, { CSSProperties, ReactNode, useRef } from 'react'
 import ContentEditable, { ContentEditableEvent } from 'react-contenteditable'
 
 export function EditableString(props: { content: string, onNewContent: (content: string) => void, style: CSSProperties, inputMode: 'text' | 'decimal' }): ReactNode {
@@ -11,13 +11,14 @@ export function EditableString(props: { content: string, onNewContent: (content:
     // https://github.com/lovasoa/react-contenteditable/issues/161
     const propsRef = useRef(props)
     propsRef.current = props
-    const [, setCounter] = useState(0)
 
     // Otherwise, this component can display the wrong number when props change
-    useEffect(() => {
+    // This cannot be an effect, as the delay causes rendering problems (such as jumping, scroll position issues)
+    const previousContent = useRef(props.content)
+    if (props.content !== previousContent.current) {
         html.current = props.content.toString()
-        setCounter(count => count + 1)
-    }, [props.content])
+    }
+    previousContent.current = props.content
 
     const handleChange = (evt: ContentEditableEvent): void => {
         html.current = evt.target.value
