@@ -1,4 +1,4 @@
-import { RequestHook, Selector } from 'testcafe'
+import { ClientFunction, RequestHook, Selector } from 'testcafe'
 
 import { clickMapFeature, flaky, getLocation, getScroll, goBack, goForward, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult } from './test_utils'
 
@@ -97,13 +97,18 @@ test('going to related resets scroll', async (t) => {
     await t.expect(t.eval(() => window.scrollY)).eql(0)
 })
 
-test('using pointers preserves scroll', async (t) => {
+test('using pointers preserves the scroll position of the pointer', async (t) => {
     const lastPointer = Selector('button[data-test-id="1"]').nth(-1)
     await t.hover(lastPointer)
-    const scrollBefore: unknown = await t.eval(() => window.scrollY)
+    const getLastPointerViewportTop = ClientFunction(() => {
+        const els = document.querySelectorAll('button[data-test-id="1"]')
+        const last = els[els.length - 1]
+        return last.getBoundingClientRect().top
+    })
+    const viewportTopBefore: number = await getLastPointerViewportTop()
     await t.click(lastPointer)
     await waitForLoading()
-    await t.expect(t.eval(() => window.scrollY)).eql(scrollBefore)
+    await t.expect(getLastPointerViewportTop()).eql(viewportTopBefore)
 })
 
 // Artificially induce lag for cetrain requests for testing purposes
