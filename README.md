@@ -64,6 +64,15 @@ The site will automatically reload when you make changes to TypeScript files.
 
 You may need to restart the command when changing other files or pulling from `origin`.
 
+# Repository Setup
+
+After cloning, run these commands to enable the pixel-aware PNG merge driver:
+
+```
+git config merge.png-merge.name "PNG pixel-aware merge"
+git config merge.png-merge.driver "python3 scripts/png_merge.py %O %A %B"
+```
+
 # Frontend Developer Flow
 
 Make your changes using `npm run watch`.
