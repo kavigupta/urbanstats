@@ -31,6 +31,7 @@ NATIVE_AREAS = Shapefile(
     ),
     include_in_syau=True,
     wikidata_sourcer=None,
+    special_data_sources=["congressional_representatives_indirect"],
 )
 NATIVE_STATISTICAL_AREAS = Shapefile(
     hash_key="native_statistical_areas",
@@ -50,6 +51,7 @@ NATIVE_STATISTICAL_AREAS = Shapefile(
     ),
     include_in_syau=True,
     wikidata_sourcer=None,
+    special_data_sources=["congressional_representatives_indirect"],
 )
 NATIVE_SUBDIVISIONS = Shapefile(
     hash_key="native_subdivisions_2",
@@ -69,6 +71,7 @@ NATIVE_SUBDIVISIONS = Shapefile(
     ),
     include_in_syau=True,
     wikidata_sourcer=None,
+    special_data_sources=["congressional_representatives_indirect"],
 )
 
 

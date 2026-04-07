@@ -219,6 +219,7 @@ def districts(
     data_credit,
     minimum_district_length,
     does_overlap_self,
+    special_data_sources=(),
     wikidata_sourcer=None,
 ):
     return Shapefile(
@@ -240,6 +241,7 @@ def districts(
         does_overlap_self=does_overlap_self,
         universe_provider=us_domestic_provider(overrides),
         subset_masks={"USA": SelfSubset()},
+        special_data_sources=special_data_sources,
         abbreviation=abbreviation,
         data_credit=[data_credit]
         + [
@@ -270,6 +272,7 @@ CONGRESSIONAL_DISTRICTS = districts(
     ),
     minimum_district_length=2,
     does_overlap_self=False,
+    special_data_sources=["congressional_representatives"],
     wikidata_sourcer=CongressionalDistrictWikidataSourcer(),
 )
 
@@ -292,6 +295,7 @@ district_shapefiles = dict(
         ),
         minimum_district_length=0,
         does_overlap_self=False,
+        special_data_sources=["congressional_representatives_indirect"],
     ),
     state_senate=districts(
         "sldu",
@@ -305,5 +309,6 @@ district_shapefiles = dict(
         ),
         minimum_district_length=0,
         does_overlap_self=False,
+        special_data_sources=["congressional_representatives_indirect"],
     ),
 )

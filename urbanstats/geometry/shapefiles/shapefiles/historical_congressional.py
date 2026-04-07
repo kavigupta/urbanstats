@@ -91,6 +91,7 @@ HISTORICAL_CONGRESSIONALs = {
         abbreviation="CONG",
         universe_provider=us_domestic_provider(),
         subset_masks={"USA": SelfSubset()},
+        special_data_sources=["congressional_representatives"],
         data_credit=dict(
             text="We adapt Jeffrey B. Lewis, Brandon DeVine, and Lincoln Pritcher with Kenneth C. Martis"
             " to unclip the coastlines.",
@@ -125,6 +126,7 @@ HISTORICAL_CONGRESSIONALs["historical_congressional_2020"] = Shapefile(
     abbreviation="CONG",
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
+    special_data_sources=["congressional_representatives"],
     data_credit=dict(
         text="2020s data is from the US Census Bureau.",
         linkText="US Census",
