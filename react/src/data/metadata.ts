@@ -33,7 +33,7 @@ export default {
             "setting_key": "show_metadata_representative_1789_90",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -42,7 +42,7 @@ export default {
             "setting_key": "show_metadata_representative_1791_92",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -51,7 +51,7 @@ export default {
             "setting_key": "show_metadata_representative_1793_94",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -60,7 +60,7 @@ export default {
             "setting_key": "show_metadata_representative_1795_96",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -69,7 +69,7 @@ export default {
             "setting_key": "show_metadata_representative_1797_98",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -78,7 +78,7 @@ export default {
             "setting_key": "show_metadata_representative_1799_00",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -87,7 +87,7 @@ export default {
             "setting_key": "show_metadata_representative_1801_02",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -96,7 +96,7 @@ export default {
             "setting_key": "show_metadata_representative_1803_04",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -105,7 +105,7 @@ export default {
             "setting_key": "show_metadata_representative_1805_06",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -114,7 +114,7 @@ export default {
             "setting_key": "show_metadata_representative_1807_08",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -123,7 +123,7 @@ export default {
             "setting_key": "show_metadata_representative_1809_10",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -132,7 +132,7 @@ export default {
             "setting_key": "show_metadata_representative_1811_12",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -141,7 +141,7 @@ export default {
             "setting_key": "show_metadata_representative_1813_14",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -150,7 +150,7 @@ export default {
             "setting_key": "show_metadata_representative_1815_16",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -159,7 +159,7 @@ export default {
             "setting_key": "show_metadata_representative_1817_18",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -168,7 +168,7 @@ export default {
             "setting_key": "show_metadata_representative_1819_20",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -177,7 +177,7 @@ export default {
             "setting_key": "show_metadata_representative_1821_22",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -186,7 +186,7 @@ export default {
             "setting_key": "show_metadata_representative_1823_24",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -195,7 +195,7 @@ export default {
             "setting_key": "show_metadata_representative_1825_26",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -204,7 +204,7 @@ export default {
             "setting_key": "show_metadata_representative_1827_28",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -213,7 +213,7 @@ export default {
             "setting_key": "show_metadata_representative_1829_30",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -222,7 +222,7 @@ export default {
             "setting_key": "show_metadata_representative_1831_32",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -231,7 +231,7 @@ export default {
             "setting_key": "show_metadata_representative_1833_34",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -240,7 +240,7 @@ export default {
             "setting_key": "show_metadata_representative_1835_36",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -249,7 +249,7 @@ export default {
             "setting_key": "show_metadata_representative_1837_38",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -258,7 +258,7 @@ export default {
             "setting_key": "show_metadata_representative_1839_40",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -267,7 +267,7 @@ export default {
             "setting_key": "show_metadata_representative_1841_42",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -276,7 +276,7 @@ export default {
             "setting_key": "show_metadata_representative_1843_44",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -285,7 +285,7 @@ export default {
             "setting_key": "show_metadata_representative_1845_46",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -294,7 +294,7 @@ export default {
             "setting_key": "show_metadata_representative_1847_48",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -303,7 +303,7 @@ export default {
             "setting_key": "show_metadata_representative_1849_50",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -312,7 +312,7 @@ export default {
             "setting_key": "show_metadata_representative_1851_52",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -321,7 +321,7 @@ export default {
             "setting_key": "show_metadata_representative_1853_54",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -330,7 +330,7 @@ export default {
             "setting_key": "show_metadata_representative_1855_56",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -339,7 +339,7 @@ export default {
             "setting_key": "show_metadata_representative_1857_58",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -348,7 +348,7 @@ export default {
             "setting_key": "show_metadata_representative_1859_60",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -357,7 +357,7 @@ export default {
             "setting_key": "show_metadata_representative_1861_62",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -366,7 +366,7 @@ export default {
             "setting_key": "show_metadata_representative_1863_64",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -375,7 +375,7 @@ export default {
             "setting_key": "show_metadata_representative_1865_66",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -384,7 +384,7 @@ export default {
             "setting_key": "show_metadata_representative_1867_68",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -393,7 +393,7 @@ export default {
             "setting_key": "show_metadata_representative_1869_70",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -402,7 +402,7 @@ export default {
             "setting_key": "show_metadata_representative_1871_72",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -411,7 +411,7 @@ export default {
             "setting_key": "show_metadata_representative_1873_74",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -420,7 +420,7 @@ export default {
             "setting_key": "show_metadata_representative_1875_76",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -429,7 +429,7 @@ export default {
             "setting_key": "show_metadata_representative_1877_78",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -438,7 +438,7 @@ export default {
             "setting_key": "show_metadata_representative_1879_80",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -447,7 +447,7 @@ export default {
             "setting_key": "show_metadata_representative_1881_82",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -456,7 +456,7 @@ export default {
             "setting_key": "show_metadata_representative_1883_84",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -465,7 +465,7 @@ export default {
             "setting_key": "show_metadata_representative_1885_86",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -474,7 +474,7 @@ export default {
             "setting_key": "show_metadata_representative_1887_88",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -483,7 +483,7 @@ export default {
             "setting_key": "show_metadata_representative_1889_90",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -492,7 +492,7 @@ export default {
             "setting_key": "show_metadata_representative_1891_92",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -501,7 +501,7 @@ export default {
             "setting_key": "show_metadata_representative_1893_94",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -510,7 +510,7 @@ export default {
             "setting_key": "show_metadata_representative_1895_96",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -519,7 +519,7 @@ export default {
             "setting_key": "show_metadata_representative_1897_98",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -528,7 +528,7 @@ export default {
             "setting_key": "show_metadata_representative_1899_00",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -537,7 +537,7 @@ export default {
             "setting_key": "show_metadata_representative_1901_02",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -546,7 +546,7 @@ export default {
             "setting_key": "show_metadata_representative_1903_04",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -555,7 +555,7 @@ export default {
             "setting_key": "show_metadata_representative_1905_06",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -564,7 +564,7 @@ export default {
             "setting_key": "show_metadata_representative_1907_08",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -573,7 +573,7 @@ export default {
             "setting_key": "show_metadata_representative_1909_10",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -582,7 +582,7 @@ export default {
             "setting_key": "show_metadata_representative_1911_12",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -591,7 +591,7 @@ export default {
             "setting_key": "show_metadata_representative_1913_14",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -600,7 +600,7 @@ export default {
             "setting_key": "show_metadata_representative_1915_16",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -609,7 +609,7 @@ export default {
             "setting_key": "show_metadata_representative_1917_18",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -618,7 +618,7 @@ export default {
             "setting_key": "show_metadata_representative_1919_20",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -627,7 +627,7 @@ export default {
             "setting_key": "show_metadata_representative_1921_22",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -636,7 +636,7 @@ export default {
             "setting_key": "show_metadata_representative_1923_24",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -645,7 +645,7 @@ export default {
             "setting_key": "show_metadata_representative_1925_26",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -654,7 +654,7 @@ export default {
             "setting_key": "show_metadata_representative_1927_28",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -663,7 +663,7 @@ export default {
             "setting_key": "show_metadata_representative_1929_30",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -672,7 +672,7 @@ export default {
             "setting_key": "show_metadata_representative_1931_32",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -681,7 +681,7 @@ export default {
             "setting_key": "show_metadata_representative_1933_34",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -690,7 +690,7 @@ export default {
             "setting_key": "show_metadata_representative_1935_36",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -699,7 +699,7 @@ export default {
             "setting_key": "show_metadata_representative_1937_38",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -708,7 +708,7 @@ export default {
             "setting_key": "show_metadata_representative_1939_40",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -717,7 +717,7 @@ export default {
             "setting_key": "show_metadata_representative_1941_42",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -726,7 +726,7 @@ export default {
             "setting_key": "show_metadata_representative_1943_44",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -735,7 +735,7 @@ export default {
             "setting_key": "show_metadata_representative_1945_46",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -744,7 +744,7 @@ export default {
             "setting_key": "show_metadata_representative_1947_48",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -753,7 +753,7 @@ export default {
             "setting_key": "show_metadata_representative_1949_50",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -762,7 +762,7 @@ export default {
             "setting_key": "show_metadata_representative_1951_52",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -771,7 +771,7 @@ export default {
             "setting_key": "show_metadata_representative_1953_54",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -780,7 +780,7 @@ export default {
             "setting_key": "show_metadata_representative_1955_56",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -789,7 +789,7 @@ export default {
             "setting_key": "show_metadata_representative_1957_58",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -798,7 +798,7 @@ export default {
             "setting_key": "show_metadata_representative_1959_60",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -807,7 +807,7 @@ export default {
             "setting_key": "show_metadata_representative_1961_62",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -816,7 +816,7 @@ export default {
             "setting_key": "show_metadata_representative_1963_64",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -825,7 +825,7 @@ export default {
             "setting_key": "show_metadata_representative_1965_66",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -834,7 +834,7 @@ export default {
             "setting_key": "show_metadata_representative_1967_68",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -843,7 +843,7 @@ export default {
             "setting_key": "show_metadata_representative_1969_70",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -852,7 +852,7 @@ export default {
             "setting_key": "show_metadata_representative_1971_72",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -861,7 +861,7 @@ export default {
             "setting_key": "show_metadata_representative_1973_74",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -870,7 +870,7 @@ export default {
             "setting_key": "show_metadata_representative_1975_76",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -879,7 +879,7 @@ export default {
             "setting_key": "show_metadata_representative_1977_78",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -888,7 +888,7 @@ export default {
             "setting_key": "show_metadata_representative_1979_80",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -897,7 +897,7 @@ export default {
             "setting_key": "show_metadata_representative_1981_82",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -906,7 +906,7 @@ export default {
             "setting_key": "show_metadata_representative_1983_84",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -915,7 +915,7 @@ export default {
             "setting_key": "show_metadata_representative_1985_86",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -924,7 +924,7 @@ export default {
             "setting_key": "show_metadata_representative_1987_88",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -933,7 +933,7 @@ export default {
             "setting_key": "show_metadata_representative_1989_90",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -942,7 +942,7 @@ export default {
             "setting_key": "show_metadata_representative_1991_92",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -951,7 +951,7 @@ export default {
             "setting_key": "show_metadata_representative_1993_94",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -960,7 +960,7 @@ export default {
             "setting_key": "show_metadata_representative_1995_96",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -969,7 +969,7 @@ export default {
             "setting_key": "show_metadata_representative_1997_98",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -978,7 +978,7 @@ export default {
             "setting_key": "show_metadata_representative_1999_00",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -987,7 +987,7 @@ export default {
             "setting_key": "show_metadata_representative_2001_02",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -996,7 +996,7 @@ export default {
             "setting_key": "show_metadata_representative_2003_04",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -1005,7 +1005,7 @@ export default {
             "setting_key": "show_metadata_representative_2005_06",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -1014,7 +1014,7 @@ export default {
             "setting_key": "show_metadata_representative_2007_08",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -1023,7 +1023,7 @@ export default {
             "setting_key": "show_metadata_representative_2009_10",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -1032,7 +1032,7 @@ export default {
             "setting_key": "show_metadata_representative_2011_12",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -1041,7 +1041,7 @@ export default {
             "setting_key": "show_metadata_representative_2013_14",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -1050,7 +1050,7 @@ export default {
             "setting_key": "show_metadata_representative_2015_16",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -1059,7 +1059,7 @@ export default {
             "setting_key": "show_metadata_representative_2017_18",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -1068,7 +1068,7 @@ export default {
             "setting_key": "show_metadata_representative_2019_20",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -1077,7 +1077,7 @@ export default {
             "setting_key": "show_metadata_representative_2021_22",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -1086,7 +1086,7 @@ export default {
             "setting_key": "show_metadata_representative_2023_24",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         },
         {
@@ -1095,7 +1095,7 @@ export default {
             "setting_key": "show_metadata_representative_2025_26",
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
-            "category": "geoid",
+            "category": "election",
             "data_credit_explanation_page": "geoid"
         }
     ],

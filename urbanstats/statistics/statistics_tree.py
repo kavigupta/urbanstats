@@ -433,17 +433,15 @@ def census_basics_with_canada(col_name, canada_name=None, *, change):
 
 def geographic_ids_metadata_category():
     metadata = export_metadata_types()
-    contents = defaultdict(dict)
+    contents = {}
 
     for entry in metadata["displayed_metadata"]:
         if not entry["show_in_metadata_table"]:
             continue
         if entry["category"] != "geoid":
             continue
-        if entry["setting_key"].startswith("show_metadata_representative_"):
-            continue
         metadata_path = get_statistic_column_path(f"metadata_{entry['setting_key']}")
-        contents["geoid"][metadata_path] = StatisticGroup(
+        contents[metadata_path] = StatisticGroup(
             {
                 None: [
                     MetadataMultiSource(
@@ -461,7 +459,7 @@ def geographic_ids_metadata_category():
     return {
         "geoid": StatisticCategory(
             name="Geographic Identifiers",
-            contents=contents["geoid"],
+            contents=contents,
         )
     }
 
@@ -521,7 +519,6 @@ def congressional_representatives_metadata_group():
     )
 
 
-metadata_categories = geographic_ids_metadata_category()
 congressional_representatives_group = congressional_representatives_metadata_group()
 
 
@@ -1054,7 +1051,7 @@ statistics_tree = StatisticTree(
             "insurance_coverage_govt",
             "insurance_coverage_private",
         ),
-        **metadata_categories,
+        **geographic_ids_metadata_category(),
         "other_densities": StatisticCategory(
             name="Other Density Metrics",
             contents={

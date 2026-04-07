@@ -29,7 +29,7 @@ metadata_types = {
         key_for_term_start_year(term_start_year): CongressionalRepresentativesMetadata(
             str,
             representative_display_name(term_start_year),
-            category="geoid",
+            category="election",
             data_credit_explanation_page="geoid",
             term_start_year=term_start_year,
         )
