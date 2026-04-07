@@ -1,5 +1,6 @@
 # pylint: disable=too-many-lines
 
+from collections import defaultdict
 from dataclasses import dataclass, field
 from types import NoneType
 

@@ -4,7 +4,7 @@ import extra_stats from '../data/extra_stats'
 import stat_path_list from '../data/statistic_path_list'
 import { Navigator } from '../navigation/Navigator'
 import { Settings, SettingsDictionary, sourceEnabledKey, statPathsWithExtra } from '../page_template/settings'
-import { activeVectorKeys, useVector, VectorSettingKey, VectorSettingsDictionary } from '../page_template/settings-vector'
+import { useVector, VectorSettingKey, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { getAvailableGroups, getAvailableYears, getDataSourceCheckboxes, groupYearKeys, statIsEnabled, useStatPathsAll } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, StatPath } from '../page_template/statistic-tree'
 import { assert } from '../utils/defensive'
@@ -59,47 +59,22 @@ const statPathsWithHistogram = extra_stats.filter(([,{ type }]) => type === 'his
 
 interface SettingsConnectionConfig { stagedSettingsKeys: readonly VectorSettingKey[], applySettingsKeys: (visibleStatPaths: StatPath[]) => readonly VectorSettingKey[] }
 
-const activeVectorKeySet = new Set<string>(activeVectorKeys as readonly string[])
-
-function isVectorSettingKey(key: string): key is VectorSettingKey {
-    return activeVectorKeySet.has(key)
-}
-
 function getStagedSettingsKeys(statPaths: StatPath[][]): readonly VectorSettingKey[] {
     const flatStatPaths = statPaths.flat()
-    const keys: VectorSettingKey[] = [
+    return [
         'use_imperial',
         'show_historical_cds',
         'simple_ordinals',
+        ...getAvailableYears(flatStatPaths).map(year => `show_stat_year_${year}` as const),
+        ...getAvailableGroups(flatStatPaths).map(group => `show_stat_group_${group.id}` as const),
+        ...getDataSourceCheckboxes(statPaths)
+            .flatMap(({ category, checkboxSpecs }) =>
+                checkboxSpecs.flatMap(({ name, forcedOn }) => forcedOn
+                    ? []
+                    : [sourceEnabledKey({ category, name })]),
+            ),
         'temperature_unit',
-    ]
-
-    for (const year of getAvailableYears(flatStatPaths)) {
-        const key = `show_stat_year_${year}`
-        if (isVectorSettingKey(key)) {
-            keys.push(key)
-        }
-    }
-
-    for (const group of getAvailableGroups(flatStatPaths)) {
-        const key = `show_stat_group_${group.id}`
-        if (isVectorSettingKey(key)) {
-            keys.push(key)
-        }
-    }
-
-    for (const { category, checkboxSpecs } of getDataSourceCheckboxes(statPaths)) {
-        for (const { name, forcedOn } of checkboxSpecs) {
-            if (!forcedOn) {
-                const key = sourceEnabledKey({ category, name })
-                if (isVectorSettingKey(key)) {
-                    keys.push(key)
-                }
-            }
-        }
-    }
-
-    return keys
+    ] as const
 }
 
 export function settingsConnectionConfig({ pageKind, statPaths, settings }: { pageKind: 'article' | 'comparison', statPaths: StatPath[][], settings: Settings }): SettingsConnectionConfig {
