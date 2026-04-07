@@ -60,7 +60,7 @@ jobs:
               "event": "COMMENT",
               "body": "",
               "comments": [
-                {"path": "file.py", "line": 10, "start_line": 9, "body": "comment text"}
+                {"path": "file.py", "start_line": 9, "line": 10, "body": "comment text"}
               ]
             }
             ```
