@@ -1,6 +1,5 @@
 # pylint: disable=too-many-lines
 
-from collections import defaultdict
 from dataclasses import dataclass, field
 from types import NoneType
 
@@ -428,15 +427,17 @@ def census_basics_with_canada(col_name, canada_name=None, *, change):
     return result
 
 
-def metadata_statistics_category():
+def geographic_ids_metadata_category():
     metadata = export_metadata_types()
-    contents = defaultdict(dict)
+    contents = {}
+
     for entry in metadata["displayed_metadata"]:
         if not entry["show_in_metadata_table"]:
             continue
+        if entry["category"] != "geoid":
+            continue
         metadata_path = get_statistic_column_path(f"metadata_{entry['setting_key']}")
-        assert "category" in entry, f"Metadata entry {entry} is missing category"
-        contents[entry["category"]][metadata_path] = StatisticGroup(
+        contents[metadata_path] = StatisticGroup(
             {
                 None: [
                     MetadataMultiSource(
@@ -450,13 +451,12 @@ def metadata_statistics_category():
             },
             group_name=entry["name"],
         )
-    category_names = {"geoid": "Geographic Identifiers"}
-    assert set(contents) == set(
-        category_names
-    ), f"Unexpected metadata categories: {set(contents)}"
+
     return {
-        cat_internal: StatisticCategory(name=cat_name, contents=contents[cat_internal])
-        for cat_internal, cat_name in category_names.items()
+        "geoid": StatisticCategory(
+            name="Geographic Identifiers",
+            contents=contents,
+        )
     }
 
 
@@ -988,7 +988,7 @@ statistics_tree = StatisticTree(
             "insurance_coverage_govt",
             "insurance_coverage_private",
         ),
-        **metadata_statistics_category(),
+        **geographic_ids_metadata_category(),
         "other_densities": StatisticCategory(
             name="Other Density Metrics",
             contents={
