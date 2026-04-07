@@ -1,5 +1,5 @@
 import maplibregl from 'maplibre-gl'
-import React, { ReactNode, memo, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, memo, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { FullscreenControl, Layer, MapProps, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
@@ -8,6 +8,8 @@ import { Basemap as BasemapSpec } from '../mapper/settings/utils'
 import { TestUtils } from '../utils/TestUtils'
 import { assert } from '../utils/defensive'
 import { ICoordinate } from '../utils/protos'
+
+import { ClusterScaleContext } from './cluster-scale-context'
 
 type PieChartSizeCategoryKey = `pieChartSizeForCategory${number}`
 type CountCategoryKey = `countCategory${number}`
@@ -47,10 +49,6 @@ interface ClusterMapProps {
     markerOpacity?: number
     /** Compute relative area relative to the largest area */
     computeRelativeArea: (area: number, maxArea: number) => number
-    /** Global maximum pie chart size across all insets. */
-    globalMaxPieChartSize?: number
-    /** Reports this inset map's current maximum pie chart size. */
-    onVisiblePieChartSizeChange?: (maxPieChartSize: number) => void
     /** Optional map props for embedding in other layouts. */
     mapLibreProps?: Partial<MapProps>
     /** Optional map ref passthrough. */
@@ -91,6 +89,8 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
         maxClusterRadius,
         markerOpacity = 1,
     } = props
+
+    const { globalMaxPieChartSize, reportMax } = useContext(ClusterScaleContext)
 
     const [mapRef, setMapRef] = useState<MapRef | null>(null)
     const [visibleMarkers, setVisibleMarkers] = useState<MarkerState[]>([])
@@ -137,8 +137,8 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
         }
 
         const localMaxPieChartSize = Math.max(...rawList.map(r => r.totalPieChartSize), 0)
-        const maxPieChartSize = props.globalMaxPieChartSize ?? localMaxPieChartSize
-        props.onVisiblePieChartSizeChange?.(localMaxPieChartSize)
+        const maxPieChartSize = globalMaxPieChartSize ?? localMaxPieChartSize
+        reportMax(localMaxPieChartSize)
         setVisibleMarkers(rawList.map(raw => ({
             featureId: raw.featureId,
             lon: raw.lon,
@@ -159,7 +159,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
     useEffect(() => {
         updateMarkers()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- this is the only relevant dependency
-    }, [props.globalMaxPieChartSize])
+    }, [globalMaxPieChartSize])
 
     const clusterProperties: Record<string, unknown> = {}
     for (let i = 0; i < categoryColors.length; i++) {

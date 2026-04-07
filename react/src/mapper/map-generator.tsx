@@ -13,6 +13,7 @@ import { consolidatedShapeLink, indexLink } from '../navigation/links'
 import { RelativeLoader } from '../navigation/loading'
 import { Colors, colorThemes } from '../page_template/color-themes'
 import { OverrideTheme, useColors } from '../page_template/colors'
+import { ClusterScaleProvider } from '../syau/cluster-scale-context'
 import { loadCentroids } from '../syau/load'
 import { ClusterMap as SyauClusterMap } from '../syau/syau-cluster-map'
 import { Universe } from '../universe'
@@ -65,83 +66,6 @@ export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
 }
 
 type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditSeq<Inset> } | { mode: 'textBoxes', editTextBoxes: EditSeq<TextBox> })
-
-function ClusterScaleAwareInsets({
-    insetsFeatures,
-    mode,
-    editInsets,
-    mapsRef,
-    mapsContainerRef,
-    mapComponentCreator,
-}: {
-    insetsFeatures: { inset: Inset, insetFeatures: GeoJSON.Feature[] }[]
-    mode: MapUIProps<{ loading: boolean }>['mode']
-    editInsets?: EditSeq<Inset>
-    mapsRef: (MapRef | null)[]
-    mapsContainerRef: React.RefObject<HTMLDivElement>
-    mapComponentCreator: MapComponentCreator
-}): ReactNode {
-    const [clusterMaxByInset, setClusterMaxByInset] = useState<number[]>([])
-
-    const setInsetMax = (insetIndex: number, maxValue: number): void => {
-        setClusterMaxByInset((prev) => {
-            if (prev.length !== insetsFeatures.length) {
-                // re-adjust the length of the features, if the number has changed. this also resets all of them
-                // resetting everything to 0 is fine, if insets have changed, there is no reason to trust
-                // any of them anyways.
-                const next = Array.from({ length: insetsFeatures.length }, () => 0)
-                next[insetIndex] = maxValue
-                return next
-            }
-            if (prev[insetIndex] === maxValue) {
-                return prev
-            }
-            const next = [...prev]
-            next[insetIndex] = maxValue
-            return next
-        })
-    }
-
-    let globalMaxPieChartSize: number | undefined = Math.max(...clusterMaxByInset, 0)
-    if (globalMaxPieChartSize === 0) {
-        // set it to undefined so we don't get float errors by dividing by 0
-        globalMaxPieChartSize = undefined
-    }
-
-    return (
-        <>
-            {insetsFeatures.map(({ inset, insetFeatures }, i, insets) => {
-                return (
-                    <InsetMap
-                        i={i}
-                        key={i}
-                        inset={inset}
-                        renderToken={String(globalMaxPieChartSize)}
-                        ref={e => mapsRef[i] = e}
-                        container={mapsContainerRef}
-                        numInsets={insets.length}
-                        editInset={mode === 'insets'
-                            ? editInsets && editIndex(editInsets, i)
-                            : undefined}
-                        interactive={mode !== 'textBoxes'}
-                    >
-                        {(mapLibreProps, mC, ref) => mapComponentCreator(
-                            mapLibreProps,
-                            mC,
-                            ref,
-                            insetFeatures,
-                            ['uss', 'view'].includes(mode),
-                            globalMaxPieChartSize,
-                            (maxPieChartSize) => {
-                                setInsetMax(i, maxPieChartSize)
-                            },
-                        )}
-                    </InsetMap>
-                )
-            })}
-        </>
-    )
-}
 
 export interface MapGenerator<T = unknown> {
     ui: (props: MapUIProps<T>) => { node: ReactNode, exportImage?: () => Promise<HTMLCanvasElement> }
@@ -212,14 +136,32 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         })
 
         const insetMaps = (
-            <ClusterScaleAwareInsets
-                insetsFeatures={insetsFeatures}
-                mode={props.mode}
-                editInsets={props.mode === 'insets' ? props.editInsets : undefined}
-                mapsRef={mapsRef}
-                mapsContainerRef={mapsContainerRef}
-                mapComponentCreator={mapComponentCreator}
-            />
+            <ClusterScaleProvider numInsets={insetsFeatures.length}>
+                {(i: number) => {
+                    const { inset, insetFeatures } = insetsFeatures[i]
+                    return (
+                        <InsetMap
+                            i={i}
+                            inset={inset}
+                            ref={e => mapsRef[i] = e}
+                            container={mapsContainerRef}
+                            numInsets={insetsFeatures.length}
+                            editInset={props.mode === 'insets'
+                                ? editIndex(props.editInsets, i)
+                                : undefined}
+                            interactive={props.mode !== 'textBoxes'}
+                        >
+                            {(mapLibreProps, mC, ref) => mapComponentCreator(
+                                mapLibreProps,
+                                mC,
+                                ref,
+                                insetFeatures,
+                                ['uss', 'view'].includes(props.mode),
+                            )}
+                        </InsetMap>
+                    )
+                }}
+            </ClusterScaleProvider>
         )
 
         const visibleInsets = insetsFeatures.map(({ inset }) => inset)
@@ -431,8 +373,6 @@ type MapComponentCreator = (
     ref: React.Ref<MapRef>,
     fs: GeoJSON.Feature[],
     clickable: boolean,
-    globalMaxPieChartSize?: number,
-    onVisiblePieChartSizeChange?: (maxPieChartSize: number) => void
 ) => ReactNode
 
 async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, geographyKind, cache }:
@@ -493,37 +433,32 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
             return {
                 features,
-                mapComponentCreator: (mapLibreProps, otherMapChildren, ref, fs, clickable, globalMaxPieChartSize, onVisiblePieChartSizeChange) => {
-                    void clickable
-                    return (
-                        <SyauClusterMap
-                            centroids={fs.map((f) => {
-                                const [lon, lat] = (f.geometry as GeoJSON.Point).coordinates
-                                return { lon, lat } satisfies ICoordinate
-                            })}
-                            categories={fs.map(f => f.properties!.rampBin as number)}
-                            pieChartSizeFor={fs.map((f) => {
-                                const radius = f.properties?.radius as number | undefined
-                                return radius === undefined ? 1 : radius ** 2
-                            })}
-                            categoryColors={clusterCategoryColors}
-                            clusterMarkerLabel={() => ''}
-                            unclusteredMarkerLabel={() => ''}
-                            maxClusterRadius={value.maxRadius}
-                            markerOpacity={value.opacity}
-                            globalMaxPieChartSize={globalMaxPieChartSize}
-                            onVisiblePieChartSizeChange={onVisiblePieChartSizeChange}
-                            computeRelativeArea={(area, maxArea) => (maxArea > 0 ? area / maxArea : 1)}
-                            clusterRadiusSpacing={value.clusterRadiusSpacing}
-                            mapLibreProps={mapLibreProps}
-                            mapRef={ref}
-                            basemap={value.basemap}
-                            doZoom={false}
-                        >
-                            {otherMapChildren}
-                        </SyauClusterMap>
-                    )
-                },
+                mapComponentCreator: (mapLibreProps, otherMapChildren, ref, fs) => (
+                    <SyauClusterMap
+                        centroids={fs.map((f) => {
+                            const [lon, lat] = (f.geometry as GeoJSON.Point).coordinates
+                            return { lon, lat } satisfies ICoordinate
+                        })}
+                        categories={fs.map(f => f.properties!.rampBin as number)}
+                        pieChartSizeFor={fs.map((f) => {
+                            const radius = f.properties?.radius as number | undefined
+                            return radius === undefined ? 1 : radius ** 2
+                        })}
+                        categoryColors={clusterCategoryColors}
+                        clusterMarkerLabel={() => ''}
+                        unclusteredMarkerLabel={() => ''}
+                        maxClusterRadius={value.maxRadius}
+                        markerOpacity={value.opacity}
+                        computeRelativeArea={(area, maxArea) => (maxArea > 0 ? area / maxArea : 1)}
+                        clusterRadiusSpacing={value.clusterRadiusSpacing}
+                        mapLibreProps={mapLibreProps}
+                        mapRef={ref}
+                        basemap={value.basemap}
+                        doZoom={false}
+                    >
+                        {otherMapChildren}
+                    </SyauClusterMap>
+                ),
                 ramp,
             }
         case 'pMap':
