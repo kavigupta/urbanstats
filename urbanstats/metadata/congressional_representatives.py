@@ -169,7 +169,7 @@ def compute_representatives_for_shapefile(
 
 
 class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
-    representatives_csv_version = "75d536eb0406ed3f9c4e20afa34d9f0c77948d57"
+    representatives_csv_version = "a38a7de"
     version = (
         f"congressional_representatives_structured_{representatives_csv_version}_v48"
     )
