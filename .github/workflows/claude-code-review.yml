@@ -60,12 +60,18 @@ jobs:
               "event": "COMMENT",
               "body": "",
               "comments": [
-                {"path": "file.py", "line": 10, "body": "comment text"}
+                {"path": "file.py", "line": 10, "start_line": 9, "body": "comment text"}
               ]
             }
             ```
             Only include content in `body` if there is an overarching issue with the PR. Do not summarize other comments. Do not provide praise.
             If there are no comments, `body` should be "LGTM" to confirm that the review has run.
+
+            When suggesting a concrete code change, use a GitHub suggestion block in the comment body instead of a plain code block. Suggestion blocks use the exact line(s) being replaced, so the reviewer can apply them with one click. The format is:
+            ````suggestion
+            replacement line(s) here
+            ````
+            The suggestion must cover exactly the lines spanned by `start_line` to `line` in the comment. If the fix spans multiple lines, set `start_line` to the first affected line and `line` to the last. Only use a suggestion block when you can provide a complete, correct replacement — if the fix requires broader context or is ambiguous, use a plain explanation instead.
 
             2. Then submit it:
             ```
