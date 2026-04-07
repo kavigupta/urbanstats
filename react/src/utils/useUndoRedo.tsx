@@ -16,7 +16,7 @@ export interface UndoRedoOptions {
     onlyElement?: { current: HTMLElement | null }
 }
 
-const logMessages: boolean = true
+const logMessages: boolean = false
 
 function debugUndo(arg: string): void {
     if (logMessages) {
