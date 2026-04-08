@@ -43,6 +43,20 @@ message TemperatureHistogram {
     repeated int32 counts = 4;
 }
 
+message CongressionalRepresentative {
+    string name = 1;
+    optional string wikipedia_page = 2;
+    optional string party = 3;
+}
+
+message CongressionalRepresentatives {
+    repeated CongressionalRepresentative representatives = 1;
+}
+
+message CongressionalRepresentativeTable {
+    repeated CongressionalRepresentative representatives = 1;
+}
+
 message ExtraStatistic {
     optional Histogram histogram = 1;
     optional TimeSeries timeseries = 2;
@@ -52,6 +66,7 @@ message ExtraStatistic {
 message Metadata {
     int32 metadata_index = 1;
     optional string string_value = 2;
+    repeated int32 congressional_representatives = 3;
 }
 
 message Article {
