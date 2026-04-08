@@ -15,6 +15,7 @@ import {
     QuizFullData,
     QuizQuestionTronche,
     SearchIndex,
+    CongressionalRepresentativeTable,
     ArticleOrderingList,
     ShardIndex,
     Symlinks,
@@ -41,6 +42,7 @@ export async function loadProtobuf(filePath: string, name: 'Feature', errorOnMis
 export async function loadProtobuf(filePath: string, name: 'ArticleOrderingList'): Promise<ArticleOrderingList>
 export async function loadProtobuf(filePath: string, name: 'OrderLists'): Promise<OrderLists>
 export async function loadProtobuf(filePath: string, name: 'DataLists'): Promise<DataLists>
+export async function loadProtobuf(filePath: string, name: 'CongressionalRepresentativeTable'): Promise<CongressionalRepresentativeTable>
 export async function loadProtobuf(filePath: string, name: 'ConsolidatedShapes'): Promise<ConsolidatedShapes>
 export async function loadProtobuf(filePath: string, name: 'ConsolidatedShapes', errorOnMissing: boolean): Promise<ConsolidatedShapes | undefined>
 export async function loadProtobuf(filePath: string, name: 'ConsolidatedArticles'): Promise<ConsolidatedArticles>
@@ -54,7 +56,7 @@ export async function loadProtobuf(filePath: string, name: 'PointSeries'): Promi
 export async function loadProtobuf(filePath: string, name: 'ArticleUniverseList'): Promise<ArticleUniverseList>
 export async function loadProtobuf(filePath: string, name: 'DefaultUniverseTable'): Promise<DefaultUniverseTable>
 export async function loadProtobuf(filePath: string, name: 'ShardIndex'): Promise<ShardIndex>
-export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | ConsolidatedShapes | ConsolidatedArticles | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | ArticleUniverseList | DefaultUniverseTable | ShardIndex | undefined> {
+export async function loadProtobuf(filePath: string, name: string, errorOnMissing: boolean = true): Promise<Article | Feature | ArticleOrderingList | OrderLists | DataLists | CongressionalRepresentativeTable | ConsolidatedShapes | ConsolidatedArticles | SearchIndex | QuizQuestionTronche | QuizFullData | CountsByArticleUniverseAndType | Symlinks | PointSeries | ArticleUniverseList | DefaultUniverseTable | ShardIndex | undefined> {
     let perfCheckpoint = performance.now()
 
     const response = await fetch(filePath)
@@ -94,6 +96,9 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     }
     else if (name === 'DataLists') {
         return DataLists.decode(arr)
+    }
+    else if (name === 'CongressionalRepresentativeTable') {
+        return CongressionalRepresentativeTable.decode(arr)
     }
     else if (name === 'ConsolidatedShapes') {
         return ConsolidatedShapes.decode(arr)
