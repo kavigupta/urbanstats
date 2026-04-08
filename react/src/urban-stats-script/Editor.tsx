@@ -36,7 +36,7 @@ interface InspectState {
 type PopoverState = AutocompleteState | InspectState | undefined
 
 export function Editor(
-    { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, eRef, assignments }: {
+    { uss, setUss, typeEnvironment, results, placeholder, selection, setSelection, eRef, assignments, children }: {
         uss: string
         setUss: (newScript: string) => void
         typeEnvironment: TypeEnvironment
@@ -46,6 +46,7 @@ export function Editor(
         setSelection: (newRange: Range | null) => void
         eRef?: React.MutableRefObject<HTMLPreElement | null>
         assignments: AssignmentsResult
+        children?: ReactNode
     },
 ): ReactNode {
     const setSelectionRef = useRef(setSelection)
@@ -342,23 +343,26 @@ export function Editor(
 
     return (
         <div style={{ marginTop: '0.25em' }}>
-            <pre
-                id="test-editor-body"
-                style={{
-                    ...codeStyle(colors),
-                    caretColor: TestUtils.shared.isTesting ? 'transparent' : colors.textMain,
-                    border: `1px solid ${borderColor}`,
-                    borderRadius: TestUtils.shared.isTesting ? 0 : (results.length > 0 ? '5px 5px 0 0' : '5px'),
-                }}
-                ref={(e) => {
-                    editorRef.current = e
-                    if (eRef !== undefined) {
-                        eRef.current = e
-                    }
-                }}
-                contentEditable="plaintext-only"
-                spellCheck="false"
-            />
+            <div style={{ position: 'relative' }}>
+                <pre
+                    id="test-editor-body"
+                    style={{
+                        ...codeStyle(colors),
+                        caretColor: TestUtils.shared.isTesting ? 'transparent' : colors.textMain,
+                        border: `1px solid ${borderColor}`,
+                        borderRadius: TestUtils.shared.isTesting ? 0 : (results.length > 0 ? '5px 5px 0 0' : '5px'),
+                    }}
+                    ref={(e) => {
+                        editorRef.current = e
+                        if (eRef !== undefined) {
+                            eRef.current = e
+                        }
+                    }}
+                    contentEditable="plaintext-only"
+                    spellCheck="false"
+                />
+                {children}
+            </div>
             <DisplayResults results={results} editor={true} />
             {popoverState === undefined
                 ? null
