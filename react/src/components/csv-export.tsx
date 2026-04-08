@@ -7,7 +7,7 @@ import React, { ReactNode } from 'react'
 import { USSOpaqueValue, USSValue } from '../urban-stats-script/types-values'
 import { Article } from '../utils/protos'
 
-import { ArticleRow, metadataStatValueToString } from './load-article'
+import { ArticleRow } from './load-article'
 
 export type CSVExportData = () => { csvData: string[][], csvFilename: string }
 
@@ -61,7 +61,7 @@ export function generateCSVDataForArticles(
         for (let statIndex = 0; statIndex < dataByArticleStat[0].length; statIndex++) {
             const rowData = dataByArticleStat[articleIndex][statIndex]
             if (rowData.kind === 'metadata') {
-                row.push(typeof rowData.statval === 'string' ? rowData.statval : metadataStatValueToString(rowData.statval))
+                row.push(typeof rowData.statval === 'string' ? rowData.statval : JSON.stringify(rowData.statval))
             }
             else {
                 row.push(rowData.statval.toString())

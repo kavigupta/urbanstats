@@ -197,13 +197,6 @@ function metadataValueByIndex(
     return values
 }
 
-export function metadataStatValueToString(statval: MetadataStatValue): string {
-    if (typeof statval === 'string') {
-        return statval
-    }
-    return statval.representatives.map(representative => `${representative.name} (${representative.party})`).join(', ')
-}
-
 function metadataRowsForArticle(
     article: Article,
     enabledMetadataPaths: StatPath[],
