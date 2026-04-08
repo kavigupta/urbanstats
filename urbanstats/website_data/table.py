@@ -58,11 +58,7 @@ def compute_statistics_for_shapefile(
             shapefile_table=result,
         )
         for computed_column in computed_columns:
-            if len(computed_column.values) != len(result):
-                raise ValueError(
-                    f"Metadata column {computed_column.key} has length"
-                    f" {len(computed_column.values)}; expected {len(result)}"
-                )
+            assert len(computed_column.values) == len(result)
             result[computed_column.key] = computed_column.values
 
     for k in sf.meta:
