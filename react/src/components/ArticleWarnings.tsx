@@ -3,7 +3,7 @@ import React, { ReactNode } from 'react'
 import { useColors } from '../page_template/colors'
 import { checkboxCategoryName, sourceEnabledKey, useSettings } from '../page_template/settings'
 import { groupYearKeys, useAvailableYears, useDataSourceCheckboxes, useGroupsMissingYearSelection, useSelectedGroups } from '../page_template/statistic-settings'
-import { Category, Group } from '../page_template/statistic-tree'
+import { Category, Group, Year } from '../page_template/statistic-tree'
 
 import { useScreenshotMode } from './screenshot'
 
@@ -96,7 +96,7 @@ function HierarchicalName({ groupOrCategory }: { groupOrCategory: Group | Catego
     }
 }
 
-function YearList({ years }: { years: number[] }): ReactNode {
+function YearList({ years }: { years: Year[] }): ReactNode {
     switch (years.length) {
         case 0:
             return null
