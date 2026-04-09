@@ -1,7 +1,7 @@
 import math
+import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-import re
 from typing import Optional, Type
 
 from urbanstats.protobuf import data_files_pb2
@@ -15,6 +15,7 @@ class MetadataColumn(ABC):
     @abstractmethod
     def export(self):
         pass
+
 
 @dataclass
 class ExternalLinkMetadata(MetadataColumn):
