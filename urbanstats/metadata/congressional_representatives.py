@@ -8,7 +8,7 @@ from typing import List
 import pandas as pd
 import tqdm.auto as tqdm
 import us
-from permacache import permacache, stable_hash
+from permacache import permacache
 
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefiles.historical_congressional import to_year
@@ -171,7 +171,7 @@ def compute_representatives_for_shapefile(
 class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
     representatives_csv_version = "a38a7de"
     version = (
-        f"congressional_representatives_structured_{representatives_csv_version}_v48"
+        f"congressional_representatives_structured_{representatives_csv_version}_v49"
     )
 
     def compute_metadata_columns(self, *, shapefile, shapefiles, shapefile_table):
@@ -202,10 +202,23 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
         )
         return representatives_by_row
 
-    def compute_metadata_columns_indirect(self, shapefile, shapefile_table, shapefiles):
+    def all_relationships(self, shapefiles, key_a, key_b):
         # pylint: disable=import-outside-toplevel,cyclic-import
         from urbanstats.geometry.relationship import create_relationships_dispatch
 
+        (a_contains_b, b_contains_a, a_intersects_b, _) = create_relationships_dispatch(
+            shapefiles, key_a, key_b
+        )
+        return [*a_contains_b, *b_contains_a, *a_intersects_b]
+
+    def name_to_representatives_for_shapefile(self, shapefile):
+        names, representatives_by_row = compute_representatives_for_shapefile(
+            shapefile,
+            representatives_csv_version=self.representatives_csv_version,
+        )
+        return dict(zip(names, representatives_by_row))
+
+    def compute_metadata_columns_indirect(self, shapefile, shapefile_table, shapefiles):
         [key_self] = [key for key, value in shapefiles.items() if value == shapefile]
 
         other_keys = [
@@ -215,29 +228,15 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
         ]
         results = defaultdict(lambda: defaultdict(list))
         for key_other in other_keys:
-            (
-                a_contains_b,
-                b_contains_a,
-                a_intersects_b,
-                _,
-            ) = create_relationships_dispatch(shapefiles, key_self, key_other)
-            relationships = [*a_contains_b, *b_contains_a, *a_intersects_b]
+            relationships = self.all_relationships(shapefiles, key_self, key_other)
             if not relationships:
                 continue
-            (
-                names_other,
-                representatives_direct_other,
-            ) = compute_representatives_for_shapefile(
-                shapefiles[key_other],
-                representatives_csv_version=self.representatives_csv_version,
-            )
-            name_to_representatives_other = dict(
-                zip(names_other, representatives_direct_other)
+            name_to_representatives_other = self.name_to_representatives_for_shapefile(
+                shapefiles[key_other]
             )
             for name, name_other in relationships:
-                representatives_other = name_to_representatives_other.get(
+                for term_start_year, reps in name_to_representatives_other.get(
                     name_other, {}
-                )
-                for term_start_year, reps in representatives_other.items():
+                ).items():
                     results[name][term_start_year].extend(reps)
         return [results[name] for name in shapefile_table.longname]
