@@ -1,3 +1,4 @@
+import { mergeMergeableRows } from '../collapse-rows/mergeable-rows'
 import explanation_page from '../data/explanation_page'
 import extra_stats from '../data/extra_stats'
 import metadata from '../data/metadata'
