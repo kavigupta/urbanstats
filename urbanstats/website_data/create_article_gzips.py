@@ -24,7 +24,7 @@ def isnan(x):
 def metadata_for_article(row, representative_table_builder):
     metadata = []
     for i, (key, metadata_type) in enumerate(metadata_types.items()):
-        if key not in row.index or row[key] != row[key] or row[key] is None:
+        if row[key] != row[key] or row[key] is None:
             continue
         metadata_value = metadata_type.create(
             i, row[key], representative_table_builder=representative_table_builder
@@ -190,14 +190,13 @@ def create_article_gzips(site_folder, full, ordering, symlinks):
             representative_table_builder=representative_table_builder,
         )
 
-    result = build_shards_from_callback(
+    build_shards_from_callback(
         f"{site_folder}/data", "data", longnames, get_article, symlinks=symlinks
     )
     write_gzip(
         representative_table_builder.to_proto(),
         f"{site_folder}/index/representatives.gz",
     )
-    return result
 
 
 @lru_cache(maxsize=None)
