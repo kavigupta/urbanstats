@@ -22,6 +22,7 @@ import { notWaiting, waiting } from '../utils/promiseStream'
 import { Article } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { TransposeContext } from '../utils/transpose'
+import { useOrderedResolve } from '../utils/useOrderedResolve'
 import { zIndex } from '../utils/zIndex'
 
 import { ArticleWarnings } from './ArticleWarnings'
@@ -41,7 +42,7 @@ export function ComparisonPanel(props: {
     universe: Universe
     universes: readonly Universe[]
     articles: Article[]
-    rows: (settings: StatGroupSettings) => ArticleRow[][]
+    rows: (settings: StatGroupSettings) => Promise<ArticleRow[][]>
     mapPartitions: number[][]
 }): ReactNode {
     const colors = useColors()
@@ -120,7 +121,8 @@ export function ComparisonPanel(props: {
 
     const settings = useSettings(groupYearKeys())
 
-    const dataByArticleStat = props.rows(settings)
+    const dataByArticleStatNullable = useOrderedResolve(props.rows(settings), 'rows').result
+    const dataByArticleStat = useMemo(() => dataByArticleStatNullable ?? [], [dataByArticleStatNullable])
     const dataByStatArticle = dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
 
     const handleSort = (statIndex: number): void => {
