@@ -1,12 +1,5 @@
-import re
-
 from .metadata_column import DisplayedMetadata, ExternalLinkMetadata
 from .metadata_list import metadata_types
-
-
-def default_setting_key(name: str) -> str:
-    slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
-    return f"show_metadata_{slug}"
 
 
 def export_metadata_types():
@@ -14,27 +7,9 @@ def export_metadata_types():
     external_link_metadata = []
     for i, v in enumerate(metadata_types.values()):
         if isinstance(v, DisplayedMetadata):
-            setting_key = v.setting_key or default_setting_key(v.name)
-            displayed_metadata.append(
-                dict(
-                    index=i,
-                    name=v.name,
-                    setting_key=setting_key,
-                    show_in_metadata_table=v.show_in_metadata_table,
-                    category=v.category,
-                    data_credit_explanation_page=v.data_credit_explanation_page,
-                )
-            )
+            displayed_metadata.append({"index": i, **v.export()})
         elif isinstance(v, ExternalLinkMetadata):
-            external_link_metadata.append(
-                dict(
-                    index=i,
-                    site=v.site,
-                    link_prefix=v.link_prefix,
-                    normalizer=v.normalizer,
-                    show_in_metadata_table=v.show_in_metadata_table,
-                )
-            )
+            external_link_metadata.append({"index": i, **v.export()})
         else:
             raise ValueError(f"Unknown metadata type: {type(v)}")
     return {
