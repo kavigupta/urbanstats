@@ -9,7 +9,7 @@ import { loadProtobuf } from '../load_json'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { assert } from '../utils/defensive'
-import { Article, IFirstOrLast, IMetadata } from '../utils/protos'
+import { Article, CongressionalRepresentativeTable, IFirstOrLast, IMetadata } from '../utils/protos'
 import { UnitType } from '../utils/unit'
 
 import { CountsByUT, forType } from './countsByArticleType'
@@ -40,12 +40,6 @@ export interface CongressionalRepresentativeView {
     name: string
     wikipediaPage: string
     party?: string
-}
-
-interface CongressionalRepresentativeProtoView {
-    name?: string | null
-    wikipediaPage?: string | null
-    party?: string | null
 }
 
 export interface CongressionalRepresentativesView {
@@ -95,10 +89,6 @@ const dataCreditExplanationPageByMetadataIndex = new Map<number, string>(
     metadata.displayed_metadata.map(e => [e.index, e.data_credit_explanation_page]),
 )
 
-const congressionalRepresentativeTablePromise = loadProtobuf('/index/representatives.gz', 'CongressionalRepresentativeTable').then(
-    value => value as unknown as { representatives: (CongressionalRepresentativeProtoView | undefined)[] },
-)
-
 interface StatisticCellRenderingInfoCommon {
     articleType: string
     statname: string
@@ -136,12 +126,11 @@ const metadataValueKindByIndex = new Map<number, MetadataValueKind>(
     metadata.displayed_metadata.map(entry => [entry.index, entry.value_kind]),
 )
 
-function assertCongressionalRepresentativesView(indices: number[], representativeTable: { representatives: (CongressionalRepresentativeProtoView | undefined)[] }): CongressionalRepresentativesView {
+function assertCongressionalRepresentativesView(indices: number[], representativeTable: CongressionalRepresentativeTable): CongressionalRepresentativesView {
     return {
         kind: 'congressional',
         representatives: indices.map((index) => {
             const representative = representativeTable.representatives[index]
-            assert(representative !== undefined, `representative index ${index} missing from representatives.gz`)
             assert(typeof representative.name === 'string', 'congressional representative name is missing')
             assert(typeof representative.wikipediaPage === 'string', 'congressional representative wikipedia page is missing')
             return {
@@ -155,7 +144,7 @@ function assertCongressionalRepresentativesView(indices: number[], representativ
 
 function metadataValueFromProto(
     metadataProto: IMetadata,
-    representativeTable: { representatives: (CongressionalRepresentativeProtoView | undefined)[] },
+    representativeTable: CongressionalRepresentativeTable,
 ): MetadataStatValue | undefined {
     if (metadataProto.metadataIndex === undefined || metadataProto.metadataIndex === null) {
         return undefined
@@ -180,7 +169,7 @@ function metadataValueFromProto(
 
 function metadataValueByIndex(
     metadataProtos: IMetadata[] | null | undefined,
-    representativeTable: { representatives: (CongressionalRepresentativeProtoView | undefined)[] },
+    representativeTable: CongressionalRepresentativeTable,
 ): Map<number, MetadataStatValue> {
     const values = new Map<number, MetadataStatValue>()
     for (const metadataProto of metadataProtos ?? []) {
@@ -201,7 +190,7 @@ function metadataValueByIndex(
 function metadataRowsForArticle(
     article: Article,
     enabledMetadataPaths: StatPath[],
-    representativeTable: { representatives: (CongressionalRepresentativeProtoView | undefined)[] },
+    representativeTable: CongressionalRepresentativeTable,
 ): MetadataArticleRow[] {
     const values = metadataValueByIndex(article.metadata, representativeTable)
     return enabledMetadataPaths.flatMap((path) => {
@@ -230,7 +219,7 @@ function metadataRowsForArticle(
     })
 }
 
-function availableMetadataPathsForArticle(article: Article, representativeTable: { representatives: (CongressionalRepresentativeProtoView | undefined)[] }): StatPath[] {
+function availableMetadataPathsForArticle(article: Article, representativeTable: CongressionalRepresentativeTable): StatPath[] {
     const values = metadataValueByIndex(article.metadata, representativeTable)
     return metadataStatPathsInTreeOrder.filter((path) => {
         const parent = statParents.get(path)
@@ -320,11 +309,19 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
     })
 }
 
+let representativeTableCache: Promise<CongressionalRepresentativeTable> | undefined = undefined
+function getRepresentativeTable(): Promise<CongressionalRepresentativeTable> {
+    if (!representativeTableCache) {
+        representativeTableCache = loadProtobuf('/index/representatives.gz', 'CongressionalRepresentativeTable')
+    }
+    return representativeTableCache
+}
+
 export async function loadArticles(datas: Article[], counts: CountsByUT, universe: string): Promise<{
     rows: (settings: StatGroupSettings) => ArticleRow[][]
     statPaths: StatPath[][]
 }> {
-    const representativeTable = await congressionalRepresentativeTablePromise
+    const representativeTable = await getRepresentativeTable()
     const availableRowsAll = datas.map(data => loadSingleArticle(data, counts, universe))
     const statPathsEach = availableRowsAll.map((availableRows, articleIndex) => {
         const statPathsThis = new Set<StatPath>()
