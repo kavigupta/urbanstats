@@ -75,11 +75,10 @@ def create_article_gzip(
     statistic_names = internal_statistic_names()
     idxs = [i for i, x in enumerate(statistic_names) if not isnan(row[x])]
     data = data_files_pb2.Article()
-    metadata = metadata_for_article(row, representative_table_builder)
-    data.metadata.extend(metadata)
+    data.metadata.extend(metadata_for_article(row, representative_table_builder))
     # vulture: ignore -- not actually creating a field. this is from protobuf
     data.statistic_indices_packed = bytes(pack_index_vector(idxs))
-    data.shortname = long_to_short[row.longname]
+    data.shortname = row.shortname
     data.longname = row.longname
     data.source = row.source
     data.article_type = row.type
