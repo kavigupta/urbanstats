@@ -1,4 +1,4 @@
-import { collapseCollapsibleRows } from '../collapse-rows/mergeable-rows'
+import { mergeMergeableRows } from '../collapse-rows/mergeable-rows'
 import explanation_page from '../data/explanation_page'
 import extra_stats from '../data/extra_stats'
 import metadata from '../data/metadata'
@@ -410,7 +410,7 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
         rowsByStatGroupAndYear.get(key)!.push(rows.map(row => row[i]))
         groupYearToName.set(key, groupYearName)
     }
-    const rowsCollapsed: ArticleRow[][] = []
+    let rowsCollapsed: ArticleRow[][] = []
     for (const key of rowsByStatGroupAndYear.keys()) {
         const rowsForGroupYear = rowsByStatGroupAndYear.get(key)!
         rowsCollapsed.push(...collapseAlternateSourcesSingleGroupYear(
@@ -418,8 +418,8 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
             groupYearToName.get(key)!,
         ))
     }
-    const rowsCollapsed2 = collapseCollapsibleRows(rowsCollapsed)
-    return rowsCollapsed2[0].map((_, i) => rowsCollapsed2.map(row => row[i]))
+    rowsCollapsed = mergeMergeableRows(rowsCollapsed)
+    return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
 }
 
 export function isNoValue(statval: number | MetadataStatValue): boolean {

@@ -1,7 +1,7 @@
 import { ArticleRow, MetadataStatValue } from '../components/load-article'
 import { assert } from '../utils/defensive'
 
-export function metadataValuesMergeable(value1: MetadataStatValue | number, value2: MetadataStatValue | number): boolean {
+function metadataValuesMergeable(value1: MetadataStatValue | number, value2: MetadataStatValue | number): boolean {
     return JSON.stringify(value1) === JSON.stringify(value2)
 }
 
@@ -24,7 +24,7 @@ function collapsedRenderedStatname(rowsForArticle: ArticleRow[]): string {
     return `${prefixStart} (${startYear}-${endYear})`
 }
 
-export function collapseCollapsibleRows(rows: ArticleRow[][]): ArticleRow[][] {
+export function mergeMergeableRows(rows: ArticleRow[][]): ArticleRow[][] {
     if (rows.length <= 1) {
         return rows
     }
