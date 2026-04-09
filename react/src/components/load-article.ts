@@ -118,10 +118,7 @@ const metadataValueKindByIndex = new Map<number, MetadataValueKind>(
     metadata.displayed_metadata.map(entry => [entry.index, entry.value_kind]),
 )
 
-function metadataValueFromProto(
-    metadataProto: IMetadata,
-    representativeTable: CongressionalRepresentativeTable,
-): MetadataStatValue | undefined {
+async function metadataValueFromProto(metadataProto: IMetadata): Promise<MetadataStatValue | undefined> {
     if (metadataProto.metadataIndex === undefined || metadataProto.metadataIndex === null) {
         return undefined
     }
@@ -136,6 +133,7 @@ function metadataValueFromProto(
             if (representativeIndices.length === 0) {
                 return undefined
             }
+            const representativeTable = await getRepresentativeTable()
             return {
                 kind: 'congressional',
                 representatives: representativeIndices.map(index => representativeTable.representatives[index]),
@@ -146,10 +144,7 @@ function metadataValueFromProto(
     }
 }
 
-function metadataValueByIndex(
-    metadataProtos: IMetadata[] | null | undefined,
-    representativeTable: CongressionalRepresentativeTable,
-): Map<number, MetadataStatValue> {
+async function metadataValueByIndex(metadataProtos: IMetadata[] | null | undefined): Promise<Map<number, MetadataStatValue>> {
     const values = new Map<number, MetadataStatValue>()
     for (const metadataProto of metadataProtos ?? []) {
         const metadataIndex = metadataProto.metadataIndex
@@ -157,7 +152,7 @@ function metadataValueByIndex(
             continue
         }
 
-        const value = metadataValueFromProto(metadataProto, representativeTable)
+        const value = await metadataValueFromProto(metadataProto)
         if (value === undefined) {
             continue
         }
@@ -166,12 +161,11 @@ function metadataValueByIndex(
     return values
 }
 
-function metadataRowsForArticle(
+async function metadataRowsForArticle(
     article: Article,
     enabledMetadataPaths: StatPath[],
-    representativeTable: CongressionalRepresentativeTable,
-): MetadataArticleRow[] {
-    const values = metadataValueByIndex(article.metadata, representativeTable)
+): Promise<MetadataArticleRow[]> {
+    const values = await metadataValueByIndex(article.metadata)
     return enabledMetadataPaths.flatMap((path) => {
         const parent = statParents.get(path)
         if (parent?.kind !== 'metadata' || parent.metadataIndex === undefined) {
@@ -198,8 +192,8 @@ function metadataRowsForArticle(
     })
 }
 
-function availableMetadataPathsForArticle(article: Article, representativeTable: CongressionalRepresentativeTable): StatPath[] {
-    const values = metadataValueByIndex(article.metadata, representativeTable)
+async function availableMetadataPathsForArticle(article: Article): Promise<StatPath[]> {
+    const values = await metadataValueByIndex(article.metadata)
     return metadataStatPathsInTreeOrder.filter((path) => {
         const parent = statParents.get(path)
         return parent?.kind === 'metadata'
@@ -297,33 +291,35 @@ function getRepresentativeTable(): Promise<CongressionalRepresentativeTable> {
 }
 
 export async function loadArticles(datas: Article[], counts: CountsByUT, universe: string): Promise<{
-    rows: (settings: StatGroupSettings) => ArticleRow[][]
+    rows: (settings: StatGroupSettings) => Promise<ArticleRow[][]>
     statPaths: StatPath[][]
 }> {
-    const representativeTable = await getRepresentativeTable()
     const availableRowsAll = datas.map(data => loadSingleArticle(data, counts, universe))
-    const statPathsEach = availableRowsAll.map((availableRows, articleIndex) => {
+    const statPathsEach = []
+    for (const [articleIndex, availableRows] of availableRowsAll.entries()) {
         const statPathsThis = new Set<StatPath>()
-        availableRows.forEach((row) => {
+        for (const row of availableRows) {
             statPathsThis.add(row.statpath)
-        })
-        availableMetadataPathsForArticle(datas[articleIndex], representativeTable).forEach((statPath) => {
+        }
+        (await availableMetadataPathsForArticle(datas[articleIndex])).forEach((statPath) => {
             statPathsThis.add(statPath)
         })
-        return Array.from(statPathsThis)
-    })
+        statPathsEach.push(Array.from(statPathsThis))
+    }
 
     const ambiguousSourcesAll = findAmbiguousSourcesAll(statPathsEach)
 
-    return { rows: (settings: StatGroupSettings) => {
+    return { rows: async (settings: StatGroupSettings) => {
         const enabledMetadataPaths = metadataStatPathsInTreeOrder.filter(path => statIsEnabled(path, settings, ambiguousSourcesAll))
-        const rows = availableRowsAll.map((availableRows, articleIndex) => [
-            ...availableRows
+        const rows = []
+        for (const [articleIndex, availableRows] of availableRowsAll.entries()) {
+            const filteredRows = availableRows
                 .filter(row => statIsEnabled(row.statpath, settings, ambiguousSourcesAll))
                 // sort by order in statistics tree.
-                .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
-            ...metadataRowsForArticle(datas[articleIndex], enabledMetadataPaths, representativeTable),
-        ])
+                .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!)
+            const metadataRows = await metadataRowsForArticle(datas[articleIndex], enabledMetadataPaths)
+            rows.push([...filteredRows, ...metadataRows])
+        }
 
         const rowsNothingMissing = insertMissing(rows)
         const rowsCollapsed = collapseAlternateSources(rowsNothingMissing)
