@@ -9,18 +9,21 @@ import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { useUniverse } from '../universe'
 import { orderNonNan } from '../urban-stats-script/constants/table'
+import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { sanitize } from '../utils/paths'
 
+import { makeColumnReorderHandler } from './makeColumnReorderHandler'
 import { Statistic, StatData, StatSetter, View } from './types'
 
-export function StatisticPanelTable({ view, stat, data, set, tableRef, loading }: {
+export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, typeEnvironment }: {
     view: View
     stat: Statistic
     data: StatData
     set: StatSetter
     tableRef: React.RefObject<HTMLDivElement>
     loading: boolean
+    typeEnvironment: TypeEnvironment
 }): ReactNode {
     const colors = useColors()
 
@@ -135,6 +138,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading }
     const superHeaderSpec: SuperHeaderSpec = {
         headerSpecs,
         showBottomBar: false,
+        handleReorder: makeColumnReorderHandler(stat, set, typeEnvironment),
     }
 
     const highlightOriginalIdx = data.articleNames.indexOf(view.highlight ?? '')

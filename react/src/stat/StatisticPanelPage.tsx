@@ -66,7 +66,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
             {view.edit && <EditPreamble stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} counts={counts} errors={errors} assignments={assignments} />}
             {!view.edit && <DisplayResults results={errors.filter(error => error.kind === 'error')} editor={false} />}
             {data
-                ? <StatisticPanelTable view={view} stat={stat} data={data} set={set} tableRef={tableRef} loading={loading} />
+                ? <StatisticPanelTable view={view} stat={stat} data={data} set={set} tableRef={tableRef} loading={loading} typeEnvironment={typeEnvironment} />
                 : (
                         <div style={{ position: 'relative', width: '100%', height: '200px' }}>
                             <RelativeLoader loading={loading} />
