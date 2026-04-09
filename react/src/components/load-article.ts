@@ -118,13 +118,6 @@ const metadataValueKindByIndex = new Map<number, MetadataValueKind>(
     metadata.displayed_metadata.map(entry => [entry.index, entry.value_kind]),
 )
 
-function assertCongressionalRepresentativesView(indices: number[], representativeTable: CongressionalRepresentativeTable): MetadataStatValue {
-    return {
-        kind: 'congressional',
-        representatives: indices.map(index => representativeTable.representatives[index]),
-    }
-}
-
 function metadataValueFromProto(
     metadataProto: IMetadata,
     representativeTable: CongressionalRepresentativeTable,
@@ -143,7 +136,10 @@ function metadataValueFromProto(
             if (representativeIndices.length === 0) {
                 return undefined
             }
-            return assertCongressionalRepresentativesView(representativeIndices, representativeTable)
+            return {
+                kind: 'congressional',
+                representatives: representativeIndices.map(index => representativeTable.representatives[index]),
+            }
         }
         default:
             return undefined
