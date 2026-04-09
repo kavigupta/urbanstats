@@ -435,17 +435,18 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
         const allCollapsible = rowsForGroupYear.every(rowByArticle =>
             statParents.get(rowByArticle[0].statpath)?.collapsible ?? false,
         )
-        if (allCollapsible) {
-            rowsCollapsed.push(...collapseCollapsibleRows(rowsForGroupYear))
-        }
-        else {
-            rowsCollapsed.push(...collapseAlternateSourcesSingleGroupYear(
-                rowsForGroupYear,
-                groupYearToName.get(key)!,
-            ))
-        }
+        // if (allCollapsible) {
+        //     rowsCollapsed.push(...collapseCollapsibleRows(rowsForGroupYear))
+        // }
+        // else {
+        rowsCollapsed.push(...collapseAlternateSourcesSingleGroupYear(
+            rowsForGroupYear,
+            groupYearToName.get(key)!,
+        ))
+        // }
     }
-    return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
+    const rowsCollapsed2 = collapseCollapsibleRows(rowsCollapsed)
+    return rowsCollapsed2[0].map((_, i) => rowsCollapsed2.map(row => row[i]))
 }
 
 export function isNoValue(statval: number | MetadataStatValue): boolean {
