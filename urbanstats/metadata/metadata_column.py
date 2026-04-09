@@ -40,6 +40,7 @@ class DisplayedMetadata(MetadataColumn):
     typ: Type
     name: str
     show_in_metadata_table: bool = True
+    value_kind: str = "string"
     category: str = field(kw_only=True)
     data_credit_explanation_page: str = field(kw_only=True)
 
@@ -55,6 +56,7 @@ class DisplayedMetadata(MetadataColumn):
             name=self.name,
             setting_key=setting_key(self.name),
             show_in_metadata_table=self.show_in_metadata_table,
+            value_kind=self.value_kind,
             category=self.category,
             data_credit_explanation_page=self.data_credit_explanation_page,
         )
