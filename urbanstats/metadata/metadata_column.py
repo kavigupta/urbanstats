@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-import re
 from typing import Type
 
 from urbanstats.protobuf import data_files_pb2
@@ -14,6 +13,7 @@ class MetadataColumn(ABC):
     @abstractmethod
     def export(self):
         pass
+
 
 @dataclass
 class ExternalLinkMetadata(MetadataColumn):
@@ -57,6 +57,7 @@ class DisplayedMetadata(MetadataColumn):
             category=self.category,
             data_credit_explanation_page=self.data_credit_explanation_page,
         )
+
 
 def setting_key(name: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
