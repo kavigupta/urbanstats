@@ -1,3 +1,4 @@
+import { mergeMergeableRows } from '../collapse-rows/mergeable-rows'
 import explanation_page from '../data/explanation_page'
 import extra_stats from '../data/extra_stats'
 import metadata from '../data/metadata'
@@ -44,6 +45,7 @@ export interface ArticleStatisticRow {
     statpath: StatPath
     explanationPage: string
     articleType: string
+    mergeable: boolean
     totalCountInClass: number
     totalCountOverall: number
     index: number
@@ -60,6 +62,7 @@ export interface MetadataArticleRow {
     statpath: StatPath
     renderedStatname: string
     articleType: string
+    mergeable: boolean
     statval: string
     extraStat: undefined
     disclaimer: undefined
@@ -77,6 +80,7 @@ interface StatisticCellRenderingInfoCommon {
     statname: string
     unit?: UnitType
     statpath?: StatPath
+    mergeable?: boolean
 }
 
 interface StatisticCellRenderingInfoStatistic extends StatisticCellRenderingInfoCommon {
@@ -135,6 +139,7 @@ function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath
             statname: parent.groupYearName,
             renderedStatname: parent.groupYearName,
             articleType: article.articleType,
+            mergeable: parent.mergeable,
             statval,
             extraStat: undefined,
             disclaimer: undefined,
@@ -196,6 +201,7 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
 
         // Determine disclaimer for election statistics
         const disclaimer = electionDisclaimerForRow(paths[i], population)
+        const mergeable = statParents.get(paths[i])?.mergeable ?? false
 
         return {
             kind: 'statistic' as const,
@@ -207,6 +213,7 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
             statpath: paths[i],
             explanationPage: explanation_page[i],
             articleType,
+            mergeable,
             totalCountInClass: forType(counts, universe, stats[i], articleType),
             totalCountOverall: forType(counts, universe, stats[i], 'overall'),
             index: i,
@@ -330,13 +337,14 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
         rowsByStatGroupAndYear.get(key)!.push(rows.map(row => row[i]))
         groupYearToName.set(key, groupYearName)
     }
-    const rowsCollapsed: ArticleRow[][] = []
+    let rowsCollapsed: ArticleRow[][] = []
     for (const key of rowsByStatGroupAndYear.keys()) {
         rowsCollapsed.push(...collapseAlternateSourcesSingleGroupYear(
             rowsByStatGroupAndYear.get(key)!,
             groupYearToName.get(key)!,
         ))
     }
+    rowsCollapsed = mergeMergeableRows(rowsCollapsed)
     return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
 }
 
