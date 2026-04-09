@@ -12,6 +12,7 @@ import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '
 import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { sanitize } from '../utils/paths'
+import { ICongressionalRepresentative } from '../utils/protos'
 import { useComparisonHeadStyle, useMobileLayout } from '../utils/responsive'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 import { displayType } from '../utils/text'
@@ -24,7 +25,7 @@ import { computeDisclaimerText, type Disclaimer } from './disclaimer-text'
 import { Percentile, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
 import { footnoteSymbol } from './footnote-symbol'
-import { ArticleRow, CongressionalRepresentativeView, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
+import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
@@ -589,13 +590,20 @@ function RepresentativeParty(props: { party?: string }): ReactNode {
     )
 }
 
-function Representative(props: { representative: CongressionalRepresentativeView }): ReactNode {
+function Representative(props: { representative: ICongressionalRepresentative }): ReactNode {
+    assert(
+        props.representative.wikipediaPage !== null
+        && props.representative.wikipediaPage !== undefined
+        && props.representative.name !== null
+        && props.representative.name !== undefined,
+        `Representative ${JSON.stringify(props.representative)} is missing required fields`,
+    )
     return (
         <span>
             <a href={props.representative.wikipediaPage} style={{ textDecoration: 'none', color: 'inherit' }} target="_blank" rel="noopener noreferrer">
                 {props.representative.name}
             </a>
-            <RepresentativeParty party={props.representative.party} />
+            <RepresentativeParty party={props.representative.party ?? undefined} />
         </span>
     )
 }

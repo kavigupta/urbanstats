@@ -1,4 +1,4 @@
-import { collapseCollapsibleRows, metadataValuesMergeable } from '../collapse-rows/mergeable-rows'
+import { collapseCollapsibleRows } from '../collapse-rows/mergeable-rows'
 import explanation_page from '../data/explanation_page'
 import extra_stats from '../data/extra_stats'
 import metadata from '../data/metadata'
@@ -9,7 +9,7 @@ import { loadProtobuf } from '../load_json'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { assert } from '../utils/defensive'
-import { Article, CongressionalRepresentativeTable, IFirstOrLast, IMetadata } from '../utils/protos'
+import { Article, CongressionalRepresentativeTable, ICongressionalRepresentative, IFirstOrLast, IMetadata } from '../utils/protos'
 import { UnitType } from '../utils/unit'
 
 import { CountsByUT, forType } from './countsByArticleType'
@@ -36,18 +36,10 @@ export type StatCol = (typeof stats)[number]
 
 export interface FirstLastStatus { isFirst: boolean, isLast: boolean }
 
-export interface CongressionalRepresentativeView {
-    name: string
-    wikipediaPage: string
-    party?: string
-}
-
-export interface CongressionalRepresentativesView {
-    kind: 'congressional'
-    representatives: CongressionalRepresentativeView[]
-}
-
-export type MetadataStatValue = string | CongressionalRepresentativesView
+export type MetadataStatValue = (
+    string
+    | { kind: 'congressional', representatives: ICongressionalRepresentative[] }
+)
 
 export interface ArticleStatisticRow {
     kind: 'statistic'
@@ -126,19 +118,10 @@ const metadataValueKindByIndex = new Map<number, MetadataValueKind>(
     metadata.displayed_metadata.map(entry => [entry.index, entry.value_kind]),
 )
 
-function assertCongressionalRepresentativesView(indices: number[], representativeTable: CongressionalRepresentativeTable): CongressionalRepresentativesView {
+function assertCongressionalRepresentativesView(indices: number[], representativeTable: CongressionalRepresentativeTable): MetadataStatValue {
     return {
         kind: 'congressional',
-        representatives: indices.map((index) => {
-            const representative = representativeTable.representatives[index]
-            assert(typeof representative.name === 'string', 'congressional representative name is missing')
-            assert(typeof representative.wikipediaPage === 'string', 'congressional representative wikipedia page is missing')
-            return {
-                name: representative.name,
-                wikipediaPage: representative.wikipediaPage,
-                party: representative.party ?? undefined,
-            } satisfies CongressionalRepresentativeView
-        }),
+        representatives: indices.map(index => representativeTable.representatives[index]),
     }
 }
 
