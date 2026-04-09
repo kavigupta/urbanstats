@@ -10,18 +10,8 @@ function columnsMergeable(column1: ArticleRow[], column2: ArticleRow[]): boolean
     return column1.every((row, index) => row.mergeable && column2[index].mergeable && metadataValuesMergeable(row.statval, column2[index].statval))
 }
 
-function parseRepresentativeRangeLabel(label: string): { prefix: string, startYear: string, endYear: string } {
-    const match = /^(.*)\((\d{4})-(\d{2,4})\)$/.exec(label)
-    assert(match !== null, `currently, we can only collapse representatives, got ${label}`)
-    const prefix = match[1].trimEnd()
-    return { prefix, startYear: match[2], endYear: match[3] }
-}
-
 function collapsedRenderedStatname(rowsForArticle: ArticleRow[]): string {
-    const { prefix: prefixStart, startYear } = parseRepresentativeRangeLabel(rowsForArticle[0].renderedStatname)
-    const { prefix: prefixEnd, endYear } = parseRepresentativeRangeLabel(rowsForArticle[rowsForArticle.length - 1].renderedStatname)
-    assert(prefixStart === prefixEnd, 'We can only collapse rows with the same prefix')
-    return `${prefixStart} (${startYear}-${endYear})`
+    throw new Error('currently, we do not support collapsing statistic rows')
 }
 
 export function collapseCollapsibleRows(rows: ArticleRow[][]): ArticleRow[][] {
