@@ -1,7 +1,7 @@
 import { ArticleRow } from '../components/load-article'
 import { assert } from '../utils/defensive'
 
-export function metadataValuesMergeable(value1: string | number, value2: string | number): boolean {
+function metadataValuesMergeable(value1: string | number, value2: string | number): boolean {
     return JSON.stringify(value1) === JSON.stringify(value2)
 }
 
