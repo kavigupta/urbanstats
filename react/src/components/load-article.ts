@@ -169,6 +169,16 @@ function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath
     })
 }
 
+function availableMetadataPathsForArticle(article: Article): StatPath[] {
+    const values = metadataValueByIndex(article.metadata)
+    return metadataStatPathsInTreeOrder.filter((path) => {
+        const parent = statParents.get(path)
+        return parent?.kind === 'metadata'
+            && parent.metadataIndex !== undefined
+            && values.has(parent.metadataIndex)
+    })
+}
+
 function unpackBytes(bytes: Uint8Array): number[] {
     const result = []
     for (let i = 0; i < bytes.length; i += 1) {
@@ -254,12 +264,12 @@ export function loadArticles(datas: Article[], counts: CountsByUT, universe: str
     statPaths: StatPath[][]
 } {
     const availableRowsAll = datas.map(data => loadSingleArticle(data, counts, universe))
-    const statPathsEach = availableRowsAll.map((availableRows) => {
+    const statPathsEach = availableRowsAll.map((availableRows, articleIndex) => {
         const statPathsThis = new Set<StatPath>()
         availableRows.forEach((row) => {
             statPathsThis.add(row.statpath)
         })
-        metadataStatPathsInTreeOrder.forEach((statPath) => {
+        availableMetadataPathsForArticle(datas[articleIndex]).forEach((statPath) => {
             statPathsThis.add(statPath)
         })
         return Array.from(statPathsThis)
