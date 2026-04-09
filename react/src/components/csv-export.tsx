@@ -60,12 +60,7 @@ export function generateCSVDataForArticles(
 
         for (let statIndex = 0; statIndex < dataByArticleStat[0].length; statIndex++) {
             const rowData = dataByArticleStat[articleIndex][statIndex]
-            if (rowData.kind === 'metadata') {
-                row.push(typeof rowData.statval === 'string' ? rowData.statval : JSON.stringify(rowData.statval))
-            }
-            else {
-                row.push(rowData.statval.toString())
-            }
+            row.push(JSON.stringify(rowData.statval))
         }
 
         if (includeOrdinals) {
