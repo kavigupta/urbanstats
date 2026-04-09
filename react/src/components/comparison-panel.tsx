@@ -121,7 +121,8 @@ export function ComparisonPanel(props: {
 
     const settings = useSettings(groupYearKeys())
 
-    const dataByArticleStatNullable = useOrderedResolve(props.rows(settings), 'rows').result
+    const rowsPromise = useMemo(() => props.rows(settings), [props, settings])
+    const dataByArticleStatNullable = useOrderedResolve(rowsPromise, 'rows').result
     const dataByArticleStat = useMemo(() => dataByArticleStatNullable ?? [], [dataByArticleStatNullable])
     const dataByStatArticle = dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
 
