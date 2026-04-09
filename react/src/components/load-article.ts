@@ -421,7 +421,7 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     for (let i = 0; i < numRows; i++) {
         const statParent = statParents.get(rows[0][i].statpath)
         assert(statParent !== undefined, `stat parent not found for statpath ${rows[0][i].statpath}`)
-        const { group, year, groupYearName, collapsible } = statParent
+        const { group, year, groupYearName } = statParent
         const key = `${group.id}_${year}`
         if (!rowsByStatGroupAndYear.has(key)) {
             rowsByStatGroupAndYear.set(key, [])
