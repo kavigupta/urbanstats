@@ -215,13 +215,13 @@ export type ExceptionalPageDescriptor = PageDescriptor
     | { kind: 'error', url: URL }
 
 export type PageData =
-    { kind: 'article', article: Article, universe: Universe, rows: (settings: StatGroupSettings) => Promise<ArticleRow[][]>, statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
+    { kind: 'article', article: Article, universe: Universe, rows: (settings: StatGroupSettings) => ArticleRow[][], statPaths: StatPath[][], articlePanel: typeof ArticlePanel }
     | {
         kind: 'comparison'
         articles: Article[]
         universe: Universe
         universes: readonly Universe[]
-        rows: (settings: StatGroupSettings) => Promise<ArticleRow[][]>
+        rows: (settings: StatGroupSettings) => ArticleRow[][]
         statPaths: StatPath[][]
         mapPartitions: number[][]
         comparisonPanel: typeof ComparisonPanel

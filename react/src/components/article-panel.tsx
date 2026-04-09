@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useCallback, useContext, useMemo, useRef } from 'react'
+import React, { ReactNode, useCallback, useContext, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
@@ -15,7 +15,6 @@ import { sanitize } from '../utils/paths'
 import { Article, IRelatedButtons } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
-import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { ArticleMap } from './ArticleMap'
 import { ArticleWarnings } from './ArticleWarnings'
@@ -30,7 +29,7 @@ import { SearchBox } from './search'
 import { CellSpec, PlotSpec, TableContents } from './supertable'
 import { ColumnIdentifier } from './table'
 
-export function ArticlePanel({ article, rows, universe }: { article: Article, rows: (settings: StatGroupSettings) => Promise<ArticleRow[][]>, universe: Universe }): ReactNode {
+export function ArticlePanel({ article, rows, universe }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][], universe: Universe }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
     const mapRef = useRef<HTMLDivElement>(null)
@@ -46,9 +45,7 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     const comparisonHeadStyle = useComparisonHeadStyle('right')
 
     const settings = useSettings(groupYearKeys())
-    const rowsPromise = useMemo(() => rows(settings), [rows, settings])
-    const filteredRowsNullable = useOrderedResolve(rowsPromise, 'rows').result?.[0]
-    const filteredRows = useMemo(() => filteredRowsNullable ?? [], [filteredRowsNullable])
+    const filteredRows = rows(settings)[0]
 
     const csvExportCallback = useCallback<CSVExportData>(() => {
         const data = generateCSVDataForArticles([article], [filteredRows], true)
