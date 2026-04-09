@@ -1,5 +1,3 @@
-import re
-
 from .metadata_column import DisplayedMetadata, ExternalLinkMetadata
 from .metadata_list import metadata_types
 
