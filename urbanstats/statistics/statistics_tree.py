@@ -57,8 +57,8 @@ class MultiSource:
                 {
                     "kind": "data",
                     "source": source.json() if source is not None else None,
-                    "mergeable": self.mergeable,
                     "column": names.index(col),
+                    "mergeable": self.mergeable,
                 }
             )
         output = dict(name=self.compute_name(name_map), stats=result)
