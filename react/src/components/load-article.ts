@@ -106,16 +106,37 @@ export type StatisticCellRenderingInfo = StatisticCellRenderingInfoStatistic | S
 const metadataStatPathsInTreeOrder = Array.from(statParents.entries())
     .flatMap(([path, parent]) => parent.kind === 'metadata' ? [path] : [])
 
+type MetadataValueKind = 'string'
+
+const metadataValueKindByIndex = new Map<number, MetadataValueKind>(
+    metadata.displayed_metadata.map(entry => [entry.index, entry.value_kind]),
+)
+
+function metadataValueFromProto(metadataProto: IMetadata): string | undefined {
+    if (metadataProto.metadataIndex === undefined || metadataProto.metadataIndex === null) {
+        return undefined
+    }
+
+    const valueKind = metadataValueKindByIndex.get(metadataProto.metadataIndex) ?? 'string'
+    switch (valueKind) {
+        case 'string': {
+            return metadataProto.stringValue ?? undefined
+        }
+    }
+}
+
 function metadataValueByIndex(metadataProtos: IMetadata[] | null | undefined): Map<number, string> {
     const values = new Map<number, string>()
     for (const metadataProto of metadataProtos ?? []) {
         if (metadataProto.metadataIndex === undefined || metadataProto.metadataIndex === null) {
             continue
         }
-        if (metadataProto.stringValue === undefined || metadataProto.stringValue === null) {
+
+        const value = metadataValueFromProto(metadataProto)
+        if (value === undefined) {
             continue
         }
-        values.set(metadataProto.metadataIndex, metadataProto.stringValue)
+        values.set(metadataProto.metadataIndex, value)
     }
     return values
 }
@@ -349,13 +370,12 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
 }
 
 export function isNoValue(statval: number | string): boolean {
+    if (typeof statval === 'number') {
+        return Number.isNaN(statval)
+    }
     switch (typeof statval) {
-        case 'number':
-            return Number.isNaN(statval)
         case 'string':
             return statval === ''
-        default:
-            throw new Error(`Unexpected type for statval: ${typeof statval}`)
     }
 }
 
