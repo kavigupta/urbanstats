@@ -56,7 +56,7 @@ interface BaseStatistic {
     source: DataSource | null
     path: StatPath
     name: string
-    collapsible: boolean
+    mergeable: boolean
     parent: GroupYear
 }
 
@@ -95,7 +95,7 @@ export const statsTree: StatsTree = rawStatsTree.map(category => (
                                     source: stat.source,
                                     path: statPaths[stat.column],
                                     name: statNames[stat.column],
-                                    collapsible: stat.collapsible,
+                                    mergeable: stat.mergeable,
                                     statcol: stats[stat.column],
                                     parent: undefined as unknown as GroupYear, // set below
                                 } satisfies DataStatistic
@@ -105,7 +105,7 @@ export const statsTree: StatsTree = rawStatsTree.map(category => (
                                     source: stat.source,
                                     path: stat.path,
                                     name,
-                                    collapsible: stat.collapsible,
+                                    mergeable: stat.mergeable,
                                     metadataIndex: stat.metadata_index,
                                     parent: undefined as unknown as GroupYear, // set below
                                 } satisfies MetadataStatistic
@@ -165,7 +165,7 @@ interface StatParent {
     indentedName?: string
     source: DataSource | null
     kind: Statistic['kind']
-    collapsible: boolean
+    mergeable: boolean
     metadataIndex?: number
 }
 
@@ -181,7 +181,7 @@ const statParentsList: [StatPath, StatParent][] = allGroups
                         indentedName: stat.indentedName,
                         source: statBySource.source,
                         kind: statBySource.kind,
-                        collapsible: statBySource.collapsible,
+                        mergeable: statBySource.mergeable,
                         metadataIndex: statBySource.kind === 'metadata' ? statBySource.metadataIndex : undefined,
                     }] satisfies [StatPath, StatParent]))))
 
