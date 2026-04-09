@@ -117,13 +117,13 @@ class StatisticGroup:
     Represents a statistic that is available for multiple years.
     """
 
-    by_year: dict[int | str | NoneType, list[MultiSource]]
+    by_year: dict[int | NoneType, list[MultiSource]]
     group_name_statcol: str = None
     group_name: str = None
 
     def __post_init__(self):
         for year, cols in self.by_year.items():
-            assert isinstance(year, int) or year is None
+            assert year in {2000, 2010, 2020, None}
             assert isinstance(cols, list)
             assert all(isinstance(col, MultiSource) for col in cols), cols
 
@@ -144,7 +144,7 @@ class StatisticGroup:
 
     @staticmethod
     def flatten_year(year, stats, name_map, names):
-        assert isinstance(year, (int, str)) or year is None, year
+        assert isinstance(year, int) or year is None, year
         stats_processed = []
         for stat in stats:
             stats_processed.append(stat.flatten(name_map, names))
@@ -517,9 +517,6 @@ def congressional_representatives_metadata_group():
     return StatisticGroup(
         congressional_group_stats_by_year, group_name="Congressional Representatives"
     )
-
-
-congressional_representatives_group = congressional_representatives_metadata_group()
 
 
 statistics_tree = StatisticTree(
@@ -997,7 +994,6 @@ statistics_tree = StatisticTree(
                     },
                     group_name="Canadian GE: PPC",
                 ),
-                "metadata_show_metadata_congressional_representatives": congressional_representatives_group,
             },
         ),
         **just_2020_category(
