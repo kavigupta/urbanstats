@@ -44,6 +44,7 @@ export interface ArticleStatisticRow {
     statpath: StatPath
     explanationPage: string
     articleType: string
+    mergeable: boolean
     totalCountInClass: number
     totalCountOverall: number
     index: number
@@ -60,6 +61,7 @@ export interface MetadataArticleRow {
     statpath: StatPath
     renderedStatname: string
     articleType: string
+    mergeable: boolean
     statval: string
     extraStat: undefined
     disclaimer: undefined
@@ -77,6 +79,7 @@ interface StatisticCellRenderingInfoCommon {
     statname: string
     unit?: UnitType
     statpath?: StatPath
+    mergeable?: boolean
 }
 
 interface StatisticCellRenderingInfoStatistic extends StatisticCellRenderingInfoCommon {
@@ -135,6 +138,7 @@ function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath
             statname: parent.groupYearName,
             renderedStatname: parent.groupYearName,
             articleType: article.articleType,
+            mergeable: parent.mergeable,
             statval,
             extraStat: undefined,
             disclaimer: undefined,
@@ -196,6 +200,7 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
 
         // Determine disclaimer for election statistics
         const disclaimer = electionDisclaimerForRow(paths[i], population)
+        const mergeable = statParents.get(paths[i])?.mergeable ?? false
 
         return {
             kind: 'statistic' as const,
@@ -207,6 +212,7 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
             statpath: paths[i],
             explanationPage: explanation_page[i],
             articleType,
+            mergeable,
             totalCountInClass: forType(counts, universe, stats[i], articleType),
             totalCountOverall: forType(counts, universe, stats[i], 'overall'),
             index: i,
