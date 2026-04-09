@@ -994,6 +994,7 @@ statistics_tree = StatisticTree(
                     },
                     group_name="Canadian GE: PPC",
                 ),
+                "metadata_show_metadata_congressional_representatives": congressional_representatives_metadata_group(),
             },
         ),
         **just_2020_category(
