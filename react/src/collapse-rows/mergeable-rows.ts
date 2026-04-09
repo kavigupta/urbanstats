@@ -14,7 +14,7 @@ function collapsedRenderedStatname(rowsForArticle: ArticleRow[]): string {
     throw new Error(`currently, we do not support collapsing statistic rows: rows claiming mergeability: ${JSON.stringify(rowsForArticle)}`)
 }
 
-export function collapseCollapsibleRows(rows: ArticleRow[][]): ArticleRow[][] {
+export function mergeMergeableRows(rows: ArticleRow[][]): ArticleRow[][] {
     if (rows.length <= 1) {
         return rows
     }

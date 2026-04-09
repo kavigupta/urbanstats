@@ -336,13 +336,14 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
         rowsByStatGroupAndYear.get(key)!.push(rows.map(row => row[i]))
         groupYearToName.set(key, groupYearName)
     }
-    const rowsCollapsed: ArticleRow[][] = []
+    let rowsCollapsed: ArticleRow[][] = []
     for (const key of rowsByStatGroupAndYear.keys()) {
         rowsCollapsed.push(...collapseAlternateSourcesSingleGroupYear(
             rowsByStatGroupAndYear.get(key)!,
             groupYearToName.get(key)!,
         ))
     }
+    rowsCollapsed = mergeMergeableRows(rowsCollapsed)
     return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
 }
 
