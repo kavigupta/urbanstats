@@ -422,7 +422,7 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
         const statParent = statParents.get(rows[0][i].statpath)
         assert(statParent !== undefined, `stat parent not found for statpath ${rows[0][i].statpath}`)
         const { group, year, groupYearName, collapsible } = statParent
-        const key = collapsible ? `${group.id}__collapsible` : `${group.id}_${year}`
+        const key = `${group.id}_${year}`
         if (!rowsByStatGroupAndYear.has(key)) {
             rowsByStatGroupAndYear.set(key, [])
         }
@@ -432,18 +432,10 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     const rowsCollapsed: ArticleRow[][] = []
     for (const key of rowsByStatGroupAndYear.keys()) {
         const rowsForGroupYear = rowsByStatGroupAndYear.get(key)!
-        const allCollapsible = rowsForGroupYear.every(rowByArticle =>
-            statParents.get(rowByArticle[0].statpath)?.collapsible ?? false,
-        )
-        // if (allCollapsible) {
-        //     rowsCollapsed.push(...collapseCollapsibleRows(rowsForGroupYear))
-        // }
-        // else {
         rowsCollapsed.push(...collapseAlternateSourcesSingleGroupYear(
             rowsForGroupYear,
             groupYearToName.get(key)!,
         ))
-        // }
     }
     const rowsCollapsed2 = collapseCollapsibleRows(rowsCollapsed)
     return rowsCollapsed2[0].map((_, i) => rowsCollapsed2.map(row => row[i]))
@@ -481,13 +473,13 @@ function collapseAlternateSourcesSingleGroupYear(rows: ArticleRow[][], groupYear
     return rowsC
 }
 
-function metadataValuesEqual(value1: MetadataStatValue | number, value2: MetadataStatValue | number): boolean {
+function metadataValuesMergeable(value1: MetadataStatValue | number, value2: MetadataStatValue | number): boolean {
     return JSON.stringify(value1) === JSON.stringify(value2)
 }
 
-function columnsEquivalent(column1: ArticleRow[], column2: ArticleRow[]): boolean {
+function columnsMergeable(column1: ArticleRow[], column2: ArticleRow[]): boolean {
     assert(column1.length === column2.length, 'Columns must have the same length')
-    return column1.every((row, index) => metadataValuesEqual(row.statval, column2[index].statval))
+    return column1.every((row, index) => row.collapsible && column2[index].collapsible && metadataValuesMergeable(row.statval, column2[index].statval))
 }
 
 function parseRepresentativeRangeLabel(label: string): { prefix: string, startYear: string, endYear: string } {
@@ -513,7 +505,7 @@ function collapseCollapsibleRows(rows: ArticleRow[][]): ArticleRow[][] {
     for (const rowByArticle of rows.slice(1)) {
         const lastGroup = groupedColumns[groupedColumns.length - 1]
         const previousColumn = lastGroup[lastGroup.length - 1]
-        if (columnsEquivalent(previousColumn, rowByArticle)) {
+        if (columnsMergeable(previousColumn, rowByArticle)) {
             lastGroup.push(rowByArticle)
         }
         else {
