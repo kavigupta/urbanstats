@@ -16,10 +16,6 @@ class MetadataColumn(ABC):
     def export(self):
         pass
 
-    @abstractmethod
-    def export(self):
-        pass
-
 @dataclass
 class ExternalLinkMetadata(MetadataColumn):
     site: str
