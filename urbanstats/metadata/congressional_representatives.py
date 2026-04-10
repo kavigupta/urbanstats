@@ -171,22 +171,19 @@ def compute_representatives_for_shapefile(
 class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
     representatives_csv_version = "a38a7de"
     version = (
-        f"congressional_representatives_structured_{representatives_csv_version}_v49"
+        f"congressional_representatives_structured_{representatives_csv_version}_v52"
     )
 
     def compute_metadata_columns(self, *, shapefile, shapefiles, shapefile_table):
-        if "congressional_representatives_indirect" in shapefile.special_data_sources:
-            assert (
-                "congressional_representatives" not in shapefile.special_data_sources
-            ), shapefile.hash_key
-            representatives_by_row = self.compute_metadata_columns_indirect(
-                shapefile, shapefile_table, shapefiles
-            )
-        else:
-            if "congressional_representatives" not in shapefile.special_data_sources:
-                return []
-
-            representatives_by_row = self.compute_metadata_columns_direct(shapefile)
+        has_representatives = set(shapefile.special_data_sources) & {
+            "congressional_representatives",
+            "congressional_representatives_indirect",
+        }
+        if not has_representatives:
+            return []
+        representatives_by_row = self.compute_metadata_columns_indirect(
+            shapefile, shapefile_table, shapefiles
+        )
         return [
             MetadataColumnResult(
                 key=key_for_term_start_year(term_start_year),
@@ -195,18 +192,11 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
             for term_start_year in TERM_START_YEARS
         ]
 
-    def compute_metadata_columns_direct(self, shapefile):
-        _, representatives_by_row = compute_representatives_for_shapefile(
-            shapefile,
-            representatives_csv_version=self.representatives_csv_version,
-        )
-        return representatives_by_row
-
     def all_relationships(self, shapefiles, key_a, key_b):
         # pylint: disable=import-outside-toplevel,cyclic-import
         from urbanstats.geometry.relationship import create_relationships_dispatch
 
-        (a_contains_b, b_contains_a, a_intersects_b, _) = create_relationships_dispatch(
+        a_contains_b, b_contains_a, a_intersects_b, _ = create_relationships_dispatch(
             shapefiles, key_a, key_b
         )
         return [*a_contains_b, *b_contains_a, *a_intersects_b]
