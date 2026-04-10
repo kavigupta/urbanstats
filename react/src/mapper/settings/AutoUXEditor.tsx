@@ -236,7 +236,6 @@ function SortableVectorItem(props: { id: number, children: ReactNode }): ReactNo
                 opacity: isDragging ? 0.5 : 1,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5em',
                 width: '100%',
                 transition,
             }}
@@ -322,7 +321,7 @@ function VectorLiteralEditor(props: {
                                 assignments={props.assignments}
                             />
                             <button
-                                style={{ flexShrink: 0 }}
+                                style={{ flexShrink: 0, marginLeft: '0.5em' }}
                                 onClick={() => {
                                     const newElements = props.uss.elements.flatMap((vectorElement, j) => {
                                         if (j === i) {
