@@ -5,6 +5,7 @@ export default {
             "name": "FIPS",
             "setting_key": "show_metadata_fips",
             "show_in_metadata_table": true,
+            "value_kind": "string",
             "category": "geoid",
             "data_credit_explanation_page": "geoid"
         },
@@ -13,6 +14,7 @@ export default {
             "name": "StatCan GeoCode",
             "setting_key": "show_metadata_statcan_geocode",
             "show_in_metadata_table": true,
+            "value_kind": "string",
             "category": "geoid",
             "data_credit_explanation_page": "geoid"
         },
@@ -21,6 +23,7 @@ export default {
             "name": "ISO Code",
             "setting_key": "show_metadata_iso_code",
             "show_in_metadata_table": true,
+            "value_kind": "string",
             "category": "geoid",
             "data_credit_explanation_page": "geoid"
         }

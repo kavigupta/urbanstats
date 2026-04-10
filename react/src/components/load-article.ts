@@ -1,3 +1,4 @@
+import { mergeMergeableRows } from '../collapse-rows/mergeable-rows'
 import explanation_page from '../data/explanation_page'
 import extra_stats from '../data/extra_stats'
 import metadata from '../data/metadata'
@@ -44,6 +45,7 @@ export interface ArticleStatisticRow {
     statpath: StatPath
     explanationPage: string
     articleType: string
+    mergeable: boolean
     totalCountInClass: number
     totalCountOverall: number
     index: number
@@ -60,6 +62,7 @@ export interface MetadataArticleRow {
     statpath: StatPath
     renderedStatname: string
     articleType: string
+    mergeable: boolean
     statval: string
     extraStat: undefined
     disclaimer: undefined
@@ -77,6 +80,7 @@ interface StatisticCellRenderingInfoCommon {
     statname: string
     unit?: UnitType
     statpath?: StatPath
+    mergeable?: boolean
 }
 
 interface StatisticCellRenderingInfoStatistic extends StatisticCellRenderingInfoCommon {
@@ -102,16 +106,37 @@ export type StatisticCellRenderingInfo = StatisticCellRenderingInfoStatistic | S
 const metadataStatPathsInTreeOrder = Array.from(statParents.entries())
     .flatMap(([path, parent]) => parent.kind === 'metadata' ? [path] : [])
 
+type MetadataValueKind = 'string'
+
+const metadataValueKindByIndex = new Map<number, MetadataValueKind>(
+    metadata.displayed_metadata.map(entry => [entry.index, entry.value_kind]),
+)
+
+function metadataValueFromProto(metadataProto: IMetadata): string | undefined {
+    if (metadataProto.metadataIndex === undefined || metadataProto.metadataIndex === null) {
+        return undefined
+    }
+
+    const valueKind = metadataValueKindByIndex.get(metadataProto.metadataIndex) ?? 'string'
+    switch (valueKind) {
+        case 'string': {
+            return metadataProto.stringValue ?? undefined
+        }
+    }
+}
+
 function metadataValueByIndex(metadataProtos: IMetadata[] | null | undefined): Map<number, string> {
     const values = new Map<number, string>()
     for (const metadataProto of metadataProtos ?? []) {
         if (metadataProto.metadataIndex === undefined || metadataProto.metadataIndex === null) {
             continue
         }
-        if (metadataProto.stringValue === undefined || metadataProto.stringValue === null) {
+
+        const value = metadataValueFromProto(metadataProto)
+        if (value === undefined) {
             continue
         }
-        values.set(metadataProto.metadataIndex, metadataProto.stringValue)
+        values.set(metadataProto.metadataIndex, value)
     }
     return values
 }
@@ -135,11 +160,22 @@ function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath
             statname: parent.groupYearName,
             renderedStatname: parent.groupYearName,
             articleType: article.articleType,
+            mergeable: parent.mergeable,
             statval,
             extraStat: undefined,
             disclaimer: undefined,
             dataCreditExplanationPage,
         }]
+    })
+}
+
+function availableMetadataPathsForArticle(article: Article): StatPath[] {
+    const values = metadataValueByIndex(article.metadata)
+    return metadataStatPathsInTreeOrder.filter((path) => {
+        const parent = statParents.get(path)
+        return parent?.kind === 'metadata'
+            && parent.metadataIndex !== undefined
+            && values.has(parent.metadataIndex)
     })
 }
 
@@ -196,6 +232,7 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
 
         // Determine disclaimer for election statistics
         const disclaimer = electionDisclaimerForRow(paths[i], population)
+        const mergeable = statParents.get(paths[i])?.mergeable ?? false
 
         return {
             kind: 'statistic' as const,
@@ -207,6 +244,7 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
             statpath: paths[i],
             explanationPage: explanation_page[i],
             articleType,
+            mergeable,
             totalCountInClass: forType(counts, universe, stats[i], articleType),
             totalCountOverall: forType(counts, universe, stats[i], 'overall'),
             index: i,
@@ -226,12 +264,12 @@ export function loadArticles(datas: Article[], counts: CountsByUT, universe: str
     statPaths: StatPath[][]
 } {
     const availableRowsAll = datas.map(data => loadSingleArticle(data, counts, universe))
-    const statPathsEach = availableRowsAll.map((availableRows) => {
+    const statPathsEach = availableRowsAll.map((availableRows, articleIndex) => {
         const statPathsThis = new Set<StatPath>()
         availableRows.forEach((row) => {
             statPathsThis.add(row.statpath)
         })
-        metadataStatPathsInTreeOrder.forEach((statPath) => {
+        availableMetadataPathsForArticle(datas[articleIndex]).forEach((statPath) => {
             statPathsThis.add(statPath)
         })
         return Array.from(statPathsThis)
@@ -330,24 +368,24 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
         rowsByStatGroupAndYear.get(key)!.push(rows.map(row => row[i]))
         groupYearToName.set(key, groupYearName)
     }
-    const rowsCollapsed: ArticleRow[][] = []
+    let rowsCollapsed: ArticleRow[][] = []
     for (const key of rowsByStatGroupAndYear.keys()) {
         rowsCollapsed.push(...collapseAlternateSourcesSingleGroupYear(
             rowsByStatGroupAndYear.get(key)!,
             groupYearToName.get(key)!,
         ))
     }
+    rowsCollapsed = mergeMergeableRows(rowsCollapsed)
     return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
 }
 
 export function isNoValue(statval: number | string): boolean {
+    if (typeof statval === 'number') {
+        return Number.isNaN(statval)
+    }
     switch (typeof statval) {
-        case 'number':
-            return Number.isNaN(statval)
         case 'string':
             return statval === ''
-        default:
-            throw new Error(`Unexpected type for statval: ${typeof statval}`)
     }
 }
 

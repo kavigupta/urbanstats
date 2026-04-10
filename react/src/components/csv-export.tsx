@@ -60,8 +60,7 @@ export function generateCSVDataForArticles(
 
         for (let statIndex = 0; statIndex < dataByArticleStat[0].length; statIndex++) {
             const rowData = dataByArticleStat[articleIndex][statIndex]
-            // works for either statistic or metadata, since both can be exported as a string
-            row.push(rowData.statval.toString())
+            row.push(JSON.stringify(rowData.statval))
         }
 
         if (includeOrdinals) {

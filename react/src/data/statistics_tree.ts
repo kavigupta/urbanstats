@@ -39,7 +39,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 399
+                                        "column": 399,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -47,7 +48,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 403
+                                        "column": 403,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -55,7 +57,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 215
+                                        "column": 215,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -74,7 +77,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 401
+                                        "column": 401,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -82,7 +86,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 402
+                                        "column": 402,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -96,7 +101,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 405
+                                        "column": 405,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -104,7 +110,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 406
+                                        "column": 406,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -120,7 +127,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 400
+                                        "column": 400,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -131,7 +139,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 404
+                                        "column": 404,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -156,7 +165,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 92
+                                        "column": 92,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -164,7 +174,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 171
+                                        "column": 171,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -172,7 +183,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 216
+                                        "column": 216,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -191,7 +203,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 104
+                                        "column": 104,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -199,7 +212,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 161
+                                        "column": 161,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -213,7 +227,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 106
+                                        "column": 106,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -221,7 +236,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 181
+                                        "column": 181,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -237,7 +253,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 103
+                                        "column": 103,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -248,7 +265,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 105
+                                        "column": 105,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -273,7 +291,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 430
+                                        "column": 430,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -281,7 +300,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 434
+                                        "column": 434,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -289,7 +309,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 214
+                                        "column": 214,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -308,7 +329,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 432
+                                        "column": 432,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -316,7 +338,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 433
+                                        "column": 433,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -332,7 +355,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 431
+                                        "column": 431,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -354,7 +378,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 132
+                                        "column": 132,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": null
@@ -376,7 +401,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 150
+                                        "column": 150,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": null
@@ -404,7 +430,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 225
+                                        "column": 225,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -426,7 +453,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 224
+                                        "column": 224,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -457,7 +485,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 484
+                                        "column": 484,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -465,7 +494,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 487
+                                        "column": 487,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -481,7 +511,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 486
+                                        "column": 486,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -497,7 +528,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 485
+                                        "column": 485,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -522,7 +554,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 236
+                                        "column": 236,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -530,7 +563,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 239
+                                        "column": 239,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -546,7 +580,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 238
+                                        "column": 238,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -562,7 +597,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 237
+                                        "column": 237,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -587,7 +623,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 140
+                                        "column": 140,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -595,7 +632,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 143
+                                        "column": 143,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -611,7 +649,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 142
+                                        "column": 142,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -627,7 +666,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 141
+                                        "column": 141,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -652,7 +692,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 133
+                                        "column": 133,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -660,7 +701,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 136
+                                        "column": 136,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -676,7 +718,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 135
+                                        "column": 135,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -692,7 +735,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 134
+                                        "column": 134,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -717,7 +761,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 353
+                                        "column": 353,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -725,7 +770,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 356
+                                        "column": 356,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -741,7 +787,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 355
+                                        "column": 355,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -757,7 +804,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 354
+                                        "column": 354,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -782,7 +830,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 226
+                                        "column": 226,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -790,7 +839,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 229
+                                        "column": 229,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -806,7 +856,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 228
+                                        "column": 228,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -822,7 +873,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 227
+                                        "column": 227,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -847,7 +899,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 392
+                                        "column": 392,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -855,7 +908,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 395
+                                        "column": 395,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -871,7 +925,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 394
+                                        "column": 394,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -887,7 +942,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 393
+                                        "column": 393,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -909,7 +965,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 240
+                                        "column": 240,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -920,7 +977,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 243
+                                        "column": 243,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -936,7 +994,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 241
+                                        "column": 241,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -947,7 +1006,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 244
+                                        "column": 244,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -963,7 +1023,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 242
+                                        "column": 242,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -985,7 +1046,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 440
+                                        "column": 440,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -996,7 +1058,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 443
+                                        "column": 443,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -1012,7 +1075,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 441
+                                        "column": 441,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -1023,7 +1087,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 444
+                                        "column": 444,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -1039,7 +1104,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 442
+                                        "column": 442,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1061,7 +1127,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 435
+                                        "column": 435,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -1072,7 +1139,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 438
+                                        "column": 438,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -1088,7 +1156,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 436
+                                        "column": 436,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -1099,7 +1168,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 439
+                                        "column": 439,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -1115,7 +1185,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 437
+                                        "column": 437,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1146,7 +1217,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 144
+                                        "column": 144,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -1154,7 +1226,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 145
+                                        "column": 145,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1179,7 +1252,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 146
+                                        "column": 146,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -1187,7 +1261,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 147
+                                        "column": 147,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1212,7 +1287,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 148
+                                        "column": 148,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -1220,7 +1296,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 149
+                                        "column": 149,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1242,7 +1319,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 137
+                                        "column": 137,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1264,7 +1342,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 138
+                                        "column": 138,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1286,7 +1365,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 139
+                                        "column": 139,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1311,7 +1391,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 312
+                                        "column": 312,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -1319,7 +1400,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 313
+                                        "column": 313,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1344,7 +1426,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 317
+                                        "column": 317,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -1352,7 +1435,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 318
+                                        "column": 318,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1374,7 +1458,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 314
+                                        "column": 314,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1396,7 +1481,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 316
+                                        "column": 316,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1418,7 +1504,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 315
+                                        "column": 315,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1446,7 +1533,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 414
+                                        "column": 414,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1468,7 +1556,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 410
+                                        "column": 410,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1490,7 +1579,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 416
+                                        "column": 416,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1512,7 +1602,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 411
+                                        "column": 411,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1534,7 +1625,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 412
+                                        "column": 412,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1556,7 +1648,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 413
+                                        "column": 413,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1578,7 +1671,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 417
+                                        "column": 417,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1600,7 +1694,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 409
+                                        "column": 409,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1622,7 +1717,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 415
+                                        "column": 415,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1650,7 +1746,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 195
+                                        "column": 195,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1672,7 +1769,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 197
+                                        "column": 197,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1694,7 +1792,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 193
+                                        "column": 193,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1716,7 +1815,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 196
+                                        "column": 196,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1738,7 +1838,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 198
+                                        "column": 198,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1760,7 +1861,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 194
+                                        "column": 194,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1782,7 +1884,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 191
+                                        "column": 191,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1804,7 +1907,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 189
+                                        "column": 189,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1826,7 +1930,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 187
+                                        "column": 187,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1848,7 +1953,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 192
+                                        "column": 192,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1870,7 +1976,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 190
+                                        "column": 190,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1892,7 +1999,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 188
+                                        "column": 188,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1914,7 +2022,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 200
+                                        "column": 200,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1936,7 +2045,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 201
+                                        "column": 201,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1958,7 +2068,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 199
+                                        "column": 199,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -1989,7 +2100,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 212
+                                        "column": 212,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -1997,7 +2109,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 213
+                                        "column": 213,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2022,7 +2135,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 202
+                                        "column": 202,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -2030,7 +2144,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 203
+                                        "column": 203,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2055,7 +2170,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 206
+                                        "column": 206,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -2063,7 +2179,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 207
+                                        "column": 207,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2088,7 +2205,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 210
+                                        "column": 210,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -2096,7 +2214,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 211
+                                        "column": 211,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2121,7 +2240,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 208
+                                        "column": 208,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -2129,7 +2249,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 209
+                                        "column": 209,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2154,7 +2275,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 204
+                                        "column": 204,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -2162,7 +2284,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 205
+                                        "column": 205,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2190,7 +2313,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 352
+                                        "column": 352,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2212,7 +2336,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 407
+                                        "column": 407,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2234,7 +2359,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 323
+                                        "column": 323,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2256,7 +2382,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 325
+                                        "column": 325,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2278,7 +2405,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 251
+                                        "column": 251,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2300,7 +2428,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 247
+                                        "column": 247,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2322,7 +2451,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 249
+                                        "column": 249,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2344,7 +2474,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 250
+                                        "column": 250,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2366,7 +2497,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 246
+                                        "column": 246,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2388,7 +2520,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 248
+                                        "column": 248,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2410,7 +2543,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 267
+                                        "column": 267,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2432,7 +2566,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 263
+                                        "column": 263,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2454,7 +2589,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 265
+                                        "column": 265,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2476,7 +2612,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 266
+                                        "column": 266,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2498,7 +2635,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 262
+                                        "column": 262,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2520,7 +2658,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 264
+                                        "column": 264,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2551,7 +2690,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 258
+                                        "column": 258,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -2559,7 +2699,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 261
+                                        "column": 261,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2575,7 +2716,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 260
+                                        "column": 260,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -2591,7 +2733,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 259
+                                        "column": 259,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -2616,7 +2759,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 254
+                                        "column": 254,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -2624,7 +2768,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 257
+                                        "column": 257,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2640,7 +2785,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 256
+                                        "column": 256,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -2656,7 +2802,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 255
+                                        "column": 255,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -2678,7 +2825,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 478
+                                        "column": 478,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2694,7 +2842,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 480
+                                        "column": 480,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -2710,7 +2859,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 479
+                                        "column": 479,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -2732,7 +2882,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 427
+                                        "column": 427,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2754,7 +2905,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 424
+                                        "column": 424,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2776,7 +2928,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 426
+                                        "column": 426,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2798,7 +2951,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 420
+                                        "column": 420,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2820,7 +2974,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 418
+                                        "column": 418,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2842,7 +2997,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 419
+                                        "column": 419,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2864,7 +3020,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 423
+                                        "column": 423,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2886,7 +3043,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 421
+                                        "column": 421,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2908,7 +3066,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 422
+                                        "column": 422,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2930,7 +3089,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 493
+                                        "column": 493,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2952,7 +3112,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 494
+                                        "column": 494,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2974,7 +3135,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 495
+                                        "column": 495,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -2996,7 +3158,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 496
+                                        "column": 496,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3018,7 +3181,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 497
+                                        "column": 497,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3040,7 +3204,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 498
+                                        "column": 498,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3065,7 +3230,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 252
+                                        "column": 252,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -3073,7 +3239,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 253
+                                        "column": 253,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3098,7 +3265,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 428
+                                        "column": 428,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -3106,7 +3274,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 429
+                                        "column": 429,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3128,7 +3297,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 425
+                                        "column": 425,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3159,7 +3329,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 469
+                                        "column": 469,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -3167,7 +3338,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 470
+                                        "column": 470,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3192,7 +3364,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 466
+                                        "column": 466,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -3200,7 +3373,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 467
+                                        "column": 467,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3225,7 +3399,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 475
+                                        "column": 475,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -3233,7 +3408,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 476
+                                        "column": 476,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3258,7 +3434,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 472
+                                        "column": 472,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -3266,7 +3443,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 473
+                                        "column": 473,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3291,7 +3469,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 459
+                                        "column": 459,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -3299,7 +3478,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 460
+                                        "column": 460,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3324,7 +3504,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 463
+                                        "column": 463,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -3332,7 +3513,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 464
+                                        "column": 464,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3357,7 +3539,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 455
+                                        "column": 455,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -3365,7 +3548,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 456
+                                        "column": 456,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3390,7 +3574,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 457
+                                        "column": 457,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -3398,7 +3583,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 458
+                                        "column": 458,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3423,7 +3609,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 461
+                                        "column": 461,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -3431,7 +3618,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 462
+                                        "column": 462,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3453,7 +3641,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 483
+                                        "column": 483,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3475,7 +3664,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 481
+                                        "column": 481,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3497,7 +3687,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 482
+                                        "column": 482,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3519,7 +3710,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 452
+                                        "column": 452,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3541,7 +3733,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 454
+                                        "column": 454,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3563,7 +3756,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 451
+                                        "column": 451,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3585,7 +3779,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 453
+                                        "column": 453,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3613,7 +3808,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 70
+                                        "column": 70,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3635,7 +3831,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 77
+                                        "column": 77,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3657,7 +3854,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 56
+                                        "column": 56,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3679,7 +3877,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 60
+                                        "column": 60,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3701,7 +3900,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 58
+                                        "column": 58,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3723,7 +3923,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 59
+                                        "column": 59,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3745,7 +3946,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 73
+                                        "column": 73,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3767,7 +3969,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 65
+                                        "column": 65,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3789,7 +3992,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 61
+                                        "column": 61,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3811,7 +4015,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 68
+                                        "column": 68,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3833,7 +4038,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 76
+                                        "column": 76,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3855,7 +4061,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 80
+                                        "column": 80,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3877,7 +4084,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 69
+                                        "column": 69,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3899,7 +4107,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 71
+                                        "column": 71,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3921,7 +4130,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 81
+                                        "column": 81,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3943,7 +4153,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 64
+                                        "column": 64,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3965,7 +4176,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 75
+                                        "column": 75,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -3987,7 +4199,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 78
+                                        "column": 78,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4009,7 +4222,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 72
+                                        "column": 72,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4031,7 +4245,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 57
+                                        "column": 57,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4053,7 +4268,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 66
+                                        "column": 66,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4075,7 +4291,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 74
+                                        "column": 74,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4097,7 +4314,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 79
+                                        "column": 79,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4119,7 +4337,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 62
+                                        "column": 62,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4141,7 +4360,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 67
+                                        "column": 67,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4163,7 +4383,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 63
+                                        "column": 63,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4185,7 +4406,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 324
+                                        "column": 324,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4207,7 +4429,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 397
+                                        "column": 397,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4235,7 +4458,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 398
+                                        "column": 398,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4257,7 +4481,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 235
+                                        "column": 235,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4279,7 +4504,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 231
+                                        "column": 231,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4301,7 +4527,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 230
+                                        "column": 230,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4323,7 +4550,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 232
+                                        "column": 232,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4345,7 +4573,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 234
+                                        "column": 234,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4367,7 +4596,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 233
+                                        "column": 233,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4398,7 +4628,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 272
+                                        "column": 272,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4406,7 +4637,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 273
+                                        "column": 273,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4431,7 +4663,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 290
+                                        "column": 290,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4439,7 +4672,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 291
+                                        "column": 291,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4464,7 +4698,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 268
+                                        "column": 268,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4472,7 +4707,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 269
+                                        "column": 269,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4497,7 +4733,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 274
+                                        "column": 274,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4505,7 +4742,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 275
+                                        "column": 275,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4530,7 +4768,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 276
+                                        "column": 276,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4538,7 +4777,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 277
+                                        "column": 277,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4563,7 +4803,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 278
+                                        "column": 278,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4571,7 +4812,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 279
+                                        "column": 279,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4596,7 +4838,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 282
+                                        "column": 282,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4604,7 +4847,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 283
+                                        "column": 283,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4629,7 +4873,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 280
+                                        "column": 280,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4637,7 +4882,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 281
+                                        "column": 281,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4662,7 +4908,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 298
+                                        "column": 298,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4670,7 +4917,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 299
+                                        "column": 299,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4695,7 +4943,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 284
+                                        "column": 284,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4703,7 +4952,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 285
+                                        "column": 285,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4728,7 +4978,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 288
+                                        "column": 288,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4736,7 +4987,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 289
+                                        "column": 289,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4761,7 +5013,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 292
+                                        "column": 292,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4769,7 +5022,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 293
+                                        "column": 293,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4794,7 +5048,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 270
+                                        "column": 270,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4802,7 +5057,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 271
+                                        "column": 271,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4827,7 +5083,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 286
+                                        "column": 286,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4835,7 +5092,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 287
+                                        "column": 287,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4860,7 +5118,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 294
+                                        "column": 294,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4868,7 +5127,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 295
+                                        "column": 295,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4893,7 +5153,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 296
+                                        "column": 296,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4901,7 +5162,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 297
+                                        "column": 297,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4926,7 +5188,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 300
+                                        "column": 300,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4934,7 +5197,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 301
+                                        "column": 301,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4959,7 +5223,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 302
+                                        "column": 302,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -4967,7 +5232,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 303
+                                        "column": 303,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -4992,7 +5258,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 304
+                                        "column": 304,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -5000,7 +5267,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 305
+                                        "column": 305,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5025,7 +5293,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 306
+                                        "column": 306,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -5033,7 +5302,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 307
+                                        "column": 307,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5061,7 +5331,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 357
+                                        "column": 357,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5083,7 +5354,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 364
+                                        "column": 364,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5105,7 +5377,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 379
+                                        "column": 379,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5127,7 +5400,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 359
+                                        "column": 359,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5149,7 +5423,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 363
+                                        "column": 363,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5171,7 +5446,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 367
+                                        "column": 367,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5193,7 +5469,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 377
+                                        "column": 377,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5215,7 +5492,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 372
+                                        "column": 372,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5237,7 +5515,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 373
+                                        "column": 373,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5259,7 +5538,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 361
+                                        "column": 361,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5281,7 +5561,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 380
+                                        "column": 380,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5303,7 +5584,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 365
+                                        "column": 365,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5325,7 +5607,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 368
+                                        "column": 368,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5347,7 +5630,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 375
+                                        "column": 375,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5369,7 +5653,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 382
+                                        "column": 382,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5391,7 +5676,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 387
+                                        "column": 387,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5413,7 +5699,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 391
+                                        "column": 391,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5435,7 +5722,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 385
+                                        "column": 385,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5457,7 +5745,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 388
+                                        "column": 388,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5479,7 +5768,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 360
+                                        "column": 360,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5501,7 +5791,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 370
+                                        "column": 370,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5523,7 +5814,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 374
+                                        "column": 374,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5545,7 +5837,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 386
+                                        "column": 386,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5567,7 +5860,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 369
+                                        "column": 369,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5589,7 +5883,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 376
+                                        "column": 376,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5611,7 +5906,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 378
+                                        "column": 378,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5633,7 +5929,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 362
+                                        "column": 362,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5655,7 +5952,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 383
+                                        "column": 383,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5677,7 +5975,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 371
+                                        "column": 371,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5699,7 +5998,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 366
+                                        "column": 366,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5721,7 +6021,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 358
+                                        "column": 358,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5743,7 +6044,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 389
+                                        "column": 389,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5765,7 +6067,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 390
+                                        "column": 390,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5787,7 +6090,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 384
+                                        "column": 384,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5809,7 +6113,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 381
+                                        "column": 381,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5837,7 +6142,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 450
+                                        "column": 450,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5859,7 +6165,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 447
+                                        "column": 447,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5881,7 +6188,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 448
+                                        "column": 448,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5903,7 +6211,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 446
+                                        "column": 446,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5925,7 +6234,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 449
+                                        "column": 449,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5950,7 +6260,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 330
+                                        "column": 330,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -5958,7 +6269,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 331
+                                        "column": 331,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -5983,7 +6295,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 328
+                                        "column": 328,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -5991,7 +6304,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 329
+                                        "column": 329,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6016,7 +6330,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 326
+                                        "column": 326,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -6024,7 +6339,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 327
+                                        "column": 327,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6052,7 +6368,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 0
+                                        "column": 0,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2008"
@@ -6063,7 +6380,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 1
+                                        "column": 1,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2008-2012 Swing"
@@ -6074,7 +6392,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 2
+                                        "column": 2,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2012"
@@ -6085,7 +6404,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 3
+                                        "column": 3,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2012-2016 Swing"
@@ -6101,7 +6421,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 16
+                                        "column": 16,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2016"
@@ -6112,7 +6433,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 17
+                                        "column": 17,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2016-2020 Swing"
@@ -6123,7 +6445,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 32
+                                        "column": 32,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6134,7 +6457,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 33
+                                        "column": 33,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020-2024 Swing"
@@ -6145,7 +6469,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 48
+                                        "column": 48,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2024"
@@ -6167,7 +6492,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 15
+                                        "column": 15,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2015"
@@ -6178,7 +6504,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 9
+                                        "column": 9,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2015-2019 Swing"
@@ -6189,7 +6516,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 31
+                                        "column": 31,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2019"
@@ -6200,7 +6528,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 24
+                                        "column": 24,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2019-2021 Swing"
@@ -6211,7 +6540,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 47
+                                        "column": 47,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2021"
@@ -6222,7 +6552,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 40
+                                        "column": 40,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2021-2025 Swing"
@@ -6233,7 +6564,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 55
+                                        "column": 55,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2025"
@@ -6255,7 +6587,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 13
+                                        "column": 13,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2015"
@@ -6266,7 +6599,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 7
+                                        "column": 7,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2015-2019 Swing"
@@ -6277,7 +6611,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 28
+                                        "column": 28,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2019"
@@ -6288,7 +6623,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 21
+                                        "column": 21,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2019-2021 Swing"
@@ -6299,7 +6635,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 44
+                                        "column": 44,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2021"
@@ -6310,7 +6647,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 37
+                                        "column": 37,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2021-2025 Swing"
@@ -6321,7 +6659,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 52
+                                        "column": 52,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2025"
@@ -6343,7 +6682,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 11
+                                        "column": 11,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2015"
@@ -6354,7 +6694,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 5
+                                        "column": 5,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2015-2019 Swing"
@@ -6365,7 +6706,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 26
+                                        "column": 26,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2019"
@@ -6376,7 +6718,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 19
+                                        "column": 19,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2019-2021 Swing"
@@ -6387,7 +6730,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 42
+                                        "column": 42,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2021"
@@ -6398,7 +6742,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 35
+                                        "column": 35,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2021-2025 Swing"
@@ -6409,7 +6754,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 50
+                                        "column": 50,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2025"
@@ -6431,7 +6777,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 14
+                                        "column": 14,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2015"
@@ -6442,7 +6789,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 8
+                                        "column": 8,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2015-2019 Swing"
@@ -6453,7 +6801,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 29
+                                        "column": 29,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2019"
@@ -6464,7 +6813,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 22
+                                        "column": 22,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2019-2021 Swing"
@@ -6475,7 +6825,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 45
+                                        "column": 45,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2021"
@@ -6486,7 +6837,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 38
+                                        "column": 38,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2021-2025 Swing"
@@ -6497,7 +6849,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 53
+                                        "column": 53,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2025"
@@ -6519,7 +6872,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 10
+                                        "column": 10,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2015"
@@ -6530,7 +6884,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 4
+                                        "column": 4,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2015-2019 Swing"
@@ -6541,7 +6896,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 25
+                                        "column": 25,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2019"
@@ -6552,7 +6908,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 18
+                                        "column": 18,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2019-2021 Swing"
@@ -6563,7 +6920,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 41
+                                        "column": 41,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2021"
@@ -6574,7 +6932,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 34
+                                        "column": 34,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2021-2025 Swing"
@@ -6585,7 +6944,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 49
+                                        "column": 49,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2025"
@@ -6607,7 +6967,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 12
+                                        "column": 12,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2015"
@@ -6618,7 +6979,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 6
+                                        "column": 6,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2015-2019 Swing"
@@ -6629,7 +6991,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 27
+                                        "column": 27,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2019"
@@ -6640,7 +7003,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 20
+                                        "column": 20,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2019-2021 Swing"
@@ -6651,7 +7015,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 43
+                                        "column": 43,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2021"
@@ -6662,7 +7027,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 36
+                                        "column": 36,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2021-2025 Swing"
@@ -6673,7 +7039,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 51
+                                        "column": 51,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2025"
@@ -6695,7 +7062,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 30
+                                        "column": 30,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2019"
@@ -6706,7 +7074,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 23
+                                        "column": 23,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2019-2021 Swing"
@@ -6717,7 +7086,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 46
+                                        "column": 46,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2021"
@@ -6728,7 +7098,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 39
+                                        "column": 39,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2021-2025 Swing"
@@ -6739,7 +7110,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 54
+                                        "column": 54,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2025"
@@ -6767,7 +7139,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 396
+                                        "column": 396,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6789,7 +7162,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 491
+                                        "column": 491,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6811,7 +7185,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 334
+                                        "column": 334,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6833,7 +7208,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 492
+                                        "column": 492,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6855,7 +7231,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 335
+                                        "column": 335,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6877,7 +7254,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 490
+                                        "column": 490,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6899,7 +7277,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 333
+                                        "column": 333,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6921,7 +7300,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 489
+                                        "column": 489,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6943,7 +7323,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 332
+                                        "column": 332,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6965,7 +7346,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 322
+                                        "column": 322,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -6987,7 +7369,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 320
+                                        "column": 320,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7009,7 +7392,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 319
+                                        "column": 319,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7031,7 +7415,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 321
+                                        "column": 321,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7059,7 +7444,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 338
+                                        "column": 338,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7081,7 +7467,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 347
+                                        "column": 347,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7103,7 +7490,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 337
+                                        "column": 337,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7125,7 +7513,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 336
+                                        "column": 336,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7147,7 +7536,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 151
+                                        "column": 151,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7169,7 +7559,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 153
+                                        "column": 153,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7191,7 +7582,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 152
+                                        "column": 152,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7213,7 +7605,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 156
+                                        "column": 156,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7235,7 +7628,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 155
+                                        "column": 155,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7257,7 +7651,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 154
+                                        "column": 154,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7279,7 +7674,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 245
+                                        "column": 245,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7301,7 +7697,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 408
+                                        "column": 408,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7323,7 +7720,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 445
+                                        "column": 445,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7345,7 +7743,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 488
+                                        "column": 488,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7367,7 +7766,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 339
+                                        "column": 339,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7389,7 +7789,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 342
+                                        "column": 342,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7411,7 +7812,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 341
+                                        "column": 341,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7433,7 +7835,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 343
+                                        "column": 343,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7455,7 +7858,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 348
+                                        "column": 348,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7477,7 +7881,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 350
+                                        "column": 350,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7499,7 +7904,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 349
+                                        "column": 349,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7521,7 +7927,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 351
+                                        "column": 351,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7549,7 +7956,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 311
+                                        "column": 311,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7571,7 +7979,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 309
+                                        "column": 309,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7593,7 +8002,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 308
+                                        "column": 308,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7615,7 +8025,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 310
+                                        "column": 310,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7645,7 +8056,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "path": "metadata_show_metadata_fips",
                                         "metadata_index": 0,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": null
@@ -7669,7 +8081,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "path": "metadata_show_metadata_statcan_geocode",
                                         "metadata_index": 1,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": null
@@ -7693,7 +8106,8 @@ export const rawStatsTree = [
                                         "source": null,
                                         "path": "metadata_show_metadata_iso_code",
                                         "metadata_index": 4,
-                                        "value_type": "string"
+                                        "value_type": "string",
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": null
@@ -7724,7 +8138,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 82
+                                        "column": 82,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -7732,7 +8147,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 167
+                                        "column": 167,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7751,7 +8167,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 84
+                                        "column": 84,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -7759,7 +8176,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 157
+                                        "column": 157,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -7773,7 +8191,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 86
+                                        "column": 86,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -7781,7 +8200,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 177
+                                        "column": 177,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -7797,7 +8217,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 83
+                                        "column": 83,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -7808,7 +8229,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 85
+                                        "column": 85,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -7833,7 +8255,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 87
+                                        "column": 87,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -7841,7 +8264,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 168
+                                        "column": 168,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7860,7 +8284,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 89
+                                        "column": 89,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -7868,7 +8293,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 158
+                                        "column": 158,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -7882,7 +8308,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 91
+                                        "column": 91,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -7890,7 +8317,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 178
+                                        "column": 178,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -7906,7 +8334,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 88
+                                        "column": 88,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -7917,7 +8346,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 90
+                                        "column": 90,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -7942,7 +8372,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 93
+                                        "column": 93,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -7950,7 +8381,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 169
+                                        "column": 169,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -7958,7 +8390,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 217
+                                        "column": 217,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -7977,7 +8410,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 95
+                                        "column": 95,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -7985,7 +8419,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 159
+                                        "column": 159,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -7999,7 +8434,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 97
+                                        "column": 97,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8007,7 +8443,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 179
+                                        "column": 179,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -8023,7 +8460,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 94
+                                        "column": 94,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -8034,7 +8472,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 96
+                                        "column": 96,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -8059,7 +8498,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 107
+                                        "column": 107,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8067,7 +8507,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 172
+                                        "column": 172,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8075,7 +8516,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 219
+                                        "column": 219,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8094,7 +8536,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 109
+                                        "column": 109,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8102,7 +8545,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 162
+                                        "column": 162,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -8116,7 +8560,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 111
+                                        "column": 111,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8124,7 +8569,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 182
+                                        "column": 182,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -8140,7 +8586,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 108
+                                        "column": 108,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -8151,7 +8598,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 110
+                                        "column": 110,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -8176,7 +8624,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 117
+                                        "column": 117,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8184,7 +8633,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 174
+                                        "column": 174,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8192,7 +8642,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 221
+                                        "column": 221,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8211,7 +8662,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 119
+                                        "column": 119,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8219,7 +8671,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 164
+                                        "column": 164,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -8233,7 +8686,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 121
+                                        "column": 121,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8241,7 +8695,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 184
+                                        "column": 184,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -8257,7 +8712,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 118
+                                        "column": 118,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -8268,7 +8724,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 120
+                                        "column": 120,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -8293,7 +8750,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 127
+                                        "column": 127,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8301,7 +8759,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 176
+                                        "column": 176,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8309,7 +8768,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 223
+                                        "column": 223,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8328,7 +8788,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 129
+                                        "column": 129,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8336,7 +8797,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 166
+                                        "column": 166,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -8350,7 +8812,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 131
+                                        "column": 131,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8358,7 +8821,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 186
+                                        "column": 186,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -8374,7 +8838,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 128
+                                        "column": 128,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -8385,7 +8850,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 130
+                                        "column": 130,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -8410,7 +8876,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 98
+                                        "column": 98,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8418,7 +8885,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 170
+                                        "column": 170,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8426,7 +8894,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 218
+                                        "column": 218,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8445,7 +8914,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 100
+                                        "column": 100,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8453,7 +8923,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 160
+                                        "column": 160,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -8467,7 +8938,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 102
+                                        "column": 102,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8475,7 +8947,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 180
+                                        "column": 180,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -8491,7 +8964,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 99
+                                        "column": 99,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -8502,7 +8976,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 101
+                                        "column": 101,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -8527,7 +9002,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 112
+                                        "column": 112,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8535,7 +9011,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 173
+                                        "column": 173,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8543,7 +9020,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 220
+                                        "column": 220,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8562,7 +9040,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 114
+                                        "column": 114,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8570,7 +9049,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 163
+                                        "column": 163,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -8584,7 +9064,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 116
+                                        "column": 116,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8592,7 +9073,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 183
+                                        "column": 183,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -8608,7 +9090,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 113
+                                        "column": 113,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -8619,7 +9102,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 115
+                                        "column": 115,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -8644,7 +9128,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 122
+                                        "column": 122,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8652,7 +9137,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 175
+                                        "column": 175,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8660,7 +9146,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "GHSL"
                                         },
-                                        "column": 222
+                                        "column": 222,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8679,7 +9166,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 124
+                                        "column": 124,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8687,7 +9175,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 165
+                                        "column": 165,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010"
@@ -8701,7 +9190,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "US Census"
                                         },
-                                        "column": 126
+                                        "column": 126,
+                                        "mergeable": false
                                     },
                                     {
                                         "kind": "data",
@@ -8709,7 +9199,8 @@ export const rawStatsTree = [
                                             "category": "Population",
                                             "name": "Canadian Census"
                                         },
-                                        "column": 185
+                                        "column": 185,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2010-2020 Change"
@@ -8725,7 +9216,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 123
+                                        "column": 123,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000"
@@ -8736,7 +9228,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 125
+                                        "column": 125,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2000-2020 Change"
@@ -8764,7 +9257,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 345
+                                        "column": 345,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8786,7 +9280,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 346
+                                        "column": 346,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8808,7 +9303,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 340
+                                        "column": 340,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8830,7 +9326,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 344
+                                        "column": 344,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8852,7 +9349,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 468
+                                        "column": 468,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8874,7 +9372,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 465
+                                        "column": 465,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8896,7 +9395,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 474
+                                        "column": 474,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8918,7 +9418,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 471
+                                        "column": 471,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
@@ -8940,7 +9441,8 @@ export const rawStatsTree = [
                                     {
                                         "kind": "data",
                                         "source": null,
-                                        "column": 477
+                                        "column": 477,
+                                        "mergeable": false
                                     }
                                 ],
                                 "indentedName": "2020"
