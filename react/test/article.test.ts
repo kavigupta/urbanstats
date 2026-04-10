@@ -451,3 +451,24 @@ test('hash collisions: hashes match and all pages load with correct compactness'
         await t.expect(Selector('span').withExactText(entry.expectedCompactness).exists).ok()
     }
 })
+
+urbanstatsFixture('special elections', '/article.html?longname=TN-07+%282023%29%2C+USA')
+
+test('special elections', async (t) => {
+    await checkTextboxes(t, ['Election'])
+    await screencap(t)
+})
+
+urbanstatsFixture('collapsed pair of representatives', '/article.html?longname=02139%2C+USA')
+
+test('collapsed pair of representatives', async (t) => {
+    await checkTextboxes(t, ['Election'])
+    await screencap(t)
+})
+
+urbanstatsFixture('hartford stable', '/article.html?longname=Hartford+city%2C+Connecticut%2C+USA&s=GczH23rwqX34ctu')
+
+test('hartford stable', async (t) => {
+    await checkTextboxes(t, ['Election', '2010', '2000'])
+    await t.expect(Selector('span').withExactText('Representative (1999-)').exists).ok()
+})
