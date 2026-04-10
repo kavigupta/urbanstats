@@ -1,5 +1,8 @@
+import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import stableStringify from 'json-stable-stringify'
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useRef } from 'react'
 
 import { ExpandButton } from '../../components/ExpandButton'
 import { RenderTwiceHidden } from '../../components/RenderTwiceHidden'
@@ -223,6 +226,141 @@ function ArgumentEditor(props: {
 
 const nullSelectionContext = new Property<ContextSelection | undefined>(undefined)
 
+function SortableVectorItem(props: { id: number, children: ReactNode }): ReactNode {
+    const { attributes, listeners, setNodeRef, transform, isDragging, transition } = useSortable({ id: props.id })
+    return (
+        <div
+            ref={setNodeRef}
+            style={{
+                transform: CSS.Transform.toString(transform),
+                opacity: isDragging ? 0.5 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5em',
+                width: '100%',
+                transition,
+            }}
+        >
+            <button
+                {...attributes}
+                {...listeners}
+                style={{ flexShrink: 0, cursor: 'grab', background: 'none', border: 'none', padding: '0 4px', touchAction: 'none' }}
+                title="Drag to reorder"
+            >
+                ⠿
+            </button>
+            {props.children}
+        </div>
+    )
+}
+
+function VectorLiteralEditor(props: {
+    uss: UrbanStatsASTExpression & { type: 'vectorLiteral' }
+    setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void
+    typeEnvironment: TypeEnvironment
+    errors: EditorError[]
+    blockIdent: string
+    elementType: USSType
+    assignments: AssignmentsResult
+}): ReactNode {
+    /*
+     * We need stable identifiers to support dragging, but we don't have unique ids for the elements
+     * So, we save the original sort orders, and use them even when the order changes.
+     */
+    const ids = useRef<number[]>([])
+    while (ids.current.length < props.uss.elements.length) {
+        ids.current.push(ids.current.length)
+    }
+
+    const sensors = useSensors(useSensor(PointerSensor))
+
+    function handleDragEnd(event: DragEndEvent): void {
+        const { active, over } = event
+        if (over && active.id !== over.id) {
+            const oldIndex = ids.current.indexOf(active.id as number)
+            const newIndex = ids.current.indexOf(over.id as number)
+            const indexedElements = props.uss.elements.map((el, i) => ({ el, oldIndex: i }))
+            const reordered = arrayMove(indexedElements, oldIndex, newIndex)
+            const newElements = reordered.map(({ el, oldIndex: oi }, newIdx) =>
+                changeBlockId(
+                    el,
+                    extendBlockIdVectorElement(props.blockIdent, oi),
+                    extendBlockIdVectorElement(props.blockIdent, newIdx),
+                ),
+            )
+            props.setUss({ ...props.uss, elements: newElements }, {})
+
+            ids.current = arrayMove(ids.current, oldIndex, newIndex)
+        }
+    }
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%' }}>
+            <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+                <SortableContext items={ids.current} strategy={verticalListSortingStrategy}>
+                    {props.uss.elements.map((el, i) => (
+                        <SortableVectorItem key={ids.current[i]} id={ids.current[i]}>
+                            <AutoUXEditor
+                                uss={el}
+                                setUss={(newEl, options) => {
+                                    const newElements = [...props.uss.elements]
+                                    newElements[i] = newEl
+                                    props.setUss({ ...props.uss, elements: newElements }, options)
+                                }}
+                                typeEnvironment={props.typeEnvironment}
+                                errors={props.errors}
+                                blockIdent={extendBlockIdVectorElement(props.blockIdent, i)}
+                                type={[props.elementType]}
+                                label={`${i + 1}`}
+                                assignments={props.assignments}
+                            />
+                            <button
+                                style={{ flexShrink: 0 }}
+                                onClick={() => {
+                                    const newElements = props.uss.elements.flatMap((vectorElement, j) => {
+                                        if (j === i) {
+                                            return []
+                                        }
+                                        if (j < i) {
+                                            return [vectorElement]
+                                        }
+                                        return [changeBlockId(
+                                            vectorElement,
+                                            extendBlockIdVectorElement(props.blockIdent, j),
+                                            extendBlockIdVectorElement(props.blockIdent, j - 1),
+                                        )]
+                                    })
+                                    props.setUss({ ...props.uss, elements: newElements }, {})
+                                }}
+                                title="Remove element"
+                            >
+                                –
+                            </button>
+                        </SortableVectorItem>
+                    ))}
+                </SortableContext>
+            </DndContext>
+            <button
+                data-test-id="test-add-vector-element-button"
+                style={{ alignSelf: 'flex-start', marginTop: 4 }}
+                onClick={() => {
+                    const subIdentPrev = extendBlockIdVectorElement(props.blockIdent, props.uss.elements.length - 1)
+                    const subIdent = extendBlockIdVectorElement(props.blockIdent, props.uss.elements.length)
+                    const newElements = [
+                        ...props.uss.elements,
+                        props.uss.elements.length > 0
+                            ? changeBlockId(props.uss.elements[props.uss.elements.length - 1], subIdentPrev, subIdent)
+                            : createDefaultExpression(props.elementType, subIdent, props.typeEnvironment),
+                    ]
+                    props.setUss({ ...props.uss, elements: newElements }, {})
+                }}
+            >
+                + Add element
+            </button>
+        </div>
+    )
+}
+
 export function AutoUXEditor(props: {
     uss: UrbanStatsASTExpression
     setUss: (u: UrbanStatsASTExpression, o: ActionOptions) => void
@@ -347,66 +485,15 @@ export function AutoUXEditor(props: {
                 elementType = props.type[0].elementType
             }
             const element = (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%' }}>
-                    {uss.elements.map((el, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5em', width: '100%' }}>
-                            <AutoUXEditor
-                                uss={el}
-                                setUss={(newEl, options) => {
-                                    const newElements = [...uss.elements]
-                                    newElements[i] = newEl
-                                    props.setUss({ ...uss, elements: newElements }, options)
-                                }}
-                                typeEnvironment={props.typeEnvironment}
-                                errors={props.errors}
-                                blockIdent={extendBlockIdVectorElement(props.blockIdent, i)}
-                                type={[elementType]}
-                                label={`${i + 1}`}
-                                assignments={props.assignments}
-                            />
-                            <button
-                                style={{ flexShrink: 0 }}
-                                onClick={() => {
-                                    const newElements = uss.elements.flatMap((vectorElement, j) => {
-                                        if (j === i) {
-                                            return []
-                                        }
-                                        if (j < i) {
-                                            return [vectorElement]
-                                        }
-                                        return [changeBlockId(
-                                            vectorElement,
-                                            extendBlockIdVectorElement(props.blockIdent, j),
-                                            extendBlockIdVectorElement(props.blockIdent, j - 1),
-                                        )]
-                                    })
-                                    props.setUss({ ...uss, elements: newElements }, {})
-                                }}
-                                title="Remove element"
-                            >
-                                –
-                            </button>
-                        </div>
-                    ))}
-                    <button
-                        data-test-id="test-add-vector-element-button"
-                        style={{ alignSelf: 'flex-start', marginTop: 4 }}
-                        onClick={() => {
-                            const subIdentPrev = extendBlockIdVectorElement(props.blockIdent, uss.elements.length - 1)
-                            const subIdent = extendBlockIdVectorElement(props.blockIdent, uss.elements.length)
-                            const newElements = [
-                                ...uss.elements,
-                                // Copy the last element if there is one
-                                uss.elements.length > 0
-                                    ? changeBlockId(uss.elements[uss.elements.length - 1], subIdentPrev, subIdent)
-                                    : createDefaultExpression(elementType, subIdent, props.typeEnvironment),
-                            ]
-                            props.setUss({ ...uss, elements: newElements }, {})
-                        }}
-                    >
-                        + Add element
-                    </button>
-                </div>
+                <VectorLiteralEditor
+                    uss={uss}
+                    setUss={props.setUss}
+                    typeEnvironment={props.typeEnvironment}
+                    errors={props.errors}
+                    blockIdent={props.blockIdent}
+                    elementType={elementType}
+                    assignments={props.assignments}
+                />
             )
             return [element, 'does-not-consume-errors']
         }
