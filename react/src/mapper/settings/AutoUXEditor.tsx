@@ -268,10 +268,15 @@ function VectorLiteralEditor(props: {
      * So, we save the original sort orders, and use them even when the order changes.
      *
      * They need to be 1-indexed. DnD kit doesn't like nullish ids
+     *
+     * These ids don't need to be perfect, they just need to work for dragging
      */
     const ids = useRef<number[]>([])
     while (ids.current.length < props.uss.elements.length) {
         ids.current.push(ids.current.length + 1)
+    }
+    while (ids.current.length > props.uss.elements.length) {
+        ids.current.pop()
     }
 
     const sensors = useSensors(useSensor(PointerSensor))

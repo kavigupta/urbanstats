@@ -128,6 +128,23 @@ test('reordering via autoux', async (t) => {
     await t.expect(columnHeaderLink(2).innerText).eql('C1')
 })
 
+test('reorder after removing a vector element', async (t) => {
+    await waitForLoading()
+    await t.click('button[data-test-id="edit"]')
+    await toggleCustomScript(t)
+
+    // Remove the middle element (C2, drag handle index 1)
+    const removeButtons = Selector('button[title="Remove element"]')
+    await t.click(removeButtons.nth(1))
+    await waitForLoading()
+
+    // Now only C1 (handle 0) and C3 (handle 1) remain; drag C1 past C3
+    await t.dragToElement(dragHandle(0), dragHandle(1))
+    await waitForLoading()
+    await t.expect(columnHeaderLink(0).innerText).eql('C3')
+    await t.expect(columnHeaderLink(1).innerText).eql('C1')
+})
+
 const variableURL = createUSSStatisticsPage(`
 columns = [
     column(values=density_pw_1km, name="Col A", unit=unitDensity),
