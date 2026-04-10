@@ -269,7 +269,7 @@ async function printConsoleMessages(t: TestController): Promise<void> {
     consoleEnabled.add(cdp)
     cdp.Console.on('messageAdded', (event) => {
         const timestamp = new Date().toISOString()
-        if (event.message.text.includes('[failtest]')) {
+        if (event.message.text.includes('[failtest]') || event.message.text.includes('Encountered two children with the same key')) {
             failTestConsoleMessages.push(event.message.text)
         }
         let text: string
