@@ -494,5 +494,5 @@ export const goForward = ClientFunction(() => { window.history.forward() })
 export const getScroll = ClientFunction(() => window.scrollY)
 
 export function dragHandle(n: number): Selector {
-    return Selector('button[aria-roledescription="sortable"]').nth(n)
+    return Selector('button[aria-roledescription="sortable"]:not([inert] *)').nth(n)
 }
