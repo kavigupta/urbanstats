@@ -5,7 +5,7 @@ import { tableType } from '../urban-stats-script/constants/table'
 import * as l from '../urban-stats-script/literal-parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 
-import { Statistic, StatSetter } from './types'
+import { Statistic, StatSetter, View } from './types'
 import { mapUSSFromStat } from './utils'
 
 const tableColumnsParser = mapUssParser(
@@ -23,6 +23,7 @@ export function makeColumnReorderHandler(
     stat: Statistic,
     set: StatSetter,
     typeEnvironment: TypeEnvironment,
+    view: View,
 ): ((from: number, to: number) => void) | undefined {
     let parseResult
     if (stat.type !== 'uss') {
@@ -44,6 +45,13 @@ export function makeColumnReorderHandler(
         const newUss = parseResult.namedArgs.columns.edit(
             elements => arrayMove(elements, from, to),
         )
-        set({ stat: { ...stat, uss: newUss as MapUSS } }, { undoable: true })
+        const columns = parseResult.namedArgs.columns.currentValue
+        const indices = Array.from({ length: columns.length }, (_, i) => i)
+        const reordered = arrayMove(indices, from, to)
+        const newSortColumn = reordered.indexOf(view.sortColumn)
+        set({
+            stat: { ...stat, uss: newUss as MapUSS },
+            view: { ...view, sortColumn: newSortColumn },
+        }, { undoable: true })
     }
 }

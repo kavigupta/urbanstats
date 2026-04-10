@@ -138,7 +138,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
     const superHeaderSpec: SuperHeaderSpec = {
         headerSpecs,
         showBottomBar: false,
-        handleReorder: makeColumnReorderHandler(stat, set, typeEnvironment),
+        handleReorder: makeColumnReorderHandler(stat, set, typeEnvironment, view),
     }
 
     const highlightOriginalIdx = data.articleNames.indexOf(view.highlight ?? '')

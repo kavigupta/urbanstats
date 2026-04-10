@@ -8,6 +8,7 @@ function createUSSStatisticsPage(uss: string, start = 1, amount = 5, universe = 
 
 const columnHeader = (n: number): Selector => Selector('[data-test-id="sortable-column-header"]').nth(n)
 const columnHeaderLink = (n: number): Selector => columnHeader(n).find('[data-test-id="statistic-link"]')
+const sortIndicator = (n: number): Selector => columnHeader(n).find('.testing-order-swap')
 
 const twoColumnUSS = `table(
     columns=[
@@ -40,6 +41,21 @@ test('column reorder persists in URL', async (t) => {
     await waitForLoading()
     await t.expect(columnHeaderLink(0).innerText).eql('Col B')
     await t.expect(columnHeaderLink(1).innerText).eql('Col A')
+})
+
+test('sort indicator follows logical column after reorder', async (t) => {
+    await waitForLoading()
+    // Click column 0 header to sort by it; sort indicator should appear on col 0
+    await t.click(columnHeader(0))
+    await waitForLoading()
+    await t.expect(sortIndicator(0).getAttribute('alt')).notEql('both')
+    await t.expect(sortIndicator(1).getAttribute('alt')).eql('both')
+
+    // Drag col 0 to col 1 — sort indicator must follow the logical column to position 1
+    await t.dragToElement(columnHeader(0), columnHeader(1))
+    await waitForLoading()
+    await t.expect(sortIndicator(0).getAttribute('alt')).eql('both')
+    await t.expect(sortIndicator(1).getAttribute('alt')).notEql('both')
 })
 
 test('column reorder updates data values', async (t) => {
