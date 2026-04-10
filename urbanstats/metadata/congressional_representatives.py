@@ -171,7 +171,7 @@ def compute_representatives_for_shapefile(
 class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
     representatives_csv_version = "a38a7de"
     version = (
-        f"congressional_representatives_structured_{representatives_csv_version}_v52"
+        f"congressional_representatives_structured_{representatives_csv_version}_v62"
     )
 
     def compute_metadata_columns(self, *, shapefile, shapefiles, shapefile_table):
@@ -197,7 +197,7 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
         from urbanstats.geometry.relationship import create_relationships_dispatch
 
         a_contains_b, b_contains_a, a_intersects_b, _ = create_relationships_dispatch(
-            shapefiles, key_a, key_b
+            shapefiles, key_a, key_b, check_temporal=False
         )
         return [*a_contains_b, *b_contains_a, *a_intersects_b]
 
