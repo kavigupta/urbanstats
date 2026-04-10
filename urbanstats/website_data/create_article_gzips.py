@@ -24,7 +24,7 @@ def isnan(x):
 def metadata_for_article(row, representative_table_builder):
     metadata = []
     for i, (key, metadata_type) in enumerate(metadata_types.items()):
-        if row[key] != row[key] or row[key] is None:
+        if key not in row or row[key] != row[key] or row[key] is None:
             continue
         metadata_value = metadata_type.create(
             i, row[key], representative_table_builder=representative_table_builder
