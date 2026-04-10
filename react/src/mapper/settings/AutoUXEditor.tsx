@@ -18,6 +18,7 @@ import { AssignmentsResult } from '../../urban-stats-script/workerManager'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { Property } from '../../utils/Property'
 import { assert } from '../../utils/defensive'
+import { randomBase62ID } from '../../utils/random'
 import { useMobileLayout } from '../../utils/responsive'
 
 import * as ArgEditButtons from './ArgEditButtons'
@@ -226,7 +227,7 @@ function ArgumentEditor(props: {
 
 const nullSelectionContext = new Property<ContextSelection | undefined>(undefined)
 
-function SortableVectorItem(props: { id: number, children: ReactNode }): ReactNode {
+function SortableVectorItem(props: { id: string, children: ReactNode }): ReactNode {
     const { attributes, listeners, setNodeRef, transform, isDragging, transition } = useSortable({ id: props.id })
     return (
         <div
@@ -270,9 +271,9 @@ function VectorLiteralEditor(props: {
      *
      * These ids don't need to be perfect, they just need to work for dragging
      */
-    const ids = useRef<number[]>([])
+    const ids = useRef<string[]>([])
     while (ids.current.length < props.uss.elements.length) {
-        ids.current.push(ids.current.length + 1)
+        ids.current.push(randomBase62ID(7))
     }
     while (ids.current.length > props.uss.elements.length) {
         ids.current.pop()
@@ -283,8 +284,8 @@ function VectorLiteralEditor(props: {
     function handleDragEnd(event: DragEndEvent): void {
         const { active, over } = event
         if (over && active.id !== over.id) {
-            const oldIndex = ids.current.indexOf(active.id as number)
-            const newIndex = ids.current.indexOf(over.id as number)
+            const oldIndex = ids.current.indexOf(active.id as string)
+            const newIndex = ids.current.indexOf(over.id as string)
             const indexedElements = props.uss.elements.map((el, i) => ({ el, oldIndex: i }))
             const reordered = arrayMove(indexedElements, oldIndex, newIndex)
             const newElements = reordered.map(({ el, oldIndex: oi }, newIdx) =>
