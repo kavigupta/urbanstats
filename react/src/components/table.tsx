@@ -205,6 +205,7 @@ function SortableHeaderCell({ id, width, children }: { id: string, width: number
     return (
         <div
             ref={setNodeRef}
+            data-test-id="sortable-column-header"
             style={{
                 width: `${width}%`,
                 display: 'flex',

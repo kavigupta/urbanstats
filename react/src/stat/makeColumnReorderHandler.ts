@@ -6,6 +6,7 @@ import * as l from '../urban-stats-script/literal-parser'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 
 import { Statistic, StatSetter } from './types'
+import { mapUSSFromStat } from './utils'
 
 const tableColumnsParser = mapUssParser(
     l.call({
@@ -23,11 +24,12 @@ export function makeColumnReorderHandler(
     set: StatSetter,
     typeEnvironment: TypeEnvironment,
 ): ((from: number, to: number) => void) | undefined {
+    let parseResult
     if (stat.type !== 'uss') {
         return undefined
     }
     try {
-        tableColumnsParser(stat.uss, typeEnvironment)
+        parseResult = tableColumnsParser(mapUSSFromStat(stat), typeEnvironment)
     }
     catch (err) {
         if (err instanceof l.LiteralParseError) {
@@ -35,8 +37,11 @@ export function makeColumnReorderHandler(
         }
         throw err
     }
+    if (parseResult.namedArgs.columns.currentValue.length < 2) {
+        return undefined
+    }
     return (from: number, to: number): void => {
-        const newUss = tableColumnsParser(stat.uss, typeEnvironment).namedArgs.columns.edit(
+        const newUss = parseResult.namedArgs.columns.edit(
             elements => arrayMove(elements, from, to),
         )
         set({ stat: { ...stat, uss: newUss as MapUSS } }, { undoable: true })
