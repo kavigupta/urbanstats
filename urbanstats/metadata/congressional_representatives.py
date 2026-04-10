@@ -3,7 +3,7 @@ import math
 import urllib.request
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import List
 
 import pandas as pd
 import tqdm.auto as tqdm
@@ -24,19 +24,12 @@ def key_for_term_start_year(term_start_year: int) -> str:
     return f"congressional_representatives_{term_start_year}"
 
 
-@dataclass(frozen=True)
+@dataclass
 class Representative:
     name: str
     wikidata_id: str
     wikipedia_page: str
     party: str
-
-
-@dataclass
-class RepresentativeWithDateRange:
-    representative: Representative
-    start_year: int
-    end_year: int
 
 
 def district_shortname_to_state_and_district(shortname: str):
@@ -236,45 +229,4 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
                     name_other, {}
                 ).items():
                     results[name][term_start_year].extend(reps)
-        results = {
-            name: attach_years(reps_by_year) for name, reps_by_year in results.items()
-        }
-        return [results.get(name, {}) for name in shapefile_table.longname]
-
-
-def attach_years(
-    reps_by_year: Dict[int, List[Representative]],
-) -> Dict[int, List[RepresentativeWithDateRange]]:
-    sorted_years = sorted(reps_by_year.keys())
-    representative_to_years = defaultdict(list)
-    for year in sorted_years:
-        for rep in reps_by_year[year]:
-            representative_to_years[rep].append(year)
-    representative_to_year_range = {
-        rep: compute_ranges(years) for rep, years in representative_to_years.items()
-    }
-
-    result = defaultdict(list)
-    for year, reps in reps_by_year.items():
-        for rep in reps:
-            for start_year, end_year in representative_to_year_range[rep]:
-                if start_year <= year <= end_year:
-                    result[year].append(
-                        RepresentativeWithDateRange(
-                            representative=rep, start_year=start_year, end_year=end_year
-                        )
-                    )
-
-    return dict(result)
-
-
-def compute_ranges(years: List[int]) -> List[tuple]:
-    sorted_years = sorted(years)
-    ranges = [(sorted_years[0], sorted_years[0])]
-    for year in sorted_years[1:]:
-        last_range = ranges[-1]
-        if year == last_range[1] + 2:
-            ranges[-1] = (last_range[0], year)
-        else:
-            ranges.append((year, year))
-    return ranges
+        return [results[name] for name in shapefile_table.longname]
