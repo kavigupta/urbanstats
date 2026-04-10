@@ -1,4 +1,5 @@
-import { useSortable } from '@dnd-kit/sortable'
+import { closestCenter, DndContext, DragEndEvent, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
@@ -120,6 +121,7 @@ export interface SuperHeaderHorizontalProps {
     showBottomBar: boolean
     leftSpacerWidth: number
     groupNames?: (string | undefined)[]
+    handleReorder?: (from: number, to: number) => void
 }
 
 export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactNode {
@@ -145,20 +147,79 @@ export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactN
         )
     }
 
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 1 } }),
+        useSensor(TouchSensor, { activationConstraint: { delay: 50, tolerance: 0 } }),
+    )
+
+    const handleDragEnd = (event: DragEndEvent): void => {
+        const { active, over } = event
+        if (over && active.id !== over.id) {
+            props.handleReorder?.(parseInt(active.id as string), parseInt(over.id as string))
+        }
+    }
+
     const getBarColor = (idx: number): string | undefined => {
         const spec = props.headerSpecs[idx]
         return spec.highlightIndex !== undefined ? colorFromCycle(colors.hueColors, spec.highlightIndex) : undefined
     }
+
+    const cellsRow = (
+        <div style={{ display: 'flex' }}>
+            <div style={{ width: `${props.leftSpacerWidth}%` }} />
+            {props.handleReorder
+                ? (
+                        <SortableContext items={props.headerSpecs.map((_, idx) => idx.toString())} strategy={horizontalListSortingStrategy}>
+                            {props.headerSpecs.map((cellSpec, idx) => {
+                                const nonDraggableSpec: CellSpec = cellSpec.type === 'comparison-longname' ? { ...cellSpec, draggable: false } : cellSpec
+                                return (
+                                    <SortableHeaderCell key={idx} id={idx.toString()} width={props.widthsEach[idx]}>
+                                        <Cell {...nonDraggableSpec} width={100} />
+                                    </SortableHeaderCell>
+                                )
+                            })}
+                        </SortableContext>
+                    )
+                : props.headerSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} width={props.widthsEach[idx]} />)}
+        </div>
+    )
+
     return (
         <>
             {props.groupNames && <SuperHeaderGroupNames leftSpacerWidth={props.leftSpacerWidth} groupNames={props.groupNames} widthsEach={props.widthsEach} />}
             {bars(getBarColor)}
-            <div style={{ display: 'flex' }}>
-                <div style={{ width: `${props.leftSpacerWidth}%` }} />
-                {props.headerSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} width={props.widthsEach[idx]} />)}
-            </div>
+            {props.handleReorder
+                ? (
+                        <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
+                            {cellsRow}
+                        </DndContext>
+                    )
+                : cellsRow}
             {props.showBottomBar && bars(getBarColor)}
         </>
+    )
+}
+
+function SortableHeaderCell({ id, width, children }: { id: string, width: number, children: ReactNode }): ReactNode {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+    return (
+        <div
+            ref={setNodeRef}
+            data-test-id="sortable-column-header"
+            style={{
+                width: `${width}%`,
+                display: 'flex',
+                transform: CSS.Transform.toString(transform),
+                transition: isDragging ? transition : 'none',
+                opacity: isDragging ? 0.5 : 1,
+                touchAction: 'none',
+                cursor: 'grab',
+            }}
+            {...attributes}
+            {...listeners}
+        >
+            {children}
+        </div>
     )
 }
 
