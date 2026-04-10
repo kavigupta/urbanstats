@@ -1,6 +1,7 @@
 import { Selector } from 'testcafe'
 
-import { target, urbanstatsFixture, waitForLoading, dataValues, safeReload } from './test_utils'
+import { toggleCustomScript } from './mapper-utils'
+import { target, urbanstatsFixture, waitForLoading, dataValues, safeReload, dragHandle } from './test_utils'
 
 function createUSSStatisticsPage(uss: string, start = 1, amount = 5, universe = 'California, USA', articleType = 'County'): string {
     return `${target}/statistic.html?uss=${encodeURIComponent(uss)}&article_type=${encodeURIComponent(articleType)}&start=${start}&amount=${amount}&universe=${encodeURIComponent(universe)}`
@@ -114,6 +115,16 @@ test('multiple sequential reorders', async (t) => {
     await waitForLoading()
     await t.expect(columnHeaderLink(0).innerText).eql('C3')
     await t.expect(columnHeaderLink(1).innerText).eql('C2')
+    await t.expect(columnHeaderLink(2).innerText).eql('C1')
+})
+
+test('reordering via autoux', async (t) => {
+    await waitForLoading()
+    await t.click('button[data-test-id="edit"]')
+    await toggleCustomScript(t)
+    await t.dragToElement(dragHandle(0), dragHandle(2))
+    await t.expect(columnHeaderLink(0).innerText).eql('C2')
+    await t.expect(columnHeaderLink(1).innerText).eql('C3')
     await t.expect(columnHeaderLink(2).innerText).eql('C1')
 })
 
