@@ -123,8 +123,7 @@ function CongressionalRepresentativesTableRenderer(props: {
                 ))}
 
                 {props.model.supercolumns.map((supercolumn, columnIndex) => supercolumn.sections.map((section) => {
-                    const districtHeaders = section.districtHeaders.flat()
-                    const gridTemplateColumnsDistrict = districtHeaders.map(() => 'minmax(0, 1fr)').join(' ')
+                    const gridTemplateColumnsDistrict = section.districtHeaders.map(() => 'minmax(0, 1fr)').join(' ')
                     const sectionTermCount = section.endTermIndex - section.startTermIndex + 1
                     return (
                         <Fragment key={`reps_section_${columnIndex}_${section.startTermIndex}_${section.endTermIndex}`}>
@@ -140,7 +139,7 @@ function CongressionalRepresentativesTableRenderer(props: {
                                     }}
                                 >
                                     <div style={{ display: 'grid', gridTemplateColumns: gridTemplateColumnsDistrict, width: '100%', height: '100%' }}>
-                                        {districtHeaders.map((districtHeader, bucketIndex) => (
+                                        {section.districtHeaders.map((districtHeaderGroup, bucketIndex) => (
                                             <div
                                                 key={`district_header_${columnIndex}_${section.startTermIndex}_${bucketIndex}`}
                                                 className="serif value"
@@ -153,20 +152,25 @@ function CongressionalRepresentativesTableRenderer(props: {
                                                     height: '100%',
                                                     textAlign: 'center',
                                                     padding: '4px 6px',
-                                                    borderRight: bucketIndex === districtHeaders.length - 1 ? 'none' : `1px solid ${borderColor}`,
+                                                    borderRight: bucketIndex === section.districtHeaders.length - 1 ? 'none' : `1px solid ${borderColor}`,
                                                     lineHeight: 1.25,
                                                 }}
                                             >
-                                                {districtArticleHref(districtHeader) === undefined
-                                                    ? districtHeader
-                                                    : (
-                                                            <a
-                                                                href={districtArticleHref(districtHeader)}
-                                                                style={{ textDecoration: 'none', color: 'inherit' }}
-                                                            >
-                                                                {districtHeader}
-                                                            </a>
-                                                        )}
+                                                {districtHeaderGroup.map((districtHeader, headerIndex) => (
+                                                    <Fragment key={`district_header_text_${columnIndex}_${section.startTermIndex}_${bucketIndex}_${headerIndex}`}>
+                                                        {headerIndex > 0 && <br />}
+                                                        {districtArticleHref(districtHeader) === undefined
+                                                            ? districtHeader
+                                                            : (
+                                                                    <a
+                                                                        href={districtArticleHref(districtHeader)}
+                                                                        style={{ textDecoration: 'none', color: 'inherit' }}
+                                                                    >
+                                                                        {districtHeader}
+                                                                    </a>
+                                                                )}
+                                                    </Fragment>
+                                                ))}
                                             </div>
                                         ))}
                                     </div>

@@ -148,21 +148,21 @@ function computeCongressionalTableModel(input: {
         entriesByTerm.map(entries => districtBucketsForTerm(entries)),
     )
 
-    const headerStartByColumnAndTerm = districtBucketsByColumnAndTerm.map((bucketsByTerm) => {
+    const sectionStartByColumnAndTerm = districtBucketsByColumnAndTerm.map((bucketsByTerm) => {
         const starts = new Set<number>()
-        let previousDistrictSignature: string | null = null
+        let previousRepresentativeCountPattern: string | null = null
         bucketsByTerm.forEach((buckets, termIndex) => {
-            const signature = buckets.map(bucket => bucket.districtLabel).join('||')
-            if (termIndex === 0 || signature !== previousDistrictSignature) {
+            const representativeCountPattern = buckets.map(bucket => bucket.entries.length).join('|')
+            if (termIndex === 0 || representativeCountPattern !== previousRepresentativeCountPattern) {
                 starts.add(termIndex)
             }
-            previousDistrictSignature = signature
+            previousRepresentativeCountPattern = representativeCountPattern
         })
         return starts
     })
 
     const headerStartCountByTerm = new Map<number, number>()
-    headerStartByColumnAndTerm.forEach((starts) => {
+    sectionStartByColumnAndTerm.forEach((starts) => {
         starts.forEach((termIndex) => {
             headerStartCountByTerm.set(termIndex, (headerStartCountByTerm.get(termIndex) ?? 0) + 1)
         })
@@ -189,15 +189,13 @@ function computeCongressionalTableModel(input: {
     }
 
     const supercolumns: CongressionalSupercolumn[] = input.columns.map((column, columnIndex) => {
-        const sectionStarts = Array.from(headerStartByColumnAndTerm[columnIndex].values()).sort((a, b) => a - b)
+        const sectionStarts = Array.from(sectionStartByColumnAndTerm[columnIndex].values()).sort((a, b) => a - b)
         const sections: DistrictConfigurationSection[] = sectionStarts.map((startTermIndex, startIdx) => {
             const endTermIndex = startIdx === sectionStarts.length - 1
                 ? input.termsDescending.length - 1
                 : sectionStarts[startIdx + 1] - 1
             const sectionBucketsByTerm = districtBucketsByColumnAndTerm[columnIndex].slice(startTermIndex, endTermIndex + 1)
-            const districtHeaders = sectionBucketsByTerm[0].map(bucket => [bucket.districtLabel])
-
-            const congressionalRuns: CongressionalRunModel[] = districtHeaders.flat().map((district) => {
+            const buildRunForSection = (district?: string): CongressionalRunModel => {
                 const representativeOrder: string[] = []
                 const representativeById = new Map<string, CongressionalRepresentativeEntry['representative']>()
                 const termCountById = new Map<string, number>()
@@ -206,7 +204,9 @@ function computeCongressionalTableModel(input: {
                 sectionBucketsByTerm.forEach((bucketsForTerm, localTermIndex) => {
                     const absoluteTermIndex = startTermIndex + localTermIndex
                     const termStart = input.termsDescending[absoluteTermIndex]
-                    const entriesInDistrict = bucketsForTerm.find(bucket => bucket.districtLabel === district)?.entries ?? []
+                    const entriesInDistrict = district === undefined
+                        ? bucketsForTerm.flatMap(bucket => bucket.entries)
+                        : bucketsForTerm.find(bucket => bucket.districtLabel === district)?.entries ?? []
                     const uniqueIdsForTerm = new Set<string>()
 
                     entriesInDistrict.forEach((entry) => {
@@ -231,7 +231,25 @@ function computeCongressionalTableModel(input: {
                     termCounts: representativeOrder.map(id => termCountById.get(id) ?? 0),
                     termsByRepresentative: representativeOrder.map(id => termsById.get(id) ?? []),
                 }
-            })
+            }
+
+            const singleDistrictPerTerm = sectionBucketsByTerm.every(buckets => buckets.length === 1)
+            const districtHeaders = singleDistrictPerTerm
+                ? [
+                        sectionBucketsByTerm
+                            .map(buckets => buckets[0].districtLabel)
+                            .reduce<string[]>((acc, district) => {
+                                if (acc.length === 0 || acc[acc.length - 1] !== district) {
+                                    acc.push(district)
+                                }
+                                return acc
+                            }, []),
+                    ]
+                : sectionBucketsByTerm[0].map(bucket => [bucket.districtLabel])
+
+            const congressionalRuns: CongressionalRunModel[] = singleDistrictPerTerm
+                ? [buildRunForSection()]
+                : districtHeaders.map(headerGroup => buildRunForSection(headerGroup[0]))
 
             return {
                 startTermIndex,

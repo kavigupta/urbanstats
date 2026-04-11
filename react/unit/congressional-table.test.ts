@@ -182,3 +182,36 @@ void test('computeCongressionalWidgetModel keeps one section for the same repres
         ],
     })
 })
+
+void test('computeCongressionalWidgetModel keeps one section for serial district transitions by the same representative', () => {
+    const model = computeCongressionalWidgetModel([
+        {
+            longname: 'CA-06',
+            representatives: [
+                representative('James E. Rogan', 'CA-27 (1993), USA', 2001, 2005),
+                representative('James E. Rogan', 'CA-06 (1993), USA', 1993, 2001),
+            ],
+        },
+    ])
+
+    assert.deepEqual(model?.supercolumns[0].sections.length, 1)
+    assert.deepEqual(model?.supercolumns[0].sections[0].congressionalRuns.length, 1)
+    assert.deepEqual(model.supercolumns[0].sections[0].districtHeaders, [['CA-27 (1993), USA', 'CA-06 (1993), USA']])
+})
+
+void test('computeCongressionalWidgetModel creates a new section when representative multiplicity changes', () => {
+    const model = computeCongressionalWidgetModel([
+        {
+            longname: 'CA-06',
+            representatives: [
+                representative('James E. Rogan', 'CA-06 (1993), USA', 2001, 2005),
+                representative('Gary Condit', 'CA-06 (1993), USA', 1993, 2001),
+                representative('Carlos Moorhead', 'CA-06 (1993), USA', 1993, 2001),
+            ],
+        },
+    ])
+
+    assert.deepEqual(model?.supercolumns[0].sections.length, 2)
+    assert.deepEqual(model.supercolumns[0].sections.map(section => [section.startTermIndex, section.endTermIndex]), [[0, 1], [2, 5]])
+    assert.deepEqual(model.supercolumns[0].sections.map(section => section.districtHeaders), [[['CA-06 (1993), USA']], [['CA-06 (1993), USA']]])
+})
