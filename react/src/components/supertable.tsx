@@ -194,6 +194,8 @@ function SuperTableRow(props: {
     extraSpaceRight: number[]
     isHighlighted: boolean
 }): ReactNode {
+    const congressionalWidgetData = extractCongressionalWidgetData(props.cellSpecs)
+
     return (
         <div>
             {props.groupName !== undefined && (props.groupName !== props.prevGroupName) && (
@@ -219,6 +221,380 @@ function SuperTableRow(props: {
                     <RenderedPlot statDescription={props.plotSpec.statDescription} plotProps={props.plotSpec.plotProps} />
                 </div>
             )}
+            {congressionalWidgetData !== undefined && (
+                <CongressionalRepresentativesWidget
+                    widthLeftHeader={props.widthLeftHeader}
+                    columnWidth={props.columnWidth}
+                    extraSpaceRight={props.extraSpaceRight}
+                    termsDescending={congressionalWidgetData.termsDescending}
+                    columns={congressionalWidgetData.columns}
+                />
+            )}
+        </div>
+    )
+}
+
+interface CongressionalRepresentativeEntry {
+    representative: {
+        name?: string | null
+        wikipediaPage?: string | null
+        party?: string | null
+    }
+    districtLongname?: string
+    startTerm?: number
+    endTerm?: number
+}
+
+interface CongressionalColumnData {
+    longname: string
+    representatives: CongressionalRepresentativeEntry[]
+}
+
+function extractCongressionalWidgetData(cellSpecs: CellSpec[]): {
+    termsDescending: number[]
+    columns: CongressionalColumnData[]
+} | undefined {
+    const columns: CongressionalColumnData[] = []
+    const termStarts = new Set<number>()
+
+    for (const cell of cellSpecs) {
+        if (cell.type !== 'statistic-row') {
+            return undefined
+        }
+        if (cell.row.kind !== 'metadata') {
+            return undefined
+        }
+        if (typeof cell.row.statval === 'string') {
+            return undefined
+        }
+        const congressionalValue = cell.row.statval
+        columns.push({
+            longname: cell.longname,
+            representatives: congressionalValue.representatives,
+        })
+        congressionalValue.representatives.forEach((entry) => {
+            for (const termStart of termStartsForEntry(entry)) {
+                termStarts.add(termStart)
+            }
+        })
+    }
+
+    if (columns.length === 0 || termStarts.size === 0) {
+        return undefined
+    }
+
+    const termsDescending = Array.from(termStarts).sort((a, b) => b - a)
+    return { termsDescending, columns }
+}
+
+function termStartsForEntry(entry: CongressionalRepresentativeEntry): number[] {
+    const startTerm = entry.startTerm
+    if (startTerm === undefined) {
+        return []
+    }
+    const endTerm = entry.endTerm
+    if (endTerm === undefined || endTerm <= startTerm) {
+        return [startTerm]
+    }
+    const terms = []
+    for (let term = startTerm; term < endTerm; term += 2) {
+        terms.push(term)
+    }
+    return terms.length > 0 ? terms : [startTerm]
+}
+
+function entryCoversTerm(entry: CongressionalRepresentativeEntry, termStart: number): boolean {
+    const startTerm = entry.startTerm
+    if (startTerm === undefined) {
+        return false
+    }
+    const endTerm = entry.endTerm
+    if (endTerm === undefined || endTerm <= startTerm) {
+        return termStart === startTerm
+    }
+    return termStart >= startTerm && termStart < endTerm && (termStart - startTerm) % 2 === 0
+}
+
+function formatTermLabel(termStart: number): string {
+    return `${termStart}-${String(termStart + 2).slice(2)}`
+}
+
+function representativeIdentity(entry: CongressionalRepresentativeEntry): string {
+    return `${entry.representative.name ?? ''}|${entry.districtLongname ?? ''}|${entry.startTerm ?? ''}|${entry.endTerm ?? ''}`
+}
+
+function districtLabel(entry: CongressionalRepresentativeEntry): string {
+    return entry.districtLongname ?? 'District unknown'
+}
+
+interface DistrictBucketForTerm {
+    districtLabel: string
+    entries: CongressionalRepresentativeEntry[]
+    signature: string
+}
+
+function representativeSignature(entry: CongressionalRepresentativeEntry): string {
+    return `${entry.representative.name ?? ''}|${entry.representative.wikipediaPage ?? ''}|${entry.representative.party ?? ''}`
+}
+
+function districtBucketSignature(entries: CongressionalRepresentativeEntry[]): string {
+    return entries.map(entry => representativeSignature(entry)).sort((a, b) => a.localeCompare(b)).join('||')
+}
+
+function districtBucketsForTerm(entries: CongressionalRepresentativeEntry[]): DistrictBucketForTerm[] {
+    const byDistrict = new Map<string, CongressionalRepresentativeEntry[]>()
+    entries.forEach((entry) => {
+        const label = districtLabel(entry)
+        const existing = byDistrict.get(label)
+        if (existing === undefined) {
+            byDistrict.set(label, [entry])
+        }
+        else {
+            existing.push(entry)
+        }
+    })
+
+    if (byDistrict.size === 0) {
+        return [{ districtLabel: 'No district data', entries: [], signature: '' }]
+    }
+
+    return Array.from(byDistrict.entries())
+        .map(([label, entriesInDistrict]) => ({
+            districtLabel: label,
+            entries: entriesInDistrict,
+            signature: districtBucketSignature(entriesInDistrict),
+        }))
+        .sort((a, b) => {
+            if (a.signature !== b.signature) {
+                return a.signature.localeCompare(b.signature)
+            }
+            return a.districtLabel.localeCompare(b.districtLabel)
+        })
+}
+
+function termBucketsSignature(buckets: DistrictBucketForTerm[]): string {
+    return JSON.stringify(buckets.map(bucket => bucket.signature))
+}
+
+interface MergedRun {
+    startIndex: number
+    length: number
+    termSignature: string
+}
+
+function buildMergedRunsByRepresentativeLayout(bucketsByTerm: DistrictBucketForTerm[][]): MergedRun[] {
+    if (bucketsByTerm.length === 0) {
+        return []
+    }
+    const runs: MergedRun[] = []
+    let currentStart = 0
+    let currentLength = 1
+    let currentSignature = termBucketsSignature(bucketsByTerm[0])
+
+    for (let i = 1; i < bucketsByTerm.length; i += 1) {
+        const signature = termBucketsSignature(bucketsByTerm[i])
+        if (signature === currentSignature) {
+            currentLength += 1
+            continue
+        }
+        runs.push({ startIndex: currentStart, length: currentLength, termSignature: currentSignature })
+        currentStart = i
+        currentLength = 1
+        currentSignature = signature
+    }
+    runs.push({ startIndex: currentStart, length: currentLength, termSignature: currentSignature })
+    return runs
+}
+
+function CongressionalRepresentativesWidget(props: {
+    widthLeftHeader: number
+    columnWidth: number
+    extraSpaceRight: number[]
+    termsDescending: number[]
+    columns: CongressionalColumnData[]
+}): ReactNode {
+    const colors = useColors()
+    const borderColor = colors.textMain
+    const panelBackground = colors.slightlyDifferentBackground
+
+    const entriesForTerm = (column: CongressionalColumnData, termStart: number): CongressionalRepresentativeEntry[] => {
+        const seen = new Set<string>()
+        return column.representatives.filter((entry) => {
+            if (!entryCoversTerm(entry, termStart)) {
+                return false
+            }
+            const key = representativeIdentity(entry)
+            if (seen.has(key)) {
+                return false
+            }
+            seen.add(key)
+            return true
+        })
+    }
+
+    const partyAbbreviation = (party?: string | null): string => {
+        if (party === undefined || party === null || party === '' || party === 'Independent') {
+            return ''
+        }
+        return ` (${party.slice(0, 1)})`
+    }
+
+    const entriesByColumnAndTerm = props.columns.map(column =>
+        props.termsDescending.map(termStart => entriesForTerm(column, termStart)),
+    )
+
+    const districtBucketsByColumnAndTerm = entriesByColumnAndTerm.map(entriesByTerm =>
+        entriesByTerm.map(entries => districtBucketsForTerm(entries)),
+    )
+
+    const mergedRunsByColumn = districtBucketsByColumnAndTerm.map(bucketsByTerm =>
+        buildMergedRunsByRepresentativeLayout(bucketsByTerm),
+    )
+
+    const gridTemplateColumns = `${props.widthLeftHeader}% ${props.columns.map((_, i) => `${props.columnWidth + props.extraSpaceRight[i]}%`).join(' ')}`
+
+    return (
+        <div style={{ width: '100%', marginTop: '4px', marginBottom: '4px', borderTop: `1px solid ${borderColor}`, borderBottom: `1px solid ${borderColor}` }}>
+            <div style={{ display: 'grid', gridTemplateColumns, alignItems: 'stretch' }}>
+                <div
+                    style={{
+                        gridColumn: 1,
+                        gridRow: 1,
+                        padding: '6px 8px',
+                        textAlign: 'right',
+                        borderBottom: `1px solid ${borderColor}`,
+                        backgroundColor: panelBackground,
+                    }}
+                    className="serif value"
+                >
+                    Term
+                </div>
+                {props.columns.map((column, columnIndex) => (
+                    <div
+                        key={`reps_column_header_${columnIndex}`}
+                        style={{
+                            gridColumn: columnIndex + 2,
+                            gridRow: 1,
+                            padding: '6px 8px',
+                            textAlign: 'center',
+                            borderLeft: `1px solid ${borderColor}`,
+                            borderBottom: `1px solid ${borderColor}`,
+                            backgroundColor: panelBackground,
+                        }}
+                        className="serif value"
+                    >
+                        {column.longname}
+                    </div>
+                ))}
+
+                {props.termsDescending.map((termStart, termIndex) => (
+                    <div
+                        key={`reps_term_label_${termStart}`}
+                        style={{
+                            gridColumn: 1,
+                            gridRow: termIndex + 2,
+                            padding: '6px 8px',
+                            textAlign: 'right',
+                            borderBottom: termIndex === props.termsDescending.length - 1 ? 'none' : `1px solid ${borderColor}`,
+                        }}
+                        className="serif value"
+                    >
+                        {formatTermLabel(termStart)}
+                    </div>
+                ))}
+
+                {mergedRunsByColumn.map((runs, columnIndex) => runs.map((run) => {
+                    const runBucketsByTerm = districtBucketsByColumnAndTerm[columnIndex].slice(run.startIndex, run.startIndex + run.length)
+                    const baseBuckets = runBucketsByTerm[0]
+                    const gridTemplateColumnsDistrict = baseBuckets.map(() => 'minmax(0, 1fr)').join(' ')
+                    const headerLabelsByBucketIndex = baseBuckets.map((bucket, bucketIndex) => {
+                        const labels: string[] = []
+                        let currentLabel = runBucketsByTerm[0][bucketIndex]?.districtLabel ?? bucket.districtLabel
+
+                        for (let termOffset = 1; termOffset < run.length; termOffset += 1) {
+                            const termLabel = runBucketsByTerm[termOffset][bucketIndex]?.districtLabel ?? bucket.districtLabel
+                            if (termLabel === currentLabel) {
+                                continue
+                            }
+                            labels.push(currentLabel)
+                            currentLabel = termLabel
+                        }
+
+                        labels.push(currentLabel)
+                        return labels
+                    })
+
+                    return (
+                        <div
+                            key={`reps_run_${columnIndex}_${run.startIndex}_${run.termSignature}`}
+                            style={{
+                                gridColumn: columnIndex + 2,
+                                gridRow: `${run.startIndex + 2} / span ${run.length}`,
+                                padding: '0',
+                                borderLeft: `1px solid ${borderColor}`,
+                                borderBottom: run.startIndex + run.length >= props.termsDescending.length ? 'none' : `1px solid ${borderColor}`,
+                                minHeight: `calc(2.1em * ${run.length})`,
+                                display: 'flex',
+                                flexDirection: 'column',
+                            }}
+                        >
+                            <div style={{ display: 'grid', gridTemplateColumns: gridTemplateColumnsDistrict, borderBottom: `1px solid ${borderColor}`, backgroundColor: colors.background }}>
+                                {baseBuckets.map((bucket, bucketIndex) => (
+                                    <div
+                                        key={`district_run_header_${columnIndex}_${run.startIndex}_${bucketIndex}`}
+                                        className="serif value"
+                                        style={{
+                                            fontSize: '0.9em',
+                                            textAlign: 'center',
+                                            padding: '4px 6px',
+                                            borderRight: bucketIndex === baseBuckets.length - 1 ? 'none' : `1px solid ${borderColor}`,
+                                            lineHeight: 1.25,
+                                        }}
+                                    >
+                                        {headerLabelsByBucketIndex[bucketIndex].map((label, labelIdx) => (
+                                            <div key={`district_run_header_label_${columnIndex}_${run.startIndex}_${bucketIndex}_${labelIdx}`}>{label}</div>
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: gridTemplateColumnsDistrict, flex: 1 }}>
+                                {baseBuckets.map((bucket, bucketIndex) => (
+                                    <div
+                                        key={`district_run_cell_${columnIndex}_${run.startIndex}_${bucketIndex}`}
+                                        style={{
+                                            padding: '6px 8px',
+                                            textAlign: 'center',
+                                            borderRight: bucketIndex === baseBuckets.length - 1 ? 'none' : `1px solid ${borderColor}`,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}
+                                    >
+                                        {bucket.entries.length === 0
+                                            ? <span className="serif value" style={{ opacity: 0.65 }}>-</span>
+                                            : (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                        {bucket.entries.map((entry, entryIndex) => (
+                                                            <span key={`run_rep_${columnIndex}_${run.startIndex}_${bucketIndex}_${entryIndex}`} className="serif value" style={{ textAlign: 'center' }}>
+                                                                {entry.representative.wikipediaPage !== undefined && entry.representative.wikipediaPage !== null
+                                                                    ? (
+                                                                            <a href={entry.representative.wikipediaPage} style={{ textDecoration: 'none', color: 'inherit' }} target="_blank" rel="noopener noreferrer">
+                                                                                {entry.representative.name ?? ''}
+                                                                            </a>
+                                                                        )
+                                                                    : (entry.representative.name ?? '')}
+                                                                {partyAbbreviation(entry.representative.party)}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )
+                }))}
+            </div>
         </div>
     )
 }

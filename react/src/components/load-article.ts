@@ -43,6 +43,8 @@ export type MetadataStatValue = (
         representatives: {
             representative: ICongressionalRepresentative
             districtLongname?: string
+            startTerm?: number
+            endTerm?: number
         }[]
     }
 )
@@ -167,6 +169,8 @@ function metadataValueFromProto(
                     return {
                         representative,
                         districtLongname: districtLongnameForPointer(ptr, representative),
+                        startTerm: ptr.startTerm ?? undefined,
+                        endTerm: ptr.endTerm ?? undefined,
                     }
                 }),
             }

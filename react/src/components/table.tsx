@@ -2,7 +2,6 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
-import partyPages from '../data/party_pages'
 import { ArticleOrderingListInternal, loadOrdering } from '../load_json'
 import './table.css'
 import { Navigator } from '../navigation/Navigator'
@@ -12,7 +11,6 @@ import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '
 import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { sanitize } from '../utils/paths'
-import { ICongressionalRepresentative } from '../utils/protos'
 import { useComparisonHeadStyle, useMobileLayout } from '../utils/responsive'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 import { displayType } from '../utils/text'
@@ -463,19 +461,7 @@ export function StatisticRowCells(props: {
                 if (typeof statval === 'string') {
                     return <span className="serif value testing-statistic-value">{statval}</span>
                 }
-                const representatives = statval.representatives
-                return (
-                    <span className="serif value testing-statistic-value" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        {representatives.map((representativeEntry, index) => (
-                            <span key={index}>
-                                <Representative
-                                    representative={representativeEntry.representative}
-                                    districtLongname={representativeEntry.districtLongname}
-                                />
-                            </span>
-                        ))}
-                    </span>
-                )
+                return <span className="serif value testing-statistic-value">See term table below</span>
             },
             style: { textAlign: 'center' },
         })
@@ -568,47 +554,6 @@ export function StatisticRowCells(props: {
             />
             <div style={{ width: `${props.extraSpaceRight}%` }} />
         </>
-    )
-}
-
-function getPartyPage(party: string): (typeof partyPages)[keyof typeof partyPages] {
-    assert(party in partyPages, `Party ${party} not found in partyPages data`)
-    return partyPages[party as keyof typeof partyPages]
-}
-
-function RepresentativeParty(props: { party?: string }): ReactNode {
-    const colors = useColors()
-    if (!props.party || props.party === 'Independent') {
-        return null
-    }
-    const partyPage = getPartyPage(props.party)
-    // eslint-disable-next-line no-restricted-syntax -- not acutal colors, just remapping
-    const colorStr = partyPage.party_color === 'black' || partyPage.party_color === 'gray' ? 'grey' : partyPage.party_color
-    const color = colors.hueColors[colorStr]
-
-    return (
-        <a href={partyPage.wikipedia_page} style={{ textDecoration: 'none', color }} target="_blank" rel="noopener noreferrer">
-            {` (${props.party.slice(0, 1)})`}
-        </a>
-    )
-}
-
-function Representative(props: { representative: ICongressionalRepresentative, districtLongname?: string }): ReactNode {
-    assert(
-        props.representative.wikipediaPage !== null
-        && props.representative.wikipediaPage !== undefined
-        && props.representative.name !== null
-        && props.representative.name !== undefined,
-        `Representative ${JSON.stringify(props.representative)} is missing required fields`,
-    )
-    return (
-        <span>
-            <a href={props.representative.wikipediaPage} style={{ textDecoration: 'none', color: 'inherit' }} target="_blank" rel="noopener noreferrer">
-                {props.representative.name}
-            </a>
-            <RepresentativeParty party={props.representative.party ?? undefined} />
-            {props.districtLongname ? ` - ${props.districtLongname}` : ''}
-        </span>
     )
 }
 
