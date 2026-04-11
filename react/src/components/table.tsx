@@ -466,9 +466,12 @@ export function StatisticRowCells(props: {
                 const representatives = statval.representatives
                 return (
                     <span className="serif value testing-statistic-value" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        {representatives.map((representative, index) => (
+                        {representatives.map((representativeEntry, index) => (
                             <span key={index}>
-                                <Representative representative={representative} />
+                                <Representative
+                                    representative={representativeEntry.representative}
+                                    districtLongname={representativeEntry.districtLongname}
+                                />
                             </span>
                         ))}
                     </span>
@@ -590,7 +593,7 @@ function RepresentativeParty(props: { party?: string }): ReactNode {
     )
 }
 
-function Representative(props: { representative: ICongressionalRepresentative }): ReactNode {
+function Representative(props: { representative: ICongressionalRepresentative, districtLongname?: string }): ReactNode {
     assert(
         props.representative.wikipediaPage !== null
         && props.representative.wikipediaPage !== undefined
@@ -604,6 +607,7 @@ function Representative(props: { representative: ICongressionalRepresentative })
                 {props.representative.name}
             </a>
             <RepresentativeParty party={props.representative.party ?? undefined} />
+            {props.districtLongname ? ` - ${props.districtLongname}` : ''}
         </span>
     )
 }

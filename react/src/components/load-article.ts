@@ -9,7 +9,7 @@ import { loadProtobuf } from '../load_json'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { assert } from '../utils/defensive'
-import { Article, CongressionalRepresentativeTable, ICongressionalRepresentative, IFirstOrLast, IMetadata } from '../utils/protos'
+import { Article, CongressionalRepresentativeTable, ICongressionalRepresentative, ICongressionalRepresentativePointer, IFirstOrLast, IMetadata } from '../utils/protos'
 import { UnitType } from '../utils/unit'
 
 import { CountsByUT, forType } from './countsByArticleType'
@@ -38,7 +38,13 @@ export interface FirstLastStatus { isFirst: boolean, isLast: boolean }
 
 export type MetadataStatValue = (
     string
-    | { kind: 'congressional', representatives: ICongressionalRepresentative[] }
+    | {
+        kind: 'congressional'
+        representatives: {
+            representative: ICongressionalRepresentative
+            districtLongname?: string
+        }[]
+    }
 )
 
 export interface ArticleStatisticRow {
@@ -136,9 +142,33 @@ function metadataValueFromProto(
             if (representativeIndices.length === 0) {
                 return undefined
             }
+
+            const districtLongnameForPointer = (
+                pointer: ICongressionalRepresentativePointer,
+                representative: ICongressionalRepresentative,
+            ): string | undefined => {
+                const termIn = (representative.termIn ?? []) as { startYear?: number | null, districtIdx?: number | null }[]
+                const pointerStartTerm = pointer.startTerm
+                const matchingTerm = pointerStartTerm !== undefined && pointerStartTerm !== null
+                    ? termIn.find(term => term.startYear === pointerStartTerm)
+                    : termIn[0]
+                const districtIdx = matchingTerm?.districtIdx
+                if (districtIdx === undefined || districtIdx === null) {
+                    return undefined
+                }
+                const districts = representativeTable.districts as { longname?: string | null }[]
+                return districts[districtIdx]?.longname ?? undefined
+            }
+
             return {
                 kind: 'congressional',
-                representatives: representativeIndices.map(ptr => representativeTable.representatives[ptr.representativeIdx!]),
+                representatives: representativeIndices.map((ptr) => {
+                    const representative = representativeTable.representatives[ptr.representativeIdx!]
+                    return {
+                        representative,
+                        districtLongname: districtLongnameForPointer(ptr, representative),
+                    }
+                }),
             }
         }
         default:
