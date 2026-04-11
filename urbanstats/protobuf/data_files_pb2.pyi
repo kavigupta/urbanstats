@@ -100,44 +100,58 @@ class TemperatureHistogram(_message.Message):
     def __init__(self, counts: _Optional[_Iterable[int]] = ...) -> None: ...
 
 class CongressionalRepresentative(_message.Message):
-    __slots__ = ("name", "wikipedia_page", "party")
+    __slots__ = ("name", "wikipedia_page", "party", "term_in")
     NAME_FIELD_NUMBER: _ClassVar[int]
     WIKIPEDIA_PAGE_FIELD_NUMBER: _ClassVar[int]
     PARTY_FIELD_NUMBER: _ClassVar[int]
+    TERM_IN_FIELD_NUMBER: _ClassVar[int]
     name: str
     wikipedia_page: str
     party: str
+    term_in: _containers.RepeatedCompositeFieldContainer[TermIn]
     def __init__(
         self,
         name: _Optional[str] = ...,
         wikipedia_page: _Optional[str] = ...,
         party: _Optional[str] = ...,
+        term_in: _Optional[_Iterable[_Union[TermIn, _Mapping]]] = ...,
     ) -> None: ...
 
-class CongressionalRepresentatives(_message.Message):
-    __slots__ = ("representatives",)
-    REPRESENTATIVES_FIELD_NUMBER: _ClassVar[int]
-    representatives: _containers.RepeatedCompositeFieldContainer[
-        CongressionalRepresentative
-    ]
+class TermIn(_message.Message):
+    __slots__ = ("start_year", "end_year", "district_idx")
+    START_YEAR_FIELD_NUMBER: _ClassVar[int]
+    END_YEAR_FIELD_NUMBER: _ClassVar[int]
+    DISTRICT_IDX_FIELD_NUMBER: _ClassVar[int]
+    start_year: int
+    end_year: int
+    district_idx: int
     def __init__(
         self,
-        representatives: _Optional[
-            _Iterable[_Union[CongressionalRepresentative, _Mapping]]
-        ] = ...,
+        start_year: _Optional[int] = ...,
+        end_year: _Optional[int] = ...,
+        district_idx: _Optional[int] = ...,
     ) -> None: ...
+
+class CongressionalDistrict(_message.Message):
+    __slots__ = ("longname",)
+    LONGNAME_FIELD_NUMBER: _ClassVar[int]
+    longname: str
+    def __init__(self, longname: _Optional[str] = ...) -> None: ...
 
 class CongressionalRepresentativeTable(_message.Message):
-    __slots__ = ("representatives",)
+    __slots__ = ("representatives", "districts")
     REPRESENTATIVES_FIELD_NUMBER: _ClassVar[int]
+    DISTRICTS_FIELD_NUMBER: _ClassVar[int]
     representatives: _containers.RepeatedCompositeFieldContainer[
         CongressionalRepresentative
     ]
+    districts: _containers.RepeatedCompositeFieldContainer[CongressionalDistrict]
     def __init__(
         self,
         representatives: _Optional[
             _Iterable[_Union[CongressionalRepresentative, _Mapping]]
         ] = ...,
+        districts: _Optional[_Iterable[_Union[CongressionalDistrict, _Mapping]]] = ...,
     ) -> None: ...
 
 class ExtraStatistic(_message.Message):

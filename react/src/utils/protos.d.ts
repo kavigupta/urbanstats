@@ -744,6 +744,9 @@ export interface ICongressionalRepresentative {
 
     /** CongressionalRepresentative party */
     party?: (string|null);
+
+    /** CongressionalRepresentative termIn */
+    termIn?: (ITermIn[]|null);
 }
 
 /** Represents a CongressionalRepresentative. */
@@ -763,6 +766,9 @@ export class CongressionalRepresentative implements ICongressionalRepresentative
 
     /** CongressionalRepresentative party. */
     public party?: (string|null);
+
+    /** CongressionalRepresentative termIn. */
+    public termIn: ITermIn[];
 
     /** CongressionalRepresentative _wikipediaPage. */
     public _wikipediaPage?: "wikipediaPage";
@@ -848,97 +854,206 @@ export class CongressionalRepresentative implements ICongressionalRepresentative
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
-/** Properties of a CongressionalRepresentatives. */
-export interface ICongressionalRepresentatives {
+/** Properties of a TermIn. */
+export interface ITermIn {
 
-    /** CongressionalRepresentatives representatives */
-    representatives?: (ICongressionalRepresentative[]|null);
+    /** TermIn startYear */
+    startYear?: (number|null);
+
+    /** TermIn endYear */
+    endYear?: (number|null);
+
+    /** TermIn districtIdx */
+    districtIdx?: (number|null);
 }
 
-/** Represents a CongressionalRepresentatives. */
-export class CongressionalRepresentatives implements ICongressionalRepresentatives {
+/** Represents a TermIn. */
+export class TermIn implements ITermIn {
 
     /**
-     * Constructs a new CongressionalRepresentatives.
+     * Constructs a new TermIn.
      * @param [properties] Properties to set
      */
-    constructor(properties?: ICongressionalRepresentatives);
+    constructor(properties?: ITermIn);
 
-    /** CongressionalRepresentatives representatives. */
-    public representatives: ICongressionalRepresentative[];
+    /** TermIn startYear. */
+    public startYear: number;
+
+    /** TermIn endYear. */
+    public endYear: number;
+
+    /** TermIn districtIdx. */
+    public districtIdx: number;
 
     /**
-     * Creates a new CongressionalRepresentatives instance using the specified properties.
+     * Creates a new TermIn instance using the specified properties.
      * @param [properties] Properties to set
-     * @returns CongressionalRepresentatives instance
+     * @returns TermIn instance
      */
-    public static create(properties?: ICongressionalRepresentatives): CongressionalRepresentatives;
+    public static create(properties?: ITermIn): TermIn;
 
     /**
-     * Encodes the specified CongressionalRepresentatives message. Does not implicitly {@link CongressionalRepresentatives.verify|verify} messages.
-     * @param message CongressionalRepresentatives message or plain object to encode
+     * Encodes the specified TermIn message. Does not implicitly {@link TermIn.verify|verify} messages.
+     * @param message TermIn message or plain object to encode
      * @param [writer] Writer to encode to
      * @returns Writer
      */
-    public static encode(message: ICongressionalRepresentatives, writer?: $protobuf.Writer): $protobuf.Writer;
+    public static encode(message: ITermIn, writer?: $protobuf.Writer): $protobuf.Writer;
 
     /**
-     * Encodes the specified CongressionalRepresentatives message, length delimited. Does not implicitly {@link CongressionalRepresentatives.verify|verify} messages.
-     * @param message CongressionalRepresentatives message or plain object to encode
+     * Encodes the specified TermIn message, length delimited. Does not implicitly {@link TermIn.verify|verify} messages.
+     * @param message TermIn message or plain object to encode
      * @param [writer] Writer to encode to
      * @returns Writer
      */
-    public static encodeDelimited(message: ICongressionalRepresentatives, writer?: $protobuf.Writer): $protobuf.Writer;
+    public static encodeDelimited(message: ITermIn, writer?: $protobuf.Writer): $protobuf.Writer;
 
     /**
-     * Decodes a CongressionalRepresentatives message from the specified reader or buffer.
+     * Decodes a TermIn message from the specified reader or buffer.
      * @param reader Reader or buffer to decode from
      * @param [length] Message length if known beforehand
-     * @returns CongressionalRepresentatives
+     * @returns TermIn
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): CongressionalRepresentatives;
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): TermIn;
 
     /**
-     * Decodes a CongressionalRepresentatives message from the specified reader or buffer, length delimited.
+     * Decodes a TermIn message from the specified reader or buffer, length delimited.
      * @param reader Reader or buffer to decode from
-     * @returns CongressionalRepresentatives
+     * @returns TermIn
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): CongressionalRepresentatives;
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): TermIn;
 
     /**
-     * Verifies a CongressionalRepresentatives message.
+     * Verifies a TermIn message.
      * @param message Plain object to verify
      * @returns `null` if valid, otherwise the reason why it is not
      */
     public static verify(message: { [k: string]: any }): (string|null);
 
     /**
-     * Creates a CongressionalRepresentatives message from a plain object. Also converts values to their respective internal types.
+     * Creates a TermIn message from a plain object. Also converts values to their respective internal types.
      * @param object Plain object
-     * @returns CongressionalRepresentatives
+     * @returns TermIn
      */
-    public static fromObject(object: { [k: string]: any }): CongressionalRepresentatives;
+    public static fromObject(object: { [k: string]: any }): TermIn;
 
     /**
-     * Creates a plain object from a CongressionalRepresentatives message. Also converts values to other types if specified.
-     * @param message CongressionalRepresentatives
+     * Creates a plain object from a TermIn message. Also converts values to other types if specified.
+     * @param message TermIn
      * @param [options] Conversion options
      * @returns Plain object
      */
-    public static toObject(message: CongressionalRepresentatives, options?: $protobuf.IConversionOptions): { [k: string]: any };
+    public static toObject(message: TermIn, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
     /**
-     * Converts this CongressionalRepresentatives to JSON.
+     * Converts this TermIn to JSON.
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
 
     /**
-     * Gets the default type url for CongressionalRepresentatives
+     * Gets the default type url for TermIn
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a CongressionalDistrict. */
+export interface ICongressionalDistrict {
+
+    /** CongressionalDistrict longname */
+    longname?: (string|null);
+}
+
+/** Represents a CongressionalDistrict. */
+export class CongressionalDistrict implements ICongressionalDistrict {
+
+    /**
+     * Constructs a new CongressionalDistrict.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: ICongressionalDistrict);
+
+    /** CongressionalDistrict longname. */
+    public longname: string;
+
+    /**
+     * Creates a new CongressionalDistrict instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns CongressionalDistrict instance
+     */
+    public static create(properties?: ICongressionalDistrict): CongressionalDistrict;
+
+    /**
+     * Encodes the specified CongressionalDistrict message. Does not implicitly {@link CongressionalDistrict.verify|verify} messages.
+     * @param message CongressionalDistrict message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: ICongressionalDistrict, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified CongressionalDistrict message, length delimited. Does not implicitly {@link CongressionalDistrict.verify|verify} messages.
+     * @param message CongressionalDistrict message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: ICongressionalDistrict, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a CongressionalDistrict message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns CongressionalDistrict
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): CongressionalDistrict;
+
+    /**
+     * Decodes a CongressionalDistrict message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns CongressionalDistrict
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): CongressionalDistrict;
+
+    /**
+     * Verifies a CongressionalDistrict message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a CongressionalDistrict message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns CongressionalDistrict
+     */
+    public static fromObject(object: { [k: string]: any }): CongressionalDistrict;
+
+    /**
+     * Creates a plain object from a CongressionalDistrict message. Also converts values to other types if specified.
+     * @param message CongressionalDistrict
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: CongressionalDistrict, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this CongressionalDistrict to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for CongressionalDistrict
      * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
      * @returns The default type url
      */
@@ -950,6 +1065,9 @@ export interface ICongressionalRepresentativeTable {
 
     /** CongressionalRepresentativeTable representatives */
     representatives?: (ICongressionalRepresentative[]|null);
+
+    /** CongressionalRepresentativeTable districts */
+    districts?: (ICongressionalDistrict[]|null);
 }
 
 /** Represents a CongressionalRepresentativeTable. */
@@ -963,6 +1081,9 @@ export class CongressionalRepresentativeTable implements ICongressionalRepresent
 
     /** CongressionalRepresentativeTable representatives. */
     public representatives: ICongressionalRepresentative[];
+
+    /** CongressionalRepresentativeTable districts. */
+    public districts: ICongressionalDistrict[];
 
     /**
      * Creates a new CongressionalRepresentativeTable instance using the specified properties.
