@@ -492,8 +492,6 @@ function CongressionalRepresentativesWidget(props: {
         buildMergedRunsByRepresentativeLayout(bucketsByTerm),
     )
 
-    // District subheaders render at the top of each merged run. Mirror that
-    // structure in the term column with a small spacer on run starts.
     const runStartTermIndices = new Set<number>()
     mergedRunsByColumn.forEach((runs) => {
         runs.forEach((run) => {
@@ -584,23 +582,6 @@ function CongressionalRepresentativesWidget(props: {
                     const runEndTermIndex = run.startIndex + run.length - 1
                     const contentEndDisplayIndex = termLabelDisplayRowByTerm.get(runEndTermIndex) ?? contentStartDisplayIndex
 
-                    const headerLabelsByBucketIndex = baseBuckets.map((bucket, bucketIndex) => {
-                        const labels: string[] = []
-                        let currentLabel = runBucketsByTerm[0][bucketIndex]?.districtLabel ?? bucket.districtLabel
-
-                        for (let termOffset = 1; termOffset < run.length; termOffset += 1) {
-                            const termLabel = runBucketsByTerm[termOffset][bucketIndex]?.districtLabel ?? bucket.districtLabel
-                            if (termLabel === currentLabel) {
-                                continue
-                            }
-                            labels.push(currentLabel)
-                            currentLabel = termLabel
-                        }
-
-                        labels.push(currentLabel)
-                        return labels
-                    })
-
                     return (
                         <Fragment key={`reps_run_${columnIndex}_${run.startIndex}_${run.termSignature}`}>
                             {headerDisplayIndex !== undefined && (
@@ -632,20 +613,16 @@ function CongressionalRepresentativesWidget(props: {
                                                     lineHeight: 1.25,
                                                 }}
                                             >
-                                                {headerLabelsByBucketIndex[bucketIndex].map((label, labelIdx) => (
-                                                    <div key={`district_header_label_${columnIndex}_${run.startIndex}_${bucketIndex}_${labelIdx}`}>
-                                                        {districtArticleHref(label) === undefined
-                                                            ? label
-                                                            : (
-                                                                    <a
-                                                                        href={districtArticleHref(label)}
-                                                                        style={{ textDecoration: 'none', color: 'inherit' }}
-                                                                    >
-                                                                        {label}
-                                                                    </a>
-                                                                )}
-                                                    </div>
-                                                ))}
+                                                {districtArticleHref(bucket.districtLabel) === undefined
+                                                    ? bucket.districtLabel
+                                                    : (
+                                                            <a
+                                                                href={districtArticleHref(bucket.districtLabel)}
+                                                                style={{ textDecoration: 'none', color: 'inherit' }}
+                                                            >
+                                                                {bucket.districtLabel}
+                                                            </a>
+                                                        )}
                                             </div>
                                         ))}
                                     </div>
