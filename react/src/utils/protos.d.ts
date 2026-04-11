@@ -1160,6 +1160,115 @@ export class ExtraStatistic implements IExtraStatistic {
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
+/** Properties of a CongressionalRepresentativePointer. */
+export interface ICongressionalRepresentativePointer {
+
+    /** CongressionalRepresentativePointer representativeIdx */
+    representativeIdx?: (number|null);
+
+    /** CongressionalRepresentativePointer startTerm */
+    startTerm?: (number|null);
+
+    /** CongressionalRepresentativePointer endTerm */
+    endTerm?: (number|null);
+}
+
+/** Represents a CongressionalRepresentativePointer. */
+export class CongressionalRepresentativePointer implements ICongressionalRepresentativePointer {
+
+    /**
+     * Constructs a new CongressionalRepresentativePointer.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: ICongressionalRepresentativePointer);
+
+    /** CongressionalRepresentativePointer representativeIdx. */
+    public representativeIdx: number;
+
+    /** CongressionalRepresentativePointer startTerm. */
+    public startTerm: number;
+
+    /** CongressionalRepresentativePointer endTerm. */
+    public endTerm: number;
+
+    /**
+     * Creates a new CongressionalRepresentativePointer instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns CongressionalRepresentativePointer instance
+     */
+    public static create(properties?: ICongressionalRepresentativePointer): CongressionalRepresentativePointer;
+
+    /**
+     * Encodes the specified CongressionalRepresentativePointer message. Does not implicitly {@link CongressionalRepresentativePointer.verify|verify} messages.
+     * @param message CongressionalRepresentativePointer message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: ICongressionalRepresentativePointer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified CongressionalRepresentativePointer message, length delimited. Does not implicitly {@link CongressionalRepresentativePointer.verify|verify} messages.
+     * @param message CongressionalRepresentativePointer message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: ICongressionalRepresentativePointer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a CongressionalRepresentativePointer message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns CongressionalRepresentativePointer
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): CongressionalRepresentativePointer;
+
+    /**
+     * Decodes a CongressionalRepresentativePointer message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns CongressionalRepresentativePointer
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): CongressionalRepresentativePointer;
+
+    /**
+     * Verifies a CongressionalRepresentativePointer message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a CongressionalRepresentativePointer message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns CongressionalRepresentativePointer
+     */
+    public static fromObject(object: { [k: string]: any }): CongressionalRepresentativePointer;
+
+    /**
+     * Creates a plain object from a CongressionalRepresentativePointer message. Also converts values to other types if specified.
+     * @param message CongressionalRepresentativePointer
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: CongressionalRepresentativePointer, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this CongressionalRepresentativePointer to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for CongressionalRepresentativePointer
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
 /** Properties of a Metadata. */
 export interface IMetadata {
 
@@ -1170,7 +1279,7 @@ export interface IMetadata {
     stringValue?: (string|null);
 
     /** Metadata congressionalRepresentatives */
-    congressionalRepresentatives?: (number[]|null);
+    congressionalRepresentatives?: (ICongressionalRepresentativePointer[]|null);
 }
 
 /** Represents a Metadata. */
@@ -1189,7 +1298,7 @@ export class Metadata implements IMetadata {
     public stringValue?: (string|null);
 
     /** Metadata congressionalRepresentatives. */
-    public congressionalRepresentatives: number[];
+    public congressionalRepresentatives: ICongressionalRepresentativePointer[];
 
     /** Metadata _stringValue. */
     public _stringValue?: "stringValue";

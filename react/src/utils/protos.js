@@ -2829,6 +2829,256 @@ export const ExtraStatistic = $root.ExtraStatistic = (() => {
     return ExtraStatistic;
 })();
 
+export const CongressionalRepresentativePointer = $root.CongressionalRepresentativePointer = (() => {
+
+    /**
+     * Properties of a CongressionalRepresentativePointer.
+     * @exports ICongressionalRepresentativePointer
+     * @interface ICongressionalRepresentativePointer
+     * @property {number|null} [representativeIdx] CongressionalRepresentativePointer representativeIdx
+     * @property {number|null} [startTerm] CongressionalRepresentativePointer startTerm
+     * @property {number|null} [endTerm] CongressionalRepresentativePointer endTerm
+     */
+
+    /**
+     * Constructs a new CongressionalRepresentativePointer.
+     * @exports CongressionalRepresentativePointer
+     * @classdesc Represents a CongressionalRepresentativePointer.
+     * @implements ICongressionalRepresentativePointer
+     * @constructor
+     * @param {ICongressionalRepresentativePointer=} [properties] Properties to set
+     */
+    function CongressionalRepresentativePointer(properties) {
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * CongressionalRepresentativePointer representativeIdx.
+     * @member {number} representativeIdx
+     * @memberof CongressionalRepresentativePointer
+     * @instance
+     */
+    CongressionalRepresentativePointer.prototype.representativeIdx = 0;
+
+    /**
+     * CongressionalRepresentativePointer startTerm.
+     * @member {number} startTerm
+     * @memberof CongressionalRepresentativePointer
+     * @instance
+     */
+    CongressionalRepresentativePointer.prototype.startTerm = 0;
+
+    /**
+     * CongressionalRepresentativePointer endTerm.
+     * @member {number} endTerm
+     * @memberof CongressionalRepresentativePointer
+     * @instance
+     */
+    CongressionalRepresentativePointer.prototype.endTerm = 0;
+
+    /**
+     * Creates a new CongressionalRepresentativePointer instance using the specified properties.
+     * @function create
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {ICongressionalRepresentativePointer=} [properties] Properties to set
+     * @returns {CongressionalRepresentativePointer} CongressionalRepresentativePointer instance
+     */
+    CongressionalRepresentativePointer.create = function create(properties) {
+        return new CongressionalRepresentativePointer(properties);
+    };
+
+    /**
+     * Encodes the specified CongressionalRepresentativePointer message. Does not implicitly {@link CongressionalRepresentativePointer.verify|verify} messages.
+     * @function encode
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {ICongressionalRepresentativePointer} message CongressionalRepresentativePointer message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CongressionalRepresentativePointer.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.representativeIdx != null && Object.hasOwnProperty.call(message, "representativeIdx"))
+            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.representativeIdx);
+        if (message.startTerm != null && Object.hasOwnProperty.call(message, "startTerm"))
+            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.startTerm);
+        if (message.endTerm != null && Object.hasOwnProperty.call(message, "endTerm"))
+            writer.uint32(/* id 3, wireType 0 =*/24).int32(message.endTerm);
+        return writer;
+    };
+
+    /**
+     * Encodes the specified CongressionalRepresentativePointer message, length delimited. Does not implicitly {@link CongressionalRepresentativePointer.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {ICongressionalRepresentativePointer} message CongressionalRepresentativePointer message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CongressionalRepresentativePointer.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a CongressionalRepresentativePointer message from the specified reader or buffer.
+     * @function decode
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {CongressionalRepresentativePointer} CongressionalRepresentativePointer
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CongressionalRepresentativePointer.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.CongressionalRepresentativePointer();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.representativeIdx = reader.int32();
+                    break;
+                }
+            case 2: {
+                    message.startTerm = reader.int32();
+                    break;
+                }
+            case 3: {
+                    message.endTerm = reader.int32();
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a CongressionalRepresentativePointer message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {CongressionalRepresentativePointer} CongressionalRepresentativePointer
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CongressionalRepresentativePointer.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a CongressionalRepresentativePointer message.
+     * @function verify
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    CongressionalRepresentativePointer.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.representativeIdx != null && message.hasOwnProperty("representativeIdx"))
+            if (!$util.isInteger(message.representativeIdx))
+                return "representativeIdx: integer expected";
+        if (message.startTerm != null && message.hasOwnProperty("startTerm"))
+            if (!$util.isInteger(message.startTerm))
+                return "startTerm: integer expected";
+        if (message.endTerm != null && message.hasOwnProperty("endTerm"))
+            if (!$util.isInteger(message.endTerm))
+                return "endTerm: integer expected";
+        return null;
+    };
+
+    /**
+     * Creates a CongressionalRepresentativePointer message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {CongressionalRepresentativePointer} CongressionalRepresentativePointer
+     */
+    CongressionalRepresentativePointer.fromObject = function fromObject(object) {
+        if (object instanceof $root.CongressionalRepresentativePointer)
+            return object;
+        let message = new $root.CongressionalRepresentativePointer();
+        if (object.representativeIdx != null)
+            message.representativeIdx = object.representativeIdx | 0;
+        if (object.startTerm != null)
+            message.startTerm = object.startTerm | 0;
+        if (object.endTerm != null)
+            message.endTerm = object.endTerm | 0;
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a CongressionalRepresentativePointer message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {CongressionalRepresentativePointer} message CongressionalRepresentativePointer
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    CongressionalRepresentativePointer.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.defaults) {
+            object.representativeIdx = 0;
+            object.startTerm = 0;
+            object.endTerm = 0;
+        }
+        if (message.representativeIdx != null && message.hasOwnProperty("representativeIdx"))
+            object.representativeIdx = message.representativeIdx;
+        if (message.startTerm != null && message.hasOwnProperty("startTerm"))
+            object.startTerm = message.startTerm;
+        if (message.endTerm != null && message.hasOwnProperty("endTerm"))
+            object.endTerm = message.endTerm;
+        return object;
+    };
+
+    /**
+     * Converts this CongressionalRepresentativePointer to JSON.
+     * @function toJSON
+     * @memberof CongressionalRepresentativePointer
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    CongressionalRepresentativePointer.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for CongressionalRepresentativePointer
+     * @function getTypeUrl
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    CongressionalRepresentativePointer.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/CongressionalRepresentativePointer";
+    };
+
+    return CongressionalRepresentativePointer;
+})();
+
 export const Metadata = $root.Metadata = (() => {
 
     /**
@@ -2837,7 +3087,7 @@ export const Metadata = $root.Metadata = (() => {
      * @interface IMetadata
      * @property {number|null} [metadataIndex] Metadata metadataIndex
      * @property {string|null} [stringValue] Metadata stringValue
-     * @property {Array.<number>|null} [congressionalRepresentatives] Metadata congressionalRepresentatives
+     * @property {Array.<ICongressionalRepresentativePointer>|null} [congressionalRepresentatives] Metadata congressionalRepresentatives
      */
 
     /**
@@ -2874,7 +3124,7 @@ export const Metadata = $root.Metadata = (() => {
 
     /**
      * Metadata congressionalRepresentatives.
-     * @member {Array.<number>} congressionalRepresentatives
+     * @member {Array.<ICongressionalRepresentativePointer>} congressionalRepresentatives
      * @memberof Metadata
      * @instance
      */
@@ -2922,12 +3172,9 @@ export const Metadata = $root.Metadata = (() => {
             writer.uint32(/* id 1, wireType 0 =*/8).int32(message.metadataIndex);
         if (message.stringValue != null && Object.hasOwnProperty.call(message, "stringValue"))
             writer.uint32(/* id 2, wireType 2 =*/18).string(message.stringValue);
-        if (message.congressionalRepresentatives != null && message.congressionalRepresentatives.length) {
-            writer.uint32(/* id 3, wireType 2 =*/26).fork();
+        if (message.congressionalRepresentatives != null && message.congressionalRepresentatives.length)
             for (let i = 0; i < message.congressionalRepresentatives.length; ++i)
-                writer.int32(message.congressionalRepresentatives[i]);
-            writer.ldelim();
-        }
+                $root.CongressionalRepresentativePointer.encode(message.congressionalRepresentatives[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
         return writer;
     };
 
@@ -2973,12 +3220,7 @@ export const Metadata = $root.Metadata = (() => {
             case 3: {
                     if (!(message.congressionalRepresentatives && message.congressionalRepresentatives.length))
                         message.congressionalRepresentatives = [];
-                    if ((tag & 7) === 2) {
-                        let end2 = reader.uint32() + reader.pos;
-                        while (reader.pos < end2)
-                            message.congressionalRepresentatives.push(reader.int32());
-                    } else
-                        message.congressionalRepresentatives.push(reader.int32());
+                    message.congressionalRepresentatives.push($root.CongressionalRepresentativePointer.decode(reader, reader.uint32()));
                     break;
                 }
             default:
@@ -3028,9 +3270,11 @@ export const Metadata = $root.Metadata = (() => {
         if (message.congressionalRepresentatives != null && message.hasOwnProperty("congressionalRepresentatives")) {
             if (!Array.isArray(message.congressionalRepresentatives))
                 return "congressionalRepresentatives: array expected";
-            for (let i = 0; i < message.congressionalRepresentatives.length; ++i)
-                if (!$util.isInteger(message.congressionalRepresentatives[i]))
-                    return "congressionalRepresentatives: integer[] expected";
+            for (let i = 0; i < message.congressionalRepresentatives.length; ++i) {
+                let error = $root.CongressionalRepresentativePointer.verify(message.congressionalRepresentatives[i]);
+                if (error)
+                    return "congressionalRepresentatives." + error;
+            }
         }
         return null;
     };
@@ -3055,8 +3299,11 @@ export const Metadata = $root.Metadata = (() => {
             if (!Array.isArray(object.congressionalRepresentatives))
                 throw TypeError(".Metadata.congressionalRepresentatives: array expected");
             message.congressionalRepresentatives = [];
-            for (let i = 0; i < object.congressionalRepresentatives.length; ++i)
-                message.congressionalRepresentatives[i] = object.congressionalRepresentatives[i] | 0;
+            for (let i = 0; i < object.congressionalRepresentatives.length; ++i) {
+                if (typeof object.congressionalRepresentatives[i] !== "object")
+                    throw TypeError(".Metadata.congressionalRepresentatives: object expected");
+                message.congressionalRepresentatives[i] = $root.CongressionalRepresentativePointer.fromObject(object.congressionalRepresentatives[i]);
+            }
         }
         return message;
     };
@@ -3088,7 +3335,7 @@ export const Metadata = $root.Metadata = (() => {
         if (message.congressionalRepresentatives && message.congressionalRepresentatives.length) {
             object.congressionalRepresentatives = [];
             for (let j = 0; j < message.congressionalRepresentatives.length; ++j)
-                object.congressionalRepresentatives[j] = message.congressionalRepresentatives[j];
+                object.congressionalRepresentatives[j] = $root.CongressionalRepresentativePointer.toObject(message.congressionalRepresentatives[j], options);
         }
         return object;
     };

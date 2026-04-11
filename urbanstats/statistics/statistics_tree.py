@@ -466,57 +466,25 @@ def geographic_ids_metadata_category():
 
 def congressional_representatives_metadata_group():
     metadata = export_metadata_types()
-    congressional_group_stats_by_year = defaultdict(list)
-
-    def representative_year_bucket(term_start_year: int):
-        decade = int(round(term_start_year / 10) * 10)
-        decade = max(decade, 2000)
-        return decade
-
-    def representative_term_start_year(setting_key: str) -> int:
-        prefix = "show_metadata_representative_"
-        assert setting_key.startswith(prefix), setting_key
-        year_text = setting_key[len(prefix) :].split("_", 1)[0]
-        return int(year_text)
-
-    def representative_term_name(setting_key, fallback_name):
-        prefix = "show_metadata_representative_"
-        if not setting_key.startswith(prefix):
-            return fallback_name
-        year_text = setting_key[len(prefix) :].split("_", 1)[0]
-        if not year_text.isdigit():
-            return fallback_name
-        start_year = int(year_text)
-        end_year = start_year + 1
-        return f"Representative ({start_year}-{end_year})"
-
-    for entry in metadata["displayed_metadata"]:
-        if not entry["show_in_metadata_table"]:
-            continue
-        if not entry["setting_key"].startswith("show_metadata_representative_"):
-            continue
-
-        metadata_path = get_statistic_column_path(f"metadata_{entry['setting_key']}")
-        congressional_group_stats_by_year[
-            representative_year_bucket(
-                representative_term_start_year(entry["setting_key"])
-            )
-        ].append(
-            MetadataMultiSource(
-                by_source={None: metadata_path},
-                metadata_index=entry["index"],
-                metadata_path=metadata_path,
-                metadata_value_type="string",
-                mergeable=True,
-                metadata_name=representative_term_name(
-                    entry["setting_key"], entry["name"]
-                ),
-            )
-        )
-
-    return StatisticGroup(
-        congressional_group_stats_by_year, group_name="Congressional Representatives"
+    [entry] = [
+        entry
+        for entry in metadata["displayed_metadata"]
+        if entry["setting_key"] == "show_metadata_representatives"
+    ]
+    source = MetadataMultiSource(
+        by_source={
+            None: get_statistic_column_path("metadata_show_metadata_representatives")
+        },
+        metadata_index=entry["index"],
+        metadata_path=get_statistic_column_path(
+            "metadata_show_metadata_representatives"
+        ),
+        metadata_value_type="string",
+        mergeable=True,
+        metadata_name="Congressional Representatives",
     )
+
+    return StatisticGroup({None: [source]}, group_name="Congressional Representatives")
 
 
 statistics_tree = StatisticTree(

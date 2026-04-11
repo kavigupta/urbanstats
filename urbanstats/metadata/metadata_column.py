@@ -2,8 +2,9 @@ import math
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Optional, Type
+from typing import Type
 
+from urbanstats.metadata.congressional_representatives import Representative
 from urbanstats.protobuf import data_files_pb2
 
 
@@ -81,6 +82,9 @@ def normalize_optional_string(value):
 
 
 def congressional_representative_proto(representative):
+    assert isinstance(
+        representative, Representative
+    ), f"Expected Representative, got {type(representative)}"
     message_kwargs = dict(name=normalize_optional_string(representative.name) or "")
     wikipedia_page = normalize_optional_string(representative.wikipedia_page)
     if wikipedia_page is not None:
@@ -94,14 +98,6 @@ def congressional_representative_proto(representative):
 @dataclass
 class CongressionalRepresentativesMetadata(DisplayedMetadata):
     value_kind: str = "congressional_representatives"
-    term_start_year: Optional[int] = None
-
-    def _representatives_for_value(self, value):
-        if self.term_start_year is not None and isinstance(value, dict):
-            return value.get(
-                self.term_start_year, value.get(str(self.term_start_year), [])
-            )
-        return value
 
     def create(self, idx, value, representative_table_builder=None):
         representatives = self.representative_messages(value)
@@ -115,14 +111,19 @@ class CongressionalRepresentativesMetadata(DisplayedMetadata):
         return data_files_pb2.Metadata(
             metadata_index=idx,
             congressional_representatives=[
-                representative_table_builder.index_for(representative)
-                for representative in representatives
+                data_files_pb2.CongressionalRepresentativePointer(
+                    representative_idx=representative_table_builder.index_for(
+                        representative
+                    ),
+                    start_term=val.start_term,
+                    end_term=val.end_term,
+                )
+                for val, representative in zip(value, representatives)
             ],
         )
 
-    def representative_messages(self, value):
-        representatives = self._representatives_for_value(value)
+    def representative_messages(self, representatives):
         return [
-            congressional_representative_proto(representative)
+            congressional_representative_proto(representative.representative)
             for representative in representatives
         ]

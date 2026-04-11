@@ -138,7 +138,7 @@ function metadataValueFromProto(
             }
             return {
                 kind: 'congressional',
-                representatives: representativeIndices.map(index => representativeTable.representatives[index]),
+                representatives: representativeIndices.map(ptr => representativeTable.representatives[ptr.representativeIdx!]),
             }
         }
         default:

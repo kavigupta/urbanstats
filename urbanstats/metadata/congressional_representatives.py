@@ -3,7 +3,7 @@ import math
 import urllib.request
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List
+from typing import List, Tuple
 
 import pandas as pd
 import tqdm.auto as tqdm
@@ -17,19 +17,20 @@ from urbanstats.metadata.metadata_columns import (
     MetadataColumnResult,
 )
 
-TERM_START_YEARS = [to_year(congress_number) for congress_number in range(1, 120)]
 
-
-def key_for_term_start_year(term_start_year: int) -> str:
-    return f"congressional_representatives_{term_start_year}"
-
-
-@dataclass
+@dataclass(frozen=True)
 class Representative:
     name: str
     wikidata_id: str
     wikipedia_page: str
     party: str
+
+
+@dataclass(frozen=True)
+class RepresentativeWithTerms:
+    representative: Representative
+    start_term: int
+    end_term: int
 
 
 def district_shortname_to_state_and_district(shortname: str):
@@ -142,7 +143,7 @@ def representatives_for_district(
 
 
 @permacache(
-    "urbanstats/metadata/congressional_representatives/compute_representatives_for_shapefile_3",
+    "urbanstats/metadata/congressional_representatives/compute_representatives_for_shapefile_5",
     key_function=dict(sf=lambda x: x.hash_key),
 )
 def compute_representatives_for_shapefile(
@@ -171,7 +172,7 @@ def compute_representatives_for_shapefile(
 class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
     representatives_csv_version = "a38a7de"
     version = (
-        f"congressional_representatives_structured_{representatives_csv_version}_v62"
+        f"congressional_representatives_structured_{representatives_csv_version}_v64"
     )
 
     def compute_metadata_columns(self, *, shapefile, shapefiles, shapefile_table):
@@ -186,10 +187,9 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
         )
         return [
             MetadataColumnResult(
-                key=key_for_term_start_year(term_start_year),
-                values=[x.get(term_start_year, []) for x in representatives_by_row],
+                key="congressional_representatives",
+                values=representatives_by_row,
             )
-            for term_start_year in TERM_START_YEARS
         ]
 
     def all_relationships(self, shapefiles, key_a, key_b):
@@ -216,7 +216,7 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
             for key, sf_other in shapefiles.items()
             if "congressional_representatives" in sf_other.special_data_sources
         ]
-        results = defaultdict(lambda: defaultdict(list))
+        results = defaultdict(list)
         for key_other in other_keys:
             relationships = self.all_relationships(shapefiles, key_self, key_other)
             if not relationships:
@@ -228,5 +228,58 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
                 for term_start_year, reps in name_to_representatives_other.get(
                     name_other, {}
                 ).items():
-                    results[name][term_start_year].extend(reps)
+                    with_terms = [
+                        RepresentativeWithTerms(
+                            representative=rep,
+                            start_term=term_start_year,
+                            end_term=term_start_year,
+                        )
+                        for rep in reps
+                    ]
+                    results[name].extend(with_terms)
+        results[name] = deduplicate_and_sort_representatives(results[name])
         return [results[name] for name in shapefile_table.longname]
+
+
+def deduplicate_and_sort_representatives(
+    representatives_with_terms: List[RepresentativeWithTerms],
+) -> List[RepresentativeWithTerms]:
+    # Sort representatives by start_term, then end_term, then name
+    by_representative = defaultdict(set)
+    for rep_with_terms in representatives_with_terms:
+        by_representative[rep_with_terms.representative].add(rep_with_terms)
+    result = []
+    for rwts in by_representative.values():
+        rwts = merge_adjacent_terms(
+            sorted(rwts, key=lambda rwt: (rwt.start_term, rwt.end_term))
+        )
+        result.extend(rwts)
+    result.sort(key=lambda rwt: (rwt.start_term, rwt.end_term, rwt.representative.name))
+    return result
+
+
+def merge_adjacent_terms(
+    rwts: List[RepresentativeWithTerms],
+) -> List[RepresentativeWithTerms]:
+    merged = [rwts[0]]
+    for rwt in rwts[1:]:
+        last = merged[-1]
+        if (
+            rwt.representative == last.representative
+            and rwt.start_term
+            <= last.end_term + 2  # allow for 2 year gap between terms
+        ):
+            assert (
+                rwt.start_term == last.end_term + 2
+            ), f"Unexpected gap between terms for {rwt.representative.name}: {last.end_term} to {rwt.start_term}"
+            merged.pop()
+            merged.append(
+                RepresentativeWithTerms(
+                    representative=last.representative,
+                    start_term=min(last.start_term, rwt.start_term),
+                    end_term=max(last.end_term, rwt.end_term),
+                )
+            )
+        else:
+            merged.append(rwt)
+    return merged

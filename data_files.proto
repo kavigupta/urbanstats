@@ -63,10 +63,16 @@ message ExtraStatistic {
     optional TemperatureHistogram temperature_histogram = 3;
 }
 
+message CongressionalRepresentativePointer {
+    int32 representative_idx = 1;
+    int32 start_term = 2;
+    int32 end_term = 3;
+}
+
 message Metadata {
     int32 metadata_index = 1;
     optional string string_value = 2;
-    repeated int32 congressional_representatives = 3;
+    repeated CongressionalRepresentativePointer congressional_representatives = 3;
 }
 
 message Article {

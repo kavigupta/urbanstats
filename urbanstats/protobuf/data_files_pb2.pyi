@@ -155,6 +155,21 @@ class ExtraStatistic(_message.Message):
         temperature_histogram: _Optional[_Union[TemperatureHistogram, _Mapping]] = ...,
     ) -> None: ...
 
+class CongressionalRepresentativePointer(_message.Message):
+    __slots__ = ("representative_idx", "start_term", "end_term")
+    REPRESENTATIVE_IDX_FIELD_NUMBER: _ClassVar[int]
+    START_TERM_FIELD_NUMBER: _ClassVar[int]
+    END_TERM_FIELD_NUMBER: _ClassVar[int]
+    representative_idx: int
+    start_term: int
+    end_term: int
+    def __init__(
+        self,
+        representative_idx: _Optional[int] = ...,
+        start_term: _Optional[int] = ...,
+        end_term: _Optional[int] = ...,
+    ) -> None: ...
+
 class Metadata(_message.Message):
     __slots__ = ("metadata_index", "string_value", "congressional_representatives")
     METADATA_INDEX_FIELD_NUMBER: _ClassVar[int]
@@ -162,12 +177,16 @@ class Metadata(_message.Message):
     CONGRESSIONAL_REPRESENTATIVES_FIELD_NUMBER: _ClassVar[int]
     metadata_index: int
     string_value: str
-    congressional_representatives: _containers.RepeatedScalarFieldContainer[int]
+    congressional_representatives: _containers.RepeatedCompositeFieldContainer[
+        CongressionalRepresentativePointer
+    ]
     def __init__(
         self,
         metadata_index: _Optional[int] = ...,
         string_value: _Optional[str] = ...,
-        congressional_representatives: _Optional[_Iterable[int]] = ...,
+        congressional_representatives: _Optional[
+            _Iterable[_Union[CongressionalRepresentativePointer, _Mapping]]
+        ] = ...,
     ) -> None: ...
 
 class Article(_message.Message):
