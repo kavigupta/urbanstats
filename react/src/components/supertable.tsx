@@ -196,7 +196,24 @@ function SuperTableRow(props: {
     extraSpaceRight: number[]
     isHighlighted: boolean
 }): ReactNode {
-    const congressionalWidgetData = extractCongressionalWidgetData(props.cellSpecs)
+    const congressionalRegions = props.cellSpecs.flatMap((cell) => {
+        if (cell.type !== 'statistic-row') {
+            return []
+        }
+        if (cell.row.kind !== 'metadata') {
+            return []
+        }
+        if (typeof cell.row.statval === 'string') {
+            return []
+        }
+        return [{
+            longname: cell.longname,
+            representatives: cell.row.statval.representatives,
+        }]
+    })
+    const congressionalWidgetData = congressionalRegions.length > 0
+        ? extractCongressionalWidgetData(congressionalRegions)
+        : undefined
 
     return (
         <div>

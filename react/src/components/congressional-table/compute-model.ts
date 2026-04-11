@@ -89,24 +89,9 @@ function districtBucketsForTerm(entries: CongressionalRepresentativeEntry[]): Di
         })
 }
 
-interface CongressionalMetadataValue {
-    representatives: CongressionalRepresentativeEntry[]
-}
-
-function isCongressionalMetadataValue(value: unknown): value is CongressionalMetadataValue {
-    return typeof value === 'object'
-        && value !== null
-        && 'representatives' in value
-        && Array.isArray((value as { representatives: unknown }).representatives)
-}
-
 export function extractCongressionalWidgetData(cellSpecs: {
-    type: string
     longname?: string
-    row?: {
-        kind?: string
-        statval?: unknown
-    }
+    representatives: CongressionalRepresentativeEntry[]
 }[]): {
     termsDescending: number[]
     columns: CongressionalColumnData[]
@@ -115,21 +100,11 @@ export function extractCongressionalWidgetData(cellSpecs: {
     const termStarts = new Set<number>()
 
     for (const cell of cellSpecs) {
-        if (cell.type !== 'statistic-row') {
-            return undefined
-        }
-        if (cell.row?.kind !== 'metadata') {
-            return undefined
-        }
-        if (!isCongressionalMetadataValue(cell.row.statval)) {
-            return undefined
-        }
-        const congressionalValue = cell.row.statval
         columns.push({
             longname: cell.longname ?? '',
-            representatives: congressionalValue.representatives,
+            representatives: cell.representatives,
         })
-        congressionalValue.representatives.forEach((entry: CongressionalRepresentativeEntry) => {
+        cell.representatives.forEach((entry: CongressionalRepresentativeEntry) => {
             for (const termStart of termStartsForEntry(entry)) {
                 termStarts.add(termStart)
             }
