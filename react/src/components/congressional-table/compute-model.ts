@@ -195,9 +195,9 @@ function computeCongressionalTableModel(input: {
                 ? input.termsDescending.length - 1
                 : sectionStarts[startIdx + 1] - 1
             const sectionBucketsByTerm = districtBucketsByColumnAndTerm[columnIndex].slice(startTermIndex, endTermIndex + 1)
-            const districtHeaders = [sectionBucketsByTerm[0].map(bucket => bucket.districtLabel)]
+            const districtHeaders = sectionBucketsByTerm[0].map(bucket => [bucket.districtLabel])
 
-            const congressionalRuns: CongressionalRunModel[] = districtHeaders[0].map((district) => {
+            const congressionalRuns: CongressionalRunModel[] = districtHeaders.flat().map((district) => {
                 const representativeOrder: string[] = []
                 const representativeById = new Map<string, CongressionalRepresentativeEntry['representative']>()
                 const termCountById = new Map<string, number>()

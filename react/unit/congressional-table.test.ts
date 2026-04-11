@@ -123,3 +123,62 @@ void test('computeCongressionalWidgetModel with multiple representatives in one 
         ],
     })
 })
+
+void test('computeCongressionalWidgetModel keeps one section for the same representative across two districts', () => {
+    const model = computeCongressionalWidgetModel([
+        {
+            longname: 'CA-06',
+            representatives: [
+                representative('James E. Rogan', 'CA-06 (1993), USA', 2001, 2005),
+                representative('James E. Rogan', 'CA-27 (1993), USA', 2001, 2005),
+            ],
+        },
+    ])
+
+    assert.deepEqual(model, {
+        displayRows: [
+            { kind: 'header-space', termIndex: 0 },
+            { kind: 'term-label', termIndex: 0, termStart: 2003 },
+            { kind: 'term-label', termIndex: 1, termStart: 2001 },
+        ],
+        supercolumns: [
+            {
+                longname: 'CA-06',
+                sections: [
+                    {
+                        startTermIndex: 0,
+                        endTermIndex: 1,
+                        headerDisplayIndex: 0,
+                        contentStartDisplayIndex: 1,
+                        contentEndDisplayIndex: 2,
+                        districtHeaders: [['CA-06 (1993), USA'], ['CA-27 (1993), USA']],
+                        congressionalRuns: [
+                            {
+                                representatives: [
+                                    {
+                                        name: 'James E. Rogan',
+                                        wikipediaPage: 'https://example.com/James%20E.%20Rogan',
+                                        party: 'Democratic',
+                                    },
+                                ],
+                                termCounts: [2],
+                                termsByRepresentative: [[2003, 2001]],
+                            },
+                            {
+                                representatives: [
+                                    {
+                                        name: 'James E. Rogan',
+                                        wikipediaPage: 'https://example.com/James%20E.%20Rogan',
+                                        party: 'Democratic',
+                                    },
+                                ],
+                                termCounts: [2],
+                                termsByRepresentative: [[2003, 2001]],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    })
+})
