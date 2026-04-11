@@ -123,7 +123,8 @@ function CongressionalRepresentativesTableRenderer(props: {
                 ))}
 
                 {props.model.supercolumns.map((supercolumn, columnIndex) => supercolumn.sections.map((section) => {
-                    const gridTemplateColumnsDistrict = section.districtHeaders.map(() => 'minmax(0, 1fr)').join(' ')
+                    const districtHeaders = section.districtHeaders.flat()
+                    const gridTemplateColumnsDistrict = districtHeaders.map(() => 'minmax(0, 1fr)').join(' ')
                     const sectionTermCount = section.endTermIndex - section.startTermIndex + 1
                     return (
                         <Fragment key={`reps_section_${columnIndex}_${section.startTermIndex}_${section.endTermIndex}`}>
@@ -139,7 +140,7 @@ function CongressionalRepresentativesTableRenderer(props: {
                                     }}
                                 >
                                     <div style={{ display: 'grid', gridTemplateColumns: gridTemplateColumnsDistrict, width: '100%', height: '100%' }}>
-                                        {section.districtHeaders.map((districtHeader, bucketIndex) => (
+                                        {districtHeaders.map((districtHeader, bucketIndex) => (
                                             <div
                                                 key={`district_header_${columnIndex}_${section.startTermIndex}_${bucketIndex}`}
                                                 className="serif value"
@@ -152,7 +153,7 @@ function CongressionalRepresentativesTableRenderer(props: {
                                                     height: '100%',
                                                     textAlign: 'center',
                                                     padding: '4px 6px',
-                                                    borderRight: bucketIndex === section.districtHeaders.length - 1 ? 'none' : `1px solid ${borderColor}`,
+                                                    borderRight: bucketIndex === districtHeaders.length - 1 ? 'none' : `1px solid ${borderColor}`,
                                                     lineHeight: 1.25,
                                                 }}
                                             >

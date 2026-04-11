@@ -47,7 +47,7 @@ void test('computeCongressionalWidgetModel with only one representative', () => 
                         headerDisplayIndex: 0,
                         contentStartDisplayIndex: 1,
                         contentEndDisplayIndex: 2,
-                        districtHeaders: ['CA-06 (1993), USA'],
+                        districtHeaders: [['CA-06 (1993), USA']],
                         congressionalRuns: [
                             {
                                 representatives: [
@@ -98,7 +98,7 @@ void test('computeCongressionalWidgetModel with multiple representatives in one 
                         headerDisplayIndex: 0,
                         contentStartDisplayIndex: 1,
                         contentEndDisplayIndex: 6,
-                        districtHeaders: ['CA-06 (1993), USA'],
+                        districtHeaders: [['CA-06 (1993), USA']],
                         congressionalRuns: [
                             {
                                 representatives: [

@@ -32,7 +32,7 @@ export interface DistrictConfigurationSection {
     headerDisplayIndex?: number
     contentStartDisplayIndex: number
     contentEndDisplayIndex: number
-    districtHeaders: string[]
+    districtHeaders: string[][]
     congressionalRuns: CongressionalRunModel[]
 }
 
