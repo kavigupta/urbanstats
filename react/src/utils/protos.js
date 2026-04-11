@@ -2119,7 +2119,7 @@ export const TermIn = $root.TermIn = (() => {
      * @interface ITermIn
      * @property {number|null} [startYear] TermIn startYear
      * @property {number|null} [endYear] TermIn endYear
-     * @property {Array.<number>|null} [districtIdx] TermIn districtIdx
+     * @property {number|null} [districtIdx] TermIn districtIdx
      */
 
     /**
@@ -2131,7 +2131,6 @@ export const TermIn = $root.TermIn = (() => {
      * @param {ITermIn=} [properties] Properties to set
      */
     function TermIn(properties) {
-        this.districtIdx = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -2156,11 +2155,11 @@ export const TermIn = $root.TermIn = (() => {
 
     /**
      * TermIn districtIdx.
-     * @member {Array.<number>} districtIdx
+     * @member {number} districtIdx
      * @memberof TermIn
      * @instance
      */
-    TermIn.prototype.districtIdx = $util.emptyArray;
+    TermIn.prototype.districtIdx = 0;
 
     /**
      * Creates a new TermIn instance using the specified properties.
@@ -2190,12 +2189,8 @@ export const TermIn = $root.TermIn = (() => {
             writer.uint32(/* id 1, wireType 0 =*/8).int32(message.startYear);
         if (message.endYear != null && Object.hasOwnProperty.call(message, "endYear"))
             writer.uint32(/* id 2, wireType 0 =*/16).int32(message.endYear);
-        if (message.districtIdx != null && message.districtIdx.length) {
-            writer.uint32(/* id 3, wireType 2 =*/26).fork();
-            for (let i = 0; i < message.districtIdx.length; ++i)
-                writer.int32(message.districtIdx[i]);
-            writer.ldelim();
-        }
+        if (message.districtIdx != null && Object.hasOwnProperty.call(message, "districtIdx"))
+            writer.uint32(/* id 3, wireType 0 =*/24).int32(message.districtIdx);
         return writer;
     };
 
@@ -2239,14 +2234,7 @@ export const TermIn = $root.TermIn = (() => {
                     break;
                 }
             case 3: {
-                    if (!(message.districtIdx && message.districtIdx.length))
-                        message.districtIdx = [];
-                    if ((tag & 7) === 2) {
-                        let end2 = reader.uint32() + reader.pos;
-                        while (reader.pos < end2)
-                            message.districtIdx.push(reader.int32());
-                    } else
-                        message.districtIdx.push(reader.int32());
+                    message.districtIdx = reader.int32();
                     break;
                 }
             default:
@@ -2290,13 +2278,9 @@ export const TermIn = $root.TermIn = (() => {
         if (message.endYear != null && message.hasOwnProperty("endYear"))
             if (!$util.isInteger(message.endYear))
                 return "endYear: integer expected";
-        if (message.districtIdx != null && message.hasOwnProperty("districtIdx")) {
-            if (!Array.isArray(message.districtIdx))
-                return "districtIdx: array expected";
-            for (let i = 0; i < message.districtIdx.length; ++i)
-                if (!$util.isInteger(message.districtIdx[i]))
-                    return "districtIdx: integer[] expected";
-        }
+        if (message.districtIdx != null && message.hasOwnProperty("districtIdx"))
+            if (!$util.isInteger(message.districtIdx))
+                return "districtIdx: integer expected";
         return null;
     };
 
@@ -2316,13 +2300,8 @@ export const TermIn = $root.TermIn = (() => {
             message.startYear = object.startYear | 0;
         if (object.endYear != null)
             message.endYear = object.endYear | 0;
-        if (object.districtIdx) {
-            if (!Array.isArray(object.districtIdx))
-                throw TypeError(".TermIn.districtIdx: array expected");
-            message.districtIdx = [];
-            for (let i = 0; i < object.districtIdx.length; ++i)
-                message.districtIdx[i] = object.districtIdx[i] | 0;
-        }
+        if (object.districtIdx != null)
+            message.districtIdx = object.districtIdx | 0;
         return message;
     };
 
@@ -2339,21 +2318,17 @@ export const TermIn = $root.TermIn = (() => {
         if (!options)
             options = {};
         let object = {};
-        if (options.arrays || options.defaults)
-            object.districtIdx = [];
         if (options.defaults) {
             object.startYear = 0;
             object.endYear = 0;
+            object.districtIdx = 0;
         }
         if (message.startYear != null && message.hasOwnProperty("startYear"))
             object.startYear = message.startYear;
         if (message.endYear != null && message.hasOwnProperty("endYear"))
             object.endYear = message.endYear;
-        if (message.districtIdx && message.districtIdx.length) {
-            object.districtIdx = [];
-            for (let j = 0; j < message.districtIdx.length; ++j)
-                object.districtIdx[j] = message.districtIdx[j];
-        }
+        if (message.districtIdx != null && message.hasOwnProperty("districtIdx"))
+            object.districtIdx = message.districtIdx;
         return object;
     };
 
@@ -2393,8 +2368,6 @@ export const CongressionalDistrict = $root.CongressionalDistrict = (() => {
      * @exports ICongressionalDistrict
      * @interface ICongressionalDistrict
      * @property {string|null} [longname] CongressionalDistrict longname
-     * @property {number|null} [startYear] CongressionalDistrict startYear
-     * @property {number|null} [endYear] CongressionalDistrict endYear
      */
 
     /**
@@ -2419,22 +2392,6 @@ export const CongressionalDistrict = $root.CongressionalDistrict = (() => {
      * @instance
      */
     CongressionalDistrict.prototype.longname = "";
-
-    /**
-     * CongressionalDistrict startYear.
-     * @member {number} startYear
-     * @memberof CongressionalDistrict
-     * @instance
-     */
-    CongressionalDistrict.prototype.startYear = 0;
-
-    /**
-     * CongressionalDistrict endYear.
-     * @member {number} endYear
-     * @memberof CongressionalDistrict
-     * @instance
-     */
-    CongressionalDistrict.prototype.endYear = 0;
 
     /**
      * Creates a new CongressionalDistrict instance using the specified properties.
@@ -2462,10 +2419,6 @@ export const CongressionalDistrict = $root.CongressionalDistrict = (() => {
             writer = $Writer.create();
         if (message.longname != null && Object.hasOwnProperty.call(message, "longname"))
             writer.uint32(/* id 1, wireType 2 =*/10).string(message.longname);
-        if (message.startYear != null && Object.hasOwnProperty.call(message, "startYear"))
-            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.startYear);
-        if (message.endYear != null && Object.hasOwnProperty.call(message, "endYear"))
-            writer.uint32(/* id 3, wireType 0 =*/24).int32(message.endYear);
         return writer;
     };
 
@@ -2502,14 +2455,6 @@ export const CongressionalDistrict = $root.CongressionalDistrict = (() => {
             switch (tag >>> 3) {
             case 1: {
                     message.longname = reader.string();
-                    break;
-                }
-            case 2: {
-                    message.startYear = reader.int32();
-                    break;
-                }
-            case 3: {
-                    message.endYear = reader.int32();
                     break;
                 }
             default:
@@ -2550,12 +2495,6 @@ export const CongressionalDistrict = $root.CongressionalDistrict = (() => {
         if (message.longname != null && message.hasOwnProperty("longname"))
             if (!$util.isString(message.longname))
                 return "longname: string expected";
-        if (message.startYear != null && message.hasOwnProperty("startYear"))
-            if (!$util.isInteger(message.startYear))
-                return "startYear: integer expected";
-        if (message.endYear != null && message.hasOwnProperty("endYear"))
-            if (!$util.isInteger(message.endYear))
-                return "endYear: integer expected";
         return null;
     };
 
@@ -2573,10 +2512,6 @@ export const CongressionalDistrict = $root.CongressionalDistrict = (() => {
         let message = new $root.CongressionalDistrict();
         if (object.longname != null)
             message.longname = String(object.longname);
-        if (object.startYear != null)
-            message.startYear = object.startYear | 0;
-        if (object.endYear != null)
-            message.endYear = object.endYear | 0;
         return message;
     };
 
@@ -2593,17 +2528,10 @@ export const CongressionalDistrict = $root.CongressionalDistrict = (() => {
         if (!options)
             options = {};
         let object = {};
-        if (options.defaults) {
+        if (options.defaults)
             object.longname = "";
-            object.startYear = 0;
-            object.endYear = 0;
-        }
         if (message.longname != null && message.hasOwnProperty("longname"))
             object.longname = message.longname;
-        if (message.startYear != null && message.hasOwnProperty("startYear"))
-            object.startYear = message.startYear;
-        if (message.endYear != null && message.hasOwnProperty("endYear"))
-            object.endYear = message.endYear;
         return object;
     };
 
