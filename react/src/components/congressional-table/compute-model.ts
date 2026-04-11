@@ -1,10 +1,10 @@
 import {
     CongressionalColumnData,
     CongressionalRepresentativeEntry,
-    CongressionalRunModel,
-    CongressionalSupercolumn,
+    RepresentativesForRegionAndDistrict,
+    RepresentativesForRegion,
     CongressionalTableModel,
-    DistrictConfigurationSection,
+    RepresentativesForRegionAndDistrictSet,
     CongressionalDisplayRow,
 } from './model'
 
@@ -191,14 +191,14 @@ function computeCongressionalTableModel(input: {
         displayRows.push({ kind: 'term-label', termIndex, termStart: input.termsDescending[termIndex] })
     }
 
-    const supercolumns: CongressionalSupercolumn[] = input.columns.map((column, columnIndex) => {
+    const supercolumns: RepresentativesForRegion[] = input.columns.map((column, columnIndex) => {
         const sectionStarts = Array.from(sectionStartByColumnAndTerm[columnIndex].values()).sort((a, b) => a - b)
-        const sections: DistrictConfigurationSection[] = sectionStarts.map((startTermIndex, startIdx) => {
+        const sections: RepresentativesForRegionAndDistrictSet[] = sectionStarts.map((startTermIndex, startIdx) => {
             const endTermIndex = startIdx === sectionStarts.length - 1
                 ? input.termsDescending.length - 1
                 : sectionStarts[startIdx + 1] - 1
             const sectionBucketsByTerm = districtBucketsByColumnAndTerm[columnIndex].slice(startTermIndex, endTermIndex + 1)
-            const buildRunForSection = (district?: string): CongressionalRunModel => {
+            const buildRunForSection = (district?: string): RepresentativesForRegionAndDistrict => {
                 const representativeOrder: string[] = []
                 const representativeById = new Map<string, CongressionalRepresentativeEntry['representative']>()
                 const termCountById = new Map<string, number>()
@@ -250,7 +250,7 @@ function computeCongressionalTableModel(input: {
                     ]
                 : sectionBucketsByTerm[0].map(bucket => [bucket.districtLabel])
 
-            const congressionalRuns: CongressionalRunModel[] = singleDistrictPerTerm
+            const congressionalRuns: RepresentativesForRegionAndDistrict[] = singleDistrictPerTerm
                 ? [buildRunForSection()]
                 : districtHeaders.map(headerGroup => buildRunForSection(headerGroup[0]))
 

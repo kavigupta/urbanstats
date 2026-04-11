@@ -20,28 +20,28 @@ export interface CongressionalDisplayRow {
     termStart?: number
 }
 
-export interface CongressionalRunModel {
+export interface RepresentativesForRegionAndDistrict {
     representatives: CongressionalRepresentativeEntry['representative'][]
     termCounts: number[]
     termsByRepresentative: number[][]
 }
 
-export interface DistrictConfigurationSection {
+export interface RepresentativesForRegionAndDistrictSet {
     startTermIndex: number
     endTermIndex: number
     headerDisplayIndex?: number
     contentStartDisplayIndex: number
     contentEndDisplayIndex: number
     districtHeaders: string[][]
-    congressionalRuns: CongressionalRunModel[]
+    congressionalRuns: RepresentativesForRegionAndDistrict[]
 }
 
-export interface CongressionalSupercolumn {
+export interface RepresentativesForRegion {
     longname: string
-    sections: DistrictConfigurationSection[]
+    sections: RepresentativesForRegionAndDistrictSet[]
 }
 
 export interface CongressionalTableModel {
     displayRows: CongressionalDisplayRow[]
-    supercolumns: CongressionalSupercolumn[]
+    supercolumns: RepresentativesForRegion[]
 }
