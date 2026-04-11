@@ -171,7 +171,26 @@ export function ComparisonPanel(props: {
     let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, includeOrdinals)
     let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (dataByArticleStat[0].length + numExpandedExtras) + 1.5
 
-    const transpose = widthColumns > computeMaxColumns(mobileLayout) && widthColumns > widthTransposeColumns
+    const hasCongressionalRepresentativeTable = dataByStatArticle.some(statData =>
+        statData.some((row) => {
+            if (row.kind !== 'metadata') {
+                return false
+            }
+            // Prefer statpath when available so this works even if some compared
+            // articles don't carry representatives for the same metadata row.
+            if (row.statpath.includes('congressional_representatives')) {
+                return true
+            }
+            if (typeof row.statval === 'string') {
+                return false
+            }
+            return 'representatives' in row.statval
+        }),
+    )
+
+    const transpose = !hasCongressionalRepresentativeTable
+        && widthColumns > computeMaxColumns(mobileLayout)
+        && widthColumns > widthTransposeColumns
 
     if (transpose) {
         ([widthColumns, widthTransposeColumns] = [widthTransposeColumns, widthColumns])
