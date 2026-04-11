@@ -2,6 +2,7 @@ import {
     CongressionalColumnData,
     CongressionalRepresentativeEntry,
     RepresentativesForRegionAndDistrict,
+    RepresentativesForRegionDistrictAndTermRun,
     RepresentativesForRegion,
     CongressionalTableModel,
     RepresentativesForRegionAndDistrictSet,
@@ -199,40 +200,53 @@ function computeCongressionalTableModel(input: {
                 : sectionStarts[startIdx + 1] - 1
             const sectionBucketsByTerm = districtBucketsByColumnAndTerm[columnIndex].slice(startTermIndex, endTermIndex + 1)
             const buildRunForSection = (district?: string): RepresentativesForRegionAndDistrict => {
-                const representativeOrder: string[] = []
-                const representativeById = new Map<string, CongressionalRepresentativeEntry['representative']>()
-                const termCountById = new Map<string, number>()
-                const termsById = new Map<string, number[]>()
-
-                sectionBucketsByTerm.forEach((bucketsForTerm, localTermIndex) => {
+                const termRuns: RepresentativesForRegionDistrictAndTermRun[] = sectionBucketsByTerm.map((bucketsForTerm, localTermIndex) => {
                     const absoluteTermIndex = startTermIndex + localTermIndex
                     const termStart = input.termsDescending[absoluteTermIndex]
                     const entriesInDistrict = district === undefined
                         ? bucketsForTerm.flatMap(bucket => bucket.entries)
                         : bucketsForTerm.find(bucket => bucket.districtLabel === district)?.entries ?? []
                     const uniqueIdsForTerm = new Set<string>()
-
-                    entriesInDistrict.forEach((entry) => {
+                    const representatives = entriesInDistrict.flatMap((entry) => {
                         const id = representativeSignature(entry)
                         if (uniqueIdsForTerm.has(id)) {
-                            return
+                            return []
                         }
                         uniqueIdsForTerm.add(id)
-                        if (!representativeById.has(id)) {
-                            representativeById.set(id, entry.representative)
-                            representativeOrder.push(id)
-                            termCountById.set(id, 0)
-                            termsById.set(id, [])
-                        }
-                        termCountById.set(id, (termCountById.get(id) ?? 0) + 1)
-                        termsById.get(id)?.push(termStart)
+                        return [entry.representative]
                     })
+
+                    return {
+                        representatives,
+                        startTerm: termStart,
+                        endTerm: termStart,
+                    }
                 })
 
+                const compressedTermRuns = termRuns.reduce<RepresentativesForRegionDistrictAndTermRun[]>((acc, termRun) => {
+                    if (acc.length === 0) {
+                        return [termRun]
+                    }
+
+                    const previous = acc[acc.length - 1]
+                    const previousSignature = previous.representatives
+                        .map(representative => `${representative.name ?? ''}|${representative.wikipediaPage ?? ''}|${representative.party ?? ''}`)
+                        .join('||')
+                    const currentSignature = termRun.representatives
+                        .map(representative => `${representative.name ?? ''}|${representative.wikipediaPage ?? ''}|${representative.party ?? ''}`)
+                        .join('||')
+                    const isContiguousTermRange = previous.endTerm - termRun.startTerm === 2
+
+                    if (previousSignature === currentSignature && isContiguousTermRange) {
+                        previous.endTerm = termRun.endTerm
+                        return acc
+                    }
+
+                    return [...acc, termRun]
+                }, [])
+
                 return {
-                    representatives: representativeOrder.map(id => representativeById.get(id)).filter((r): r is CongressionalRepresentativeEntry['representative'] => r !== undefined),
-                    termCounts: representativeOrder.map(id => termCountById.get(id) ?? 0),
-                    termsByRepresentative: representativeOrder.map(id => termsById.get(id) ?? []),
+                    termRuns: compressedTermRuns,
                 }
             }
 

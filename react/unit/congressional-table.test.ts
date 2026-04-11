@@ -50,15 +50,19 @@ void test('computeCongressionalWidgetModel with only one representative', () => 
                         districtHeaders: [['CA-06 (1993), USA']],
                         congressionalRuns: [
                             {
-                                representatives: [
+                                termRuns: [
                                     {
-                                        name: 'James E. Rogan',
-                                        wikipediaPage: 'https://example.com/James%20E.%20Rogan',
-                                        party: 'Democratic',
+                                        representatives: [
+                                            {
+                                                name: 'James E. Rogan',
+                                                wikipediaPage: 'https://example.com/James%20E.%20Rogan',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startTerm: 2003,
+                                        endTerm: 2001,
                                     },
                                 ],
-                                termCounts: [2],
-                                termsByRepresentative: [[2003, 2001]],
                             },
                         ],
                     },
@@ -101,20 +105,30 @@ void test('computeCongressionalWidgetModel with multiple representatives in one 
                         districtHeaders: [['CA-06 (1993), USA']],
                         congressionalRuns: [
                             {
-                                representatives: [
+                                termRuns: [
                                     {
-                                        name: 'James E. Rogan',
-                                        wikipediaPage: 'https://example.com/James%20E.%20Rogan',
-                                        party: 'Democratic',
+                                        representatives: [
+                                            {
+                                                name: 'James E. Rogan',
+                                                wikipediaPage: 'https://example.com/James%20E.%20Rogan',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startTerm: 2003,
+                                        endTerm: 2001,
                                     },
                                     {
-                                        name: 'Gary Condit',
-                                        wikipediaPage: 'https://example.com/Gary%20Condit',
-                                        party: 'Democratic',
+                                        representatives: [
+                                            {
+                                                name: 'Gary Condit',
+                                                wikipediaPage: 'https://example.com/Gary%20Condit',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startTerm: 1999,
+                                        endTerm: 1993,
                                     },
                                 ],
-                                termCounts: [2, 4],
-                                termsByRepresentative: [[2003, 2001], [1999, 1997, 1995, 1993]],
                             },
                         ],
                     },
@@ -154,26 +168,34 @@ void test('computeCongressionalWidgetModel keeps one section for the same repres
                         districtHeaders: [['CA-06 (1993), USA'], ['CA-27 (1993), USA']],
                         congressionalRuns: [
                             {
-                                representatives: [
+                                termRuns: [
                                     {
-                                        name: 'James E. Rogan',
-                                        wikipediaPage: 'https://example.com/James%20E.%20Rogan',
-                                        party: 'Democratic',
+                                        representatives: [
+                                            {
+                                                name: 'James E. Rogan',
+                                                wikipediaPage: 'https://example.com/James%20E.%20Rogan',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startTerm: 2003,
+                                        endTerm: 2001,
                                     },
                                 ],
-                                termCounts: [2],
-                                termsByRepresentative: [[2003, 2001]],
                             },
                             {
-                                representatives: [
+                                termRuns: [
                                     {
-                                        name: 'James E. Rogan',
-                                        wikipediaPage: 'https://example.com/James%20E.%20Rogan',
-                                        party: 'Democratic',
+                                        representatives: [
+                                            {
+                                                name: 'James E. Rogan',
+                                                wikipediaPage: 'https://example.com/James%20E.%20Rogan',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startTerm: 2003,
+                                        endTerm: 2001,
                                     },
                                 ],
-                                termCounts: [2],
-                                termsByRepresentative: [[2003, 2001]],
                             },
                         ],
                     },
@@ -197,6 +219,19 @@ void test('computeCongressionalWidgetModel keeps one section for serial district
     assert.deepEqual(model?.supercolumns[0].sections.length, 1)
     assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns.length, 1)
     assert.deepEqual(model.supercolumns[0].sections[0].districtHeaders, [['CA-27 (1993), USA', 'CA-06 (1993), USA']])
+    assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns[0].termRuns, [
+        {
+            representatives: [
+                {
+                    name: 'James E. Rogan',
+                    wikipediaPage: 'https://example.com/James%20E.%20Rogan',
+                    party: 'Democratic',
+                },
+            ],
+            startTerm: 2003,
+            endTerm: 1993,
+        },
+    ])
 })
 
 void test('computeCongressionalWidgetModel creates a new section when representative multiplicity changes', () => {
@@ -214,6 +249,24 @@ void test('computeCongressionalWidgetModel creates a new section when representa
     assert.deepEqual(model?.supercolumns[0].sections.length, 2)
     assert.deepEqual(model.supercolumns[0].sections.map(section => [section.startTermIndex, section.endTermIndex]), [[0, 1], [2, 5]])
     assert.deepEqual(model.supercolumns[0].sections.map(section => section.districtHeaders), [[['CA-06 (1993), USA']], [['CA-06 (1993), USA']]])
+    assert.deepEqual(model.supercolumns[0].sections[1].congressionalRuns[0].termRuns, [
+        {
+            representatives: [
+                {
+                    name: 'Gary Condit',
+                    wikipediaPage: 'https://example.com/Gary%20Condit',
+                    party: 'Democratic',
+                },
+                {
+                    name: 'Carlos Moorhead',
+                    wikipediaPage: 'https://example.com/Carlos%20Moorhead',
+                    party: 'Democratic',
+                },
+            ],
+            startTerm: 1999,
+            endTerm: 1993,
+        },
+    ])
 })
 
 void test('computeCongressionalWidgetModel creates a new section when district topology changes with the same representative-count pattern', () => {
@@ -239,5 +292,81 @@ void test('computeCongressionalWidgetModel creates a new section when district t
     assert.deepEqual(model.supercolumns[0].sections.map(section => section.districtHeaders), [
         [['CA-27 (1993), USA'], ['CA-28 (2023), USA']],
         [['CA-29 (2003), USA'], ['CA-30 (2003), USA']],
+    ])
+    assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns[0].termRuns[0], {
+        representatives: [
+            {
+                name: 'Representative A',
+                wikipediaPage: 'https://example.com/Representative%20A',
+                party: 'Democratic',
+            },
+        ],
+        startTerm: 2003,
+        endTerm: 2003,
+    })
+    assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns[1].termRuns[0], {
+        representatives: [
+            {
+                name: 'Representative B',
+                wikipediaPage: 'https://example.com/Representative%20B',
+                party: 'Democratic',
+            },
+        ],
+        startTerm: 2003,
+        endTerm: 2003,
+    })
+})
+
+void test('computeCongressionalWidgetModel creates per-term duplicated entries for concurrent representatives in one district', () => {
+    const model = computeCongressionalWidgetModel([
+        {
+            longname: 'CA-AL',
+            representatives: [
+                representative('John Chilton Burch', 'CA-AL (1849), USA', 1859, 1861),
+                representative('Charles L. Scott', 'CA-AL (1849), USA', 1857, 1861),
+            ],
+        },
+    ])
+
+    if (model === undefined) {
+        assert.fail('Expected model to be defined')
+    }
+
+    assert.equal(model.supercolumns[0].sections.length, 2)
+    assert.deepEqual(model.supercolumns[0].sections.map(section => [section.startTermIndex, section.endTermIndex]), [[0, 0], [1, 1]])
+    assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns.length, 1)
+    assert.deepEqual(model.supercolumns[0].sections[1].congressionalRuns.length, 1)
+
+    assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns[0].termRuns, [
+        {
+            representatives: [
+                {
+                    name: 'John Chilton Burch',
+                    wikipediaPage: 'https://example.com/John%20Chilton%20Burch',
+                    party: 'Democratic',
+                },
+                {
+                    name: 'Charles L. Scott',
+                    wikipediaPage: 'https://example.com/Charles%20L.%20Scott',
+                    party: 'Democratic',
+                },
+            ],
+            startTerm: 1859,
+            endTerm: 1859,
+        },
+    ])
+
+    assert.deepEqual(model.supercolumns[0].sections[1].congressionalRuns[0].termRuns, [
+        {
+            representatives: [
+                {
+                    name: 'Charles L. Scott',
+                    wikipediaPage: 'https://example.com/Charles%20L.%20Scott',
+                    party: 'Democratic',
+                },
+            ],
+            startTerm: 1857,
+            endTerm: 1857,
+        },
     ])
 })

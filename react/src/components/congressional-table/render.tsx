@@ -213,7 +213,7 @@ function CongressionalRepresentativesTableRenderer(props: {
                                             gridTemplateRows: 'subgrid',
                                         }}
                                     >
-                                        {run.representatives.length === 0
+                                        {run.termRuns.length === 0
                                             ? (
                                                     <div
                                                         style={{
@@ -231,99 +231,41 @@ function CongressionalRepresentativesTableRenderer(props: {
                                                 )
                                             : (
                                                     <>
-                                                        {(() => {
-                                                            const placements = run.representatives.flatMap((representative, entryIndex) => {
-                                                                const terms = run.termsByRepresentative[entryIndex] ?? []
-                                                                const sectionRelativeTermRows = terms
-                                                                    .map(termStart => termIndexByStart.get(termStart))
-                                                                    .filter((termIndex): termIndex is number => termIndex !== undefined)
-                                                                    .map(termIndex => termIndex - section.startTermIndex + 1)
-                                                                    .filter(termRow => termRow >= 1 && termRow <= sectionTermCount)
-                                                                    .sort((a, b) => a - b)
-
-                                                                if (sectionRelativeTermRows.length === 0) {
-                                                                    return [{
-                                                                        representative,
-                                                                        key: `rep_${columnIndex}_${section.startTermIndex}_${bucketIndex}_${entryIndex}_fallback`,
-                                                                        rowStart: run.termCounts.slice(0, entryIndex).reduce((a, b) => a + b, 0) + 1,
-                                                                        spanCount: Math.max(run.termCounts[entryIndex], 1),
-                                                                    }]
-                                                                }
-
-                                                                const segments = sectionRelativeTermRows.reduce<number[][]>((acc, row) => {
-                                                                    if (acc.length === 0) {
-                                                                        return [[row]]
-                                                                    }
-                                                                    const current = acc[acc.length - 1]
-                                                                    const previousRow = current[current.length - 1]
-                                                                    if (row === previousRow || row === previousRow + 1) {
-                                                                        if (row !== previousRow) {
-                                                                            current.push(row)
-                                                                        }
-                                                                        return acc
-                                                                    }
-                                                                    return [...acc, [row]]
-                                                                }, [])
-
-                                                                return segments.map((segment, segmentIndex) => ({
-                                                                    representative,
-                                                                    key: `rep_${columnIndex}_${section.startTermIndex}_${bucketIndex}_${entryIndex}_seg_${segmentIndex}`,
-                                                                    rowStart: segment[0],
-                                                                    spanCount: segment[segment.length - 1] - segment[0] + 1,
-                                                                }))
-                                                            })
-
-                                                            const groupedByPlacement = placements.reduce<Map<string, typeof placements>>((acc, placement) => {
-                                                                const placementKey = `${placement.rowStart}:${placement.spanCount}`
-                                                                const existing = acc.get(placementKey)
-                                                                if (existing === undefined) {
-                                                                    acc.set(placementKey, [placement])
-                                                                }
-                                                                else {
-                                                                    existing.push(placement)
-                                                                }
-                                                                return acc
-                                                            }, new Map())
-
-                                                            return Array.from(groupedByPlacement.values())
-                                                                .sort((a, b) => a[0].rowStart - b[0].rowStart)
-                                                                .map((group, groupOrderIndex, groups) => {
-                                                                    const rowStart = group[0].rowStart
-                                                                    const spanCount = group[0].spanCount
-                                                                    return (
-                                                                        <div
-                                                                            key={`rep_group_${columnIndex}_${section.startTermIndex}_${bucketIndex}_${rowStart}_${spanCount}`}
-                                                                            style={{
-                                                                                gridRow: `${rowStart} / span ${spanCount}`,
-                                                                                display: 'flex',
-                                                                                flexDirection: 'column',
-                                                                                alignItems: 'stretch',
-                                                                                justifyContent: 'center',
-                                                                                textAlign: 'center',
-                                                                                padding: '6px 8px',
-                                                                                borderBottom: groupOrderIndex === groups.length - 1 ? 'none' : `1px solid ${borderColor}`,
-                                                                            }}
-                                                                        >
-                                                                            {group.map(placement => (
-                                                                                <div
-                                                                                    key={placement.key}
-                                                                                    style={{
-                                                                                        display: 'flex',
-                                                                                        alignItems: 'center',
-                                                                                        justifyContent: 'center',
-                                                                                        textAlign: 'center',
-                                                                                        borderBottom: 'none',
-                                                                                    }}
-                                                                                >
-                                                                                    <span className="serif value" style={{ textAlign: 'center' }}>
-                                                                                        <Representative representative={placement.representative} />
-                                                                                    </span>
-                                                                                </div>
-                                                                            ))}
-                                                                        </div>
-                                                                    )
-                                                                })
-                                                        })()}
+                                                        {run.termRuns.map((termRun, termRunIndex) => {
+                                                            const startTermIndex = termIndexByStart.get(termRun.startTerm)
+                                                            const endTermIndex = termIndexByStart.get(termRun.endTerm)
+                                                            if (startTermIndex === undefined || endTermIndex === undefined) {
+                                                                return null
+                                                            }
+                                                            const relativeStartRow = startTermIndex - section.startTermIndex + 1
+                                                            const relativeEndRow = endTermIndex - section.startTermIndex + 1
+                                                            const rowStart = Math.min(relativeStartRow, relativeEndRow)
+                                                            const spanCount = Math.abs(relativeEndRow - relativeStartRow) + 1
+                                                            const bottomRow = rowStart + spanCount - 1
+                                                            return (
+                                                                <div
+                                                                    key={`rep_run_${columnIndex}_${section.startTermIndex}_${bucketIndex}_${termRunIndex}`}
+                                                                    style={{
+                                                                        gridRow: `${rowStart} / span ${spanCount}`,
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        textAlign: 'center',
+                                                                        padding: '6px 8px',
+                                                                        borderBottom: bottomRow >= sectionTermCount ? 'none' : `1px solid ${borderColor}`,
+                                                                        gap: '10px',
+                                                                    }}
+                                                                >
+                                                                    {termRun.representatives.length === 0
+                                                                        ? <span className="serif value" style={{ opacity: 0.65 }}>-</span>
+                                                                        : termRun.representatives.map((representative, representativeIndex) => (
+                                                                            <span key={`rep_run_item_${columnIndex}_${section.startTermIndex}_${bucketIndex}_${termRunIndex}_${representativeIndex}`} className="serif value" style={{ textAlign: 'center' }}>
+                                                                                <Representative representative={representative} />
+                                                                            </span>
+                                                                        ))}
+                                                                </div>
+                                                            )
+                                                        })}
                                                     </>
                                                 )}
                                     </div>
