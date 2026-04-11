@@ -124,19 +124,28 @@ class TermIn(_message.Message):
     DISTRICT_IDX_FIELD_NUMBER: _ClassVar[int]
     start_year: int
     end_year: int
-    district_idx: int
+    district_idx: _containers.RepeatedScalarFieldContainer[int]
     def __init__(
         self,
         start_year: _Optional[int] = ...,
         end_year: _Optional[int] = ...,
-        district_idx: _Optional[int] = ...,
+        district_idx: _Optional[_Iterable[int]] = ...,
     ) -> None: ...
 
 class CongressionalDistrict(_message.Message):
-    __slots__ = ("longname",)
+    __slots__ = ("longname", "start_year", "end_year")
     LONGNAME_FIELD_NUMBER: _ClassVar[int]
+    START_YEAR_FIELD_NUMBER: _ClassVar[int]
+    END_YEAR_FIELD_NUMBER: _ClassVar[int]
     longname: str
-    def __init__(self, longname: _Optional[str] = ...) -> None: ...
+    start_year: int
+    end_year: int
+    def __init__(
+        self,
+        longname: _Optional[str] = ...,
+        start_year: _Optional[int] = ...,
+        end_year: _Optional[int] = ...,
+    ) -> None: ...
 
 class CongressionalRepresentativeTable(_message.Message):
     __slots__ = ("representatives", "districts")

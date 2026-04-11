@@ -864,7 +864,7 @@ export interface ITermIn {
     endYear?: (number|null);
 
     /** TermIn districtIdx */
-    districtIdx?: (number|null);
+    districtIdx?: (number[]|null);
 }
 
 /** Represents a TermIn. */
@@ -883,7 +883,7 @@ export class TermIn implements ITermIn {
     public endYear: number;
 
     /** TermIn districtIdx. */
-    public districtIdx: number;
+    public districtIdx: number[];
 
     /**
      * Creates a new TermIn instance using the specified properties.
@@ -968,6 +968,12 @@ export interface ICongressionalDistrict {
 
     /** CongressionalDistrict longname */
     longname?: (string|null);
+
+    /** CongressionalDistrict startYear */
+    startYear?: (number|null);
+
+    /** CongressionalDistrict endYear */
+    endYear?: (number|null);
 }
 
 /** Represents a CongressionalDistrict. */
@@ -981,6 +987,12 @@ export class CongressionalDistrict implements ICongressionalDistrict {
 
     /** CongressionalDistrict longname. */
     public longname: string;
+
+    /** CongressionalDistrict startYear. */
+    public startYear: number;
+
+    /** CongressionalDistrict endYear. */
+    public endYear: number;
 
     /**
      * Creates a new CongressionalDistrict instance using the specified properties.
