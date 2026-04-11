@@ -1,5 +1,6 @@
 import React, { CSSProperties, Fragment, ReactNode, useMemo } from 'react'
 
+import partyPages from '../data/party_pages'
 import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { Universe, useUniverse } from '../universe'
@@ -250,6 +251,46 @@ interface CongressionalColumnData {
     representatives: CongressionalRepresentativeEntry[]
 }
 
+function getPartyPage(party: string): (typeof partyPages)[keyof typeof partyPages] {
+    assert(party in partyPages, `Party ${party} not found in partyPages data`)
+    return partyPages[party as keyof typeof partyPages]
+}
+
+function RepresentativeParty(props: { party?: string | null }): ReactNode {
+    const colors = useColors()
+    if (!props.party || props.party === 'Independent') {
+        return null
+    }
+    const partyPage = getPartyPage(props.party)
+    // eslint-disable-next-line no-restricted-syntax -- not actual colors, just remapping
+    const colorStr = partyPage.party_color === 'black' || partyPage.party_color === 'gray' ? 'grey' : partyPage.party_color
+    const color = colors.hueColors[colorStr]
+
+    return (
+        <a href={partyPage.wikipedia_page} style={{ textDecoration: 'none', color }} target="_blank" rel="noopener noreferrer">
+            {` (${props.party.slice(0, 1)})`}
+        </a>
+    )
+}
+
+function Representative(props: { representative: CongressionalRepresentativeEntry['representative'] }): ReactNode {
+    assert(
+        props.representative.wikipediaPage !== null
+        && props.representative.wikipediaPage !== undefined
+        && props.representative.name !== null
+        && props.representative.name !== undefined,
+        `Representative ${JSON.stringify(props.representative)} is missing required fields`,
+    )
+    return (
+        <span>
+            <a href={props.representative.wikipediaPage} style={{ textDecoration: 'none', color: 'inherit' }} target="_blank" rel="noopener noreferrer">
+                {props.representative.name}
+            </a>
+            <RepresentativeParty party={props.representative.party ?? undefined} />
+        </span>
+    )
+}
+
 function extractCongressionalWidgetData(cellSpecs: CellSpec[]): {
     termsDescending: number[]
     columns: CongressionalColumnData[]
@@ -432,11 +473,11 @@ function CongressionalRepresentativesWidget(props: {
         })
     }
 
-    const partyAbbreviation = (party?: string | null): string => {
-        if (party === undefined || party === null || party === '' || party === 'Independent') {
-            return ''
+    const districtArticleHref = (district: string): string | undefined => {
+        if (district === 'No district data' || district === 'District unknown') {
+            return undefined
         }
-        return ` (${party.slice(0, 1)})`
+        return `article.html?longname=${encodeURIComponent(district)}`
     }
 
     const entriesByColumnAndTerm = props.columns.map(column =>
@@ -486,6 +527,9 @@ function CongressionalRepresentativesWidget(props: {
                         gridColumn: 1,
                         gridRow: 1,
                         padding: '6px 8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-end',
                         textAlign: 'right',
                         borderBottom: `1px solid ${borderColor}`,
                         backgroundColor: panelBackground,
@@ -519,6 +563,9 @@ function CongressionalRepresentativesWidget(props: {
                             gridColumn: 1,
                             gridRow: displayIndex + 2,
                             padding: '6px 8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'flex-end',
                             textAlign: 'right',
                             borderBottom: displayIndex === displayRows.length - 1 ? 'none' : `1px solid ${borderColor}`,
                         }}
@@ -564,15 +611,21 @@ function CongressionalRepresentativesWidget(props: {
                                         borderLeft: `1px solid ${borderColor}`,
                                         borderBottom: `1px solid ${borderColor}`,
                                         backgroundColor: colors.background,
+                                        display: 'flex',
                                     }}
                                 >
-                                    <div style={{ display: 'grid', gridTemplateColumns: gridTemplateColumnsDistrict }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: gridTemplateColumnsDistrict, width: '100%', height: '100%' }}>
                                         {baseBuckets.map((bucket, bucketIndex) => (
                                             <div
                                                 key={`district_header_${columnIndex}_${run.startIndex}_${bucketIndex}`}
                                                 className="serif value"
                                                 style={{
                                                     fontSize: '0.9em',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'flex-end',
+                                                    alignItems: 'center',
+                                                    height: '100%',
                                                     textAlign: 'center',
                                                     padding: '4px 6px',
                                                     borderRight: bucketIndex === baseBuckets.length - 1 ? 'none' : `1px solid ${borderColor}`,
@@ -580,7 +633,18 @@ function CongressionalRepresentativesWidget(props: {
                                                 }}
                                             >
                                                 {headerLabelsByBucketIndex[bucketIndex].map((label, labelIdx) => (
-                                                    <div key={`district_header_label_${columnIndex}_${run.startIndex}_${bucketIndex}_${labelIdx}`}>{label}</div>
+                                                    <div key={`district_header_label_${columnIndex}_${run.startIndex}_${bucketIndex}_${labelIdx}`}>
+                                                        {districtArticleHref(label) === undefined
+                                                            ? label
+                                                            : (
+                                                                    <a
+                                                                        href={districtArticleHref(label)}
+                                                                        style={{ textDecoration: 'none', color: 'inherit' }}
+                                                                    >
+                                                                        {label}
+                                                                    </a>
+                                                                )}
+                                                    </div>
                                                 ))}
                                             </div>
                                         ))}
@@ -615,14 +679,7 @@ function CongressionalRepresentativesWidget(props: {
                                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                                             {bucket.entries.map((entry, entryIndex) => (
                                                                 <span key={`rep_${columnIndex}_${run.startIndex}_${bucketIndex}_${entryIndex}`} className="serif value" style={{ textAlign: 'center' }}>
-                                                                    {entry.representative.wikipediaPage !== undefined && entry.representative.wikipediaPage !== null
-                                                                        ? (
-                                                                                <a href={entry.representative.wikipediaPage} style={{ textDecoration: 'none', color: 'inherit' }} target="_blank" rel="noopener noreferrer">
-                                                                                    {entry.representative.name ?? ''}
-                                                                                </a>
-                                                                            )
-                                                                        : (entry.representative.name ?? '')}
-                                                                    {partyAbbreviation(entry.representative.party)}
+                                                                    <Representative representative={entry.representative} />
                                                                 </span>
                                                             ))}
                                                         </div>
