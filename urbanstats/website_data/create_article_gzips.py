@@ -5,6 +5,7 @@ import numpy as np
 
 from urbanstats.geometry.relationship import full_relationships, ordering_idx
 from urbanstats.metadata.metadata_list import metadata_types
+from urbanstats.metadata.metadata_column import congressional_representative_proto
 from urbanstats.ordinals.flat_ordinals import compute_flat_ordinals
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
@@ -24,7 +25,7 @@ def isnan(x):
 def metadata_for_article(row, representative_table_builder):
     metadata = []
     for i, (key, metadata_type) in enumerate(metadata_types.items()):
-        if row[key] != row[key] or row[key] is None:
+        if key not in row or row[key] != row[key] or row[key] is None:
             continue
         metadata_value = metadata_type.create(
             i, row[key], representative_table_builder=representative_table_builder
@@ -38,24 +39,49 @@ def metadata_for_article(row, representative_table_builder):
 class RepresentativeTableBuilder:
     def __init__(self):
         self._representative_key_to_index = {}
+        self._district_to_index = {}
+        self._term_keys_by_representative = {}
         self.representatives = []
+        self.districts = []
 
-    def index_for(self, representative):
+    def index_for(self, representative_with_terms):
+        representative = representative_with_terms.representative
         key = (
             representative.name,
-            representative.wikipedia_page
-            if representative.HasField("wikipedia_page")
-            else None,
-            representative.party if representative.HasField("party") else None,
+            representative.wikipedia_page or None,
+            representative.party or None,
         )
         if key not in self._representative_key_to_index:
             self._representative_key_to_index[key] = len(self.representatives)
-            self.representatives.append(representative)
+            self.representatives.append(congressional_representative_proto(representative))
+            self._term_keys_by_representative[key] = set()
+
+        representative_proto = self.representatives[self._representative_key_to_index[key]]
+        district_longname = representative_with_terms.district_longname
+        if district_longname not in self._district_to_index:
+            self._district_to_index[district_longname] = len(self.districts)
+            self.districts.append(
+                data_files_pb2.CongressionalDistrict(longname=district_longname)
+            )
+
+        term_key = (
+            representative_with_terms.start_term,
+            representative_with_terms.end_term,
+            self._district_to_index[district_longname],
+        )
+        if term_key not in self._term_keys_by_representative[key]:
+            self._term_keys_by_representative[key].add(term_key)
+            representative_proto.term_in.add(
+                start_year=representative_with_terms.start_term,
+                district_idx=self._district_to_index[district_longname],
+            )
+
         return self._representative_key_to_index[key]
 
     def to_proto(self):
         result = data_files_pb2.CongressionalRepresentativeTable()
         result.representatives.extend(self.representatives)
+        result.districts.extend(self.districts)
         return result
 
 

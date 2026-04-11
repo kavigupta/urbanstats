@@ -118,18 +118,13 @@ class CongressionalRepresentative(_message.Message):
     ) -> None: ...
 
 class TermIn(_message.Message):
-    __slots__ = ("start_year", "end_year", "district_idx")
+    __slots__ = ("start_year", "district_idx")
     START_YEAR_FIELD_NUMBER: _ClassVar[int]
-    END_YEAR_FIELD_NUMBER: _ClassVar[int]
     DISTRICT_IDX_FIELD_NUMBER: _ClassVar[int]
     start_year: int
-    end_year: int
     district_idx: int
     def __init__(
-        self,
-        start_year: _Optional[int] = ...,
-        end_year: _Optional[int] = ...,
-        district_idx: _Optional[int] = ...,
+        self, start_year: _Optional[int] = ..., district_idx: _Optional[int] = ...
     ) -> None: ...
 
 class CongressionalDistrict(_message.Message):

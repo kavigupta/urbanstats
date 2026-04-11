@@ -2118,7 +2118,6 @@ export const TermIn = $root.TermIn = (() => {
      * @exports ITermIn
      * @interface ITermIn
      * @property {number|null} [startYear] TermIn startYear
-     * @property {number|null} [endYear] TermIn endYear
      * @property {number|null} [districtIdx] TermIn districtIdx
      */
 
@@ -2144,14 +2143,6 @@ export const TermIn = $root.TermIn = (() => {
      * @instance
      */
     TermIn.prototype.startYear = 0;
-
-    /**
-     * TermIn endYear.
-     * @member {number} endYear
-     * @memberof TermIn
-     * @instance
-     */
-    TermIn.prototype.endYear = 0;
 
     /**
      * TermIn districtIdx.
@@ -2187,8 +2178,6 @@ export const TermIn = $root.TermIn = (() => {
             writer = $Writer.create();
         if (message.startYear != null && Object.hasOwnProperty.call(message, "startYear"))
             writer.uint32(/* id 1, wireType 0 =*/8).int32(message.startYear);
-        if (message.endYear != null && Object.hasOwnProperty.call(message, "endYear"))
-            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.endYear);
         if (message.districtIdx != null && Object.hasOwnProperty.call(message, "districtIdx"))
             writer.uint32(/* id 3, wireType 0 =*/24).int32(message.districtIdx);
         return writer;
@@ -2227,10 +2216,6 @@ export const TermIn = $root.TermIn = (() => {
             switch (tag >>> 3) {
             case 1: {
                     message.startYear = reader.int32();
-                    break;
-                }
-            case 2: {
-                    message.endYear = reader.int32();
                     break;
                 }
             case 3: {
@@ -2275,9 +2260,6 @@ export const TermIn = $root.TermIn = (() => {
         if (message.startYear != null && message.hasOwnProperty("startYear"))
             if (!$util.isInteger(message.startYear))
                 return "startYear: integer expected";
-        if (message.endYear != null && message.hasOwnProperty("endYear"))
-            if (!$util.isInteger(message.endYear))
-                return "endYear: integer expected";
         if (message.districtIdx != null && message.hasOwnProperty("districtIdx"))
             if (!$util.isInteger(message.districtIdx))
                 return "districtIdx: integer expected";
@@ -2298,8 +2280,6 @@ export const TermIn = $root.TermIn = (() => {
         let message = new $root.TermIn();
         if (object.startYear != null)
             message.startYear = object.startYear | 0;
-        if (object.endYear != null)
-            message.endYear = object.endYear | 0;
         if (object.districtIdx != null)
             message.districtIdx = object.districtIdx | 0;
         return message;
@@ -2320,13 +2300,10 @@ export const TermIn = $root.TermIn = (() => {
         let object = {};
         if (options.defaults) {
             object.startYear = 0;
-            object.endYear = 0;
             object.districtIdx = 0;
         }
         if (message.startYear != null && message.hasOwnProperty("startYear"))
             object.startYear = message.startYear;
-        if (message.endYear != null && message.hasOwnProperty("endYear"))
-            object.endYear = message.endYear;
         if (message.districtIdx != null && message.hasOwnProperty("districtIdx"))
             object.districtIdx = message.districtIdx;
         return object;

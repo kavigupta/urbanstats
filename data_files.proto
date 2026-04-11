@@ -52,7 +52,6 @@ message CongressionalRepresentative {
 
 message TermIn {
     int32 start_year = 1;
-    int32 end_year = 2;
     int32 district_idx = 3; // index into CongressionalRepresentativeTable.districts
 }
 

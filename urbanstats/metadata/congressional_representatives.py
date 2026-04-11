@@ -29,6 +29,7 @@ class Representative:
 @dataclass(frozen=True)
 class RepresentativeWithTerms:
     representative: Representative
+    district_longname: str
     start_term: int
     end_term: int
 
@@ -172,7 +173,7 @@ def compute_representatives_for_shapefile(
 class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
     representatives_csv_version = "a38a7de"
     version = (
-        f"congressional_representatives_structured_{representatives_csv_version}_v64"
+        f"congressional_representatives_structured_{representatives_csv_version}_v65"
     )
 
     def compute_metadata_columns(self, *, shapefile, shapefiles, shapefile_table):
@@ -231,6 +232,7 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
                     with_terms = [
                         RepresentativeWithTerms(
                             representative=rep,
+                            district_longname=name_other,
                             start_term=term_start_year,
                             end_term=term_start_year,
                         )
@@ -247,14 +249,14 @@ def deduplicate_and_sort_representatives(
     # Sort representatives by start_term, then end_term, then name
     by_representative = defaultdict(set)
     for rep_with_terms in representatives_with_terms:
-        by_representative[rep_with_terms.representative].add(rep_with_terms)
+        by_representative[(rep_with_terms.representative, rep_with_terms.district_longname)].add(rep_with_terms)
     result = []
     for rwts in by_representative.values():
         rwts = merge_adjacent_terms(
             sorted(rwts, key=lambda rwt: (rwt.start_term, rwt.end_term))
         )
         result.extend(rwts)
-    result.sort(key=lambda rwt: (rwt.start_term, rwt.end_term, rwt.representative.name))
+    result.sort(key=lambda rwt: (rwt.start_term, rwt.end_term, rwt.representative.name, rwt.district_longname))
     return result
 
 
@@ -266,6 +268,7 @@ def merge_adjacent_terms(
         last = merged[-1]
         if (
             rwt.representative == last.representative
+            and rwt.district_longname == last.district_longname
             and rwt.start_term
             <= last.end_term + 2  # allow for 2 year gap between terms
         ):
@@ -276,6 +279,7 @@ def merge_adjacent_terms(
             merged.append(
                 RepresentativeWithTerms(
                     representative=last.representative,
+                    district_longname=last.district_longname,
                     start_term=min(last.start_term, rwt.start_term),
                     end_term=max(last.end_term, rwt.end_term),
                 )

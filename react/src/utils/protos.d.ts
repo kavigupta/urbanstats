@@ -860,9 +860,6 @@ export interface ITermIn {
     /** TermIn startYear */
     startYear?: (number|null);
 
-    /** TermIn endYear */
-    endYear?: (number|null);
-
     /** TermIn districtIdx */
     districtIdx?: (number|null);
 }
@@ -878,9 +875,6 @@ export class TermIn implements ITermIn {
 
     /** TermIn startYear. */
     public startYear: number;
-
-    /** TermIn endYear. */
-    public endYear: number;
 
     /** TermIn districtIdx. */
     public districtIdx: number;
