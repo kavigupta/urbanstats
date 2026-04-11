@@ -150,13 +150,16 @@ function computeCongressionalTableModel(input: {
 
     const sectionStartByColumnAndTerm = districtBucketsByColumnAndTerm.map((bucketsByTerm) => {
         const starts = new Set<number>()
-        let previousRepresentativeCountPattern: string | null = null
+        let previousSectionPattern: string | null = null
         bucketsByTerm.forEach((buckets, termIndex) => {
             const representativeCountPattern = buckets.map(bucket => bucket.entries.length).join('|')
-            if (termIndex === 0 || representativeCountPattern !== previousRepresentativeCountPattern) {
+            const sectionPattern = buckets.length <= 1
+                ? `count:${representativeCountPattern}`
+                : `count:${representativeCountPattern};topology:${buckets.map(bucket => `${bucket.districtLabel}::${bucket.signature}`).join('|')}`
+            if (termIndex === 0 || sectionPattern !== previousSectionPattern) {
                 starts.add(termIndex)
             }
-            previousRepresentativeCountPattern = representativeCountPattern
+            previousSectionPattern = sectionPattern
         })
         return starts
     })
@@ -171,7 +174,7 @@ function computeCongressionalTableModel(input: {
     const headerStartTermIndices = new Set<number>()
     for (let termIndex = 0; termIndex < input.termsDescending.length; termIndex += 1) {
         const headerCount = headerStartCountByTerm.get(termIndex) ?? 0
-        if (input.columns.length === 1 ? headerCount >= 1 : headerCount >= 2) {
+        if (headerCount >= 1) {
             headerStartTermIndices.add(termIndex)
         }
     }

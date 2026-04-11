@@ -195,7 +195,7 @@ void test('computeCongressionalWidgetModel keeps one section for serial district
     ])
 
     assert.deepEqual(model?.supercolumns[0].sections.length, 1)
-    assert.deepEqual(model?.supercolumns[0].sections[0].congressionalRuns.length, 1)
+    assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns.length, 1)
     assert.deepEqual(model.supercolumns[0].sections[0].districtHeaders, [['CA-27 (1993), USA', 'CA-06 (1993), USA']])
 })
 
@@ -214,4 +214,30 @@ void test('computeCongressionalWidgetModel creates a new section when representa
     assert.deepEqual(model?.supercolumns[0].sections.length, 2)
     assert.deepEqual(model.supercolumns[0].sections.map(section => [section.startTermIndex, section.endTermIndex]), [[0, 1], [2, 5]])
     assert.deepEqual(model.supercolumns[0].sections.map(section => section.districtHeaders), [[['CA-06 (1993), USA']], [['CA-06 (1993), USA']]])
+})
+
+void test('computeCongressionalWidgetModel creates a new section when district topology changes with the same representative-count pattern', () => {
+    const model = computeCongressionalWidgetModel([
+        {
+            longname: 'CA',
+            representatives: [
+                // A and B are parellel, C and D are parallel. this should be split up.
+                representative('Representative A', 'CA-27 (1993), USA', 2003, 2005),
+                representative('Representative B', 'CA-28 (2023), USA', 2003, 2005),
+                representative('Representative C', 'CA-29 (2003), USA', 2001, 2003),
+                representative('Representative D', 'CA-30 (2003), USA', 2001, 2003),
+            ],
+        },
+    ])
+
+    if (model === undefined) {
+        assert.fail('Expected model to be defined')
+    }
+
+    assert.equal(model.supercolumns[0].sections.length, 2)
+    assert.deepEqual(model.supercolumns[0].sections.map(section => section.startTermIndex), [0, 1])
+    assert.deepEqual(model.supercolumns[0].sections.map(section => section.districtHeaders), [
+        [['CA-27 (1993), USA'], ['CA-28 (2023), USA']],
+        [['CA-29 (2003), USA'], ['CA-30 (2003), USA']],
+    ])
 })

@@ -232,25 +232,45 @@ function CongressionalRepresentativesTableRenderer(props: {
                                             : (
                                                     <>
                                                         {(() => {
-                                                            const placements = run.representatives.map((representative, entryIndex) => {
+                                                            const placements = run.representatives.flatMap((representative, entryIndex) => {
                                                                 const terms = run.termsByRepresentative[entryIndex] ?? []
                                                                 const sectionRelativeTermRows = terms
                                                                     .map(termStart => termIndexByStart.get(termStart))
                                                                     .filter((termIndex): termIndex is number => termIndex !== undefined)
                                                                     .map(termIndex => termIndex - section.startTermIndex + 1)
                                                                     .filter(termRow => termRow >= 1 && termRow <= sectionTermCount)
-                                                                const rowStart = sectionRelativeTermRows.length > 0
-                                                                    ? Math.min(...sectionRelativeTermRows)
-                                                                    : run.termCounts.slice(0, entryIndex).reduce((a, b) => a + b, 0) + 1
-                                                                const spanCount = sectionRelativeTermRows.length > 0
-                                                                    ? Math.max(...sectionRelativeTermRows) - Math.min(...sectionRelativeTermRows) + 1
-                                                                    : Math.max(run.termCounts[entryIndex], 1)
-                                                                return {
-                                                                    representative,
-                                                                    key: `rep_${columnIndex}_${section.startTermIndex}_${bucketIndex}_${entryIndex}`,
-                                                                    rowStart,
-                                                                    spanCount,
+                                                                    .sort((a, b) => a - b)
+
+                                                                if (sectionRelativeTermRows.length === 0) {
+                                                                    return [{
+                                                                        representative,
+                                                                        key: `rep_${columnIndex}_${section.startTermIndex}_${bucketIndex}_${entryIndex}_fallback`,
+                                                                        rowStart: run.termCounts.slice(0, entryIndex).reduce((a, b) => a + b, 0) + 1,
+                                                                        spanCount: Math.max(run.termCounts[entryIndex], 1),
+                                                                    }]
                                                                 }
+
+                                                                const segments = sectionRelativeTermRows.reduce<number[][]>((acc, row) => {
+                                                                    if (acc.length === 0) {
+                                                                        return [[row]]
+                                                                    }
+                                                                    const current = acc[acc.length - 1]
+                                                                    const previousRow = current[current.length - 1]
+                                                                    if (row === previousRow || row === previousRow + 1) {
+                                                                        if (row !== previousRow) {
+                                                                            current.push(row)
+                                                                        }
+                                                                        return acc
+                                                                    }
+                                                                    return [...acc, [row]]
+                                                                }, [])
+
+                                                                return segments.map((segment, segmentIndex) => ({
+                                                                    representative,
+                                                                    key: `rep_${columnIndex}_${section.startTermIndex}_${bucketIndex}_${entryIndex}_seg_${segmentIndex}`,
+                                                                    rowStart: segment[0],
+                                                                    spanCount: segment[segment.length - 1] - segment[0] + 1,
+                                                                }))
                                                             })
 
                                                             const groupedByPlacement = placements.reduce<Map<string, typeof placements>>((acc, placement) => {
