@@ -4,8 +4,8 @@ import partyPages from '../../data/party_pages'
 import { useColors } from '../../page_template/colors'
 import { assert } from '../../utils/defensive'
 
-import { computeCongressionalTableModel, formatTermLabel } from './compute-model'
-import { CongressionalColumnData, CongressionalRepresentativeEntry, CongressionalTableModel } from './model'
+import { computeCongressionalWidgetModel, CongressionalRegionData } from './compute-model'
+import { CongressionalRepresentativeEntry, CongressionalTableModel } from './model'
 
 function getPartyPage(party: string): (typeof partyPages)[keyof typeof partyPages] {
     assert(party in partyPages, `Party ${party} not found in partyPages data`)
@@ -243,19 +243,19 @@ function CongressionalRepresentativesTableRenderer(props: {
 }
 
 export function CongressionalRepresentativesWidget(props: {
+    regions: CongressionalRegionData[]
     widthLeftHeader: number
     columnWidth: number
     extraSpaceRight: number[]
-    termsDescending: number[]
-    columns: CongressionalColumnData[]
 }): ReactNode {
     const model = useMemo(
-        () => computeCongressionalTableModel({
-            termsDescending: props.termsDescending,
-            columns: props.columns,
-        }),
-        [props.termsDescending, props.columns],
+        () => computeCongressionalWidgetModel(props.regions),
+        [props.regions],
     )
+
+    if (model === undefined) {
+        return null
+    }
 
     return (
         <CongressionalRepresentativesTableRenderer
@@ -265,4 +265,8 @@ export function CongressionalRepresentativesWidget(props: {
             extraSpaceRight={props.extraSpaceRight}
         />
     )
+}
+
+function formatTermLabel(termStart: number): string {
+    return `${termStart}-${String(termStart + 2).slice(2)}`
 }

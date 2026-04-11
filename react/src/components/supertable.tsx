@@ -6,7 +6,6 @@ import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { Article } from '../utils/protos'
 
-import { extractCongressionalWidgetData } from './congressional-table/compute-model'
 import { CongressionalRepresentativesWidget } from './congressional-table/render'
 import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
@@ -211,9 +210,6 @@ function SuperTableRow(props: {
             representatives: cell.row.statval.representatives,
         }]
     })
-    const congressionalWidgetData = congressionalRegions.length > 0
-        ? extractCongressionalWidgetData(congressionalRegions)
-        : undefined
 
     return (
         <div>
@@ -240,13 +236,12 @@ function SuperTableRow(props: {
                     <RenderedPlot statDescription={props.plotSpec.statDescription} plotProps={props.plotSpec.plotProps} />
                 </div>
             )}
-            {congressionalWidgetData !== undefined && (
+            {congressionalRegions.length > 0 && (
                 <CongressionalRepresentativesWidget
+                    regions={congressionalRegions}
                     widthLeftHeader={props.widthLeftHeader}
                     columnWidth={props.columnWidth}
                     extraSpaceRight={props.extraSpaceRight}
-                    termsDescending={congressionalWidgetData.termsDescending}
-                    columns={congressionalWidgetData.columns}
                 />
             )}
         </div>

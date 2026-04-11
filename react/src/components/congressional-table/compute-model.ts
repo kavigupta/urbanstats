@@ -8,6 +8,11 @@ import {
     CongressionalDisplayRow,
 } from './model'
 
+export interface CongressionalRegionData {
+    longname?: string
+    representatives: CongressionalRepresentativeEntry[]
+}
+
 function termStartsForEntry(entry: CongressionalRepresentativeEntry): number[] {
     const startTerm = entry.startTerm
     if (startTerm === undefined) {
@@ -89,10 +94,7 @@ function districtBucketsForTerm(entries: CongressionalRepresentativeEntry[]): Di
         })
 }
 
-export function extractCongressionalWidgetData(cellSpecs: {
-    longname?: string
-    representatives: CongressionalRepresentativeEntry[]
-}[]): {
+function extractCongressionalWidgetData(cellSpecs: CongressionalRegionData[]): {
     termsDescending: number[]
     columns: CongressionalColumnData[]
 } | undefined {
@@ -119,11 +121,7 @@ export function extractCongressionalWidgetData(cellSpecs: {
     return { termsDescending, columns }
 }
 
-export function formatTermLabel(termStart: number): string {
-    return `${termStart}-${String(termStart + 2).slice(2)}`
-}
-
-export function computeCongressionalTableModel(input: {
+function computeCongressionalTableModel(input: {
     termsDescending: number[]
     columns: CongressionalColumnData[]
 }): CongressionalTableModel {
@@ -258,4 +256,12 @@ export function computeCongressionalTableModel(input: {
         displayRows,
         supercolumns,
     }
+}
+
+export function computeCongressionalWidgetModel(cellSpecs: CongressionalRegionData[]): CongressionalTableModel | undefined {
+    const extracted = extractCongressionalWidgetData(cellSpecs)
+    if (extracted === undefined) {
+        return undefined
+    }
+    return computeCongressionalTableModel(extracted)
 }
