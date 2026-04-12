@@ -13,6 +13,7 @@ import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { sanitize } from '../utils/paths'
 
+import { makeColumnDeleteHandler } from './makeColumnDeleteHandler'
 import { makeColumnReorderHandler } from './makeColumnReorderHandler'
 import { Statistic, StatData, StatSetter, View } from './types'
 
@@ -139,6 +140,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
         headerSpecs,
         showBottomBar: false,
         handleReorder: makeColumnReorderHandler(stat, set, typeEnvironment, view),
+        handleDelete: makeColumnDeleteHandler(stat, set, typeEnvironment, view),
     }
 
     const highlightOriginalIdx = data.articleNames.indexOf(view.highlight ?? '')

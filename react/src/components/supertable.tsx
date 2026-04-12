@@ -21,6 +21,7 @@ export interface SuperHeaderSpec {
     showBottomBar: boolean
     groupNames?: (string | undefined)[]
     handleReorder?: (from: number, to: number) => void
+    handleDelete?: (colIndex: number) => void
 }
 
 export interface LeftHeaderSpec {

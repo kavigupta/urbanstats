@@ -122,6 +122,7 @@ export interface SuperHeaderHorizontalProps {
     leftSpacerWidth: number
     groupNames?: (string | undefined)[]
     handleReorder?: (from: number, to: number) => void
+    handleDelete?: (colIndex: number) => void
 }
 
 export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactNode {
@@ -174,13 +175,21 @@ export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactN
                                 const nonDraggableSpec: CellSpec = cellSpec.type === 'comparison-longname' ? { ...cellSpec, draggable: false } : cellSpec
                                 return (
                                     <SortableHeaderCell key={idx} id={idx.toString()} width={props.widthsEach[idx]}>
-                                        <Cell {...nonDraggableSpec} width={100} />
+                                        <DeleteButton handleDelete={props.handleDelete} idx={idx} colors={colors}>
+                                            <Cell {...nonDraggableSpec} width={100} />
+                                        </DeleteButton>
                                     </SortableHeaderCell>
                                 )
                             })}
                         </SortableContext>
                     )
-                : props.headerSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} width={props.widthsEach[idx]} />)}
+                : props.headerSpecs.map((cellSpec, idx) => (
+                    <div key={idx} style={{ width: `${props.widthsEach[idx]}%`, position: 'relative' }}>
+                        <DeleteButton handleDelete={props.handleDelete} idx={idx} colors={colors}>
+                            <Cell {...cellSpec} width={100} />
+                        </DeleteButton>
+                    </div>
+                ))}
         </div>
     )
 
@@ -219,6 +228,36 @@ function SortableHeaderCell({ id, width, children }: { id: string, width: number
             {...listeners}
         >
             {children}
+        </div>
+    )
+}
+
+function DeleteButton({ handleDelete, idx, colors, children }: { handleDelete: ((colIndex: number) => void) | undefined, idx: number, colors: Colors, children: ReactNode }): ReactNode {
+    if (handleDelete === undefined) {
+        return <>{children}</>
+    }
+    return (
+        <div style={{ position: 'relative', width: '100%' }}>
+            {children}
+            <button
+                data-test-id="delete-column"
+                onPointerDown={e => { e.stopPropagation() }}
+                onClick={() => { handleDelete(idx) }}
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: colors.hueColors.red,
+                    fontSize: '1em',
+                    lineHeight: 1,
+                    padding: '2px 4px',
+                }}
+            >
+                ×
+            </button>
         </div>
     )
 }
