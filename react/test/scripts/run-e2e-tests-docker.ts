@@ -13,7 +13,7 @@ export async function runE2eTestsDocker(args: string[]): Promise<number> {
         [
             'run', '--rm',
             '--network', 'host',
-            ...process.stdout.isTTY ? ['-t'] : [],
+            ...process.stdout.isTTY ? ['-it'] : [],
             '-v', `${repoRoot}:/urbanstats`,
             '-w', '/urbanstats/react',
             ...process.env.PORT ? ['-e', `PORT=${process.env.PORT}`] : [],
