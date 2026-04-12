@@ -2,7 +2,13 @@ import assert from 'assert/strict'
 import { test } from 'node:test'
 
 import { computeCongressionalWidgetModel } from '../src/components/congressional-table/compute-model'
-import { CongressionalRepresentativeEntry } from '../src/components/congressional-table/model'
+import { CongressionalRepresentativeEntry, CongressionalTableModel } from '../src/components/congressional-table/model'
+
+function assertModelDefined(model: CongressionalTableModel | undefined): asserts model is CongressionalTableModel {
+    if (model === undefined) {
+        assert.fail('Expected model to be defined')
+    }
+}
 
 function representative(name: string, districtLongname: string, startTerm: number, endTerm?: number): CongressionalRepresentativeEntry {
     return {
@@ -34,23 +40,22 @@ void test('computeCongressionalWidgetModel with only one representative', () => 
     assert.deepEqual(model, {
         displayRows: [
             { kind: 'header-space', termIndex: 0 },
-            { kind: 'term-label', termIndex: 0, termStart: 2003 },
-            { kind: 'term-label', termIndex: 1, termStart: 2001 },
+            { kind: 'term-label', termIndex: 0, termStart: 2005 },
+            { kind: 'term-label', termIndex: 1, termStart: 2003 },
+            { kind: 'term-label', termIndex: 2, termStart: 2001 },
         ],
         supercolumns: [
             {
                 longname: 'CA-06',
                 sections: [
                     {
-                        startTermIndex: 0,
-                        endTermIndex: 1,
                         headerDisplayIndex: 0,
                         contentStartDisplayIndex: 1,
-                        contentEndDisplayIndex: 2,
+                        contentEndDisplayIndex: 3,
                         districtHeaders: [['CA-06 (1993), USA']],
                         congressionalRuns: [
                             {
-                                termRuns: [
+                                displayRuns: [
                                     {
                                         representatives: [
                                             {
@@ -59,8 +64,8 @@ void test('computeCongressionalWidgetModel with only one representative', () => 
                                                 party: 'Democratic',
                                             },
                                         ],
-                                        startTerm: 2003,
-                                        endTerm: 2001,
+                                        startDisplayIndex: 1,
+                                        endDisplayIndex: 3,
                                     },
                                 ],
                             },
@@ -78,34 +83,33 @@ void test('computeCongressionalWidgetModel with multiple representatives in one 
             longname: 'CA-06',
             representatives: [
                 representative('James E. Rogan', 'CA-06 (1993), USA', 2001, 2005),
-                representative('Gary Condit', 'CA-06 (1993), USA', 1993, 2001),
+                representative('Gary Condit', 'CA-06 (1993), USA', 1993, 1999),
             ],
         },
     ])
     assert.deepEqual(model, {
         displayRows: [
             { kind: 'header-space', termIndex: 0 },
-            { kind: 'term-label', termIndex: 0, termStart: 2003 },
-            { kind: 'term-label', termIndex: 1, termStart: 2001 },
-            { kind: 'term-label', termIndex: 2, termStart: 1999 },
-            { kind: 'term-label', termIndex: 3, termStart: 1997 },
-            { kind: 'term-label', termIndex: 4, termStart: 1995 },
-            { kind: 'term-label', termIndex: 5, termStart: 1993 },
+            { kind: 'term-label', termIndex: 0, termStart: 2005 },
+            { kind: 'term-label', termIndex: 1, termStart: 2003 },
+            { kind: 'term-label', termIndex: 2, termStart: 2001 },
+            { kind: 'term-label', termIndex: 3, termStart: 1999 },
+            { kind: 'term-label', termIndex: 4, termStart: 1997 },
+            { kind: 'term-label', termIndex: 5, termStart: 1995 },
+            { kind: 'term-label', termIndex: 6, termStart: 1993 },
         ],
         supercolumns: [
             {
                 longname: 'CA-06',
                 sections: [
                     {
-                        startTermIndex: 0,
-                        endTermIndex: 5,
                         headerDisplayIndex: 0,
                         contentStartDisplayIndex: 1,
-                        contentEndDisplayIndex: 6,
+                        contentEndDisplayIndex: 7,
                         districtHeaders: [['CA-06 (1993), USA']],
                         congressionalRuns: [
                             {
-                                termRuns: [
+                                displayRuns: [
                                     {
                                         representatives: [
                                             {
@@ -114,8 +118,8 @@ void test('computeCongressionalWidgetModel with multiple representatives in one 
                                                 party: 'Democratic',
                                             },
                                         ],
-                                        startTerm: 2003,
-                                        endTerm: 2001,
+                                        startDisplayIndex: 1,
+                                        endDisplayIndex: 3,
                                     },
                                     {
                                         representatives: [
@@ -125,8 +129,8 @@ void test('computeCongressionalWidgetModel with multiple representatives in one 
                                                 party: 'Democratic',
                                             },
                                         ],
-                                        startTerm: 1999,
-                                        endTerm: 1993,
+                                        startDisplayIndex: 4,
+                                        endDisplayIndex: 7,
                                     },
                                 ],
                             },
@@ -152,23 +156,22 @@ void test('computeCongressionalWidgetModel keeps one section for the same repres
     assert.deepEqual(model, {
         displayRows: [
             { kind: 'header-space', termIndex: 0 },
-            { kind: 'term-label', termIndex: 0, termStart: 2003 },
-            { kind: 'term-label', termIndex: 1, termStart: 2001 },
+            { kind: 'term-label', termIndex: 0, termStart: 2005 },
+            { kind: 'term-label', termIndex: 1, termStart: 2003 },
+            { kind: 'term-label', termIndex: 2, termStart: 2001 },
         ],
         supercolumns: [
             {
                 longname: 'CA-06',
                 sections: [
                     {
-                        startTermIndex: 0,
-                        endTermIndex: 1,
                         headerDisplayIndex: 0,
                         contentStartDisplayIndex: 1,
-                        contentEndDisplayIndex: 2,
+                        contentEndDisplayIndex: 3,
                         districtHeaders: [['CA-06 (1993), USA'], ['CA-27 (1993), USA']],
                         congressionalRuns: [
                             {
-                                termRuns: [
+                                displayRuns: [
                                     {
                                         representatives: [
                                             {
@@ -177,13 +180,13 @@ void test('computeCongressionalWidgetModel keeps one section for the same repres
                                                 party: 'Democratic',
                                             },
                                         ],
-                                        startTerm: 2003,
-                                        endTerm: 2001,
+                                        startDisplayIndex: 1,
+                                        endDisplayIndex: 3,
                                     },
                                 ],
                             },
                             {
-                                termRuns: [
+                                displayRuns: [
                                     {
                                         representatives: [
                                             {
@@ -192,8 +195,8 @@ void test('computeCongressionalWidgetModel keeps one section for the same repres
                                                 party: 'Democratic',
                                             },
                                         ],
-                                        startTerm: 2003,
-                                        endTerm: 2001,
+                                        startDisplayIndex: 1,
+                                        endDisplayIndex: 3,
                                     },
                                 ],
                             },
@@ -211,15 +214,16 @@ void test('computeCongressionalWidgetModel keeps one section for serial district
             longname: 'CA-06',
             representatives: [
                 representative('James E. Rogan', 'CA-27 (1993), USA', 2001, 2005),
-                representative('James E. Rogan', 'CA-06 (1993), USA', 1993, 2001),
+                representative('James E. Rogan', 'CA-06 (1993), USA', 1993, 1999),
             ],
         },
     ])
 
-    assert.deepEqual(model?.supercolumns[0].sections.length, 1)
+    assertModelDefined(model)
+    assert.deepEqual(model.supercolumns[0].sections.length, 1)
     assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns.length, 1)
     assert.deepEqual(model.supercolumns[0].sections[0].districtHeaders, [['CA-27 (1993), USA', 'CA-06 (1993), USA']])
-    assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns[0].termRuns, [
+    assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns[0].displayRuns, [
         {
             representatives: [
                 {
@@ -228,8 +232,8 @@ void test('computeCongressionalWidgetModel keeps one section for serial district
                     party: 'Democratic',
                 },
             ],
-            startTerm: 2003,
-            endTerm: 1993,
+            startDisplayIndex: 1,
+            endDisplayIndex: 7,
         },
     ])
 })
@@ -240,16 +244,17 @@ void test('computeCongressionalWidgetModel creates a new section when representa
             longname: 'CA-06',
             representatives: [
                 representative('James E. Rogan', 'CA-06 (1993), USA', 2001, 2005),
-                representative('Gary Condit', 'CA-06 (1993), USA', 1993, 2001),
-                representative('Carlos Moorhead', 'CA-06 (1993), USA', 1993, 2001),
+                representative('Gary Condit', 'CA-06 (1993), USA', 1993, 1999),
+                representative('Carlos Moorhead', 'CA-06 (1993), USA', 1993, 1999),
             ],
         },
     ])
 
-    assert.deepEqual(model?.supercolumns[0].sections.length, 2)
-    assert.deepEqual(model.supercolumns[0].sections.map(section => [section.startTermIndex, section.endTermIndex]), [[0, 1], [2, 5]])
+    assertModelDefined(model)
+    assert.deepEqual(model.supercolumns[0].sections.length, 2)
+    assert.deepEqual(model.supercolumns[0].sections.map(section => [section.contentStartDisplayIndex, section.contentEndDisplayIndex]), [[1, 3], [5, 8]])
     assert.deepEqual(model.supercolumns[0].sections.map(section => section.districtHeaders), [[['CA-06 (1993), USA']], [['CA-06 (1993), USA']]])
-    assert.deepEqual(model.supercolumns[0].sections[1].congressionalRuns[0].termRuns, [
+    assert.deepEqual(model.supercolumns[0].sections[1].congressionalRuns[0].displayRuns, [
         {
             representatives: [
                 {
@@ -263,8 +268,8 @@ void test('computeCongressionalWidgetModel creates a new section when representa
                     party: 'Democratic',
                 },
             ],
-            startTerm: 1999,
-            endTerm: 1993,
+            startDisplayIndex: 5,
+            endDisplayIndex: 8,
         },
     ])
 })
@@ -277,23 +282,21 @@ void test('computeCongressionalWidgetModel creates a new section when district t
                 // A and B are parellel, C and D are parallel. this should be split up.
                 representative('Representative A', 'CA-27 (1993), USA', 2003, 2005),
                 representative('Representative B', 'CA-28 (2023), USA', 2003, 2005),
-                representative('Representative C', 'CA-29 (2003), USA', 2001, 2003),
-                representative('Representative D', 'CA-30 (2003), USA', 2001, 2003),
+                representative('Representative C', 'CA-29 (2003), USA', 2001, 2001),
+                representative('Representative D', 'CA-30 (2003), USA', 2001, 2001),
             ],
         },
     ])
 
-    if (model === undefined) {
-        assert.fail('Expected model to be defined')
-    }
+    assertModelDefined(model)
 
     assert.equal(model.supercolumns[0].sections.length, 2)
-    assert.deepEqual(model.supercolumns[0].sections.map(section => section.startTermIndex), [0, 1])
+    assert.deepEqual(model.supercolumns[0].sections.map(section => section.contentStartDisplayIndex), [1, 4])
     assert.deepEqual(model.supercolumns[0].sections.map(section => section.districtHeaders), [
         [['CA-27 (1993), USA'], ['CA-28 (2023), USA']],
         [['CA-29 (2003), USA'], ['CA-30 (2003), USA']],
     ])
-    assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns[0].termRuns[0], {
+    assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns[0].displayRuns[0], {
         representatives: [
             {
                 name: 'Representative A',
@@ -301,10 +304,10 @@ void test('computeCongressionalWidgetModel creates a new section when district t
                 party: 'Democratic',
             },
         ],
-        startTerm: 2003,
-        endTerm: 2003,
+        startDisplayIndex: 1,
+        endDisplayIndex: 2,
     })
-    assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns[1].termRuns[0], {
+    assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns[1].displayRuns[0], {
         representatives: [
             {
                 name: 'Representative B',
@@ -312,8 +315,8 @@ void test('computeCongressionalWidgetModel creates a new section when district t
                 party: 'Democratic',
             },
         ],
-        startTerm: 2003,
-        endTerm: 2003,
+        startDisplayIndex: 1,
+        endDisplayIndex: 2,
     })
 })
 
@@ -328,16 +331,14 @@ void test('computeCongressionalWidgetModel creates per-term duplicated entries f
         },
     ])
 
-    if (model === undefined) {
-        assert.fail('Expected model to be defined')
-    }
+    assertModelDefined(model)
 
     assert.equal(model.supercolumns[0].sections.length, 2)
-    assert.deepEqual(model.supercolumns[0].sections.map(section => [section.startTermIndex, section.endTermIndex]), [[0, 0], [1, 1]])
+    assert.deepEqual(model.supercolumns[0].sections.map(section => [section.contentStartDisplayIndex, section.contentEndDisplayIndex]), [[1, 2], [4, 4]])
     assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns.length, 1)
     assert.deepEqual(model.supercolumns[0].sections[1].congressionalRuns.length, 1)
 
-    assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns[0].termRuns, [
+    assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns[0].displayRuns, [
         {
             representatives: [
                 {
@@ -351,12 +352,12 @@ void test('computeCongressionalWidgetModel creates per-term duplicated entries f
                     party: 'Democratic',
                 },
             ],
-            startTerm: 1859,
-            endTerm: 1859,
+            startDisplayIndex: 1,
+            endDisplayIndex: 2,
         },
     ])
 
-    assert.deepEqual(model.supercolumns[0].sections[1].congressionalRuns[0].termRuns, [
+    assert.deepEqual(model.supercolumns[0].sections[1].congressionalRuns[0].displayRuns, [
         {
             representatives: [
                 {
@@ -365,8 +366,106 @@ void test('computeCongressionalWidgetModel creates per-term duplicated entries f
                     party: 'Democratic',
                 },
             ],
-            startTerm: 1857,
-            endTerm: 1857,
+            startDisplayIndex: 4,
+            endDisplayIndex: 4,
         },
     ])
+})
+
+void test('computeCongressionalWidgetModel handles two geographies with one continuous and one split representative timeline', () => {
+    const model = computeCongressionalWidgetModel([
+        {
+            longname: 'Geo A',
+            representatives: [
+                representative('Continuous Rep', 'GA-01, USA', 2013, 2021),
+            ],
+        },
+        {
+            longname: 'Geo B',
+            representatives: [
+                representative('Split Rep One', 'GB-01, USA', 2013, 2015),
+                representative('Split Rep Two', 'GB-01, USA', 2017, 2021),
+            ],
+        },
+    ])
+
+    assert.deepEqual(model, {
+        displayRows: [
+            { kind: 'header-space', termIndex: 0 },
+            { kind: 'term-label', termIndex: 0, termStart: 2021 },
+            { kind: 'term-label', termIndex: 1, termStart: 2019 },
+            { kind: 'term-label', termIndex: 2, termStart: 2017 },
+            { kind: 'term-label', termIndex: 3, termStart: 2015 },
+            { kind: 'term-label', termIndex: 4, termStart: 2013 },
+        ],
+        supercolumns: [
+            {
+                longname: 'Geo A',
+                sections: [
+                    {
+                        headerDisplayIndex: 0,
+                        contentStartDisplayIndex: 1,
+                        contentEndDisplayIndex: 5,
+                        districtHeaders: [['GA-01, USA']],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [
+                                    {
+                                        representatives: [
+                                            {
+                                                name: 'Continuous Rep',
+                                                wikipediaPage: 'https://example.com/Continuous%20Rep',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startDisplayIndex: 1,
+                                        endDisplayIndex: 5,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                longname: 'Geo B',
+                sections: [
+                    {
+                        headerDisplayIndex: 0,
+                        contentStartDisplayIndex: 1,
+                        contentEndDisplayIndex: 5,
+                        districtHeaders: [['GB-01, USA']],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [
+                                    {
+                                        representatives: [
+                                            {
+                                                name: 'Split Rep Two',
+                                                wikipediaPage: 'https://example.com/Split%20Rep%20Two',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startDisplayIndex: 1,
+                                        endDisplayIndex: 3,
+                                    },
+                                    {
+                                        representatives: [
+                                            {
+                                                name: 'Split Rep One',
+                                                wikipediaPage: 'https://example.com/Split%20Rep%20One',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startDisplayIndex: 4,
+                                        endDisplayIndex: 5,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    })
 })

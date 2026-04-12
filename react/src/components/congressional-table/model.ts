@@ -20,19 +20,17 @@ export interface CongressionalDisplayRow {
     termStart?: number
 }
 
-export interface RepresentativesForRegionDistrictAndTermRun {
+export interface RepresentativesForRegionDistrictAndDisplayRun {
     representatives: CongressionalRepresentativeEntry['representative'][]
-    startTerm: number
-    endTerm: number
+    startDisplayIndex: number
+    endDisplayIndex: number
 }
 
 export interface RepresentativesForRegionAndDistrict {
-    termRuns: RepresentativesForRegionDistrictAndTermRun[]
+    displayRuns: RepresentativesForRegionDistrictAndDisplayRun[]
 }
 
 export interface RepresentativesForRegionAndDistrictSet {
-    startTermIndex: number
-    endTermIndex: number
     headerDisplayIndex?: number
     contentStartDisplayIndex: number
     contentEndDisplayIndex: number

@@ -5,7 +5,12 @@ import { useColors } from '../../page_template/colors'
 import { assert } from '../../utils/defensive'
 
 import { computeCongressionalWidgetModel, CongressionalRegionData } from './compute-model'
-import { CongressionalRepresentativeEntry, CongressionalTableModel } from './model'
+import {
+    CongressionalRepresentativeEntry,
+    CongressionalTableModel,
+    RepresentativesForRegionAndDistrict,
+    RepresentativesForRegionDistrictAndDisplayRun,
+} from './model'
 
 function getPartyPage(party: string): (typeof partyPages)[keyof typeof partyPages] {
     assert(party in partyPages, `Party ${party} not found in partyPages data`)
@@ -65,13 +70,6 @@ function CongressionalRepresentativesTableRenderer(props: {
     }
 
     const gridTemplateColumns = `${props.widthLeftHeader}% ${props.model.supercolumns.map((_, i) => `${props.columnWidth + props.extraSpaceRight[i]}%`).join(' ')}`
-    const termIndexByStart = new Map<number, number>()
-    props.model.displayRows.forEach((row) => {
-        if (row.kind === 'term-label' && row.termStart !== undefined) {
-            termIndexByStart.set(row.termStart, row.termIndex)
-        }
-    })
-
     return (
         <div style={{ width: '100%', marginTop: '4px', marginBottom: '4px', borderTop: `1px solid ${borderColor}`, borderBottom: `1px solid ${borderColor}` }}>
             <div
@@ -137,9 +135,9 @@ function CongressionalRepresentativesTableRenderer(props: {
 
                 {props.model.supercolumns.map((supercolumn, columnIndex) => supercolumn.sections.map((section) => {
                     const gridTemplateColumnsDistrict = section.districtHeaders.map(() => 'minmax(0, 1fr)').join(' ')
-                    const sectionTermCount = section.endTermIndex - section.startTermIndex + 1
+                    const sectionRowCount = section.contentEndDisplayIndex - section.contentStartDisplayIndex + 1
                     return (
-                        <Fragment key={`reps_section_${columnIndex}_${section.startTermIndex}_${section.endTermIndex}`}>
+                        <Fragment key={`reps_section_${columnIndex}_${section.contentStartDisplayIndex}_${section.contentEndDisplayIndex}`}>
                             {section.headerDisplayIndex !== undefined && (
                                 <div
                                     style={{
@@ -154,7 +152,7 @@ function CongressionalRepresentativesTableRenderer(props: {
                                     <div style={{ display: 'grid', gridTemplateColumns: gridTemplateColumnsDistrict, width: '100%', height: '100%' }}>
                                         {section.districtHeaders.map((districtHeaderGroup, bucketIndex) => (
                                             <div
-                                                key={`district_header_${columnIndex}_${section.startTermIndex}_${bucketIndex}`}
+                                                key={`district_header_${columnIndex}_${section.contentStartDisplayIndex}_${bucketIndex}`}
                                                 className="serif value"
                                                 style={{
                                                     fontSize: '0.9em',
@@ -170,7 +168,7 @@ function CongressionalRepresentativesTableRenderer(props: {
                                                 }}
                                             >
                                                 {districtHeaderGroup.map((districtHeader, headerIndex) => (
-                                                    <Fragment key={`district_header_text_${columnIndex}_${section.startTermIndex}_${bucketIndex}_${headerIndex}`}>
+                                                    <Fragment key={`district_header_text_${columnIndex}_${section.contentStartDisplayIndex}_${bucketIndex}_${headerIndex}`}>
                                                         {headerIndex > 0 && <br />}
                                                         {districtArticleHref(districtHeader) === undefined
                                                             ? districtHeader
@@ -201,23 +199,23 @@ function CongressionalRepresentativesTableRenderer(props: {
                                     gridTemplateRows: 'subgrid',
                                 }}
                             >
-                                {section.congressionalRuns.map((run, bucketIndex) => (
+                                {section.congressionalRuns.map((run: RepresentativesForRegionAndDistrict, bucketIndex) => (
                                     <div
-                                        key={`district_cell_${columnIndex}_${section.startTermIndex}_${bucketIndex}`}
+                                        key={`district_cell_${columnIndex}_${section.contentStartDisplayIndex}_${bucketIndex}`}
                                         style={{
                                             gridColumn: bucketIndex + 1,
-                                            gridRow: `1 / ${sectionTermCount + 1}`,
+                                            gridRow: `1 / ${sectionRowCount + 1}`,
                                             textAlign: 'center',
                                             borderRight: bucketIndex === section.congressionalRuns.length - 1 ? 'none' : `1px solid ${borderColor}`,
                                             display: 'grid',
                                             gridTemplateRows: 'subgrid',
                                         }}
                                     >
-                                        {run.termRuns.length === 0
+                                        {run.displayRuns.length === 0
                                             ? (
                                                     <div
                                                         style={{
-                                                            gridRow: `1 / ${sectionTermCount + 1}`,
+                                                            gridRow: `1 / ${sectionRowCount + 1}`,
                                                             width: '100%',
                                                             height: '100%',
                                                             display: 'flex',
@@ -231,20 +229,15 @@ function CongressionalRepresentativesTableRenderer(props: {
                                                 )
                                             : (
                                                     <>
-                                                        {run.termRuns.map((termRun, termRunIndex) => {
-                                                            const startTermIndex = termIndexByStart.get(termRun.startTerm)
-                                                            const endTermIndex = termIndexByStart.get(termRun.endTerm)
-                                                            if (startTermIndex === undefined || endTermIndex === undefined) {
-                                                                return null
-                                                            }
-                                                            const relativeStartRow = startTermIndex - section.startTermIndex + 1
-                                                            const relativeEndRow = endTermIndex - section.startTermIndex + 1
+                                                        {run.displayRuns.map((displayRun: RepresentativesForRegionDistrictAndDisplayRun, displayRunIndex) => {
+                                                            const relativeStartRow = displayRun.startDisplayIndex - section.contentStartDisplayIndex + 1
+                                                            const relativeEndRow = displayRun.endDisplayIndex - section.contentStartDisplayIndex + 1
                                                             const rowStart = Math.min(relativeStartRow, relativeEndRow)
                                                             const spanCount = Math.abs(relativeEndRow - relativeStartRow) + 1
                                                             const bottomRow = rowStart + spanCount - 1
                                                             return (
                                                                 <div
-                                                                    key={`rep_run_${columnIndex}_${section.startTermIndex}_${bucketIndex}_${termRunIndex}`}
+                                                                    key={`rep_run_${columnIndex}_${section.contentStartDisplayIndex}_${bucketIndex}_${displayRunIndex}`}
                                                                     style={{
                                                                         gridRow: `${rowStart} / span ${spanCount}`,
                                                                         display: 'flex',
@@ -252,14 +245,14 @@ function CongressionalRepresentativesTableRenderer(props: {
                                                                         justifyContent: 'center',
                                                                         textAlign: 'center',
                                                                         padding: '6px 8px',
-                                                                        borderBottom: bottomRow >= sectionTermCount ? 'none' : `1px solid ${borderColor}`,
+                                                                        borderBottom: bottomRow >= sectionRowCount ? 'none' : `1px solid ${borderColor}`,
                                                                         gap: '10px',
                                                                     }}
                                                                 >
-                                                                    {termRun.representatives.length === 0
+                                                                    {displayRun.representatives.length === 0
                                                                         ? <span className="serif value" style={{ opacity: 0.65 }}>-</span>
-                                                                        : termRun.representatives.map((representative, representativeIndex) => (
-                                                                            <span key={`rep_run_item_${columnIndex}_${section.startTermIndex}_${bucketIndex}_${termRunIndex}_${representativeIndex}`} className="serif value" style={{ textAlign: 'center' }}>
+                                                                        : displayRun.representatives.map((representative, representativeIndex) => (
+                                                                            <span key={`rep_run_item_${columnIndex}_${section.contentStartDisplayIndex}_${bucketIndex}_${displayRunIndex}_${representativeIndex}`} className="serif value" style={{ textAlign: 'center' }}>
                                                                                 <Representative representative={representative} />
                                                                             </span>
                                                                         ))}

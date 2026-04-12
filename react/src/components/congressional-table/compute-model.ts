@@ -2,7 +2,7 @@ import {
     CongressionalColumnData,
     CongressionalRepresentativeEntry,
     RepresentativesForRegionAndDistrict,
-    RepresentativesForRegionDistrictAndTermRun,
+    RepresentativesForRegionDistrictAndDisplayRun,
     RepresentativesForRegion,
     CongressionalTableModel,
     RepresentativesForRegionAndDistrictSet,
@@ -23,8 +23,8 @@ function termStartsForEntry(entry: CongressionalRepresentativeEntry): number[] {
     if (endTerm === undefined || endTerm <= startTerm) {
         return [startTerm]
     }
-    const terms = []
-    for (let term = startTerm; term < endTerm; term += 2) {
+    const terms: number[] = []
+    for (let term = startTerm; term <= endTerm; term += 2) {
         terms.push(term)
     }
     return terms.length > 0 ? terms : [startTerm]
@@ -39,7 +39,7 @@ function entryCoversTerm(entry: CongressionalRepresentativeEntry, termStart: num
     if (endTerm === undefined || endTerm <= startTerm) {
         return termStart === startTerm
     }
-    return termStart >= startTerm && termStart < endTerm && (termStart - startTerm) % 2 === 0
+    return termStart >= startTerm && termStart <= endTerm && (termStart - startTerm) % 2 === 0
 }
 
 function representativeIdentity(entry: CongressionalRepresentativeEntry): string {
@@ -194,59 +194,65 @@ function computeCongressionalTableModel(input: {
 
     const supercolumns: RepresentativesForRegion[] = input.columns.map((column, columnIndex) => {
         const sectionStarts = Array.from(sectionStartByColumnAndTerm[columnIndex].values()).sort((a, b) => a - b)
-        const sections: RepresentativesForRegionAndDistrictSet[] = sectionStarts.map((startTermIndex, startIdx) => {
-            const endTermIndex = startIdx === sectionStarts.length - 1
+        const sections: RepresentativesForRegionAndDistrictSet[] = sectionStarts.map((startIndex, startIdx) => {
+            const endIndex = startIdx === sectionStarts.length - 1
                 ? input.termsDescending.length - 1
                 : sectionStarts[startIdx + 1] - 1
-            const sectionBucketsByTerm = districtBucketsByColumnAndTerm[columnIndex].slice(startTermIndex, endTermIndex + 1)
+            const sectionBucketsByTerm = districtBucketsByColumnAndTerm[columnIndex].slice(startIndex, endIndex + 1)
             const buildRunForSection = (district?: string): RepresentativesForRegionAndDistrict => {
-                const termRuns: RepresentativesForRegionDistrictAndTermRun[] = sectionBucketsByTerm.map((bucketsForTerm, localTermIndex) => {
-                    const absoluteTermIndex = startTermIndex + localTermIndex
-                    const termStart = input.termsDescending[absoluteTermIndex]
-                    const entriesInDistrict = district === undefined
-                        ? bucketsForTerm.flatMap(bucket => bucket.entries)
+                const displayRuns: RepresentativesForRegionDistrictAndDisplayRun[] = sectionBucketsByTerm.map((bucketsForTerm, localTermIndex) => {
+                    const absoluteTermIndex = startIndex + localTermIndex
+                    const displayIndex = termLabelDisplayRowByTerm.get(absoluteTermIndex) ?? 0
+                    const entriesInDistrict: CongressionalRepresentativeEntry[] = district === undefined
+                        ? bucketsForTerm.reduce<CongressionalRepresentativeEntry[]>((acc, bucket) => {
+                            acc.push(...bucket.entries)
+                            return acc
+                        }, [])
                         : bucketsForTerm.find(bucket => bucket.districtLabel === district)?.entries ?? []
                     const uniqueIdsForTerm = new Set<string>()
-                    const representatives = entriesInDistrict.flatMap((entry) => {
+                    const representatives = entriesInDistrict.reduce<CongressionalRepresentativeEntry['representative'][]>((acc, entry) => {
                         const id = representativeSignature(entry)
                         if (uniqueIdsForTerm.has(id)) {
-                            return []
+                            return acc
                         }
                         uniqueIdsForTerm.add(id)
-                        return [entry.representative]
-                    })
+                        acc.push(entry.representative)
+                        return acc
+                    }, [])
 
                     return {
                         representatives,
-                        startTerm: termStart,
-                        endTerm: termStart,
+                        startDisplayIndex: displayIndex,
+                        endDisplayIndex: displayIndex,
                     }
                 })
 
-                const compressedTermRuns = termRuns.reduce<RepresentativesForRegionDistrictAndTermRun[]>((acc, termRun) => {
+                const compressedDisplayRuns = displayRuns.reduce<RepresentativesForRegionDistrictAndDisplayRun[]>((acc, displayRun) => {
                     if (acc.length === 0) {
-                        return [termRun]
+                        acc.push(displayRun)
+                        return acc
                     }
 
                     const previous = acc[acc.length - 1]
                     const previousSignature = previous.representatives
                         .map(representative => `${representative.name ?? ''}|${representative.wikipediaPage ?? ''}|${representative.party ?? ''}`)
                         .join('||')
-                    const currentSignature = termRun.representatives
+                    const currentSignature = displayRun.representatives
                         .map(representative => `${representative.name ?? ''}|${representative.wikipediaPage ?? ''}|${representative.party ?? ''}`)
                         .join('||')
-                    const isContiguousTermRange = previous.endTerm - termRun.startTerm === 2
+                    const isContiguousDisplayRange = previous.endDisplayIndex + 1 === displayRun.startDisplayIndex
 
-                    if (previousSignature === currentSignature && isContiguousTermRange) {
-                        previous.endTerm = termRun.endTerm
+                    if (previousSignature === currentSignature && isContiguousDisplayRange) {
+                        previous.endDisplayIndex = displayRun.endDisplayIndex
                         return acc
                     }
 
-                    return [...acc, termRun]
+                    acc.push(displayRun)
+                    return acc
                 }, [])
 
                 return {
-                    termRuns: compressedTermRuns,
+                    displayRuns: compressedDisplayRuns,
                 }
             }
 
@@ -269,13 +275,11 @@ function computeCongressionalTableModel(input: {
                 : districtHeaders.map(headerGroup => buildRunForSection(headerGroup[0]))
 
             return {
-                startTermIndex,
-                endTermIndex,
-                headerDisplayIndex: headerStartTermIndices.has(startTermIndex)
-                    ? headerDisplayRowByTerm.get(startTermIndex)
+                headerDisplayIndex: headerStartTermIndices.has(startIndex)
+                    ? headerDisplayRowByTerm.get(startIndex)
                     : undefined,
-                contentStartDisplayIndex: termLabelDisplayRowByTerm.get(startTermIndex) ?? 0,
-                contentEndDisplayIndex: termLabelDisplayRowByTerm.get(endTermIndex) ?? 0,
+                contentStartDisplayIndex: termLabelDisplayRowByTerm.get(startIndex) ?? 0,
+                contentEndDisplayIndex: termLabelDisplayRowByTerm.get(endIndex) ?? 0,
                 districtHeaders,
                 congressionalRuns,
             }
