@@ -106,7 +106,7 @@ function CongressionalTableTermLabels(props: {
         <>
             {props.displayRows.map((row, displayIndex) => (
                 <div
-                    key={`reps_term_display_row_${displayIndex}_${row.displayIndex}`}
+                    key={displayIndex}
                     style={{
                         gridColumn: 1,
                         gridRow: displayIndex + 2,
@@ -133,7 +133,7 @@ function CongressionalTableColumnHeaders(props: {
         <>
             {props.supercolumns.map((column, columnIndex) => (
                 <div
-                    key={`reps_column_header_${columnIndex}`}
+                    key={columnIndex}
                     style={{
                         gridColumn: columnIndex + 2,
                         gridRow: 1,
@@ -181,7 +181,7 @@ function CongressionalTableSectionDistrictHeaders(props: {
             <div style={{ display: 'grid', gridTemplateColumns: gridTemplateColumnsDistrict, width: '100%', height: '100%' }}>
                 {props.section.districtHeaders.map((districtHeaderGroup, bucketIndex) => (
                     <div
-                        key={`district_header_${props.columnIndex}_${props.section.contentStartDisplayIndex}_${bucketIndex}`}
+                        key={bucketIndex}
                         className="serif value"
                         style={{
                             fontSize: '0.9em',
@@ -197,7 +197,7 @@ function CongressionalTableSectionDistrictHeaders(props: {
                         }}
                     >
                         {districtHeaderGroup.map((districtHeader, headerIndex) => (
-                            <Fragment key={`district_header_text_${props.columnIndex}_${props.section.contentStartDisplayIndex}_${bucketIndex}_${headerIndex}`}>
+                            <Fragment key={headerIndex}>
                                 {headerIndex > 0 && <br />}
                                 {districtArticleHref(districtHeader) === undefined
                                     ? districtHeader
@@ -226,6 +226,7 @@ function CongressionalTableRunRows(props: {
     isLastBucket: boolean
     borderColor: string
 }): ReactNode {
+    assert(props.run.displayRuns.length > 0, `Section ${props.section.contentStartDisplayIndex}-${props.section.contentEndDisplayIndex} has no display runs`)
     const sectionRowCount = props.section.contentEndDisplayIndex - props.section.contentStartDisplayIndex + 1
 
     return (
@@ -242,59 +243,39 @@ function CongressionalTableRunRows(props: {
                 gridTemplateRows: 'subgrid',
             }}
         >
-            {props.run.displayRuns.length === 0
-                ? (
-                        <div
-                            style={{
-                                gridRow: `1 / ${sectionRowCount + 1}`,
-                                width: '100%',
-                                height: '100%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: '6px 8px',
-                            }}
-                        >
-                            <span className="serif value" style={{ opacity: 0.65 }}>-</span>
-                        </div>
-                    )
-                : (
-                        <>
-                            {props.run.displayRuns.map((displayRun, displayRunIndex) => {
-                                const relativeStartRow = displayRun.startDisplayIndex - props.section.contentStartDisplayIndex + 1
-                                const relativeEndRow = displayRun.endDisplayIndex - props.section.contentStartDisplayIndex + 1
-                                const rowStart = Math.min(relativeStartRow, relativeEndRow)
-                                const spanCount = Math.abs(relativeEndRow - relativeStartRow) + 1
-                                const bottomRow = rowStart + spanCount - 1
-                                return (
-                                    <div
-                                        key={`rep_run_${props.columnIndex}_${props.section.contentStartDisplayIndex}_${props.bucketIndex}_${displayRunIndex}`}
-                                        style={{
-                                            gridRow: `${rowStart} / span ${spanCount}`,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            textAlign: 'center',
-                                            padding: '6px 8px',
-                                            ...borderStyles({
-                                                borderColor: props.borderColor,
-                                                borderBottom: bottomRow < sectionRowCount,
-                                            }),
-                                            gap: '10px',
-                                        }}
-                                    >
-                                        {displayRun.representatives.length === 0
-                                            ? <span className="serif value" style={{ opacity: 0.65 }}>-</span>
-                                            : displayRun.representatives.map((representative, representativeIndex) => (
-                                                <span key={`rep_run_item_${props.columnIndex}_${props.section.contentStartDisplayIndex}_${props.bucketIndex}_${displayRunIndex}_${representativeIndex}`} className="serif value" style={{ textAlign: 'center' }}>
-                                                    <Representative representative={representative} />
-                                                </span>
-                                            ))}
-                                    </div>
-                                )
-                            })}
-                        </>
-                    )}
+            {props.run.displayRuns.map((displayRun) => {
+                const relativeStartRow = displayRun.startDisplayIndex - props.section.contentStartDisplayIndex + 1
+                const relativeEndRow = displayRun.endDisplayIndex - props.section.contentStartDisplayIndex + 1
+                const rowStart = Math.min(relativeStartRow, relativeEndRow)
+                const spanCount = Math.abs(relativeEndRow - relativeStartRow) + 1
+                const bottomRow = rowStart + spanCount - 1
+                return (
+                    <div
+                        key={displayRun.startDisplayIndex}
+                        style={{
+                            gridRow: `${rowStart} / span ${spanCount}`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            textAlign: 'center',
+                            padding: '6px 8px',
+                            ...borderStyles({
+                                borderColor: props.borderColor,
+                                borderBottom: bottomRow < sectionRowCount,
+                            }),
+                            gap: '10px',
+                        }}
+                    >
+                        {displayRun.representatives.length === 0
+                            ? <span className="serif value" style={{ opacity: 0.65 }}>-</span>
+                            : displayRun.representatives.map((representative, representativeIndex) => (
+                                <span key={representativeIndex} className="serif value" style={{ textAlign: 'center' }}>
+                                    <Representative representative={representative} />
+                                </span>
+                            ))}
+                    </div>
+                )
+            })}
         </div>
     )
 }
@@ -306,7 +287,7 @@ function CongressionalTableSection(props: {
     sectionBackgroundColor: string
 }): ReactNode {
     return (
-        <Fragment key={`reps_section_${props.columnIndex}_${props.section.contentStartDisplayIndex}_${props.section.contentEndDisplayIndex}`}>
+        <Fragment key={`${props.columnIndex}-${props.section.contentStartDisplayIndex}`}>
             {props.section.headerDisplayIndex !== undefined && (
                 <CongressionalTableSectionDistrictHeaders
                     section={props.section}
@@ -330,7 +311,7 @@ function CongressionalTableSection(props: {
             >
                 {props.section.congressionalRuns.map((run, bucketIndex) => (
                     <CongressionalTableRunRows
-                        key={`district_cell_${props.columnIndex}_${props.section.contentStartDisplayIndex}_${bucketIndex}`}
+                        key={bucketIndex}
                         section={props.section}
                         run={run}
                         columnIndex={props.columnIndex}
@@ -369,11 +350,13 @@ function CongressionalRepresentativesTableRenderer(props: {
                     style={{
                         gridColumn: 1,
                         gridRow: 1,
-                        ...baseTableCellStyle({
-                            borderColor,
-                            borderBottom: true,
-                            backgroundColor: panelBackground,
-                        }),
+                        padding: '6px 8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-end',
+                        textAlign: 'right',
+                        borderBottom: `1px solid ${borderColor}`,
+                        backgroundColor: panelBackground,
                     }}
                     className="serif value"
                 >
@@ -393,7 +376,7 @@ function CongressionalRepresentativesTableRenderer(props: {
                 {props.model.supercolumns.map((supercolumn, columnIndex) => supercolumn.sections.map((section) => {
                     return (
                         <CongressionalTableSection
-                            key={`reps_section_${columnIndex}_${section.contentStartDisplayIndex}_${section.contentEndDisplayIndex}`}
+                            key={`${columnIndex}-${section.contentStartDisplayIndex}`}
                             section={section}
                             columnIndex={columnIndex}
                             borderColor={borderColor}
