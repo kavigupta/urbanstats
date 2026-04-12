@@ -47,14 +47,21 @@ message CongressionalRepresentative {
     string name = 1;
     optional string wikipedia_page = 2;
     optional string party = 3;
+    repeated TermIn term_in = 4;
 }
 
-message CongressionalRepresentatives {
-    repeated CongressionalRepresentative representatives = 1;
+message TermIn {
+    int32 start_year = 1;
+    int32 district_idx = 3; // index into CongressionalRepresentativeTable.districts
+}
+
+message CongressionalDistrict {
+    string longname = 1;
 }
 
 message CongressionalRepresentativeTable {
     repeated CongressionalRepresentative representatives = 1;
+    repeated CongressionalDistrict districts = 2;
 }
 
 message ExtraStatistic {
@@ -63,10 +70,16 @@ message ExtraStatistic {
     optional TemperatureHistogram temperature_histogram = 3;
 }
 
+message CongressionalRepresentativePointer {
+    int32 representative_idx = 1;
+    int32 start_term = 2;
+    int32 end_term = 3;
+}
+
 message Metadata {
     int32 metadata_index = 1;
     optional string string_value = 2;
-    repeated int32 congressional_representatives = 3;
+    repeated CongressionalRepresentativePointer congressional_representatives = 3;
 }
 
 message Article {
