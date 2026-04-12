@@ -29,7 +29,7 @@ const options = argumentParser({
 }).parse(process.argv.slice(2))
 
 if (options.docker) {
-    const argsWithoutDocker = process.argv.slice(2).filter(arg => arg !== '--docker' && arg !== '--docker=true')
+    const argsWithoutDocker = process.argv.slice(2).filter(arg => !/--docker($|=)/.test(arg))
     const exitCode = await runE2eTestsDocker(argsWithoutDocker)
     process.exit(exitCode)
 }
