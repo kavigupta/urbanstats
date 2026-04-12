@@ -195,7 +195,7 @@ def sum_in_radius(
         result_for_row = compute_convolution(
             loading_start, local_array, local_array_cumsum, overlaps
         )
-        # sparsify it back, we will only every query
+        # sparsify it back, we will only ever query
         # cells where the original array is nonzero,
         # so we can save a lot of space by doing this before saving.
 
