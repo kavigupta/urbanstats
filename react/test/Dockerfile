@@ -19,7 +19,7 @@ RUN echo 'deb [check-valid-until=no] https://snapshot.debian.org/archive/debian/
     && rm -f /etc/apt/sources.list.d/*.list \
     && apt-get -o Acquire::Check-Valid-Until=false -y update
 
-RUN apt-get -y install chromium=143.*
+RUN apt-get -y install chromium=143.* chromium-common=143.*
 
 RUN apt-get -y install xvfb
 
