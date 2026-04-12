@@ -1,4 +1,4 @@
-import React, { Fragment, ReactNode, useMemo } from 'react'
+import React, { CSSProperties, Fragment, ReactNode, useMemo } from 'react'
 
 import partyPages from '../../data/party_pages'
 import { useColors } from '../../page_template/colors'
@@ -61,6 +61,43 @@ function districtArticleHref(district: string): string | undefined {
     return `article.html?longname=${encodeURIComponent(district)}`
 }
 
+function borderStyles(props: {
+    borderColor: string
+    borderTop?: boolean
+    borderRight?: boolean
+    borderBottom?: boolean
+    borderLeft?: boolean
+}): CSSProperties {
+    return {
+        borderTop: props.borderTop ? `1px solid ${props.borderColor}` : undefined,
+        borderRight: props.borderRight ? `1px solid ${props.borderColor}` : undefined,
+        borderBottom: props.borderBottom ? `1px solid ${props.borderColor}` : undefined,
+        borderLeft: props.borderLeft ? `1px solid ${props.borderColor}` : undefined,
+    }
+}
+
+function baseTableCellStyle(props: {
+    borderColor: string
+    borderBottom?: boolean
+    borderLeft?: boolean
+    borderRight?: boolean
+    textAlign?: 'left' | 'right' | 'center'
+    display?: CSSProperties['display']
+    justifyContent?: CSSProperties['justifyContent']
+    alignItems?: CSSProperties['alignItems']
+    backgroundColor?: string
+}): CSSProperties {
+    return {
+        padding: '6px 8px',
+        display: props.display ?? 'flex',
+        alignItems: props.alignItems ?? 'center',
+        justifyContent: props.justifyContent ?? 'flex-end',
+        textAlign: props.textAlign ?? 'right',
+        backgroundColor: props.backgroundColor,
+        ...borderStyles(props),
+    }
+}
+
 function CongressionalTableTermLabels(props: {
     displayRows: CongressionalDisplayRow[]
     borderColor: string
@@ -73,12 +110,10 @@ function CongressionalTableTermLabels(props: {
                     style={{
                         gridColumn: 1,
                         gridRow: displayIndex + 2,
-                        padding: '6px 8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'flex-end',
-                        textAlign: 'right',
-                        borderBottom: displayIndex === props.displayRows.length - 1 ? 'none' : `1px solid ${props.borderColor}`,
+                        ...baseTableCellStyle({
+                            borderColor: props.borderColor,
+                            borderBottom: displayIndex !== props.displayRows.length - 1,
+                        }),
                     }}
                     className="serif value"
                 >
@@ -102,11 +137,14 @@ function CongressionalTableColumnHeaders(props: {
                     style={{
                         gridColumn: columnIndex + 2,
                         gridRow: 1,
-                        padding: '6px 8px',
-                        textAlign: 'center',
-                        borderLeft: `1px solid ${props.borderColor}`,
-                        borderBottom: `1px solid ${props.borderColor}`,
-                        backgroundColor: props.panelBackground,
+                        ...baseTableCellStyle({
+                            borderColor: props.borderColor,
+                            borderLeft: true,
+                            borderBottom: true,
+                            textAlign: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: props.panelBackground,
+                        }),
                     }}
                     className="serif value"
                 >
@@ -131,8 +169,11 @@ function CongressionalTableSectionDistrictHeaders(props: {
             style={{
                 gridColumn: props.columnIndex + 2,
                 gridRow: props.headerDisplayIndex + 2,
-                borderLeft: `1px solid ${props.borderColor}`,
-                borderBottom: `1px solid ${props.borderColor}`,
+                ...borderStyles({
+                    borderColor: props.borderColor,
+                    borderLeft: true,
+                    borderBottom: true,
+                }),
                 backgroundColor: props.backgroundColor,
                 display: 'flex',
             }}
@@ -193,7 +234,10 @@ function CongressionalTableRunRows(props: {
                 gridColumn: props.bucketIndex + 1,
                 gridRow: `1 / ${sectionRowCount + 1}`,
                 textAlign: 'center',
-                borderRight: props.isLastBucket ? 'none' : `1px solid ${props.borderColor}`,
+                ...borderStyles({
+                    borderColor: props.borderColor,
+                    borderRight: !props.isLastBucket,
+                }),
                 display: 'grid',
                 gridTemplateRows: 'subgrid',
             }}
@@ -232,7 +276,10 @@ function CongressionalTableRunRows(props: {
                                             justifyContent: 'center',
                                             textAlign: 'center',
                                             padding: '6px 8px',
-                                            borderBottom: bottomRow >= sectionRowCount ? 'none' : `1px solid ${props.borderColor}`,
+                                            ...borderStyles({
+                                                borderColor: props.borderColor,
+                                                borderBottom: bottomRow < sectionRowCount,
+                                            }),
                                             gap: '10px',
                                         }}
                                     >
@@ -322,13 +369,11 @@ function CongressionalRepresentativesTableRenderer(props: {
                     style={{
                         gridColumn: 1,
                         gridRow: 1,
-                        padding: '6px 8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'flex-end',
-                        textAlign: 'right',
-                        borderBottom: `1px solid ${borderColor}`,
-                        backgroundColor: panelBackground,
+                        ...baseTableCellStyle({
+                            borderColor,
+                            borderBottom: true,
+                            backgroundColor: panelBackground,
+                        }),
                     }}
                     className="serif value"
                 >
