@@ -264,12 +264,9 @@ function VectorLiteralEditor(props: {
     assignments: AssignmentsResult
 }): ReactNode {
     /*
-     * We need stable identifiers to support dragging, but we don't have unique ids for the elements
-     * So, we save the original sort orders, and use them even when the order changes.
-     *
-     * They need to be 1-indexed. DnD kit doesn't like nullish ids
-     *
-     * These ids don't need to be perfect, they just need to work for dragging
+     * We need stable identifiers for dnd-kit, but elements don't have unique ids.
+     * We generate random IDs and keep them in a ref so they persist across re-renders.
+     * These ids don't need to be perfect, they just need to be unique for dragging.
      */
     const ids = useRef<string[]>([])
     while (ids.current.length < props.uss.elements.length) {
