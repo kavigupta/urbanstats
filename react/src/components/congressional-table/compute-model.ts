@@ -1,7 +1,7 @@
+import { assert } from '../../utils/defensive'
 import {
     CongressionalColumnData,
     CongressionalRepresentativeEntry,
-    RepresentativesForRegionAndDistrict,
     RepresentativesForRegionDistrictAndDisplayRun,
     RepresentativesForRegion,
     CongressionalTableModel,
@@ -15,31 +15,17 @@ export interface CongressionalRegionData {
 }
 
 function termStartsForEntry(entry: CongressionalRepresentativeEntry): number[] {
-    const startTerm = entry.startTerm
-    if (startTerm === undefined) {
-        return []
-    }
-    const endTerm = entry.endTerm
-    if (endTerm === undefined || endTerm <= startTerm) {
-        return [startTerm]
-    }
-    const terms: number[] = []
-    for (let term = startTerm; term <= endTerm; term += 2) {
+    assert(entry.startTerm !== undefined && entry.endTerm !== undefined, 'Entry must have defined startTerm and endTerm')
+    const terms = []
+    for (let term = entry.startTerm; term <= entry.endTerm; term += 2) {
         terms.push(term)
     }
-    return terms.length > 0 ? terms : [startTerm]
+    return terms
 }
 
 function entryCoversTerm(entry: CongressionalRepresentativeEntry, termStart: number): boolean {
-    const startTerm = entry.startTerm
-    if (startTerm === undefined) {
-        return false
-    }
-    const endTerm = entry.endTerm
-    if (endTerm === undefined || endTerm <= startTerm) {
-        return termStart === startTerm
-    }
-    return termStart >= startTerm && termStart <= endTerm && (termStart - startTerm) % 2 === 0
+    assert(entry.startTerm !== undefined && entry.endTerm !== undefined, 'Entry must have defined startTerm and endTerm')
+    return entry.startTerm <= termStart && entry.endTerm >= termStart
 }
 
 function representativeIdentity(entry: CongressionalRepresentativeEntry): string {
@@ -52,7 +38,7 @@ function districtLabel(entry: CongressionalRepresentativeEntry): string {
 
 interface DistrictBucketForTerm {
     districtLabel: string
-    entries: CongressionalRepresentativeEntry[]
+    representatives: CongressionalRepresentativeEntry['representative'][]
     signature: string
 }
 
@@ -60,8 +46,23 @@ function representativeSignature(entry: CongressionalRepresentativeEntry): strin
     return `${entry.representative.name ?? ''}|${entry.representative.wikipediaPage ?? ''}|${entry.representative.party ?? ''}`
 }
 
-function districtBucketSignature(entries: CongressionalRepresentativeEntry[]): string {
-    return entries.map(entry => representativeSignature(entry)).sort((a, b) => a.localeCompare(b)).join('||')
+function representativeListSignature(representatives: CongressionalRepresentativeEntry['representative'][]): string {
+    return representatives
+        .map(representative => `${representative.name ?? ''}|${representative.wikipediaPage ?? ''}|${representative.party ?? ''}`)
+        .join('||')
+}
+
+function uniqueRepresentatives(entries: CongressionalRepresentativeEntry[]): CongressionalRepresentativeEntry['representative'][] {
+    const seen = new Set<string>()
+    return entries.reduce<CongressionalRepresentativeEntry['representative'][]>((acc, entry) => {
+        const signature = representativeSignature(entry)
+        if (seen.has(signature)) {
+            return acc
+        }
+        seen.add(signature)
+        acc.push(entry.representative)
+        return acc
+    }, [])
 }
 
 function districtBucketsForTerm(entries: CongressionalRepresentativeEntry[]): DistrictBucketForTerm[] {
@@ -78,15 +79,18 @@ function districtBucketsForTerm(entries: CongressionalRepresentativeEntry[]): Di
     })
 
     if (byDistrict.size === 0) {
-        return [{ districtLabel: 'No district data', entries: [], signature: '' }]
+        return [{ districtLabel: 'No district data', representatives: [], signature: '' }]
     }
 
     return Array.from(byDistrict.entries())
-        .map(([label, entriesInDistrict]) => ({
-            districtLabel: label,
-            entries: entriesInDistrict,
-            signature: districtBucketSignature(entriesInDistrict),
-        }))
+        .map(([label, entriesInDistrict]) => {
+            const representatives = uniqueRepresentatives(entriesInDistrict)
+            return {
+                districtLabel: label,
+                representatives,
+                signature: representativeListSignature(representatives),
+            }
+        })
         .sort((a, b) => {
             if (a.signature !== b.signature) {
                 return a.signature.localeCompare(b.signature)
@@ -122,186 +126,196 @@ function extractCongressionalWidgetData(cellSpecs: CongressionalRegionData[]): {
     return { termsDescending, columns }
 }
 
+interface LongnameRun {
+    termIndices: number[]
+    terms: number[]
+    districtBucketsByTerm: DistrictBucketForTerm[][]
+    pattern: string
+}
+
+interface LongnameRuns {
+    longname: string
+    runs: LongnameRun[]
+}
+
+function entriesForTerm(column: CongressionalColumnData, termStart: number): CongressionalRepresentativeEntry[] {
+    const seen = new Set<string>()
+    return column.representatives.filter((entry) => {
+        if (!entryCoversTerm(entry, termStart)) {
+            return false
+        }
+        const key = representativeIdentity(entry)
+        if (seen.has(key)) {
+            return false
+        }
+        seen.add(key)
+        return true
+    })
+}
+
+function sectionPatternForBuckets(buckets: DistrictBucketForTerm[]): string {
+    const representativeCountPattern = buckets.map(bucket => bucket.representatives.length).join('|')
+    if (buckets.length <= 1) {
+        return `count:${representativeCountPattern}`
+    }
+    return `count:${representativeCountPattern};signature:${buckets.map(bucket => bucket.signature).join('|')}`
+}
+
+function buildRunsForLongname(column: CongressionalColumnData, termsDescending: number[]): LongnameRuns {
+    const districtBucketsByTerm = termsDescending.map(termStart => districtBucketsForTerm(entriesForTerm(column, termStart)))
+    const runs: LongnameRun[] = []
+
+    let currentRun: LongnameRun | undefined
+    districtBucketsByTerm.forEach((buckets, termIndex) => {
+        const pattern = sectionPatternForBuckets(buckets)
+        if (currentRun === undefined || currentRun.pattern !== pattern) {
+            currentRun = {
+                termIndices: [termIndex],
+                terms: [termsDescending[termIndex]],
+                districtBucketsByTerm: [buckets],
+                pattern,
+            }
+            runs.push(currentRun)
+            return
+        }
+
+        currentRun.termIndices.push(termIndex)
+        currentRun.terms.push(termsDescending[termIndex])
+        currentRun.districtBucketsByTerm.push(buckets)
+    })
+
+    return {
+        longname: column.longname,
+        runs,
+    }
+}
+
+function findBreakpoints(runsByLongname: LongnameRuns[]): Set<number> {
+    const breakpoints = new Set<number>()
+    runsByLongname.forEach(({ runs }) => {
+        runs.forEach((run) => {
+            breakpoints.add(run.termIndices[0])
+        })
+    })
+    return breakpoints
+}
+
+function buildDisplayRowMap(termsDescending: number[], breakpoints: Set<number>): {
+    displayRows: CongressionalDisplayRow[]
+    headerDisplayIndexByTermIndex: Map<number, number>
+    termDisplayIndexByTermIndex: Map<number, number>
+} {
+    const displayRows: CongressionalDisplayRow[] = []
+    const headerDisplayIndexByTermIndex = new Map<number, number>()
+    const termDisplayIndexByTermIndex = new Map<number, number>()
+
+    termsDescending.forEach((termStart, termIndex) => {
+        if (breakpoints.has(termIndex)) {
+            headerDisplayIndexByTermIndex.set(termIndex, displayRows.length)
+            displayRows.push({ kind: 'header-space', displayIndex: displayRows.length })
+        }
+        termDisplayIndexByTermIndex.set(termIndex, displayRows.length)
+        displayRows.push({ kind: 'term-label', displayIndex: displayRows.length, termStart })
+    })
+
+    return {
+        displayRows,
+        headerDisplayIndexByTermIndex,
+        termDisplayIndexByTermIndex,
+    }
+}
+
+function compactLabels(labels: string[]): string[] {
+    return labels.reduce<string[]>((acc, label) => {
+        if (acc.length === 0 || acc[acc.length - 1] !== label) {
+            acc.push(label)
+        }
+        return acc
+    }, [])
+}
+
+function buildDisplayRunsForSection(
+    sectionBucketsByTerm: DistrictBucketForTerm[][],
+    startTermIndex: number,
+    termDisplayIndexByTermIndex: Map<number, number>,
+    laneIndex?: number,
+): RepresentativesForRegionDistrictAndDisplayRun[] {
+    const displayRuns: RepresentativesForRegionDistrictAndDisplayRun[] = []
+
+    sectionBucketsByTerm.forEach((bucketsForTerm, localTermIndex) => {
+        const absoluteTermIndex = startTermIndex + localTermIndex
+        const displayIndex = termDisplayIndexByTermIndex.get(absoluteTermIndex) ?? 0
+        const representatives = laneIndex === undefined
+            ? (bucketsForTerm[0]?.representatives ?? [])
+            : (bucketsForTerm[laneIndex]?.representatives ?? [])
+
+        const currentRun = {
+            representatives,
+            startDisplayIndex: displayIndex,
+            endDisplayIndex: displayIndex,
+        }
+
+        const previousRun = displayRuns[displayRuns.length - 1]
+        if (displayRuns.length > 0 && representativeListSignature(previousRun.representatives) === representativeListSignature(currentRun.representatives)) {
+            previousRun.endDisplayIndex = currentRun.endDisplayIndex
+            return
+        }
+
+        displayRuns.push(currentRun)
+    })
+
+    return displayRuns
+}
+
+function buildDistrictHeadersForSection(sectionBucketsByTerm: DistrictBucketForTerm[][]): string[][] {
+    const singleDistrictPerTerm = sectionBucketsByTerm.every(buckets => buckets.length === 1)
+    if (singleDistrictPerTerm) {
+        return [compactLabels(sectionBucketsByTerm.map(buckets => buckets[0]?.districtLabel ?? 'District unknown'))]
+    }
+
+    const laneCount = sectionBucketsByTerm[0]?.length ?? 0
+    return Array.from({ length: laneCount }, (_, laneIndex) =>
+        compactLabels(sectionBucketsByTerm.map(buckets => buckets[laneIndex]?.districtLabel ?? 'District unknown')),
+    )
+}
+
+function buildSectionForRun(
+    run: LongnameRun,
+    termDisplayIndexByTermIndex: Map<number, number>,
+    headerDisplayIndexByTermIndex: Map<number, number>,
+): RepresentativesForRegionAndDistrictSet {
+    const startTermIndex = run.termIndices[0]
+    const endTermIndex = run.termIndices[run.termIndices.length - 1]
+    const sectionBucketsByTerm = run.districtBucketsByTerm
+    const districtHeaders = buildDistrictHeadersForSection(sectionBucketsByTerm)
+    const singleDistrictPerTerm = sectionBucketsByTerm.every(buckets => buckets.length === 1)
+    const congressionalRuns = singleDistrictPerTerm
+        ? [{ displayRuns: buildDisplayRunsForSection(sectionBucketsByTerm, startTermIndex, termDisplayIndexByTermIndex) }]
+        : districtHeaders.map((_, laneIndex) => ({
+            displayRuns: buildDisplayRunsForSection(sectionBucketsByTerm, startTermIndex, termDisplayIndexByTermIndex, laneIndex),
+        }))
+
+    return {
+        headerDisplayIndex: headerDisplayIndexByTermIndex.get(startTermIndex),
+        contentStartDisplayIndex: termDisplayIndexByTermIndex.get(startTermIndex) ?? 0,
+        contentEndDisplayIndex: termDisplayIndexByTermIndex.get(endTermIndex) ?? 0,
+        districtHeaders,
+        congressionalRuns,
+    }
+}
+
 function computeCongressionalTableModel(input: {
     termsDescending: number[]
     columns: CongressionalColumnData[]
 }): CongressionalTableModel {
-    const entriesForTerm = (column: CongressionalColumnData, termStart: number): CongressionalRepresentativeEntry[] => {
-        const seen = new Set<string>()
-        return column.representatives.filter((entry) => {
-            if (!entryCoversTerm(entry, termStart)) {
-                return false
-            }
-            const key = representativeIdentity(entry)
-            if (seen.has(key)) {
-                return false
-            }
-            seen.add(key)
-            return true
-        })
-    }
+    const runsByLongname = input.columns.map(column => buildRunsForLongname(column, input.termsDescending))
+    const breakpoints = findBreakpoints(runsByLongname)
+    const { displayRows, headerDisplayIndexByTermIndex, termDisplayIndexByTermIndex } = buildDisplayRowMap(input.termsDescending, breakpoints)
 
-    const entriesByColumnAndTerm = input.columns.map(column =>
-        input.termsDescending.map(termStart => entriesForTerm(column, termStart)),
-    )
-
-    const districtBucketsByColumnAndTerm = entriesByColumnAndTerm.map(entriesByTerm =>
-        entriesByTerm.map(entries => districtBucketsForTerm(entries)),
-    )
-
-    const sectionStartByColumnAndTerm = districtBucketsByColumnAndTerm.map((bucketsByTerm) => {
-        const starts = new Set<number>()
-        let previousSectionPattern: string | null = null
-        bucketsByTerm.forEach((buckets, termIndex) => {
-            const representativeCountPattern = buckets.map(bucket => bucket.entries.length).join('|')
-            const sectionPattern = buckets.length <= 1
-                ? `count:${representativeCountPattern}`
-                : `count:${representativeCountPattern};signature:${buckets.map(bucket => bucket.signature).join('|')}`
-            if (termIndex === 0 || sectionPattern !== previousSectionPattern) {
-                starts.add(termIndex)
-            }
-            previousSectionPattern = sectionPattern
-        })
-        return starts
-    })
-
-    const headerStartCountByTerm = new Map<number, number>()
-    sectionStartByColumnAndTerm.forEach((starts) => {
-        starts.forEach((termIndex) => {
-            headerStartCountByTerm.set(termIndex, (headerStartCountByTerm.get(termIndex) ?? 0) + 1)
-        })
-    })
-
-    const headerStartTermIndices = new Set<number>()
-    for (let termIndex = 0; termIndex < input.termsDescending.length; termIndex += 1) {
-        const headerCount = headerStartCountByTerm.get(termIndex) ?? 0
-        if (headerCount >= 1) {
-            headerStartTermIndices.add(termIndex)
-        }
-    }
-
-    const displayRows: CongressionalDisplayRow[] = []
-    const headerDisplayRowByTerm = new Map<number, number>()
-    const termLabelDisplayRowByTerm = new Map<number, number>()
-    for (let termIndex = 0; termIndex < input.termsDescending.length; termIndex += 1) {
-        if (headerStartTermIndices.has(termIndex)) {
-            headerDisplayRowByTerm.set(termIndex, displayRows.length)
-            displayRows.push({ kind: 'header-space', displayIndex: displayRows.length })
-        }
-        termLabelDisplayRowByTerm.set(termIndex, displayRows.length)
-        displayRows.push({ kind: 'term-label', displayIndex: displayRows.length, termStart: input.termsDescending[termIndex] })
-    }
-
-    const supercolumns: RepresentativesForRegion[] = input.columns.map((column, columnIndex) => {
-        const sectionStarts = Array.from(sectionStartByColumnAndTerm[columnIndex].values()).sort((a, b) => a - b)
-        const sections: RepresentativesForRegionAndDistrictSet[] = sectionStarts.map((startIndex, startIdx) => {
-            const endIndex = startIdx === sectionStarts.length - 1
-                ? input.termsDescending.length - 1
-                : sectionStarts[startIdx + 1] - 1
-            const sectionBucketsByTerm = districtBucketsByColumnAndTerm[columnIndex].slice(startIndex, endIndex + 1)
-            const buildRunForSection = (district?: string, bucketIndex?: number): RepresentativesForRegionAndDistrict => {
-                const displayRuns: RepresentativesForRegionDistrictAndDisplayRun[] = sectionBucketsByTerm.map((bucketsForTerm, localTermIndex) => {
-                    const absoluteTermIndex = startIndex + localTermIndex
-                    const displayIndex = termLabelDisplayRowByTerm.get(absoluteTermIndex) ?? 0
-                    const entriesInDistrict: CongressionalRepresentativeEntry[] = district === undefined
-                        ? (bucketIndex === undefined
-                                ? bucketsForTerm.reduce<CongressionalRepresentativeEntry[]>((acc, bucket) => {
-                                    acc.push(...bucket.entries)
-                                    return acc
-                                }, [])
-                                : (bucketsForTerm[bucketIndex]?.entries ?? []))
-                        : bucketsForTerm.find(bucket => bucket.districtLabel === district)?.entries ?? []
-                    const uniqueIdsForTerm = new Set<string>()
-                    const representatives = entriesInDistrict.reduce<CongressionalRepresentativeEntry['representative'][]>((acc, entry) => {
-                        const id = representativeSignature(entry)
-                        if (uniqueIdsForTerm.has(id)) {
-                            return acc
-                        }
-                        uniqueIdsForTerm.add(id)
-                        acc.push(entry.representative)
-                        return acc
-                    }, [])
-
-                    return {
-                        representatives,
-                        startDisplayIndex: displayIndex,
-                        endDisplayIndex: displayIndex,
-                    }
-                })
-
-                const compressedDisplayRuns = displayRuns.reduce<RepresentativesForRegionDistrictAndDisplayRun[]>((acc, displayRun) => {
-                    if (acc.length === 0) {
-                        acc.push(displayRun)
-                        return acc
-                    }
-
-                    const previous = acc[acc.length - 1]
-                    const previousSignature = previous.representatives
-                        .map(representative => `${representative.name ?? ''}|${representative.wikipediaPage ?? ''}|${representative.party ?? ''}`)
-                        .join('||')
-                    const currentSignature = displayRun.representatives
-                        .map(representative => `${representative.name ?? ''}|${representative.wikipediaPage ?? ''}|${representative.party ?? ''}`)
-                        .join('||')
-
-                    // Merge adjacent terms with the same representative set, even if a global
-                    // header-space row exists between their display indices.
-                    if (previousSignature === currentSignature) {
-                        previous.endDisplayIndex = displayRun.endDisplayIndex
-                        return acc
-                    }
-
-                    acc.push(displayRun)
-                    return acc
-                }, [])
-
-                return {
-                    displayRuns: compressedDisplayRuns,
-                }
-            }
-
-            const singleDistrictPerTerm = sectionBucketsByTerm.every(buckets => buckets.length === 1)
-            const districtHeaders = singleDistrictPerTerm
-                ? [
-                        sectionBucketsByTerm
-                            .map(buckets => buckets[0].districtLabel)
-                            .reduce<string[]>((acc, district) => {
-                                if (acc.length === 0 || acc[acc.length - 1] !== district) {
-                                    acc.push(district)
-                                }
-                                return acc
-                            }, []),
-                    ]
-                : sectionBucketsByTerm[0].map((_, bucketIndex) =>
-                        sectionBucketsByTerm
-                            .map(buckets => buckets[bucketIndex]?.districtLabel ?? 'District unknown')
-                            .reduce<string[]>((acc, district) => {
-                                if (acc.length === 0 || acc[acc.length - 1] !== district) {
-                                    acc.push(district)
-                                }
-                                return acc
-                            }, []),
-                    )
-
-            const congressionalRuns: RepresentativesForRegionAndDistrict[] = singleDistrictPerTerm
-                ? [buildRunForSection()]
-                : districtHeaders.map((_, bucketIndex) => buildRunForSection(undefined, bucketIndex))
-
-            return {
-                headerDisplayIndex: headerStartTermIndices.has(startIndex)
-                    ? headerDisplayRowByTerm.get(startIndex)
-                    : undefined,
-                contentStartDisplayIndex: termLabelDisplayRowByTerm.get(startIndex) ?? 0,
-                contentEndDisplayIndex: termLabelDisplayRowByTerm.get(endIndex) ?? 0,
-                districtHeaders,
-                congressionalRuns,
-            }
-        })
-
-        return {
-            longname: column.longname,
-            sections,
-        }
-    })
+    const supercolumns: RepresentativesForRegion[] = runsByLongname.map(({ longname, runs }) => ({
+        longname,
+        sections: runs.map(run => buildSectionForRun(run, termDisplayIndexByTermIndex, headerDisplayIndexByTermIndex)),
+    }))
 
     return {
         displayRows,
