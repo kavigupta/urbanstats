@@ -249,14 +249,23 @@ def deduplicate_and_sort_representatives(
     # Sort representatives by start_term, then end_term, then name
     by_representative = defaultdict(set)
     for rep_with_terms in representatives_with_terms:
-        by_representative[(rep_with_terms.representative, rep_with_terms.district_longname)].add(rep_with_terms)
+        by_representative[
+            (rep_with_terms.representative, rep_with_terms.district_longname)
+        ].add(rep_with_terms)
     result = []
     for rwts in by_representative.values():
         rwts = merge_adjacent_terms(
             sorted(rwts, key=lambda rwt: (rwt.start_term, rwt.end_term))
         )
         result.extend(rwts)
-    result.sort(key=lambda rwt: (rwt.start_term, rwt.end_term, rwt.representative.name, rwt.district_longname))
+    result.sort(
+        key=lambda rwt: (
+            rwt.start_term,
+            rwt.end_term,
+            rwt.representative.name,
+            rwt.district_longname,
+        )
+    )
     return result
 
 

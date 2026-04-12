@@ -4,7 +4,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Type
 
-from urbanstats.metadata.congressional_representatives import Representative, RepresentativeWithTerms
+from urbanstats.metadata.congressional_representatives import (
+    Representative,
+    RepresentativeWithTerms,
+)
 from urbanstats.protobuf import data_files_pb2
 
 
@@ -99,7 +102,12 @@ def congressional_representative_proto(representative):
 class CongressionalRepresentativesMetadata(DisplayedMetadata):
     value_kind: str = "congressional_representatives"
 
-    def create(self, idx, value: list[RepresentativeWithTerms], representative_table_builder=None):
+    def create(
+        self,
+        idx,
+        value: list[RepresentativeWithTerms],
+        representative_table_builder=None,
+    ):
         representatives = self.representative_messages(value)
         if not representatives:
             return None
@@ -125,3 +133,6 @@ class CongressionalRepresentativesMetadata(DisplayedMetadata):
             congressional_representative_proto(representative.representative)
             for representative in representatives
         ]
+
+    def export(self):
+        return None

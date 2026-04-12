@@ -7,7 +7,9 @@ def export_metadata_types():
     external_link_metadata = []
     for i, v in enumerate(metadata_types.values()):
         if isinstance(v, DisplayedMetadata):
-            displayed_metadata.append({"index": i, **v.export()})
+            exp = v.export()
+            if exp is not None:
+                displayed_metadata.append({"index": i, **exp})
         elif isinstance(v, ExternalLinkMetadata):
             external_link_metadata.append({"index": i, **v.export()})
         else:
