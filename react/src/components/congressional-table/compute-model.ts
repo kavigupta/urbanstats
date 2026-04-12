@@ -29,10 +29,6 @@ function entryCoversTerm(entry: CongressionalRepresentativeEntry, termStart: num
     return entry.startTerm <= termStart && entry.endTerm >= termStart
 }
 
-function representativeIdentity(entry: CongressionalRepresentativeEntry): string {
-    return `${entry.representative.name ?? ''}|${entry.districtLongname ?? ''}|${entry.startTerm ?? ''}|${entry.endTerm ?? ''}`
-}
-
 function districtLabel(entry: CongressionalRepresentativeEntry): string {
     return entry.districtLongname ?? 'District unknown'
 }
@@ -40,7 +36,6 @@ function districtLabel(entry: CongressionalRepresentativeEntry): string {
 interface DistrictBucketForTerm {
     districtLabel: string
     representatives: CongressionalRepresentativeEntry['representative'][]
-    signature: string
 }
 
 function representativeSignature(entry: CongressionalRepresentativeEntry): string {
@@ -84,7 +79,7 @@ function districtBucketsForTerm(entries: CongressionalRepresentativeEntry[]): Di
     })
 
     if (byDistrict.size === 0) {
-        return [{ districtLabel: 'No district data', representatives: [], signature: '' }]
+        return [{ districtLabel: 'No district data', representatives: [] }]
     }
 
     return Array.from(byDistrict.entries())
@@ -93,15 +88,9 @@ function districtBucketsForTerm(entries: CongressionalRepresentativeEntry[]): Di
             return {
                 districtLabel: label,
                 representatives,
-                signature: representativeListSignature(representatives),
             }
         })
-        .sort((a, b) => {
-            if (a.signature !== b.signature) {
-                return a.signature.localeCompare(b.signature)
-            }
-            return a.districtLabel.localeCompare(b.districtLabel)
-        })
+        .sort((a, b) => a.districtLabel.localeCompare(b.districtLabel))
 }
 
 function extractCongressionalWidgetData(cellSpecs: CongressionalRegionData[]): {
@@ -148,7 +137,7 @@ function entriesForTerm(column: CongressionalColumnData, termStart: number): Con
         if (!entryCoversTerm(entry, termStart)) {
             return false
         }
-        const key = representativeIdentity(entry)
+        const key = JSON.stringify(entry)
         if (seen.has(key)) {
             return false
         }
