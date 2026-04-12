@@ -108,8 +108,7 @@ class CongressionalRepresentativesMetadata(DisplayedMetadata):
         value: list[RepresentativeWithTerms],
         representative_table_builder=None,
     ):
-        representatives = self.representative_messages(value)
-        if not representatives:
+        if not value:
             return None
 
         assert (
@@ -124,7 +123,7 @@ class CongressionalRepresentativesMetadata(DisplayedMetadata):
                     start_term=val.start_term,
                     end_term=val.end_term,
                 )
-                for val, representative in zip(value, representatives)
+                for val in value
             ],
         )
 

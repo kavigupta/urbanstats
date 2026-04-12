@@ -260,6 +260,10 @@ def merge_adjacent_terms(
             and rwt.start_term
             <= last.end_term + 2  # allow for 2 year gap between terms
         ):
+            # Just doublechecking that thhe term distance is appropriate.
+            # This does crash if there's any representatives < 2 years apart
+            # But that is correct. Terms are 2 apart and there should not
+            # be duplicate entries.
             assert (
                 rwt.start_term == last.end_term + 2
             ), f"Unexpected gap between terms for {rwt.representative.name}: {last.end_term} to {rwt.start_term}"
