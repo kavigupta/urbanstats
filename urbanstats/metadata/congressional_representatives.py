@@ -1,9 +1,7 @@
-import json
 import math
-import urllib.request
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List
 
 import pandas as pd
 import tqdm.auto as tqdm
@@ -219,7 +217,8 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
                         for rep in reps
                     ]
                     results[name].extend(with_terms)
-        results[name] = deduplicate_and_sort_representatives(results[name])
+        for name in results:
+            results[name] = deduplicate_and_sort_representatives(results[name])
         return [results[name] for name in shapefile_table.longname]
 
 
