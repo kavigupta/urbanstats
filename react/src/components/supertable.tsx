@@ -21,6 +21,7 @@ export interface SuperHeaderSpec {
     headerSpecs: CellSpec[]
     showBottomBar: boolean
     groupNames?: (string | undefined)[]
+    handleReorder?: (from: number, to: number) => void
 }
 
 export interface LeftHeaderSpec {

@@ -9,6 +9,7 @@ import { argumentParser } from 'zodcli'
 
 import { startProxy } from './ci_proxy'
 import { github } from './github-utils'
+import { runE2eTestsDocker } from './run-e2e-tests-docker'
 import { booleanArgument, getTOTPWait, setTOTPWait, testFile, TestHistory, TestResult } from './util'
 
 const options = argumentParser({
@@ -23,8 +24,15 @@ const options = argumentParser({
         tries: z.optional(z.coerce.number().int()).default(1), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
         baseRef: z.optional(z.string()),
         live: booleanArgument({ defaultValue: false }),
+        docker: booleanArgument({ defaultValue: false }), // Runs tests in an environment very similar to the CI.
     }).strict(),
 }).parse(process.argv.slice(2))
+
+if (options.docker) {
+    const argsWithoutDocker = process.argv.slice(2).filter(arg => !/--docker($|=)/.test(arg))
+    const exitCode = await runE2eTestsDocker(argsWithoutDocker)
+    process.exit(exitCode)
+}
 
 const testFiles = globSync(options.test)
 
