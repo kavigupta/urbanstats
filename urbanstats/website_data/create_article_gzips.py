@@ -4,8 +4,8 @@ from functools import lru_cache
 import numpy as np
 
 from urbanstats.geometry.relationship import full_relationships, ordering_idx
-from urbanstats.metadata.metadata_list import metadata_types
 from urbanstats.metadata.metadata_column import congressional_representative_proto
+from urbanstats.metadata.metadata_list import metadata_types
 from urbanstats.ordinals.flat_ordinals import compute_flat_ordinals
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
@@ -53,10 +53,14 @@ class RepresentativeTableBuilder:
         )
         if key not in self._representative_key_to_index:
             self._representative_key_to_index[key] = len(self.representatives)
-            self.representatives.append(congressional_representative_proto(representative))
+            self.representatives.append(
+                congressional_representative_proto(representative)
+            )
             self._term_keys_by_representative[key] = set()
 
-        representative_proto = self.representatives[self._representative_key_to_index[key]]
+        representative_proto = self.representatives[
+            self._representative_key_to_index[key]
+        ]
         district_longname = representative_with_terms.district_longname
         if district_longname not in self._district_to_index:
             self._district_to_index[district_longname] = len(self.districts)
