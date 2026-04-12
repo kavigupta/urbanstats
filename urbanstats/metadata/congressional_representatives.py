@@ -151,7 +151,7 @@ def compute_representatives_for_shapefile(
 class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
     representatives_csv_version = "a38a7de"
     version = (
-        f"congressional_representatives_structured_{representatives_csv_version}_v66"
+        f"congressional_representatives_structured_{representatives_csv_version}_v67"
     )
 
     def compute_metadata_columns(self, *, shapefile, shapefiles, shapefile_table):
