@@ -39,10 +39,10 @@ void test('computeCongressionalWidgetModel with only one representative', () => 
 
     assert.deepEqual(model, {
         displayRows: [
-            { kind: 'header-space', termIndex: 0 },
-            { kind: 'term-label', termIndex: 0, termStart: 2005 },
-            { kind: 'term-label', termIndex: 1, termStart: 2003 },
-            { kind: 'term-label', termIndex: 2, termStart: 2001 },
+            { kind: 'header-space', displayIndex: 0 },
+            { kind: 'term-label', displayIndex: 1, termStart: 2005 },
+            { kind: 'term-label', displayIndex: 2, termStart: 2003 },
+            { kind: 'term-label', displayIndex: 3, termStart: 2001 },
         ],
         supercolumns: [
             {
@@ -89,14 +89,14 @@ void test('computeCongressionalWidgetModel with multiple representatives in one 
     ])
     assert.deepEqual(model, {
         displayRows: [
-            { kind: 'header-space', termIndex: 0 },
-            { kind: 'term-label', termIndex: 0, termStart: 2005 },
-            { kind: 'term-label', termIndex: 1, termStart: 2003 },
-            { kind: 'term-label', termIndex: 2, termStart: 2001 },
-            { kind: 'term-label', termIndex: 3, termStart: 1999 },
-            { kind: 'term-label', termIndex: 4, termStart: 1997 },
-            { kind: 'term-label', termIndex: 5, termStart: 1995 },
-            { kind: 'term-label', termIndex: 6, termStart: 1993 },
+            { kind: 'header-space', displayIndex: 0 },
+            { kind: 'term-label', displayIndex: 1, termStart: 2005 },
+            { kind: 'term-label', displayIndex: 2, termStart: 2003 },
+            { kind: 'term-label', displayIndex: 3, termStart: 2001 },
+            { kind: 'term-label', displayIndex: 4, termStart: 1999 },
+            { kind: 'term-label', displayIndex: 5, termStart: 1997 },
+            { kind: 'term-label', displayIndex: 6, termStart: 1995 },
+            { kind: 'term-label', displayIndex: 7, termStart: 1993 },
         ],
         supercolumns: [
             {
@@ -155,10 +155,10 @@ void test('computeCongressionalWidgetModel keeps one section for the same repres
 
     assert.deepEqual(model, {
         displayRows: [
-            { kind: 'header-space', termIndex: 0 },
-            { kind: 'term-label', termIndex: 0, termStart: 2005 },
-            { kind: 'term-label', termIndex: 1, termStart: 2003 },
-            { kind: 'term-label', termIndex: 2, termStart: 2001 },
+            { kind: 'header-space', displayIndex: 0 },
+            { kind: 'term-label', displayIndex: 1, termStart: 2005 },
+            { kind: 'term-label', displayIndex: 2, termStart: 2003 },
+            { kind: 'term-label', displayIndex: 3, termStart: 2001 },
         ],
         supercolumns: [
             {
@@ -257,15 +257,15 @@ void test('computeCongressionalWidgetModel creates a new section when representa
 
     const expected = {
         displayRows: [
-            { kind: 'header-space', termIndex: 0 },
-            { kind: 'term-label', termIndex: 0, termStart: 2005 },
-            { kind: 'term-label', termIndex: 1, termStart: 2003 },
-            { kind: 'term-label', termIndex: 2, termStart: 2001 },
-            { kind: 'header-space', termIndex: 3 },
-            { kind: 'term-label', termIndex: 3, termStart: 1999 },
-            { kind: 'term-label', termIndex: 4, termStart: 1997 },
-            { kind: 'term-label', termIndex: 5, termStart: 1995 },
-            { kind: 'term-label', termIndex: 6, termStart: 1993 },
+            { kind: 'header-space', displayIndex: 0 },
+            { kind: 'term-label', displayIndex: 1, termStart: 2005 },
+            { kind: 'term-label', displayIndex: 2, termStart: 2003 },
+            { kind: 'term-label', displayIndex: 3, termStart: 2001 },
+            { kind: 'header-space', displayIndex: 4 },
+            { kind: 'term-label', displayIndex: 5, termStart: 1999 },
+            { kind: 'term-label', displayIndex: 6, termStart: 1997 },
+            { kind: 'term-label', displayIndex: 7, termStart: 1995 },
+            { kind: 'term-label', displayIndex: 8, termStart: 1993 },
         ],
         supercolumns: [
             {
@@ -442,12 +442,12 @@ void test('computeCongressionalWidgetModel handles two geographies with one cont
 
     assert.deepEqual(model, {
         displayRows: [
-            { kind: 'header-space', termIndex: 0 },
-            { kind: 'term-label', termIndex: 0, termStart: 2021 },
-            { kind: 'term-label', termIndex: 1, termStart: 2019 },
-            { kind: 'term-label', termIndex: 2, termStart: 2017 },
-            { kind: 'term-label', termIndex: 3, termStart: 2015 },
-            { kind: 'term-label', termIndex: 4, termStart: 2013 },
+            { kind: 'header-space', displayIndex: 0 },
+            { kind: 'term-label', displayIndex: 1, termStart: 2021 },
+            { kind: 'term-label', displayIndex: 2, termStart: 2019 },
+            { kind: 'term-label', displayIndex: 3, termStart: 2017 },
+            { kind: 'term-label', displayIndex: 4, termStart: 2015 },
+            { kind: 'term-label', displayIndex: 5, termStart: 2013 },
         ],
         supercolumns: [
             {
@@ -540,12 +540,12 @@ void test('computeCongressionalWidgetModel handles two geographies with one cont
 
     assert.deepEqual(model, {
         displayRows: [
-            { kind: 'header-space', termIndex: 0 },
-            { kind: 'term-label', termIndex: 0, termStart: 2021 },
-            { kind: 'term-label', termIndex: 1, termStart: 2019 },
-            { kind: 'term-label', termIndex: 2, termStart: 2017 },
-            { kind: 'term-label', termIndex: 3, termStart: 2015 },
-            { kind: 'term-label', termIndex: 4, termStart: 2013 },
+            { kind: 'header-space', displayIndex: 0 },
+            { kind: 'term-label', displayIndex: 1, termStart: 2021 },
+            { kind: 'term-label', displayIndex: 2, termStart: 2019 },
+            { kind: 'term-label', displayIndex: 3, termStart: 2017 },
+            { kind: 'term-label', displayIndex: 4, termStart: 2015 },
+            { kind: 'term-label', displayIndex: 5, termStart: 2013 },
         ],
         supercolumns: [
             {

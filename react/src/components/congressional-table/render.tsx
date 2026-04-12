@@ -69,7 +69,7 @@ function CongressionalTableTermLabels(props: {
         <>
             {props.displayRows.map((row, displayIndex) => (
                 <div
-                    key={`reps_term_display_row_${displayIndex}_${row.termIndex}`}
+                    key={`reps_term_display_row_${displayIndex}_${row.displayIndex}`}
                     style={{
                         gridColumn: 1,
                         gridRow: displayIndex + 2,
@@ -82,7 +82,7 @@ function CongressionalTableTermLabels(props: {
                     }}
                     className="serif value"
                 >
-                    {row.kind === 'term-label' && row.termStart !== undefined ? formatTermLabel(row.termStart) : ''}
+                    {row.kind === 'term-label' ? formatTermLabel(row.termStart) : ''}
                 </div>
             ))}
         </>

@@ -186,10 +186,10 @@ function computeCongressionalTableModel(input: {
     for (let termIndex = 0; termIndex < input.termsDescending.length; termIndex += 1) {
         if (headerStartTermIndices.has(termIndex)) {
             headerDisplayRowByTerm.set(termIndex, displayRows.length)
-            displayRows.push({ kind: 'header-space', termIndex })
+            displayRows.push({ kind: 'header-space', displayIndex: displayRows.length })
         }
         termLabelDisplayRowByTerm.set(termIndex, displayRows.length)
-        displayRows.push({ kind: 'term-label', termIndex, termStart: input.termsDescending[termIndex] })
+        displayRows.push({ kind: 'term-label', displayIndex: displayRows.length, termStart: input.termsDescending[termIndex] })
     }
 
     const supercolumns: RepresentativesForRegion[] = input.columns.map((column, columnIndex) => {

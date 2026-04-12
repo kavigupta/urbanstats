@@ -14,11 +14,18 @@ export interface CongressionalColumnData {
     representatives: CongressionalRepresentativeEntry[]
 }
 
-export interface CongressionalDisplayRow {
-    kind: 'header-space' | 'term-label'
-    termIndex: number
-    termStart?: number
+export interface CongressionalDisplayHeaderSpaceRow {
+    kind: 'header-space'
+    displayIndex: number
 }
+
+export interface CongressionalDisplayTermLabelRow {
+    kind: 'term-label'
+    displayIndex: number
+    termStart: number
+}
+
+export type CongressionalDisplayRow = CongressionalDisplayHeaderSpaceRow | CongressionalDisplayTermLabelRow
 
 export interface RepresentativesForRegionDistrictAndDisplayRun {
     representatives: CongressionalRepresentativeEntry['representative'][]
