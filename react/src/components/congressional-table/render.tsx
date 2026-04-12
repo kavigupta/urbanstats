@@ -396,7 +396,16 @@ export function CongressionalRepresentativesWidget(props: {
     extraSpaceRight: number[]
 }): ReactNode {
     const model = useMemo(
-        () => computeCongressionalWidgetModel(props.regions),
+        () => {
+            // TODO remove later once we are done with debugging.
+            const regions = props.regions.map(region => ({
+                longname: region.longname,
+                representatives: region.representatives.filter(
+                    representative => (representative.endTerm ?? Number.NEGATIVE_INFINITY) >= 2020,
+                ),
+            }))
+            return computeCongressionalWidgetModel(regions)
+        },
         [props.regions],
     )
 
