@@ -9,10 +9,10 @@ from urbanstats.website_data.table import shapefile_without_ordinals
 
 
 @permacache(
-    "population_density/relationship/create_relationships_14",
+    "population_density/relationship/create_relationships_15",
     key_function=dict(x=lambda x: x.hash_key, y=lambda y: y.hash_key),
 )
-def create_relationships(x, y):
+def create_relationships(x, y, check_temporal=True):
     """
     Get the relationships between the two shapefiles x and y.
     Delegates to relationship_equirectangular.compute_relationships.
@@ -25,7 +25,7 @@ def create_relationships(x, y):
     intersects = set(rels["intersects"])
     borders = set(rels["borders"])
     return [
-        sorted(filter_temporal_overlaps(a, b, s))
+        sorted(filter_temporal_overlaps(a, b, s) if check_temporal else s)
         for s in [a_contains_b, b_contains_a, intersects, borders]
     ]
 
@@ -312,8 +312,22 @@ def compute_all_relationships(long_to_type, shapefiles_to_use):
     return contains, contained_by, intersects, borders
 
 
-def create_relationships_dispatch(shapefiles_to_use, k1, k2):
-    if not temporal_ranges_overlap(
+def flip(edges):
+    return [(y, x) for (x, y) in edges]
+
+
+def create_relationships_dispatch(shapefiles_to_use, k1, k2, check_temporal=True):
+    if k1 < k2:
+        a_contains_b, b_contains_a, a_intersects_b, a_borders_b = create_relationships(
+            shapefiles_to_use[k2], shapefiles_to_use[k1]
+        )
+        return (
+            flip(a_contains_b),
+            flip(b_contains_a),
+            flip(a_intersects_b),
+            flip(a_borders_b),
+        )
+    if check_temporal and not temporal_ranges_overlap(
         shapefiles_to_use[k1].start_date_overall,
         shapefiles_to_use[k1].end_date_overall,
         shapefiles_to_use[k2].start_date_overall,
@@ -325,7 +339,9 @@ def create_relationships_dispatch(shapefiles_to_use, k1, k2):
         b_contains_a,
         a_intersects_b,
         a_borders_b,
-    ) = create_relationships(shapefiles_to_use[k1], shapefiles_to_use[k2])
+    ) = create_relationships(
+        shapefiles_to_use[k1], shapefiles_to_use[k2], check_temporal=check_temporal
+    )
 
     return a_contains_b, b_contains_a, a_intersects_b, a_borders_b
 
