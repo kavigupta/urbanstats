@@ -185,6 +185,11 @@ def sum_in_radius(
         result_for_row = compute_convolution(
             loading_start, local_array, local_array_cumsum, overlaps
         )
+        # sparsify it back, we will only every query
+        # cells where the original array is nonzero,
+        # so we can save a lot of space by doing this before saving.
+
+        result_for_row[local_array[row_idx - loading_start] == 0] = 0
 
         assigner.assign(row_idx, result_for_row * multiplier)
     assigner.flush()
