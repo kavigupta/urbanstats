@@ -10,12 +10,21 @@ function assertModelDefined(model: CongressionalTableModel | undefined): asserts
     }
 }
 
-function representative(name: string, districtLongname: string, startTerm: number, endTerm?: number): CongressionalRepresentativeEntry {
+function representative(
+    name: string,
+    districtLongname: string,
+    startTerm: number,
+    endTerm?: number,
+    options?: {
+        wikipediaPage?: string
+        party?: string
+    },
+): CongressionalRepresentativeEntry {
     return {
         representative: {
             name,
-            wikipediaPage: `https://example.com/${encodeURIComponent(name)}`,
-            party: 'Democratic',
+            wikipediaPage: options?.wikipediaPage ?? `https://example.com/${encodeURIComponent(name)}`,
+            party: options?.party ?? 'Democratic',
         },
         districtLongname,
         startTerm,
@@ -739,6 +748,115 @@ void test('computeCongressionalWidgetModel handles two geographies with one cont
                                         ],
                                         startDisplayIndex: 5,
                                         endDisplayIndex: 6,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    })
+})
+
+void test('computeCongressionalWidgetModel stacks lanes in provided payload and keeps representatives merged', () => {
+    const model = computeCongressionalWidgetModel([
+        {
+            longname: '91101, USA',
+            representatives: [
+                representative('Judy Chu', 'CA-28 (2023), USA', 2023, 2023),
+                representative('Judy Chu', 'CA-28 (2023), USA', 2025, 2025),
+                representative('Judy Chu', 'CA-27 (2013), USA', 2021, 2021),
+            ],
+        },
+        {
+            longname: '02139, USA',
+            representatives: [
+                representative('Katherine Clark', 'MA-05 (2023), USA', 2023, 2023),
+                representative('Katherine Clark', 'MA-05 (2023), USA', 2025, 2025),
+                representative('Ayanna Pressley', 'MA-07 (2023), USA', 2023, 2023),
+                representative('Ayanna Pressley', 'MA-07 (2023), USA', 2025, 2025),
+                representative('Katherine Clark', 'MA-05 (2013), USA', 2021, 2021),
+                representative('Ayanna Pressley', 'MA-07 (2013), USA', 2021, 2021),
+            ],
+        },
+    ])
+
+    assert.deepEqual(model, {
+        displayRows: [
+            { kind: 'header-space', displayIndex: 0 },
+            { kind: 'term-label', displayIndex: 1, termStart: 2025 },
+            { kind: 'term-label', displayIndex: 2, termStart: 2023 },
+            { kind: 'term-label', displayIndex: 3, termStart: 2021 },
+        ],
+        supercolumns: [
+            {
+                longname: '91101, USA',
+                sections: [
+                    {
+                        headerDisplayIndex: 0,
+                        contentStartDisplayIndex: 1,
+                        contentEndDisplayIndex: 3,
+                        districtHeaders: [['CA-28 (2023), USA', 'CA-27 (2013), USA']],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [
+                                    {
+                                        representatives: [
+                                            {
+                                                name: 'Judy Chu',
+                                                wikipediaPage: 'https://example.com/Judy%20Chu',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startDisplayIndex: 1,
+                                        endDisplayIndex: 3,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                longname: '02139, USA',
+                sections: [
+                    {
+                        headerDisplayIndex: 0,
+                        contentStartDisplayIndex: 1,
+                        contentEndDisplayIndex: 3,
+                        districtHeaders: [
+                            ['MA-07 (2023), USA', 'MA-07 (2013), USA'],
+                            ['MA-05 (2023), USA', 'MA-05 (2013), USA'],
+                        ],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [
+                                    {
+                                        representatives: [
+                                            {
+                                                name: 'Ayanna Pressley',
+                                                wikipediaPage: 'https://example.com/Ayanna%20Pressley',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startDisplayIndex: 1,
+                                        endDisplayIndex: 3,
+                                    },
+                                ],
+                            },
+                            {
+                                displayRuns: [
+                                    {
+                                        representatives: [
+                                            {
+                                                name: 'Katherine Clark',
+                                                wikipediaPage: 'https://example.com/Katherine%20Clark',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startDisplayIndex: 1,
+                                        endDisplayIndex: 3,
                                     },
                                 ],
                             },
