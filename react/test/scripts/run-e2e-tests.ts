@@ -10,6 +10,7 @@ import { argumentParser } from 'zodcli'
 import { startProxy } from './ci_proxy'
 import { github } from './github-utils'
 import { runE2eTestsDocker } from './run-e2e-tests-docker'
+import { testCafePorts } from './testcafe-ports'
 import { booleanArgument, getTOTPWait, setTOTPWait, testFile, TestHistory, TestResult } from './util'
 
 const options = argumentParser({
@@ -54,7 +55,7 @@ if (options.proxy) {
     await startProxy()
 }
 
-const testcafe = await createTestCafe('localhost', 1337, 1338)
+const testcafe = await createTestCafe('localhost', ...testCafePorts())
 
 const testHistory: TestHistory = []
 
