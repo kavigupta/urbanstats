@@ -337,6 +337,7 @@ function VectorLiteralEditor(props: {
                                             extendBlockIdVectorElement(props.blockIdent, j - 1),
                                         )]
                                     })
+                                    ids.current.splice(i, 1)
                                     props.setUss({ ...props.uss, elements: newElements }, {})
                                 }}
                                 title="Remove element"
