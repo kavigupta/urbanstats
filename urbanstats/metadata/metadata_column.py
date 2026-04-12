@@ -1,14 +1,16 @@
+import math
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Type
 
+from urbanstats.metadata.congressional_representatives import Representative, RepresentativeWithTerms
 from urbanstats.protobuf import data_files_pb2
 
 
 class MetadataColumn(ABC):
     @abstractmethod
-    def create(self, idx, value):
+    def create(self, idx, value, representative_table_builder=None):
         pass
 
     @abstractmethod
@@ -23,7 +25,7 @@ class ExternalLinkMetadata(MetadataColumn):
     normalizer: str = None
     show_in_metadata_table: bool = False
 
-    def create(self, idx, value):
+    def create(self, idx, value, representative_table_builder=None):
         return data_files_pb2.Metadata(metadata_index=idx, string_value=value)
 
     def export(self):
@@ -44,7 +46,7 @@ class DisplayedMetadata(MetadataColumn):
     category: str = field(kw_only=True)
     data_credit_explanation_page: str = field(kw_only=True)
 
-    def create(self, idx, value):
+    def create(self, idx, value, representative_table_builder=None):
         assert isinstance(
             value, self.typ
         ), f"Expected {self.typ}, got {type(value)} for value {value}"
@@ -65,3 +67,61 @@ class DisplayedMetadata(MetadataColumn):
 def setting_key(name: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
     return f"show_metadata_{slug}"
+
+
+def normalize_optional_string(value):
+    if value is None:
+        return None
+    if isinstance(value, float) and math.isnan(value):
+        return None
+    text = str(value)
+    assert text not in {"<NA>", "nan", "None"}, f"Unexpected string value: {text}"
+    if not text:
+        return None
+    return text
+
+
+def congressional_representative_proto(representative):
+    assert isinstance(
+        representative, Representative
+    ), f"Expected Representative, got {type(representative)}"
+    message_kwargs = dict(name=normalize_optional_string(representative.name) or "")
+    wikipedia_page = normalize_optional_string(representative.wikipedia_page)
+    if wikipedia_page is not None:
+        message_kwargs["wikipedia_page"] = wikipedia_page
+    party = normalize_optional_string(representative.party)
+    if party is not None:
+        message_kwargs["party"] = party
+    return data_files_pb2.CongressionalRepresentative(**message_kwargs)
+
+
+@dataclass
+class CongressionalRepresentativesMetadata(DisplayedMetadata):
+    value_kind: str = "congressional_representatives"
+
+    def create(self, idx, value: list[RepresentativeWithTerms], representative_table_builder=None):
+        representatives = self.representative_messages(value)
+        if not representatives:
+            return None
+
+        assert (
+            representative_table_builder is not None
+        ), "representative_table_builder is required for congressional representative metadata"
+
+        return data_files_pb2.Metadata(
+            metadata_index=idx,
+            congressional_representatives=[
+                data_files_pb2.CongressionalRepresentativePointer(
+                    representative_idx=representative_table_builder.index_for(val),
+                    start_term=val.start_term,
+                    end_term=val.end_term,
+                )
+                for val, representative in zip(value, representatives)
+            ],
+        )
+
+    def representative_messages(self, representatives: list[RepresentativeWithTerms]):
+        return [
+            congressional_representative_proto(representative.representative)
+            for representative in representatives
+        ]
