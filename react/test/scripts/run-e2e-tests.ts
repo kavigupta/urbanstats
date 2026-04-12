@@ -24,7 +24,7 @@ const options = argumentParser({
         tries: z.optional(z.coerce.number().int()).default(1), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
         baseRef: z.optional(z.string()),
         live: booleanArgument({ defaultValue: false }),
-        docker: booleanArgument({ defaultValue: false }),
+        docker: booleanArgument({ defaultValue: false }), // Runs tests in an environment very similar to the CI.
     }).strict(),
 }).parse(process.argv.slice(2))
 
