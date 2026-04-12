@@ -239,6 +239,77 @@ void test('computeCongressionalWidgetModel keeps one section for serial district
 })
 
 void test('computeCongressionalWidgetModel creates a new section when representative multiplicity changes', () => {
+    const representativeA = {
+        name: 'James E. Rogan',
+        wikipediaPage: 'https://example.com/James%20E.%20Rogan',
+        party: 'Democratic',
+    }
+    const representativeB = {
+        name: 'Gary Condit',
+        wikipediaPage: 'https://example.com/Gary%20Condit',
+        party: 'Democratic',
+    }
+    const representativeC = {
+        name: 'Carlos Moorhead',
+        wikipediaPage: 'https://example.com/Carlos%20Moorhead',
+        party: 'Democratic',
+    }
+
+    const expected = {
+        displayRows: [
+            { kind: 'header-space', termIndex: 0 },
+            { kind: 'term-label', termIndex: 0, termStart: 2005 },
+            { kind: 'term-label', termIndex: 1, termStart: 2003 },
+            { kind: 'term-label', termIndex: 2, termStart: 2001 },
+            { kind: 'header-space', termIndex: 3 },
+            { kind: 'term-label', termIndex: 3, termStart: 1999 },
+            { kind: 'term-label', termIndex: 4, termStart: 1997 },
+            { kind: 'term-label', termIndex: 5, termStart: 1995 },
+            { kind: 'term-label', termIndex: 6, termStart: 1993 },
+        ],
+        supercolumns: [
+            {
+                longname: 'CA-06',
+                sections: [
+                    {
+                        headerDisplayIndex: 0,
+                        contentStartDisplayIndex: 1,
+                        contentEndDisplayIndex: 3,
+                        districtHeaders: [['CA-06 (1993), USA']],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [
+                                    {
+                                        representatives: [representativeA],
+                                        startDisplayIndex: 1,
+                                        endDisplayIndex: 3,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        headerDisplayIndex: 4,
+                        contentStartDisplayIndex: 5,
+                        contentEndDisplayIndex: 8,
+                        districtHeaders: [['CA-06 (1993), USA']],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [
+                                    {
+                                        representatives: [representativeB, representativeC],
+                                        startDisplayIndex: 5,
+                                        endDisplayIndex: 8,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    }
+
     const model = computeCongressionalWidgetModel([
         {
             longname: 'CA-06',
@@ -251,27 +322,7 @@ void test('computeCongressionalWidgetModel creates a new section when representa
     ])
 
     assertModelDefined(model)
-    assert.deepEqual(model.supercolumns[0].sections.length, 2)
-    assert.deepEqual(model.supercolumns[0].sections.map(section => [section.contentStartDisplayIndex, section.contentEndDisplayIndex]), [[1, 3], [5, 8]])
-    assert.deepEqual(model.supercolumns[0].sections.map(section => section.districtHeaders), [[['CA-06 (1993), USA']], [['CA-06 (1993), USA']]])
-    assert.deepEqual(model.supercolumns[0].sections[1].congressionalRuns[0].displayRuns, [
-        {
-            representatives: [
-                {
-                    name: 'Gary Condit',
-                    wikipediaPage: 'https://example.com/Gary%20Condit',
-                    party: 'Democratic',
-                },
-                {
-                    name: 'Carlos Moorhead',
-                    wikipediaPage: 'https://example.com/Carlos%20Moorhead',
-                    party: 'Democratic',
-                },
-            ],
-            startDisplayIndex: 5,
-            endDisplayIndex: 8,
-        },
-    ])
+    assert.deepEqual(model, expected)
 })
 
 void test('computeCongressionalWidgetModel creates a new section when district topology changes with the same representative-count pattern', () => {
@@ -458,6 +509,108 @@ void test('computeCongressionalWidgetModel handles two geographies with one cont
                                             },
                                         ],
                                         startDisplayIndex: 4,
+                                        endDisplayIndex: 5,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    })
+})
+
+void test('computeCongressionalWidgetModel handles two geographies with one continuous and one parallel representative timeline', () => {
+    const model = computeCongressionalWidgetModel([
+        {
+            longname: 'Geo A',
+            representatives: [
+                representative('Continuous Rep', 'GA-01, USA', 2013, 2021),
+            ],
+        },
+        {
+            longname: 'Geo B',
+            representatives: [
+                representative('Parallel Rep One', 'GB-01, USA', 2013, 2021),
+                representative('Parallel Rep Two', 'GB-02, USA', 2013, 2021),
+            ],
+        },
+    ])
+
+    assert.deepEqual(model, {
+        displayRows: [
+            { kind: 'header-space', termIndex: 0 },
+            { kind: 'term-label', termIndex: 0, termStart: 2021 },
+            { kind: 'term-label', termIndex: 1, termStart: 2019 },
+            { kind: 'term-label', termIndex: 2, termStart: 2017 },
+            { kind: 'term-label', termIndex: 3, termStart: 2015 },
+            { kind: 'term-label', termIndex: 4, termStart: 2013 },
+        ],
+        supercolumns: [
+            {
+                longname: 'Geo A',
+                sections: [
+                    {
+                        headerDisplayIndex: 0,
+                        contentStartDisplayIndex: 1,
+                        contentEndDisplayIndex: 5,
+                        districtHeaders: [['GA-01, USA']],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [
+                                    {
+                                        representatives: [
+                                            {
+                                                name: 'Continuous Rep',
+                                                wikipediaPage: 'https://example.com/Continuous%20Rep',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startDisplayIndex: 1,
+                                        endDisplayIndex: 5,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                longname: 'Geo B',
+                sections: [
+                    {
+                        headerDisplayIndex: 0,
+                        contentStartDisplayIndex: 1,
+                        contentEndDisplayIndex: 5,
+                        districtHeaders: [['GB-01, USA'], ['GB-02, USA']],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [
+                                    {
+                                        representatives: [
+                                            {
+                                                name: 'Parallel Rep One',
+                                                wikipediaPage: 'https://example.com/Parallel%20Rep%20One',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startDisplayIndex: 1,
+                                        endDisplayIndex: 5,
+                                    },
+                                ],
+                            },
+                            {
+                                displayRuns: [
+                                    {
+                                        representatives: [
+                                            {
+                                                name: 'Parallel Rep Two',
+                                                wikipediaPage: 'https://example.com/Parallel%20Rep%20Two',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startDisplayIndex: 1,
                                         endDisplayIndex: 5,
                                     },
                                 ],
