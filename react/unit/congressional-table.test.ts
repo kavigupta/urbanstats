@@ -622,3 +622,130 @@ void test('computeCongressionalWidgetModel handles two geographies with one cont
         ],
     })
 })
+
+void test('computeCongressionalWidgetModel handles two geographies with one continuous and one-to-two representative transition', () => {
+    const model = computeCongressionalWidgetModel([
+        {
+            longname: 'Geo A',
+            representatives: [
+                representative('Continuous Rep', 'GA-01, USA', 2013, 2021),
+            ],
+        },
+        {
+            longname: 'Geo B',
+            representatives: [
+                representative('Solo Rep', 'GB-01, USA', 2017, 2021),
+                representative('Parallel Rep One', 'GB-01, USA', 2013, 2015),
+                representative('Parallel Rep Two', 'GB-02, USA', 2013, 2015),
+            ],
+        },
+    ])
+
+    assert.deepEqual(model, {
+        displayRows: [
+            { kind: 'header-space', displayIndex: 0 },
+            { kind: 'term-label', displayIndex: 1, termStart: 2021 },
+            { kind: 'term-label', displayIndex: 2, termStart: 2019 },
+            { kind: 'term-label', displayIndex: 3, termStart: 2017 },
+            { kind: 'header-space', displayIndex: 4 },
+            { kind: 'term-label', displayIndex: 5, termStart: 2015 },
+            { kind: 'term-label', displayIndex: 6, termStart: 2013 },
+        ],
+        supercolumns: [
+            {
+                longname: 'Geo A',
+                sections: [
+                    {
+                        headerDisplayIndex: 0,
+                        contentStartDisplayIndex: 1,
+                        contentEndDisplayIndex: 6,
+                        districtHeaders: [['GA-01, USA']],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [
+                                    {
+                                        representatives: [
+                                            {
+                                                name: 'Continuous Rep',
+                                                wikipediaPage: 'https://example.com/Continuous%20Rep',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startDisplayIndex: 1,
+                                        endDisplayIndex: 6,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                longname: 'Geo B',
+                sections: [
+                    {
+                        headerDisplayIndex: 0,
+                        contentStartDisplayIndex: 1,
+                        contentEndDisplayIndex: 3,
+                        districtHeaders: [['GB-01, USA']],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [
+                                    {
+                                        representatives: [
+                                            {
+                                                name: 'Solo Rep',
+                                                wikipediaPage: 'https://example.com/Solo%20Rep',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startDisplayIndex: 1,
+                                        endDisplayIndex: 3,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        headerDisplayIndex: 4,
+                        contentStartDisplayIndex: 5,
+                        contentEndDisplayIndex: 6,
+                        districtHeaders: [['GB-01, USA'], ['GB-02, USA']],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [
+                                    {
+                                        representatives: [
+                                            {
+                                                name: 'Parallel Rep One',
+                                                wikipediaPage: 'https://example.com/Parallel%20Rep%20One',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startDisplayIndex: 5,
+                                        endDisplayIndex: 6,
+                                    },
+                                ],
+                            },
+                            {
+                                displayRuns: [
+                                    {
+                                        representatives: [
+                                            {
+                                                name: 'Parallel Rep Two',
+                                                wikipediaPage: 'https://example.com/Parallel%20Rep%20Two',
+                                                party: 'Democratic',
+                                            },
+                                        ],
+                                        startDisplayIndex: 5,
+                                        endDisplayIndex: 6,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    })
+})

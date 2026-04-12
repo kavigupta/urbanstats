@@ -156,7 +156,7 @@ function computeCongressionalTableModel(input: {
             const representativeCountPattern = buckets.map(bucket => bucket.entries.length).join('|')
             const sectionPattern = buckets.length <= 1
                 ? `count:${representativeCountPattern}`
-                : `count:${representativeCountPattern};topology:${buckets.map(bucket => `${bucket.districtLabel}::${bucket.signature}`).join('|')}`
+                : `count:${representativeCountPattern};signature:${buckets.map(bucket => bucket.signature).join('|')}`
             if (termIndex === 0 || sectionPattern !== previousSectionPattern) {
                 starts.add(termIndex)
             }
@@ -199,15 +199,17 @@ function computeCongressionalTableModel(input: {
                 ? input.termsDescending.length - 1
                 : sectionStarts[startIdx + 1] - 1
             const sectionBucketsByTerm = districtBucketsByColumnAndTerm[columnIndex].slice(startIndex, endIndex + 1)
-            const buildRunForSection = (district?: string): RepresentativesForRegionAndDistrict => {
+            const buildRunForSection = (district?: string, bucketIndex?: number): RepresentativesForRegionAndDistrict => {
                 const displayRuns: RepresentativesForRegionDistrictAndDisplayRun[] = sectionBucketsByTerm.map((bucketsForTerm, localTermIndex) => {
                     const absoluteTermIndex = startIndex + localTermIndex
                     const displayIndex = termLabelDisplayRowByTerm.get(absoluteTermIndex) ?? 0
                     const entriesInDistrict: CongressionalRepresentativeEntry[] = district === undefined
-                        ? bucketsForTerm.reduce<CongressionalRepresentativeEntry[]>((acc, bucket) => {
-                            acc.push(...bucket.entries)
-                            return acc
-                        }, [])
+                        ? (bucketIndex === undefined
+                                ? bucketsForTerm.reduce<CongressionalRepresentativeEntry[]>((acc, bucket) => {
+                                    acc.push(...bucket.entries)
+                                    return acc
+                                }, [])
+                                : (bucketsForTerm[bucketIndex]?.entries ?? []))
                         : bucketsForTerm.find(bucket => bucket.districtLabel === district)?.entries ?? []
                     const uniqueIdsForTerm = new Set<string>()
                     const representatives = entriesInDistrict.reduce<CongressionalRepresentativeEntry['representative'][]>((acc, entry) => {
@@ -240,9 +242,10 @@ function computeCongressionalTableModel(input: {
                     const currentSignature = displayRun.representatives
                         .map(representative => `${representative.name ?? ''}|${representative.wikipediaPage ?? ''}|${representative.party ?? ''}`)
                         .join('||')
-                    const isContiguousDisplayRange = previous.endDisplayIndex + 1 === displayRun.startDisplayIndex
 
-                    if (previousSignature === currentSignature && isContiguousDisplayRange) {
+                    // Merge adjacent terms with the same representative set, even if a global
+                    // header-space row exists between their display indices.
+                    if (previousSignature === currentSignature) {
                         previous.endDisplayIndex = displayRun.endDisplayIndex
                         return acc
                     }
@@ -268,11 +271,20 @@ function computeCongressionalTableModel(input: {
                                 return acc
                             }, []),
                     ]
-                : sectionBucketsByTerm[0].map(bucket => [bucket.districtLabel])
+                : sectionBucketsByTerm[0].map((_, bucketIndex) =>
+                        sectionBucketsByTerm
+                            .map(buckets => buckets[bucketIndex]?.districtLabel ?? 'District unknown')
+                            .reduce<string[]>((acc, district) => {
+                                if (acc.length === 0 || acc[acc.length - 1] !== district) {
+                                    acc.push(district)
+                                }
+                                return acc
+                            }, []),
+                    )
 
             const congressionalRuns: RepresentativesForRegionAndDistrict[] = singleDistrictPerTerm
                 ? [buildRunForSection()]
-                : districtHeaders.map(headerGroup => buildRunForSection(headerGroup[0]))
+                : districtHeaders.map((_, bucketIndex) => buildRunForSection(undefined, bucketIndex))
 
             return {
                 headerDisplayIndex: headerStartTermIndices.has(startIndex)
