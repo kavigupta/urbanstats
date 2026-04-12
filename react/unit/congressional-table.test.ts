@@ -32,6 +32,48 @@ function representative(
     }
 }
 
+interface CompactCongressionalWidgetModel {
+    displayRows: CongressionalTableModel['displayRows']
+    supercolumns: {
+        longname: string
+        sections: {
+            headerDisplayIndex?: number
+            contentStartDisplayIndex: number
+            contentEndDisplayIndex: number
+            districtHeaders: string[][]
+            congressionalRuns: {
+                displayRuns: [string[], number, number][]
+            }[]
+        }[]
+    }[]
+}
+
+function compactCongressionalWidgetModel(model: CongressionalTableModel | undefined): CompactCongressionalWidgetModel | undefined {
+    if (model === undefined) {
+        return undefined
+    }
+
+    return {
+        displayRows: model.displayRows,
+        supercolumns: model.supercolumns.map(({ longname, sections }) => ({
+            longname,
+            sections: sections.map(({ headerDisplayIndex, contentStartDisplayIndex, contentEndDisplayIndex, districtHeaders, congressionalRuns }) => ({
+                headerDisplayIndex,
+                contentStartDisplayIndex,
+                contentEndDisplayIndex,
+                districtHeaders,
+                congressionalRuns: congressionalRuns.map(({ displayRuns }) => ({
+                    displayRuns: displayRuns.map(({ representatives, startDisplayIndex, endDisplayIndex }) => [
+                        representatives.map(({ name }) => name ?? '[missing]'),
+                        startDisplayIndex,
+                        endDisplayIndex,
+                    ]),
+                })),
+            })),
+        })),
+    }
+}
+
 void test('computeCongressionalWidgetModel returns undefined for empty input', () => {
     assert.equal(computeCongressionalWidgetModel([]), undefined)
 })
@@ -46,7 +88,7 @@ void test('computeCongressionalWidgetModel with only one representative', () => 
         },
     ])
 
-    assert.deepEqual(model, {
+    assert.deepEqual(compactCongressionalWidgetModel(model), {
         displayRows: [
             { kind: 'header-space', displayIndex: 0 },
             { kind: 'term-label', displayIndex: 1, termStart: 2005 },
@@ -64,19 +106,7 @@ void test('computeCongressionalWidgetModel with only one representative', () => 
                         districtHeaders: [['CA-06 (1993), USA']],
                         congressionalRuns: [
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'James E. Rogan',
-                                                wikipediaPage: 'https://example.com/James%20E.%20Rogan',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 1,
-                                        endDisplayIndex: 3,
-                                    },
-                                ],
+                                displayRuns: [[['James E. Rogan'], 1, 3]],
                             },
                         ],
                     },
@@ -96,7 +126,7 @@ void test('computeCongressionalWidgetModel with multiple representatives in one 
             ],
         },
     ])
-    assert.deepEqual(model, {
+    assert.deepEqual(compactCongressionalWidgetModel(model), {
         displayRows: [
             { kind: 'header-space', displayIndex: 0 },
             { kind: 'term-label', displayIndex: 1, termStart: 2005 },
@@ -118,30 +148,7 @@ void test('computeCongressionalWidgetModel with multiple representatives in one 
                         districtHeaders: [['CA-06 (1993), USA']],
                         congressionalRuns: [
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'James E. Rogan',
-                                                wikipediaPage: 'https://example.com/James%20E.%20Rogan',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 1,
-                                        endDisplayIndex: 3,
-                                    },
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'Gary Condit',
-                                                wikipediaPage: 'https://example.com/Gary%20Condit',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 4,
-                                        endDisplayIndex: 7,
-                                    },
-                                ],
+                                displayRuns: [[['James E. Rogan'], 1, 3], [['Gary Condit'], 4, 7]],
                             },
                         ],
                     },
@@ -162,7 +169,7 @@ void test('computeCongressionalWidgetModel keeps one section for the same repres
         },
     ])
 
-    assert.deepEqual(model, {
+    assert.deepEqual(compactCongressionalWidgetModel(model), {
         displayRows: [
             { kind: 'header-space', displayIndex: 0 },
             { kind: 'term-label', displayIndex: 1, termStart: 2005 },
@@ -180,34 +187,10 @@ void test('computeCongressionalWidgetModel keeps one section for the same repres
                         districtHeaders: [['CA-06 (1993), USA'], ['CA-27 (1993), USA']],
                         congressionalRuns: [
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'James E. Rogan',
-                                                wikipediaPage: 'https://example.com/James%20E.%20Rogan',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 1,
-                                        endDisplayIndex: 3,
-                                    },
-                                ],
+                                displayRuns: [[['James E. Rogan'], 1, 3]],
                             },
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'James E. Rogan',
-                                                wikipediaPage: 'https://example.com/James%20E.%20Rogan',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 1,
-                                        endDisplayIndex: 3,
-                                    },
-                                ],
+                                displayRuns: [[['James E. Rogan'], 1, 3]],
                             },
                         ],
                     },
@@ -248,22 +231,6 @@ void test('computeCongressionalWidgetModel keeps one section for serial district
 })
 
 void test('computeCongressionalWidgetModel creates a new section when representative multiplicity changes', () => {
-    const representativeA = {
-        name: 'James E. Rogan',
-        wikipediaPage: 'https://example.com/James%20E.%20Rogan',
-        party: 'Democratic',
-    }
-    const representativeB = {
-        name: 'Gary Condit',
-        wikipediaPage: 'https://example.com/Gary%20Condit',
-        party: 'Democratic',
-    }
-    const representativeC = {
-        name: 'Carlos Moorhead',
-        wikipediaPage: 'https://example.com/Carlos%20Moorhead',
-        party: 'Democratic',
-    }
-
     const expected = {
         displayRows: [
             { kind: 'header-space', displayIndex: 0 },
@@ -287,13 +254,7 @@ void test('computeCongressionalWidgetModel creates a new section when representa
                         districtHeaders: [['CA-06 (1993), USA']],
                         congressionalRuns: [
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [representativeA],
-                                        startDisplayIndex: 1,
-                                        endDisplayIndex: 3,
-                                    },
-                                ],
+                                displayRuns: [[['James E. Rogan'], 1, 3]],
                             },
                         ],
                     },
@@ -304,13 +265,7 @@ void test('computeCongressionalWidgetModel creates a new section when representa
                         districtHeaders: [['CA-06 (1993), USA']],
                         congressionalRuns: [
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [representativeB, representativeC],
-                                        startDisplayIndex: 5,
-                                        endDisplayIndex: 8,
-                                    },
-                                ],
+                                displayRuns: [[['Gary Condit', 'Carlos Moorhead'], 5, 8]],
                             },
                         ],
                     },
@@ -331,7 +286,7 @@ void test('computeCongressionalWidgetModel creates a new section when representa
     ])
 
     assertModelDefined(model)
-    assert.deepEqual(model, expected)
+    assert.deepEqual(compactCongressionalWidgetModel(model), expected)
 })
 
 void test('computeCongressionalWidgetModel creates a new section when district topology changes with the same representative-count pattern', () => {
@@ -449,7 +404,7 @@ void test('computeCongressionalWidgetModel handles two geographies with one cont
         },
     ])
 
-    assert.deepEqual(model, {
+    assert.deepEqual(compactCongressionalWidgetModel(model), {
         displayRows: [
             { kind: 'header-space', displayIndex: 0 },
             { kind: 'term-label', displayIndex: 1, termStart: 2021 },
@@ -469,19 +424,7 @@ void test('computeCongressionalWidgetModel handles two geographies with one cont
                         districtHeaders: [['GA-01, USA']],
                         congressionalRuns: [
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'Continuous Rep',
-                                                wikipediaPage: 'https://example.com/Continuous%20Rep',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 1,
-                                        endDisplayIndex: 5,
-                                    },
-                                ],
+                                displayRuns: [[['Continuous Rep'], 1, 5]],
                             },
                         ],
                     },
@@ -497,30 +440,7 @@ void test('computeCongressionalWidgetModel handles two geographies with one cont
                         districtHeaders: [['GB-01, USA']],
                         congressionalRuns: [
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'Split Rep Two',
-                                                wikipediaPage: 'https://example.com/Split%20Rep%20Two',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 1,
-                                        endDisplayIndex: 3,
-                                    },
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'Split Rep One',
-                                                wikipediaPage: 'https://example.com/Split%20Rep%20One',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 4,
-                                        endDisplayIndex: 5,
-                                    },
-                                ],
+                                displayRuns: [[['Split Rep Two'], 1, 3], [['Split Rep One'], 4, 5]],
                             },
                         ],
                     },
@@ -547,7 +467,7 @@ void test('computeCongressionalWidgetModel handles two geographies with one cont
         },
     ])
 
-    assert.deepEqual(model, {
+    assert.deepEqual(compactCongressionalWidgetModel(model), {
         displayRows: [
             { kind: 'header-space', displayIndex: 0 },
             { kind: 'term-label', displayIndex: 1, termStart: 2021 },
@@ -567,19 +487,7 @@ void test('computeCongressionalWidgetModel handles two geographies with one cont
                         districtHeaders: [['GA-01, USA']],
                         congressionalRuns: [
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'Continuous Rep',
-                                                wikipediaPage: 'https://example.com/Continuous%20Rep',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 1,
-                                        endDisplayIndex: 5,
-                                    },
-                                ],
+                                displayRuns: [[['Continuous Rep'], 1, 5]],
                             },
                         ],
                     },
@@ -595,34 +503,10 @@ void test('computeCongressionalWidgetModel handles two geographies with one cont
                         districtHeaders: [['GB-01, USA'], ['GB-02, USA']],
                         congressionalRuns: [
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'Parallel Rep One',
-                                                wikipediaPage: 'https://example.com/Parallel%20Rep%20One',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 1,
-                                        endDisplayIndex: 5,
-                                    },
-                                ],
+                                displayRuns: [[['Parallel Rep One'], 1, 5]],
                             },
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'Parallel Rep Two',
-                                                wikipediaPage: 'https://example.com/Parallel%20Rep%20Two',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 1,
-                                        endDisplayIndex: 5,
-                                    },
-                                ],
+                                displayRuns: [[['Parallel Rep Two'], 1, 5]],
                             },
                         ],
                     },
@@ -650,7 +534,7 @@ void test('computeCongressionalWidgetModel handles two geographies with one cont
         },
     ])
 
-    assert.deepEqual(model, {
+    assert.deepEqual(compactCongressionalWidgetModel(model), {
         displayRows: [
             { kind: 'header-space', displayIndex: 0 },
             { kind: 'term-label', displayIndex: 1, termStart: 2021 },
@@ -671,19 +555,7 @@ void test('computeCongressionalWidgetModel handles two geographies with one cont
                         districtHeaders: [['GA-01, USA']],
                         congressionalRuns: [
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'Continuous Rep',
-                                                wikipediaPage: 'https://example.com/Continuous%20Rep',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 1,
-                                        endDisplayIndex: 6,
-                                    },
-                                ],
+                                displayRuns: [[['Continuous Rep'], 1, 6]],
                             },
                         ],
                     },
@@ -699,19 +571,7 @@ void test('computeCongressionalWidgetModel handles two geographies with one cont
                         districtHeaders: [['GB-01, USA']],
                         congressionalRuns: [
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'Solo Rep',
-                                                wikipediaPage: 'https://example.com/Solo%20Rep',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 1,
-                                        endDisplayIndex: 3,
-                                    },
-                                ],
+                                displayRuns: [[['Solo Rep'], 1, 3]],
                             },
                         ],
                     },
@@ -722,34 +582,10 @@ void test('computeCongressionalWidgetModel handles two geographies with one cont
                         districtHeaders: [['GB-01, USA'], ['GB-02, USA']],
                         congressionalRuns: [
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'Parallel Rep One',
-                                                wikipediaPage: 'https://example.com/Parallel%20Rep%20One',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 5,
-                                        endDisplayIndex: 6,
-                                    },
-                                ],
+                                displayRuns: [[['Parallel Rep One'], 5, 6]],
                             },
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'Parallel Rep Two',
-                                                wikipediaPage: 'https://example.com/Parallel%20Rep%20Two',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 5,
-                                        endDisplayIndex: 6,
-                                    },
-                                ],
+                                displayRuns: [[['Parallel Rep Two'], 5, 6]],
                             },
                         ],
                     },
@@ -782,7 +618,7 @@ void test('computeCongressionalWidgetModel stacks lanes in provided payload and 
         },
     ])
 
-    assert.deepEqual(model, {
+    assert.deepEqual(compactCongressionalWidgetModel(model), {
         displayRows: [
             { kind: 'header-space', displayIndex: 0 },
             { kind: 'term-label', displayIndex: 1, termStart: 2025 },
@@ -800,19 +636,7 @@ void test('computeCongressionalWidgetModel stacks lanes in provided payload and 
                         districtHeaders: [['CA-28 (2023), USA', 'CA-27 (2013), USA']],
                         congressionalRuns: [
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'Judy Chu',
-                                                wikipediaPage: 'https://example.com/Judy%20Chu',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 1,
-                                        endDisplayIndex: 3,
-                                    },
-                                ],
+                                displayRuns: [[['Judy Chu'], 1, 3]],
                             },
                         ],
                     },
@@ -831,34 +655,10 @@ void test('computeCongressionalWidgetModel stacks lanes in provided payload and 
                         ],
                         congressionalRuns: [
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'Ayanna Pressley',
-                                                wikipediaPage: 'https://example.com/Ayanna%20Pressley',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 1,
-                                        endDisplayIndex: 3,
-                                    },
-                                ],
+                                displayRuns: [[['Ayanna Pressley'], 1, 3]],
                             },
                             {
-                                displayRuns: [
-                                    {
-                                        representatives: [
-                                            {
-                                                name: 'Katherine Clark',
-                                                wikipediaPage: 'https://example.com/Katherine%20Clark',
-                                                party: 'Democratic',
-                                            },
-                                        ],
-                                        startDisplayIndex: 1,
-                                        endDisplayIndex: 3,
-                                    },
-                                ],
+                                displayRuns: [[['Katherine Clark'], 1, 3]],
                             },
                         ],
                     },
