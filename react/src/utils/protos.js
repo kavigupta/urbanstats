@@ -2179,7 +2179,7 @@ export const TermIn = $root.TermIn = (() => {
         if (message.startYear != null && Object.hasOwnProperty.call(message, "startYear"))
             writer.uint32(/* id 1, wireType 0 =*/8).int32(message.startYear);
         if (message.districtIdx != null && Object.hasOwnProperty.call(message, "districtIdx"))
-            writer.uint32(/* id 3, wireType 0 =*/24).int32(message.districtIdx);
+            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.districtIdx);
         return writer;
     };
 
@@ -2218,7 +2218,7 @@ export const TermIn = $root.TermIn = (() => {
                     message.startYear = reader.int32();
                     break;
                 }
-            case 3: {
+            case 2: {
                     message.districtIdx = reader.int32();
                     break;
                 }
