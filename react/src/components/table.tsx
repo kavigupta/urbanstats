@@ -122,7 +122,6 @@ export interface SuperHeaderHorizontalProps {
     leftSpacerWidth: number
     groupNames?: (string | undefined)[]
     handleReorder?: (from: number, to: number) => void
-    handleDelete?: (colIndex: number) => void
 }
 
 export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactNode {
@@ -175,21 +174,13 @@ export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactN
                                 const nonDraggableSpec: CellSpec = cellSpec.type === 'comparison-longname' ? { ...cellSpec, draggable: false } : cellSpec
                                 return (
                                     <SortableHeaderCell key={idx} id={idx.toString()} width={props.widthsEach[idx]}>
-                                        <DeleteButton handleDelete={props.handleDelete} idx={idx} colors={colors}>
-                                            <Cell {...nonDraggableSpec} width={100} />
-                                        </DeleteButton>
+                                        <Cell {...nonDraggableSpec} width={100} />
                                     </SortableHeaderCell>
                                 )
                             })}
                         </SortableContext>
                     )
-                : props.headerSpecs.map((cellSpec, idx) => (
-                    <div key={idx} style={{ width: `${props.widthsEach[idx]}%`, position: 'relative' }}>
-                        <DeleteButton handleDelete={props.handleDelete} idx={idx} colors={colors}>
-                            <Cell {...cellSpec} width={100} />
-                        </DeleteButton>
-                    </div>
-                ))}
+                : props.headerSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} width={props.widthsEach[idx]} />)}
         </div>
     )
 
@@ -228,36 +219,6 @@ function SortableHeaderCell({ id, width, children }: { id: string, width: number
             {...listeners}
         >
             {children}
-        </div>
-    )
-}
-
-function DeleteButton({ handleDelete, idx, colors, children }: { handleDelete: ((colIndex: number) => void) | undefined, idx: number, colors: Colors, children: ReactNode }): ReactNode {
-    if (handleDelete === undefined) {
-        return <>{children}</>
-    }
-    return (
-        <div style={{ position: 'relative', width: '100%' }}>
-            {children}
-            <button
-                data-test-id="delete-column"
-                onPointerDown={e => { e.stopPropagation() }}
-                onClick={() => { handleDelete(idx) }}
-                style={{
-                    position: 'absolute',
-                    top: 0,
-                    right: 0,
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: colors.hueColors.red,
-                    fontSize: '1em',
-                    lineHeight: 1,
-                    padding: '2px 4px',
-                }}
-            >
-                ×
-            </button>
         </div>
     )
 }
@@ -946,6 +907,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                             <ArrowUpOrDown direction={props.sortInfo.sortDirection} shouldAppearInScreenshot={false} />
                         </span>
                     )}
+                    {props.handleDelete && <DeleteButton handleDelete={props.handleDelete} />}
                 </span>
             </div>
         </>
@@ -1410,4 +1372,31 @@ function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearI
             break
     }
     return <img src={image} className="testing-order-swap" alt={props.direction} style={{ width: '16px', height: '16px' }} />
+}
+
+function DeleteButton({ handleDelete }: { handleDelete: () => void }): ReactNode {
+    const isScreenshot = useScreenshotMode()
+    if (isScreenshot) {
+        return null
+    }
+    const size = 16
+    return (
+        <button
+            data-test-id="delete-column"
+            onPointerDown={(e) => { e.stopPropagation() }}
+            onClick={() => { handleDelete() }}
+            style={{
+                border: 'none',
+                cursor: 'pointer',
+                padding: '2px 4px',
+                backgroundImage: 'url("/close-red-small.png")',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: size,
+                width: size,
+                height: size,
+            }}
+        >
+        </button>
+    )
 }

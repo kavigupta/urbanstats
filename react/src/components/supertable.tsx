@@ -21,7 +21,6 @@ export interface SuperHeaderSpec {
     showBottomBar: boolean
     groupNames?: (string | undefined)[]
     handleReorder?: (from: number, to: number) => void
-    handleDelete?: (colIndex: number) => void
 }
 
 export interface LeftHeaderSpec {
@@ -280,6 +279,7 @@ export interface StatisticNameCellProps {
         sortDirection: 'up' | 'down' | 'both'
         onSort: () => void
     }
+    handleDelete?: () => void
 }
 
 export interface StatisticRowCellProps {
