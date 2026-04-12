@@ -172,6 +172,7 @@ function CongressionalTableSectionDistrictHeaders(props: {
                 ...borderStyles({
                     borderColor: props.borderColor,
                     borderLeft: true,
+                    borderTop: true,
                     borderBottom: true,
                 }),
                 backgroundColor: props.backgroundColor,
@@ -255,6 +256,7 @@ function CongressionalTableRunRows(props: {
                         style={{
                             gridRow: `${rowStart} / span ${spanCount}`,
                             display: 'flex',
+                            flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
                             textAlign: 'center',
@@ -263,7 +265,7 @@ function CongressionalTableRunRows(props: {
                                 borderColor: props.borderColor,
                                 borderBottom: bottomRow < sectionRowCount,
                             }),
-                            gap: '10px',
+                            gap: '4px',
                         }}
                     >
                         {displayRun.representatives.length === 0
@@ -396,16 +398,7 @@ export function CongressionalRepresentativesWidget(props: {
     extraSpaceRight: number[]
 }): ReactNode {
     const model = useMemo(
-        () => {
-            // TODO remove later once we are done with debugging.
-            const regions = props.regions.map(region => ({
-                longname: region.longname,
-                representatives: region.representatives.filter(
-                    representative => (representative.endTerm ?? Number.NEGATIVE_INFINITY) >= 2020,
-                ),
-            }))
-            return computeCongressionalWidgetModel(regions)
-        },
+        () => computeCongressionalWidgetModel(props.regions),
         [props.regions],
     )
 

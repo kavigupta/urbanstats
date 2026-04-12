@@ -230,7 +230,54 @@ void test('computeCongressionalWidgetModel keeps one section for serial district
     ])
 })
 
-void test('computeCongressionalWidgetModel creates a new section when representative multiplicity changes', () => {
+void test('computeCongressionalWidgetModel doesnt create a new section when representative multiplicity changes', () => {
+    const expected = {
+        displayRows: [
+            { kind: 'header-space', displayIndex: 0 },
+            { kind: 'term-label', displayIndex: 1, termStart: 2005 },
+            { kind: 'term-label', displayIndex: 2, termStart: 2003 },
+            { kind: 'term-label', displayIndex: 3, termStart: 2001 },
+            { kind: 'term-label', displayIndex: 4, termStart: 1999 },
+            { kind: 'term-label', displayIndex: 5, termStart: 1997 },
+            { kind: 'term-label', displayIndex: 6, termStart: 1995 },
+            { kind: 'term-label', displayIndex: 7, termStart: 1993 },
+        ],
+        supercolumns: [
+            {
+                longname: 'CA-06',
+                sections: [
+                    {
+                        headerDisplayIndex: 0,
+                        contentStartDisplayIndex: 1,
+                        contentEndDisplayIndex: 7,
+                        districtHeaders: [['CA-06 (1993), USA']],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [[['James E. Rogan'], 1, 3], [['Gary Condit', 'Carlos Moorhead'], 4, 7]],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    }
+
+    const model = computeCongressionalWidgetModel([
+        {
+            longname: 'CA-06',
+            representatives: [
+                representative('James E. Rogan', 'CA-06 (1993), USA', 2001, 2005),
+                representative('Gary Condit', 'CA-06 (1993), USA', 1993, 1999),
+                representative('Carlos Moorhead', 'CA-06 (1993), USA', 1993, 1999),
+            ],
+        },
+    ])
+
+    assertModelDefined(model)
+    assert.deepEqual(compactCongressionalWidgetModel(model), expected)
+})
+
+void test('computeCongressionalWidgetModel creates a new section when district multiplicity changes', () => {
     const expected = {
         displayRows: [
             { kind: 'header-space', displayIndex: 0 },
@@ -262,10 +309,13 @@ void test('computeCongressionalWidgetModel creates a new section when representa
                         headerDisplayIndex: 4,
                         contentStartDisplayIndex: 5,
                         contentEndDisplayIndex: 8,
-                        districtHeaders: [['CA-06 (1993), USA']],
+                        districtHeaders: [['CA-07 (1993), USA'], ['CA-06 (1993), USA']],
                         congressionalRuns: [
                             {
-                                displayRuns: [[['Gary Condit', 'Carlos Moorhead'], 5, 8]],
+                                displayRuns: [[['Carlos Moorhead'], 5, 8]],
+                            },
+                            {
+                                displayRuns: [[['Gary Condit'], 5, 8]],
                             },
                         ],
                     },
@@ -280,7 +330,7 @@ void test('computeCongressionalWidgetModel creates a new section when representa
             representatives: [
                 representative('James E. Rogan', 'CA-06 (1993), USA', 2001, 2005),
                 representative('Gary Condit', 'CA-06 (1993), USA', 1993, 1999),
-                representative('Carlos Moorhead', 'CA-06 (1993), USA', 1993, 1999),
+                representative('Carlos Moorhead', 'CA-07 (1993), USA', 1993, 1999),
             ],
         },
     ])
@@ -348,10 +398,9 @@ void test('computeCongressionalWidgetModel creates per-term duplicated entries f
 
     assertModelDefined(model)
 
-    assert.equal(model.supercolumns[0].sections.length, 2)
-    assert.deepEqual(model.supercolumns[0].sections.map(section => [section.contentStartDisplayIndex, section.contentEndDisplayIndex]), [[1, 2], [4, 4]])
+    assert.equal(model.supercolumns[0].sections.length, 1)
+    assert.deepEqual(model.supercolumns[0].sections.map(section => [section.contentStartDisplayIndex, section.contentEndDisplayIndex]), [[1, 3]])
     assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns.length, 1)
-    assert.deepEqual(model.supercolumns[0].sections[1].congressionalRuns.length, 1)
 
     assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns[0].displayRuns, [
         {
@@ -370,9 +419,6 @@ void test('computeCongressionalWidgetModel creates per-term duplicated entries f
             startDisplayIndex: 1,
             endDisplayIndex: 2,
         },
-    ])
-
-    assert.deepEqual(model.supercolumns[0].sections[1].congressionalRuns[0].displayRuns, [
         {
             representatives: [
                 {
@@ -381,10 +427,24 @@ void test('computeCongressionalWidgetModel creates per-term duplicated entries f
                     party: 'Democratic',
                 },
             ],
-            startDisplayIndex: 4,
-            endDisplayIndex: 4,
+            startDisplayIndex: 3,
+            endDisplayIndex: 3,
         },
     ])
+
+    assert.deepEqual(model.supercolumns[0].sections[0].congressionalRuns[0].displayRuns[1],
+        {
+            representatives: [
+                {
+                    name: 'Charles L. Scott',
+                    wikipediaPage: 'https://example.com/Charles%20L.%20Scott',
+                    party: 'Democratic',
+                },
+            ],
+            startDisplayIndex: 3,
+            endDisplayIndex: 3,
+        },
+    )
 })
 
 void test('computeCongressionalWidgetModel handles two geographies with one continuous and one split representative timeline', () => {
@@ -586,6 +646,73 @@ void test('computeCongressionalWidgetModel handles two geographies with one cont
                             },
                             {
                                 displayRuns: [[['Parallel Rep Two'], 5, 6]],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    })
+})
+
+void test('computeCongressionalWidgetModel keeps one section when one of two columns changes representative and the other stays continuous', () => {
+    const model = computeCongressionalWidgetModel([
+        {
+            longname: 'Geo A',
+            representatives: [
+                representative('Continuous Rep', 'GA-01, USA', 2013, 2021),
+            ],
+        },
+        {
+            longname: 'Geo B',
+            representatives: [
+                representative('Left Column Rep', 'GB-01, USA', 2013, 2021),
+                representative('Right Column Rep One', 'GB-02, USA', 2013, 2017),
+                representative('Right Column Rep Two', 'GB-02, USA', 2019, 2021),
+            ],
+        },
+    ])
+
+    assert.deepEqual(compactCongressionalWidgetModel(model), {
+        displayRows: [
+            { kind: 'header-space', displayIndex: 0 },
+            { kind: 'term-label', displayIndex: 1, termStart: 2021 },
+            { kind: 'term-label', displayIndex: 2, termStart: 2019 },
+            { kind: 'term-label', displayIndex: 3, termStart: 2017 },
+            { kind: 'term-label', displayIndex: 4, termStart: 2015 },
+            { kind: 'term-label', displayIndex: 5, termStart: 2013 },
+        ],
+        supercolumns: [
+            {
+                longname: 'Geo A',
+                sections: [
+                    {
+                        headerDisplayIndex: 0,
+                        contentStartDisplayIndex: 1,
+                        contentEndDisplayIndex: 5,
+                        districtHeaders: [['GA-01, USA']],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [[['Continuous Rep'], 1, 5]],
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                longname: 'Geo B',
+                sections: [
+                    {
+                        headerDisplayIndex: 0,
+                        contentStartDisplayIndex: 1,
+                        contentEndDisplayIndex: 5,
+                        districtHeaders: [['GB-01, USA'], ['GB-02, USA']],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [[['Left Column Rep'], 1, 5]],
+                            },
+                            {
+                                displayRuns: [[['Right Column Rep Two'], 1, 2], [['Right Column Rep One'], 3, 5]],
                             },
                         ],
                     },

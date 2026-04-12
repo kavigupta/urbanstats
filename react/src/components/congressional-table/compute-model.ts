@@ -1,4 +1,5 @@
 import { assert } from '../../utils/defensive'
+
 import {
     CongressionalColumnData,
     CongressionalRepresentativeEntry,
@@ -46,9 +47,13 @@ function representativeSignature(entry: CongressionalRepresentativeEntry): strin
     return `${entry.representative.name ?? ''}|${entry.representative.wikipediaPage ?? ''}|${entry.representative.party ?? ''}`
 }
 
+function representativeValueSignature(representative: CongressionalRepresentativeEntry['representative']): string {
+    return `${representative.name ?? ''}|${representative.wikipediaPage ?? ''}|${representative.party ?? ''}`
+}
+
 function representativeListSignature(representatives: CongressionalRepresentativeEntry['representative'][]): string {
     return representatives
-        .map(representative => `${representative.name ?? ''}|${representative.wikipediaPage ?? ''}|${representative.party ?? ''}`)
+        .map(representativeValueSignature)
         .join('||')
 }
 
@@ -130,7 +135,6 @@ interface LongnameRun {
     termIndices: number[]
     terms: number[]
     districtBucketsByTerm: DistrictBucketForTerm[][]
-    pattern: string
 }
 
 interface LongnameRuns {
@@ -153,12 +157,37 @@ function entriesForTerm(column: CongressionalColumnData, termStart: number): Con
     })
 }
 
-function sectionPatternForBuckets(buckets: DistrictBucketForTerm[]): string {
-    const representativeCountPattern = buckets.map(bucket => bucket.representatives.length).join('|')
-    if (buckets.length <= 1) {
-        return `count:${representativeCountPattern}`
+function bucketDistrictLabelPattern(buckets: DistrictBucketForTerm[]): string {
+    return buckets.map(bucket => bucket.districtLabel).join('|')
+}
+
+function bucketsShareRepresentative(previousBuckets: DistrictBucketForTerm[], currentBuckets: DistrictBucketForTerm[]): boolean {
+    const signatures = new Set<string>()
+    previousBuckets.forEach((bucket) => {
+        bucket.representatives.forEach((representative) => {
+            signatures.add(representativeValueSignature(representative))
+        })
+    })
+
+    return currentBuckets.some(bucket =>
+        bucket.representatives.some(representative => signatures.has(representativeValueSignature(representative))),
+    )
+}
+
+function shouldStartNewSection(previousBuckets: DistrictBucketForTerm[] | undefined, currentBuckets: DistrictBucketForTerm[]): boolean {
+    if (previousBuckets === undefined) {
+        return true
     }
-    return `count:${representativeCountPattern};signature:${buckets.map(bucket => bucket.signature).join('|')}`
+
+    if (previousBuckets.length !== currentBuckets.length) {
+        return true
+    }
+
+    if (bucketDistrictLabelPattern(previousBuckets) !== bucketDistrictLabelPattern(currentBuckets) && !bucketsShareRepresentative(previousBuckets, currentBuckets)) {
+        return true
+    }
+
+    return false
 }
 
 function buildRunsForLongname(column: CongressionalColumnData, termsDescending: number[]): LongnameRuns {
@@ -166,22 +195,23 @@ function buildRunsForLongname(column: CongressionalColumnData, termsDescending: 
     const runs: LongnameRun[] = []
 
     let currentRun: LongnameRun | undefined
+    let previousBuckets: DistrictBucketForTerm[] | undefined
     districtBucketsByTerm.forEach((buckets, termIndex) => {
-        const pattern = sectionPatternForBuckets(buckets)
-        if (currentRun === undefined || currentRun.pattern !== pattern) {
+        if (currentRun === undefined || shouldStartNewSection(previousBuckets, buckets)) {
             currentRun = {
                 termIndices: [termIndex],
                 terms: [termsDescending[termIndex]],
                 districtBucketsByTerm: [buckets],
-                pattern,
             }
             runs.push(currentRun)
-            return
+        }
+        else {
+            currentRun.termIndices.push(termIndex)
+            currentRun.terms.push(termsDescending[termIndex])
+            currentRun.districtBucketsByTerm.push(buckets)
         }
 
-        currentRun.termIndices.push(termIndex)
-        currentRun.terms.push(termsDescending[termIndex])
-        currentRun.districtBucketsByTerm.push(buckets)
+        previousBuckets = buckets
     })
 
     return {
