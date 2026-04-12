@@ -52,7 +52,7 @@ message CongressionalRepresentative {
 
 message TermIn {
     int32 start_year = 1;
-    int32 district_idx = 3; // index into CongressionalRepresentativeTable.districts
+    int32 district_idx = 2; // index into CongressionalRepresentativeTable.districts
 }
 
 message CongressionalDistrict {
@@ -70,8 +70,14 @@ message ExtraStatistic {
     optional TemperatureHistogram temperature_histogram = 3;
 }
 
+// a particular representative covering a particular area
+// for certain terms, used in that area's metadata
 message CongressionalRepresentativePointer {
     int32 representative_idx = 1;
+    // inclusive term starting, inclusive term ending
+    // i.e., 2023 and 2025 means the representative served in the 2023-2024
+    // and 2025-2026 congresses, but not the 2027-2028 congress representing
+    // this particular area
     int32 start_term = 2;
     int32 end_term = 3;
 }

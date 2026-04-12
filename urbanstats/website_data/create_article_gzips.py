@@ -46,20 +46,17 @@ class RepresentativeTableBuilder:
 
     def index_for(self, representative_with_terms):
         representative = representative_with_terms.representative
-        key = (
-            representative.name,
-            representative.wikipedia_page or None,
-            representative.party or None,
-        )
-        if key not in self._representative_key_to_index:
-            self._representative_key_to_index[key] = len(self.representatives)
+        if representative not in self._representative_key_to_index:
+            self._representative_key_to_index[representative] = len(
+                self.representatives
+            )
             self.representatives.append(
                 congressional_representative_proto(representative)
             )
-            self._term_keys_by_representative[key] = set()
+            self._term_keys_by_representative[representative] = set()
 
         representative_proto = self.representatives[
-            self._representative_key_to_index[key]
+            self._representative_key_to_index[representative]
         ]
         district_longname = representative_with_terms.district_longname
         if district_longname not in self._district_to_index:
@@ -73,14 +70,14 @@ class RepresentativeTableBuilder:
             representative_with_terms.end_term,
             self._district_to_index[district_longname],
         )
-        if term_key not in self._term_keys_by_representative[key]:
-            self._term_keys_by_representative[key].add(term_key)
+        if term_key not in self._term_keys_by_representative[representative]:
+            self._term_keys_by_representative[representative].add(term_key)
             representative_proto.term_in.add(
                 start_year=representative_with_terms.start_term,
                 district_idx=self._district_to_index[district_longname],
             )
 
-        return self._representative_key_to_index[key]
+        return self._representative_key_to_index[representative]
 
     def to_proto(self):
         result = data_files_pb2.CongressionalRepresentativeTable()

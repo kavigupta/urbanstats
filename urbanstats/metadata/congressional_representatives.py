@@ -3,7 +3,7 @@ import math
 import urllib.request
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List
 
 import pandas as pd
 import tqdm.auto as tqdm
@@ -173,7 +173,7 @@ def compute_representatives_for_shapefile(
 class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
     representatives_csv_version = "a38a7de"
     version = (
-        f"congressional_representatives_structured_{representatives_csv_version}_v65"
+        f"congressional_representatives_structured_{representatives_csv_version}_v67"
     )
 
     def compute_metadata_columns(self, *, shapefile, shapefiles, shapefile_table):
@@ -239,7 +239,8 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
                         for rep in reps
                     ]
                     results[name].extend(with_terms)
-        results[name] = deduplicate_and_sort_representatives(results[name])
+        for name in results:
+            results[name] = deduplicate_and_sort_representatives(results[name])
         return [results[name] for name in shapefile_table.longname]
 
 
@@ -281,6 +282,10 @@ def merge_adjacent_terms(
             and rwt.start_term
             <= last.end_term + 2  # allow for 2 year gap between terms
         ):
+            # Just doublechecking that thhe term distance is appropriate.
+            # This does crash if there's any representatives < 2 years apart
+            # But that is correct. Terms are 2 apart and there should not
+            # be duplicate entries.
             assert (
                 rwt.start_term == last.end_term + 2
             ), f"Unexpected gap between terms for {rwt.representative.name}: {last.end_term} to {rwt.start_term}"

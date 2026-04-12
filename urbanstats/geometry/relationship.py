@@ -319,11 +319,11 @@ def flip(edges):
 def create_relationships_dispatch(shapefiles_to_use, k1, k2, check_temporal=True):
     if k1 < k2:
         a_contains_b, b_contains_a, a_intersects_b, a_borders_b = create_relationships(
-            shapefiles_to_use[k2], shapefiles_to_use[k1]
+            shapefiles_to_use[k2], shapefiles_to_use[k1], check_temporal=check_temporal
         )
         return (
-            flip(a_contains_b),
             flip(b_contains_a),
+            flip(a_contains_b),
             flip(a_intersects_b),
             flip(a_borders_b),
         )
