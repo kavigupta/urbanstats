@@ -493,15 +493,6 @@ compute relations via run-length encoding (#1816)
 1314    data
 3194    total
 
-add congressional representative metadata (#1906)
-
-125     consolidated
-167     quiz_sampling_info
-685     shape
-775     order
-1314    data
-3194    total
-
 Congressional representatives just data (#1964)
 
 125     consolidated
@@ -509,4 +500,4 @@ Congressional representatives just data (#1964)
 685     shape
 775     order
 1388    data
-3269    total
+3241    total
