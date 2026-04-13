@@ -3,7 +3,7 @@ import math
 import urllib.request
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List
+from typing import Dict, List
 
 import pandas as pd
 import tqdm.auto as tqdm
@@ -21,7 +21,6 @@ from urbanstats.metadata.metadata_columns import (
 @dataclass(frozen=True)
 class Representative:
     name: str
-    wikidata_id: str
     wikipedia_page: str
     party: str
 
@@ -58,12 +57,6 @@ def clean_optional_str(value):
     if isinstance(value, float) and math.isnan(value):
         return None
     return str(value)
-
-
-def to_bool(v):
-    if isinstance(v, bool):
-        return v
-    return str(v).strip().lower() in {"true", "1", "yes"}
 
 
 @permacache(
@@ -106,10 +99,6 @@ def load_representatives_by_district(*, version):
 
     result = defaultdict(lambda: defaultdict(list))
     for row in table.itertuples(index=False):
-        if row.state_abbr is None:
-            continue
-        if to_bool(row.vacant):
-            continue
         if isinstance(row.representative_name, float) and math.isnan(
             row.representative_name
         ):
@@ -117,7 +106,6 @@ def load_representatives_by_district(*, version):
         result[(row.state_abbr, row.district_norm)][row.term_start_year].append(
             Representative(
                 name=clean_optional_str(row.representative_name),
-                wikidata_id="",
                 wikipedia_page=clean_optional_str(row.representative_wikipedia_page),
                 party=clean_optional_str(row.party),
             )
@@ -131,7 +119,7 @@ def load_representatives_by_district(*, version):
 
 def representatives_for_district(
     state_abbr: str, district: str, start_year, end_year, *, representatives_csv_version
-) -> List[Representative]:
+) -> Dict[int, List[Representative]]:
     representatives = load_representatives_by_district(
         version=representatives_csv_version
     )
@@ -144,7 +132,7 @@ def representatives_for_district(
 
 
 @permacache(
-    "urbanstats/metadata/congressional_representatives/compute_representatives_for_shapefile_5",
+    "urbanstats/metadata/congressional_representatives/compute_representatives_for_shapefile_6",
     key_function=dict(sf=lambda x: x.hash_key),
 )
 def compute_representatives_for_shapefile(
@@ -173,7 +161,7 @@ def compute_representatives_for_shapefile(
 class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
     representatives_csv_version = "a38a7de"
     version = (
-        f"congressional_representatives_structured_{representatives_csv_version}_v67"
+        f"congressional_representatives_structured_{representatives_csv_version}_v68"
     )
 
     def compute_metadata_columns(self, *, shapefile, shapefiles, shapefile_table):
@@ -273,6 +261,10 @@ def deduplicate_and_sort_representatives(
 def merge_adjacent_terms(
     rwts: List[RepresentativeWithTerms],
 ) -> List[RepresentativeWithTerms]:
+    for rwt in rwts:
+        assert (
+            rwt.start_term == rwt.end_term
+        ), f"Expected single-term representative, got {rwt.start_term} to {rwt.end_term}"
     merged = [rwts[0]]
     for rwt in rwts[1:]:
         last = merged[-1]

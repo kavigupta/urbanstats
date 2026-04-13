@@ -499,5 +499,14 @@ add congressional representative metadata (#1906)
 167     quiz_sampling_info
 685     shape
 775     order
-1417    data
-3270    total
+1314    data
+3194    total
+
+Congressional representatives just data (#1964)
+
+125     consolidated
+167     quiz_sampling_info
+685     shape
+775     order
+1388    data
+3269    total

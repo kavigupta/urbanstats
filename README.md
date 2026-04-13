@@ -86,3 +86,28 @@ Push your branch to Github. If changes on the frontend depend on changes on the 
 Correct any failing checks.
 
 Create a PR for your branch.
+
+# Running Multiple Urban Stats Frontends at Once
+
+Make a second copy of `urbanstats`, e.g. `urbanstats2`. (Potentially via git worktrees or other means)
+
+Follow the repo setup instructions above again for the new copy.
+
+Make a second copy of `~/densitydb.github.io`, e.g. `~/densitydb.github.io.2`.
+
+Add `PORT` and `TESTCAFE_PORT` environment variables to `.envrc` in `urbanstats2` that are different from the defaults:
+
+```
+source venv/bin/activate
+export PORT=8001 # Default 8000
+export TESTCAFE_PORT=1339 # Default 1337, TestCafe takes two ports
+```
+
+You'll need to run `direnv allow` again.
+
+Now, you can run your second copy, accessible on port `8001`:
+
+```
+cd react
+npm run watch ~/densitydb.github.io.2
+```

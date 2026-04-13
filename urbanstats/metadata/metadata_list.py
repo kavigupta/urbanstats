@@ -22,6 +22,6 @@ metadata_types = {
         str,
         "Representatives",
         category="election",
-        data_credit_explanation_page="geoid",
+        data_credit_explanation_page="congressional_representatives",
     ),
 }
