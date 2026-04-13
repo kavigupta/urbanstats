@@ -43,14 +43,19 @@ export function makeColumnDeleteHandler(
         const newUss = parseResult.namedArgs.columns.edit(
             elements => elements.filter((_, i) => i !== colIndex),
         )
-        const newSortColumn = view.sortColumn > colIndex
-            ? view.sortColumn - 1
-            : view.sortColumn === colIndex
-                ? 0
-                : view.sortColumn
+        let newView: Partial<View>
+        if (view.sortColumn > colIndex) {
+            newView = { sortColumn: view.sortColumn - 1 }
+        }
+        else if (view.sortColumn === colIndex) {
+            newView = { sortColumn: 0, start: 1, order: 'descending' }
+        }
+        else {
+            newView = {}
+        }
         set({
             stat: { ...stat, uss: newUss as MapUSS },
-            view: { ...view, sortColumn: newSortColumn },
+            view: { ...view, ...newView },
         }, { undoable: true })
     }
 }
