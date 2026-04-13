@@ -51,6 +51,12 @@ message CongressionalRepresentative {
 }
 
 message TermIn {
+    // the start of the period during which this representative served in
+    // this district. For example if a representative served in CA-27 from 2013-2022
+    // and CA-28 from 2023-2026, there would be two TermIn's, one with start_year 2013
+    // and district_idx corresponding to CA-27, and another with start_year 2023 and
+    // district_idx corresponding to CA-28. The end of the period is implicitly the next
+    // start_year for this representative, or infinity if there is no next start_year.
     int32 start_year = 1;
     int32 district_idx = 2; // index into CongressionalRepresentativeTable.districts
 }
