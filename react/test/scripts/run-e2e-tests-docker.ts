@@ -16,7 +16,7 @@ export async function runE2eTestsDocker(args: string[]): Promise<number> {
             ...process.stdout.isTTY ? ['-it'] : [],
             '-v', `${repoRoot}:/urbanstats`,
             '-w', '/urbanstats/react',
-            ...process.env.PORT ? ['-e', `PORT=${process.env.PORT}`] : [],
+            ...(['PORT', 'TESTCAFE_PORT'].flatMap(envVar => process.env[envVar] ? ['-e', `${envVar}=${process.env[envVar]}`] : [])),
             imageName,
             ...args,
         ],
