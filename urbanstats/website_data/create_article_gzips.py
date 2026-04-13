@@ -72,6 +72,8 @@ class RepresentativeTableBuilder:
         )
         if term_key not in self._term_keys_by_representative[representative]:
             self._term_keys_by_representative[representative].add(term_key)
+            # For each run we just store the start term. see protobuf file
+            # for details on what we are doing (the end term is implicit).
             representative_proto.term_in.add(
                 start_year=representative_with_terms.start_term,
                 district_idx=self._district_to_index[district_longname],
