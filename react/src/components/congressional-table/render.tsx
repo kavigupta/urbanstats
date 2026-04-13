@@ -37,6 +37,9 @@ function RepresentativeParty(props: { party?: string | null }): ReactNode {
 }
 
 function Representative(props: { representative: CongressionalRepresentativeEntry['representative'] }): ReactNode {
+    if (props.representative.name === 'Vacant') {
+        return <span className="serif value">(Vacant)</span>
+    }
     assert(
         props.representative.wikipediaPage !== null
         && props.representative.wikipediaPage !== undefined

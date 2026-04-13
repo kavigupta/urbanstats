@@ -34,7 +34,7 @@ export default {
             "show_in_metadata_table": true,
             "value_kind": "congressional_representatives",
             "category": "election",
-            "data_credit_explanation_page": "geoid"
+            "data_credit_explanation_page": "congressional_representatives"
         }
     ],
     "external_link_metadata": [
