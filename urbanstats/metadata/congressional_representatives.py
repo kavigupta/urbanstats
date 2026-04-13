@@ -57,12 +57,6 @@ def clean_optional_str(value):
     return str(value)
 
 
-def to_bool(v):
-    if isinstance(v, bool):
-        return v
-    return str(v).strip().lower() in {"true", "1", "yes"}
-
-
 @permacache(
     "urbanstats/metadata/congressional_representatives/load_representatives_by_district_2",
     key_function=dict(version=str),
