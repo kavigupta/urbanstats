@@ -1382,6 +1382,7 @@ function DeleteButton({ handleDelete }: { handleDelete: () => void }): ReactNode
     const size = 16
     return (
         <button
+            aria-label="Delete column"
             data-test-id="delete-column"
             onPointerDown={(e) => { e.stopPropagation() }}
             onClick={() => { handleDelete() }}
