@@ -240,12 +240,22 @@ function SortableVectorItem(props: { id: string, children: ReactNode }): ReactNo
                 alignItems: 'center',
                 width: '100%',
                 transition,
+                position: 'relative',
             }}
         >
             <button
                 {...attributes}
                 {...listeners}
-                style={{ flexShrink: 0, cursor: 'grab', background: 'none', border: 'none', padding: '0 4px', touchAction: 'none' }}
+                style={{
+                    flexShrink: 0,
+                    cursor: 'grab',
+                    background: 'none',
+                    border: 'none',
+                    padding: '0 4px',
+                    touchAction: 'none',
+                    position: 'absolute',
+                    right: '100%',
+                }}
                 title="Drag to reorder"
             >
                 ⠿
