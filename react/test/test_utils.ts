@@ -269,7 +269,10 @@ async function printConsoleMessages(t: TestController): Promise<void> {
     consoleEnabled.add(cdp)
     cdp.Console.on('messageAdded', (event) => {
         const timestamp = new Date().toISOString()
-        if (event.message.text.includes('[failtest]') || event.message.text.includes('Encountered two children with the same key')) {
+        if (
+            event.message.text.includes('[failtest]')
+            || event.message.text.includes('Encountered two children with the same key') // This React error only shows up in dev mode, but it's helpful to catch when running tests locally.
+        ) {
             failTestConsoleMessages.push(event.message.text)
         }
         let text: string
