@@ -4,9 +4,11 @@ from functools import lru_cache
 import numpy as np
 
 from urbanstats.geometry.relationship import full_relationships, ordering_idx
+from urbanstats.metadata.metadata_column import congressional_representative_proto
 from urbanstats.metadata.metadata_list import metadata_types
 from urbanstats.ordinals.flat_ordinals import compute_flat_ordinals
 from urbanstats.protobuf import data_files_pb2
+from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.universe.universe_constants import ZERO_POPULATION_UNIVERSES
@@ -20,13 +22,70 @@ def isnan(x):
     return False
 
 
-def metadata_for_article(row):
+def metadata_for_article(row, representative_table_builder):
     metadata = []
     for i, (key, metadata_type) in enumerate(metadata_types.items()):
-        if row[key] != row[key] or row[key] is None:
+        if key not in row or row[key] != row[key] or row[key] is None:
             continue
-        metadata.append(metadata_type.create(i, row[key]))
+        metadata_value = metadata_type.create(
+            i, row[key], representative_table_builder=representative_table_builder
+        )
+        if metadata_value is None:
+            continue
+        metadata.append(metadata_value)
     return metadata
+
+
+class RepresentativeTableBuilder:
+    def __init__(self):
+        self._representative_key_to_index = {}
+        self._district_to_index = {}
+        self._term_keys_by_representative = {}
+        self.representatives = []
+        self.districts = []
+
+    def index_for(self, representative_with_terms):
+        representative = representative_with_terms.representative
+        if representative not in self._representative_key_to_index:
+            self._representative_key_to_index[representative] = len(
+                self.representatives
+            )
+            self.representatives.append(
+                congressional_representative_proto(representative)
+            )
+            self._term_keys_by_representative[representative] = set()
+
+        representative_proto = self.representatives[
+            self._representative_key_to_index[representative]
+        ]
+        district_longname = representative_with_terms.district_longname
+        if district_longname not in self._district_to_index:
+            self._district_to_index[district_longname] = len(self.districts)
+            self.districts.append(
+                data_files_pb2.CongressionalDistrict(longname=district_longname)
+            )
+
+        term_key = (
+            representative_with_terms.start_term,
+            representative_with_terms.end_term,
+            self._district_to_index[district_longname],
+        )
+        if term_key not in self._term_keys_by_representative[representative]:
+            self._term_keys_by_representative[representative].add(term_key)
+            # For each run we just store the start term. see protobuf file
+            # for details on what we are doing (the end term is implicit).
+            representative_proto.term_in.add(
+                start_year=representative_with_terms.start_term,
+                district_idx=self._district_to_index[district_longname],
+            )
+
+        return self._representative_key_to_index[representative]
+
+    def to_proto(self):
+        result = data_files_pb2.CongressionalRepresentativeTable()
+        result.representatives.extend(self.representatives)
+        result.districts.extend(self.districts)
+        return result
 
 
 def create_article_gzip(
@@ -39,12 +98,13 @@ def create_article_gzip(
     long_to_idx,
     flat_ords,
     counts_overall,
+    representative_table_builder,
 ):
     # pylint: disable=too-many-locals,too-many-arguments
     statistic_names = internal_statistic_names()
     idxs = [i for i, x in enumerate(statistic_names) if not isnan(row[x])]
     data = data_files_pb2.Article()
-    data.metadata.extend(metadata_for_article(row))
+    data.metadata.extend(metadata_for_article(row, representative_table_builder))
     # vulture: ignore -- not actually creating a field. this is from protobuf
     data.statistic_indices_packed = bytes(pack_index_vector(idxs))
     data.shortname = row.shortname
@@ -124,6 +184,7 @@ def create_article_gzips(site_folder, full, ordering, symlinks):
     flat_ords = compute_flat_ordinals(full, ordering)
 
     relationships = full_relationships(long_to_type)
+    representative_table_builder = RepresentativeTableBuilder()
 
     counts = ordering.counts_by_type_universe_col()
     counts_overall = {
@@ -155,10 +216,15 @@ def create_article_gzips(site_folder, full, ordering, symlinks):
             long_to_idx=long_to_idx,
             flat_ords=flat_ords,
             counts_overall=counts_overall,
+            representative_table_builder=representative_table_builder,
         )
 
-    return build_shards_from_callback(
+    build_shards_from_callback(
         f"{site_folder}/data", "data", longnames, get_article, symlinks=symlinks
+    )
+    write_gzip(
+        representative_table_builder.to_proto(),
+        f"{site_folder}/index/representatives.gz",
     )
 
 
