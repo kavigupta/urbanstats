@@ -3,6 +3,7 @@ import { Protocol } from 'devtools-protocol'
 
 import { DefaultMap } from '../src/utils/DefaultMap'
 
+import { testCafePorts } from './scripts/testcafe-ports'
 import { cdpSessionWithSessionId } from './test_utils'
 
 export async function networkUsage(t: TestController): Promise<(label: string) => Promise<number>> {
@@ -22,7 +23,7 @@ export async function networkUsage(t: TestController): Promise<(label: string) =
     cdpSession.Network.on('loadingFinished', (event) => {
         const request = requests.get(event.requestId)
         requests.delete(event.requestId)
-        if (request !== undefined && !request.url.includes('localhost:1337')) {
+        if (request !== undefined && !request.url.includes(`localhost:${testCafePorts()[0]}`)) {
             // exclude testcafe
             requestBytes.push({ request, bytes: event.encodedDataLength })
         }

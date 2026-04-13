@@ -10,6 +10,7 @@ import { argumentParser } from 'zodcli'
 import { startProxy } from './ci_proxy'
 import { github } from './github-utils'
 import { runE2eTestsDocker } from './run-e2e-tests-docker'
+import { testCafePorts } from './testcafe-ports'
 import { booleanArgument, getTOTPWait, setTOTPWait, testFile, TestHistory, TestResult } from './util'
 
 const options = argumentParser({
@@ -25,6 +26,7 @@ const options = argumentParser({
         baseRef: z.optional(z.string()),
         live: booleanArgument({ defaultValue: false }),
         docker: booleanArgument({ defaultValue: false }), // Runs tests in an environment very similar to the CI.
+        remoteDebuggingPort: z.optional(z.coerce.number().int()), // Connect with `chrome://inspect` in your browser.
     }).strict(),
 }).parse(process.argv.slice(2))
 
@@ -54,7 +56,7 @@ if (options.proxy) {
     await startProxy()
 }
 
-const testcafe = await createTestCafe('localhost', 1337, 1338)
+const testcafe = await createTestCafe('localhost', ...testCafePorts())
 
 const testHistory: TestHistory = []
 
@@ -153,7 +155,15 @@ async function runTest(test: string): Promise<TestResult> {
     let runner = testcafe[options.live ? 'createLiveModeRunner' : 'createRunner']()
         .src(testFile(test))
         // Refs https://source.chromium.org/chromium/chromium/src/+/main:content/web_test/browser/web_test_browser_main_runner.cc;l=295
-        .browsers([`${options.browser} --window-size=1400,800 --hide-scrollbars --disable-search-engine-choice-screen --disable-skia-runtime-opts --disable-renderer-backgrounding --disable-features=LocalNetworkAccessChecks`])
+        .browsers([`chrome:${options.browser}${options.remoteDebuggingPort ? `:cdpPort=${options.remoteDebuggingPort}` : ''} ${[
+            '--window-size=1400,800',
+            '--hide-scrollbars',
+            '--disable-search-engine-choice-screen',
+            '--disable-skia-runtime-opts',
+            '--disable-renderer-backgrounding',
+            '--disable-features=LocalNetworkAccessChecks',
+            ...(options.remoteDebuggingPort ? [`--remote-debugging-port=${options.remoteDebuggingPort}`] : []),
+        ].join(' ')}`])
         // Explicitly interpolate test here so we don't add the error to the directory
         // Pattern is only used for take on fail, we make our own pattern otherwise
         .screenshots(`screenshots/${test}`, true, `\${BROWSER}/\${TEST}.error.png`)
