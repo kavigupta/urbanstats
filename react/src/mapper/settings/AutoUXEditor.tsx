@@ -195,6 +195,7 @@ function ArgumentEditor(props: {
                                                                 maxHeight: collapsed ? 0 : renderArg.height,
                                                                 transition: 'max-height 0.25s',
                                                                 overflowY: collapsed ? 'clip' : undefined,
+                                                                maxWidth: collapsed ? 0 : undefined,
                                                             }),
                                                 }}
                                                 ref={renderArg.kind === 'hidden' ? renderArg.ref : undefined}
