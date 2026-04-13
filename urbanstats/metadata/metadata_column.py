@@ -127,11 +127,5 @@ class CongressionalRepresentativesMetadata(DisplayedMetadata):
             ],
         )
 
-    def representative_messages(self, representatives: list[RepresentativeWithTerms]):
-        return [
-            congressional_representative_proto(representative.representative)
-            for representative in representatives
-        ]
-
     def export(self):
         return None
