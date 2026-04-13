@@ -896,16 +896,22 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                         footnoteSymbol={props.footnoteSymbol}
                     />
                     {props.sortInfo && (
-                        <span
+                        <button
+                            aria-label={props.sortInfo.sortDirection === 'both' ? 'Sort' : props.sortInfo.sortDirection === 'up' ? 'Sorted ascending' : 'Sorted descending'}
                             style={{
                                 cursor: 'pointer',
                                 height: '16px',
                                 marginLeft: props.transpose ? '0' : 'auto',
+                                background: 'none',
+                                border: 'none',
+                                padding: 0,
+                                display: 'flex',
+                                alignItems: 'center',
                             }}
                             onClick={props.sortInfo.onSort}
                         >
                             <ArrowUpOrDown direction={props.sortInfo.sortDirection} shouldAppearInScreenshot={false} />
-                        </span>
+                        </button>
                     )}
                 </span>
             </div>
@@ -917,13 +923,14 @@ function ExpansionButton(props: { row: ArticleRow }): ReactNode {
     const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
     return (
-        <div
+        <button
             className="expand-toggle"
+            aria-label={expanded ? 'Collapse' : 'Expand'}
             onClick={() => { setExpanded(!expanded) }}
-            style={articleStatnameButtonStyle(colors)}
+            style={{ ...articleStatnameButtonStyle(colors), background: 'none' }}
         >
             {expanded ? '-' : '+'}
-        </div>
+        </button>
     )
 }
 
