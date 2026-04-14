@@ -35,7 +35,6 @@ class MultiSource:
     by_source: dict[str | NoneType, str]
     multi_source_colname: str = None
     indented_name: str = None
-    mergeable: bool = False
 
     def __post_init__(self):
         if None in self.by_source:
@@ -58,7 +57,6 @@ class MultiSource:
                     "kind": "data",
                     "source": source.json() if source is not None else None,
                     "column": names.index(col),
-                    "mergeable": self.mergeable,
                 }
             )
         output = dict(name=self.compute_name(name_map), stats=result)
@@ -99,7 +97,6 @@ class MetadataMultiSource(MultiSource):
                     "path": self.metadata_path,
                     "metadata_index": self.metadata_index,
                     "value_type": self.metadata_value_type,
-                    "mergeable": self.mergeable,
                 }
             ],
         }
