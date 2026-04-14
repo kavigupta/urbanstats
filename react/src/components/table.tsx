@@ -1375,5 +1375,5 @@ function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearI
             image = '/sort-both.png'
             break
     }
-    return <img src={image} className="testing-order-swap" alt={props.direction} style={{ width: '16px', height: '16px' }} />
+    return <img src={image} className="testing-order-swap" alt={props.direction} style={{ width: '16px', height: '16px', display: 'block' }} />
 }
