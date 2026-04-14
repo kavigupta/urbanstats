@@ -477,7 +477,6 @@ def congressional_representatives_metadata_group():
             "metadata_show_metadata_representatives"
         ),
         metadata_value_type="string",
-        mergeable=True,
         metadata_name="Congressional Representatives",
     )
 
