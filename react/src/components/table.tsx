@@ -876,6 +876,7 @@ export function ComparisonLongnameCell(props: ComparisonLongnameCellProps & { wi
 export function StatisticNameCell(props: StatisticNameCellProps & { width: number }): ReactNode {
     const haveColorbar = !props.transpose && props.highlightIndex !== undefined
     const width = props.width - (haveColorbar ? 100 * leftBarMargin : 0)
+    const displayName = props.displayName ?? props.renderedStatname
 
     return (
         <>
@@ -892,26 +893,23 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                         longname={props.longname}
                         currentUniverse={props.currentUniverse}
                         center={props.center}
-                        displayName={props.displayName ?? props.renderedStatname}
+                        displayName={displayName}
                         footnoteSymbol={props.footnoteSymbol}
                     />
                     {props.sortInfo && (
-                        <button
-                            aria-label={props.sortInfo.sortDirection === 'both' ? 'Sort' : props.sortInfo.sortDirection === 'up' ? 'Sorted ascending' : 'Sorted descending'}
+                        <span
+                            role="button"
+                            aria-label={`Sort by ${displayName}`}
+                            aria-sort={sortDirectionToAriaSort[props.sortInfo.sortDirection]}
                             style={{
                                 cursor: 'pointer',
                                 height: '16px',
                                 marginLeft: props.transpose ? '0' : 'auto',
-                                background: 'none',
-                                border: 'none',
-                                padding: 0,
-                                display: 'flex',
-                                alignItems: 'center',
                             }}
                             onClick={props.sortInfo.onSort}
                         >
                             <ArrowUpOrDown direction={props.sortInfo.sortDirection} shouldAppearInScreenshot={false} />
-                        </button>
+                        </span>
                     )}
                 </span>
             </div>
@@ -919,18 +917,25 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
     )
 }
 
+const sortDirectionToAriaSort = {
+    up: 'ascending',
+    down: 'descending',
+    both: 'none',
+} as const
+
 function ExpansionButton(props: { row: ArticleRow }): ReactNode {
     const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
     return (
-        <button
+        <div
+            role="button"
             className="expand-toggle"
             aria-label={expanded ? 'Collapse' : 'Expand'}
             onClick={() => { setExpanded(!expanded) }}
-            style={{ ...articleStatnameButtonStyle(colors), background: 'none' }}
+            style={articleStatnameButtonStyle(colors)}
         >
             {expanded ? '-' : '+'}
-        </button>
+        </div>
     )
 }
 
