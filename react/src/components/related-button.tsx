@@ -9,6 +9,7 @@ import { useColors } from '../page_template/colors'
 import { relationshipKey, useSettings } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { DefaultMap } from '../utils/DefaultMap'
+import { withButtonRole } from '../utils/a11y'
 import { mixWithBackground } from '../utils/color'
 import { assert } from '../utils/defensive'
 import { useMobileLayout } from '../utils/responsive'
@@ -121,21 +122,13 @@ function ExpandButton(props: { rowType: string, expanded: boolean, onToggle: () 
 
     return (
         <RelatedButtonLayout
+            {...withButtonRole(props.expanded ? 'Collapse' : 'Expand', handleToggle)}
             rowType={props.rowType}
-            onClick={handleToggle}
             style={{
                 cursor: 'pointer',
                 border: `1px solid ${colors.borderShadow}`,
                 backgroundColor: colors.slightlyDifferentBackground,
                 display: 'flex',
-            }}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
-                    handleToggle(event)
-                }
             }}
         >
             {!props.expanded && (

@@ -1,6 +1,6 @@
-import { HTMLAttributes } from 'react'
+import React, { HTMLAttributes } from 'react'
 
-export function withButtonRole(label: string, handler: () => void): HTMLAttributes<HTMLElement> {
+export function withButtonRole(label: string, handler: (e: React.MouseEvent | React.KeyboardEvent) => void): HTMLAttributes<HTMLElement> {
     return {
         'tabIndex': 0,
         'role': 'button',
@@ -9,7 +9,7 @@ export function withButtonRole(label: string, handler: () => void): HTMLAttribut
         'onKeyDown': (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                handler()
+                handler(e)
             }
         },
     } satisfies HTMLAttributes<HTMLElement>

@@ -12,6 +12,7 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { Settings, useSetting } from '../page_template/settings'
 import { getVector, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { allGroups, allYears, statParents, StatPath, StatName } from '../page_template/statistic-tree'
+import { withButtonRole } from '../utils/a11y'
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { AuthenticationStateMachine } from './AuthenticationStateMachine'
@@ -98,7 +99,7 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                             <div>
                                 <QuizAuthStatus />
                             </div>
-                            <div role="button" title="Dismiss" onClick={() => QuizModel.shared.dismissAuthNag.value = Date.now()}>
+                            <div {...withButtonRole('Dismiss', () => QuizModel.shared.dismissAuthNag.value = Date.now())} title="Dismiss">
                                 <Icon size="1em" color={colors.textMain} src="/close.png" />
                             </div>
                         </NotificationBanner>
