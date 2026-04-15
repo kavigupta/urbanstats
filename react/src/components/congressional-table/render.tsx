@@ -116,6 +116,7 @@ function CongressionalTableTermLabels(props: {
                         ...baseTableCellStyle({
                             borderColor: props.borderColor,
                             borderBottom: displayIndex !== props.displayRows.length - 1,
+                            borderRight: true,
                         }),
                     }}
                     className="serif value"
@@ -142,7 +143,7 @@ function CongressionalTableColumnHeaders(props: {
                         gridRow: 1,
                         ...baseTableCellStyle({
                             borderColor: props.borderColor,
-                            borderLeft: true,
+                            borderRight: true,
                             borderBottom: true,
                             textAlign: 'center',
                             justifyContent: 'center',
@@ -174,8 +175,7 @@ function CongressionalTableSectionDistrictHeaders(props: {
                 gridRow: props.headerDisplayIndex + 2,
                 ...borderStyles({
                     borderColor: props.borderColor,
-                    borderLeft: true,
-                    borderTop: true,
+                    borderRight: true,
                     borderBottom: true,
                 }),
                 backgroundColor: props.backgroundColor,
@@ -307,8 +307,8 @@ function CongressionalTableSection(props: {
                 style={{
                     gridColumn: props.columnIndex + 2,
                     gridRow: `${props.section.contentStartDisplayIndex + 2} / ${props.section.contentEndDisplayIndex + 3}`,
-                    borderLeft: `1px solid ${props.borderColor}`,
-                    borderBottom: 'none',
+                    borderRight: `1px solid ${props.borderColor}`,
+                    borderBottom: `1px solid ${props.borderColor}`,
                     display: 'grid',
                     gridTemplateColumns: props.section.districtHeaders.map(() => 'minmax(0, 1fr)').join(' '),
                     gridTemplateRows: 'subgrid',
@@ -360,6 +360,7 @@ function CongressionalRepresentativesTableRenderer(props: {
                         alignItems: 'center',
                         justifyContent: 'flex-end',
                         textAlign: 'right',
+                        borderRight: `1px solid ${borderColor}`,
                         borderBottom: `1px solid ${borderColor}`,
                         backgroundColor: panelBackground,
                     }}
