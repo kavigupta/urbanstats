@@ -106,6 +106,16 @@ def compute_cell_overlaps_with_circle(radius, row_idx, grid_size=100, *, resolut
 
 
 def compute_circle_density_per_cell_zarr(radius, resolution):
+    """
+    Computes the population density in a circle of the given radius around
+    each cell, and returns it as a zarr array. The density is computed
+    as the sum of the population in the circle divided by the area of the circle.
+
+    NOTE: this only is stored at locations where the original population is nonzero,
+    to save space, since we will only query those locations. The density at other
+    locations will be set to 0. Do NOT interpret a value of 0 as meaning that the
+    density is actually 0, it just means that we didn't compute it because the population was 0.
+    """
     path = (
         f"named_region_shapefiles/gpw/zarr/ghs_gpw_radius_{radius}km_res_{resolution}"
     )
@@ -185,6 +195,11 @@ def sum_in_radius(
         result_for_row = compute_convolution(
             loading_start, local_array, local_array_cumsum, overlaps
         )
+        # sparsify it back, we will only ever query
+        # cells where the original array is nonzero,
+        # so we can save a lot of space by doing this before saving.
+
+        result_for_row[local_array[row_idx - loading_start] == 0] = 0
 
         assigner.assign(row_idx, result_for_row * multiplier)
     assigner.flush()
@@ -295,6 +310,9 @@ def compute_gpw_for_shape_raster(shape, collect_density=True, *, resolution_by_r
         for resolution in set(resolution_by_radius.values())
     }
     if collect_density:
+        # NOTE: these values should only be queried at locations where
+        # the population is nonzero, it is not meaningful at other
+        # locations.
         dens_by_radius = {
             k: compute_circle_density_per_cell_zarr(k, resolution)
             for k, resolution in resolution_by_radius.items()
