@@ -309,13 +309,13 @@ void test('computeCongressionalWidgetModel creates a new section when district m
                         headerDisplayIndex: 4,
                         contentStartDisplayIndex: 5,
                         contentEndDisplayIndex: 8,
-                        districtHeaders: [['CA-07 (1993), USA'], ['CA-06 (1993), USA']],
+                        districtHeaders: [['CA-06 (1993), USA'], ['CA-07 (1993), USA']],
                         congressionalRuns: [
                             {
-                                displayRuns: [[['Carlos Moorhead'], 5, 8]],
+                                displayRuns: [[['Gary Condit'], 5, 8]],
                             },
                             {
-                                displayRuns: [[['Gary Condit'], 5, 8]],
+                                displayRuns: [[['Carlos Moorhead'], 5, 8]],
                             },
                         ],
                     },
@@ -777,15 +777,15 @@ void test('computeCongressionalWidgetModel stacks lanes in provided payload and 
                         contentStartDisplayIndex: 1,
                         contentEndDisplayIndex: 3,
                         districtHeaders: [
-                            ['MA-07 (2023), USA', 'MA-07 (2013), USA'],
                             ['MA-05 (2023), USA', 'MA-05 (2013), USA'],
+                            ['MA-07 (2023), USA', 'MA-07 (2013), USA'],
                         ],
                         congressionalRuns: [
                             {
-                                displayRuns: [[['Ayanna Pressley'], 1, 3]],
+                                displayRuns: [[['Katherine Clark'], 1, 3]],
                             },
                             {
-                                displayRuns: [[['Katherine Clark'], 1, 3]],
+                                displayRuns: [[['Ayanna Pressley'], 1, 3]],
                             },
                         ],
                     },
