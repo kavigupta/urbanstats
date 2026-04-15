@@ -93,7 +93,7 @@ def main() -> int:
 
     # Crop to ours' original size and drop the presence channel before saving.
     result = result[: ours_shape[0], : ours_shape[1], :4]
-    Image.fromarray(result, "RGBA").save(ours_path)
+    Image.fromarray(result, "RGBA").save(ours_path, format="PNG")
     return 0
 
 
