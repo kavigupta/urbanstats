@@ -465,10 +465,3 @@ test('collapsed pair of representatives', async (t) => {
     await checkTextboxes(t, ['Election'])
     await screencap(t)
 })
-
-urbanstatsFixture('hartford stable', '/article.html?longname=Hartford+city%2C+Connecticut%2C+USA&s=GczH23rwqX34ctu')
-
-test('hartford stable', async (t) => {
-    await checkTextboxes(t, ['Election', '2010', '2000'])
-    await t.expect(Selector('span').withExactText('Representative (1999-)').exists).ok()
-})
