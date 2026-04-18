@@ -150,12 +150,12 @@ function bucketsShareRepresentative(previousBuckets: DistrictBucketForTerm[], cu
     )
 }
 
-function shouldStartNewSection(previousBuckets: DistrictBucketForTerm[], currentBuckets: DistrictBucketForTerm[]): boolean {
-    if (previousBuckets.length !== currentBuckets.length) {
+function shouldStartNewSection(startBuckets: DistrictBucketForTerm[], currentBuckets: DistrictBucketForTerm[]): boolean {
+    if (startBuckets.length !== currentBuckets.length) {
         return true
     }
 
-    if (bucketDistrictLabelPattern(previousBuckets) !== bucketDistrictLabelPattern(currentBuckets) && !bucketsShareRepresentative(previousBuckets, currentBuckets)) {
+    if (bucketDistrictLabelPattern(startBuckets) !== bucketDistrictLabelPattern(currentBuckets) && !bucketsShareRepresentative(startBuckets, currentBuckets)) {
         return true
     }
 
@@ -166,14 +166,15 @@ function buildRunsForLongname(column: CongressionalColumnData, termsDescending: 
     const districtBucketsByTerm = termsDescending.map(termStart => districtBucketsForTerm(entriesForTerm(column, termStart)))
     const runs: LongnameRun[] = []
 
+    const currentRun = (): LongnameRun => runs[runs.length - 1]
+
     districtBucketsByTerm.forEach((buckets, termIndex) => {
-        if (termIndex === 0 || shouldStartNewSection(districtBucketsByTerm[termIndex - 1], buckets)) {
+        if (termIndex === 0 || shouldStartNewSection(districtBucketsByTerm[termIndex - currentRun().terms.length], buckets)) {
             runs.push({ termIndices: [], terms: [], districtBucketsByTerm: [] })
         }
-        const currentRun = runs[runs.length - 1]
-        currentRun.termIndices.push(termIndex)
-        currentRun.terms.push(termsDescending[termIndex])
-        currentRun.districtBucketsByTerm.push(buckets)
+        currentRun().termIndices.push(termIndex)
+        currentRun().terms.push(termsDescending[termIndex])
+        currentRun().districtBucketsByTerm.push(buckets)
     })
 
     return {

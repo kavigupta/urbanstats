@@ -810,8 +810,9 @@ void test('computeCongressionalWidgetModel handles overlapping representatives a
             { kind: 'term-label', displayIndex: 1, termStart: 2021 },
             { kind: 'term-label', displayIndex: 2, termStart: 2019 },
             { kind: 'term-label', displayIndex: 3, termStart: 2017 },
-            { kind: 'term-label', displayIndex: 4, termStart: 2015 },
-            { kind: 'term-label', displayIndex: 5, termStart: 2013 },
+            { kind: 'header-space', displayIndex: 4 },
+            { kind: 'term-label', displayIndex: 5, termStart: 2015 },
+            { kind: 'term-label', displayIndex: 6, termStart: 2013 },
         ],
         supercolumns: [
             {
@@ -820,24 +821,43 @@ void test('computeCongressionalWidgetModel handles overlapping representatives a
                     {
                         headerDisplayIndex: 0,
                         contentStartDisplayIndex: 1,
-                        contentEndDisplayIndex: 5,
+                        contentEndDisplayIndex: 3,
                         districtHeaders: [
-                            ['District 1, USA', 'District 2, USA', 'District 3, USA'],
-                            ['District 2, USA', 'District 3, USA', 'District 4, USA'],
+                            ['District 1, USA', 'District 2, USA'],
+                            ['District 2, USA', 'District 3, USA'],
                         ],
                         congressionalRuns: [
                             {
                                 displayRuns: [
                                     [['Rep A'], 1, 2],
                                     [['Rep B'], 3, 3],
-                                    [['Rep C'], 4, 5],
                                 ],
                             },
                             {
                                 displayRuns: [
                                     [['Rep B'], 1, 2],
                                     [['Rep C'], 3, 3],
-                                    [['Rep D'], 4, 5],
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        headerDisplayIndex: 4,
+                        contentStartDisplayIndex: 5,
+                        contentEndDisplayIndex: 6,
+                        districtHeaders: [
+                            ['District 3, USA'],
+                            ['District 4, USA'],
+                        ],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [
+                                    [['Rep C'], 5, 6],
+                                ],
+                            },
+                            {
+                                displayRuns: [
+                                    [['Rep D'], 5, 6],
                                 ],
                             },
                         ],
