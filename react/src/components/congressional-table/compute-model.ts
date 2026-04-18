@@ -11,7 +11,7 @@ import {
 } from './model'
 
 export interface CongressionalRegionData {
-    longname?: string
+    longname: string
     representatives: CongressionalRepresentativeEntry[]
 }
 
@@ -93,31 +93,18 @@ function districtBucketsForTerm(entries: CongressionalRepresentativeEntry[]): Di
         .sort((a, b) => a.districtLabel.localeCompare(b.districtLabel))
 }
 
-function extractCongressionalWidgetData(cellSpecs: CongressionalRegionData[]): {
-    termsDescending: number[]
-    columns: CongressionalColumnData[]
-} | undefined {
-    const columns: CongressionalColumnData[] = []
+function computeTermsDescending(cellSpecs: CongressionalRegionData[]): number[] {
     const termStarts = new Set<number>()
 
     for (const cell of cellSpecs) {
-        columns.push({
-            longname: cell.longname ?? '',
-            representatives: cell.representatives,
-        })
         cell.representatives.forEach((entry: CongressionalRepresentativeEntry) => {
             for (const termStart of termStartsForEntry(entry)) {
                 termStarts.add(termStart)
             }
         })
     }
-
-    if (columns.length === 0 || termStarts.size === 0) {
-        return undefined
-    }
-
     const termsDescending = Array.from(termStarts).sort((a, b) => b - a)
-    return { termsDescending, columns }
+    return termsDescending
 }
 
 interface LongnameRun {
@@ -323,13 +310,11 @@ function buildSectionForRun(
     }
 }
 
-function computeCongressionalTableModel(input: {
-    termsDescending: number[]
-    columns: CongressionalColumnData[]
-}): CongressionalTableModel {
-    const runsByLongname = input.columns.map(column => buildRunsForLongname(column, input.termsDescending))
+export function computeCongressionalWidgetModel(cellSpecs: CongressionalRegionData[]): CongressionalTableModel {
+    const termsDescending = computeTermsDescending(cellSpecs)
+    const runsByLongname = cellSpecs.map(cell => buildRunsForLongname({ longname: cell.longname, representatives: cell.representatives }, termsDescending))
     const breakpoints = findBreakpoints(runsByLongname)
-    const { displayRows, headerDisplayIndexByTermIndex, termDisplayIndexByTermIndex } = buildDisplayRowMap(input.termsDescending, breakpoints)
+    const { displayRows, headerDisplayIndexByTermIndex, termDisplayIndexByTermIndex } = buildDisplayRowMap(termsDescending, breakpoints)
 
     const supercolumns: RepresentativesForRegion[] = runsByLongname.map(({ longname, runs }) => ({
         longname,
@@ -340,12 +325,4 @@ function computeCongressionalTableModel(input: {
         displayRows,
         supercolumns,
     }
-}
-
-export function computeCongressionalWidgetModel(cellSpecs: CongressionalRegionData[]): CongressionalTableModel | undefined {
-    const extracted = extractCongressionalWidgetData(cellSpecs)
-    if (extracted === undefined) {
-        return undefined
-    }
-    return computeCongressionalTableModel(extracted)
 }

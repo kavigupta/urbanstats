@@ -74,10 +74,6 @@ function compactCongressionalWidgetModel(model: CongressionalTableModel | undefi
     }
 }
 
-void test('computeCongressionalWidgetModel returns undefined for empty input', () => {
-    assert.equal(computeCongressionalWidgetModel([]), undefined)
-})
-
 void test('computeCongressionalWidgetModel with only one representative', () => {
     const model = computeCongressionalWidgetModel([
         {

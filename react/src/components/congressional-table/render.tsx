@@ -401,14 +401,11 @@ export function CongressionalRepresentativesWidget(props: {
     columnWidth: number
     extraSpaceRight: number[]
 }): ReactNode {
+    assert(props.regions.length > 0, 'CongressionalRepresentativesWidget requires at least one region')
     const model = useMemo(
         () => computeCongressionalWidgetModel(props.regions),
         [props.regions],
     )
-
-    if (model === undefined) {
-        return null
-    }
 
     return (
         <CongressionalRepresentativesTableRenderer
