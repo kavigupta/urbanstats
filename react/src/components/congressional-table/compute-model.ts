@@ -167,12 +167,11 @@ function buildRunsForLongname(column: CongressionalColumnData, termsDescending: 
     const newRun = (): LongnameRun => ({ termIndices: [], terms: [], districtBucketsByTerm: [] })
     const runs: LongnameRun[] = []
 
-    let currentRun: LongnameRun | undefined
     districtBucketsByTerm.forEach((buckets, termIndex) => {
-        if (currentRun === undefined || shouldStartNewSection(districtBucketsByTerm[termIndex - 1], buckets)) {
-            currentRun = newRun()
-            runs.push(currentRun)
+        if (termIndex === 0 || shouldStartNewSection(districtBucketsByTerm[termIndex - 1], buckets)) {
+            runs.push(newRun())
         }
+        const currentRun = runs[runs.length - 1]
         currentRun.termIndices.push(termIndex)
         currentRun.terms.push(termsDescending[termIndex])
         currentRun.districtBucketsByTerm.push(buckets)
