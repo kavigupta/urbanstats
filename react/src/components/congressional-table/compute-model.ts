@@ -150,11 +150,7 @@ function bucketsShareRepresentative(previousBuckets: DistrictBucketForTerm[], cu
     )
 }
 
-function shouldStartNewSection(previousBuckets: DistrictBucketForTerm[] | undefined, currentBuckets: DistrictBucketForTerm[]): boolean {
-    if (previousBuckets === undefined) {
-        return true
-    }
-
+function shouldStartNewSection(previousBuckets: DistrictBucketForTerm[], currentBuckets: DistrictBucketForTerm[]): boolean {
     if (previousBuckets.length !== currentBuckets.length) {
         return true
     }
@@ -168,26 +164,18 @@ function shouldStartNewSection(previousBuckets: DistrictBucketForTerm[] | undefi
 
 function buildRunsForLongname(column: CongressionalColumnData, termsDescending: number[]): LongnameRuns {
     const districtBucketsByTerm = termsDescending.map(termStart => districtBucketsForTerm(entriesForTerm(column, termStart)))
+    const newRun = (): LongnameRun => ({ termIndices: [], terms: [], districtBucketsByTerm: [] })
     const runs: LongnameRun[] = []
 
     let currentRun: LongnameRun | undefined
-    let previousBuckets: DistrictBucketForTerm[] | undefined
     districtBucketsByTerm.forEach((buckets, termIndex) => {
-        if (currentRun === undefined || shouldStartNewSection(previousBuckets, buckets)) {
-            currentRun = {
-                termIndices: [termIndex],
-                terms: [termsDescending[termIndex]],
-                districtBucketsByTerm: [buckets],
-            }
+        if (currentRun === undefined || shouldStartNewSection(districtBucketsByTerm[termIndex - 1], buckets)) {
+            currentRun = newRun()
             runs.push(currentRun)
         }
-        else {
-            currentRun.termIndices.push(termIndex)
-            currentRun.terms.push(termsDescending[termIndex])
-            currentRun.districtBucketsByTerm.push(buckets)
-        }
-
-        previousBuckets = buckets
+        currentRun.termIndices.push(termIndex)
+        currentRun.terms.push(termsDescending[termIndex])
+        currentRun.districtBucketsByTerm.push(buckets)
     })
 
     return {
