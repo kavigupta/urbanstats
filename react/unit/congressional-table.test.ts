@@ -790,3 +790,60 @@ void test('computeCongressionalWidgetModel stacks lanes in provided payload and 
         ],
     })
 })
+
+void test('computeCongressionalWidgetModel handles overlapping representatives across different districts', () => {
+    const model = computeCongressionalWidgetModel([
+        {
+            longname: 'State Test Region, USA',
+            representatives: [
+                representative('Rep A', 'District 1, USA', 2019, 2021),
+                representative('Rep B', 'District 2, USA', 2017, 2021),
+                representative('Rep C', 'District 3, USA', 2013, 2017),
+                representative('Rep D', 'District 4, USA', 2013, 2015),
+            ],
+        },
+    ])
+
+    assert.deepEqual(compactCongressionalWidgetModel(model), {
+        displayRows: [
+            { kind: 'header-space', displayIndex: 0 },
+            { kind: 'term-label', displayIndex: 1, termStart: 2021 },
+            { kind: 'term-label', displayIndex: 2, termStart: 2019 },
+            { kind: 'term-label', displayIndex: 3, termStart: 2017 },
+            { kind: 'term-label', displayIndex: 4, termStart: 2015 },
+            { kind: 'term-label', displayIndex: 5, termStart: 2013 },
+        ],
+        supercolumns: [
+            {
+                longname: 'State Test Region, USA',
+                sections: [
+                    {
+                        headerDisplayIndex: 0,
+                        contentStartDisplayIndex: 1,
+                        contentEndDisplayIndex: 5,
+                        districtHeaders: [
+                            ['District 1, USA', 'District 2, USA', 'District 3, USA'],
+                            ['District 2, USA', 'District 3, USA', 'District 4, USA'],
+                        ],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [
+                                    [['Rep A'], 1, 2],
+                                    [['Rep B'], 3, 3],
+                                    [['Rep C'], 4, 5],
+                                ],
+                            },
+                            {
+                                displayRuns: [
+                                    [['Rep B'], 1, 2],
+                                    [['Rep C'], 3, 3],
+                                    [['Rep D'], 4, 5],
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    })
+})
