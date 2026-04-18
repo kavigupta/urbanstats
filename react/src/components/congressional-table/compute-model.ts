@@ -137,17 +137,21 @@ function bucketDistrictLabelPattern(buckets: DistrictBucketForTerm[]): string {
     return buckets.map(bucket => bucket.districtLabel).join('|')
 }
 
-function bucketsShareRepresentative(previousBuckets: DistrictBucketForTerm[], currentBuckets: DistrictBucketForTerm[]): boolean {
-    const signatures = new Set<string>()
-    previousBuckets.forEach((bucket) => {
+function representativeSignatureSet(buckets: DistrictBucketForTerm[]): Set<string> {
+    const representatives = new Set<string>()
+    buckets.forEach((bucket) => {
         bucket.representatives.forEach((representative) => {
-            signatures.add(representativeValueSignature(representative))
+            representatives.add(representativeValueSignature(representative))
         })
     })
+    return representatives
+}
 
-    return currentBuckets.some(bucket =>
-        bucket.representatives.some(representative => signatures.has(representativeValueSignature(representative))),
-    )
+function bucketsSameRepresentatives(previousBuckets: DistrictBucketForTerm[], currentBuckets: DistrictBucketForTerm[]): boolean {
+    const previousSignatures = representativeSignatureSet(previousBuckets)
+    const currentSignatures = representativeSignatureSet(currentBuckets)
+    return previousSignatures.size === currentSignatures.size
+        && Array.from(previousSignatures).every(sig => currentSignatures.has(sig))
 }
 
 function shouldStartNewSection(startBuckets: DistrictBucketForTerm[], currentBuckets: DistrictBucketForTerm[]): boolean {
@@ -155,7 +159,7 @@ function shouldStartNewSection(startBuckets: DistrictBucketForTerm[], currentBuc
         return true
     }
 
-    if (bucketDistrictLabelPattern(startBuckets) !== bucketDistrictLabelPattern(currentBuckets) && !bucketsShareRepresentative(startBuckets, currentBuckets)) {
+    if (bucketDistrictLabelPattern(startBuckets) !== bucketDistrictLabelPattern(currentBuckets) && !bucketsSameRepresentatives(startBuckets, currentBuckets)) {
         return true
     }
 

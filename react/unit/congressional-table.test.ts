@@ -809,10 +809,11 @@ void test('computeCongressionalWidgetModel handles overlapping representatives a
             { kind: 'header-space', displayIndex: 0 },
             { kind: 'term-label', displayIndex: 1, termStart: 2021 },
             { kind: 'term-label', displayIndex: 2, termStart: 2019 },
-            { kind: 'term-label', displayIndex: 3, termStart: 2017 },
-            { kind: 'header-space', displayIndex: 4 },
-            { kind: 'term-label', displayIndex: 5, termStart: 2015 },
-            { kind: 'term-label', displayIndex: 6, termStart: 2013 },
+            { kind: 'header-space', displayIndex: 3 },
+            { kind: 'term-label', displayIndex: 4, termStart: 2017 },
+            { kind: 'header-space', displayIndex: 5 },
+            { kind: 'term-label', displayIndex: 6, termStart: 2015 },
+            { kind: 'term-label', displayIndex: 7, termStart: 2013 },
         ],
         supercolumns: [
             {
@@ -821,30 +822,49 @@ void test('computeCongressionalWidgetModel handles overlapping representatives a
                     {
                         headerDisplayIndex: 0,
                         contentStartDisplayIndex: 1,
-                        contentEndDisplayIndex: 3,
+                        contentEndDisplayIndex: 2,
                         districtHeaders: [
-                            ['District 1, USA', 'District 2, USA'],
-                            ['District 2, USA', 'District 3, USA'],
+                            ['District 1, USA'],
+                            ['District 2, USA'],
                         ],
                         congressionalRuns: [
                             {
                                 displayRuns: [
                                     [['Rep A'], 1, 2],
-                                    [['Rep B'], 3, 3],
                                 ],
                             },
                             {
                                 displayRuns: [
                                     [['Rep B'], 1, 2],
-                                    [['Rep C'], 3, 3],
                                 ],
                             },
                         ],
                     },
                     {
-                        headerDisplayIndex: 4,
-                        contentStartDisplayIndex: 5,
-                        contentEndDisplayIndex: 6,
+                        headerDisplayIndex: 3,
+                        contentStartDisplayIndex: 4,
+                        contentEndDisplayIndex: 4,
+                        districtHeaders: [
+                            ['District 2, USA'],
+                            ['District 3, USA'],
+                        ],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [
+                                    [['Rep B'], 4, 4],
+                                ],
+                            },
+                            {
+                                displayRuns: [
+                                    [['Rep C'], 4, 4],
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        headerDisplayIndex: 5,
+                        contentStartDisplayIndex: 6,
+                        contentEndDisplayIndex: 7,
                         districtHeaders: [
                             ['District 3, USA'],
                             ['District 4, USA'],
@@ -852,12 +872,12 @@ void test('computeCongressionalWidgetModel handles overlapping representatives a
                         congressionalRuns: [
                             {
                                 displayRuns: [
-                                    [['Rep C'], 5, 6],
+                                    [['Rep C'], 6, 7],
                                 ],
                             },
                             {
                                 displayRuns: [
-                                    [['Rep D'], 5, 6],
+                                    [['Rep D'], 6, 7],
                                 ],
                             },
                         ],
