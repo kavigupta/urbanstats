@@ -164,12 +164,11 @@ function shouldStartNewSection(previousBuckets: DistrictBucketForTerm[], current
 
 function buildRunsForLongname(column: CongressionalColumnData, termsDescending: number[]): LongnameRuns {
     const districtBucketsByTerm = termsDescending.map(termStart => districtBucketsForTerm(entriesForTerm(column, termStart)))
-    const newRun = (): LongnameRun => ({ termIndices: [], terms: [], districtBucketsByTerm: [] })
     const runs: LongnameRun[] = []
 
     districtBucketsByTerm.forEach((buckets, termIndex) => {
         if (termIndex === 0 || shouldStartNewSection(districtBucketsByTerm[termIndex - 1], buckets)) {
-            runs.push(newRun())
+            runs.push({ termIndices: [], terms: [], districtBucketsByTerm: [] })
         }
         const currentRun = runs[runs.length - 1]
         currentRun.termIndices.push(termIndex)
