@@ -133,10 +133,6 @@ function entriesForTerm(column: CongressionalColumnData, termStart: number): Con
     })
 }
 
-function bucketDistrictLabelPattern(buckets: DistrictBucketForTerm[]): string {
-    return buckets.map(bucket => bucket.districtLabel).join('|')
-}
-
 function representativeSignatureSet(buckets: DistrictBucketForTerm[]): Set<string> {
     const representatives = new Set<string>()
     buckets.forEach((bucket) => {
@@ -154,19 +150,56 @@ function bucketsSameRepresentatives(previousBuckets: DistrictBucketForTerm[], cu
         && Array.from(previousSignatures).every(sig => currentSignatures.has(sig))
 }
 
-function shouldStartNewSection(startBuckets: DistrictBucketForTerm[] | undefined, currentBuckets: DistrictBucketForTerm[]): boolean {
-    if (startBuckets === undefined) {
-        return true
-    }
-    if (startBuckets.length !== currentBuckets.length) {
-        return true
-    }
-
-    if (bucketDistrictLabelPattern(startBuckets) !== bucketDistrictLabelPattern(currentBuckets) && !bucketsSameRepresentatives(startBuckets, currentBuckets)) {
-        return true
+function attemptAlign(startBuckets: DistrictBucketForTerm[] | undefined, currentBuckets: DistrictBucketForTerm[]): {
+    newBuckets: DistrictBucketForTerm[]
+    isAligned: boolean
+} {
+    if (startBuckets === undefined || startBuckets.length !== currentBuckets.length) {
+        // don't even attempt to unify, since the number of districts is different
+        // there's no visual continuity anyway.
+        return { newBuckets: currentBuckets, isAligned: false }
     }
 
-    return false
+    const remainingIndices = new Set(currentBuckets.map((_, index) => index))
+    const newBuckets: (DistrictBucketForTerm | undefined)[] = startBuckets.map(() => undefined)
+    // align buckets based on district label first.
+    for (const [startIdex, startBucket] of startBuckets.entries()) {
+        const matchIndex = currentBuckets.findIndex((bucket, candidateIndex) =>
+            bucket.districtLabel === startBucket.districtLabel && remainingIndices.has(candidateIndex),
+        )
+        if (matchIndex !== -1) {
+            newBuckets[startIdex] = currentBuckets[matchIndex]
+            remainingIndices.delete(matchIndex)
+            continue
+        }
+    }
+    // then attempt to align remaining buckets based on representative signatures, if labels didn't match.
+    for (const [startIdex, startBucket] of startBuckets.entries()) {
+        if (newBuckets[startIdex] !== undefined) {
+            continue
+        }
+        // console.log('attempting to align with', JSON.stringify(startBucket))
+        const matchIndex = currentBuckets.findIndex((bucket, candidateIndex) =>
+            bucketsSameRepresentatives([bucket], [startBucket])
+            && remainingIndices.has(candidateIndex),
+        )
+        if (matchIndex !== -1) {
+            newBuckets[startIdex] = currentBuckets[matchIndex]
+            remainingIndices.delete(matchIndex)
+        }
+    }
+
+    const isAligned = remainingIndices.size === 0
+    const remainingIndicesList = Array.from(remainingIndices).sort((a, b) => a - b)
+    let nextUnmatchedIndex = 0
+    for (let i = 0; i < newBuckets.length; i++) {
+        if (newBuckets[i] === undefined) {
+            newBuckets[i] = currentBuckets[remainingIndicesList[nextUnmatchedIndex]]
+            nextUnmatchedIndex++
+        }
+    }
+    assert(newBuckets.every(bucket => bucket !== undefined), 'All buckets should be filled in at this point')
+    return { newBuckets, isAligned }
 }
 
 function buildRunsForLongname(column: CongressionalColumnData, termsDescending: number[]): LongnameRuns {
@@ -176,14 +209,15 @@ function buildRunsForLongname(column: CongressionalColumnData, termsDescending: 
     let startOfCurrentRunBuckets: DistrictBucketForTerm[] | undefined = undefined
 
     districtBucketsByTerm.forEach((buckets, termIndex) => {
-        if (shouldStartNewSection(startOfCurrentRunBuckets, buckets)) {
+        const { newBuckets, isAligned } = attemptAlign(startOfCurrentRunBuckets, buckets)
+        if (!isAligned) {
             runs.push({ termIndices: [], terms: [], districtBucketsByTerm: [] })
-            startOfCurrentRunBuckets = buckets
+            startOfCurrentRunBuckets = newBuckets
         }
         const currentRun = runs[runs.length - 1]
         currentRun.termIndices.push(termIndex)
         currentRun.terms.push(termsDescending[termIndex])
-        currentRun.districtBucketsByTerm.push(buckets)
+        currentRun.districtBucketsByTerm.push(newBuckets)
     })
 
     return {

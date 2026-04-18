@@ -845,18 +845,18 @@ void test('computeCongressionalWidgetModel handles overlapping representatives a
                         contentStartDisplayIndex: 4,
                         contentEndDisplayIndex: 4,
                         districtHeaders: [
-                            ['District 2, USA'],
                             ['District 3, USA'],
+                            ['District 2, USA'],
                         ],
                         congressionalRuns: [
                             {
                                 displayRuns: [
-                                    [['Rep B'], 4, 4],
+                                    [['Rep C'], 4, 4],
                                 ],
                             },
                             {
                                 displayRuns: [
-                                    [['Rep C'], 4, 4],
+                                    [['Rep B'], 4, 4],
                                 ],
                             },
                         ],
