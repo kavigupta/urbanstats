@@ -312,7 +312,7 @@ function buildSectionForRun(
 
 export function computeCongressionalWidgetModel(cellSpecs: CongressionalRegionData[]): CongressionalTableModel {
     const termsDescending = computeTermsDescending(cellSpecs)
-    const runsByLongname = cellSpecs.map(cell => buildRunsForLongname({ longname: cell.longname, representatives: cell.representatives }, termsDescending))
+    const runsByLongname = cellSpecs.map(cell => buildRunsForLongname(cell, termsDescending))
     const breakpoints = findBreakpoints(runsByLongname)
     const { displayRows, headerDisplayIndexByTermIndex, termDisplayIndexByTermIndex } = buildDisplayRowMap(termsDescending, breakpoints)
 
