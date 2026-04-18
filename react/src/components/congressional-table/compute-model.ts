@@ -154,7 +154,10 @@ function bucketsSameRepresentatives(previousBuckets: DistrictBucketForTerm[], cu
         && Array.from(previousSignatures).every(sig => currentSignatures.has(sig))
 }
 
-function shouldStartNewSection(startBuckets: DistrictBucketForTerm[], currentBuckets: DistrictBucketForTerm[]): boolean {
+function shouldStartNewSection(startBuckets: DistrictBucketForTerm[] | undefined, currentBuckets: DistrictBucketForTerm[]): boolean {
+    if (startBuckets === undefined) {
+        return true
+    }
     if (startBuckets.length !== currentBuckets.length) {
         return true
     }
@@ -170,15 +173,17 @@ function buildRunsForLongname(column: CongressionalColumnData, termsDescending: 
     const districtBucketsByTerm = termsDescending.map(termStart => districtBucketsForTerm(entriesForTerm(column, termStart)))
     const runs: LongnameRun[] = []
 
-    const currentRun = (): LongnameRun => runs[runs.length - 1]
+    let startOfCurrentRunBuckets: DistrictBucketForTerm[] | undefined = undefined
 
     districtBucketsByTerm.forEach((buckets, termIndex) => {
-        if (termIndex === 0 || shouldStartNewSection(districtBucketsByTerm[termIndex - currentRun().terms.length], buckets)) {
+        if (termIndex === 0 || shouldStartNewSection(startOfCurrentRunBuckets, buckets)) {
             runs.push({ termIndices: [], terms: [], districtBucketsByTerm: [] })
+            startOfCurrentRunBuckets = buckets
         }
-        currentRun().termIndices.push(termIndex)
-        currentRun().terms.push(termsDescending[termIndex])
-        currentRun().districtBucketsByTerm.push(buckets)
+        const currentRun = runs[runs.length - 1]
+        currentRun.termIndices.push(termIndex)
+        currentRun.terms.push(termsDescending[termIndex])
+        currentRun.districtBucketsByTerm.push(buckets)
     })
 
     return {
