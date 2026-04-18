@@ -176,7 +176,7 @@ function buildRunsForLongname(column: CongressionalColumnData, termsDescending: 
     let startOfCurrentRunBuckets: DistrictBucketForTerm[] | undefined = undefined
 
     districtBucketsByTerm.forEach((buckets, termIndex) => {
-        if (termIndex === 0 || shouldStartNewSection(startOfCurrentRunBuckets, buckets)) {
+        if (shouldStartNewSection(startOfCurrentRunBuckets, buckets)) {
             runs.push({ termIndices: [], terms: [], districtBucketsByTerm: [] })
             startOfCurrentRunBuckets = buckets
         }
