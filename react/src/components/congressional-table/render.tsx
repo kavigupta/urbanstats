@@ -274,12 +274,13 @@ function CongressionalTableRunRows(props: {
                 gridTemplateRows: 'subgrid',
             }}
         >
-            {props.run.displayRuns.map((displayRun) => {
+            {props.run.displayRuns.map((displayRun, runIndex) => {
                 const relativeStartRow = displayRun.startDisplayIndex - props.section.contentStartDisplayIndex + 1
                 const relativeEndRow = displayRun.endDisplayIndex - props.section.contentStartDisplayIndex + 1
                 const rowStart = Math.min(relativeStartRow, relativeEndRow)
                 const spanCount = Math.abs(relativeEndRow - relativeStartRow) + 1
                 const bottomRow = rowStart + spanCount - 1
+                const isLastDisplayRun = runIndex === props.run.displayRuns.length - 1
                 return (
                     <div
                         key={displayRun.startDisplayIndex}
@@ -293,7 +294,7 @@ function CongressionalTableRunRows(props: {
                             padding,
                             ...borderStyles({
                                 borderColor: props.borderColor,
-                                borderBottom: bottomRow < sectionRowCount,
+                                borderBottom: !isLastDisplayRun && bottomRow < sectionRowCount,
                             }),
                             gap: '0.1em',
                         }}
@@ -317,6 +318,7 @@ function CongressionalTableSection(props: {
     columnIndex: number
     borderColor: string
     sectionBackgroundColor: string
+    isLastSectionInSupercolumn: boolean
 }): ReactNode {
     return (
         <Fragment key={`${props.columnIndex}-${props.section.contentStartDisplayIndex}`}>
@@ -335,7 +337,7 @@ function CongressionalTableSection(props: {
                     gridColumn: props.columnIndex + 2,
                     gridRow: `${props.section.contentStartDisplayIndex + 2} / ${props.section.contentEndDisplayIndex + 3}`,
                     borderRight: `1px solid ${props.borderColor}`,
-                    borderBottom: `1px solid ${props.borderColor}`,
+                    borderBottom: props.isLastSectionInSupercolumn ? undefined : `1px solid ${props.borderColor}`,
                     display: 'grid',
                     gridTemplateColumns: props.section.districtHeaders.map(() => 'minmax(0, 1fr)').join(' '),
                     gridTemplateRows: 'subgrid',
@@ -626,7 +628,7 @@ function CongressionalRepresentativesTableActual(props: {
                 borderColor={borderColor}
             />
 
-            {props.model.supercolumns.map((supercolumn, columnIndex) => supercolumn.sections.map((section) => {
+            {props.model.supercolumns.map((supercolumn, columnIndex) => supercolumn.sections.map((section, sectionIndex) => {
                 return (
                     <CongressionalTableSection
                         key={`${columnIndex}-${section.contentStartDisplayIndex}`}
@@ -634,6 +636,7 @@ function CongressionalRepresentativesTableActual(props: {
                         columnIndex={columnIndex}
                         borderColor={borderColor}
                         sectionBackgroundColor={colors.background}
+                        isLastSectionInSupercolumn={sectionIndex === supercolumn.sections.length - 1}
                     />
                 )
             }))}
