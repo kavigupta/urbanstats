@@ -150,10 +150,14 @@ function bucketsSameRepresentatives(previousBuckets: DistrictBucketForTerm[], cu
         && Array.from(previousSignatures).every(sig => currentSignatures.has(sig))
 }
 
+export function cleanDistrictLabel(label: string): string {
+    return label.replace(/\s*\(\d{4}\), USA$/g, '').trim()
+}
+
 function districtLabelsMatch(label1: string, label2: string): boolean {
     // strip out any year labels in the districts
-    const cleanLabel1 = label1.replace(/\s*\(\d{4}\)\s*/g, '').trim()
-    const cleanLabel2 = label2.replace(/\s*\(\d{4}\)\s*/g, '').trim()
+    const cleanLabel1 = cleanDistrictLabel(label1)
+    const cleanLabel2 = cleanDistrictLabel(label2)
     return cleanLabel1 === cleanLabel2
 }
 
