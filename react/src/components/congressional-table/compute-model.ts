@@ -150,6 +150,13 @@ function bucketsSameRepresentatives(previousBuckets: DistrictBucketForTerm[], cu
         && Array.from(previousSignatures).every(sig => currentSignatures.has(sig))
 }
 
+function districtLabelsMatch(label1: string, label2: string): boolean {
+    // strip out any year labels in the districts
+    const cleanLabel1 = label1.replace(/\s*\(\d{4}\)\s*/g, '').trim()
+    const cleanLabel2 = label2.replace(/\s*\(\d{4}\)\s*/g, '').trim()
+    return cleanLabel1 === cleanLabel2
+}
+
 function attemptAlign(startBuckets: DistrictBucketForTerm[] | undefined, currentBuckets: DistrictBucketForTerm[]): {
     newBuckets: DistrictBucketForTerm[]
     isAligned: boolean
@@ -165,7 +172,7 @@ function attemptAlign(startBuckets: DistrictBucketForTerm[] | undefined, current
     // align buckets based on district label first.
     for (const [startIdex, startBucket] of startBuckets.entries()) {
         const matchIndex = currentBuckets.findIndex((bucket, candidateIndex) =>
-            bucket.districtLabel === startBucket.districtLabel && remainingIndices.has(candidateIndex),
+            districtLabelsMatch(bucket.districtLabel, startBucket.districtLabel) && remainingIndices.has(candidateIndex),
         )
         if (matchIndex !== -1) {
             newBuckets[startIdex] = currentBuckets[matchIndex]

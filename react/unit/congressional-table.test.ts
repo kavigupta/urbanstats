@@ -887,7 +887,6 @@ void test('computeCongressionalWidgetModel handles overlapping representatives a
         ],
     })
 })
-
 void test('representatives swapped districts', () => {
     const model = computeCongressionalWidgetModel([
         {
@@ -919,6 +918,53 @@ void test('representatives swapped districts', () => {
                         districtHeaders: [
                             ['District 1, USA'],
                             ['District 2, USA'],
+                        ],
+                        congressionalRuns: [
+                            {
+                                displayRuns: [[['Rep A'], 1, 2], [['Rep B'], 3, 4]],
+                            },
+                            {
+                                displayRuns: [[['Rep B'], 1, 2], [['Rep A'], 3, 4]],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    })
+})
+
+void test('district alignment ignores year', () => {
+    const model = computeCongressionalWidgetModel([
+        {
+            longname: 'State Test Region, USA',
+            representatives: [
+                representative('Rep A', 'District 1 (2019), USA', 2019, 2021),
+                representative('Rep B', 'District 2 (2019), USA', 2019, 2021),
+                representative('Rep A', 'District 2 (2015), USA', 2015, 2017),
+                representative('Rep B', 'District 1 (2015), USA', 2015, 2017),
+            ],
+        },
+    ])
+    assert.deepEqual(compactCongressionalWidgetModel(model), {
+        displayRows: [
+            { kind: 'header-space', displayIndex: 0 },
+            { kind: 'term-label', displayIndex: 1, termStart: 2021 },
+            { kind: 'term-label', displayIndex: 2, termStart: 2019 },
+            { kind: 'term-label', displayIndex: 3, termStart: 2017 },
+            { kind: 'term-label', displayIndex: 4, termStart: 2015 },
+        ],
+        supercolumns: [
+            {
+                longname: 'State Test Region, USA',
+                sections: [
+                    {
+                        headerDisplayIndex: 0,
+                        contentStartDisplayIndex: 1,
+                        contentEndDisplayIndex: 4,
+                        districtHeaders: [
+                            ['District 1 (2019), USA', 'District 1 (2015), USA'],
+                            ['District 2 (2019), USA', 'District 2 (2015), USA'],
                         ],
                         congressionalRuns: [
                             {
