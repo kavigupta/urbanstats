@@ -1,10 +1,11 @@
 import React, { CSSProperties, Fragment, ReactNode, useMemo } from 'react'
 
 import partyPages from '../../data/party_pages'
+import { NavLink, Navigator } from '../../navigation/Navigator'
 import { useColors } from '../../page_template/colors'
 import { assert } from '../../utils/defensive'
 
-import { computeCongressionalWidgetModel, CongressionalRegionData } from './compute-model'
+import { cleanDistrictLabel, computeCongressionalWidgetModel, CongressionalRegionData } from './compute-model'
 import {
     CongressionalRepresentativeEntry,
     CongressionalDisplayRow,
@@ -57,11 +58,18 @@ function Representative(props: { representative: CongressionalRepresentativeEntr
     )
 }
 
-function districtArticleHref(district: string): string | undefined {
-    if (district === 'No district data' || district === 'District unknown') {
-        return undefined
+function districtArticleHref(nav: Navigator, longnames: string[]): NavLink {
+    assert(longnames.length > 0, 'districtArticleHref requires at least one longname')
+    if (longnames.length === 1) {
+        return nav.link({
+            kind: 'article',
+            longname: longnames[0],
+        }, { scroll: { kind: 'position', top: 0 } })
     }
-    return `article.html?longname=${encodeURIComponent(district)}`
+    return nav.link({
+        kind: 'comparison',
+        longnames,
+    }, { scroll: { kind: 'position', top: 0 } })
 }
 
 function borderStyles(props: {
@@ -197,29 +205,37 @@ function CongressionalTableSectionDistrictHeaders(props: {
                             textAlign: 'center',
                             padding: '4px 6px',
                             borderRight: bucketIndex === props.section.districtHeaders.length - 1 ? 'none' : `1px solid ${props.borderColor}`,
-                            lineHeight: 1.25,
                         }}
                     >
-                        {districtHeaderGroup.map((districtHeader, headerIndex) => (
-                            <Fragment key={headerIndex}>
-                                {headerIndex > 0 && <br />}
-                                {districtArticleHref(districtHeader) === undefined
-                                    ? districtHeader
-                                    : (
-                                            <a
-                                                href={districtArticleHref(districtHeader)}
-                                                style={{ textDecoration: 'none', color: 'inherit' }}
-                                            >
-                                                {districtHeader}
-                                            </a>
-                                        )}
-                            </Fragment>
-                        ))}
+                        <CongressionalTableSectionDistrictHeader districtLongnames={districtHeaderGroup} />
                     </div>
                 ))}
             </div>
         </div>
     )
+}
+
+function CongressionalTableSectionDistrictHeader(props: {
+    districtLongnames: string[]
+}): ReactNode {
+    const nav = React.useContext(Navigator.Context)
+    const cleanToLong = new Map<string, string[]>()
+    props.districtLongnames.forEach((longname) => {
+        const clean = cleanDistrictLabel(longname)
+        if (!cleanToLong.has(clean)) {
+            cleanToLong.set(clean, [])
+        }
+        cleanToLong.get(clean)!.push(longname)
+    })
+    return [...cleanToLong.entries()].map(([districtHeader, longnames], headerIndex) => (
+        <a
+            key={headerIndex}
+            {...districtArticleHref(nav, longnames)}
+            style={{ textDecoration: 'none', color: 'inherit' }}
+        >
+            {districtHeader}
+        </a>
+    ))
 }
 
 function CongressionalTableRunRows(props: {
