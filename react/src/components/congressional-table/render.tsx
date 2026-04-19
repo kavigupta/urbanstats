@@ -130,9 +130,9 @@ function CongressionalTableTermLabels(props: {
                         ...baseTableCellStyle({
                             borderColor: props.borderColor,
                             borderBottom: displayIndex !== props.displayRows.length - 1,
-                            borderRight: true,
                         }),
                         fontWeight: 500,
+                        ...interSupercolumnBorder(colors, false),
                     }}
                 >
                     {row.kind === 'term-label' ? formatTermLabel(row.termStart) : ''}
