@@ -10,6 +10,7 @@ import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { Universe, useUniverse } from '../universe'
+import { withButtonRole } from '../utils/a11y'
 import { assert } from '../utils/defensive'
 import { sanitize } from '../utils/paths'
 import { useComparisonHeadStyle, useMobileLayout } from '../utils/responsive'
@@ -892,24 +893,40 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                         longname={props.longname}
                         currentUniverse={props.currentUniverse}
                         center={props.center}
-                        displayName={props.displayName ?? props.renderedStatname}
+                        displayName={displayName(props)}
                         footnoteSymbol={props.footnoteSymbol}
                     />
                     {props.sortInfo && (
-                        <span
-                            style={{
-                                cursor: 'pointer',
-                                height: '16px',
-                                marginLeft: props.transpose ? '0' : 'auto',
-                            }}
-                            onClick={props.sortInfo.onSort}
-                        >
-                            <ArrowUpOrDown direction={props.sortInfo.sortDirection} shouldAppearInScreenshot={false} />
-                        </span>
+                        <SortButton {...props} sortInfo={props.sortInfo} />
                     )}
                 </span>
             </div>
         </>
+    )
+}
+
+function displayName(props: StatisticNameCellProps): string {
+    return props.displayName ?? props.renderedStatname
+}
+
+function SortButton(props: StatisticNameCellProps & { sortInfo: NonNullable<StatisticNameCellProps['sortInfo']> }): ReactNode {
+    const sortButtonLabel = `Sort by ${displayName(props)}${
+        props.sortInfo.sortDirection === 'up'
+            ? ', currently ascending'
+            : props.sortInfo.sortDirection === 'down' ? ', currently descending' : ''
+    }`
+
+    return (
+        <span
+            {...withButtonRole(sortButtonLabel, props.sortInfo.onSort)}
+            style={{
+                cursor: 'pointer',
+                height: '16px',
+                marginLeft: props.transpose ? '0' : 'auto',
+            }}
+        >
+            <ArrowUpOrDown direction={props.sortInfo.sortDirection} shouldAppearInScreenshot={false} />
+        </span>
     )
 }
 
@@ -918,8 +935,9 @@ function ExpansionButton(props: { row: ArticleRow }): ReactNode {
     const colors = useColors()
     return (
         <div
+            {...withButtonRole(`${expanded ? 'Collapse' : 'Expand'} ${props.row.statname}`, () => { setExpanded(!expanded) })}
             className="expand-toggle"
-            onClick={() => { setExpanded(!expanded) }}
+            aria-expanded={expanded}
             style={articleStatnameButtonStyle(colors)}
         >
             {expanded ? '-' : '+'}
