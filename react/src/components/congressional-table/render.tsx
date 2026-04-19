@@ -5,6 +5,7 @@ import { NavLink, Navigator } from '../../navigation/Navigator'
 import { useColors } from '../../page_template/colors'
 import { useSelectedYears } from '../../page_template/statistic-settings'
 import { assert } from '../../utils/defensive'
+import { useScreenshotMode } from '../screenshot'
 
 import { cleanDistrictLabel, computeCongressionalWidgetModel, CongressionalRegionData } from './compute-model'
 import {
@@ -433,18 +434,56 @@ function useCongressionalTableScrollViewportHeight(displayRows: CongressionalDis
     }
 }
 
+function normalizeWidths(
+    totalWidth: number,
+    unnormalizedTermColumnPercent: number,
+    unnormalizedDataColumnPercents: number[],
+    normalizeTo: 'include-header' | 'just-data-columns',
+): { normalizedTermColumnPercent: number, normalizedDataColumnPercents: number[] } {
+    switch (normalizeTo) {
+        case 'include-header': {
+            const newDenom = unnormalizedTermColumnPercent + unnormalizedDataColumnPercents.reduce((a, b) => a + b, 0)
+            const reweightFactor = totalWidth / newDenom
+            return {
+                normalizedTermColumnPercent: unnormalizedTermColumnPercent * reweightFactor,
+                normalizedDataColumnPercents: unnormalizedDataColumnPercents.map(percent => percent * reweightFactor),
+            }
+        }
+        case 'just-data-columns': {
+            const newDenom = unnormalizedDataColumnPercents.reduce((a, b) => a + b, 0)
+            const reweightFactor = totalWidth / newDenom
+            return {
+                normalizedTermColumnPercent: unnormalizedTermColumnPercent,
+                normalizedDataColumnPercents: unnormalizedDataColumnPercents.map(percent => percent * reweightFactor),
+            }
+        }
+    }
+}
+
 function CongressionalRepresentativesTableActual(props: {
     model: CongressionalTableModel
-    normalizedTermColumnPercent: number
-    normalizedDataColumnPercents: number[]
+    totalWidthPercent: number
+    unnormalizedTermColumnPercent: number
+    unnormalizedDataColumnPercents: number[]
+    normalizeTo: 'include-header' | 'just-data-columns'
 }): ReactNode {
     const colors = useColors()
     const borderColor = colors.textMain
     const panelBackground = colors.slightlyDifferentBackground
-    const gridTemplateColumns = `${props.normalizedTermColumnPercent}% ${props.normalizedDataColumnPercents.map(width => `${width}%`).join(' ')}`
+    const {
+        normalizedTermColumnPercent,
+        normalizedDataColumnPercents,
+    } = normalizeWidths(
+        props.totalWidthPercent,
+        props.unnormalizedTermColumnPercent,
+        props.unnormalizedDataColumnPercents,
+        props.normalizeTo,
+    )
+    const gridTemplateColumns = `${normalizedTermColumnPercent}% ${normalizedDataColumnPercents.map(width => `${width}%`).join(' ')}`
 
     return (
         <div
+            id="congressional-representatives-table-actual"
             style={{
                 display: 'grid',
                 gridTemplateColumns,
@@ -495,6 +534,19 @@ function CongressionalRepresentativesTableActual(props: {
     )
 }
 
+const maxColumnsBeforeScroll = 7
+
+function numEffectiveColumns(model: CongressionalTableModel): number {
+    const supercolumnCount = model.supercolumns.length
+    const maxColumnsPerSupercolumn = Math.max(
+        1,
+        ...model.supercolumns.flatMap(supercolumn =>
+            supercolumn.sections.map(section => section.districtHeaders.length),
+        ),
+    )
+    return supercolumnCount * maxColumnsPerSupercolumn
+}
+
 function CongressionalRepresentativesWithScroll(props: {
     model: CongressionalTableModel
     widthLeftHeader: number
@@ -502,16 +554,25 @@ function CongressionalRepresentativesWithScroll(props: {
     extraSpaceRight: number[]
 }): ReactNode {
     const { scrollContainerRef, scrollContainerHeight } = useCongressionalTableScrollViewportHeight(props.model.displayRows)
-    const supercolumnCount = props.model.supercolumns.length
-    const maxColumnsPerSupercolumn = Math.max(
-        1,
-        ...props.model.supercolumns.flatMap(supercolumn =>
-            supercolumn.sections.map(section => section.districtHeaders.length),
-        ),
-    )
-    const effectiveColumnWidth = supercolumnCount * maxColumnsPerSupercolumn / 7
-    const needsHorizontalScroll = effectiveColumnWidth
-    const expansionFactor = needsHorizontalScroll ? effectiveColumnWidth : 1
+    const isScreenshot = useScreenshotMode()
+    const effectiveColumnCount = numEffectiveColumns(props.model)
+    const needsHorizontalScroll = effectiveColumnCount > maxColumnsBeforeScroll
+    const expansionFactor = needsHorizontalScroll ? effectiveColumnCount / maxColumnsBeforeScroll : 1
+    const columnSizes = props.model.supercolumns.map((_, columnIndex) => props.columnWidth + props.extraSpaceRight[columnIndex])
+    if (isScreenshot) {
+        // put the entire table in, but shrunk down to fit, using a CSS transform.
+        return (
+            <div style={{ width: `${expansionFactor * 100}%`, transform: `scale(${1 / expansionFactor})`, transformOrigin: 'top left' }}>
+                <CongressionalRepresentativesTableActual
+                    model={props.model}
+                    totalWidthPercent={100}
+                    unnormalizedTermColumnPercent={props.widthLeftHeader}
+                    unnormalizedDataColumnPercents={columnSizes}
+                    normalizeTo="just-data-columns"
+                />
+            </div>
+        )
+    }
     const totalExpandedPercent = props.widthLeftHeader + expansionFactor * (100 - props.widthLeftHeader)
     const normalizedTermColumnPercent = props.widthLeftHeader / totalExpandedPercent * 100
     const normalizedDataColumnPercents = props.model.supercolumns.map((_, i) => {
@@ -544,8 +605,10 @@ function CongressionalRepresentativesWithScroll(props: {
                 >
                     <CongressionalRepresentativesTableActual
                         model={props.model}
-                        normalizedTermColumnPercent={normalizedTermColumnPercent}
-                        normalizedDataColumnPercents={normalizedDataColumnPercents}
+                        totalWidthPercent={totalExpandedPercent}
+                        unnormalizedTermColumnPercent={normalizedTermColumnPercent}
+                        unnormalizedDataColumnPercents={normalizedDataColumnPercents}
+                        normalizeTo="include-header"
                     />
                 </div>
             </div>
