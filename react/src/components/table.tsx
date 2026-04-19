@@ -935,7 +935,7 @@ function ExpansionButton(props: { row: ArticleRow }): ReactNode {
     const colors = useColors()
     return (
         <div
-            {...withButtonRole(expanded ? 'Collapse' : 'Expand', () => { setExpanded(!expanded) })}
+            {...withButtonRole(`${expanded ? 'Collapse' : 'Expand'} ${props.row.statname}`, () => { setExpanded(!expanded) })}
             className="expand-toggle"
             aria-expanded={expanded}
             style={articleStatnameButtonStyle(colors)}
