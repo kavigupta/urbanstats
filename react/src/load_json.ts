@@ -5,7 +5,6 @@ import order_links from './data/order_links'
 import statistic_path_list from './data/statistic_path_list'
 import universes_ordered from './data/universes_ordered'
 import { dataLink, indexLink, orderingDataLink, orderingLink, shapeLink } from './navigation/links'
-import { debugPerformance } from './search'
 import { Universe } from './universe'
 import { assert } from './utils/defensive'
 import {
@@ -23,6 +22,7 @@ import {
     ArticleUniverseList,
     DefaultUniverseTable,
 } from './utils/protos'
+import { debugPerformance } from './utils/search-performance'
 import { NormalizeProto } from './utils/types'
 
 // from https://stackoverflow.com/a/4117299/1549476

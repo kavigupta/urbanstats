@@ -1,4 +1,5 @@
-import { createIndex, debugPerformance, SearchIndexConfig, SearchParams } from './search'
+import { createIndex, SearchIndexConfig, SearchParams } from './search'
+import { debugPerformance } from './utils/search-performance'
 
 debugPerformance(`Search worker starting at timestamp ${Date.now()}`)
 

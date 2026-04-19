@@ -7,9 +7,10 @@ import { searchIconLink, typesInOrder } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useSettings } from '../page_template/settings'
 import '../common.css'
-import { SearchResult, SearchParams, debugPerformance, getIndexCacheKey, SearchIndexConfig } from '../search'
+import { SearchResult, SearchParams, getIndexCacheKey, SearchIndexConfig } from '../search'
 import { Universe, useUniverse } from '../universe'
 import { TestUtils } from '../utils/TestUtils'
+import { debugPerformance } from '../utils/search-performance'
 
 import { GenericSearchBox } from './search-generic'
 

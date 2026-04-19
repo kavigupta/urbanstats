@@ -9,6 +9,7 @@ import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSi
 import { assert } from './utils/defensive'
 import { ISearchIndexMetadata } from './utils/protos'
 import { isAllowedToBeShown, ShowGeographySettings } from './utils/restricted-types'
+import { debugPerformance } from './utils/search-performance'
 import { concatenate } from './utils/typed-array-concat'
 
 export type SearchResult =
@@ -23,15 +24,6 @@ const debugSearch: boolean = false
 
 function debug(arg: unknown): void {
     if (debugSearch) {
-        // eslint-disable-next-line no-console -- Debug logging
-        console.log(arg)
-    }
-}
-
-const debugSearchPerformance: boolean = false
-
-export function debugPerformance(arg: unknown): void {
-    if (debugSearchPerformance) {
         // eslint-disable-next-line no-console -- Debug logging
         console.log(arg)
     }

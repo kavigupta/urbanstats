@@ -2,6 +2,8 @@ import type maplibregl from 'maplibre-gl'
 
 import { keptByNoBasemap } from '../components/map-common-utils'
 
+import { simulateSlowSearch } from './search-performance'
+
 /**
  * Indicates whether we're e2e testing.
  *
@@ -13,6 +15,7 @@ export class TestUtils {
     readonly isTesting = (window as unknown as TestWindow)['%hammerhead%'] !== undefined
     readonly testIterationId: string | undefined
     testSyncing = false
+    readonly simulateSlowSearch: boolean = simulateSlowSearch
 
     private constructor() {
         let iterId = localStorage.getItem('testIterationId')
