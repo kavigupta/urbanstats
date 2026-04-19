@@ -2,6 +2,7 @@ import React, { CSSProperties, Fragment, ReactNode, useMemo } from 'react'
 
 import partyPages from '../../data/party_pages'
 import { NavLink, Navigator } from '../../navigation/Navigator'
+import { Colors } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
 import { useSelectedYears } from '../../page_template/statistic-settings'
 import { assert } from '../../utils/defensive'
@@ -141,11 +142,19 @@ function CongressionalTableTermLabels(props: {
     )
 }
 
+function interSupercolumnBorder(colors: Colors, disable: boolean): CSSProperties {
+    if (disable) {
+        return {}
+    }
+    return { borderRight: `3px solid ${colors.textMain}` }
+}
+
 function CongressionalTableColumnHeaders(props: {
     supercolumns: RepresentativesForRegion[]
     borderColor: string
     panelBackground: string
 }): ReactNode {
+    const colors = useColors()
     return (
         <>
             {props.supercolumns.map((column, columnIndex) => (
@@ -156,13 +165,14 @@ function CongressionalTableColumnHeaders(props: {
                         gridRow: 1,
                         ...baseTableCellStyle({
                             borderColor: props.borderColor,
-                            borderRight: true,
+                            // borderRight: true,
                             borderBottom: true,
                             textAlign: 'center',
                             justifyContent: 'center',
                             backgroundColor: props.panelBackground,
                         }),
                         fontWeight: 500,
+                        ...interSupercolumnBorder(colors, columnIndex === props.supercolumns.length - 1),
                     }}
                 >
                     {column.longname}
@@ -178,7 +188,9 @@ function CongressionalTableSectionDistrictHeaders(props: {
     columnIndex: number
     borderColor: string
     backgroundColor: string
+    isLastSupercolumn: boolean
 }): ReactNode {
+    const colors = useColors()
     const gridTemplateColumnsDistrict = props.section.districtHeaders.map(() => 'minmax(0, 1fr)').join(' ')
 
     return (
@@ -188,11 +200,14 @@ function CongressionalTableSectionDistrictHeaders(props: {
                 gridRow: props.headerDisplayIndex + 2,
                 ...borderStyles({
                     borderColor: props.borderColor,
-                    borderRight: true,
                     borderBottom: true,
                 }),
                 backgroundColor: props.backgroundColor,
                 display: 'flex',
+                ...interSupercolumnBorder(
+                    colors,
+                    props.isLastSupercolumn,
+                ),
             }}
         >
             <div style={{ display: 'grid', gridTemplateColumns: gridTemplateColumnsDistrict, width: '100%', height: '100%' }}>
@@ -319,6 +334,7 @@ function CongressionalTableSection(props: {
     borderColor: string
     sectionBackgroundColor: string
     isLastSectionInSupercolumn: boolean
+    isLastSuperColumn: boolean
 }): ReactNode {
     return (
         <Fragment key={`${props.columnIndex}-${props.section.contentStartDisplayIndex}`}>
@@ -329,6 +345,7 @@ function CongressionalTableSection(props: {
                     columnIndex={props.columnIndex}
                     borderColor={props.borderColor}
                     backgroundColor={props.sectionBackgroundColor}
+                    isLastSupercolumn={props.isLastSuperColumn}
                 />
             )}
 
@@ -336,11 +353,11 @@ function CongressionalTableSection(props: {
                 style={{
                     gridColumn: props.columnIndex + 2,
                     gridRow: `${props.section.contentStartDisplayIndex + 2} / ${props.section.contentEndDisplayIndex + 3}`,
-                    borderRight: `1px solid ${props.borderColor}`,
                     borderBottom: props.isLastSectionInSupercolumn ? undefined : `1px solid ${props.borderColor}`,
                     display: 'grid',
                     gridTemplateColumns: props.section.districtHeaders.map(() => 'minmax(0, 1fr)').join(' '),
                     gridTemplateRows: 'subgrid',
+                    ...interSupercolumnBorder(useColors(), props.isLastSuperColumn),
                 }}
             >
                 {props.section.congressionalRuns.map((run, bucketIndex) => (
@@ -637,6 +654,7 @@ function CongressionalRepresentativesTableActual(props: {
                         borderColor={borderColor}
                         sectionBackgroundColor={colors.background}
                         isLastSectionInSupercolumn={sectionIndex === supercolumn.sections.length - 1}
+                        isLastSuperColumn={columnIndex === props.model.supercolumns.length - 1}
                     />
                 )
             }))}
