@@ -1414,6 +1414,7 @@ function DeleteButton({ handleDelete }: { handleDelete: () => void }): ReactNode
                 backgroundSize: size,
                 width: size,
                 height: size,
+                backgroundColor: 'transparent',
             }}
         >
         </button>
