@@ -665,7 +665,7 @@ function CongressionalRepresentativesWithScroll(props: {
                 width: '100%',
                 marginTop: '4px',
                 marginBottom: '4px',
-                resize: 'both',
+                resize: 'vertical',
                 overflowX: needsHorizontalScroll ? 'auto' : 'visible',
                 overflowY: 'auto',
                 height: scrollContainerHeight,
