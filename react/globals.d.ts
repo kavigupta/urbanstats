@@ -10,3 +10,7 @@ interface ObjectConstructor {
     keys<const T extends Record<PropertyKey, unknown>>(o: T): (keyof T)[]
 }
 /* eslint-enable @typescript-eslint/method-signature-style */
+
+// Prevent extraneous errors in the ide
+// Just provides null type information for css imports, non-existent css files are still invalid
+declare module '*.css'
