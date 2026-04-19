@@ -89,6 +89,8 @@ function borderStyles(props: {
     }
 }
 
+const padding = '0.2em 0.25em'
+
 function baseTableCellStyle(props: {
     borderColor: string
     borderBottom?: boolean
@@ -101,7 +103,7 @@ function baseTableCellStyle(props: {
     backgroundColor?: string
 }): CSSProperties {
     return {
-        padding: '6px 8px',
+        padding,
         display: props.display ?? 'flex',
         alignItems: props.alignItems ?? 'center',
         justifyContent: props.justifyContent ?? 'flex-end',
@@ -206,7 +208,7 @@ function CongressionalTableSectionDistrictHeaders(props: {
                             alignItems: 'center',
                             height: '100%',
                             textAlign: 'center',
-                            padding: '4px 6px',
+                            padding,
                             borderRight: bucketIndex === props.section.districtHeaders.length - 1 ? 'none' : `1px solid ${props.borderColor}`,
                         }}
                     >
@@ -288,12 +290,12 @@ function CongressionalTableRunRows(props: {
                             alignItems: 'center',
                             justifyContent: 'center',
                             textAlign: 'center',
-                            padding: '6px 8px',
+                            padding,
                             ...borderStyles({
                                 borderColor: props.borderColor,
                                 borderBottom: bottomRow < sectionRowCount,
                             }),
-                            gap: '4px',
+                            gap: '0.1em',
                         }}
                     >
                         {displayRun.representatives.length === 0
@@ -495,7 +497,7 @@ function CongressionalRepresentativesTableActual(props: {
                 style={{
                     gridColumn: 1,
                     gridRow: 1,
-                    padding: '6px 8px',
+                    padding,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
@@ -592,14 +594,14 @@ function CongressionalRepresentativesWithScroll(props: {
                 marginTop: '4px',
                 marginBottom: '4px',
                 overflowX: needsHorizontalScroll ? 'auto' : 'visible',
+                overflowY: 'auto',
+                height: scrollContainerHeight,
             }}
         >
             <div
                 ref={scrollContainerRef}
                 style={{
                     width: needsHorizontalScroll ? expandedWidth : '100%',
-                    overflowY: 'auto',
-                    height: scrollContainerHeight,
                 }}
             >
                 <CongressionalRepresentativesTableActual
