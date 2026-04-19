@@ -5,6 +5,7 @@ import { NavLink, Navigator } from '../../navigation/Navigator'
 import { Colors } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
 import { useSelectedYears } from '../../page_template/statistic-settings'
+import { mixWithBackground } from '../../utils/color'
 import { assert } from '../../utils/defensive'
 import { useScreenshotMode } from '../screenshot'
 
@@ -21,6 +22,31 @@ import {
 function getPartyPage(party: string): (typeof partyPages)[keyof typeof partyPages] {
     assert(party in partyPages, `Party ${party} not found in partyPages data`)
     return partyPages[party as keyof typeof partyPages]
+}
+
+/** Party hue used for links and run cell backgrounds; mirrors `RepresentativeParty`. */
+function partyHueColorString(colors: Colors, party: string | null | undefined): string | undefined {
+    if (!party || party === 'Independent') {
+        return undefined
+    }
+    if (!(party in partyPages)) {
+        return undefined
+    }
+    const partyPage = partyPages[party as keyof typeof partyPages]
+    // eslint-disable-next-line no-restricted-syntax -- not actual colors, just remapping
+    const colorStr = partyPage.party_color === 'black' || partyPage.party_color === 'gray' ? 'grey' : partyPage.party_color
+    return colors.hueColors[colorStr as keyof typeof colors.hueColors]
+}
+
+function displayRunBackgroundForFirstRepresentative(
+    colors: Colors,
+    first: CongressionalRepresentativeEntry['representative'] | undefined,
+): string | undefined {
+    const hue = partyHueColorString(colors, first?.party)
+    if (!hue) {
+        return undefined
+    }
+    return mixWithBackground(hue, 0.9, colors.background)
 }
 
 function RepresentativeParty(props: { party?: string | null }): ReactNode {
@@ -118,6 +144,7 @@ function CongressionalTableTermLabels(props: {
     displayRows: CongressionalDisplayRow[]
     borderColor: string
 }): ReactNode {
+    const colors = useColors()
     return (
         <>
             {props.displayRows.map((row, displayIndex) => (
@@ -272,6 +299,7 @@ function CongressionalTableRunRows(props: {
     isLastBucket: boolean
     borderColor: string
 }): ReactNode {
+    const colors = useColors()
     assert(props.run.displayRuns.length > 0, `Section ${props.section.contentStartDisplayIndex}-${props.section.contentEndDisplayIndex} has no display runs`)
     const sectionRowCount = props.section.contentEndDisplayIndex - props.section.contentStartDisplayIndex + 1
 
@@ -296,6 +324,7 @@ function CongressionalTableRunRows(props: {
                 const spanCount = Math.abs(relativeEndRow - relativeStartRow) + 1
                 const bottomRow = rowStart + spanCount - 1
                 const isLastDisplayRun = runIndex === props.run.displayRuns.length - 1
+                const runBackground = displayRunBackgroundForFirstRepresentative(colors, displayRun.representatives[0])
                 return (
                     <div
                         key={displayRun.startDisplayIndex}
@@ -307,6 +336,7 @@ function CongressionalTableRunRows(props: {
                             justifyContent: 'center',
                             textAlign: 'center',
                             padding,
+                            backgroundColor: runBackground,
                             ...borderStyles({
                                 borderColor: props.borderColor,
                                 borderBottom: !isLastDisplayRun && bottomRow < sectionRowCount,
