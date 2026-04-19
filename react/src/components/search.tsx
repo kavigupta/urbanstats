@@ -9,6 +9,7 @@ import { useSettings } from '../page_template/settings'
 import '../common.css'
 import { SearchResult, SearchParams, getIndexCacheKey, SearchIndexConfig } from '../search'
 import { Universe, useUniverse } from '../universe'
+import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
 import { debugPerformance } from '../utils/search-performance'
 
@@ -126,7 +127,10 @@ function SingleSearchResult(props: SearchResult): ReactNode {
 
 const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { worker.terminate() })
 
-type SearchWorker = (params: SearchParams) => Promise<SearchResult[]>
+interface SearchWorker {
+    executeSearch: (params: SearchParams) => Promise<SearchResult[]>
+    status: Property<{ status: 'ready' } | { status: 'loading', message: string }>
+}
 
 type AsyncConfig = Omit<SearchIndexConfig, 'cacheKey'> & { cacheKeyPromise: Promise<string | undefined> }
 
