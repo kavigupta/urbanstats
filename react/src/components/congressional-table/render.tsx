@@ -443,68 +443,98 @@ function CongressionalRepresentativesTableRenderer(props: {
     const borderColor = colors.textMain
     const panelBackground = colors.slightlyDifferentBackground
     const { scrollContainerRef, scrollContainerHeight } = useCongressionalTableScrollViewportHeight(props.model.displayRows)
+    const supercolumnCount = props.model.supercolumns.length
+    const maxColumnsPerSupercolumn = Math.max(
+        1,
+        ...props.model.supercolumns.flatMap(supercolumn =>
+            supercolumn.sections.map(section => section.districtHeaders.length),
+        ),
+    )
+    const effectiveColumnWidth = supercolumnCount * maxColumnsPerSupercolumn / 7
+    const needsHorizontalScroll = effectiveColumnWidth
+    const expansionFactor = needsHorizontalScroll ? effectiveColumnWidth : 1
+    const totalExpandedPercent = props.widthLeftHeader + expansionFactor * (100 - props.widthLeftHeader)
+    const normalizedTermColumnPercent = props.widthLeftHeader / totalExpandedPercent * 100
+    const normalizedDataColumnPercents = props.model.supercolumns.map((_, i) => {
+        const basePercent = props.columnWidth + props.extraSpaceRight[i]
+        return expansionFactor * basePercent / totalExpandedPercent * 100
+    })
+    const expandedWidth = `${totalExpandedPercent}%`
 
-    const gridTemplateColumns = `${props.widthLeftHeader}% ${props.model.supercolumns.map((_, i) => `${props.columnWidth + props.extraSpaceRight[i]}%`).join(' ')}`
+    const gridTemplateColumns = `${normalizedTermColumnPercent}% ${normalizedDataColumnPercents.map(width => `${width}%`).join(' ')}`
     return (
         <div
-            ref={scrollContainerRef}
             style={{
                 width: '100%',
                 marginTop: '4px',
                 marginBottom: '4px',
-                borderTop: `1px solid ${borderColor}`,
-                borderBottom: `1px solid ${borderColor}`,
-                overflowY: 'auto',
-                height: scrollContainerHeight,
+                overflowX: needsHorizontalScroll ? 'auto' : 'visible',
             }}
         >
             <div
                 style={{
-                    display: 'grid',
-                    gridTemplateColumns,
-                    gridTemplateRows: `auto repeat(${props.model.displayRows.length}, minmax(0, auto))`,
-                    alignItems: 'stretch',
+                    width: needsHorizontalScroll ? expandedWidth : '100%',
                 }}
             >
                 <div
+                    ref={scrollContainerRef}
                     style={{
-                        gridColumn: 1,
-                        gridRow: 1,
-                        padding: '6px 8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'flex-end',
-                        textAlign: 'right',
-                        borderRight: `1px solid ${borderColor}`,
+                        width: '100%',
+                        borderTop: `1px solid ${borderColor}`,
                         borderBottom: `1px solid ${borderColor}`,
-                        backgroundColor: panelBackground,
+                        overflowY: 'auto',
+                        height: scrollContainerHeight,
                     }}
-                    className="serif value"
                 >
-                    Term
-                </div>
-                <CongressionalTableColumnHeaders
-                    supercolumns={props.model.supercolumns}
-                    borderColor={borderColor}
-                    panelBackground={panelBackground}
-                />
-
-                <CongressionalTableTermLabels
-                    displayRows={props.model.displayRows}
-                    borderColor={borderColor}
-                />
-
-                {props.model.supercolumns.map((supercolumn, columnIndex) => supercolumn.sections.map((section) => {
-                    return (
-                        <CongressionalTableSection
-                            key={`${columnIndex}-${section.contentStartDisplayIndex}`}
-                            section={section}
-                            columnIndex={columnIndex}
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns,
+                            gridTemplateRows: `auto repeat(${props.model.displayRows.length}, minmax(0, auto))`,
+                            alignItems: 'stretch',
+                        }}
+                    >
+                        <div
+                            style={{
+                                gridColumn: 1,
+                                gridRow: 1,
+                                padding: '6px 8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'flex-end',
+                                textAlign: 'right',
+                                borderRight: `1px solid ${borderColor}`,
+                                borderBottom: `1px solid ${borderColor}`,
+                                backgroundColor: panelBackground,
+                            }}
+                            className="serif value"
+                        >
+                            Term
+                        </div>
+                        <CongressionalTableColumnHeaders
+                            supercolumns={props.model.supercolumns}
                             borderColor={borderColor}
-                            sectionBackgroundColor={colors.background}
+                            panelBackground={panelBackground}
                         />
-                    )
-                }))}
+
+                        <CongressionalTableTermLabels
+                            displayRows={props.model.displayRows}
+                            borderColor={borderColor}
+                        />
+
+                        {props.model.supercolumns.map((supercolumn, columnIndex) => supercolumn.sections.map((section) => {
+                            return (
+                                <CongressionalTableSection
+                                    key={`${columnIndex}-${section.contentStartDisplayIndex}`}
+                                    section={section}
+                                    columnIndex={columnIndex}
+                                    borderColor={borderColor}
+                                    sectionBackgroundColor={colors.background}
+                                />
+                            )
+                        }))}
+                    </div>
+                </div>
             </div>
         </div>
     )
