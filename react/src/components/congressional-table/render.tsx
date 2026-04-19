@@ -3,6 +3,7 @@ import React, { CSSProperties, Fragment, ReactNode, useMemo } from 'react'
 import partyPages from '../../data/party_pages'
 import { NavLink, Navigator } from '../../navigation/Navigator'
 import { useColors } from '../../page_template/colors'
+import { useSelectedYears } from '../../page_template/statistic-settings'
 import { assert } from '../../utils/defensive'
 
 import { cleanDistrictLabel, computeCongressionalWidgetModel, CongressionalRegionData } from './compute-model'
@@ -353,12 +354,32 @@ function CongressionalTableSection(props: {
     )
 }
 
+/** Round a calendar year to the nearest multiple of 10 (half-to-even at .5). */
+function bankersDecadeForYear(year: number): number {
+    const sign = year < 0 ? -1 : 1
+    const y = Math.abs(year)
+    const q = Math.floor(y / 10)
+    const r = y % 10
+    if (r < 5) {
+        return sign * q * 10
+    }
+    if (r > 5) {
+        return sign * (q + 1) * 10
+    }
+    const lowerTen = q * 10
+    const upperTen = (q + 1) * 10
+    return sign * (q % 2 === 0 ? lowerTen : upperTen)
+}
+
 function useCongressionalTableScrollViewportHeight(displayRows: CongressionalDisplayRow[]): {
     scrollContainerRef: React.RefObject<HTMLDivElement>
     scrollContainerHeight: CSSProperties['height']
 } {
     const scrollContainerRef = React.useRef<HTMLDivElement>(null)
     const [preferredScrollableHeight, setPreferredScrollableHeight] = React.useState<number | undefined>(undefined)
+    const years = useSelectedYears()
+    const minDecade = years.length > 0 ? Math.min(...years) : 2020
+    const maxDecade = years.length > 0 ? Math.max(...years) : 2020
 
     React.useLayoutEffect(() => {
         const container = scrollContainerRef.current
@@ -370,7 +391,11 @@ function useCongressionalTableScrollViewportHeight(displayRows: CongressionalDis
         container.scrollTop = 0
 
         const targetDisplayIndex = displayRows.reduce((lastIndex, row, displayIndex) => {
-            if (row.kind === 'term-label' && row.termStart >= 2000) {
+            if (
+                row.kind === 'term-label'
+                && bankersDecadeForYear(row.termStart) >= minDecade
+                && bankersDecadeForYear(row.termStart) <= maxDecade
+            ) {
                 return displayIndex
             }
             return lastIndex
@@ -392,7 +417,7 @@ function useCongressionalTableScrollViewportHeight(displayRows: CongressionalDis
         }
 
         // Measure using element rects to avoid offsetParent/positioning artifacts.
-        // This keeps the viewport tall enough for the header area plus term rows from newest through the last >= 2000 term.
+        // Tall enough for the header plus term rows from newest through the last term in the selected decade range.
         const containerRect = container.getBoundingClientRect()
         const firstTermRect = firstTermRow.getBoundingClientRect()
         const targetRect = targetRow.getBoundingClientRect()
@@ -400,7 +425,7 @@ function useCongressionalTableScrollViewportHeight(displayRows: CongressionalDis
         const termRangeHeight = Math.max(0, targetRect.bottom - firstTermRect.top)
         const nextHeight = Math.max(220, Math.ceil(headerHeight + termRangeHeight + 1))
         setPreferredScrollableHeight(previous => (previous === nextHeight ? previous : nextHeight))
-    }, [displayRows])
+    }, [displayRows, minDecade, maxDecade])
 
     return {
         scrollContainerRef,
