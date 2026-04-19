@@ -426,7 +426,8 @@ function useCongressionalTableScrollViewportHeight(displayRows: CongressionalDis
         const targetRect = targetRow.getBoundingClientRect()
         const headerHeight = Math.max(0, firstTermRect.top - containerRect.top)
         const termRangeHeight = Math.max(0, targetRect.bottom - firstTermRect.top)
-        const nextHeight = Math.max(220, Math.ceil(headerHeight + termRangeHeight + 1))
+        const horizontalScrollbarHeight = Math.max(0, container.offsetHeight - container.clientHeight)
+        const nextHeight = Math.max(220, Math.ceil(headerHeight + termRangeHeight + horizontalScrollbarHeight + 1))
         setPreferredScrollableHeight(previous => (previous === nextHeight ? previous : nextHeight))
     }, [displayRows, minDecade, maxDecade])
 
@@ -589,17 +590,20 @@ function CongressionalRepresentativesWithScroll(props: {
 
     return (
         <div
+            ref={scrollContainerRef}
             style={{
                 width: '100%',
                 marginTop: '4px',
                 marginBottom: '4px',
+                resize: 'both',
                 overflowX: needsHorizontalScroll ? 'auto' : 'visible',
                 overflowY: 'auto',
                 height: scrollContainerHeight,
+                minHeight: '220px',
+                boxSizing: 'border-box',
             }}
         >
             <div
-                ref={scrollContainerRef}
                 style={{
                     width: needsHorizontalScroll ? expandedWidth : '100%',
                 }}
