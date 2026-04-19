@@ -38,15 +38,57 @@ function partyHueColorString(colors: Colors, party: string | null | undefined): 
     return colors.hueColors[colorStr as keyof typeof colors.hueColors]
 }
 
-function displayRunBackgroundForFirstRepresentative(
+const runFillMix = 0.8
+/** Stripe width per representative in proportional party hatching (see `displayRunFillStyle`). */
+const hatchPixelsPerCount = 20
+
+function mixedPartyFill(colors: Colors, hue: string): string {
+    return mixWithBackground(hue, runFillMix, colors.cleanBackground)
+}
+
+/**
+ * Solid tint for a single mappable party, or 45° diagonal stripes with widths proportional
+ * to representative counts per party (e.g. 5 Dems / 4 Reps → 5k px blue then 4k red per repeat, k constant).
+ */
+function displayRunFillStyle(
     colors: Colors,
-    first: CongressionalRepresentativeEntry['representative'] | undefined,
-): string | undefined {
-    const hue = partyHueColorString(colors, first?.party)
-    if (!hue) {
+    representatives: CongressionalRepresentativeEntry['representative'][],
+): Pick<CSSProperties, 'backgroundColor' | 'backgroundImage'> | undefined {
+    const partyCounts = new Map<string, { count: number, hue: string }>()
+    for (const rep of representatives) {
+        const hue = partyHueColorString(colors, rep.party)
+        if (!hue || !rep.party) {
+            continue
+        }
+        const prev = partyCounts.get(rep.party)
+        if (prev) {
+            prev.count += 1
+        }
+        else {
+            partyCounts.set(rep.party, { count: 1, hue })
+        }
+    }
+    if (partyCounts.size === 0) {
         return undefined
     }
-    return mixWithBackground(hue, 0.9, colors.background)
+    const entries = [...partyCounts.entries()]
+        .map(([party, { count, hue }]) => ({ party, count, hue }))
+        .sort((a, b) => a.party.localeCompare(b.party))
+
+    if (entries.length === 1) {
+        return { backgroundColor: mixedPartyFill(colors, entries[0].hue) }
+    }
+
+    const stripeUnitPx = hatchPixelsPerCount
+    const stops: string[] = []
+    let posPx = 0
+    for (const { count, hue } of entries) {
+        const w = count * stripeUnitPx
+        const c = mixedPartyFill(colors, hue)
+        stops.push(`${c} ${posPx}px`, `${c} ${posPx + w}px`)
+        posPx += w
+    }
+    return { backgroundImage: `repeating-linear-gradient(-45deg, ${stops.join(', ')})` }
 }
 
 function RepresentativeParty(props: { party?: string | null }): ReactNode {
@@ -324,7 +366,7 @@ function CongressionalTableRunRows(props: {
                 const spanCount = Math.abs(relativeEndRow - relativeStartRow) + 1
                 const bottomRow = rowStart + spanCount - 1
                 const isLastDisplayRun = runIndex === props.run.displayRuns.length - 1
-                const runBackground = displayRunBackgroundForFirstRepresentative(colors, displayRun.representatives[0])
+                const runFill = displayRunFillStyle(colors, displayRun.representatives)
                 return (
                     <div
                         key={displayRun.startDisplayIndex}
@@ -336,7 +378,7 @@ function CongressionalTableRunRows(props: {
                             justifyContent: 'center',
                             textAlign: 'center',
                             padding,
-                            backgroundColor: runBackground,
+                            ...(runFill ?? {}),
                             ...borderStyles({
                                 borderColor: props.borderColor,
                                 borderBottom: !isLastDisplayRun && bottomRow < sectionRowCount,
