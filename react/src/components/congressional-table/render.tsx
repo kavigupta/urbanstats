@@ -118,6 +118,7 @@ function CongressionalTableTermLabels(props: {
             {props.displayRows.map((row, displayIndex) => (
                 <div
                     key={displayIndex}
+                    data-display-index={displayIndex}
                     style={{
                         gridColumn: 1,
                         gridRow: displayIndex + 2,
@@ -352,6 +353,61 @@ function CongressionalTableSection(props: {
     )
 }
 
+function useCongressionalTableScrollViewportHeight(displayRows: CongressionalDisplayRow[]): {
+    scrollContainerRef: React.RefObject<HTMLDivElement>
+    scrollContainerHeight: CSSProperties['height']
+} {
+    const scrollContainerRef = React.useRef<HTMLDivElement>(null)
+    const [preferredScrollableHeight, setPreferredScrollableHeight] = React.useState<number | undefined>(undefined)
+
+    React.useLayoutEffect(() => {
+        const container = scrollContainerRef.current
+        if (!container) {
+            return
+        }
+
+        // Default to the newest terms at the top.
+        container.scrollTop = 0
+
+        const targetDisplayIndex = displayRows.reduce((lastIndex, row, displayIndex) => {
+            if (row.kind === 'term-label' && row.termStart >= 2000) {
+                return displayIndex
+            }
+            return lastIndex
+        }, -1)
+
+        if (targetDisplayIndex === -1) {
+            setPreferredScrollableHeight(undefined)
+            return
+        }
+
+        const firstTermDisplayIndex = displayRows.findIndex(row => row.kind === 'term-label')
+        const firstTermRow = firstTermDisplayIndex === -1
+            ? null
+            : container.querySelector<HTMLElement>(`[data-display-index="${firstTermDisplayIndex}"]`)
+        const targetRow = container.querySelector<HTMLElement>(`[data-display-index="${targetDisplayIndex}"]`)
+        if (!firstTermRow || !targetRow) {
+            setPreferredScrollableHeight(undefined)
+            return
+        }
+
+        // Measure using element rects to avoid offsetParent/positioning artifacts.
+        // This keeps the viewport tall enough for the header area plus term rows from newest through the last >= 2000 term.
+        const containerRect = container.getBoundingClientRect()
+        const firstTermRect = firstTermRow.getBoundingClientRect()
+        const targetRect = targetRow.getBoundingClientRect()
+        const headerHeight = Math.max(0, firstTermRect.top - containerRect.top)
+        const termRangeHeight = Math.max(0, targetRect.bottom - firstTermRect.top)
+        const nextHeight = Math.max(220, Math.ceil(headerHeight + termRangeHeight + 1))
+        setPreferredScrollableHeight(previous => (previous === nextHeight ? previous : nextHeight))
+    }, [displayRows])
+
+    return {
+        scrollContainerRef,
+        scrollContainerHeight: preferredScrollableHeight === undefined ? '70vh' : `${preferredScrollableHeight}px`,
+    }
+}
+
 function CongressionalRepresentativesTableRenderer(props: {
     model: CongressionalTableModel
     widthLeftHeader: number
@@ -361,10 +417,22 @@ function CongressionalRepresentativesTableRenderer(props: {
     const colors = useColors()
     const borderColor = colors.textMain
     const panelBackground = colors.slightlyDifferentBackground
+    const { scrollContainerRef, scrollContainerHeight } = useCongressionalTableScrollViewportHeight(props.model.displayRows)
 
     const gridTemplateColumns = `${props.widthLeftHeader}% ${props.model.supercolumns.map((_, i) => `${props.columnWidth + props.extraSpaceRight[i]}%`).join(' ')}`
     return (
-        <div style={{ width: '100%', marginTop: '4px', marginBottom: '4px', borderTop: `1px solid ${borderColor}`, borderBottom: `1px solid ${borderColor}` }}>
+        <div
+            ref={scrollContainerRef}
+            style={{
+                width: '100%',
+                marginTop: '4px',
+                marginBottom: '4px',
+                borderTop: `1px solid ${borderColor}`,
+                borderBottom: `1px solid ${borderColor}`,
+                overflowY: 'auto',
+                height: scrollContainerHeight,
+            }}
+        >
             <div
                 style={{
                     display: 'grid',
