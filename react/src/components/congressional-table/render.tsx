@@ -41,7 +41,7 @@ function RepresentativeParty(props: { party?: string | null }): ReactNode {
 
 function Representative(props: { representative: CongressionalRepresentativeEntry['representative'] }): ReactNode {
     if (props.representative.name === 'Vacant') {
-        return <span className="serif value">(Vacant)</span>
+        return <span>(Vacant)</span>
     }
     assert(
         props.representative.wikipediaPage !== null
@@ -129,8 +129,8 @@ function CongressionalTableTermLabels(props: {
                             borderBottom: displayIndex !== props.displayRows.length - 1,
                             borderRight: true,
                         }),
+                        fontWeight: 500,
                     }}
-                    className="serif value"
                 >
                     {row.kind === 'term-label' ? formatTermLabel(row.termStart) : ''}
                 </div>
@@ -160,8 +160,8 @@ function CongressionalTableColumnHeaders(props: {
                             justifyContent: 'center',
                             backgroundColor: props.panelBackground,
                         }),
+                        fontWeight: 500,
                     }}
-                    className="serif value"
                 >
                     {column.longname}
                 </div>
@@ -197,9 +197,9 @@ function CongressionalTableSectionDistrictHeaders(props: {
                 {props.section.districtHeaders.map((districtHeaderGroup, bucketIndex) => (
                     <div
                         key={bucketIndex}
-                        className="serif value"
                         style={{
                             fontSize: '0.9em',
+                            fontWeight: 500,
                             display: 'flex',
                             flexDirection: 'column',
                             justifyContent: 'flex-end',
@@ -297,9 +297,9 @@ function CongressionalTableRunRows(props: {
                         }}
                     >
                         {displayRun.representatives.length === 0
-                            ? <span className="serif value" style={{ opacity: 0.65 }}>-</span>
+                            ? <span style={{ opacity: 0.65, fontWeight: 500 }}>-</span>
                             : displayRun.representatives.map((representative, representativeIndex) => (
-                                <span key={representativeIndex} className="serif value" style={{ textAlign: 'center' }}>
+                                <span key={representativeIndex} style={{ textAlign: 'center', fontWeight: 500 }}>
                                     <Representative representative={representative} />
                                 </span>
                             ))}
@@ -451,7 +451,7 @@ function normalizeWidths(
         }
         case 'just-data-columns': {
             const newDenom = unnormalizedDataColumnPercents.reduce((a, b) => a + b, 0)
-            const reweightFactor = totalWidth / newDenom
+            const reweightFactor = (totalWidth - unnormalizedTermColumnPercent) / newDenom
             return {
                 normalizedTermColumnPercent: unnormalizedTermColumnPercent,
                 normalizedDataColumnPercents: unnormalizedDataColumnPercents.map(percent => percent * reweightFactor),
@@ -503,8 +503,8 @@ function CongressionalRepresentativesTableActual(props: {
                     borderRight: `1px solid ${borderColor}`,
                     borderBottom: `1px solid ${borderColor}`,
                     backgroundColor: panelBackground,
+                    fontWeight: 500,
                 }}
-                className="serif value"
             >
                 Term
             </div>
@@ -560,9 +560,13 @@ function CongressionalRepresentativesWithScroll(props: {
     const expansionFactor = needsHorizontalScroll ? effectiveColumnCount / maxColumnsBeforeScroll : 1
     const columnSizes = props.model.supercolumns.map((_, columnIndex) => props.columnWidth + props.extraSpaceRight[columnIndex])
     if (isScreenshot) {
-        // put the entire table in, but shrunk down to fit, using a CSS transform.
+        // put the entire table in, but shrunk down to fit, by changing the font sizes
         return (
-            <div style={{ width: `${expansionFactor * 100}%`, transform: `scale(${1 / expansionFactor})`, transformOrigin: 'top left' }}>
+            <div
+                style={{
+                    fontSize: `${100 / expansionFactor}%`,
+                }}
+            >
                 <CongressionalRepresentativesTableActual
                     model={props.model}
                     totalWidthPercent={100}
@@ -591,26 +595,21 @@ function CongressionalRepresentativesWithScroll(props: {
             }}
         >
             <div
+                ref={scrollContainerRef}
                 style={{
                     width: needsHorizontalScroll ? expandedWidth : '100%',
+                    overflowY: 'auto',
+                    height: scrollContainerHeight,
                 }}
             >
-                <div
-                    ref={scrollContainerRef}
-                    style={{
-                        width: '100%',
-                        overflowY: 'auto',
-                        height: scrollContainerHeight,
-                    }}
-                >
-                    <CongressionalRepresentativesTableActual
-                        model={props.model}
-                        totalWidthPercent={totalExpandedPercent}
-                        unnormalizedTermColumnPercent={normalizedTermColumnPercent}
-                        unnormalizedDataColumnPercents={normalizedDataColumnPercents}
-                        normalizeTo="include-header"
-                    />
-                </div>
+                <CongressionalRepresentativesTableActual
+                    model={props.model}
+                    // leave a tiny bit of wiggle room for the scroll bar.
+                    totalWidthPercent={99}
+                    unnormalizedTermColumnPercent={normalizedTermColumnPercent}
+                    unnormalizedDataColumnPercents={normalizedDataColumnPercents}
+                    normalizeTo="include-header"
+                />
             </div>
         </div>
     )
