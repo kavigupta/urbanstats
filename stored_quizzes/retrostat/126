@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2024 Presidential Election",
+      "stat_path": "2024 Presidential Election-margin",
+      "question": "!FULL Which voted more for Harris in the 2024 presidential election?",
+      "longname_a": "Richmond County, New York, USA",
+      "longname_b": "Douglas County, Nebraska, USA",
+      "stat_a": -0.2932365100509814,
+      "stat_b": 0.10168723926603872
+    },
+    "b": {
+      "stat_column": "Arthritis %",
+      "stat_path": "ARTHRITIS_cdc_2",
+      "question": "higher % of adults with arthritis",
+      "longname_a": "LA-01 (2025), USA",
+      "longname_b": "MI-06 (2023), USA",
+      "stat_a": 0.256930132240879,
+      "stat_b": 0.22655020693247144
+    },
+    "a_ease": 0.2699573430834857,
+    "b_ease": 0.6759410801963993
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Educational instruction, and library occupations %",
+      "stat_path": "occupation_educational_instruction,_and_library_occupations",
+      "question": "higher % of workers employed in educational instruction, and library occupations!TOOLTIP teachers, tutors, professors, librarians, and archivists",
+      "longname_a": "Aurora city, Colorado, USA",
+      "longname_b": "Santa Ana city, California, USA",
+      "stat_a": 0.04439234952056013,
+      "stat_b": 0.035431559289290586
+    },
+    "b": {
+      "stat_column": "2015GE 2-Coalition Margin",
+      "stat_path": "2015GE-coalition_margin",
+      "question": "!FULL Which voted more for the left-of-center parties in the 2015 Canadian general election?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "Toronto CDR, Ontario, Canada",
+      "longname_b": "Fraser Valley Regional district, British Columbia, Canada",
+      "stat_a": 0.4729334784542528,
+      "stat_b": 0.1289343093717695
+    },
+    "a_ease": 0.4363193174893358,
+    "b_ease": 0.8366013071895425
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Median Household Income (USD)",
+      "stat_path": "median_household_income",
+      "question": "higher median household income",
+      "longname_a": "Lansing [Urban Area], MI, USA",
+      "longname_b": "Lancaster-Manheim [Urban Area], PA, USA",
+      "stat_a": 64238.0,
+      "stat_b": 82219.0
+    },
+    "b": {
+      "stat_column": "2BR Rent < $750 %",
+      "stat_path": "rent_2br_under_750",
+      "question": "higher % of units with 2br rent under $750",
+      "longname_a": "Temecula-Murrieta-Menifee [Urban Area], CA, USA",
+      "longname_b": "Columbia [Urban Area], SC, USA",
+      "stat_a": 0.03772913613815717,
+      "stat_b": 0.18258523661689455
+    },
+    "a_ease": 0.45460085313833026,
+    "b_ease": 0.863030303030303
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population",
+      "stat_path": "population",
+      "question": "higher population",
+      "longname_a": "Tel Aviv Urban Center, Israel",
+      "longname_b": "London Urban Center, United Kingdom",
+      "stat_a": 2798244.482222029,
+      "stat_b": 10422328.067045625
+    },
+    "b": {
+      "stat_column": "Private Insurance %",
+      "stat_path": "insurance_coverage_private",
+      "question": "higher % of people who are on private insurance!TOOLTIP The denominator for this statistic is the the total number of adults, including those without health insurance coverage.",
+      "longname_a": "TX-06 (2023), USA",
+      "longname_b": "UT-03 (2023), USA",
+      "stat_a": 0.6602661872901382,
+      "stat_b": 0.809106809307583
+    },
+    "a_ease": 0.897510133178923,
+    "b_ease": 0.4863925883034163
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Poverty %",
+      "stat_path": "poverty_below_line",
+      "question": "higher % of people who are in poverty",
+      "longname_a": "Atlantic City-Ocean City-Villas [Urban Area], NJ, USA",
+      "longname_b": "The Woodlands-Conroe [Urban Area], TX, USA",
+      "stat_a": 0.13815238027919985,
+      "stat_b": 0.07181199451971848
+    },
+    "b": {
+      "stat_column": "Obesity %",
+      "stat_path": "OBESITY_cdc_2",
+      "question": "higher % of adults with obesity",
+      "longname_a": "CA-19 (2023), USA",
+      "longname_b": "AL-06 (2025), USA",
+      "stat_a": 0.23244577536100067,
+      "stat_b": 0.3619912699146511
+    },
+    "a_ease": 0.5376432078559739,
+    "b_ease": 0.9395424836601307
+  }
+]
