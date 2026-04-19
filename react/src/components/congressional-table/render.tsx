@@ -227,15 +227,21 @@ function CongressionalTableSectionDistrictHeader(props: {
         }
         cleanToLong.get(clean)!.push(longname)
     })
-    return [...cleanToLong.entries()].map(([districtHeader, longnames], headerIndex) => (
-        <a
-            key={headerIndex}
-            {...districtArticleHref(nav, longnames)}
-            style={{ textDecoration: 'none', color: 'inherit' }}
-        >
-            {districtHeader}
-        </a>
-    ))
+    return (
+        <span style={{ whiteSpace: 'normal' }}>
+            {[...cleanToLong.entries()].map(([districtHeader, longnames], headerIndex) => (
+                <Fragment key={headerIndex}>
+                    {headerIndex > 0 && ' / '}
+                    <a
+                        {...districtArticleHref(nav, longnames)}
+                        style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
+                        {districtHeader}
+                    </a>
+                </Fragment>
+            ))}
+        </span>
+    )
 }
 
 function CongressionalTableRunRows(props: {
