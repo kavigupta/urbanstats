@@ -29,6 +29,20 @@ function entryCoversTerm(entry: CongressionalRepresentativeEntry, termStart: num
     return entry.startTerm <= termStart && entry.endTerm >= termStart
 }
 
+export function subsetEntryToTerms(entry: CongressionalRepresentativeEntry, termStarts: number[]): CongressionalRepresentativeEntry[] {
+    if (termStarts.length === 0) {
+        return []
+    }
+    assert(entry.startTerm !== undefined && entry.endTerm !== undefined, 'Entry must have defined startTerm and endTerm')
+    const minStart = Math.min(...termStarts)
+    const maxStart = Math.max(...termStarts)
+    if (entry.endTerm < minStart || entry.startTerm > maxStart) {
+        return []
+    }
+    const newEntry = { ...entry, startTerm: Math.max(entry.startTerm, minStart), endTerm: Math.min(entry.endTerm, maxStart) }
+    return [newEntry]
+}
+
 function districtLabel(entry: CongressionalRepresentativeEntry): string {
     return entry.districtLongname ?? 'District unknown'
 }

@@ -7,7 +7,7 @@ import { useSelectedYears } from '../../page_template/statistic-settings'
 import { assert } from '../../utils/defensive'
 import { useScreenshotMode } from '../screenshot'
 
-import { cleanDistrictLabel, computeCongressionalWidgetModel, CongressionalRegionData } from './compute-model'
+import { cleanDistrictLabel, computeCongressionalWidgetModel, CongressionalRegionData, subsetEntryToTerms } from './compute-model'
 import {
     CongressionalRepresentativeEntry,
     CongressionalDisplayRow,
@@ -374,15 +374,50 @@ function bankersDecadeForYear(year: number): number {
     return sign * (q % 2 === 0 ? lowerTen : upperTen)
 }
 
-function useCongressionalTableScrollViewportHeight(displayRows: CongressionalDisplayRow[]): {
+function useCongressionalTableScrollViewportHeight(regions: CongressionalRegionData[]): {
     scrollContainerRef: React.RefObject<HTMLDivElement>
     scrollContainerHeight: CSSProperties['height']
+    visibleTerms: number[]
 } {
     const scrollContainerRef = React.useRef<HTMLDivElement>(null)
     const [preferredScrollableHeight, setPreferredScrollableHeight] = React.useState<number | undefined>(undefined)
+    const [visibleTerms, setVisibleTerms] = React.useState<number[]>([])
     const years = useSelectedYears()
     const minDecade = years.length > 0 ? Math.min(...years) : 2020
     const maxDecade = years.length > 0 ? Math.max(...years) : 2020
+    const displayRows = useMemo(() => computeCongressionalWidgetModel(regions).displayRows, [regions])
+    const termRows = React.useMemo(
+        () => {
+            return displayRows.flatMap((row, displayIndex) =>
+                row.kind === 'term-label'
+                    ? [{ displayIndex, termStart: row.termStart }]
+                    : [],
+            )
+        },
+        [displayRows],
+    )
+
+    const updateVisibleTerms = React.useCallback(() => {
+        const container = scrollContainerRef.current
+        if (!container) {
+            setVisibleTerms([])
+            return
+        }
+        const containerRect = container.getBoundingClientRect()
+        const nextVisibleTerms = termRows.flatMap(({ displayIndex, termStart }) => {
+            const rowElement = container.querySelector<HTMLElement>(`[data-display-index="${displayIndex}"]`)
+            if (!rowElement) {
+                return []
+            }
+            const rowRect = rowElement.getBoundingClientRect()
+            const visibleTop = Math.max(rowRect.top, containerRect.top)
+            const visibleBottom = Math.min(rowRect.bottom, containerRect.bottom)
+            const visibleHeight = Math.max(0, visibleBottom - visibleTop)
+            const rowHeight = rowRect.height
+            return rowHeight > 0 && visibleHeight / rowHeight >= 0.5 ? [termStart] : []
+        })
+        setVisibleTerms(nextVisibleTerms)
+    }, [termRows])
 
     React.useLayoutEffect(() => {
         const container = scrollContainerRef.current
@@ -429,11 +464,32 @@ function useCongressionalTableScrollViewportHeight(displayRows: CongressionalDis
         const horizontalScrollbarHeight = Math.max(0, container.offsetHeight - container.clientHeight)
         const nextHeight = Math.max(220, Math.ceil(headerHeight + termRangeHeight + horizontalScrollbarHeight + 1))
         setPreferredScrollableHeight(previous => (previous === nextHeight ? previous : nextHeight))
-    }, [displayRows, minDecade, maxDecade])
+        updateVisibleTerms()
+    }, [displayRows, minDecade, maxDecade, updateVisibleTerms])
+
+    React.useEffect(() => {
+        const container = scrollContainerRef.current
+        if (!container) {
+            return
+        }
+        const resizeObserver = new ResizeObserver(() => {
+            updateVisibleTerms()
+        })
+        resizeObserver.observe(container)
+        container.addEventListener('scroll', updateVisibleTerms)
+        window.addEventListener('resize', updateVisibleTerms)
+        updateVisibleTerms()
+        return () => {
+            resizeObserver.disconnect()
+            container.removeEventListener('scroll', updateVisibleTerms)
+            window.removeEventListener('resize', updateVisibleTerms)
+        }
+    }, [updateVisibleTerms])
 
     return {
         scrollContainerRef,
         scrollContainerHeight: preferredScrollableHeight === undefined ? '70vh' : `${preferredScrollableHeight}px`,
+        visibleTerms,
     }
 }
 
@@ -551,17 +607,31 @@ function numEffectiveColumns(model: CongressionalTableModel): number {
 }
 
 function CongressionalRepresentativesWithScroll(props: {
-    model: CongressionalTableModel
+    regions: CongressionalRegionData[]
     widthLeftHeader: number
     columnWidth: number
     extraSpaceRight: number[]
 }): ReactNode {
-    const { scrollContainerRef, scrollContainerHeight } = useCongressionalTableScrollViewportHeight(props.model.displayRows)
     const isScreenshot = useScreenshotMode()
-    const effectiveColumnCount = numEffectiveColumns(props.model)
+    const { scrollContainerRef, scrollContainerHeight, visibleTerms } = useCongressionalTableScrollViewportHeight(props.regions)
+    const model = useMemo(
+        () => {
+            let regionsToUse = props.regions
+            if (isScreenshot) {
+                // filter for the ones previously visible
+                regionsToUse = props.regions.map(region => ({
+                    ...region,
+                    representatives: region.representatives.flatMap(representative => subsetEntryToTerms(representative, visibleTerms)),
+                }))
+            }
+            return computeCongressionalWidgetModel(regionsToUse)
+        },
+        [props.regions, visibleTerms, isScreenshot],
+    )
+    const effectiveColumnCount = numEffectiveColumns(model)
     const needsHorizontalScroll = effectiveColumnCount > maxColumnsBeforeScroll
     const expansionFactor = needsHorizontalScroll ? effectiveColumnCount / maxColumnsBeforeScroll : 1
-    const columnSizes = props.model.supercolumns.map((_, columnIndex) => props.columnWidth + props.extraSpaceRight[columnIndex])
+    const columnSizes = model.supercolumns.map((_, columnIndex) => props.columnWidth + props.extraSpaceRight[columnIndex])
     if (isScreenshot) {
         // put the entire table in, but shrunk down to fit, by changing the font sizes
         return (
@@ -571,7 +641,7 @@ function CongressionalRepresentativesWithScroll(props: {
                 }}
             >
                 <CongressionalRepresentativesTableActual
-                    model={props.model}
+                    model={model}
                     totalWidthPercent={100}
                     unnormalizedTermColumnPercent={props.widthLeftHeader}
                     unnormalizedDataColumnPercents={columnSizes}
@@ -582,7 +652,7 @@ function CongressionalRepresentativesWithScroll(props: {
     }
     const totalExpandedPercent = props.widthLeftHeader + expansionFactor * (100 - props.widthLeftHeader)
     const normalizedTermColumnPercent = props.widthLeftHeader / totalExpandedPercent * 100
-    const normalizedDataColumnPercents = props.model.supercolumns.map((_, i) => {
+    const normalizedDataColumnPercents = model.supercolumns.map((_, i) => {
         const basePercent = props.columnWidth + props.extraSpaceRight[i]
         return expansionFactor * basePercent / totalExpandedPercent * 100
     })
@@ -609,7 +679,7 @@ function CongressionalRepresentativesWithScroll(props: {
                 }}
             >
                 <CongressionalRepresentativesTableActual
-                    model={props.model}
+                    model={model}
                     // leave a tiny bit of wiggle room for the scroll bar.
                     totalWidthPercent={99}
                     unnormalizedTermColumnPercent={normalizedTermColumnPercent}
@@ -628,14 +698,9 @@ export function CongressionalRepresentativesWidget(props: {
     extraSpaceRight: number[]
 }): ReactNode {
     assert(props.regions.length > 0, 'CongressionalRepresentativesWidget requires at least one region')
-    const model = useMemo(
-        () => computeCongressionalWidgetModel(props.regions),
-        [props.regions],
-    )
-
     return (
         <CongressionalRepresentativesWithScroll
-            model={model}
+            regions={props.regions}
             widthLeftHeader={props.widthLeftHeader}
             columnWidth={props.columnWidth}
             extraSpaceRight={props.extraSpaceRight}
