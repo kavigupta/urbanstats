@@ -433,7 +433,7 @@ function useCongressionalTableScrollViewportHeight(displayRows: CongressionalDis
     }
 }
 
-function CongressionalRepresentativesTableRenderer(props: {
+function CongressionalRepresentativesWithScroll(props: {
     model: CongressionalTableModel
     widthLeftHeader: number
     columnWidth: number
@@ -553,7 +553,7 @@ export function CongressionalRepresentativesWidget(props: {
     )
 
     return (
-        <CongressionalRepresentativesTableRenderer
+        <CongressionalRepresentativesWithScroll
             model={model}
             widthLeftHeader={props.widthLeftHeader}
             columnWidth={props.columnWidth}
