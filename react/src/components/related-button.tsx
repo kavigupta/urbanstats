@@ -101,7 +101,7 @@ function Label(props: { checkId: string, children: ReactNode, fontWeight: number
 
 const maxRegions = 10
 
-function ExpandButton(props: { rowType: string, expanded: boolean, onToggle: () => void }): ReactNode {
+function ExpandButton(props: { rowType: string, expanded: boolean, onToggle: () => void, description: string }): ReactNode {
     const colors = useColors()
     // Want to maintain vertical position relative to the button
     const scrollAdjustRef = useRef<{ element: Element, top: number } | null>(null)
@@ -122,7 +122,7 @@ function ExpandButton(props: { rowType: string, expanded: boolean, onToggle: () 
 
     return (
         <RelatedButtonLayout
-            {...withButtonRole(props.expanded ? 'Collapse' : 'Expand', handleToggle)}
+            {...withButtonRole(`${props.expanded ? 'Collapse' : 'Expand'} ${props.description}`, handleToggle)}
             rowType={props.rowType}
             style={{
                 cursor: 'pointer',
@@ -218,6 +218,7 @@ function RelationshipGroup(props: {
                     rowType={props.regions[0].rowType}
                     expanded={expanded}
                     onToggle={() => { setExpanded(e => !e) }}
+                    description={displayName(props.relationshipType)}
                 />
             )}
         </ul>
