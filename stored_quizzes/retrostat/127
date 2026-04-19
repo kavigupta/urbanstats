@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Poverty %",
+      "stat_path": "poverty_below_line",
+      "question": "higher % of people who are in poverty",
+      "longname_a": "Tallahassee MSA, FL, USA",
+      "longname_b": "Lancaster MSA, PA, USA",
+      "stat_a": 0.18707754139471522,
+      "stat_b": 0.08597996554489531
+    },
+    "b": {
+      "stat_column": "Hindu % [StatCan]",
+      "stat_path": "religion_hindu_canada",
+      "question": "higher % of people who are Hindu",
+      "longname_a": "Hamilton CMA, ON, Canada",
+      "longname_b": "Calgary CMA, AB, Canada",
+      "stat_a": 0.01537258146886373,
+      "stat_b": 0.02095078834209269
+    },
+    "a_ease": 0.6927175843694494,
+    "b_ease": 0.2683801554094441
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2012 Presidential Election",
+      "stat_path": "2012 Presidential Election-margin",
+      "question": "!FULL Which voted more for Obama in the 2012 presidential election?",
+      "longname_a": "Memphis MSA, TN-MS-AR, USA",
+      "longname_b": "Vallejo-Fairfield MSA, CA, USA",
+      "stat_a": 0.12526516417983727,
+      "stat_b": 0.280453216901813
+    },
+    "b": {
+      "stat_column": "Racial Homogeneity Change (2000-2020) %",
+      "stat_path": "homogeneity_250_diff_2000",
+      "question": "!FULL Which diversified less between 2000 and 2020?!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "CA-39 (2023), USA",
+      "longname_b": "MA-02 (2023), USA",
+      "stat_a": 0.07301688469946765,
+      "stat_b": -0.18864620993482029
+    },
+    "a_ease": 0.7584233947870311,
+    "b_ease": 0.34655172413793106
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Public School",
+      "stat_path": "mean_dist_Public School_updated",
+      "question": "!FULL Which has less access to public schools (higher population-weighted mean distance)?",
+      "longname_a": "Roanoke-Lynchburg VA Media Market, USA",
+      "longname_b": "Laredo TX Media Market, USA",
+      "stat_a": 3.0908457800850035,
+      "stat_b": 0.8582846335267524
+    },
+    "b": {
+      "stat_column": "2008-2012 Swing",
+      "stat_path": "2008-2012 Swing-margin",
+      "question": "!FULL Which swung less towards Republicans from 2008 to 2012?",
+      "longname_a": "Hickory-Lenoir-Morganton MSA, NC, USA",
+      "longname_b": "Atlantic City-Hammonton MSA, NJ, USA",
+      "stat_a": -0.050759678975329126,
+      "stat_b": 0.021176413313144182
+    },
+    "a_ease": 0.2612074118350269,
+    "b_ease": 0.7087033747779752
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Independent living disability %",
+      "stat_path": "INDEPLIVE_cdc_2",
+      "question": "higher % of adults with an independent living disability",
+      "longname_a": "Stockton city, California, USA",
+      "longname_b": "Gilbert town, Arizona, USA",
+      "stat_a": 0.0952980441615703,
+      "stat_b": 0.04798127102592364
+    },
+    "b": {
+      "stat_column": "Diagnosed diabetes %",
+      "stat_path": "DIABETES_cdc_2",
+      "question": "higher % of adults with diagnosed diabetes",
+      "longname_a": "Jefferson County, Texas, USA",
+      "longname_b": "Dane County, Wisconsin, USA",
+      "stat_a": 0.13497989837133487,
+      "stat_b": 0.06253301011285647
+    },
+    "a_ease": 0.34517465956187093,
+    "b_ease": 0.7675675675675676
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Public Insurance %",
+      "stat_path": "insurance_coverage_govt",
+      "question": "higher % of people who are on public insurance!TOOLTIP The denominator for this statistic is the the total number of adults, including those without health insurance coverage.",
+      "longname_a": "Salt Lake City MSA, UT, USA",
+      "longname_b": "Salisbury MSA, MD-DE, USA",
+      "stat_a": 0.07865009320318826,
+      "stat_b": 0.2438047188010091
+    },
+    "b": {
+      "stat_column": "Racial Homogeneity Change (2010-2020) %",
+      "stat_path": "homogeneity_250_diff_2010",
+      "question": "!FULL Which diversified less between 2010 and 2020?!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "Clarksburg-Weston WV Media Market, USA",
+      "longname_b": "Bakersfield CA Media Market, USA",
+      "stat_a": -0.057352056337291346,
+      "stat_b": -0.013460208532097617
+    },
+    "a_ease": 0.6422413793103449,
+    "b_ease": 0.21869040050858232
+  }
+]
