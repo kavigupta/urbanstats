@@ -374,9 +374,9 @@ function bankersDecadeForYear(year: number): number {
     return sign * (q % 2 === 0 ? lowerTen : upperTen)
 }
 
-function useCongressionalTableScrollViewportHeight(regions: CongressionalRegionData[]): {
+function useTableDisplayInfo(regions: CongressionalRegionData[]): {
     scrollContainerRef: React.RefObject<HTMLDivElement>
-    scrollContainerHeight: CSSProperties['height']
+    preferredScrollableHeight: number
     visibleTerms: number[]
 } {
     const scrollContainerRef = React.useRef<HTMLDivElement>(null)
@@ -488,9 +488,57 @@ function useCongressionalTableScrollViewportHeight(regions: CongressionalRegionD
 
     return {
         scrollContainerRef,
-        scrollContainerHeight: preferredScrollableHeight === undefined ? '70vh' : `${preferredScrollableHeight}px`,
+        preferredScrollableHeight: preferredScrollableHeight ?? 500,
         visibleTerms,
     }
+}
+
+function useRestorepreferredScrollableHeightAfterScreenshot(props: {
+    isScreenshot: boolean
+    scrollContainerRef: React.RefObject<HTMLDivElement | null>
+    preferredScrollableHeight: number
+}): { scrollableHeight: number } {
+    const lastNonScreenshotHeightPxRef = React.useRef<number | undefined>(undefined)
+    const wasScreenshotRef = React.useRef<boolean>(props.isScreenshot)
+    const [scrollableHeight, setscrollableHeight] = React.useState<number | undefined>(undefined)
+
+    React.useLayoutEffect(() => {
+        if (props.isScreenshot) {
+            const container = props.scrollContainerRef.current
+            if (container) {
+                lastNonScreenshotHeightPxRef.current = Math.ceil(container.getBoundingClientRect().height)
+            }
+        }
+        else if (wasScreenshotRef.current) {
+            setscrollableHeight(lastNonScreenshotHeightPxRef.current)
+        }
+        wasScreenshotRef.current = props.isScreenshot
+    }, [props.isScreenshot, props.scrollContainerRef])
+
+    React.useLayoutEffect(() => {
+        if (props.isScreenshot) {
+            return
+        }
+        const container = props.scrollContainerRef.current
+        if (!container) {
+            return
+        }
+        const updateHeight = (): void => {
+            lastNonScreenshotHeightPxRef.current = Math.ceil(container.getBoundingClientRect().height)
+        }
+        updateHeight()
+        const resizeObserver = new ResizeObserver(updateHeight)
+        resizeObserver.observe(container)
+        container.addEventListener('scroll', updateHeight)
+        window.addEventListener('resize', updateHeight)
+        return () => {
+            resizeObserver.disconnect()
+            container.removeEventListener('scroll', updateHeight)
+            window.removeEventListener('resize', updateHeight)
+        }
+    }, [props.isScreenshot, props.preferredScrollableHeight, props.scrollContainerRef])
+
+    return { scrollableHeight: scrollableHeight ?? props.preferredScrollableHeight }
 }
 
 function normalizeWidths(
@@ -613,7 +661,13 @@ function CongressionalRepresentativesWithScroll(props: {
     extraSpaceRight: number[]
 }): ReactNode {
     const isScreenshot = useScreenshotMode()
-    const { scrollContainerRef, scrollContainerHeight, visibleTerms } = useCongressionalTableScrollViewportHeight(props.regions)
+    const { scrollContainerRef, preferredScrollableHeight, visibleTerms } = useTableDisplayInfo(props.regions)
+    const { scrollableHeight } = useRestorepreferredScrollableHeightAfterScreenshot({
+        isScreenshot,
+        scrollContainerRef,
+        preferredScrollableHeight,
+    })
+
     const model = useMemo(
         () => {
             let regionsToUse = props.regions
@@ -668,7 +722,7 @@ function CongressionalRepresentativesWithScroll(props: {
                 resize: 'vertical',
                 overflowX: needsHorizontalScroll ? 'auto' : 'visible',
                 overflowY: 'auto',
-                height: scrollContainerHeight,
+                height: `${scrollableHeight}px`,
                 minHeight: '220px',
                 boxSizing: 'border-box',
             }}
