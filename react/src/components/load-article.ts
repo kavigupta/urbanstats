@@ -35,16 +35,18 @@ export type StatCol = (typeof stats)[number]
 
 export interface FirstLastStatus { isFirst: boolean, isLast: boolean }
 
+interface MetadataStatValCongressional {
+    representative: ICongressionalRepresentative
+    districtLongname: string
+    startTerm: number
+    endTerm: number
+}
+
 export type MetadataStatValue = (
     string
     | {
         kind: 'congressional'
-        representatives: {
-            representative: ICongressionalRepresentative
-            districtLongname?: string
-            startTerm?: number
-            endTerm?: number
-        }[]
+        representatives: MetadataStatValCongressional[]
     }
 )
 
@@ -149,30 +151,36 @@ function metadataValueFromProto(
             const districtLongnameForPointer = (
                 pointer: ICongressionalRepresentativePointer,
                 representative: ICongressionalRepresentative,
-            ): string | undefined => {
+            ): string => {
                 const termIn = (representative.termIn ?? []) as { startYear?: number | null, districtIdx?: number | null }[]
                 const pointerStartTerm = pointer.startTerm
                 const matchingTerm = pointerStartTerm !== undefined && pointerStartTerm !== null
                     ? termIn.find(term => term.startYear === pointerStartTerm)
                     : termIn[0]
                 const districtIdx = matchingTerm?.districtIdx
-                if (districtIdx === undefined || districtIdx === null) {
-                    return undefined
-                }
-                const districts = representativeTable.districts as { longname?: string | null }[]
-                return districts[districtIdx]?.longname ?? undefined
+                assert(districtIdx !== undefined && districtIdx !== null, 'representative pointer is missing district index')
+                const districts = representativeTable.districts
+                const district = districts[districtIdx]
+                assert(district.longname !== undefined && district.longname !== null, 'district is missing longname')
+                return district.longname
             }
 
             return {
                 kind: 'congressional',
                 representatives: representativeIndices.map((ptr) => {
-                    const representative = representativeTable.representatives[ptr.representativeIdx!]
+                    assert(
+                        ptr.representativeIdx !== undefined && ptr.representativeIdx !== null
+                        && ptr.startTerm !== undefined && ptr.startTerm !== null
+                        && ptr.endTerm !== undefined && ptr.endTerm !== null,
+                        'representative pointer is missing required fields',
+                    )
+                    const representative = representativeTable.representatives[ptr.representativeIdx]
                     return {
                         representative,
                         districtLongname: districtLongnameForPointer(ptr, representative),
-                        startTerm: ptr.startTerm ?? undefined,
-                        endTerm: ptr.endTerm ?? undefined,
-                    }
+                        startTerm: ptr.startTerm,
+                        endTerm: ptr.endTerm,
+                    } satisfies MetadataStatValCongressional
                 }),
             }
         }
