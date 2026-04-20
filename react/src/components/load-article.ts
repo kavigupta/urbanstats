@@ -82,11 +82,6 @@ export interface MetadataArticleRow {
 
 export type ArticleRow = ArticleStatisticRow | MetadataArticleRow
 
-export function isCongressionalRepresentativesMetadataRow(row: ArticleRow): boolean {
-    const congressionalRepresentativesMetadataStatPath: StatPath = 'metadata_show_metadata_representatives'
-    return row.kind === 'metadata' && row.statpath === congressionalRepresentativesMetadataStatPath
-}
-
 const dataCreditExplanationPageByMetadataIndex = new Map<number, string>(
     metadata.displayed_metadata.map(e => [e.index, e.data_credit_explanation_page]),
 )
