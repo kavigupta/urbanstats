@@ -328,10 +328,10 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
     })
 }
 
-let representativeTableCache: Promise<CongressionalRepresentativeTable> | undefined = undefined
-function getRepresentativeTable(): Promise<CongressionalRepresentativeTable> {
+let representativeTableCache: CongressionalRepresentativeTable | undefined = undefined
+async function getRepresentativeTable(): Promise<CongressionalRepresentativeTable> {
     if (!representativeTableCache) {
-        representativeTableCache = loadProtobuf('/index/representatives.gz', 'CongressionalRepresentativeTable')
+        representativeTableCache = await loadProtobuf('/index/representatives.gz', 'CongressionalRepresentativeTable')
     }
     return representativeTableCache
 }
