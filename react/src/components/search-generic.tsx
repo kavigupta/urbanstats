@@ -18,6 +18,7 @@ export function GenericSearchBox<T>(
         style: CSSProperties | string
         renderMatch: (currentMatch: () => T, onMouseOver: () => void, onClick: () => void, style: CSSProperties, dataTestId: string | undefined) => ReactElement
         allowEmptyQuery?: boolean
+        loadingStatus?: string
     }): ReactElement {
     const colors = useColors()
 

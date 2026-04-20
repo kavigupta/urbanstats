@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactElement, ReactNode, useCallback, useMemo, useRef } from 'react'
+import React, { CSSProperties, ReactElement, ReactNode, useCallback, useMemo, useRef, useState } from 'react'
 
 import type_ordering_idx from '../data/type_ordering_idx'
 import universes_ordered from '../data/universes_ordered'
@@ -8,12 +8,15 @@ import { useColors } from '../page_template/colors'
 import { useSettings } from '../page_template/settings'
 import '../common.css'
 import { SearchResult, SearchParams, getIndexCacheKey, SearchIndexConfig } from '../search'
+import { SearchWorkerInputMessage, SearchWorkerOutputMessage, SearchWorkerStatus } from '../searchWorker'
 import { Universe, useUniverse } from '../universe'
 import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
 import { debugPerformance } from '../utils/search-performance'
 
 import { GenericSearchBox } from './search-generic'
+
+const defaultWorkerStatusProperty = new Property<SearchWorkerStatus>({ status: 'ready' })
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void
@@ -35,10 +38,14 @@ export function SearchBox(props: {
     const searchWorker = useRef<SearchWorker | undefined>()
     const searchWorkerConfig = useRef<AsyncConfig | undefined>()
 
+    const [workerStatusProperty, setWorkerStatusProperty] = useState(defaultWorkerStatusProperty)
+    const workerStatus = workerStatusProperty.use()
+
     const createSearchWorkerIfNeeded = useCallback(() => {
         if (searchWorker.current === undefined || searchWorkerConfig.current?.cacheKeyPromise !== cacheKeyPromise || searchWorkerConfig.current.statsUniverse !== statsUniverse) {
             searchWorker.current = createSearchWorker({ cacheKeyPromise, statsUniverse })
             searchWorkerConfig.current = { cacheKeyPromise, statsUniverse }
+            setWorkerStatusProperty(searchWorker.current.status)
         }
     }, [cacheKeyPromise, statsUniverse])
 
@@ -49,7 +56,7 @@ export function SearchBox(props: {
             }
             createSearchWorkerIfNeeded()
             TestUtils.shared.startLoading('doSearch')
-            const result = await searchWorker.current!({
+            const result = await searchWorker.current!.executeSearch({
                 unnormalizedPattern: sq,
                 maxResults: 10,
                 showSettings,
@@ -105,12 +112,14 @@ export function SearchBox(props: {
             }}
             onBlur={() => {
                 searchWorker.current = undefined
+                setWorkerStatusProperty(defaultWorkerStatusProperty)
             }}
             onTextPresenceChange={props.onTextPresenceChange}
             autoFocus={props.autoFocus}
             placeholder={props.placeholder}
             style={props.style}
             renderMatch={renderMatch}
+            loadingStatus={workerStatus.status !== 'ready' ? workerStatus.message : undefined}
         />
     )
 }
@@ -129,26 +138,37 @@ const workerTerminatorRegistry = new FinalizationRegistry<Worker>((worker) => { 
 
 interface SearchWorker {
     executeSearch: (params: SearchParams) => Promise<SearchResult[]>
-    status: Property<{ status: 'ready' } | { status: 'loading', message: string }>
+    status: Property<SearchWorkerStatus>
 }
 
 type AsyncConfig = Omit<SearchIndexConfig, 'cacheKey'> & { cacheKeyPromise: Promise<string | undefined> }
 
 function createSearchWorker(config: AsyncConfig): SearchWorker {
     const worker = new Worker(new URL('../searchWorker', import.meta.url))
-    const configured = config.cacheKeyPromise.then((cacheKey) => { worker.postMessage({ ...config, cacheKeyPromise: undefined, cacheKey }) })
+    const { cacheKeyPromise, ...configWithoutPromise } = config
+    const configured = cacheKeyPromise.then((cacheKey) => { worker.postMessage({ type: 'configure', config: { ...configWithoutPromise, cacheKey } } satisfies SearchWorkerInputMessage) })
     debugPerformance(`Requested new search worker at timestamp ${Date.now()}`)
     const messageQueue: ((results: SearchResult[]) => void)[] = []
-    worker.addEventListener('message', (message: MessageEvent<SearchResult[]>) => {
-        messageQueue.shift()!(message.data)
-    })
-    const result: SearchWorker = async (params) => {
-        await configured
-        worker.postMessage(params)
-        return new Promise((resolve) => {
-            messageQueue.push(resolve)
-        })
+    const result: SearchWorker = {
+        executeSearch: async (params) => {
+            await configured
+            worker.postMessage({ type: 'search', params } satisfies SearchWorkerInputMessage)
+            return new Promise((resolve) => {
+                messageQueue.push(resolve)
+            })
+        },
+        status: new Property({ status: 'loading', message: 'Not yet initialized' }),
     }
+    worker.addEventListener('message', (message: MessageEvent<SearchWorkerOutputMessage>) => {
+        switch (message.data.type) {
+            case 'result':
+                messageQueue.shift()!(message.data.results)
+                break
+            case 'status':
+                result.status.value = message.data.status
+                break
+        }
+    })
     workerTerminatorRegistry.register(result, worker)
     return result
 }
