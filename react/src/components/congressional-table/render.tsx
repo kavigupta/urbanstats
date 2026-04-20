@@ -807,6 +807,7 @@ function CongressionalRepresentativesWithScroll(props: {
 
     return (
         <div
+            id="congressional-representatives-scroll-view"
             ref={scrollContainerRef}
             style={{
                 width: '100%',
