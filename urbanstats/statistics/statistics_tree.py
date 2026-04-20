@@ -460,6 +460,28 @@ def geographic_ids_metadata_category():
     }
 
 
+def congressional_representatives_metadata_group():
+    metadata = export_metadata_types()
+    [entry] = [
+        entry
+        for entry in metadata["displayed_metadata"]
+        if entry["setting_key"] == "show_metadata_representatives"
+    ]
+    source = MetadataMultiSource(
+        by_source={
+            None: get_statistic_column_path("metadata_show_metadata_representatives")
+        },
+        metadata_index=entry["index"],
+        metadata_path=get_statistic_column_path(
+            "metadata_show_metadata_representatives"
+        ),
+        metadata_value_type="string",
+        metadata_name="Congressional Representatives",
+    )
+
+    return StatisticGroup({None: [source]}, group_name="Congressional Representatives")
+
+
 statistics_tree = StatisticTree(
     {
         "main": StatisticCategory(
@@ -935,6 +957,7 @@ statistics_tree = StatisticTree(
                     },
                     group_name="Canadian GE: PPC",
                 ),
+                "metadata_show_metadata_congressional_representatives": congressional_representatives_metadata_group(),
             },
         ),
         **just_2020_category(
