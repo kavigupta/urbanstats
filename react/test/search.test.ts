@@ -73,6 +73,20 @@ test('tab tab type', async (t) => {
     await t.pressKey('a')
 })
 
+test('search results hidden on blur and shown on refocus', async (t) => {
+    await t
+        .click(searchField)
+        .typeText(searchField, 'Pasadena')
+    await waitForSelectedSearchResult(t)
+    await t.expect(Selector('[data-test-id=selected-search-result]').exists).ok()
+    // Click outside the search field to blur it
+    await t.click(Selector('body'), { offsetX: 10, offsetY: 10 })
+    await t.expect(Selector('[data-test-id=selected-search-result]').exists).notOk()
+    // Refocus the search field
+    await t.click(searchField)
+    await t.expect(Selector('[data-test-id=selected-search-result]').exists).ok()
+})
+
 test('control click search result to open in new tab', async (t) => {
     await t
         .click(searchField)

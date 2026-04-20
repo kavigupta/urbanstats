@@ -2,7 +2,7 @@ import { ClientFunction, Selector } from 'testcafe'
 
 import { nthEditor, typeInEditor } from './editor_test_utils'
 import { checkSelector, getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { checkTextboxesDirect, downloadImage, getLocation, mapper, screencap, target, urbanstatsFixture, waitForLoading, withHamburgerMenu } from './test_utils'
+import { checkTextboxesDirect, downloadImage, dragHandle, getLocation, mapper, screencap, target, urbanstatsFixture, waitForLoading, withHamburgerMenu } from './test_utils'
 
 urbanstatsFixture('mapper default', `${target}/mapper.html`)
 
@@ -402,4 +402,14 @@ mapper(() => test)('preamble checkbox stays checked when preamble is cleared', {
     // Undo should not unexpectedly uncheck the preamble
     await t.pressKey('ctrl+z')
     await t.expect(preamble.checked).ok()
+})
+
+mapper(() => test)('autoux reorder insets', { universe: 'USA', code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    await t.click(checkSelector(/Insets/))
+    await t.scrollIntoView(dragHandle(4))
+    await t.dragToElement(dragHandle(0), dragHandle(4))
+    const insets = ClientFunction(() => Array.from(document.querySelectorAll('[id^="auto-ux-editor-ro_insets_pos_0_el_"]:not([inert] *) input[type="text"]')).map(input => (input as HTMLInputElement).value))
+    await t.expect(insets()).eql(['Guam', 'Puerto Rico + USVI', 'Hawaii', 'Alaska', 'Continental USA'])
+    await t.dragToElement(dragHandle(3), dragHandle(2))
+    await t.expect(insets()).eql(['Guam', 'Puerto Rico + USVI', 'Alaska', 'Hawaii', 'Continental USA'])
 })

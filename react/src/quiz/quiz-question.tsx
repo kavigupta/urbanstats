@@ -8,6 +8,7 @@ import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 import { CommonMaplibreMap, CustomAttributionControlComponent, PolygonFeatureCollection, polygonFeatureCollection, useZoomFirstFeature } from '../components/map-common'
 import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
+import { withButtonRole } from '../utils/a11y'
 import { notWaiting, waiting } from '../utils/promiseStream'
 import { useMobileLayout } from '../utils/responsive'
 
@@ -125,7 +126,7 @@ function QuizQuestion(props: QuizQuestionProps & {
             <div className="gap"></div>
             <div style={rowStyle}>
                 <div style={{ width: '50%', padding: '0.5em' }}>
-                    <div role="button" id="quiz-answer-button-a" className={buttonA} onClick={() => { props.onSelect('A') }} style={buttonStyle}>
+                    <div {...withButtonRole(`Select ${props.getOption('a')}`, () => { props.onSelect('A') })} id="quiz-answer-button-a" className={buttonA} style={buttonStyle}>
                         <span style={{ margin: 'auto' }}>
                             <div className={`centered_text ${quizTextCSS}`}>
                                 {props.getOption('a')}
@@ -134,7 +135,7 @@ function QuizQuestion(props: QuizQuestionProps & {
                     </div>
                 </div>
                 <div style={{ width: '50%', padding: '0.5em' }}>
-                    <div role="button" id="quiz-answer-button-b" className={buttonB} onClick={() => { props.onSelect('B') }} style={buttonStyle}>
+                    <div {...withButtonRole(`Select ${props.getOption('b')}`, () => { props.onSelect('B') })} id="quiz-answer-button-b" className={buttonB} style={buttonStyle}>
                         <span style={{ margin: 'auto' }}>
                             <div className={`centered_text ${quizTextCSS}`}>
                                 {props.getOption('b')}
@@ -255,9 +256,8 @@ function Tooltip(props: { content: ReactNode }): ReactNode {
                         height: 'unset',
                         padding: '0px 5px',
                     }}
-                    onClick={() => { setShow(!show) }}
                     className="quiz_clickable"
-                    role="button"
+                    {...withButtonRole('Get more info about this question', () => { setShow(!show) })}
                 >
                     {'ⓘ\ufe0e'}
                 </div>
