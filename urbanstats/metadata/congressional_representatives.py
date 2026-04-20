@@ -80,7 +80,7 @@ def load_party_pages(*, version):
 
 
 @permacache(
-    "urbanstats/metadata/congressional_representatives/load_representatives_by_district",
+    "urbanstats/metadata/congressional_representatives/load_representatives_by_district_3",
     key_function=dict(version=str),
 )
 def load_representatives_by_district(*, version):
