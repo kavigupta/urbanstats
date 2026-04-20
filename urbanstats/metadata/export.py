@@ -7,11 +7,7 @@ def export_metadata_types():
     external_link_metadata = []
     for i, v in enumerate(metadata_types.values()):
         if isinstance(v, DisplayedMetadata):
-            exp = v.export()
-            # temporary, will be removed once we implement congressional representatives
-            # in the frontend
-            if exp is not None:
-                displayed_metadata.append({"index": i, **exp})
+            displayed_metadata.append({"index": i, **v.export()})
         elif isinstance(v, ExternalLinkMetadata):
             external_link_metadata.append({"index": i, **v.export()})
         else:

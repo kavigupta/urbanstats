@@ -20,6 +20,7 @@ from urbanstats.geometry.shapefiles.shapefiles_list import (
     shapefiles,
 )
 from urbanstats.mapper.ramp import output_ramps
+from urbanstats.metadata.congressional_representatives import load_party_pages
 from urbanstats.metadata.export import export_metadata_types
 from urbanstats.ordinals.ordering_info_outputter import output_ordering
 from urbanstats.protobuf.data_files_pb2_hash import proto_hash
@@ -104,6 +105,9 @@ def create_react_jsons():
 
     with open("react/src/data/metadata.ts", "w") as f:
         output_typescript(export_metadata_types(), f)
+
+    with open("react/src/data/party_pages.ts", "w") as f:
+        output_typescript(load_party_pages(version="main"), f)
 
     with open("react/src/data/explanation_industry_occupation_table.ts", "w") as f:
         output_typescript(
