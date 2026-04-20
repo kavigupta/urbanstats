@@ -4,10 +4,11 @@ import metadata from '../data/metadata'
 import stats from '../data/statistic_list'
 import names from '../data/statistic_name_list'
 import paths from '../data/statistic_path_list'
+import { loadProtobuf } from '../load_json'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 import { assert } from '../utils/defensive'
-import { Article, IFirstOrLast, IMetadata } from '../utils/protos'
+import { Article, CongressionalRepresentativeTable, ICongressionalRepresentative, ICongressionalRepresentativePointer, IFirstOrLast, IMetadata } from '../utils/protos'
 import { UnitType } from '../utils/unit'
 
 import { CountsByUT, forType } from './countsByArticleType'
@@ -33,6 +34,19 @@ export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat
 export type StatCol = (typeof stats)[number]
 
 export interface FirstLastStatus { isFirst: boolean, isLast: boolean }
+
+export type MetadataStatValue = (
+    string
+    | {
+        kind: 'congressional'
+        representatives: {
+            representative: ICongressionalRepresentative
+            districtLongname?: string
+            startTerm?: number
+            endTerm?: number
+        }[]
+    }
+)
 
 export interface ArticleStatisticRow {
     kind: 'statistic'
@@ -60,13 +74,18 @@ export interface MetadataArticleRow {
     statpath: StatPath
     renderedStatname: string
     articleType: string
-    statval: string
+    statval: MetadataStatValue
     extraStat: undefined
     disclaimer: undefined
     dataCreditExplanationPage: string
 }
 
 export type ArticleRow = ArticleStatisticRow | MetadataArticleRow
+
+export function isCongressionalRepresentativesMetadataRow(row: ArticleRow): boolean {
+    const congressionalRepresentativesMetadataStatPath: StatPath = 'metadata_show_metadata_representatives'
+    return row.kind === 'metadata' && row.statpath === congressionalRepresentativesMetadataStatPath
+}
 
 const dataCreditExplanationPageByMetadataIndex = new Map<number, string>(
     metadata.displayed_metadata.map(e => [e.index, e.data_credit_explanation_page]),
@@ -91,7 +110,7 @@ interface StatisticCellRenderingInfoStatistic extends StatisticCellRenderingInfo
 
 interface StatisticCellRenderingInfoMetadata extends StatisticCellRenderingInfoCommon {
     kind: 'metadata'
-    statval: string
+    statval: MetadataStatValue
     statpath: StatPath
 }
 
@@ -102,13 +121,16 @@ export type StatisticCellRenderingInfo = StatisticCellRenderingInfoStatistic | S
 const metadataStatPathsInTreeOrder = Array.from(statParents.entries())
     .flatMap(([path, parent]) => parent.kind === 'metadata' ? [path] : [])
 
-type MetadataValueKind = 'string'
+type MetadataValueKind = 'string' | 'congressional_representatives'
 
 const metadataValueKindByIndex = new Map<number, MetadataValueKind>(
     metadata.displayed_metadata.map(entry => [entry.index, entry.value_kind]),
 )
 
-function metadataValueFromProto(metadataProto: IMetadata): string | undefined {
+function metadataValueFromProto(
+    metadataProto: IMetadata,
+    representativeTable: CongressionalRepresentativeTable,
+): MetadataStatValue | undefined {
     if (metadataProto.metadataIndex === undefined || metadataProto.metadataIndex === null) {
         return undefined
     }
@@ -118,27 +140,73 @@ function metadataValueFromProto(metadataProto: IMetadata): string | undefined {
         case 'string': {
             return metadataProto.stringValue ?? undefined
         }
+        case 'congressional_representatives': {
+            const representativeIndices = metadataProto.congressionalRepresentatives ?? []
+            if (representativeIndices.length === 0) {
+                return undefined
+            }
+
+            const districtLongnameForPointer = (
+                pointer: ICongressionalRepresentativePointer,
+                representative: ICongressionalRepresentative,
+            ): string | undefined => {
+                const termIn = (representative.termIn ?? []) as { startYear?: number | null, districtIdx?: number | null }[]
+                const pointerStartTerm = pointer.startTerm
+                const matchingTerm = pointerStartTerm !== undefined && pointerStartTerm !== null
+                    ? termIn.find(term => term.startYear === pointerStartTerm)
+                    : termIn[0]
+                const districtIdx = matchingTerm?.districtIdx
+                if (districtIdx === undefined || districtIdx === null) {
+                    return undefined
+                }
+                const districts = representativeTable.districts as { longname?: string | null }[]
+                return districts[districtIdx]?.longname ?? undefined
+            }
+
+            return {
+                kind: 'congressional',
+                representatives: representativeIndices.map((ptr) => {
+                    const representative = representativeTable.representatives[ptr.representativeIdx!]
+                    return {
+                        representative,
+                        districtLongname: districtLongnameForPointer(ptr, representative),
+                        startTerm: ptr.startTerm ?? undefined,
+                        endTerm: ptr.endTerm ?? undefined,
+                    }
+                }),
+            }
+        }
+        default:
+            return undefined
     }
 }
 
-function metadataValueByIndex(metadataProtos: IMetadata[] | null | undefined): Map<number, string> {
-    const values = new Map<number, string>()
+function metadataValueByIndex(
+    metadataProtos: IMetadata[] | null | undefined,
+    representativeTable: CongressionalRepresentativeTable,
+): Map<number, MetadataStatValue> {
+    const values = new Map<number, MetadataStatValue>()
     for (const metadataProto of metadataProtos ?? []) {
-        if (metadataProto.metadataIndex === undefined || metadataProto.metadataIndex === null) {
+        const metadataIndex = metadataProto.metadataIndex
+        if (metadataIndex === undefined || metadataIndex === null) {
             continue
         }
 
-        const value = metadataValueFromProto(metadataProto)
+        const value = metadataValueFromProto(metadataProto, representativeTable)
         if (value === undefined) {
             continue
         }
-        values.set(metadataProto.metadataIndex, value)
+        values.set(metadataIndex, value)
     }
     return values
 }
 
-function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath[]): MetadataArticleRow[] {
-    const values = metadataValueByIndex(article.metadata)
+function metadataRowsForArticle(
+    article: Article,
+    enabledMetadataPaths: StatPath[],
+    representativeTable: CongressionalRepresentativeTable,
+): MetadataArticleRow[] {
+    const values = metadataValueByIndex(article.metadata, representativeTable)
     return enabledMetadataPaths.flatMap((path) => {
         const parent = statParents.get(path)
         if (parent?.kind !== 'metadata' || parent.metadataIndex === undefined) {
@@ -164,8 +232,8 @@ function metadataRowsForArticle(article: Article, enabledMetadataPaths: StatPath
     })
 }
 
-function availableMetadataPathsForArticle(article: Article): StatPath[] {
-    const values = metadataValueByIndex(article.metadata)
+function availableMetadataPathsForArticle(article: Article, representativeTable: CongressionalRepresentativeTable): StatPath[] {
+    const values = metadataValueByIndex(article.metadata, representativeTable)
     return metadataStatPathsInTreeOrder.filter((path) => {
         const parent = statParents.get(path)
         return parent?.kind === 'metadata'
@@ -252,17 +320,26 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
     })
 }
 
-export function loadArticles(datas: Article[], counts: CountsByUT, universe: string): {
+let representativeTableCache: Promise<CongressionalRepresentativeTable> | undefined = undefined
+function getRepresentativeTable(): Promise<CongressionalRepresentativeTable> {
+    if (!representativeTableCache) {
+        representativeTableCache = loadProtobuf('/index/representatives.gz', 'CongressionalRepresentativeTable')
+    }
+    return representativeTableCache
+}
+
+export async function loadArticles(datas: Article[], counts: CountsByUT, universe: string): Promise<{
     rows: (settings: StatGroupSettings) => ArticleRow[][]
     statPaths: StatPath[][]
-} {
+}> {
+    const representativeTable = await getRepresentativeTable()
     const availableRowsAll = datas.map(data => loadSingleArticle(data, counts, universe))
     const statPathsEach = availableRowsAll.map((availableRows, articleIndex) => {
         const statPathsThis = new Set<StatPath>()
         availableRows.forEach((row) => {
             statPathsThis.add(row.statpath)
         })
-        availableMetadataPathsForArticle(datas[articleIndex]).forEach((statPath) => {
+        availableMetadataPathsForArticle(datas[articleIndex], representativeTable).forEach((statPath) => {
             statPathsThis.add(statPath)
         })
         return Array.from(statPathsThis)
@@ -277,7 +354,7 @@ export function loadArticles(datas: Article[], counts: CountsByUT, universe: str
                 .filter(row => statIsEnabled(row.statpath, settings, ambiguousSourcesAll))
                 // sort by order in statistics tree.
                 .sort((a, b) => statPathToOrder.get(a.statpath)! - statPathToOrder.get(b.statpath)!),
-            ...metadataRowsForArticle(datas[articleIndex], enabledMetadataPaths),
+            ...metadataRowsForArticle(datas[articleIndex], enabledMetadataPaths, representativeTable),
         ])
 
         const rowsNothingMissing = insertMissing(rows)
@@ -363,27 +440,35 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     }
     const rowsCollapsed: ArticleRow[][] = []
     for (const key of rowsByStatGroupAndYear.keys()) {
+        const rowsForGroupYear = rowsByStatGroupAndYear.get(key)!
         rowsCollapsed.push(...collapseAlternateSourcesSingleGroupYear(
-            rowsByStatGroupAndYear.get(key)!,
+            rowsForGroupYear,
             groupYearToName.get(key)!,
         ))
     }
     return rowsCollapsed[0].map((_, i) => rowsCollapsed.map(row => row[i]))
 }
 
-export function isNoValue(statval: number | string): boolean {
-    if (typeof statval === 'number') {
-        return Number.isNaN(statval)
-    }
+export function isNoValue(statval: number | MetadataStatValue): boolean {
     switch (typeof statval) {
+        case 'number':
+            return Number.isNaN(statval)
         case 'string':
             return statval === ''
+        default:
+            switch (statval.kind) {
+                case 'congressional':
+                    return statval.representatives.length === 0
+            }
     }
 }
 
 function collapseAlternateSourcesSingleGroupYear(rows: ArticleRow[][], groupYearName: string): ArticleRow[][] {
     // rows[stat_column][article]
     if (rows.length === 1) {
+        return rows
+    }
+    if (rows[0][0].kind !== 'statistic') {
         return rows
     }
     // convert to a bitmap of whether each thing has a value (alternative is nan)
