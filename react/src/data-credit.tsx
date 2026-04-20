@@ -882,6 +882,14 @@ export function DataCreditPanel(): ReactNode {
                             Results might not match official results exactly
                             due to the disaggregation process.
                         </div>
+                        <NRef name="congressional_representatives" h="h2">Congressional Representatives</NRef>
+                        <div>
+                            Congressional representative metadata is scraped from Wikipedia, see
+                            {' '}
+                            <a href="https://github.com/kavigupta/all-congressional-representatives">our scraper repository</a>
+                            {' '}
+                            for more details on how this was put together.
+                        </div>
                         <NRef name="park" h="h1">Parkland</NRef>
                         <div>
                             We compute the percentage of each 1km disc around each census block that is parkland.
