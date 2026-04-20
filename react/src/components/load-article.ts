@@ -448,9 +448,8 @@ function collapseAlternateSources(rows: ArticleRow[][]): ArticleRow[][] {
     }
     const rowsCollapsed: ArticleRow[][] = []
     for (const key of rowsByStatGroupAndYear.keys()) {
-        const rowsForGroupYear = rowsByStatGroupAndYear.get(key)!
         rowsCollapsed.push(...collapseAlternateSourcesSingleGroupYear(
-            rowsForGroupYear,
+            rowsByStatGroupAndYear.get(key)!,
             groupYearToName.get(key)!,
         ))
     }
@@ -474,9 +473,6 @@ export function isNoValue(statval: number | MetadataStatValue): boolean {
 function collapseAlternateSourcesSingleGroupYear(rows: ArticleRow[][], groupYearName: string): ArticleRow[][] {
     // rows[stat_column][article]
     if (rows.length === 1) {
-        return rows
-    }
-    if (rows[0][0].kind !== 'statistic') {
         return rows
     }
     // convert to a bitmap of whether each thing has a value (alternative is nan)
