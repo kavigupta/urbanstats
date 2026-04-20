@@ -21,7 +21,6 @@ import { zIndex } from '../utils/zIndex'
 
 import { Icon } from './Icon'
 import { Modal } from './Modal'
-import { Representative } from './congressional-table/render'
 import { computeDisclaimerText, type Disclaimer } from './disclaimer-text'
 import { Percentile, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
@@ -515,24 +514,11 @@ export function StatisticRowCells(props: {
     const cells: ColumnLayoutProps['cells'] = []
 
     if (props.row.kind === 'metadata') {
-        const metadataRow = props.row
         cells.push({
             widthPercentage: 25,
             columnIdentifier: 'statval',
             content: () => {
-                const statval = metadataRow.statval
-                if (typeof statval === 'string') {
-                    return <span className="serif value testing-statistic-value">{statval}</span>
-                }
-                return (
-                    <div className="value_unit">
-                        {
-                            statval.representatives.map((representative, idx) => (
-                                <Representative key={idx} representative={representative.representative} />
-                            ))
-                        }
-                    </div>
-                )
+                return <span className="serif value testing-statistic-value">{props.row.statval}</span>
             },
             style: { textAlign: 'center' },
         })

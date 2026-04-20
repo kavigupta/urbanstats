@@ -1,6 +1,4 @@
-import json
 import math
-import urllib.request
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Dict, List
@@ -60,27 +58,7 @@ def clean_optional_str(value):
 
 
 @permacache(
-    "urbanstats/metadata/congressional_representatives/load_party_pages",
-    key_function=dict(version=str),
-)
-def load_party_pages(*, version):
-    party_pages_url = (
-        "https://raw.githubusercontent.com/kavigupta/"
-        f"all-congressional-representatives/{version}/party_pages.json"
-    )
-    with urllib.request.urlopen(party_pages_url) as response:
-        party_pages = json.load(response)
-    return {
-        party: {
-            "party_color": page["party_color"],
-            "wikipedia_page": page["wikipedia_page"],
-        }
-        for party, page in party_pages.items()
-    }
-
-
-@permacache(
-    "urbanstats/metadata/congressional_representatives/load_representatives_by_district",
+    "urbanstats/metadata/congressional_representatives/load_representatives_by_district_2",
     key_function=dict(version=str),
 )
 def load_representatives_by_district(*, version):

@@ -49,8 +49,6 @@ export interface NavigationOptions {
     | { kind: 'element', element: HTMLElement } // Scroll keeping a specific element in the same place
 }
 
-export interface NavLink { href: string, onClick: (e?: React.MouseEvent) => Promise<void> }
-
 export class Navigator {
     /* eslint-disable react-hooks/rules-of-hooks, no-restricted-syntax -- This is a logic class with custom hooks and core navigation functions */
     static Context = createContext(new Navigator())
@@ -299,7 +297,7 @@ export class Navigator {
     link(pageDescriptor: PageDescriptor, options: {
         scroll: NavigationOptions['scroll']
         postNavigationCallback?: () => void
-    }): NavLink {
+    }): { href: string, onClick: (e?: React.MouseEvent) => Promise<void> } {
         const url = urlFromPageDescriptor(pageDescriptor)
         return {
             href: url.pathname + url.search + url.hash,

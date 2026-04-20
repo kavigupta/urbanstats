@@ -126,3 +126,6 @@ class CongressionalRepresentativesMetadata(DisplayedMetadata):
                 for val in value
             ],
         )
+
+    def export(self):
+        return None

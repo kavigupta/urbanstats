@@ -449,7 +449,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
 
             const displayUniverse = articleUniverse === defaultUniverse ? undefined : articleUniverse
 
-            const { rows: articleRows, statPaths: articleStatPaths } = await loadArticles([article], countsByArticleType, articleUniverse)
+            const { rows: articleRows, statPaths: articleStatPaths } = loadArticles([article], countsByArticleType, articleUniverse)
 
             return {
                 pageData: {
@@ -497,7 +497,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
 
             const displayComparisonUniverse = comparisonUniverse === defaultUniverseComparison ? undefined : comparisonUniverse
 
-            const { rows: comparisonRows, statPaths: comparisonStatPaths } = await loadArticles(articles, countsByArticleType, comparisonUniverse)
+            const { rows: comparisonRows, statPaths: comparisonStatPaths } = loadArticles(articles, countsByArticleType, comparisonUniverse)
 
             return {
                 pageData: {

@@ -6747,30 +6747,6 @@ export const rawStatsTree = [
                         ]
                     }
                 ]
-            },
-            {
-                "id": "metadata_show_metadata_congressional_representatives",
-                "name": "Congressional Representatives",
-                "contents": [
-                    {
-                        "year": null,
-                        "stats_by_source": [
-                            {
-                                "name": "Congressional Representatives",
-                                "stats": [
-                                    {
-                                        "kind": "metadata",
-                                        "source": null,
-                                        "path": "metadata_show_metadata_representatives",
-                                        "metadata_index": 5,
-                                        "value_type": "string"
-                                    }
-                                ],
-                                "indentedName": null
-                            }
-                        ]
-                    }
-                ]
             }
         ]
     },
