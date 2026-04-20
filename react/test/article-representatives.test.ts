@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { checkTextboxes, downloadImage, getLocation, getLocationWithoutSettings, screencap, target, urbanstatsFixture } from './test_utils'
+import { checkTextboxes, downloadImage, getLocationWithoutSettings, screencap, target, urbanstatsFixture } from './test_utils'
 
 urbanstatsFixture('special elections', '/article.html?longname=TN-07+%282023%29%2C+USA')
 
