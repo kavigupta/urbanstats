@@ -913,6 +913,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                     {props.sortInfo && (
                         <SortButton {...props} sortInfo={props.sortInfo} />
                     )}
+                    {props.handleDelete && <DeleteButton handleDelete={props.handleDelete} />}
                 </span>
             </div>
         </>
@@ -1403,4 +1404,33 @@ function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearI
             break
     }
     return <img src={image} className="testing-order-swap" alt={props.direction} style={{ width: '16px', height: '16px', display: 'block' }} />
+}
+
+function DeleteButton({ handleDelete }: { handleDelete: () => void }): ReactNode {
+    const isScreenshot = useScreenshotMode()
+    if (isScreenshot) {
+        return null
+    }
+    const size = 16
+    return (
+        <button
+            aria-label="Delete column"
+            data-test-id="delete-column"
+            onPointerDown={(e) => { e.stopPropagation() }}
+            onClick={() => { handleDelete() }}
+            style={{
+                border: 'none',
+                cursor: 'pointer',
+                padding: '2px 4px',
+                backgroundImage: 'url("/close-red-small.png")',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: size,
+                width: size,
+                height: size,
+                backgroundColor: 'transparent',
+            }}
+        >
+        </button>
+    )
 }
