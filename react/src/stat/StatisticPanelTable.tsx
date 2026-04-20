@@ -13,6 +13,7 @@ import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { sanitize } from '../utils/paths'
 
+import { makeColumnDeleteHandler } from './makeColumnDeleteHandler'
 import { makeColumnReorderHandler } from './makeColumnReorderHandler'
 import { Statistic, StatData, StatSetter, View } from './types'
 
@@ -120,6 +121,8 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
         statNameOverride: 'Name',
     }
 
+    const deleteHandler = makeColumnDeleteHandler(stat, set, typeEnvironment, view)
+
     const headerSpecs: CellSpec[] = data.table.map((col, colIndex) => ({
         type: 'statistic-name',
         renderedStatname: col.name,
@@ -134,6 +137,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
         },
         center: true,
         transpose: true, // This is a header not on the left, so it's in "transpose" mode
+        handleDelete: deleteHandler && (() => { deleteHandler(colIndex) }),
     } satisfies CellSpec))
     const superHeaderSpec: SuperHeaderSpec = {
         headerSpecs,
