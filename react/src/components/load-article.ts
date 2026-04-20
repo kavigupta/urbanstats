@@ -152,7 +152,7 @@ function metadataValueFromProto(
                 pointer: ICongressionalRepresentativePointer,
                 representative: ICongressionalRepresentative,
             ): string => {
-                const termIn = (representative.termIn ?? []) as { startYear?: number | null, districtIdx?: number | null }[]
+                const termIn = representative.termIn ?? []
                 const pointerStartTerm = pointer.startTerm
                 const matchingTerm = pointerStartTerm !== undefined && pointerStartTerm !== null
                     ? termIn.find(term => term.startYear === pointerStartTerm)
