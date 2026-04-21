@@ -279,6 +279,7 @@ export interface StatisticNameCellProps {
         sortDirection: 'up' | 'down' | 'both'
         onSort: () => void
     }
+    handleDelete?: () => void
 }
 
 export interface StatisticRowCellProps {

@@ -10,6 +10,7 @@ import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { Universe, useUniverse } from '../universe'
+import { withButtonRole } from '../utils/a11y'
 import { assert } from '../utils/defensive'
 import { sanitize } from '../utils/paths'
 import { useComparisonHeadStyle, useMobileLayout } from '../utils/responsive'
@@ -20,6 +21,7 @@ import { zIndex } from '../utils/zIndex'
 
 import { Icon } from './Icon'
 import { Modal } from './Modal'
+import { Representative } from './congressional-table/render'
 import { computeDisclaimerText, type Disclaimer } from './disclaimer-text'
 import { Percentile, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
@@ -513,11 +515,24 @@ export function StatisticRowCells(props: {
     const cells: ColumnLayoutProps['cells'] = []
 
     if (props.row.kind === 'metadata') {
+        const metadataRow = props.row
         cells.push({
             widthPercentage: 25,
             columnIdentifier: 'statval',
             content: () => {
-                return <span className="serif value testing-statistic-value">{props.row.statval}</span>
+                const statval = metadataRow.statval
+                if (typeof statval === 'string') {
+                    return <span className="serif value testing-statistic-value">{statval}</span>
+                }
+                return (
+                    <div className="value_unit">
+                        {
+                            statval.representatives.map((representative, idx) => (
+                                <Representative key={idx} representative={representative.representative} />
+                            ))
+                        }
+                    </div>
+                )
             },
             style: { textAlign: 'center' },
         })
@@ -892,24 +907,41 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                         longname={props.longname}
                         currentUniverse={props.currentUniverse}
                         center={props.center}
-                        displayName={props.displayName ?? props.renderedStatname}
+                        displayName={displayName(props)}
                         footnoteSymbol={props.footnoteSymbol}
                     />
                     {props.sortInfo && (
-                        <span
-                            style={{
-                                cursor: 'pointer',
-                                height: '16px',
-                                marginLeft: props.transpose ? '0' : 'auto',
-                            }}
-                            onClick={props.sortInfo.onSort}
-                        >
-                            <ArrowUpOrDown direction={props.sortInfo.sortDirection} shouldAppearInScreenshot={false} />
-                        </span>
+                        <SortButton {...props} sortInfo={props.sortInfo} />
                     )}
+                    {props.handleDelete && <DeleteButton handleDelete={props.handleDelete} />}
                 </span>
             </div>
         </>
+    )
+}
+
+function displayName(props: StatisticNameCellProps): string {
+    return props.displayName ?? props.renderedStatname
+}
+
+function SortButton(props: StatisticNameCellProps & { sortInfo: NonNullable<StatisticNameCellProps['sortInfo']> }): ReactNode {
+    const sortButtonLabel = `Sort by ${displayName(props)}${
+        props.sortInfo.sortDirection === 'up'
+            ? ', currently ascending'
+            : props.sortInfo.sortDirection === 'down' ? ', currently descending' : ''
+    }`
+
+    return (
+        <span
+            {...withButtonRole(sortButtonLabel, props.sortInfo.onSort)}
+            style={{
+                cursor: 'pointer',
+                height: '16px',
+                marginLeft: props.transpose ? '0' : 'auto',
+            }}
+        >
+            <ArrowUpOrDown direction={props.sortInfo.sortDirection} shouldAppearInScreenshot={false} />
+        </span>
     )
 }
 
@@ -918,8 +950,9 @@ function ExpansionButton(props: { row: ArticleRow }): ReactNode {
     const colors = useColors()
     return (
         <div
+            {...withButtonRole(`${expanded ? 'Collapse' : 'Expand'} ${props.row.statname}`, () => { setExpanded(!expanded) })}
             className="expand-toggle"
-            onClick={() => { setExpanded(!expanded) }}
+            aria-expanded={expanded}
             style={articleStatnameButtonStyle(colors)}
         >
             {expanded ? '-' : '+'}
@@ -1371,4 +1404,33 @@ function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearI
             break
     }
     return <img src={image} className="testing-order-swap" alt={props.direction} style={{ width: '16px', height: '16px', display: 'block' }} />
+}
+
+function DeleteButton({ handleDelete }: { handleDelete: () => void }): ReactNode {
+    const isScreenshot = useScreenshotMode()
+    if (isScreenshot) {
+        return null
+    }
+    const size = 16
+    return (
+        <button
+            aria-label="Delete column"
+            data-test-id="delete-column"
+            onPointerDown={(e) => { e.stopPropagation() }}
+            onClick={() => { handleDelete() }}
+            style={{
+                border: 'none',
+                cursor: 'pointer',
+                padding: '2px 4px',
+                backgroundImage: 'url("/close-red-small.png")',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: size,
+                width: size,
+                height: size,
+                backgroundColor: 'transparent',
+            }}
+        >
+        </button>
+    )
 }

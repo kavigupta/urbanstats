@@ -151,7 +151,7 @@ export function GenericSearchBox<T>(
                     zIndex: zIndex.searchResults,
                 }}
             >
-                {matches.map((_, idx) => (
+                {isFocused && matches.map((_, idx) => (
                     props.renderMatch(
                         () => matches[idx],
                         () => { setFocused(idx) },

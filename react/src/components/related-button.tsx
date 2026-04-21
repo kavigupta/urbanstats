@@ -9,6 +9,7 @@ import { useColors } from '../page_template/colors'
 import { relationshipKey, useSettings } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { DefaultMap } from '../utils/DefaultMap'
+import { withButtonRole } from '../utils/a11y'
 import { mixWithBackground } from '../utils/color'
 import { assert } from '../utils/defensive'
 import { useMobileLayout } from '../utils/responsive'
@@ -100,7 +101,7 @@ function Label(props: { checkId: string, children: ReactNode, fontWeight: number
 
 const maxRegions = 10
 
-function ExpandButton(props: { rowType: string, expanded: boolean, onToggle: () => void }): ReactNode {
+function ExpandButton(props: { rowType: string, expanded: boolean, onToggle: () => void, description: string }): ReactNode {
     const colors = useColors()
     // Want to maintain vertical position relative to the button
     const scrollAdjustRef = useRef<{ element: Element, top: number } | null>(null)
@@ -121,21 +122,13 @@ function ExpandButton(props: { rowType: string, expanded: boolean, onToggle: () 
 
     return (
         <RelatedButtonLayout
+            {...withButtonRole(`${props.expanded ? 'Collapse' : 'Expand'} ${props.description}`, handleToggle)}
             rowType={props.rowType}
-            onClick={handleToggle}
             style={{
                 cursor: 'pointer',
                 border: `1px solid ${colors.borderShadow}`,
                 backgroundColor: colors.slightlyDifferentBackground,
                 display: 'flex',
-            }}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault()
-                    handleToggle(event)
-                }
             }}
         >
             {!props.expanded && (
@@ -225,6 +218,7 @@ function RelationshipGroup(props: {
                     rowType={props.regions[0].rowType}
                     expanded={expanded}
                     onToggle={() => { setExpanded(e => !e) }}
+                    description={displayName(props.relationshipType)}
                 />
             )}
         </ul>
