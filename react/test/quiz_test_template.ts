@@ -6,7 +6,7 @@ import { gzipSync } from 'zlib'
 import { ClientFunction, Selector } from 'testcafe'
 
 import { clickButton, clickButtons, quizFixture, quizScreencap, tempfileName, withMockedClipboard } from './quiz_test_utils'
-import { target, safeReload, screencap, safeClearLocalStorage, waitForDownload } from './test_utils'
+import { target, safeReload, screencap, safeClearLocalStorage, waitForDownload, withInterceptedRequests } from './test_utils'
 
 export async function runQuery(t: TestController, query: string): Promise<string> {
     // dump given query to a string
@@ -124,17 +124,12 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
 
     test('loading indicator', async (t) => {
         // Loading indicator appears when shape load fails or is delayed
-        const cdp = await t.getCurrentCDPSession()
+        await withInterceptedRequests(t, request => request.url.includes('shape') ? 'continue' : 'fail', async () => {
+            await clickButtons(t, ['a'])
+            await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
 
-        await cdp.Network.enable({})
-        await cdp.Network.setBlockedURLs({
-            urls: ['*shape*'],
+            await screencap(t, { wait: false })
         })
-
-        await clickButtons(t, ['a'])
-        await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
-
-        await screencap(t, { wait: false })
     })
 
     quizFixture(

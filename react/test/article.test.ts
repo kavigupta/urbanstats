@@ -13,6 +13,7 @@ import {
     downloadOrCheckString,
     waitForLoading,
     downloadCSV,
+    withInterceptedRequests,
 } from './test_utils'
 
 function articleUrl(longname: string): string {
@@ -399,17 +400,12 @@ test('download-article-csv-settings-ignored', async (t) => {
 
 test('loading indicator', async (t) => {
     // Loading indicator appears when shape load fails or is delayed
-    const cdp = await t.getCurrentCDPSession()
+    await withInterceptedRequests(t, request => request.url.includes('shape') ? 'continue' : 'fail', async () => {
+        await t.click(Selector('button[data-test-id="1"]'))
+        await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
 
-    await cdp.Network.enable({})
-    await cdp.Network.setBlockedURLs({
-        urls: ['*shape*'],
+        await screencap(t, { wait: false })
     })
-
-    await t.click(Selector('button[data-test-id="1"]'))
-    await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
-
-    await screencap(t, { wait: false })
 })
 
 urbanstatsFixture('uncheck all years', '/article.html?longname=California%2C+USA')
