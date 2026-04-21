@@ -148,6 +148,17 @@ function createSearchWorker(config: AsyncConfig): SearchWorker {
     const configured = cacheKeyPromise.then((cacheKey) => { worker.postMessage({ type: 'configure', config: { ...configWithoutPromise, cacheKey } } satisfies SearchWorkerInputMessage) })
     debugPerformance(`Requested new search worker at timestamp ${Date.now()}`)
     const messageQueue: ((results: SearchResult[]) => void)[] = []
+    const statusProperty = new Property<SearchWorkerStatus>({ status: 'loading', message: 'Spawning worker...' })
+    worker.addEventListener('message', (message: MessageEvent<SearchWorkerOutputMessage>) => {
+        switch (message.data.type) {
+            case 'result':
+                messageQueue.shift()!(message.data.results)
+                break
+            case 'status':
+                statusProperty.value = message.data.status
+                break
+        }
+    })
     const result: SearchWorker = {
         executeSearch: async (params) => {
             await configured
@@ -156,18 +167,8 @@ function createSearchWorker(config: AsyncConfig): SearchWorker {
                 messageQueue.push(resolve)
             })
         },
-        status: new Property({ status: 'loading', message: 'Spawning worker...' }),
+        status: statusProperty,
     }
-    worker.addEventListener('message', (message: MessageEvent<SearchWorkerOutputMessage>) => {
-        switch (message.data.type) {
-            case 'result':
-                messageQueue.shift()!(message.data.results)
-                break
-            case 'status':
-                result.status.value = message.data.status
-                break
-        }
-    })
     workerTerminatorRegistry.register(result, worker)
     return result
 }
