@@ -4,10 +4,9 @@ import { test } from 'node:test'
 import { AllUniverses } from '../src/components/search-statistic'
 import type_ordering_idx from '../src/data/type_ordering_idx'
 import './util/fetch'
-import { createIndex, SearchResult } from '../src/search'
+import { createIndex, SearchResult, simulateSlowSearchDelayMs } from '../src/search'
 import { Universe } from '../src/universe'
 import { DefaultMap } from '../src/utils/DefaultMap'
-import { simulateSlowSearchDelayMs } from '../src/utils/search-performance'
 
 const search = new DefaultMap<Universe | AllUniverses | undefined, ReturnType<typeof createIndex>>(statsUniverse => createIndex({ cacheKey: undefined, statsUniverse }, () => Promise.resolve()))
 

@@ -9,7 +9,6 @@ import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSi
 import { assert } from './utils/defensive'
 import { ISearchIndexMetadata } from './utils/protos'
 import { isAllowedToBeShown, ShowGeographySettings } from './utils/restricted-types'
-import { debugPerformance } from './utils/search-performance'
 import { concatenate } from './utils/typed-array-concat'
 
 export type SearchResult =
@@ -28,6 +27,17 @@ function debug(arg: unknown): void {
         console.log(arg)
     }
 }
+
+const debugSearchPerformance: boolean = false
+
+export function debugPerformance(arg: unknown): void {
+    if (debugSearchPerformance) {
+        // eslint-disable-next-line no-console -- Debug logging
+        console.log(arg)
+    }
+}
+
+export const simulateSlowSearchDelayMs: number | undefined = undefined
 
 export function normalize(a: string, handlePunctuation = true): string {
     a = a.toLowerCase()

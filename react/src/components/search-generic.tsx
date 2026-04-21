@@ -165,10 +165,9 @@ export function GenericSearchBox<T>(
                     )
                 ),
                 )}
-
             </div>
 
-            {/* When the use has typed a query, there are no results yet, and we're still loading, show them what's going on */}
+            {/* When the user has typed a query, show them what's going on */}
             {isFocused && query.length > 0 && props.loadingStatus && <LoadingIndicator type={matches.length === 0 ? 'dropdown' : 'field'} message={props.loadingStatus} />}
         </form>
     )

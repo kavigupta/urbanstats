@@ -1,6 +1,5 @@
-import { createIndex, SearchIndexConfig, SearchParams, SearchResult } from './search'
+import { createIndex, debugPerformance, SearchIndexConfig, SearchParams, SearchResult, simulateSlowSearchDelayMs } from './search'
 import { assert } from './utils/defensive'
-import { debugPerformance, simulateSlowSearchDelayMs } from './utils/search-performance'
 
 export type SearchWorkerInputMessage = { type: 'configure', config: SearchIndexConfig } | { type: 'search', params: SearchParams }
 export type SearchWorkerOutputMessage = { type: 'result', results: SearchResult[] } | { type: 'status', status: SearchWorkerStatus }
