@@ -122,3 +122,14 @@ test('even stupider table', async (t) => {
     await screencap(t)
     await downloadImage(t)
 })
+
+// Dark mode screenshot and download test
+urbanstatsFixture('just representatives dark mode', `/article.html?longname=02139%2C+USA&s=${justRepresentatives}`)
+
+test('just-02139-darkmode-screenshot-download', async (t) => {
+    // Switch to dark mode
+    await t.click(Selector('.theme-setting').find('select'))
+        .click(Selector('option').withExactText('Dark Mode'))
+    await screencap(t)
+    await downloadImage(t)
+})
