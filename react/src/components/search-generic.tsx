@@ -1,4 +1,5 @@
 import React, { CSSProperties, ReactElement, useState, useRef, useEffect } from 'react'
+import { MoonLoader } from 'react-spinners'
 
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
@@ -164,7 +165,43 @@ export function GenericSearchBox<T>(
                     )
                 ),
                 )}
+
             </div>
+
+            {/* When the use has typed a query, there are no results yet, and we're still loading, show them what's going on */}
+            {isFocused && query.length > 0 && props.loadingStatus && <LoadingIndicator type={matches.length === 0 ? 'dropdown' : 'field'} message={props.loadingStatus} />}
         </form>
     )
+}
+
+function LoadingIndicator({ type, message }: { type: 'dropdown' | 'field', message: string }): ReactElement {
+    const colors = useColors()
+
+    switch (type) {
+        case 'field':
+            return (
+                <div style={{ position: 'absolute', right: '0.5em', top: 0, bottom: 0, display: 'flex', alignItems: 'center' }}>
+                    <MoonLoader color={colors.textMain} size="24px" />
+                </div>
+            )
+        case 'dropdown':
+            return (
+                <div style={{
+                    color: colors.ordinalTextColor,
+                    padding: '0.5em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5em',
+                    borderRadius: '0.25em',
+                    backgroundColor: colors.slightlyDifferentBackground,
+                    zIndex: zIndex.searchResults,
+                    position: 'absolute',
+                    width: '100%',
+                }}
+                >
+                    <MoonLoader color={colors.textMain} size="20px" />
+                    {message}
+                </div>
+            )
+    }
 }

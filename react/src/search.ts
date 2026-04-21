@@ -404,8 +404,10 @@ function search(searchIndex: NormalizedSearchIndex, { unnormalizedPattern, maxRe
     })
 }
 
+type ReportStatus = (message: string) => Promise<void>
+
 // Potentially cached
-export async function createIndex(config: SearchIndexConfig): Promise<(params: SearchParams) => SearchResult[]> {
+export async function createIndex(config: SearchIndexConfig, reportStatus: ReportStatus): Promise<(params: SearchParams) => SearchResult[]> {
     const statsIndexPromise = config.statsUniverse && createStatsIndex(config.statsUniverse)
 
     let index: NormalizedSearchIndex | undefined
@@ -415,6 +417,7 @@ export async function createIndex(config: SearchIndexConfig): Promise<(params: S
             throw new Error('No cache key specified')
         }
 
+        await reportStatus('Accessing search cache database...') // Checkpoint after since this can introduce artificial delay
         let checkpoint = performance.now()
 
         const db = await idb.openDB('SearchCache', 1, {
@@ -435,7 +438,7 @@ export async function createIndex(config: SearchIndexConfig): Promise<(params: S
 
         if (index === undefined) {
             debugPerformance('Cache miss')
-            index = await createIndexNoCache()
+            index = await createIndexNoCache(status => reportStatus(`Cache miss: ${status}`))
 
             void (async () => {
                 const writeStore = db.transaction('indexes', 'readwrite').objectStore('indexes')
@@ -451,12 +454,13 @@ export async function createIndex(config: SearchIndexConfig): Promise<(params: S
     catch (error) {
         // This is going to fail during unit testing since we don't mock stuff
         console.warn('Getting cached search index failed', error)
-        index = await createIndexNoCache()
+        index = await createIndexNoCache(status => reportStatus(`No cache key: ${status}`))
     }
 
     let modifiedIndex = index // Don't want to store this one back to the cache
 
     if (statsIndexPromise) {
+        await reportStatus('Waiting for stats index...')
         const checkpoint = performance.now()
         // stats go first so they are prioritized if all other things are equal
         modifiedIndex = concatIndices(await statsIndexPromise, index)
@@ -473,8 +477,10 @@ function makeSearchFunction(searchIndex: NormalizedSearchIndex): (params: Search
     }
 }
 
-async function createIndexNoCache(): Promise<NormalizedSearchIndex> {
+async function createIndexNoCache(reportStatus: ReportStatus): Promise<NormalizedSearchIndex> {
+    await reportStatus('Loading search index from network...')
     const rawIndex = await loadProtobuf('/index/pages_all.gz', 'SearchIndex')
+    await reportStatus('Processing search index...')
     return processRawSearchIndex(rawIndex)
 }
 

@@ -7,4 +7,4 @@ export function debugPerformance(arg: unknown): void {
     }
 }
 
-export const simulateSlowSearch: boolean = false
+export const simulateSlowSearchDelayMs: number | undefined = undefined

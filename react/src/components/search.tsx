@@ -157,7 +157,7 @@ function createSearchWorker(config: AsyncConfig): SearchWorker {
                 messageQueue.push(resolve)
             })
         },
-        status: new Property({ status: 'loading', message: 'Not yet initialized' }),
+        status: new Property({ status: 'loading', message: 'Spawning worker...' }),
     }
     worker.addEventListener('message', (message: MessageEvent<SearchWorkerOutputMessage>) => {
         switch (message.data.type) {

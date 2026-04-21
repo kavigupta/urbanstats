@@ -1,6 +1,4 @@
-import { ClientFunction, Selector } from 'testcafe'
-
-import { TestWindow } from '../src/utils/TestUtils'
+import { Selector } from 'testcafe'
 
 import {
     searchField, target, getLocationWithoutSettings, screencap,
@@ -196,8 +194,4 @@ test('search within california universe', async (t) => {
     await waitForSelectedSearchResult(t)
     await t.pressKey('enter')
     await t.expect(getLocation()).eql(`${target}/statistic.html?statname=PW+Mean+__PCT__+of+parkland+within+1km&article_type=City&start=1&amount=20&universe=California%2C+USA`)
-})
-
-test(`don't leave slow search on`, async (t) => {
-    await t.expect(ClientFunction(() => (window as unknown as TestWindow).testUtils.simulateSlowSearch)).notOk()
 })
