@@ -114,7 +114,7 @@ async function prepForImage(t: TestController, options: { hover: boolean, remove
         }
 
         // remove the flashing text caret
-        document.querySelectorAll('input[type=text]').forEach((element) => { element.setAttribute('style', `${element.getAttribute('style')} caret-color: transparent;`) })
+        document.querySelectorAll('input[type=text],textarea,[contenteditable]:not([contenteditable="false"])').forEach((element) => { element.setAttribute('style', `${element.getAttribute('style')} caret-color: transparent;`) })
 
         // stop all animations (intended for moving spinners)
         document.querySelectorAll('[style*=animation]').forEach((element) => { (element as HTMLElement).style.animation = 'none' })
