@@ -179,24 +179,36 @@ function LoadingIndicator({ type, message }: { type: 'dropdown' | 'field', messa
     switch (type) {
         case 'field':
             return (
-                <div style={{ position: 'absolute', right: '0.5em', top: 0, bottom: 0, display: 'flex', alignItems: 'center' }}>
+                <div
+                    style={{
+                        position: 'absolute',
+                        right: '0.5em',
+                        top: 0,
+                        bottom: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                    }}
+                    data-test-id="search-load-field"
+                >
                     <MoonLoader color={colors.textMain} size="24px" />
                 </div>
             )
         case 'dropdown':
             return (
-                <div style={{
-                    color: colors.ordinalTextColor,
-                    padding: '0.5em',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5em',
-                    borderRadius: '0.25em',
-                    backgroundColor: colors.slightlyDifferentBackground,
-                    zIndex: zIndex.searchResults,
-                    position: 'absolute',
-                    width: '100%',
-                }}
+                <div
+                    style={{
+                        color: colors.ordinalTextColor,
+                        padding: '0.5em',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5em',
+                        borderRadius: '0.25em',
+                        backgroundColor: colors.slightlyDifferentBackground,
+                        zIndex: zIndex.searchResults,
+                        position: 'absolute',
+                        width: '100%',
+                    }}
+                    data-test-id="search-load-dropdown"
                 >
                     <MoonLoader color={colors.textMain} size="20px" />
                     {message}

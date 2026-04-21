@@ -10,6 +10,8 @@ import {
     createComparison,
     checkTextboxes,
     waitForLoading,
+    withInterceptedRequests,
+    cdpSessionWithSessionId,
 } from './test_utils'
 
 urbanstatsFixture('shorter article test', `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
@@ -195,3 +197,57 @@ test('search within california universe', async (t) => {
     await t.pressKey('enter')
     await t.expect(getLocation()).eql(`${target}/statistic.html?statname=PW+Mean+__PCT__+of+parkland+within+1km&article_type=City&start=1&amount=20&universe=California%2C+USA`)
 })
+
+test('initial loading indicator', async (t) => {
+    await withInterceptedRequests(t, request => request.url.includes('pages_all') ? 'fail' : 'continue', async () => {
+        await t
+            .click(searchField)
+            .typeText(searchField, 'parkland by city')
+
+        await t.wait(1000)
+
+        await t.expect(Selector('[data-test-id="search-load-dropdown"]').exists).ok()
+        await screencap(t, { wait: false })
+    })
+})
+
+test('subsequent loading indicator', async (t) => {
+    const cdp = await t.getCurrentCDPSession()
+    await cdp.Target.setDiscoverTargets({ discover: true })
+
+    const workerSession = new Promise<typeof cdp>((resolve) => {
+        cdp.Target.on('targetCreated', async (e) => {
+            const { sessionId } = await cdp.Target.attachToTarget({ ...e.targetInfo, flatten: true })
+
+            resolve(cdpSessionWithSessionId(cdp, sessionId))
+        })
+    })
+
+    // Do initial load of the worker
+    await t
+        .click(searchField)
+        .typeText(searchField, 'parkland by city')
+
+    await waitForLoading()
+
+    // Block search completion messages
+    await (await workerSession).Runtime.evaluate({ expression: /{(.+)}/s.exec(swapPostMessage.toString())![1] })
+
+    await t
+        .click(searchField)
+        .typeText(searchField, 'abcd', { replace: true })
+
+    await t.wait(1000)
+
+    await t.expect(Selector('[data-test-id="search-load-field"]').exists).ok()
+    await screencap(t, { wait: false })
+})
+
+function swapPostMessage(): void {
+    const originalPostMessage = postMessage
+    globalThis.postMessage = (message: { type: string, status: { status: string } }) => {
+        if (message.type === 'status' && message.status.status !== 'ready') {
+            originalPostMessage(message)
+        }
+    }
+}
