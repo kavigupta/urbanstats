@@ -163,7 +163,6 @@ async function runTest(test: string): Promise<TestResult> {
             '--disable-renderer-backgrounding',
             '--disable-features=LocalNetworkAccessChecks',
             ...(options.remoteDebuggingPort ? [`--remote-debugging-port=${options.remoteDebuggingPort}`] : []),
-            '--disable-composited-antialiasing',
         ].join(' ')}`])
         // Explicitly interpolate test here so we don't add the error to the directory
         // Pattern is only used for take on fail, we make our own pattern otherwise
