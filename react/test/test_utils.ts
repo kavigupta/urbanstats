@@ -3,6 +3,7 @@ import path from 'path'
 import { gzipSync, gunzipSync } from 'zlib'
 
 import chalkTemplate from 'chalk-template'
+import type { Protocol } from 'devtools-protocol'
 import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
 import xmlFormat from 'xml-formatter'
@@ -498,4 +499,41 @@ export const getScroll = ClientFunction(() => window.scrollY)
 
 export function dragHandle(n: number): Selector {
     return Selector('button[aria-roledescription="sortable"]:not([inert] *)').nth(n)
+}
+
+type RequestHandler = (request: Protocol.Network.Request) => 'continue' | 'fail'
+
+const interceptors = new WeakMap<object, (h: RequestHandler) => void>()
+
+// Exists to simplify request interception for tests, since Fetch CDP is carried over between tests
+export async function withInterceptedRequests(t: TestController, requestHandler: RequestHandler, testBlock: () => void | Promise<void>): Promise<void> {
+    const cdp = await t.getCurrentCDPSession()
+    let interceptor = interceptors.get(cdp)
+    if (interceptor === undefined) {
+        // Interceptor's default state is to continue
+        let interceptorRequestHandler: RequestHandler = () => 'continue'
+        interceptor = (newRequestHandler) => {
+            interceptorRequestHandler = newRequestHandler
+        }
+        cdp.Fetch.on('requestPaused', async ({ requestId, request }) => {
+            switch (interceptorRequestHandler(request)) {
+                case 'continue':
+                    await cdp.Fetch.continueRequest({ requestId })
+                    break
+                case 'fail':
+                    await cdp.Fetch.failRequest({ requestId, errorReason: 'BlockedByClient' })
+                    break
+            }
+        })
+        interceptors.set(cdp, interceptor)
+    }
+    interceptor(requestHandler)
+    await cdp.Fetch.enable({})
+    try {
+        await testBlock()
+    }
+    finally {
+        interceptor(() => 'continue')
+        await cdp.Fetch.disable()
+    }
 }
