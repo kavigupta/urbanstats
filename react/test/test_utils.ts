@@ -3,7 +3,7 @@ import path from 'path'
 import { gzipSync, gunzipSync } from 'zlib'
 
 import chalkTemplate from 'chalk-template'
-import type Protocol from 'devtools-protocol'
+import type { Protocol } from 'devtools-protocol'
 import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
 import xmlFormat from 'xml-formatter'
