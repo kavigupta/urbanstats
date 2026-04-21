@@ -124,7 +124,7 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
 
     test('loading indicator', async (t) => {
         // Loading indicator appears when shape load fails or is delayed
-        await withInterceptedRequests(t, request => request.url.includes('shape') ? 'continue' : 'fail', async () => {
+        await withInterceptedRequests(t, request => request.url.includes('shape') ? 'fail' : 'continue', async () => {
             await clickButtons(t, ['a'])
             await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
 
