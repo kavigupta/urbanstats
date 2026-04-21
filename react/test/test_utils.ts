@@ -525,6 +525,7 @@ export async function withInterceptedRequests(t: TestController, requestHandler:
                     break
             }
         })
+        interceptors.set(cdp, interceptor)
     }
     interceptor(requestHandler)
     await cdp.Fetch.enable({})
