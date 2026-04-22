@@ -453,7 +453,7 @@ export const cMapRGB: USSValue = {
             opacity: 'Opacity',
             label: 'Label',
             geo: 'Geography',
-            outline: 'Outline Options',
+            outline: 'Options',
             basemap: 'Basemap Options',
             insets: 'Insets',
             unit: 'Unit',
