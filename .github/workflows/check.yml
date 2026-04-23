@@ -173,6 +173,7 @@ jobs:
           CHECK_RUN_ID: ${{ job.check_run_id }}
       - id: artifact-name
         if: "!cancelled()"
+        shell: bash
         run: |
           name="${{ matrix.test-file }}"
           echo "name=${name:0:200}" >> $GITHUB_OUTPUT
