@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="160mm"
+   height="160mm"
+   viewBox="0 0 159.99999 160.00001"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   sodipodi:docname="percentile.svg"
+   inkscape:export-filename="percentile.png"
+   inkscape:export-xdpi="127"
+   inkscape:export-ydpi="127"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.86643918"
+     inkscape:cx="38.663995"
+     inkscape:cy="223.32785"
+     inkscape:window-width="2190"
+     inkscape:window-height="1435"
+     inkscape:window-x="26"
+     inkscape:window-y="23"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="g3949"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1" />
+  <defs
+     id="defs2">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="61.003862 : 44.612156 : 1"
+       inkscape:vp_y="0 : 663.24883 : 0"
+       inkscape:vp_z="200.2861 : 44.612156 : 1"
+       inkscape:persp3d-origin="130.64504 : 11.781346 : 1"
+       id="perspective240" />
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="103.97237 : 40.653577 : 1"
+       inkscape:vp_y="0 : 454.17892 : 0"
+       inkscape:vp_z="199.34991 : 40.653577 : 1"
+       inkscape:persp3d-origin="151.66113 : 18.171725 : 1"
+       id="perspective240-3" />
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="125.34217 : 44.620416 : 1"
+       inkscape:vp_y="0 : 752.10365 : 0"
+       inkscape:vp_z="193.09662 : 51.972526 : 1"
+       inkscape:persp3d-origin="167.05562 : 11.547226 : 1"
+       id="perspective240-3-9" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-271.80194,218.23845)">
+    <g
+       id="g3949"
+       transform="translate(-14.318162,1.970182)">
+      <text
+         xml:space="preserve"
+         style="font-weight:bold;font-size:182.298px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold';letter-spacing:0px;word-spacing:0px;fill:#8686bf;fill-opacity:1;stroke:none;stroke-width:4.55744px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         x="291.46906"
+         y="-76.313179"
+         id="text348"><tspan
+           sodipodi:role="line"
+           id="tspan346"
+           style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-family:'Jost*';-inkscape-font-specification:'Jost* Medium';fill:#8686bf;fill-opacity:1;stroke:none;stroke-width:4.55744px;stroke-opacity:1"
+           x="291.46906"
+           y="-76.313179">%</tspan></text>
+    </g>
+  </g>
+</svg>

@@ -1,5 +1,5 @@
 import * as Plot from '@observablehq/plot'
-import React, { ReactElement, ReactNode, useCallback, useContext, useState } from 'react'
+import React, { ReactElement, ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 
 // imort Observable plot
 import { Navigator } from '../navigation/Navigator'
@@ -12,7 +12,9 @@ import { IHistogram } from '../utils/protos'
 import { useTranspose } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
+import { percentileText } from './display-stats'
 import { PlotComponent } from './plots-general'
+import { approximateHistogramPercentile, renderHistogramValue, renderNumberHighlyRounded } from './plots-histogram-utils'
 import { createScreenshot } from './screenshot'
 import { SearchBox } from './search'
 import { CheckboxSetting } from './sidebar'
@@ -30,12 +32,32 @@ interface HistogramProps {
     subseriesName: string
 }
 
+interface PercentileMarker {
+    xidx: number
+    color: string
+    label: string
+    histogram: IHistogram
+    universeTotal: number
+}
+
+interface PercentileResult {
+    shortname: string
+    xidx: number
+    valueText: string
+    color: string
+    histogramData: IHistogram
+    universeTotal: number
+}
+
+function hasMultipleSubseries(histograms: HistogramProps[]): boolean {
+    return new Set<string>(histograms.map(h => h.subseriesName)).size > 1
+}
+
 function processHistogramType(histogramType: HistogramType, histograms: HistogramProps[]): HistogramType {
     if (histogramType !== 'Bar') {
         return histogramType
     }
-    const subseriesNames = new Set<string>(histograms.map(h => h.subseriesName))
-    if (subseriesNames.size > 1) {
+    if (hasMultipleSubseries(histograms)) {
         return 'Line'
     }
     return histogramType
@@ -46,6 +68,7 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
     const histogramType = processHistogramType(histogramTypeRaw, props.histograms)
     const [useImperial] = useSetting('use_imperial')
     const [relative] = useSetting('histogram_relative')
+    const [percentileInput, setPercentileInput] = useState('')
     const binMin = props.histograms[0].histogram.binMin!
     const binSize = props.histograms[0].histogram.binSize!
     for (const histogram of props.histograms) {
@@ -53,8 +76,47 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
             throw new Error('histograms have different binMin or binSize')
         }
     }
+    const includeSubseriesInSeriesName = hasMultipleSubseries(props.histograms)
+    const percentile = percentileInput === '' ? undefined : Number(percentileInput)
+    const validPercentile = percentile !== undefined && !Number.isNaN(percentile) && percentile >= 0 && percentile <= 100
+    const percentileAnnotation = validPercentile ? percentileText(percentile, false) : undefined
+    const percentileMarkers = useMemo(() => {
+        if (!validPercentile) {
+            return []
+        }
+        const results = props.histograms
+            .map((histogram) => {
+                const xidx = approximateHistogramPercentile(histogram.histogram, percentile)
+                if (Number.isNaN(xidx)) {
+                    return undefined
+                }
+                return {
+                    shortname: seriesDisplayName(histogram, includeSubseriesInSeriesName),
+                    xidx,
+                    valueText: renderHistogramValue(xidx, binSize, binMin, useImperial),
+                    color: histogram.color,
+                    histogramData: histogram.histogram,
+                    universeTotal: histogram.universeTotal,
+                }
+            })
+            .filter((r): r is PercentileResult => r !== undefined)
+        return results.map(result => ({
+            xidx: result.xidx,
+            color: result.color,
+            label: `${result.shortname}: ${result.valueText}`,
+            histogram: result.histogramData,
+            universeTotal: result.universeTotal,
+        }))
+    }, [validPercentile, percentile, props.histograms, binSize, binMin, useImperial, includeSubseriesInSeriesName])
     const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
-        <HistogramSettings makePlot={makePlot} shortnames={props.histograms.map(h => h.shortname)} longnames={props.histograms.map(h => h.longname)} sharedTypeOfAllArticles={props.sharedTypeOfAllArticles} />
+        <HistogramSettings
+            makePlot={makePlot}
+            shortnames={props.histograms.map(h => h.shortname)}
+            longnames={props.histograms.map(h => h.longname)}
+            sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
+            percentileInput={percentileInput}
+            setPercentileInput={setPercentileInput}
+        />
     )
 
     const systemColors = useColors()
@@ -70,6 +132,7 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
             const xidxs = Array.from({ length: xIdxEnd - xIdxStart }, (_, i) => i + xIdxStart)
             const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial, transpose)
             const [marks, maxValue] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose, systemColors)
+            marks.push(...createPercentileMarks(percentileMarkers, transpose, systemColors, relative))
             marks.push(
                 ...xAxisMarks,
                 ...yAxis(maxValue, transpose),
@@ -78,10 +141,10 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
             const xlabel = `${props.statDescription} (/${useImperial ? 'mi' : 'km'}²)`
             const ylabel = relative ? '% of total' : 'Population'
             const ydomain: [number, number] = [maxValue * (-yPad), maxValue * (1 + yPad)]
-            marks.push(...manualLegend(props.histograms, transpose, colors, shortnames, systemColors))
+            marks.push(...manualLegend(props.histograms, transpose, colors, shortnames, systemColors, percentileAnnotation))
             return { marks, xlabel, ylabel, ydomain }
         },
-        [props.histograms, binMin, binSize, relative, histogramType, useImperial, systemColors, props.statDescription],
+        [props.histograms, binMin, binSize, relative, histogramType, useImperial, systemColors, props.statDescription, percentileMarkers, percentileAnnotation],
     )
 
     return (
@@ -110,6 +173,12 @@ function computeColorItems(shortnames: string[], colors: string[]): { label: str
     return colorItems
 }
 
+function seriesDisplayName(histogram: HistogramProps, includeSubseriesName: boolean): string {
+    return includeSubseriesName && histogram.subseriesName !== ''
+        ? `${histogram.shortname} ${histogram.subseriesName}`
+        : histogram.shortname
+}
+
 function computeDashPatterns(histograms: HistogramProps[]): Map<string, { pattern: string, name: string }> {
     const dashPatterns = new Map<string, { pattern: string, name: string }>()
     const subseriesNames = new Set<string>()
@@ -130,7 +199,14 @@ function computeDashPatterns(histograms: HistogramProps[]): Map<string, { patter
     return dashPatterns
 }
 
-function manualLegend(histograms: HistogramProps[], transpose: boolean, colors: string[], shortnames: string[], themeColors: Colors): Plot.Markish[] {
+function manualLegend(
+    histograms: HistogramProps[],
+    transpose: boolean,
+    colors: string[],
+    shortnames: string[],
+    themeColors: Colors,
+    percentileAnnotation?: string,
+): Plot.Markish[] {
     const colorItems = computeColorItems(shortnames, colors)
 
     const dashPatterns = computeDashPatterns(histograms)
@@ -146,7 +222,8 @@ function manualLegend(histograms: HistogramProps[], transpose: boolean, colors: 
         })
     }
 
-    const totalItems = colorItems.length + dashPatternItems.length
+    const percentileLegendRows = percentileAnnotation === undefined ? 0 : 1
+    const totalItems = colorItems.length + dashPatternItems.length + percentileLegendRows
     if (totalItems === 0) {
         return []
     }
@@ -168,7 +245,11 @@ function manualLegend(histograms: HistogramProps[], transpose: boolean, colors: 
         const textSpacing = 10
 
         // Calculate width based on longest label
-        const allLabels = [...colorItems.map(item => item.label), ...dashPatternItems.map(item => item.label)]
+        const allLabels = [
+            ...colorItems.map(item => item.label),
+            ...dashPatternItems.map(item => item.label),
+            ...(percentileAnnotation === undefined ? [] : [percentileAnnotation]),
+        ]
         let maxTextWidth = 0
         if (allLabels.length > 0) {
             // Use canvas to measure text width accurately
@@ -260,6 +341,44 @@ function manualLegend(histograms: HistogramProps[], transpose: boolean, colors: 
             rowIndex++
         })
 
+        if (percentileAnnotation !== undefined) {
+            const row = document.createElementNS(svgNS, 'g')
+            row.setAttribute('transform', `translate(${paddingX} ${paddingY + rowHeight * rowIndex})`)
+
+            const centerY = rowHeight / 2
+            const lineX = lineLength / 2
+
+            const line = document.createElementNS(svgNS, 'line')
+            line.setAttribute('x1', String(lineX))
+            line.setAttribute('x2', String(lineX))
+            line.setAttribute('y1', String(centerY - 7))
+            line.setAttribute('y2', String(centerY + 7))
+            line.setAttribute('stroke', themeColors.textMain)
+            line.setAttribute('stroke-width', '2')
+            row.appendChild(line)
+
+            const dot = document.createElementNS(svgNS, 'circle')
+            dot.setAttribute('cx', String(lineX))
+            dot.setAttribute('cy', String(centerY))
+            dot.setAttribute('r', '3')
+            dot.setAttribute('fill', themeColors.textMain)
+            dot.setAttribute('stroke', themeColors.slightlyDifferentBackground)
+            dot.setAttribute('stroke-width', '1')
+            row.appendChild(dot)
+
+            const text = document.createElementNS(svgNS, 'text')
+            text.setAttribute('x', String(lineLength + 10))
+            text.setAttribute('y', String(centerY))
+            text.setAttribute('font-size', `${fontSize}px`)
+            text.setAttribute('fill', themeColors.textMain)
+            text.setAttribute('dominant-baseline', 'middle')
+            text.setAttribute('text-anchor', 'start')
+            text.textContent = percentileAnnotation
+            row.appendChild(text)
+
+            group.appendChild(row)
+        }
+
         return group
     }
 
@@ -273,6 +392,8 @@ function HistogramSettings(props: {
     longnames: string[]
     makePlot: () => HTMLElement
     sharedTypeOfAllArticles?: string
+    percentileInput: string
+    setPercentileInput: (value: string) => void
 }): ReactNode {
     const universe = useUniverse()
     const [histogramType, setHistogramType] = useSetting('histogram_type')
@@ -280,8 +401,8 @@ function HistogramSettings(props: {
     const transpose = useTranspose()
     const navContext = useContext(Navigator.Context)
     const [showSearchBox, setShowSearchBox] = useState(false)
+    const [showPercentileBox, setShowPercentileBox] = useState(false)
 
-    // dropdown for histogram type
     return (
         <div
             className="serif"
@@ -357,6 +478,56 @@ function HistogramSettings(props: {
                                 }, { scroll: { kind: 'none' } })
                             }}
                         />
+                    </div>
+                )}
+            </div>
+            <div style={{ position: 'relative' }}>
+                <img
+                    src="/percentile.png"
+                    onClick={() => { setShowPercentileBox(!showPercentileBox) }}
+                    width="20"
+                    height="20"
+                    style={{ cursor: 'pointer' }}
+                    title="Look up percentile"
+                />
+                {showPercentileBox && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: '25px',
+                            left: '0px',
+                            backgroundColor: colors.background,
+                            border: `1px solid ${colors.textMain}`,
+                            borderRadius: '4px',
+                            padding: '0.5em',
+                            zIndex: zIndex.plotSettings,
+                            minWidth: '180px',
+                        }}
+                    >
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em' }}>
+                            <label htmlFor="histogram-percentile-popup-input" style={{ fontSize: '0.9em' }}>
+                                Look up percentile
+                            </label>
+                            <input
+                                id="histogram-percentile-popup-input"
+                                type="number"
+                                min="0"
+                                max="100"
+                                step="0.1"
+                                value={props.percentileInput}
+                                onChange={(e) => { props.setPercentileInput(e.target.value) }}
+                                autoFocus={true}
+                                style={{
+                                    width: '100%',
+                                    backgroundColor: colors.background,
+                                    color: colors.textMain,
+                                    border: `1px solid ${colors.textMain}`,
+                                    borderRadius: '4px',
+                                    padding: '0.35em',
+                                    boxSizing: 'border-box',
+                                }}
+                            />
+                        </div>
                     </div>
                 )}
             </div>
@@ -485,8 +656,6 @@ function xAxis(xidxs: number[], binSize: number, binMin: number, useImperial: bo
             xKeypoints.push(xidx)
         }
     }
-    const adjustment = useImperial ? Math.log10(1.60934) * 2 : 0
-
     let axis = Plot.axisX
     let grid = Plot.gridX
     if (transpose) {
@@ -495,10 +664,10 @@ function xAxis(xidxs: number[], binSize: number, binMin: number, useImperial: bo
     }
     return [
         [
-            axis(xKeypoints, { tickFormat: d => renderPow10(d * binSize + binMin + adjustment) }),
+            axis(xKeypoints, { tickFormat: d => renderPow10(d * binSize + binMin + (useImperial ? Math.log10(1.60934) * 2 : 0)) }),
             grid(xKeypoints),
         ],
-        x => `${renderNumberHighlyRounded(Math.pow(10, x * binSize + binMin + adjustment), 2)}/${useImperial ? 'mi' : 'km'}²`,
+        x => renderHistogramValue(x, binSize, binMin, useImperial),
     ]
 }
 
@@ -555,22 +724,6 @@ function renderPow10(x: number): string {
     const p10 = pow10Moral(x)
 
     return renderNumberHighlyRounded(p10)
-}
-
-function renderNumberHighlyRounded(x: number, places = 0): string {
-    if (x < 1000) {
-        return x.toFixed(0)
-    }
-    if (x < 1e6) {
-        return `${(x / 1e3).toFixed(places)}k`
-    }
-    if (x < 1e9) {
-        return `${(x / 1e6).toFixed(places)}M`
-    }
-    if (x < 1e12) {
-        return `${(x / 1e9).toFixed(places)}B`
-    }
-    return x.toExponential(1)
 }
 
 function createHistogramMarks(
@@ -638,4 +791,62 @@ function createHistogramMarks(
     }
     marks.push(tip)
     return [marks, maxValue]
+}
+
+function createPercentileMarks(
+    percentileMarkers: PercentileMarker[],
+    transpose: boolean,
+    themeColors: Colors,
+    relative: boolean,
+): Plot.Markish[] {
+    if (percentileMarkers.length === 0) {
+        return []
+    }
+
+    // Create marks for each marker
+    return percentileMarkers.flatMap((marker) => {
+        const xidxFloor = Math.floor(marker.xidx)
+        const xidxCeil = Math.ceil(marker.xidx)
+        const fraction = marker.xidx - xidxFloor
+        const counts = marker.histogram.counts ?? []
+        const y1 = counts[xidxFloor] ?? 0
+        const y2 = counts[xidxCeil] ?? 0
+        const rawYValue = y1 + (y2 - y1) * fraction
+
+        // Normalize y-value using the same formula as histogram marks
+        const sumCounts = counts.reduce((a, b) => a + b, 0)
+        const normalizedCount = sumCounts > 0 ? rawYValue / sumCounts : 0
+        // Scale by universeTotal (absolute) or 100 (relative)
+        const yValue = normalizedCount * (relative ? 100 : marker.universeTotal)
+
+        const dotPoint = transpose
+            ? { x: yValue, y: marker.xidx }
+            : { x: marker.xidx, y: yValue }
+        const labelPoint = transpose
+            ? { x: yValue, y: marker.xidx, label: marker.label }
+            : { x: marker.xidx, y: yValue, label: marker.label }
+
+        return [
+            transpose
+                ? Plot.ruleY([marker.xidx], { stroke: marker.color, strokeWidth: 2, strokeOpacity: 0.8 })
+                : Plot.ruleX([marker.xidx], { stroke: marker.color, strokeWidth: 2, strokeOpacity: 0.8 }),
+            Plot.dot([dotPoint], {
+                x: 'x',
+                y: 'y',
+                fill: marker.color,
+                stroke: themeColors.background,
+                r: 4,
+            }),
+            Plot.text([labelPoint], {
+                x: 'x',
+                y: 'y',
+                text: 'label',
+                fill: marker.color,
+                fontSize: 11,
+                textAnchor: transpose ? 'start' : 'middle',
+                dx: transpose ? 6 : 0,
+                dy: transpose ? 0 : -8,
+            }),
+        ] as Plot.Markish[]
+    })
 }

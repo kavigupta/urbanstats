@@ -305,6 +305,7 @@ def build_urbanstats(site_folder, *, steps, mode):
     shutil.copy("icons/main/screenshot.png", f"{site_folder}/")
     shutil.copy("icons/main/download.png", f"{site_folder}/")
     shutil.copy("icons/main/add.png", f"{site_folder}/")
+    shutil.copy("icons/main/percentile.png", f"{site_folder}/")
     shutil.copy("icons/main/add-green-small.png", f"{site_folder}/")
     shutil.copy("icons/main/link-preview.png", f"{site_folder}/")
     shutil.copy("icons/main/juxtastat-link-preview.png", f"{site_folder}/")
