@@ -43,10 +43,6 @@ export function subsetEntryToTerms(entry: CongressionalRepresentativeEntry, term
     return [newEntry]
 }
 
-function districtLabel(entry: CongressionalRepresentativeEntry): string {
-    return entry.districtLongname ?? 'District unknown'
-}
-
 interface DistrictBucketForTerm {
     districtLabel: string
     representatives: CongressionalRepresentativeEntry['representative'][]
@@ -82,7 +78,7 @@ function uniqueRepresentatives(entries: CongressionalRepresentativeEntry[]): Con
 function districtBucketsForTerm(entries: CongressionalRepresentativeEntry[]): DistrictBucketForTerm[] {
     const byDistrict = new Map<string, CongressionalRepresentativeEntry[]>()
     entries.forEach((entry) => {
-        const label = districtLabel(entry)
+        const label = entry.districtLongname ?? 'District unknown'
         const existing = byDistrict.get(label)
         if (existing === undefined) {
             byDistrict.set(label, [entry])
