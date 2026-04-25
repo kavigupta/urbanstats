@@ -4,11 +4,11 @@ import { test } from 'node:test'
 import { AllUniverses } from '../src/components/search-statistic'
 import type_ordering_idx from '../src/data/type_ordering_idx'
 import './util/fetch'
-import { createIndex, SearchResult } from '../src/search'
+import { createIndex, SearchResult, simulateSlowSearchDelayMs } from '../src/search'
 import { Universe } from '../src/universe'
 import { DefaultMap } from '../src/utils/DefaultMap'
 
-const search = new DefaultMap<Universe | AllUniverses | undefined, ReturnType<typeof createIndex>>(statsUniverse => createIndex({ cacheKey: undefined, statsUniverse }))
+const search = new DefaultMap<Universe | AllUniverses | undefined, ReturnType<typeof createIndex>>(statsUniverse => createIndex({ cacheKey: undefined, statsUniverse }, () => Promise.resolve()))
 
 const computeNthResult = async (n: number, query: string, prioritizeType: string | undefined, statsUniverse: Universe | AllUniverses | undefined): Promise<SearchResult> => (await search.get(statsUniverse))({
     unnormalizedPattern: query,
@@ -72,3 +72,7 @@ nthResult(test)(0, 'by population center', 'Thunder Bay Population Center, ON, C
 nthResult(test)(0, 'by population center', 'Area by CA Population Center', undefined, 'allUniverses')
 nthResult(test)(0, 'by population center', 'Area by CA Population Center', undefined, 'Canada')
 nthResult(test)(0, 'agriculture by riding', 'Natural resources and agriculture occupations % [StatCan] by CA Riding', undefined, 'allUniverses')
+
+void test('do not leave slow mode on', () => {
+    assert.equal(simulateSlowSearchDelayMs, undefined)
+})
