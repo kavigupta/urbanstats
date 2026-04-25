@@ -171,20 +171,26 @@ jobs:
           URBAN_STATS_TEST_PASSWORD: ${{ secrets.URBAN_STATS_TEST_PASSWORD }}
           URBAN_STATS_TEST_TOTP: ${{ secrets.URBAN_STATS_TEST_TOTP }}
           CHECK_RUN_ID: ${{ job.check_run_id }}
+      - id: artifact-name
+        if: "!cancelled()"
+        shell: bash
+        run: |
+          name="${{ matrix.test-file }}"
+          echo "name=${name:0:200}" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
-          name: delta-${{ matrix.test-file }}
+          name: delta-${{ steps.artifact-name.outputs.name }}
           path: react/delta
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
-          name: changed_screenshots-${{ matrix.test-file }}
+          name: changed_screenshots-${{ steps.artifact-name.outputs.name }}
           path: react/changed_screenshots
       - uses: actions/upload-artifact@v4
         if: "!cancelled()"
         with:
-          name: test_histories-${{ matrix.test-file }}
+          name: test_histories-${{ steps.artifact-name.outputs.name }}
           path: react/test_histories
 
   merge-screenshots:
