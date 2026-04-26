@@ -211,11 +211,10 @@ function SuperTableRow(props: {
             longname: cell.longname,
             representatives: cell.row.statval.representatives.map((r): CongressionalRepresentativeEntry => {
                 assert(r.representative.name !== undefined && r.representative.name !== null, 'representative name missing')
-                assert(r.representative.wikipediaPage !== undefined && r.representative.wikipediaPage !== null, 'representative wikipedia page missing')
                 return {
                     representative: {
                         name: r.representative.name,
-                        wikipediaPage: r.representative.wikipediaPage,
+                        wikipediaPage: r.representative.wikipediaPage ?? undefined,
                         party: r.representative.party ?? undefined,
                     },
                     districtLongname: r.districtLongname,

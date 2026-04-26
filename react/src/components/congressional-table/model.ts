@@ -1,7 +1,7 @@
 export interface CongressionalRepresentativeEntry {
     representative: {
         name: string
-        wikipediaPage: string
+        wikipediaPage?: string
         party?: string
     }
     districtLongname: string
