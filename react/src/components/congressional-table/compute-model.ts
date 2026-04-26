@@ -15,14 +15,6 @@ export interface CongressionalRegionData {
     representatives: CongressionalRepresentativeEntry[]
 }
 
-function termStartsForEntry(entry: CongressionalRepresentativeEntry): number[] {
-    const terms = []
-    for (let term = entry.startTerm; term <= entry.endTerm; term += 2) {
-        terms.push(term)
-    }
-    return terms
-}
-
 function entryCoversTerm(entry: CongressionalRepresentativeEntry, termStart: number): boolean {
     return entry.startTerm <= termStart && entry.endTerm >= termStart
 }
@@ -105,7 +97,7 @@ function computeTermsDescending(cellSpecs: CongressionalRegionData[]): number[] 
 
     for (const cell of cellSpecs) {
         cell.representatives.forEach((entry: CongressionalRepresentativeEntry) => {
-            for (const termStart of termStartsForEntry(entry)) {
+            for (let termStart = entry.startTerm; termStart <= entry.endTerm; termStart += 2) {
                 termStarts.add(termStart)
             }
         })
