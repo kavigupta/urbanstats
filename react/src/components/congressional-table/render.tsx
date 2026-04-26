@@ -500,7 +500,13 @@ function useTableDisplayInfo(regions: CongressionalRegionData[]): {
             const rowHeight = rowRect.height
             return rowHeight > 0 && visibleHeight / rowHeight >= 0.5 ? [termStart] : []
         })
-        setVisibleTerms(nextVisibleTerms)
+        // avoid updating state if no real change
+        setVisibleTerms((prevVisibleTerms) => {
+            if (JSON.stringify(prevVisibleTerms) === JSON.stringify(nextVisibleTerms)) {
+                return prevVisibleTerms
+            }
+            return nextVisibleTerms
+        })
     }, [termRows])
 
     React.useLayoutEffect(() => {
