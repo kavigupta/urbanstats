@@ -398,6 +398,11 @@ mapper(() => test)('disable basemap', { code: 'customNode("");\ncondition (true)
     await downloadPNG(t)
 })
 
+mapper(() => test)('disable basemap labels', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, basemap=osmBasemap())', universe: 'USA', geo: 'Subnational Region' }, async (t) => {
+    await checkBox(t, /Disable Basemap Labels/)
+    await t.expect(Selector('#auto-ux-editor-ro_basemap_noLabels input').value).eql('true')
+})
+
 mapper(() => test)('preamble checkbox syncs with undo/redo operations', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     const preamble = checkSelector(/^Preamble/)
     await t.expect(preamble.checked).notOk()
