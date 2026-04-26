@@ -34,13 +34,11 @@ interface DistrictBucketForTerm {
 }
 
 function representativeValueSignature(representative: CongressionalRepresentativeEntry['representative']): string {
-    return `${representative.name}|${representative.wikipediaPage}|${representative.party ?? ''}`
+    return JSON.stringify(representative, ['name', 'wikipediaPage', 'party'])
 }
 
 function representativeListSignature(representatives: CongressionalRepresentativeEntry['representative'][]): string {
-    return representatives
-        .map(representativeValueSignature)
-        .join('||')
+    return JSON.stringify(representatives.map(representativeValueSignature))
 }
 
 function uniqueRepresentatives(entries: CongressionalRepresentativeEntry[]): CongressionalRepresentativeEntry['representative'][] {
