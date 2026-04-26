@@ -401,6 +401,7 @@ function CongressionalTableSection(props: {
     isLastSectionInSupercolumn: boolean
     isLastSuperColumn: boolean
 }): ReactNode {
+    const colors = useColors()
     return (
         <Fragment key={`${props.columnIndex}-${props.section.contentStartDisplayIndex}`}>
             {props.section.headerDisplayIndex !== undefined && (
@@ -422,7 +423,7 @@ function CongressionalTableSection(props: {
                     display: 'grid',
                     gridTemplateColumns: props.section.districtHeaders.map(() => 'minmax(0, 1fr)').join(' '),
                     gridTemplateRows: 'subgrid',
-                    ...interSupercolumnBorder(useColors(), props.isLastSuperColumn),
+                    ...interSupercolumnBorder(colors, props.isLastSuperColumn),
                 }}
             >
                 {props.section.congressionalRuns.map((run, bucketIndex) => (
