@@ -577,14 +577,14 @@ function useTableDisplayInfo(regions: CongressionalRegionData[]): {
     }
 }
 
-function useRestorepreferredScrollableHeightAfterScreenshot(props: {
+function useRestorePreferredScrollableHeightAfterScreenshot(props: {
     isScreenshot: boolean
     scrollContainerRef: React.RefObject<HTMLDivElement | null>
     preferredScrollableHeight: number
 }): { scrollableHeight: number } {
     const lastNonScreenshotHeightPxRef = React.useRef<number | undefined>(undefined)
     const wasScreenshotRef = React.useRef<boolean>(props.isScreenshot)
-    const [scrollableHeight, setscrollableHeight] = React.useState<number | undefined>(undefined)
+    const [scrollableHeight, setScrollableHeight] = React.useState<number | undefined>(undefined)
 
     React.useLayoutEffect(() => {
         if (props.isScreenshot) {
@@ -594,7 +594,7 @@ function useRestorepreferredScrollableHeightAfterScreenshot(props: {
             }
         }
         else if (wasScreenshotRef.current) {
-            setscrollableHeight(lastNonScreenshotHeightPxRef.current)
+            setScrollableHeight(lastNonScreenshotHeightPxRef.current)
         }
         wasScreenshotRef.current = props.isScreenshot
     }, [props.isScreenshot, props.scrollContainerRef])
@@ -748,7 +748,7 @@ function CongressionalRepresentativesWithScroll(props: {
 }): ReactNode {
     const isScreenshot = useScreenshotMode()
     const { scrollContainerRef, preferredScrollableHeight, visibleTerms } = useTableDisplayInfo(props.regions)
-    const { scrollableHeight } = useRestorepreferredScrollableHeightAfterScreenshot({
+    const { scrollableHeight } = useRestorePreferredScrollableHeightAfterScreenshot({
         isScreenshot,
         scrollContainerRef,
         preferredScrollableHeight,

@@ -148,28 +148,27 @@ function attemptAlign(startBuckets: DistrictBucketForTerm[] | undefined, current
     const remainingIndices = new Set(currentBuckets.map((_, index) => index))
     const newBuckets: (DistrictBucketForTerm | undefined)[] = startBuckets.map(() => undefined)
     // align buckets based on district label first.
-    for (const [startIdex, startBucket] of startBuckets.entries()) {
+    for (const [startIndex, startBucket] of startBuckets.entries()) {
         const matchIndex = currentBuckets.findIndex((bucket, candidateIndex) =>
             districtLabelsMatch(bucket.districtLabel, startBucket.districtLabel) && remainingIndices.has(candidateIndex),
         )
         if (matchIndex !== -1) {
-            newBuckets[startIdex] = currentBuckets[matchIndex]
+            newBuckets[startIndex] = currentBuckets[matchIndex]
             remainingIndices.delete(matchIndex)
             continue
         }
     }
     // then attempt to align remaining buckets based on representative signatures, if labels didn't match.
-    for (const [startIdex, startBucket] of startBuckets.entries()) {
-        if (newBuckets[startIdex] !== undefined) {
+    for (const [startIndex, startBucket] of startBuckets.entries()) {
+        if (newBuckets[startIndex] !== undefined) {
             continue
         }
-        // console.log('attempting to align with', JSON.stringify(startBucket))
         const matchIndex = currentBuckets.findIndex((bucket, candidateIndex) =>
             bucketsSameRepresentatives([bucket], [startBucket])
             && remainingIndices.has(candidateIndex),
         )
         if (matchIndex !== -1) {
-            newBuckets[startIdex] = currentBuckets[matchIndex]
+            newBuckets[startIndex] = currentBuckets[matchIndex]
             remainingIndices.delete(matchIndex)
         }
     }
