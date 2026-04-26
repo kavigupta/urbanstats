@@ -688,7 +688,6 @@ test('disable ordinals/percentiles and verify CSV export', async (t) => {
     })
 
     await checkTextboxesDirect(t, ['Hide Ordinals/Percentiles'])
-    await replaceInput(t, 'false', 'true')
 
     await waitForLoading()
 
