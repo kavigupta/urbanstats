@@ -15,10 +15,6 @@ export interface CongressionalRegionData {
     representatives: CongressionalRepresentativeEntry[]
 }
 
-function entryCoversTerm(entry: CongressionalRepresentativeEntry, termStart: number): boolean {
-    return entry.startTerm <= termStart && entry.endTerm >= termStart
-}
-
 export function subsetEntryToTerms(entry: CongressionalRepresentativeEntry, termStarts: number[]): CongressionalRepresentativeEntry[] {
     if (termStarts.length === 0) {
         return []
@@ -117,21 +113,6 @@ interface LongnameRuns {
     runs: LongnameRun[]
 }
 
-function entriesForTerm(column: CongressionalColumnData, termStart: number): CongressionalRepresentativeEntry[] {
-    const seen = new Set<string>()
-    return column.representatives.filter((entry) => {
-        if (!entryCoversTerm(entry, termStart)) {
-            return false
-        }
-        const key = JSON.stringify(entry)
-        if (seen.has(key)) {
-            return false
-        }
-        seen.add(key)
-        return true
-    })
-}
-
 function representativeSignatureSet(buckets: DistrictBucketForTerm[]): Set<string> {
     const representatives = new Set<string>()
     buckets.forEach((bucket) => {
@@ -213,7 +194,10 @@ function attemptAlign(startBuckets: DistrictBucketForTerm[] | undefined, current
 }
 
 function buildRunsForLongname(column: CongressionalColumnData, termsDescending: number[]): LongnameRuns {
-    const districtBucketsByTerm = termsDescending.map(termStart => districtBucketsForTerm(entriesForTerm(column, termStart)))
+    const districtBucketsByTerm = termsDescending.map(termStart => districtBucketsForTerm(
+        // entries that cover the term
+        column.representatives.filter(entry => entry.startTerm <= termStart && entry.endTerm >= termStart),
+    ))
     const runs: LongnameRun[] = []
 
     let startOfCurrentRunBuckets: DistrictBucketForTerm[] | undefined = undefined
