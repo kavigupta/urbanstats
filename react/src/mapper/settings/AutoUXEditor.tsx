@@ -11,7 +11,7 @@ import { UrbanStatsASTExpression, UrbanStatsASTArg, locationOf } from '../../urb
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
-import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement } from '../../urban-stats-script/location'
+import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement, noLocation } from '../../urban-stats-script/location'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression, unparse } from '../../urban-stats-script/parser'
 import { USSType, USSFunctionArgType, renderType, USSFunctionType, TypeEnvironment } from '../../urban-stats-script/types-values'
 import { AssignmentsResult } from '../../urban-stats-script/workerManager'
@@ -154,9 +154,22 @@ function ArgumentEditor(props: {
                                     onChange={(checked) => {
                                         if (checked) {
                                             const defaultExpr = props.argWDefault.defaultValue
-                                            let exprToUse = defaultExpr === undefined || (defaultExpr.type === 'identifier' && defaultExpr.name.node === 'null')
-                                                ? createDefaultExpression(arg.value, subident, props.typeEnvironment)
-                                                : defaultExpr
+                                            let exprToUse: UrbanStatsASTExpression
+                                            if (defaultExpr === undefined || (defaultExpr.type === 'identifier' && defaultExpr.name.node === 'null')) {
+                                                exprToUse = createDefaultExpression(arg.value, subident, props.typeEnvironment)
+                                            }
+                                            else if (defaultExpr.type === 'identifier' && defaultExpr.name.node === 'false') {
+                                                exprToUse = {
+                                                    type: 'identifier',
+                                                    name: {
+                                                        node: 'true',
+                                                        location: noLocation,
+                                                    },
+                                                }
+                                            }
+                                            else {
+                                                exprToUse = defaultExpr
+                                            }
                                             exprToUse = deconstruct(exprToUse, props.typeEnvironment, subident, arg.value) ?? parseExpr(exprToUse, subident, [arg.value], props.typeEnvironment, () => {
                                                 throw new Error('Should not happen')
                                             }, true)
