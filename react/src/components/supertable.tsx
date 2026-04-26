@@ -6,6 +6,7 @@ import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { Article } from '../utils/protos'
 
+import { CongressionalColumnData, CongressionalRepresentativeEntry } from './congressional-table/model'
 import { CongressionalRepresentativesWidget } from './congressional-table/render'
 import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
@@ -208,8 +209,21 @@ function SuperTableRow(props: {
         }
         return [{
             longname: cell.longname,
-            representatives: cell.row.statval.representatives,
-        }]
+            representatives: cell.row.statval.representatives.map((r): CongressionalRepresentativeEntry => {
+                assert(r.representative.name !== undefined && r.representative.name !== null, 'representative name missing')
+                assert(r.representative.wikipediaPage !== undefined && r.representative.wikipediaPage !== null, 'representative wikipedia page missing')
+                return {
+                    representative: {
+                        name: r.representative.name,
+                        wikipediaPage: r.representative.wikipediaPage,
+                        party: r.representative.party ?? undefined,
+                    },
+                    districtLongname: r.districtLongname,
+                    startTerm: r.startTerm,
+                    endTerm: r.endTerm,
+                }
+            }),
+        } satisfies CongressionalColumnData]
     })
 
     return (

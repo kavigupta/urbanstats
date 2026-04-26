@@ -14,7 +14,7 @@ function representative(
     name: string,
     districtLongname: string,
     startTerm: number,
-    endTerm?: number,
+    endTerm: number,
     options?: {
         wikipediaPage?: string
         party?: string
@@ -64,7 +64,7 @@ function compactCongressionalWidgetModel(model: CongressionalTableModel | undefi
                 districtHeaders,
                 congressionalRuns: congressionalRuns.map(({ displayRuns }) => ({
                     displayRuns: displayRuns.map(({ representatives, startDisplayIndex, endDisplayIndex }) => [
-                        representatives.map(({ name }) => name ?? '[missing]'),
+                        representatives.map(({ name }) => name),
                         startDisplayIndex,
                         endDisplayIndex,
                     ]),

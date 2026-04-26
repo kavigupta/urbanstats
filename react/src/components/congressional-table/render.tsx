@@ -112,13 +112,6 @@ function Representative(props: { representative: CongressionalRepresentativeEntr
     if (props.representative.name === 'Vacant') {
         return <span>(Vacant)</span>
     }
-    assert(
-        props.representative.wikipediaPage !== null
-        && props.representative.wikipediaPage !== undefined
-        && props.representative.name !== null
-        && props.representative.name !== undefined,
-        `Representative ${JSON.stringify(props.representative)} is missing required fields`,
-    )
     return (
         <span>
             <a href={props.representative.wikipediaPage} style={{ textDecoration: 'none', color: 'inherit' }} target="_blank" rel="noopener noreferrer">

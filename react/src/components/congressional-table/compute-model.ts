@@ -16,7 +16,6 @@ export interface CongressionalRegionData {
 }
 
 function termStartsForEntry(entry: CongressionalRepresentativeEntry): number[] {
-    assert(entry.startTerm !== undefined && entry.endTerm !== undefined, 'Entry must have defined startTerm and endTerm')
     const terms = []
     for (let term = entry.startTerm; term <= entry.endTerm; term += 2) {
         terms.push(term)
@@ -25,7 +24,6 @@ function termStartsForEntry(entry: CongressionalRepresentativeEntry): number[] {
 }
 
 function entryCoversTerm(entry: CongressionalRepresentativeEntry, termStart: number): boolean {
-    assert(entry.startTerm !== undefined && entry.endTerm !== undefined, 'Entry must have defined startTerm and endTerm')
     return entry.startTerm <= termStart && entry.endTerm >= termStart
 }
 
@@ -33,7 +31,6 @@ export function subsetEntryToTerms(entry: CongressionalRepresentativeEntry, term
     if (termStarts.length === 0) {
         return []
     }
-    assert(entry.startTerm !== undefined && entry.endTerm !== undefined, 'Entry must have defined startTerm and endTerm')
     const minStart = Math.min(...termStarts)
     const maxStart = Math.max(...termStarts)
     if (entry.endTerm < minStart || entry.startTerm > maxStart) {
@@ -49,11 +46,11 @@ interface DistrictBucketForTerm {
 }
 
 function representativeSignature(entry: CongressionalRepresentativeEntry): string {
-    return `${entry.representative.name ?? ''}|${entry.representative.wikipediaPage ?? ''}|${entry.representative.party ?? ''}`
+    return `${entry.representative.name}|${entry.representative.wikipediaPage}|${entry.representative.party ?? ''}`
 }
 
 function representativeValueSignature(representative: CongressionalRepresentativeEntry['representative']): string {
-    return `${representative.name ?? ''}|${representative.wikipediaPage ?? ''}|${representative.party ?? ''}`
+    return `${representative.name}|${representative.wikipediaPage}|${representative.party ?? ''}`
 }
 
 function representativeListSignature(representatives: CongressionalRepresentativeEntry['representative'][]): string {
@@ -78,7 +75,7 @@ function uniqueRepresentatives(entries: CongressionalRepresentativeEntry[]): Con
 function districtBucketsForTerm(entries: CongressionalRepresentativeEntry[]): DistrictBucketForTerm[] {
     const byDistrict = new Map<string, CongressionalRepresentativeEntry[]>()
     entries.forEach((entry) => {
-        const label = entry.districtLongname ?? 'District unknown'
+        const label = entry.districtLongname
         const existing = byDistrict.get(label)
         if (existing === undefined) {
             byDistrict.set(label, [entry])

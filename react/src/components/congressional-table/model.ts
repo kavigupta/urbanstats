@@ -1,12 +1,12 @@
 export interface CongressionalRepresentativeEntry {
     representative: {
-        name?: string | null
-        wikipediaPage?: string | null
-        party?: string | null
+        name: string
+        wikipediaPage: string
+        party?: string
     }
-    districtLongname?: string
-    startTerm?: number
-    endTerm?: number
+    districtLongname: string
+    startTerm: number
+    endTerm: number
 }
 
 export interface CongressionalColumnData {
