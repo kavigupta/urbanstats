@@ -33,10 +33,6 @@ interface DistrictBucketForTerm {
     representatives: CongressionalRepresentativeEntry['representative'][]
 }
 
-function representativeSignature(entry: CongressionalRepresentativeEntry): string {
-    return `${entry.representative.name}|${entry.representative.wikipediaPage}|${entry.representative.party ?? ''}`
-}
-
 function representativeValueSignature(representative: CongressionalRepresentativeEntry['representative']): string {
     return `${representative.name}|${representative.wikipediaPage}|${representative.party ?? ''}`
 }
@@ -50,7 +46,7 @@ function representativeListSignature(representatives: CongressionalRepresentativ
 function uniqueRepresentatives(entries: CongressionalRepresentativeEntry[]): CongressionalRepresentativeEntry['representative'][] {
     const seen = new Set<string>()
     return entries.reduce<CongressionalRepresentativeEntry['representative'][]>((acc, entry) => {
-        const signature = representativeSignature(entry)
+        const signature = representativeValueSignature(entry.representative)
         if (seen.has(signature)) {
             return acc
         }
