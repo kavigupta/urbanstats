@@ -197,7 +197,7 @@ function SuperTableRow(props: {
     extraSpaceRight: number[]
     isHighlighted: boolean
 }): ReactNode {
-    const congressionalRegions = props.cellSpecs.flatMap((cell) => {
+    const congressionalRegions = useMemo(() => props.cellSpecs.flatMap((cell) => {
         if (cell.type !== 'statistic-row') {
             return []
         }
@@ -223,7 +223,7 @@ function SuperTableRow(props: {
                 }
             }),
         } satisfies CongressionalColumnData]
-    })
+    }), [props.cellSpecs])
 
     return (
         <div>
