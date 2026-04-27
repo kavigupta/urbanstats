@@ -6,6 +6,8 @@ import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { Article } from '../utils/protos'
 
+import { CongressionalColumnData, CongressionalRepresentativeEntry } from './congressional-table/model'
+import { CongressionalRepresentativesWidget } from './congressional-table/render'
 import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
 import { useScreenshotMode } from './screenshot'
@@ -195,6 +197,34 @@ function SuperTableRow(props: {
     extraSpaceRight: number[]
     isHighlighted: boolean
 }): ReactNode {
+    const congressionalRegions = useMemo(() => props.cellSpecs.flatMap((cell) => {
+        if (cell.type !== 'statistic-row') {
+            return []
+        }
+        if (cell.row.kind !== 'metadata') {
+            return []
+        }
+        if (typeof cell.row.statval === 'string') {
+            return []
+        }
+        return [{
+            longname: cell.longname,
+            representatives: cell.row.statval.representatives.map((r): CongressionalRepresentativeEntry => {
+                assert(r.representative.name !== undefined && r.representative.name !== null, 'representative name missing')
+                return {
+                    representative: {
+                        name: r.representative.name,
+                        wikipediaPage: r.representative.wikipediaPage ?? undefined,
+                        party: r.representative.party ?? undefined,
+                    },
+                    districtLongname: r.districtLongname,
+                    startTerm: r.startTerm,
+                    endTerm: r.endTerm,
+                }
+            }),
+        } satisfies CongressionalColumnData]
+    }), [props.cellSpecs])
+
     return (
         <div>
             {props.groupName !== undefined && (props.groupName !== props.prevGroupName) && (
@@ -219,6 +249,14 @@ function SuperTableRow(props: {
                 <div style={{ width: '100%', position: 'relative' }}>
                     <RenderedPlot statDescription={props.plotSpec.statDescription} plotProps={props.plotSpec.plotProps} />
                 </div>
+            )}
+            {congressionalRegions.length > 0 && (
+                <CongressionalRepresentativesWidget
+                    regions={congressionalRegions}
+                    widthLeftHeader={props.widthLeftHeader}
+                    columnWidth={props.columnWidth}
+                    extraSpaceRight={props.extraSpaceRight}
+                />
             )}
         </div>
     )
