@@ -113,7 +113,7 @@ export function useSelectedGroups(): Group[] {
     return availableGroups.filter(group => settingsValues[`show_stat_group_${group.id}`])
 }
 
-function useSelectedYears(): Year[] {
+export function useSelectedYears(): Year[] {
     const availableYears = useAvailableYears()
     const settingsValues = useSettings(yearKeys(availableYears))
     return availableYears.filter(year => settingsValues[`show_stat_year_${year}`])

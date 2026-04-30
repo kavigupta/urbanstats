@@ -21,7 +21,6 @@ import { zIndex } from '../utils/zIndex'
 
 import { Icon } from './Icon'
 import { Modal } from './Modal'
-import { Representative } from './congressional-table/render'
 import { computeDisclaimerText, type Disclaimer } from './disclaimer-text'
 import { Percentile, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
@@ -524,15 +523,7 @@ export function StatisticRowCells(props: {
                 if (typeof statval === 'string') {
                     return <span className="serif value testing-statistic-value">{statval}</span>
                 }
-                return (
-                    <div className="value_unit">
-                        {
-                            statval.representatives.map((representative, idx) => (
-                                <Representative key={idx} representative={representative.representative} />
-                            ))
-                        }
-                    </div>
-                )
+                return <span className="serif value testing-statistic-value">See term table below</span>
             },
             style: { textAlign: 'center' },
         })

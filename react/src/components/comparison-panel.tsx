@@ -28,7 +28,7 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { computeNameSpecsWithGroups } from './article-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
-import { ArticleRow, isNoValue } from './load-article'
+import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
@@ -171,7 +171,13 @@ export function ComparisonPanel(props: {
     let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, includeOrdinals)
     let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (dataByArticleStat[0].length + numExpandedExtras) + 1.5
 
-    const transpose = widthColumns > computeMaxColumns(mobileLayout) && widthColumns > widthTransposeColumns
+    const hasCongressionalRepresentativeTable = dataByStatArticle.some(statData =>
+        statData.some(row => isCongressionalRepresentativesMetadataRow(row)),
+    )
+
+    const transpose = !hasCongressionalRepresentativeTable
+        && widthColumns > computeMaxColumns(mobileLayout)
+        && widthColumns > widthTransposeColumns
 
     if (transpose) {
         ([widthColumns, widthTransposeColumns] = [widthTransposeColumns, widthColumns])
