@@ -132,7 +132,12 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
 
     return (
         <>
-            <Source id={polygonsId(id, 'source')} type="geojson" data={collection} />
+            <Source
+                id={polygonsId(id, 'source')}
+                type="geojson"
+                data={collection}
+                tolerance={0} // Avoid visual artifacts
+            />
             <Layer
                 id={polygonsId(id, 'fill')}
                 type="fill"
