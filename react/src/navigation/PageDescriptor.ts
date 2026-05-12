@@ -192,6 +192,10 @@ const screenshotDiffViewerSchema = z.object({
     index: z.optional(z.coerce.number()),
 })
 
+const juxtarouteSchema = z.object({
+    urbanArea: z.optional(z.string()),
+})
+
 export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('article') }).and(articleSchema),
     z.object({ kind: z.literal('comparison') }).and(comparisonSchema),
@@ -207,6 +211,7 @@ export const pageDescriptorSchema = z.union([
     z.object({ kind: z.literal('editor') }).and(editorSchema),
     z.object({ kind: z.literal('oauthCallback'), params: z.record(z.string()) }),
     z.object({ kind: z.literal('screenshotDiffViewer') }).and(screenshotDiffViewerSchema),
+    z.object({ kind: z.literal('juxtaroute') }).and(juxtarouteSchema),
 ])
 
 export type PageDescriptor = z.infer<typeof pageDescriptorSchema>
@@ -236,6 +241,7 @@ export type PageData =
     | { kind: 'mapper', settings: MapSettings, view: boolean, mapperPanel: typeof MapperPanel, counts: CountsByUT }
     | { kind: 'editor', editorPanel: typeof DebugEditorPanel | typeof DebugMapTextBoxPanel, undoChunking?: number }
     | { kind: 'oauthCallback', result: { success: false, error: string } | { success: true }, oauthCallbackPanel: typeof OauthCallbackPanel }
+    | { kind: 'juxtaroute', urbanArea?: string, juxtaroutePanel: React.ComponentType<{ urbanArea?: string }> }
     | {
         kind: 'error'
         error: unknown
@@ -286,6 +292,8 @@ export function pageDescriptorFromURL(url: URL): PageDescriptor {
             return { kind: 'oauthCallback', params }
         case '/screenshot-diff-viewer.html':
             return { kind: 'screenshotDiffViewer', ...screenshotDiffViewerSchema.parse(params) }
+        case '/juxtaroute.html':
+            return { kind: 'juxtaroute', ...juxtarouteSchema.parse(params) }
         default:
             throw new Error('404 not found')
     }
@@ -417,7 +425,14 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 hash: pageDescriptor.hash,
                 index: pageDescriptor.index?.toString(),
             }
-    }
+            break
+        case 'juxtaroute':
+            pathname = '/juxtaroute.html'
+            searchParams = {
+                urbanArea: pageDescriptor.urbanArea,
+            }
+            break
+        }
     // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
     const result = new URL(window.location.origin)
     result.pathname = pathname
@@ -790,6 +805,16 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
                 newPageDescriptor: newDescriptor,
                 effects: () => undefined,
             }
+        case 'juxtaroute':
+            return {
+                pageData: {
+                    kind: 'juxtaroute',
+                    urbanArea: newDescriptor.urbanArea,
+                    juxtaroutePanel: (await import('../juxtaroute/Juxtaroute')).Juxtaroute,
+                },
+                newPageDescriptor: newDescriptor,
+                effects: () => undefined,
+            }
     }
 }
 
@@ -806,6 +831,8 @@ export function pageTitle(pageData: PageData): string {
             return 'USS Documentation'
         case 'mapper':
             return 'Urban Stats Mapper'
+        case 'juxtaroute':
+            return 'Juxtaroute'
         case 'quiz':
             switch (pageData.quizDescriptor.kind) {
                 case 'juxtastat':

@@ -97,7 +97,7 @@ export class Navigator {
             if (parseResult.success) {
                 void this.navigate(parseResult.data.pageDescriptor, {
                     history: null,
-                    scroll: { kind: 'position', top: parseResult.data.scrollPosition },
+                    scroll: { kind: 'position', top: parseResult.data.scrollPosition as number },
                 })
             }
             else {
