@@ -4,8 +4,7 @@ import { urbanstatsFixture } from './test_utils'
 
 urbanstatsFixture('mapper', '/mapper.html')
 
-test('metropolitan clusters china', async (t) => {
-    await replaceInput(t, 'USA', 'China')
-    await replaceInput(t, 'Subnational Region', 'Metropolitan Cluster')
-    await t.expect(await memoryUsage(t)).lt(210_000_000)
+test('counties USA', async (t) => {
+    await replaceInput(t, 'Subnational Region', 'County')
+    await t.expect(await memoryUsage(t)).lt(186_000_000)
 })
