@@ -167,9 +167,12 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, h
     return resultCanvas
 }
 
-export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors, setScreenshotMode: (on: boolean) => void, forceNonTesting: boolean = false): Promise<void> {
-    setScreenshotMode(true)
-    await new Promise(resolve => setTimeout(resolve))
+export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors, setScreenshotMode: (context: ScreenshotContextType) => void, forceNonTesting: boolean = false): Promise<void> {
+    const loading = new Set<Promise<void>>()
+
+    setScreenshotMode({ screenshotMode: true, loading })
+    await new Promise(resolve => setTimeout(resolve)) // Wait for the update above to propogate
+    await Promise.all(loading) // Wait for loading triggered by the update to complete
 
     const overallWidth = config.overallWidth
     const heightMultiplier = config.heightMultiplier ?? 1
@@ -229,12 +232,14 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
         saveAs(blob!, config.path)
     })
 
-    setScreenshotMode(false)
+    setScreenshotMode({ screenshotMode: false })
 }
 
+export type ScreenshotContextType = { screenshotMode: true, loading: Set<Promise<void>> } | { screenshotMode: false }
+
 // eslint-disable-next-line no-restricted-syntax -- Context declaration
-export const ScreenshotContext = createContext(false)
+export const ScreenshotContext = createContext<ScreenshotContextType>({ screenshotMode: false })
 
 export function useScreenshotMode(): boolean {
-    return useContext(ScreenshotContext)
+    return useContext(ScreenshotContext).screenshotMode
 }

@@ -17,7 +17,7 @@ import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { keptByNoBasemap } from './map-common-utils'
-import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
+import { defaultMapBorderRadius, mapBorderWidth, ScreenshotContext, useScreenshotMode } from './screenshot'
 
 import './map.css'
 
@@ -130,13 +130,24 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
 
     useClickable({ id: polygonsId(id, 'fill'), features, clickable })
 
+    const screenshotContext = useContext(ScreenshotContext)
+
+    useEffect(() => {
+        if (screenshotContext.screenshotMode) {
+            screenshotContext.loading.add(waitForMapLoadedOrRemoved(map!))
+        }
+    }, [screenshotContext, map])
+
     return (
         <>
             <Source
+                // Must remount for apply tolerance changes
+                key={String(screenshotContext.screenshotMode)}
                 id={polygonsId(id, 'source')}
                 type="geojson"
                 data={collection}
-                tolerance={0} // Avoid visual artifacts
+                // Only use tolerance=0 in screenshot mode, as it takes a lot of memory
+                {...(screenshotContext.screenshotMode ? { tolerance: 0 } : { })}
             />
             <Layer
                 id={polygonsId(id, 'fill')}
@@ -180,6 +191,7 @@ async function waitForMapLoadedOrRemoved(map: MapRef): Promise<void> {
     if (!map.loaded()) {
         await Promise.any([
             map.once('load'),
+            map.once('idle'),
             map.once('remove'), // Map might be removed while it's loading
         ])
     }

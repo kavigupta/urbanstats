@@ -2,7 +2,7 @@ import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
 import { exportToCSV, CSVExportData } from '../components/csv-export'
 import { Header } from '../components/header'
-import { ScreenshotContext } from '../components/screenshot'
+import { ScreenshotContext, ScreenshotContextType } from '../components/screenshot'
 import { Sidebar } from '../components/sidebar'
 import '../common.css'
 import '../components/article.css'
@@ -21,14 +21,14 @@ export function PageTemplate({
     showFooter = true,
     topPanel = true,
 }: {
-    screencap?: (currentUniverse: string | undefined, colors: Colors, setScreenshotMode: (on: boolean) => void) => Promise<void>
+    screencap?: (currentUniverse: string | undefined, colors: Colors, setScreenshotMode: (context: ScreenshotContextType) => void) => Promise<void>
     csvExportCallback?: CSVExportData
     children?: React.ReactNode
     showFooter?: boolean
     topPanel?: boolean
 }): ReactNode {
     const [hamburgerOpen, setHamburgerOpen] = useState(false)
-    const [screenshotMode, setScreenshotMode] = useState(false)
+    const [screenshotMode, setScreenshotMode] = useState<ScreenshotContextType>({ screenshotMode: false })
     const colors = useColors()
     const mobileLayout = useMobileLayout()
     const hideSidebarDesktop = useHideSidebarDesktop()
