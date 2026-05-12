@@ -133,15 +133,15 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
     const screenshotContext = useContext(ScreenshotContext)
 
     useEffect(() => {
-        if (screenshotContext.screenshotMode) {
-            screenshotContext.loading.add(waitForMapLoadedOrRemoved(map!))
+        if (screenshotContext.screenshotMode && map) {
+            screenshotContext.loading.add(waitForMapLoadedOrRemoved(map))
         }
     }, [screenshotContext, map])
 
     return (
         <>
             <Source
-                // Must remount for apply tolerance changes
+                // Must remount to apply tolerance changes
                 key={String(screenshotContext.screenshotMode)}
                 id={polygonsId(id, 'source')}
                 type="geojson"

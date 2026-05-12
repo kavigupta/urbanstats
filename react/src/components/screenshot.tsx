@@ -171,7 +171,7 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
     const loading = new Set<Promise<void>>()
 
     setScreenshotMode({ screenshotMode: true, loading })
-    await new Promise(resolve => setTimeout(resolve)) // Wait for the update above to propogate
+    await new Promise(resolve => setTimeout(resolve)) // Wait for the update above to propagate
     await Promise.all(loading) // Wait for loading triggered by the update to complete
 
     const overallWidth = config.overallWidth
