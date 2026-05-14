@@ -9,12 +9,15 @@ export interface Card {
     label: string
 }
 
-export const GAME_STATS: Record<string, string> = {
+// eslint-disable-next-line no-restricted-syntax -- Game stats are not colors
+export const gameStats: Record<string, string> = {
     'population': 'Population',
     'gpw_pw_density_1': 'Population Density',
     'median_household_income': 'Median Household Income',
+    // eslint-disable-next-line no-restricted-syntax -- Game stats are not colors
     'white': 'White %',
     'hispanic': 'Hispanic %',
+    // eslint-disable-next-line no-restricted-syntax -- Game stats are not colors
     'black': 'Black %',
     'asian': 'Asian %',
     '2020 Presidential Election-margin': '2020 Election Margin (D-R)',
@@ -22,9 +25,9 @@ export const GAME_STATS: Record<string, string> = {
 }
 
 export function getRandomStat(): { statPath: StatPath, label: string } {
-    const keys = Object.keys(GAME_STATS)
+    const keys = Object.keys(gameStats)
     const key = keys[Math.floor(Math.random() * keys.length)]
-    return { statPath: key as StatPath, label: GAME_STATS[key] }
+    return { statPath: key as StatPath, label: gameStats[key] }
 }
 
 export function createCard(): Card {
@@ -43,16 +46,21 @@ export function validateMove(
         const nextVal = nextStats.find(s => s.statpath === card.statPath)?.statval
 
         if (currentVal === undefined || nextVal === undefined || Number.isNaN(currentVal) || Number.isNaN(nextVal)) {
-            // If stat is missing, we consider it a failure or ignore it?
-            // For now, let's say it fails to be safe.
+            console.log(`Move invalid: missing stat for ${card.label} (${card.statPath}). Current: ${currentVal}, Next: ${nextVal}`)
             return false
         }
 
         if (card.direction === 'higher') {
-            if (!(nextVal > currentVal)) return false
+            if (!(nextVal > currentVal)) {
+                console.log(`Move invalid: ${card.label} is not higher. Current: ${currentVal}, Next: ${nextVal}`)
+                return false
+            }
         }
         else {
-            if (!(nextVal < currentVal)) return false
+            if (!(nextVal < currentVal)) {
+                console.log(`Move invalid: ${card.label} is not lower. Current: ${currentVal}, Next: ${nextVal}`)
+                return false
+            }
         }
     }
     return true

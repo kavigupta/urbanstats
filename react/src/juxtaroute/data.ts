@@ -1,6 +1,6 @@
 import { getCountsByArticleType } from '../components/countsByArticleType'
 import { loadArticles, ArticleStatisticRow } from '../components/load-article'
-import { Article } from '../utils/protos'
+import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { loadArticleFromPossibleSymlink } from '../utils/symlinks'
 
 export async function fetchZipStats(zipLongname: string): Promise<ArticleStatisticRow[]> {
@@ -12,8 +12,16 @@ export async function fetchZipStats(zipLongname: string): Promise<ArticleStatist
     const universe = article.universes[0]
 
     const { rows } = await loadArticles([article], counts, universe)
+
+    const settings: Partial<StatGroupSettings> = {}
+    for (const key of groupYearKeys()) {
+        settings[key] = true
+    }
+
     // Return statistics for the article (assuming it's a single article)
-    return rows({} as any).flat() as ArticleStatisticRow[]
+    const result = rows(settings as StatGroupSettings).flat() as ArticleStatisticRow[]
+    console.log(`Stats for ${zipLongname}:`, result.map(s => s.statpath))
+    return result
 }
 
 export async function fetchZipNeighbors(zipLongname: string): Promise<string[]> {
