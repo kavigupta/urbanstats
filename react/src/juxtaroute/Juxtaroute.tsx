@@ -5,24 +5,24 @@ import { SearchBox } from '../components/search'
 import { Navigator } from '../navigation/Navigator'
 import { PageTemplate } from '../page_template/template'
 
+import { Card, getInitialHand } from './ExplorerGameEngine'
 import { ExplorerMap } from './ExplorerMap'
 import { fetchZipStats, fetchZipNeighbors } from './data'
 import { fetchUrbanAreaZips } from './urbanArea'
 
 export function Juxtaroute({ urbanArea }: { urbanArea?: string }): ReactNode {
     const navigator = useContext(Navigator.Context)
-    const [areaZips, setAreaZips] = useState<string[]>([])
     const [currentZip, setCurrentZip] = useState<string | undefined>(undefined)
     const [currentStats, setCurrentStats] = useState<ArticleStatisticRow[]>([])
     const [neighbors, setNeighbors] = useState<string[]>([])
-    const [hand, setHand] = useState<any[]>([])
+    const [hand, setHand] = useState<Card[]>([])
 
     useEffect(() => {
         if (urbanArea) {
             void fetchUrbanAreaZips(urbanArea).then((zips) => {
-                setAreaZips(zips)
                 if (zips.length > 0) setCurrentZip(zips[Math.floor(Math.random() * zips.length)])
             })
+            setHand(getInitialHand(5))
         }
     }, [urbanArea])
 
@@ -63,6 +63,24 @@ export function Juxtaroute({ urbanArea }: { urbanArea?: string }): ReactNode {
                 Current ZIP:
                 {currentZip ?? 'Select a starting ZIP'}
             </p>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                {hand.map((card, i) => (
+                    <div
+                        key={i}
+                        style={{
+                            border: '1px solid #ccc',
+                            padding: '10px',
+                            borderRadius: '5px',
+                            backgroundColor: 'rgb(249, 249, 249)',
+                            width: '150px',
+                        }}
+                    >
+                        <strong>{card.label}</strong>
+                        <br />
+                        {card.direction === 'higher' ? '↑ Higher' : '↓ Lower'}
+                    </div>
+                ))}
+            </div>
             <ExplorerMap
                 currentZip={currentZip}
                 neighbors={neighbors}
