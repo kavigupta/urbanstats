@@ -432,7 +432,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
                 urbanArea: pageDescriptor.urbanArea,
             }
             break
-        }
+    }
     // eslint-disable-next-line no-restricted-syntax -- Core navigation functions
     const result = new URL(window.location.origin)
     result.pathname = pathname

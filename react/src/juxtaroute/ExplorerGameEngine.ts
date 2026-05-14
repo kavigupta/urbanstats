@@ -1,5 +1,5 @@
-import { StatPath } from '../page_template/statistic-tree'
 import { ArticleStatisticRow } from '../components/load-article'
+import { StatPath } from '../page_template/statistic-tree'
 
 export type Direction = 'higher' | 'lower'
 
@@ -50,7 +50,8 @@ export function validateMove(
 
         if (card.direction === 'higher') {
             if (!(nextVal > currentVal)) return false
-        } else {
+        }
+        else {
             if (!(nextVal < currentVal)) return false
         }
     }

@@ -1,7 +1,8 @@
-import React, { ReactNode, useState, useEffect } from 'react'
+import React, { ReactNode, useState, useEffect, useContext } from 'react'
 
 import { ArticleStatisticRow } from '../components/load-article'
 import { SearchBox } from '../components/search'
+import { Navigator } from '../navigation/Navigator'
 import { PageTemplate } from '../page_template/template'
 
 import { ExplorerMap } from './ExplorerMap'
@@ -9,7 +10,7 @@ import { fetchZipStats, fetchZipNeighbors } from './data'
 import { fetchUrbanAreaZips } from './urbanArea'
 
 export function Juxtaroute({ urbanArea }: { urbanArea?: string }): ReactNode {
-    const [area, setArea] = useState(urbanArea ?? '')
+    const navigator = useContext(Navigator.Context)
     const [areaZips, setAreaZips] = useState<string[]>([])
     const [currentZip, setCurrentZip] = useState<string | undefined>(undefined)
     const [currentStats, setCurrentStats] = useState<ArticleStatisticRow[]>([])
@@ -17,22 +18,22 @@ export function Juxtaroute({ urbanArea }: { urbanArea?: string }): ReactNode {
     const [hand, setHand] = useState<any[]>([])
 
     useEffect(() => {
-        if (area) {
-            fetchUrbanAreaZips(area).then((zips) => {
+        if (urbanArea) {
+            void fetchUrbanAreaZips(urbanArea).then((zips) => {
                 setAreaZips(zips)
                 if (zips.length > 0) setCurrentZip(zips[Math.floor(Math.random() * zips.length)])
             })
         }
-    }, [area])
+    }, [urbanArea])
 
     useEffect(() => {
         if (currentZip) {
-            fetchZipStats(currentZip).then(setCurrentStats)
-            fetchZipNeighbors(currentZip).then(setNeighbors)
+            void fetchZipStats(currentZip).then(setCurrentStats)
+            void fetchZipNeighbors(currentZip).then(setNeighbors)
         }
     }, [currentZip])
 
-    if (!area) {
+    if (!urbanArea) {
         return (
             <PageTemplate>
                 <h1>Select Urban Area</h1>
@@ -44,7 +45,7 @@ export function Juxtaroute({ urbanArea }: { urbanArea?: string }): ReactNode {
                         href: '#',
                         onClick: async (e) => {
                             e?.preventDefault()
-                            setArea(longname)
+                            await navigator.navigate({ kind: 'juxtaroute', urbanArea: longname }, { history: 'push', scroll: { kind: 'none' } })
                         },
                     })}
                 />
@@ -56,7 +57,7 @@ export function Juxtaroute({ urbanArea }: { urbanArea?: string }): ReactNode {
         <PageTemplate>
             <h1>
                 Juxtaroute:
-                {area}
+                {urbanArea}
             </h1>
             <p>
                 Current ZIP:
