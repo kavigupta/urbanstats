@@ -181,18 +181,18 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             const loading = new Set<Promise<void>>()
             setScreenshotMode({ screenshotMode: true, loading })
             const restoreMaps = mapsRef.map(r => r!.getMap()).map(prepareMapForImageExport)
-            return new Promise((resolve) => {
-                setTimeout(async () => {
-                    await Promise.all(loading)
-                    const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
 
-                    const image = await mapImageExport(elementCanvas, mapResultMain.value.basemap, colors)
+            await new Promise(resolve => setTimeout(resolve)) // Wait for the updates above to propagate
+            await Promise.all(loading) // Wait for loading triggered by the updates to complete
 
-                    resolve(image)
-                    setScreenshotMode({ screenshotMode: false })
-                    restoreMaps.forEach((restore) => { restore() })
-                })
-            })
+            const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
+
+            const image = await mapImageExport(elementCanvas, mapResultMain.value.basemap, colors)
+
+            setScreenshotMode({ screenshotMode: false })
+            restoreMaps.forEach((restore) => { restore() })
+
+            return image
         })
 
         const textBoxes = props.mode === 'insets'
