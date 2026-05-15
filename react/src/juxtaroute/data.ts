@@ -20,7 +20,6 @@ export async function fetchZipStats(zipLongname: string): Promise<ArticleStatist
 
     // Return statistics for the article (assuming it's a single article)
     const result = rows(settings as StatGroupSettings).flat() as ArticleStatisticRow[]
-    console.log(`Stats for ${zipLongname}:`, result.map(s => s.statpath))
     return result
 }
 

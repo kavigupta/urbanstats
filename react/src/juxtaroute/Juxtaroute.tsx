@@ -108,7 +108,8 @@ export function Juxtaroute({ urbanArea }: { urbanArea?: string }): ReactNode {
             return
         }
 
-        if (validateMove(currentStats, nextStats, selectedCards)) {
+        const validation = validateMove(currentStats, nextStats, selectedCards)
+        if (validation.isValid) {
             setCurrentZip(selectedNeighbor)
             setPath(prev => [...prev, selectedNeighbor])
             // Remove selected cards and draw new ones
@@ -121,7 +122,7 @@ export function Juxtaroute({ urbanArea }: { urbanArea?: string }): ReactNode {
             setMessage(undefined)
         }
         else {
-            setMessage('Invalid move for selected cards!')
+            setMessage(`Invalid move: ${validation.reason ?? ''}`)
         }
     }
 
