@@ -22,10 +22,3 @@ export async function fetchZipStats(zipLongname: string): Promise<ArticleStatist
     const result = rows(settings as StatGroupSettings).flat() as ArticleStatisticRow[]
     return result
 }
-
-export async function fetchZipNeighbors(zipLongname: string): Promise<string[]> {
-    const article = await loadArticleFromPossibleSymlink(zipLongname)
-    // Find borders relationship
-    const borders = article.related.find(r => r.relationshipType === 'borders')
-    return borders?.buttons ? borders.buttons.filter(b => b.rowType === 'ZIP').map(b => b.longname ?? '') : []
-}

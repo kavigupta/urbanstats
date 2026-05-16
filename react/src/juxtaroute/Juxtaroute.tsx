@@ -8,8 +8,8 @@ import { PageTemplate } from '../page_template/template'
 
 import { Card, getInitialHand, validateMove, createCard } from './ExplorerGameEngine'
 import { ExplorerMap } from './ExplorerMap'
-import { fetchZipStats, fetchZipNeighbors } from './data'
-import { fetchUrbanAreaZips } from './urbanArea'
+import { fetchZipStats } from './data'
+import { fetchRelatedZips } from './urbanArea'
 
 interface SavedState {
     currentZip: string
@@ -44,7 +44,7 @@ export function Juxtaroute({ urbanArea }: { urbanArea?: string }): ReactNode {
                     console.error('Failed to load saved state', e)
                 }
             }
-            void fetchUrbanAreaZips(urbanArea).then((zips) => {
+            void fetchRelatedZips(urbanArea, 'contains').then((zips) => {
                 if (zips.length > 0) {
                     const startZip = zips[Math.floor(Math.random() * zips.length)]
                     setCurrentZip(startZip)
@@ -65,7 +65,7 @@ export function Juxtaroute({ urbanArea }: { urbanArea?: string }): ReactNode {
     useEffect(() => {
         if (currentZip) {
             void fetchZipStats(currentZip).then(setCurrentStats)
-            void fetchZipNeighbors(currentZip).then(setNeighbors)
+            void fetchRelatedZips(currentZip, 'borders').then(setNeighbors)
             setSelectedNeighbor(undefined)
         }
     }, [currentZip])
@@ -73,7 +73,7 @@ export function Juxtaroute({ urbanArea }: { urbanArea?: string }): ReactNode {
     const resetGame = (): void => {
         if (!urbanArea) return
         localStorage.removeItem(`juxtaroute_state_${urbanArea}`)
-        void fetchUrbanAreaZips(urbanArea).then((zips) => {
+        void fetchRelatedZips(urbanArea, 'contains').then((zips) => {
             if (zips.length > 0) {
                 const startZip = zips[Math.floor(Math.random() * zips.length)]
                 setCurrentZip(startZip)
