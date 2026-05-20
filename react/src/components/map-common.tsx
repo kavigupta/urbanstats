@@ -118,8 +118,7 @@ function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
 
 export function PolygonFeatureCollection({ features, clickable }: { features: GeoJSON.Feature[], clickable: boolean }): ReactNode {
     const { current: map } = useMap()
-
-    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]), 'PolygonFeatureCollection.firstLabel').result
+    const beforeId = useContentBeforeId(map)
 
     const collection: GeoJSON.FeatureCollection = useMemo(() => ({
         type: 'FeatureCollection',
@@ -134,7 +133,13 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
 
     useEffect(() => {
         if (screenshotContext.screenshotMode && map) {
-            screenshotContext.loading.add(waitForMapLoadedOrRemoved(map))
+            screenshotContext.loading.add((async () => {
+                while (!map.loaded()) {
+                    await map.once('idle')
+                    // Map will sometimes return to idle but needs to load more
+                    await new Promise(resolve => setTimeout(resolve))
+                }
+            })())
         }
     }, [screenshotContext, map])
 
@@ -142,7 +147,7 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
         <>
             <Source
                 // Must remount to apply tolerance changes
-                key={String(screenshotContext.screenshotMode)}
+                key={`source-${String(screenshotContext.screenshotMode)}`}
                 id={polygonsId(id, 'source')}
                 type="geojson"
                 data={collection}
@@ -157,7 +162,7 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
                     'fill-color': ['get', 'fillColor'],
                     'fill-opacity': ['get', 'fillOpacity'],
                 }}
-                beforeId={labelId}
+                beforeId={beforeId}
             />
             <Layer
                 id={polygonsId(id, 'outline')}
@@ -167,7 +172,7 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
                     'line-color': ['get', 'color'],
                     'line-width': ['get', 'weight'],
                 }}
-                beforeId={labelId}
+                beforeId={beforeId}
             />
         </>
     )
@@ -191,7 +196,6 @@ async function waitForMapLoadedOrRemoved(map: MapRef): Promise<void> {
     if (!map.loaded()) {
         await Promise.any([
             map.once('load'),
-            map.once('idle'),
             map.once('remove'), // Map might be removed while it's loading
         ])
     }
@@ -206,6 +210,19 @@ async function firstLabelId(map: MapRef): Promise<string | undefined> {
         }
     }
     return undefined
+}
+
+function useContentBeforeId(map: MapRef | undefined): string | undefined {
+    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]), 'useContentBeforeId').result
+    const hasBasemapSubnationalsLayer = map?.getLayer(basemapSubnationalsId) !== undefined
+    if (hasBasemapSubnationalsLayer && labelId !== undefined) {
+        // If the basemap is in front of the label, then it hasn't moved yet, and we should actually place the content before the label
+        const layersOrder = map.getLayersOrder()
+        if (layersOrder.indexOf(basemapSubnationalsId) > layersOrder.indexOf(labelId)) {
+            return labelId
+        }
+    }
+    return hasBasemapSubnationalsLayer ? basemapSubnationalsId : labelId
 }
 
 class CustomAttributionControl extends maplibregl.AttributionControl {
@@ -237,9 +254,8 @@ function pointsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
 
 export function PointFeatureCollection({ features, clickable }: { features: GeoJSON.Feature[], clickable: boolean }): ReactNode {
     const { current: map } = useMap()
+    const beforeId = useContentBeforeId(map)
     const id = useId()
-
-    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]), 'PointFeatureCollection').result
 
     const collection: GeoJSON.FeatureCollection = useMemo(() => ({
         type: 'FeatureCollection',
@@ -260,7 +276,7 @@ export function PointFeatureCollection({ features, clickable }: { features: GeoJ
                     'circle-opacity': ['get', 'fillOpacity'],
                     'circle-radius': ['get', 'radius'],
                 }}
-                beforeId={labelId}
+                beforeId={beforeId}
             />
         </>
     )
@@ -320,6 +336,8 @@ function useClickable({ id, clickable, features }: { id: string, clickable: bool
 // eslint-disable-next-line no-restricted-syntax -- This is the default maplibre background color
 const defaultBackgroundColor = '#f8f4f0'
 
+const basemapSubnationalsId = 'boundary_subn_overlayed'
+
 export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
     const map = useMap().current!
 
@@ -344,7 +362,7 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
     if (basemap.type === 'osm' && basemap.subnationalOutlines !== undefined) {
         return (
             <Layer
-                id="boundary_subn_overlayed"
+                id={basemapSubnationalsId}
                 type="line"
                 source="openmaptiles"
                 source-layer="boundary"
