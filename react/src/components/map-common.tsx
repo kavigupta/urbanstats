@@ -135,7 +135,13 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
         if (screenshotContext.screenshotMode && map) {
             screenshotContext.loading.add((async () => {
                 while (!map.loaded()) {
-                    await map.once('idle')
+                    await Promise.any([
+                        map.once('idle'),
+                        map.once('remove'),
+                    ])
+                    if (map._removed) {
+                        return
+                    }
                     // Map will sometimes return to idle but needs to load more
                     await new Promise(resolve => setTimeout(resolve))
                 }
