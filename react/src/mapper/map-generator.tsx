@@ -4,7 +4,7 @@ import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
 import { Basemap as BasemapComponent, CommonMaplibreMap, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
-import { screencapElement, ScreenshotContext } from '../components/screenshot'
+import { screencapElement, ScreenshotContext, ScreenshotContextType } from '../components/screenshot'
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
@@ -173,24 +173,26 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             />
         )
 
-        const [screenshotMode, setScreenshotMode] = useState(false)
+        const [screenshotMode, setScreenshotMode] = useState<ScreenshotContextType>({ screenshotMode: false })
 
         const colors = useColors()
 
         exportImageRef(async () => {
-            setScreenshotMode(true)
+            const loading = new Set<Promise<void>>()
+            setScreenshotMode({ screenshotMode: true, loading })
             const restoreMaps = mapsRef.map(r => r!.getMap()).map(prepareMapForImageExport)
-            return new Promise((resolve) => {
-                setTimeout(async () => {
-                    const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
 
-                    const image = await mapImageExport(elementCanvas, mapResultMain.value.basemap, colors)
+            await new Promise(resolve => setTimeout(resolve)) // Wait for the updates above to propagate
+            await Promise.all(loading) // Wait for loading triggered by the updates to complete
 
-                    resolve(image)
-                    setScreenshotMode(false)
-                    restoreMaps.forEach((restore) => { restore() })
-                })
-            })
+            const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
+
+            const image = await mapImageExport(elementCanvas, mapResultMain.value.basemap, colors)
+
+            setScreenshotMode({ screenshotMode: false })
+            restoreMaps.forEach((restore) => { restore() })
+
+            return image
         })
 
         const textBoxes = props.mode === 'insets'

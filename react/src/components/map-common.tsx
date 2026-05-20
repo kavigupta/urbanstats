@@ -17,7 +17,7 @@ import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { keptByNoBasemap } from './map-common-utils'
-import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
+import { defaultMapBorderRadius, mapBorderWidth, ScreenshotContext, useScreenshotMode } from './screenshot'
 
 import './map.css'
 
@@ -129,9 +129,37 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
 
     useClickable({ id: polygonsId(id, 'fill'), features, clickable })
 
+    const screenshotContext = useContext(ScreenshotContext)
+
+    useEffect(() => {
+        if (screenshotContext.screenshotMode && map) {
+            screenshotContext.loading.add((async () => {
+                while (!map.loaded()) {
+                    await Promise.any([
+                        map.once('idle'),
+                        map.once('remove'),
+                    ])
+                    if (map._removed) {
+                        return
+                    }
+                    // Map will sometimes return to idle but needs to load more
+                    await new Promise(resolve => setTimeout(resolve))
+                }
+            })())
+        }
+    }, [screenshotContext, map])
+
     return (
         <>
-            <Source id={polygonsId(id, 'source')} type="geojson" data={collection} />
+            <Source
+                // Must remount to apply tolerance changes
+                key={`source-${String(screenshotContext.screenshotMode)}`}
+                id={polygonsId(id, 'source')}
+                type="geojson"
+                data={collection}
+                // Only use tolerance=0 in screenshot mode, as it takes a lot of memory
+                {...(screenshotContext.screenshotMode ? { tolerance: 0 } : { })}
+            />
             <Layer
                 id={polygonsId(id, 'fill')}
                 type="fill"
