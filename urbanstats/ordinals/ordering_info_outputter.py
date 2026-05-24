@@ -9,15 +9,27 @@ from urbanstats.statistics.stat_path import get_statistic_column_path
 from urbanstats.universe.universe_list import all_universes
 from urbanstats.utils import output_typescript
 
-
-def close_enough(a, b, tol=1e-3):
-    if not np.isfinite(a) or not np.isfinite(b):
-        return True  # if either is not finite, we consider them close enough
-    return abs(a - b) < tol * max(abs(a), abs(b), 1)
-
+def check_ordering(prev_val, val_unmodified, val_modified, tol=1e-3):
+    assert isinstance(prev_val, np.float32)
+    assert isinstance(val_unmodified, np.float32)
+    assert isinstance(val_modified, np.float32)
+    if not np.isfinite(prev_val) or not np.isfinite(val_unmodified):
+        return
+    if not (val_modified < prev_val):
+        import IPython; IPython.embed()
+        raise ValueError(f"Modified value {val_modified} is not less than previous value {prev_val}")
+    if not np.isclose(val_unmodified, val_modified, rtol=tol, atol=tol):
+        raise ValueError(f"Modified value {val_modified} is not close enough to original value {val_unmodified}")
 
 def ensure_correct_ordering(values, ordering):
-    values = np.array(values, dtype=np.float64, copy=True)
+    """
+    We want to ensure that the values are strictly decreasing according to the ordering.
+    We break ties by using np.nextafter to get the next representable float value that is less than the previous value.
+
+    The resulting list guarantees that for all initially finite values, if ordering[i] > ordering[j], then values[i] < values[j],
+    and the values are within a small tolerance of the original values
+    """
+    values = np.array(values, dtype=np.float32, copy=True)
     ordering = np.array(ordering, dtype=np.int64, copy=False)
     assert len(values) == len(ordering)
     ordering = np.argsort(np.argsort(ordering))
@@ -26,14 +38,8 @@ def ensure_correct_ordering(values, ordering):
         prev_index = ordering[i - 1]
         if values[index] >= values[prev_index]:
             previous_value = values[prev_index]
-            new_value = np.nextafter(previous_value, -np.inf)
-            assert (
-                new_value < previous_value
-            ), "nextafter should be less than the original value"
-            assert close_enough(
-                values[index], new_value
-            ), "nextafter should be very close to the original value"
-            values[index] = new_value
+            new_value = np.nextafter(previous_value, np.float32(-np.inf))
+            check_ordering(previous_value, values[index], new_value)
     return values.tolist()
 
 
