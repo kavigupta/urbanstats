@@ -216,17 +216,13 @@ export async function loadOrderingDataProtobuf(universe: Universe, statpath: str
     const links = data_links
     const idx = type in links ? pullKey(links[type], statpath) : 0
     const orderLink = orderingDataLink(type, idx)
-    const orderingPromise = loadOrderingProtobuf(universe, statpath, type)
     const dataLists = await loadProtobuf(orderLink, 'DataLists')
     const index = dataLists.statnames.indexOf(statpath)
     const res = dataLists.dataLists[index]
     const universeIdx = universes_ordered.indexOf(universe)
     const universes = await loadUniverses(type)
-    const ordering = (await orderingPromise).orderIdxs
-    assert(ordering !== undefined && ordering !== null, 'Ordering must be defined to load ordering data')
-    assert(res.value !== undefined && res.value !== null, 'Ordering data values must be defined')
     return {
-        value: res.value.filter((_, i) => universes.universes[i].universeIdxs?.includes(universeIdx)),
+        value: res.value!.filter((_, i) => universes.universes[i].universeIdxs?.includes(universeIdx)),
         populationPercentile: res.populationPercentileByUniverse!.flatMap((_, i) => {
             const universeIndex = universes.universes[i].universeIdxs!.indexOf(universeIdx)
             if (universeIndex === -1) {
