@@ -211,6 +211,8 @@ async function loadOrderingProtobuf(universe: Universe, statpath: string, type: 
 }
 
 function ensureCorrectOrdering(values: number[], ordering: number[]): number[] {
+    assert(values.length === ordering.length, 'Values and ordering must have the same length')
+    ordering = reindex(ordering) // argsort(argsort(ordering))
     // ensure this is in descending order by messing with the ulp.
     // it should already be almost in descending order.
     for (let i = 1; i < values.length; i++) {
@@ -219,7 +221,7 @@ function ensureCorrectOrdering(values: number[], ordering: number[]): number[] {
         if (values[index] >= values[prevIndex]) {
             const newValue = nextDown(values[prevIndex])
             assert(newValue < values[prevIndex], 'nextDown should be less than the original value')
-            assert(Math.abs(values[index] - newValue) < 1e-3 * Math.min(Math.abs(values[index]), 1), 'nextDown should be very close to the original value')
+            assert(Math.abs(values[index] - newValue) < 1e-3 * Math.max(Math.abs(values[index]), 1), 'nextDown should be very close to the original value')
             values[index] = newValue
         }
     }
