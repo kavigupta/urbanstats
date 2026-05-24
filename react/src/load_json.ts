@@ -8,7 +8,6 @@ import { dataLink, indexLink, orderingDataLink, orderingLink, shapeLink } from '
 import { debugPerformance } from './search'
 import { Universe } from './universe'
 import { assert } from './utils/defensive'
-import { nextDown } from './utils/math'
 import {
     Article, ConsolidatedArticles, ConsolidatedShapes, CountsByArticleUniverseAndType, DataLists,
     Feature, IOrderList, OrderList,
@@ -210,24 +209,6 @@ async function loadOrderingProtobuf(universe: Universe, statpath: string, type: 
     return { orderIdxs: orderIndices }
 }
 
-function ensureCorrectOrdering(values: number[], ordering: number[]): number[] {
-    assert(values.length === ordering.length, 'Values and ordering must have the same length')
-    ordering = reindex(ordering) // argsort(argsort(ordering))
-    // ensure this is in descending order by messing with the ulp.
-    // it should already be almost in descending order.
-    for (let i = 1; i < values.length; i++) {
-        const index = ordering[i]
-        const prevIndex = ordering[i - 1]
-        if (values[index] >= values[prevIndex]) {
-            const newValue = nextDown(values[prevIndex])
-            assert(newValue < values[prevIndex], 'nextDown should be less than the original value')
-            assert(Math.abs(values[index] - newValue) < 1e-3 * Math.max(Math.abs(values[index]), 1), 'nextDown should be very close to the original value')
-            values[index] = newValue
-        }
-    }
-    return values
-}
-
 export async function loadOrderingDataProtobuf(universe: Universe, statpath: string, type: string): Promise<{
     value: number[]
     populationPercentile: number[]
@@ -243,8 +224,9 @@ export async function loadOrderingDataProtobuf(universe: Universe, statpath: str
     const universes = await loadUniverses(type)
     const ordering = (await orderingPromise).orderIdxs
     assert(ordering !== undefined && ordering !== null, 'Ordering must be defined to load ordering data')
+    assert(res.value !== undefined && res.value !== null, 'Ordering data values must be defined')
     return {
-        value: ensureCorrectOrdering(res.value!.filter((_, i) => universes.universes[i].universeIdxs?.includes(universeIdx)), ordering),
+        value: res.value.filter((_, i) => universes.universes[i].universeIdxs?.includes(universeIdx)),
         populationPercentile: res.populationPercentileByUniverse!.flatMap((_, i) => {
             const universeIndex = universes.universes[i].universeIdxs!.indexOf(universeIdx)
             if (universeIndex === -1) {

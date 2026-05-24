@@ -1,4 +1,5 @@
 import tqdm.auto as tqdm
+import numpy as np
 
 from urbanstats.ordinals.compress_counts import compress_counts, mapify
 from urbanstats.protobuf import data_files_pb2
@@ -7,6 +8,33 @@ from urbanstats.statistics.output_statistics_metadata import internal_statistic_
 from urbanstats.statistics.stat_path import get_statistic_column_path
 from urbanstats.universe.universe_list import all_universes
 from urbanstats.utils import output_typescript
+
+
+def close_enough(a, b, tol=1e-3):
+    if not np.isfinite(a) or not np.isfinite(b):
+        return True  # if either is not finite, we consider them close enough
+    return abs(a - b) < tol * max(abs(a), abs(b), 1)
+
+
+def ensure_correct_ordering(values, ordering):
+    values = np.array(values, dtype=np.float64, copy=True)
+    ordering = np.array(ordering, dtype=np.int64, copy=False)
+    assert len(values) == len(ordering)
+    ordering = np.argsort(np.argsort(ordering))
+    for i in range(1, len(values)):
+        index = ordering[i]
+        prev_index = ordering[i - 1]
+        if values[index] >= values[prev_index]:
+            previous_value = values[prev_index]
+            new_value = np.nextafter(previous_value, -np.inf)
+            assert (
+                new_value < previous_value
+            ), "nextafter should be less than the original value"
+            assert close_enough(
+                values[index], new_value
+            ), "nextafter should be very close to the original value"
+            values[index] = new_value
+    return values.tolist()
 
 
 class ProtobufOutputter:
@@ -77,6 +105,8 @@ def output_data_files(order_info, site_folder, typ):
         ordered_values = order_info.compute_values_and_percentiles(
             "world", typ, statistic_column
         )
+        ordering = order_info.compute_ordinals("world", typ, statistic_column)
+        ordered_values = ensure_correct_ordering(ordered_values, ordering)
         percs_by_u = order_info.percentiles_by_universe(typ, statistic_column)
         data_list.value.extend(ordered_values)
         for pbu in percs_by_u:
