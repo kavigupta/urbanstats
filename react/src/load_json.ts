@@ -8,6 +8,7 @@ import { dataLink, indexLink, orderingDataLink, orderingLink, shapeLink } from '
 import { debugPerformance } from './search'
 import { Universe } from './universe'
 import { assert } from './utils/defensive'
+import { nextDown } from './utils/math'
 import {
     Article, ConsolidatedArticles, ConsolidatedShapes, CountsByArticleUniverseAndType, DataLists,
     Feature, IOrderList, OrderList,
@@ -209,6 +210,22 @@ async function loadOrderingProtobuf(universe: Universe, statpath: string, type: 
     return { orderIdxs: orderIndices }
 }
 
+function ensureCorrectOrdering(values: number[], ordering: number[]): number[] {
+    // ensure this is in descending order by messing with the ulp.
+    // it should already be almost in descending order.
+    for (let i = 1; i < values.length; i++) {
+        const index = ordering[i]
+        const prevIndex = ordering[i - 1]
+        if (values[index] >= values[prevIndex]) {
+            const newValue = nextDown(values[prevIndex])
+            assert(newValue < values[prevIndex], 'nextDown should be less than the original value')
+            assert(Math.abs(values[index] - newValue) < 1e-3 * Math.min(Math.abs(values[index]), 1), 'nextDown should be very close to the original value')
+            values[index] = newValue
+        }
+    }
+    return values
+}
+
 export async function loadOrderingDataProtobuf(universe: Universe, statpath: string, type: string): Promise<{
     value: number[]
     populationPercentile: number[]
@@ -216,13 +233,16 @@ export async function loadOrderingDataProtobuf(universe: Universe, statpath: str
     const links = data_links
     const idx = type in links ? pullKey(links[type], statpath) : 0
     const orderLink = orderingDataLink(type, idx)
+    const orderingPromise = loadOrderingProtobuf(universe, statpath, type)
     const dataLists = await loadProtobuf(orderLink, 'DataLists')
     const index = dataLists.statnames.indexOf(statpath)
     const res = dataLists.dataLists[index]
     const universeIdx = universes_ordered.indexOf(universe)
     const universes = await loadUniverses(type)
+    const ordering = (await orderingPromise).orderIdxs
+    assert(ordering !== undefined && ordering !== null, 'Ordering must be defined to load ordering data')
     return {
-        value: res.value!.filter((_, i) => universes.universes[i].universeIdxs?.includes(universeIdx)),
+        value: ensureCorrectOrdering(res.value!.filter((_, i) => universes.universes[i].universeIdxs?.includes(universeIdx)), ordering),
         populationPercentile: res.populationPercentileByUniverse!.flatMap((_, i) => {
             const universeIndex = universes.universes[i].universeIdxs!.indexOf(universeIdx)
             if (universeIndex === -1) {
