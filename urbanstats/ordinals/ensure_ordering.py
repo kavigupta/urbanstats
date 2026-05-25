@@ -7,6 +7,7 @@ def check_ordering_pair(prev_val, val_unmodified, val_modified, tol=1e-3):
     assert isinstance(val_modified, np.float32)
     if not np.isfinite(prev_val) or not np.isfinite(val_unmodified):
         return
+    # pylint: disable=superfluous-parens
     if not (val_modified < prev_val):
         raise ValueError(
             f"Modified value {val_modified} is not less than previous value {prev_val}"
