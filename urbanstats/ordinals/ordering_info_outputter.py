@@ -45,12 +45,12 @@ def ensure_correct_ordering(values, ordering):
     ordering = np.array(ordering, dtype=np.int64, copy=False)
     assert len(values) == len(ordering)
     ordering = np.argsort(np.argsort(ordering))
-    for i in range(1, len(values)):
+    for i in reversed(range(0, len(values) - 1)):
         index = ordering[i]
-        prev_index = ordering[i - 1]
-        if values[index] >= values[prev_index]:
-            previous_value = values[prev_index]
-            new_value = np.nextafter(previous_value, np.float32(-np.inf))
+        next_index = ordering[i + 1]
+        if values[index] <= values[next_index]:
+            next_value = values[next_index]
+            new_value = np.nextafter(next_value, np.float32(np.inf))
             values[index] = new_value
     check_ordering(values, ordering)
     return values.tolist()
