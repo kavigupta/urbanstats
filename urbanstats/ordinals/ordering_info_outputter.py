@@ -1,5 +1,5 @@
-import tqdm.auto as tqdm
 import numpy as np
+import tqdm.auto as tqdm
 
 from urbanstats.ordinals.compress_counts import compress_counts, mapify
 from urbanstats.protobuf import data_files_pb2
