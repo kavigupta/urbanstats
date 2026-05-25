@@ -14,6 +14,7 @@ import {
     waitForLoading,
     downloadCSV,
     withInterceptedRequests,
+    clickUniverseFlag,
 } from './test_utils'
 
 function articleUrl(longname: string): string {
@@ -446,4 +447,44 @@ test('hash collisions: hashes match and all pages load with correct compactness'
         await checkAllCategoryBoxes(t)
         await t.expect(Selector('span').withExactText(entry.expectedCompactness).exists).ok()
     }
+})
+
+urbanstatsFixture('make sure ties in custom table are resolved appropriately', '/article.html?longname=33523%2C+USA&s=2cB5JjRm6YapUJ19cevM')
+
+async function getAllTexts(t: TestController, selector: Selector): Promise<string[]> {
+    await t.expect(selector.count).gt(0)
+    const count = await selector.count
+    const texts: string[] = []
+    for (let i = 0; i < count; i++) {
+        texts.push(await selector.nth(i).innerText)
+    }
+    return texts
+}
+
+async function testSameOrdinalPercentile(t: TestController): Promise<void> {
+    // pull the longname from "centered_text subheadertext" div
+    const longname = await Selector('div').withAttribute('class', 'centered_text subheadertext').nth(0).innerText
+    // pull the index: data-test-id="statistic-ordinal"
+    const index = await Selector('div').withAttribute('data-test-id', 'statistic-ordinal').nth(0).innerText
+    // navigate to the table
+    await t.click(Selector('a').withExactText('Coronary heart disease %'))
+    // // make sure a div with the text 33523, USA exists
+    // await t.expect(Selector('div').withExactText(longname).exists).ok()
+    const tableLongnames = await getAllTexts(t, Selector('a').withAttribute('data-test-id', 'statistic-panel-longname-link'))
+    const tableIndices = await getAllTexts(t, Selector('div').withAttribute('data-test-id', 'statistic-ordinal'))
+    await t.expect(tableLongnames).contains(longname)
+    const indexInTable = tableLongnames.indexOf(longname)
+    await t.expect(tableIndices[indexInTable]).eql(index.split(' ')[0])
+}
+
+test('custom table tie-breaking', async (t) => {
+    await testSameOrdinalPercentile(t)
+})
+
+test('custom table tie-breaking in universe', async (t) => {
+    // florida
+    await t
+        .click(Selector('img').withAttribute('class', 'universe-selector'))
+    await clickUniverseFlag(t, 'Florida, USA')
+    await testSameOrdinalPercentile(t)
 })

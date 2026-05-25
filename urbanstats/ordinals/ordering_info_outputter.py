@@ -1,6 +1,7 @@
 import tqdm.auto as tqdm
 
 from urbanstats.ordinals.compress_counts import compress_counts, mapify
+from urbanstats.ordinals.ensure_ordering import ensure_correct_ordering
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import save_article_ordering_list, write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
@@ -77,6 +78,8 @@ def output_data_files(order_info, site_folder, typ):
         ordered_values = order_info.compute_values_and_percentiles(
             "world", typ, statistic_column
         )
+        ordering = order_info.compute_ordinals("world", typ, statistic_column)
+        ordered_values = ensure_correct_ordering(ordered_values, ordering)
         percs_by_u = order_info.percentiles_by_universe(typ, statistic_column)
         data_list.value.extend(ordered_values)
         for pbu in percs_by_u:
