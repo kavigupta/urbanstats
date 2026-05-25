@@ -485,7 +485,6 @@ test('custom table tie-breaking in universe', async (t) => {
     // florida
     await t
         .click(Selector('img').withAttribute('class', 'universe-selector'))
-    await screencap(t)
     await clickUniverseFlag(t, 'Florida, USA')
     await testSameOrdinalPercentile(t)
 })
