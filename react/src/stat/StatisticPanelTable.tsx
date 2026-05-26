@@ -327,11 +327,12 @@ function PerPageSelector(props: {
             <span>
                 <select
                     style={{ backgroundColor: colors.background, color: colors.textMain }}
-                    defaultValue={
+                    value={
                         props.perPage === props.total ? 'All' : props.perPage
                     }
                     onChange={(e) => { props.changeAmount(e.target.value) }}
                     className="serif"
+                    data-test-id="amount-selector"
                 >
                     <option value="10">10</option>
                     <option value="20">20</option>
