@@ -62,18 +62,19 @@ test('statistics-navigation-right', async (t) => {
         .eql(`${target}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=41&amount=20`)
 })
 
+const amountSelector = Selector('select[data-test-id="amount-selector"]')
+
 test('statistics-navigation-amount', async (t) => {
     // take the select field that currently says 20 and make it say 50
-    const amount = Selector('select').withText(/20/).nth(0)
     await t
-        .click(amount)
+        .click(amountSelector)
         .click(Selector('option').withText(/50/))
     await t.expect(getLocation())
         .eql(`${target}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=50`)
     await screencap(t)
     // set to All
     await t
-        .click(amount)
+        .click(amountSelector)
         .click(Selector('option').withText(/All/))
     await t.expect(getLocation())
         .eql(`${target}/statistic.html?statname=Population&article_type=Hospital+Referral+Region&start=1&amount=All`)
@@ -539,7 +540,7 @@ test('page navigation and amount changes in edit mode: undoable and do not add t
     await t.wait(2000)
 
     // Change amount to 20 in edit mode — should also be replaceState
-    await t.click(Selector('select').withText(/10/)).click(Selector('option').withExactText('20'))
+    await t.click(amountSelector).click(Selector('option').withExactText('20'))
     await waitForLoading()
     const amount20Values = await dataValues()
     await t.expect(amount20Values).notEql(page2Values)
@@ -1176,4 +1177,14 @@ test('type in filter should preserve spaces', async (t) => {
     await checkTextboxesDirect(t, ['Filter?'])
     await typeInEditor(t, 0, 'population > 10m', true)
     await t.expect(nthEditor(0).textContent).eql('population > 10m\n')
+})
+
+urbanstatsFixture('population by county 100 count', `${target}/statistic.html?statname=Population&article_type=County&start=1&amount=100&universe=USA`)
+
+test('count selector updates when navigating', async (t) => {
+    await t.expect(amountSelector.value).eql('100')
+    await t.click(amountSelector).click(Selector('option').withText(/50/))
+    await t.expect(amountSelector.value).eql('50')
+    await goBack()
+    await t.expect(amountSelector.value).eql('100')
 })
