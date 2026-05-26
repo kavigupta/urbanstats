@@ -99,18 +99,24 @@ export function Header(props: {
                                     postNavigationCallback: () => { props.setHamburgerOpen(false) },
                                 })
                             }
-                            statisticLink={(statisticIndex, articleType, universe) => navContext.link({
-                                kind: 'statistic',
-                                universe,
-                                statname: statistic_name_list[statisticIndex],
-                                article_type: articleType,
-                                start: 1,
-                                amount: 20,
-                                order: 'descending',
-                            }, {
-                                scroll: { kind: 'position', top: 0 },
-                                postNavigationCallback: () => { props.setHamburgerOpen(false) },
-                            })}
+                            statisticLink={(statisticIndex, articleType, universe) => {
+                                const currentDescriptor = navContext.currentDescriptor
+                                return navContext.link({
+                                    kind: 'statistic',
+                                    universe,
+                                    statname: statistic_name_list[statisticIndex],
+                                    article_type: articleType,
+                                    start: 1,
+                                    // Preserve the amount if we're already on a statistics page
+                                    amount: currentDescriptor.kind === 'statistic'
+                                        ? currentDescriptor.amount
+                                        : 20,
+                                    order: 'descending',
+                                }, {
+                                    scroll: { kind: 'position', top: 0 },
+                                    postNavigationCallback: () => { props.setHamburgerOpen(false) },
+                                })
+                            }}
                             placeholder="Search Urban Stats"
                             style={{
                                 fontSize: '30px',

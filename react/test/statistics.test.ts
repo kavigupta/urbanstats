@@ -1188,3 +1188,13 @@ test('count selector updates when navigating', async (t) => {
     await goBack()
     await t.expect(amountSelector.value).eql('100')
 })
+
+test('numeric amount preserved when searching to new stat page', async (t) => {
+    await t.click(searchField).typeText(searchField, 'county pw density')
+    await waitForSelectedSearchResult(t)
+    await t.pressKey('enter')
+    await waitForLoading()
+    await t.expect(getLocation()).contains('amount=100')
+    await t.expect(amountSelector.value).eql('100')
+    await t.expect((await getAllLongnames()).length).eql(100)
+})
