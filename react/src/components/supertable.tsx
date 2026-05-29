@@ -10,7 +10,7 @@ import { CongressionalColumnData, CongressionalRepresentativeEntry } from './con
 import { CongressionalRepresentativesWidget } from './congressional-table/render'
 import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
-import { useScreenshotCallback } from './screenshot'
+import { useScreenshotMode } from './screenshot'
 import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeDisclaimerFootnotes, computeSizesForRow, CommonLayoutInformation } from './table'
 
 export interface PlotSpec {
@@ -53,7 +53,7 @@ export interface TableContentsProps {
 export function TableContents(props: TableContentsProps): ReactNode {
     const universe = useUniverse()
     const colors = useColors()
-    const screenshotMode = useScreenshotCallback()
+    const screenshotMode = useScreenshotMode()
     assert(universe !== undefined, 'no universe')
 
     const rowsForFootnotes = useMemo(() => {

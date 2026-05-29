@@ -27,7 +27,7 @@ import { EditableNumber } from './editable-field'
 import { footnoteSymbol } from './footnote-symbol'
 import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
-import { useScreenshotCallback } from './screenshot'
+import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
 import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
@@ -259,7 +259,7 @@ export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: num
 
 export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
     const isMobileLayout = useMobileLayout()
-    const isScreenshot = useScreenshotCallback()
+    const isScreenshot = useScreenshotMode()
     const isTranspose = useTranspose()
 
     const [statsModalOpen, setStatsModalOpen] = useState(false)
@@ -430,7 +430,7 @@ function PointerHeaderCells(props: { ordinalStyle: CSSProperties }): ColumnLayou
     // Must be outside branch because uses hooks
     const selectorCell = PointerHeaderSelectorCell()
 
-    const screenshotMode = useScreenshotCallback()
+    const screenshotMode = useScreenshotMode()
     const singlePointerCell = useSinglePointerCell()
 
     if (screenshotMode) {
@@ -620,7 +620,7 @@ export function StatisticRowCells(props: {
 }
 
 function PointerRowCells(props: { ordinalStyle: CSSProperties, row: StatisticCellRenderingInfo, longname: string }): ColumnLayoutProps['cells'] {
-    const screenshotMode = useScreenshotCallback()
+    const screenshotMode = useScreenshotMode()
 
     const singlePointerCell = useSinglePointerCell()
     const [preferredPointerCell] = useSetting('mobile_article_pointers')
@@ -754,7 +754,7 @@ function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipula
         </div>
     )
 
-    const screenshotMode = useScreenshotCallback()
+    const screenshotMode = useScreenshotMode()
 
     const navContext = useContext(Navigator.Context)
 
@@ -1000,7 +1000,7 @@ function StatisticName(props: {
                         {props.displayName}
                     </span>
                 )
-    const screenshotMode = useScreenshotCallback()
+    const screenshotMode = useScreenshotMode()
     const elements = [link]
     if (props.row?.extraStat !== undefined && !screenshotMode) {
         elements.push(
@@ -1376,7 +1376,7 @@ function PointerButtonIndex(props: {
 }
 
 function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearInScreenshot: boolean }): ReactNode {
-    const isScreenshot = useScreenshotCallback()
+    const isScreenshot = useScreenshotMode()
 
     if (isScreenshot && !props.shouldAppearInScreenshot) {
         return null
@@ -1398,7 +1398,7 @@ function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearI
 }
 
 function DeleteButton({ handleDelete }: { handleDelete: () => void }): ReactNode {
-    const isScreenshot = useScreenshotCallback()
+    const isScreenshot = useScreenshotMode()
     if (isScreenshot) {
         return null
     }

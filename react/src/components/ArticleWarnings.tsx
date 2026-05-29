@@ -5,10 +5,10 @@ import { checkboxCategoryName, sourceEnabledKey, useSettings } from '../page_tem
 import { groupYearKeys, useAvailableYears, useDataSourceCheckboxes, useGroupsMissingYearSelection, useSelectedGroups } from '../page_template/statistic-settings'
 import { Category, Group, Year } from '../page_template/statistic-tree'
 
-import { useScreenshotCallback } from './screenshot'
+import { useScreenshotMode } from './screenshot'
 
 export function ArticleWarnings(): ReactNode {
-    const screenshotMode = useScreenshotCallback()
+    const screenshotMode = useScreenshotMode()
     const selectedGroups = useSelectedGroups()
     const groupsMissingYearSelection = useGroupsMissingYearSelection()
     const availableYears = useAvailableYears()

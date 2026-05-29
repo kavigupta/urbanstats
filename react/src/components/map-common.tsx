@@ -17,7 +17,7 @@ import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { keptByNoBasemap } from './map-common-utils'
-import { defaultMapBorderRadius, mapBorderWidth, ScreenshotContext, useScreenshotCallback } from './screenshot'
+import { defaultMapBorderRadius, mapBorderWidth, ScreenshotContext, useScreenshotMode } from './screenshot'
 
 import './map.css'
 
@@ -31,7 +31,7 @@ export type CommonMapProps = MapProps & { testId?: string }
 // eslint-disable-next-line no-restricted-syntax -- Forwarded ref
 function _CommonMaplibreMap(props: CommonMapProps, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
-    const isScreenshotMode = useScreenshotCallback()
+    const isScreenshotMode = useScreenshotMode()
 
     const fallbackTestId = useId()
     const testId = props.testId ?? fallbackTestId

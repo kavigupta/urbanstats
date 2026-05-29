@@ -2,7 +2,7 @@ import React, { HTMLAttributes, ReactNode, RefObject, useEffect, useRef, useStat
 import { MapRef, useMap } from 'react-map-gl/maplibre'
 
 import { CommonMapProps, CustomAttributionControlComponent, insetBorderWidth } from '../../components/map-common'
-import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback } from '../../components/screenshot'
+import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from '../../components/screenshot'
 import { useColors } from '../../page_template/colors'
 import { Inset } from '../../urban-stats-script/constants/insets'
 import { Edit } from '../../utils/array-edits'
@@ -25,7 +25,7 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets, intera
 
     const id = `map-${i}`
 
-    const screenshotMode = useScreenshotCallback()
+    const screenshotMode = useScreenshotMode()
 
     const mapChildren = (
         <>
