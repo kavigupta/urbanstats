@@ -4,7 +4,7 @@ import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
 import { Basemap as BasemapComponent, CommonMaplibreMap, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
-import { screencapElement, ScreenshotContext, ScreenshotContextType } from '../components/screenshot'
+import { screencapElement, ScreenshotContext, ScreenshotContextType, withScreenshotMode } from '../components/screenshot'
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
@@ -180,15 +180,10 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         exportImageRef(async () => {
             const restoreMaps = mapsRef.map(r => r!.getMap()).map(prepareMapForImageExport)
 
-            // Tell all the components that we're screenshotting, and wait for them to be ready
-            await Promise.all(Array.from(screenshotContext.current).map(setCallback => new Promise<void>((resolve) => { setCallback(() => resolve) })))
-
-            const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
-
-            const image = await mapImageExport(elementCanvas, mapResultMain.value.basemap, colors)
-
-            // Move everything out of screenshot mode
-            screenshotContext.current.forEach((setCallback) => { setCallback(undefined) })
+            const image = await withScreenshotMode(screenshotContext.current, async () => {
+                const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
+                return mapImageExport(elementCanvas, mapResultMain.value.basemap, colors)
+            })
 
             restoreMaps.forEach((restore) => { restore() })
 

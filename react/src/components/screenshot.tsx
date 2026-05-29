@@ -167,75 +167,83 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, h
     return resultCanvas
 }
 
-export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType, forceNonTesting: boolean = false): Promise<void> {
-    // Tell all the components that we're screenshotting, and wait for them to be ready
-    await Promise.all(Array.from(screenshotContext).map(setCallback => new Promise<void>((resolve) => { setCallback(() => resolve) })))
-
-    const overallWidth = config.overallWidth
-    const heightMultiplier = config.heightMultiplier ?? 1
-
-    const canvases = []
-    for (const ref of config.elementsToRender) {
-        try {
-            canvases.push(await screencapElement(ref, overallWidth, heightMultiplier, { testing: !forceNonTesting && TestUtils.shared.isTesting }))
-        }
-        catch (e) {
-            console.error(e)
-        }
-    }
-
-    const canvas = document.createElement('canvas')
-
-    const padAround = 100
-    const padBetween = 50
-
-    const banner = await loadImage(colors.screenshotFooterUrl)
-
-    const bannerScale = overallWidth / banner.width
-    const bannerHeight = banner.height * bannerScale
-
-    canvas.width = padAround * 2 + overallWidth
-    canvas.height = padAround + padBetween * (canvases.length - 1) + canvases.reduce((a, b) => a + b.height, 0) + bannerHeight
-
-    const ctx = canvas.getContext('2d')!
-
-    ctx.fillStyle = colors.background
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-    let start = padAround
-    for (const elementCanvas of canvases) {
-        ctx.drawImage(elementCanvas, padAround, start)
-        start += elementCanvas.height + padBetween
-    }
-
-    start -= padBetween
-
-    ctx.drawImage(banner, padAround, start, overallWidth, bannerHeight)
-
-    if (universe !== undefined) {
-        const flag = new Image()
-        flag.src = universePath(universe)
-        await new Promise<void>((resolve) => {
-            flag.onload = () => { resolve() }
-        })
-        // draw on bottom left, same height as banner
-        const flagHeight = bannerHeight / 2
-        const offset = flagHeight / 2
-        const flagWidth = flag.width * flagHeight / flag.height
-        drawImageIfNotTesting(ctx, canvases.length, flag, padAround + offset, start + offset, flagWidth, flagHeight, TestUtils.shared.isTesting)
-    }
-
-    canvas.toBlob(function (blob) {
-        saveAs(blob!, config.path)
-    })
-
-    // Move everything out of screenshot mode
-    screenshotContext.forEach((setCallback) => { setCallback(undefined) })
-}
-
-type ReadyForScreenshotCallback = () => void
+export type ReadyForScreenshotCallback = () => void
 
 export type ScreenshotContextType = Set<(callback: ReadyForScreenshotCallback | undefined) => void>
+
+export async function withScreenshotMode<T>(context: ScreenshotContextType, fn: () => Promise<T>): Promise<T> {
+    // Tell all the components that we're screenshotting, and wait for them to be ready
+    await Promise.all(Array.from(context).map(setCallback => new Promise<void>((resolve) => { setCallback(() => resolve) })))
+    try {
+        return await fn()
+    }
+    finally {
+        // Move everything out of screenshot mode
+        context.forEach((setCallback) => { setCallback(undefined) })
+    }
+}
+
+export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType, forceNonTesting: boolean = false): Promise<void> {
+    await withScreenshotMode(screenshotContext, async () => {
+        const overallWidth = config.overallWidth
+        const heightMultiplier = config.heightMultiplier ?? 1
+
+        const canvases = []
+        for (const ref of config.elementsToRender) {
+            try {
+                canvases.push(await screencapElement(ref, overallWidth, heightMultiplier, { testing: !forceNonTesting && TestUtils.shared.isTesting }))
+            }
+            catch (e) {
+                console.error(e)
+            }
+        }
+
+        const canvas = document.createElement('canvas')
+
+        const padAround = 100
+        const padBetween = 50
+
+        const banner = await loadImage(colors.screenshotFooterUrl)
+
+        const bannerScale = overallWidth / banner.width
+        const bannerHeight = banner.height * bannerScale
+
+        canvas.width = padAround * 2 + overallWidth
+        canvas.height = padAround + padBetween * (canvases.length - 1) + canvases.reduce((a, b) => a + b.height, 0) + bannerHeight
+
+        const ctx = canvas.getContext('2d')!
+
+        ctx.fillStyle = colors.background
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        let start = padAround
+        for (const elementCanvas of canvases) {
+            ctx.drawImage(elementCanvas, padAround, start)
+            start += elementCanvas.height + padBetween
+        }
+
+        start -= padBetween
+
+        ctx.drawImage(banner, padAround, start, overallWidth, bannerHeight)
+
+        if (universe !== undefined) {
+            const flag = new Image()
+            flag.src = universePath(universe)
+            await new Promise<void>((resolve) => {
+                flag.onload = () => { resolve() }
+            })
+            // draw on bottom left, same height as banner
+            const flagHeight = bannerHeight / 2
+            const offset = flagHeight / 2
+            const flagWidth = flag.width * flagHeight / flag.height
+            drawImageIfNotTesting(ctx, canvases.length, flag, padAround + offset, start + offset, flagWidth, flagHeight, TestUtils.shared.isTesting)
+        }
+
+        canvas.toBlob(function (blob) {
+            saveAs(blob!, config.path)
+        })
+    })
+}
 
 // eslint-disable-next-line no-restricted-syntax -- Context declaration
 export const ScreenshotContext = createContext<ScreenshotContextType>(new Set())
