@@ -1,6 +1,6 @@
 import domtoimage from 'dom-to-image-more'
 import { saveAs } from 'file-saver'
-import React, { createContext, ReactNode, useContext } from 'react'
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 
 import { universePath } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
@@ -23,8 +23,15 @@ export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
             <img src="/screenshot.png" alt="Screenshot Button" style={{ height: '100%' }} />
         </div>
     )
+
+    const screenshotCallback = useScreenshotMode()
+
+    useEffect(() => {
+        screenshotCallback?.()
+    }, [screenshotCallback])
+
     // if screenshot mode is on, put a loading circle over the image
-    if (useScreenshotMode()) {
+    if (screenshotCallback !== undefined) {
         const pad = 10 // pct
         const loadingCircle = (
             <div style={{
@@ -167,12 +174,9 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, h
     return resultCanvas
 }
 
-export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors, setScreenshotMode: (context: ScreenshotContextType) => void, forceNonTesting: boolean = false): Promise<void> {
-    const loading = new Set<Promise<void>>()
-
-    setScreenshotMode({ screenshotMode: true, loading })
-    await new Promise(resolve => setTimeout(resolve)) // Wait for the update above to propagate
-    await Promise.all(loading) // Wait for loading triggered by the update to complete
+export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType, forceNonTesting: boolean = false): Promise<void> {
+    // Tell all the components that we're screenshotting, and wait for them to be ready
+    await Promise.all(Array.from(screenshotContext).map(setCallback => new Promise<void>((resolve) => { setCallback(resolve) })))
 
     const overallWidth = config.overallWidth
     const heightMultiplier = config.heightMultiplier ?? 1
@@ -232,14 +236,29 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
         saveAs(blob!, config.path)
     })
 
-    setScreenshotMode({ screenshotMode: false })
+    // Move everything out of screenshot mode
+    screenshotContext.forEach((setCallback) => { setCallback(undefined) })
 }
 
-export type ScreenshotContextType = { screenshotMode: true, loading: Set<Promise<void>> } | { screenshotMode: false }
+type ReadyForScreenshotCallback = () => void
+
+export type ScreenshotContextType = Set<(callback: ReadyForScreenshotCallback | undefined) => void>
 
 // eslint-disable-next-line no-restricted-syntax -- Context declaration
-export const ScreenshotContext = createContext<ScreenshotContextType>({ screenshotMode: false })
+export const ScreenshotContext = createContext<ScreenshotContextType>(new Set())
 
-export function useScreenshotMode(): boolean {
-    return useContext(ScreenshotContext).screenshotMode
+// When we're taking a screenshot, returns a callback that should be called when the component is ready for the screenshot
+// Using this, we can sync up all component readiness
+export function useScreenshotMode(): ReadyForScreenshotCallback | undefined {
+    const context = useContext(ScreenshotContext)
+    const [callback, setCallback] = useState<ReadyForScreenshotCallback | undefined>(undefined)
+
+    useEffect(() => {
+        context.add(setCallback)
+        return () => {
+            context.delete(setCallback)
+        }
+    }, [context])
+
+    return callback
 }
