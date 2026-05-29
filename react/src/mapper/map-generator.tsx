@@ -181,7 +181,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             const restoreMaps = mapsRef.map(r => r!.getMap()).map(prepareMapForImageExport)
 
             // Tell all the components that we're screenshotting, and wait for them to be ready
-            await Promise.all(Array.from(screenshotContext.current).map(setCallback => new Promise<void>((resolve) => { setCallback(resolve) })))
+            await Promise.all(Array.from(screenshotContext.current).map(setCallback => new Promise<void>((resolve) => { setCallback(() => resolve) })))
 
             const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
 

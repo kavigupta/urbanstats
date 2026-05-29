@@ -170,7 +170,7 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, h
 
 export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType, forceNonTesting: boolean = false): Promise<void> {
     // Tell all the components that we're screenshotting, and wait for them to be ready
-    await Promise.all(Array.from(screenshotContext).map(setCallback => new Promise<void>((resolve) => { setCallback(resolve) })))
+    await Promise.all(Array.from(screenshotContext).map(setCallback => new Promise<void>((resolve) => { setCallback(() => resolve) })))
 
     const overallWidth = config.overallWidth
     const heightMultiplier = config.heightMultiplier ?? 1
