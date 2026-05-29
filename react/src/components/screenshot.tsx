@@ -23,7 +23,6 @@ export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
             <img src="/screenshot.png" alt="Screenshot Button" style={{ height: '100%' }} />
         </div>
     )
-
     // if screenshot mode is on, put a loading circle over the image
     if (useScreenshotMode()) {
         const pad = 10 // pct
