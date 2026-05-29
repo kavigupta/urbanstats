@@ -173,23 +173,23 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             />
         )
 
-        const [screenshotMode, setScreenshotMode] = useState<ScreenshotContextType>({ screenshotMode: false })
+        const screenshotContext = useRef<ScreenshotContextType>(new Set())
 
         const colors = useColors()
 
         exportImageRef(async () => {
-            const loading = new Set<Promise<void>>()
-            setScreenshotMode({ screenshotMode: true, loading })
             const restoreMaps = mapsRef.map(r => r!.getMap()).map(prepareMapForImageExport)
 
-            await new Promise(resolve => setTimeout(resolve)) // Wait for the updates above to propagate
-            await Promise.all(loading) // Wait for loading triggered by the updates to complete
+            // Tell all the components that we're screenshotting, and wait for them to be ready
+            await Promise.all(Array.from(screenshotContext.current).map(setCallback => new Promise<void>((resolve) => { setCallback(resolve) })))
 
             const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
 
             const image = await mapImageExport(elementCanvas, mapResultMain.value.basemap, colors)
 
-            setScreenshotMode({ screenshotMode: false })
+            // Move everything out of screenshot mode
+            screenshotContext.current.forEach((setCallback) => { setCallback(undefined) })
+
             restoreMaps.forEach((restore) => { restore() })
 
             return image
@@ -213,7 +213,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                 )
 
         return (
-            <ScreenshotContext.Provider value={screenshotMode}>
+            <ScreenshotContext.Provider value={screenshotContext.current}>
                 <MapLayout
                     maps={insetMaps}
                     loading={props.loading}

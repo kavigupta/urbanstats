@@ -17,7 +17,7 @@ import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { keptByNoBasemap } from './map-common-utils'
-import { defaultMapBorderRadius, mapBorderWidth, ScreenshotContext, useScreenshotMode } from './screenshot'
+import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback, useScreenshotMode } from './screenshot'
 
 import './map.css'
 
@@ -129,11 +129,11 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
 
     useClickable({ id: polygonsId(id, 'fill'), features, clickable })
 
-    const screenshotContext = useContext(ScreenshotContext)
+    const screenshotCallback = useScreenshotCallback()
 
     useEffect(() => {
-        if (screenshotContext.screenshotMode && map) {
-            screenshotContext.loading.add((async () => {
+        if (screenshotCallback !== undefined && map) {
+            void (async () => {
                 while (!map.loaded()) {
                     await Promise.any([
                         map.once('idle'),
@@ -145,20 +145,21 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
                     // Map will sometimes return to idle but needs to load more
                     await new Promise(resolve => setTimeout(resolve))
                 }
-            })())
+                screenshotCallback()
+            })()
         }
-    }, [screenshotContext, map])
+    }, [screenshotCallback, map])
 
     return (
         <>
             <Source
                 // Must remount to apply tolerance changes
-                key={`source-${String(screenshotContext.screenshotMode)}`}
+                key={`source-${String(screenshotCallback !== undefined)}`}
                 id={polygonsId(id, 'source')}
                 type="geojson"
                 data={collection}
                 // Only use tolerance=0 in screenshot mode, as it takes a lot of memory
-                {...(screenshotContext.screenshotMode ? { tolerance: 0 } : { })}
+                {...(screenshotCallback !== undefined ? { tolerance: 0 } : { })}
             />
             <Layer
                 id={polygonsId(id, 'fill')}
