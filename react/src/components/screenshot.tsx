@@ -24,14 +24,8 @@ export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
         </div>
     )
 
-    const screenshotCallback = useScreenshotMode()
-
-    useEffect(() => {
-        screenshotCallback?.()
-    }, [screenshotCallback])
-
     // if screenshot mode is on, put a loading circle over the image
-    if (screenshotCallback !== undefined) {
+    if (useScreenshotMode()) {
         const pad = 10 // pct
         const loadingCircle = (
             <div style={{
@@ -249,7 +243,7 @@ export const ScreenshotContext = createContext<ScreenshotContextType>(new Set())
 
 // When we're taking a screenshot, returns a callback that should be called when the component is ready for the screenshot
 // Using this, we can sync up all component readiness
-export function useScreenshotMode(): ReadyForScreenshotCallback | undefined {
+export function useScreenshotCallback(): ReadyForScreenshotCallback | undefined {
     const context = useContext(ScreenshotContext)
     const [callback, setCallback] = useState<ReadyForScreenshotCallback | undefined>(undefined)
 
@@ -261,4 +255,15 @@ export function useScreenshotMode(): ReadyForScreenshotCallback | undefined {
     }, [context])
 
     return callback
+}
+
+// Just running a `useEffect` should be good enough for most use cases
+export function useScreenshotMode(): boolean {
+    const screenshotCallback = useScreenshotCallback()
+
+    useEffect(() => {
+        screenshotCallback?.()
+    }, [screenshotCallback])
+
+    return screenshotCallback !== undefined
 }
