@@ -24,7 +24,7 @@ import { pullRelevantPlotProps } from './comparison-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
 import { Related } from './related-button'
-import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
+import { createScreenshot, ScreencapElements, useScreenshotCallback } from './screenshot'
 import { SearchBox } from './search'
 import { CellSpec, PlotSpec, TableContents } from './supertable'
 import { ColumnIdentifier } from './table'
@@ -264,7 +264,7 @@ function ComparisonSearchBox({ longname, type }: { longname: string, type: strin
 function useWidths(): { widthLeftHeader: number, columnWidth: number } {
     const [simpleOrdinals] = useSetting('simple_ordinals')
     const isMobile = useMobileLayout()
-    const screenshotMode = useScreenshotMode()
+    const screenshotMode = useScreenshotCallback()
 
     // TODO clean this up and reduce the amount of magic numbers
     const nonPointerColumns = 15 + 10 + (simpleOrdinals ? 7 + 8 : 17 + 25)

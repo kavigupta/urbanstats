@@ -4,7 +4,7 @@ import React, { ReactElement, useCallback, useEffect, useRef } from 'react'
 import { useTranspose } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
-import { useScreenshotMode } from './screenshot'
+import { useScreenshotCallback } from './screenshot'
 
 import './plots.css'
 
@@ -70,7 +70,7 @@ export function PlotComponent(props: {
         }
     }, [props.plotSpec, transpose, plotConfig])
 
-    const screenshotMode = useScreenshotMode()
+    const screenshotMode = useScreenshotCallback()
 
     const transposeTopMargin = '35px'
 

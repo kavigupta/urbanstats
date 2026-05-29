@@ -31,7 +31,7 @@ import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps } from './plots'
-import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
+import { createScreenshot, ScreencapElements, useScreenshotCallback } from './screenshot'
 import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
 import { TableContents, CellSpec } from './supertable'
@@ -567,7 +567,7 @@ function ComparisonMap({ longnames, colors, attribution }: { longnames: string[]
 
 function ComparisonMapButtons({ longnames, colors, features, mapRef }: { longnames: string[], colors: string[], features: (GeoJSON.Feature | typeof waiting)[], mapRef: MapRef | null }): ReactNode {
     const systemColors = useColors()
-    const isScreenshot = useScreenshotMode()
+    const isScreenshot = useScreenshotCallback()
 
     if (isScreenshot) {
         return null

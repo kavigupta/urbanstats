@@ -7,7 +7,7 @@ import { useColors } from '../../page_template/colors'
 import { useSelectedYears } from '../../page_template/statistic-settings'
 import { mixWithBackground } from '../../utils/color'
 import { assert } from '../../utils/defensive'
-import { useScreenshotMode } from '../screenshot'
+import { useScreenshotCallback } from '../screenshot'
 
 import { cleanDistrictLabel, computeCongressionalWidgetModel, CongressionalRegionData, subsetEntryToTerms } from './compute-model'
 import {
@@ -753,7 +753,7 @@ function CongressionalRepresentativesWithScroll(props: {
     columnWidth: number
     extraSpaceRight: number[]
 }): ReactNode {
-    const isScreenshot = useScreenshotMode()
+    const isScreenshot = useScreenshotCallback()
     const { scrollContainerRef, preferredScrollableHeight, visibleTerms } = useTableDisplayInfo(props.regions)
     const { scrollableHeight } = useRestorePreferredScrollableHeightAfterScreenshot({
         isScreenshot,

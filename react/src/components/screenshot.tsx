@@ -24,7 +24,7 @@ export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
         </div>
     )
 
-    const screenshotCallback = useScreenshotMode()
+    const screenshotCallback = useScreenshotCallback()
 
     useEffect(() => {
         screenshotCallback?.()
@@ -249,7 +249,7 @@ export const ScreenshotContext = createContext<ScreenshotContextType>(new Set())
 
 // When we're taking a screenshot, returns a callback that should be called when the component is ready for the screenshot
 // Using this, we can sync up all component readiness
-export function useScreenshotMode(): ReadyForScreenshotCallback | undefined {
+export function useScreenshotCallback(): ReadyForScreenshotCallback | undefined {
     const context = useContext(ScreenshotContext)
     const [callback, setCallback] = useState<ReadyForScreenshotCallback | undefined>(undefined)
 
