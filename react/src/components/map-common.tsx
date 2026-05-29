@@ -145,8 +145,7 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
                     // Map will sometimes return to idle but needs to load more
                     await new Promise(resolve => setTimeout(resolve))
                 }
-                screenshotCallback()
-            })()
+            })().then(screenshotCallback)
         }
     }, [screenshotCallback, map])
 
