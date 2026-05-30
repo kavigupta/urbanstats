@@ -54,9 +54,7 @@ def save_search_index(longnames, types, universe_idxs_list, path, *, symlinks):
     for name, target in symlinks.items():
         res.elements.append(name)
         idx = longname_to_index[target]
-        metadata = data_files_pb2.SearchIndexMetadata(
-            type=orders[idx], is_symlink=True
-        )
+        metadata = data_files_pb2.SearchIndexMetadata(type=orders[idx], is_symlink=True)
         metadata.universe_idxs.extend(universe_idxs_list[idx])
         res.metadata.append(metadata)
     write_gzip(res, path)
