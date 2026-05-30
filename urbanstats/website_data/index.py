@@ -42,10 +42,6 @@ def export_index(full, site_folder):
     save_search_index(
         full.longname,
         full.type,
-        # This is an elemntwise comparison, so it's actually needed
-        # Clears out NaN values, treating them as False
-        # pylint: disable=singleton-comparison
-        full.subset_mask_USA == True,
         universe_idxs_list,
         f"{site_folder}/index/pages_all.gz",
         symlinks=compute_symlinks(),

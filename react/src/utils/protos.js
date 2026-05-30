@@ -6528,7 +6528,6 @@ export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
      * @exports ISearchIndexMetadata
      * @interface ISearchIndexMetadata
      * @property {number|null} [type] SearchIndexMetadata type
-     * @property {number|null} [isUsa] SearchIndexMetadata isUsa
      * @property {number|null} [isSymlink] SearchIndexMetadata isSymlink
      * @property {Array.<number>|null} [universeIdxs] SearchIndexMetadata universeIdxs
      */
@@ -6556,14 +6555,6 @@ export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
      * @instance
      */
     SearchIndexMetadata.prototype.type = 0;
-
-    /**
-     * SearchIndexMetadata isUsa.
-     * @member {number} isUsa
-     * @memberof SearchIndexMetadata
-     * @instance
-     */
-    SearchIndexMetadata.prototype.isUsa = 0;
 
     /**
      * SearchIndexMetadata isSymlink.
@@ -6607,8 +6598,6 @@ export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
             writer = $Writer.create();
         if (message.type != null && Object.hasOwnProperty.call(message, "type"))
             writer.uint32(/* id 1, wireType 0 =*/8).int32(message.type);
-        if (message.isUsa != null && Object.hasOwnProperty.call(message, "isUsa"))
-            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.isUsa);
         if (message.isSymlink != null && Object.hasOwnProperty.call(message, "isSymlink"))
             writer.uint32(/* id 3, wireType 0 =*/24).int32(message.isSymlink);
         if (message.universeIdxs != null && message.universeIdxs.length) {
@@ -6653,10 +6642,6 @@ export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
             switch (tag >>> 3) {
             case 1: {
                     message.type = reader.int32();
-                    break;
-                }
-            case 2: {
-                    message.isUsa = reader.int32();
                     break;
                 }
             case 3: {
@@ -6712,9 +6697,6 @@ export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
         if (message.type != null && message.hasOwnProperty("type"))
             if (!$util.isInteger(message.type))
                 return "type: integer expected";
-        if (message.isUsa != null && message.hasOwnProperty("isUsa"))
-            if (!$util.isInteger(message.isUsa))
-                return "isUsa: integer expected";
         if (message.isSymlink != null && message.hasOwnProperty("isSymlink"))
             if (!$util.isInteger(message.isSymlink))
                 return "isSymlink: integer expected";
@@ -6742,8 +6724,6 @@ export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
         let message = new $root.SearchIndexMetadata();
         if (object.type != null)
             message.type = object.type | 0;
-        if (object.isUsa != null)
-            message.isUsa = object.isUsa | 0;
         if (object.isSymlink != null)
             message.isSymlink = object.isSymlink | 0;
         if (object.universeIdxs) {
@@ -6773,13 +6753,10 @@ export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
             object.universeIdxs = [];
         if (options.defaults) {
             object.type = 0;
-            object.isUsa = 0;
             object.isSymlink = 0;
         }
         if (message.type != null && message.hasOwnProperty("type"))
             object.type = message.type;
-        if (message.isUsa != null && message.hasOwnProperty("isUsa"))
-            object.isUsa = message.isUsa;
         if (message.isSymlink != null && message.hasOwnProperty("isSymlink"))
             object.isSymlink = message.isSymlink;
         if (message.universeIdxs && message.universeIdxs.length) {
