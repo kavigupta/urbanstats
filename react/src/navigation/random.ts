@@ -1,6 +1,7 @@
 import universes_ordered from '../data/universes_ordered'
 import { loadJSON, loadProtobuf } from '../load_json'
 import { Settings } from '../page_template/settings'
+import { assert } from '../utils/defensive'
 import { SearchIndex } from '../utils/protos'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 
@@ -18,7 +19,7 @@ export async function byPopulation(universe: string | undefined): Promise<() => 
         loadJSON('/index/best_population_estimate.json') as Promise<number[]>,
     ])
     const totalWeight = populations.reduce((sum, x) => sum + x)
-    const filterUniverseIdx = universe !== undefined ? universeIdx(universe) : -1
+    const filterUniverseIdx = universe !== undefined ? universeIdx(universe) : undefined
 
     return () => {
         while (true) {
@@ -26,7 +27,7 @@ export async function byPopulation(universe: string | undefined): Promise<() => 
             const randomValue = Math.random() * totalWeight
 
             // Find the destination based on the random value
-            let idx = -1
+            let idx: number | undefined
             let cumulativeWeight = 0
 
             for (let i = 0; i < index.elements.length; i++) {
@@ -38,11 +39,13 @@ export async function byPopulation(universe: string | undefined): Promise<() => 
                 }
             }
 
-            if (idx < 0 || !valid(index, idx)) {
+            assert(idx !== undefined, 'Should not happen')
+
+            if (!valid(index, idx)) {
                 continue
             }
 
-            if (filterUniverseIdx >= 0 && !inUniverse(index, idx, filterUniverseIdx)) {
+            if (filterUniverseIdx !== undefined && !inUniverse(index, idx, filterUniverseIdx)) {
                 continue
             }
 
@@ -53,14 +56,14 @@ export async function byPopulation(universe: string | undefined): Promise<() => 
 
 export async function uniform(universe: string | undefined): Promise<() => string> {
     const index = (await loadProtobuf('/index/pages_all.gz', 'SearchIndex'))
-    const filterUniverseIdx = universe !== undefined ? universeIdx(universe) : -1
+    const filterUniverseIdx = universe !== undefined ? universeIdx(universe) : undefined
     return () => {
         while (true) {
             const randomIndex = Math.floor(Math.random() * index.elements.length)
             if (!valid(index, randomIndex)) {
                 continue
             }
-            if (filterUniverseIdx >= 0 && !inUniverse(index, randomIndex, filterUniverseIdx)) {
+            if (filterUniverseIdx !== undefined && !inUniverse(index, randomIndex, filterUniverseIdx)) {
                 continue
             }
             return index.elements[randomIndex]
