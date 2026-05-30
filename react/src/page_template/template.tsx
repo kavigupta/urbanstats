@@ -21,14 +21,14 @@ export function PageTemplate({
     showFooter = true,
     topPanel = true,
 }: {
-    screencap?: (currentUniverse: string | undefined, colors: Colors, setScreenshotMode: (context: ScreenshotContextType) => void) => Promise<void>
+    screencap?: (currentUniverse: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType) => Promise<void>
     csvExportCallback?: CSVExportData
     children?: React.ReactNode
     showFooter?: boolean
     topPanel?: boolean
 }): ReactNode {
     const [hamburgerOpen, setHamburgerOpen] = useState(false)
-    const [screenshotMode, setScreenshotMode] = useState<ScreenshotContextType>({ screenshotMode: false })
+    const screenshotContext = useRef<ScreenshotContextType>(new Set())
     const colors = useColors()
     const mobileLayout = useMobileLayout()
     const hideSidebarDesktop = useHideSidebarDesktop()
@@ -70,7 +70,7 @@ export function PageTemplate({
             return
         }
         try {
-            await screencap(currentUniverse, colors, setScreenshotMode)
+            await screencap(currentUniverse, colors, screenshotContext.current)
         }
         catch (e) {
             console.error(e)
@@ -81,7 +81,7 @@ export function PageTemplate({
     const runningInTestCafe = (window as unknown as { '%hammerhead%': unknown })['%hammerhead%'] !== undefined
 
     return (
-        <ScreenshotContext.Provider value={screenshotMode}>
+        <ScreenshotContext.Provider value={screenshotContext.current}>
             <meta name="viewport" content="width=device-width, initial-scale=0.75" />
             <div
                 className={mobileLayout ? 'main_panel_mobile' : 'main_panel'}
