@@ -56,6 +56,7 @@ export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): 
                 ui: ({ loading }) => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
                 errors: [],
                 assignments: new Map(),
+                destroy: () => undefined,
             },
             ui: (generator, loading) => ({
                 ...generator,
@@ -73,6 +74,7 @@ export interface MapGenerator<T = unknown> {
     exportCSV?: CSVExportData
     errors: EditorError[]
     assignments: AssignmentsResult
+    destroy: () => void
 }
 
 async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { mapSettings: MapSettings, cache: MapCache, previousGenerator: Promise<MapGenerator<{ loading: boolean }>> }): Promise<MapGenerator<{ loading: boolean }>> {
@@ -81,6 +83,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             ui: ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
             errors: [{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }],
             assignments: new Map(),
+            destroy: () => undefined,
         }
     }
 
@@ -105,6 +108,10 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         }
     }
 
+    // Beyond this point, we assume we don't need the previous generator
+    // Prevents the previous generator's data from being retained by react
+    void previousGenerator.then((g) => { g.destroy() })
+
     const mapResultMain = execResult.resultingValue.value
 
     const csvExportCallback: CSVExportData = () => {
@@ -116,7 +123,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         }
     }
 
-    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache })
+    const { features, mapComponentCreator, ramp, destroy } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache })
 
     function MapComponent({ props, exportImageRef }: { props: MapUIProps<{ loading: boolean }>, exportImageRef: (fn: () => Promise<HTMLCanvasElement>) => void }): ReactNode {
         const mapsRef: (MapRef | null)[] = []
@@ -237,6 +244,11 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             }
         },
         assignments: execResult.assignments,
+        destroy: () => {
+            // Destory all used data references to avoid https://github.com/facebook/react/issues/36176
+            execResult.assignments.clear()
+            destroy()
+        },
     }
 }
 
@@ -378,7 +390,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     universe: Universe
     geographyKind: typeof valid_geographies[number]
     cache: MapCache
-}): Promise<{ features: GeoJSON.Feature[], mapComponentCreator: MapComponentCreator, ramp: RampToDisplay }> {
+}): Promise<{ features: GeoJSON.Feature[], mapComponentCreator: MapComponentCreator, ramp: RampToDisplay, destroy: () => void }> {
     let ramp: RampToDisplay
     let colors: string[]
     let clusterCategoryColors: string[] = []
@@ -413,6 +425,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
     let features: GeoJSON.Feature[]
     let mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode
+    let destroy: () => void
     switch (opaqueType) {
         case 'clusterMap':
             const clusterPoints: Point[] = Array.from(value.data.entries()).map(([i, dataValue]) => {
@@ -457,6 +470,13 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                     </SyauClusterMap>
                 ),
                 ramp,
+                destroy: () => {
+                    clusterPoints.length = 0
+                    features.length = 0
+                    colors.length = 0
+                    value.data.length = 0
+                    value.geo.length = 0
+                },
             }
         case 'pMap':
             const points: Point[] = Array.from(value.data.entries()).map(([i, dataValue]) => {
@@ -472,6 +492,14 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
             features = await pointsGeojson(geographyKind, universe, points, cache)
 
             mapChildren = (fs, clickable) => <PointFeatureCollection features={fs} clickable={clickable} />
+
+            destroy = () => {
+                points.length = 0
+                features.length = 0
+                value.data.length = 0
+                colors.length = 0
+                value.geo.length = 0
+            }
 
             break
         case 'cMap':
@@ -501,6 +529,23 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
             mapChildren = (fs, clickable) => <PolygonFeatureCollection features={fs} clickable={clickable} />
 
+            destroy = () => {
+                features.length = 0
+                colors.length = 0
+                switch (opaqueType) {
+                    case 'cMap':
+                        value.data.length = 0
+                        break
+                    case 'cMapRGB':
+                        value.dataA.length = 0
+                        value.dataR.length = 0
+                        value.dataG.length = 0
+                        value.dataB.length = 0
+                }
+                value.geo.length = 0
+                polys.length = 0
+            }
+
             break
     }
 
@@ -521,6 +566,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
         ),
         ramp,
+        destroy,
     }
 }
 
