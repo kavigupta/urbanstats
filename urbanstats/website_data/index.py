@@ -6,6 +6,7 @@ from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 from urbanstats.geometry.relationship import type_to_type_category
 from urbanstats.protobuf.utils import save_search_index
 from urbanstats.special_cases.symlinks.compute_symlinks import compute_symlinks
+from urbanstats.website_data.create_article_gzips import universe_to_idx
 
 # maps types to their search priority scores. Higher=less important.
 type_category_to_priority = {
@@ -32,6 +33,12 @@ def type_to_priority_list():
 
 
 def export_index(full, site_folder):
+    utoi = universe_to_idx()
+    longname_to_universes = dict(zip(full.longname, full.universes))
+    universe_idxs_list = [
+        [utoi[u] for u in longname_to_universes[ln] if u in utoi]
+        for ln in full.longname
+    ]
     save_search_index(
         full.longname,
         full.type,
@@ -39,6 +46,7 @@ def export_index(full, site_folder):
         # Clears out NaN values, treating them as False
         # pylint: disable=singleton-comparison
         full.subset_mask_USA == True,
+        universe_idxs_list,
         f"{site_folder}/index/pages_all.gz",
         symlinks=compute_symlinks(),
     )

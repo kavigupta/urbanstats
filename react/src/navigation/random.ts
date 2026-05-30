@@ -1,22 +1,32 @@
+import universes_ordered from '../data/universes_ordered'
 import { loadJSON, loadProtobuf } from '../load_json'
 import { Settings } from '../page_template/settings'
 import { SearchIndex } from '../utils/protos'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 
-export async function byPopulation(domesticOnly: boolean): Promise<() => string> {
+function universeIdx(universe: string): number {
+    return universes_ordered.indexOf(universe as typeof universes_ordered[number])
+}
+
+function inUniverse(index: SearchIndex, idx: number, filterUniverseIdx: number): boolean {
+    return index.metadata[idx].universeIdxs?.includes(filterUniverseIdx) ?? false
+}
+
+export async function byPopulation(universe: string | undefined): Promise<() => string> {
     const [index, populations] = await Promise.all([
         loadProtobuf('/index/pages_all.gz', 'SearchIndex'),
         loadJSON('/index/best_population_estimate.json') as Promise<number[]>,
     ])
     const totalWeight = populations.reduce((sum, x) => sum + x)
+    const filterUniverseIdx = universe !== undefined ? universeIdx(universe) : -1
 
     return () => {
         while (true) {
-        // Generate a random number between 0 and the total weight
+            // Generate a random number between 0 and the total weight
             const randomValue = Math.random() * totalWeight
 
             // Find the destination based on the random value
-            let idx: number
+            let idx = -1
             let cumulativeWeight = 0
 
             for (let i = 0; i < index.elements.length; i++) {
@@ -28,27 +38,29 @@ export async function byPopulation(domesticOnly: boolean): Promise<() => string>
                 }
             }
 
-            if (!valid(index, idx!)) {
+            if (idx < 0 || !valid(index, idx)) {
                 continue
             }
 
-            // this is specifically looking for stuff that's only in the US.
-            // so it makes sense.
-            if (domesticOnly && !index.metadata[idx!].isUsa) {
+            if (filterUniverseIdx >= 0 && !inUniverse(index, idx, filterUniverseIdx)) {
                 continue
             }
 
-            return index.elements[idx!]
+            return index.elements[idx]
         }
     }
 }
 
-export async function uniform(): Promise<() => string> {
+export async function uniform(universe: string | undefined): Promise<() => string> {
     const index = (await loadProtobuf('/index/pages_all.gz', 'SearchIndex'))
+    const filterUniverseIdx = universe !== undefined ? universeIdx(universe) : -1
     return () => {
         while (true) {
             const randomIndex = Math.floor(Math.random() * index.elements.length)
             if (!valid(index, randomIndex)) {
+                continue
+            }
+            if (filterUniverseIdx >= 0 && !inUniverse(index, randomIndex, filterUniverseIdx)) {
                 continue
             }
             return index.elements[randomIndex]

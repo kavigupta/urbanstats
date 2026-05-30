@@ -6530,6 +6530,7 @@ export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
      * @property {number|null} [type] SearchIndexMetadata type
      * @property {number|null} [isUsa] SearchIndexMetadata isUsa
      * @property {number|null} [isSymlink] SearchIndexMetadata isSymlink
+     * @property {Array.<number>|null} [universeIdxs] SearchIndexMetadata universeIdxs
      */
 
     /**
@@ -6541,6 +6542,7 @@ export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
      * @param {ISearchIndexMetadata=} [properties] Properties to set
      */
     function SearchIndexMetadata(properties) {
+        this.universeIdxs = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -6572,6 +6574,14 @@ export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
     SearchIndexMetadata.prototype.isSymlink = 0;
 
     /**
+     * SearchIndexMetadata universeIdxs.
+     * @member {Array.<number>} universeIdxs
+     * @memberof SearchIndexMetadata
+     * @instance
+     */
+    SearchIndexMetadata.prototype.universeIdxs = $util.emptyArray;
+
+    /**
      * Creates a new SearchIndexMetadata instance using the specified properties.
      * @function create
      * @memberof SearchIndexMetadata
@@ -6601,6 +6611,12 @@ export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
             writer.uint32(/* id 2, wireType 0 =*/16).int32(message.isUsa);
         if (message.isSymlink != null && Object.hasOwnProperty.call(message, "isSymlink"))
             writer.uint32(/* id 3, wireType 0 =*/24).int32(message.isSymlink);
+        if (message.universeIdxs != null && message.universeIdxs.length) {
+            writer.uint32(/* id 4, wireType 2 =*/34).fork();
+            for (let i = 0; i < message.universeIdxs.length; ++i)
+                writer.int32(message.universeIdxs[i]);
+            writer.ldelim();
+        }
         return writer;
     };
 
@@ -6647,6 +6663,17 @@ export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
                     message.isSymlink = reader.int32();
                     break;
                 }
+            case 4: {
+                    if (!(message.universeIdxs && message.universeIdxs.length))
+                        message.universeIdxs = [];
+                    if ((tag & 7) === 2) {
+                        let end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.universeIdxs.push(reader.int32());
+                    } else
+                        message.universeIdxs.push(reader.int32());
+                    break;
+                }
             default:
                 reader.skipType(tag & 7);
                 break;
@@ -6691,6 +6718,13 @@ export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
         if (message.isSymlink != null && message.hasOwnProperty("isSymlink"))
             if (!$util.isInteger(message.isSymlink))
                 return "isSymlink: integer expected";
+        if (message.universeIdxs != null && message.hasOwnProperty("universeIdxs")) {
+            if (!Array.isArray(message.universeIdxs))
+                return "universeIdxs: array expected";
+            for (let i = 0; i < message.universeIdxs.length; ++i)
+                if (!$util.isInteger(message.universeIdxs[i]))
+                    return "universeIdxs: integer[] expected";
+        }
         return null;
     };
 
@@ -6712,6 +6746,13 @@ export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
             message.isUsa = object.isUsa | 0;
         if (object.isSymlink != null)
             message.isSymlink = object.isSymlink | 0;
+        if (object.universeIdxs) {
+            if (!Array.isArray(object.universeIdxs))
+                throw TypeError(".SearchIndexMetadata.universeIdxs: array expected");
+            message.universeIdxs = [];
+            for (let i = 0; i < object.universeIdxs.length; ++i)
+                message.universeIdxs[i] = object.universeIdxs[i] | 0;
+        }
         return message;
     };
 
@@ -6728,6 +6769,8 @@ export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
         if (!options)
             options = {};
         let object = {};
+        if (options.arrays || options.defaults)
+            object.universeIdxs = [];
         if (options.defaults) {
             object.type = 0;
             object.isUsa = 0;
@@ -6739,6 +6782,11 @@ export const SearchIndexMetadata = $root.SearchIndexMetadata = (() => {
             object.isUsa = message.isUsa;
         if (message.isSymlink != null && message.hasOwnProperty("isSymlink"))
             object.isSymlink = message.isSymlink;
+        if (message.universeIdxs && message.universeIdxs.length) {
+            object.universeIdxs = [];
+            for (let j = 0; j < message.universeIdxs.length; ++j)
+                object.universeIdxs[j] = message.universeIdxs[j];
+        }
         return object;
     };
 

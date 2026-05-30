@@ -21,10 +21,19 @@ async function assertCorrect(t: TestController): Promise<void> {
     await assertNoSpecials(t)
 }
 
-urbanstatsFixture('random-usa-by-population', `${target}/random.html?sampleby=population&us_only=true`)
+urbanstatsFixture('random-usa-by-population', `${target}/random.html?sampleby=population&universe=USA`)
 
 for (let count = 0; count < repeats; count++) {
     test(`random-usa-by-population-${count}`, async (t) => {
+        await assertCorrect(t)
+        await t.expect(getLocation()).match(/.*USA.*/)
+    })
+}
+
+urbanstatsFixture('random-usa-by-population-compat', `${target}/random.html?sampleby=population&us_only=true`)
+
+for (let count = 0; count < repeats; count++) {
+    test(`random-usa-by-population-compat-${count}`, async (t) => {
         await assertCorrect(t)
         await t.expect(getLocation()).match(/.*USA.*/)
     })
