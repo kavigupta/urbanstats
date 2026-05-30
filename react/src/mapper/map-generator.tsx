@@ -31,6 +31,7 @@ import { loadImage } from '../utils/Image'
 import { editIndex, EditSeq } from '../utils/array-edits'
 import { furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
+import { makeDestroyTracker } from '../utils/destroy'
 import { ConsolidatedShapes, Feature, ICoordinate } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
@@ -109,7 +110,8 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
     }
 
     // Beyond this point, we assume we don't need the previous generator
-    // Prevents the previous generator's data from being retained by react
+    // Prevents the previous generator's data from being retained by callbacks from this function, and also by React (https://github.com/facebook/react/issues/36176)
+    // We could worry about cleaning up all the data (e.g. the reference to the previous generator object), but realistically, everything else is negligible compared to the arrays with the map data
     void previousGenerator.then((g) => { g.destroy() })
 
     const mapResultMain = execResult.resultingValue.value
@@ -245,7 +247,6 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         },
         assignments: execResult.assignments,
         destroy: () => {
-            // Destory all used data references to avoid https://github.com/facebook/react/issues/36176
             execResult.assignments.clear()
             destroy()
         },
@@ -391,6 +392,13 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     geographyKind: typeof valid_geographies[number]
     cache: MapCache
 }): Promise<{ features: GeoJSON.Feature[], mapComponentCreator: MapComponentCreator, ramp: RampToDisplay, destroy: () => void }> {
+    /**
+     * All arrays of map data must be `track`ed so they can be `destroy`ed when the map result is destroyed
+     */
+    const { track, destroy } = makeDestroyTracker()
+
+    track(value.geo)
+
     let ramp: RampToDisplay
     let colors: string[]
     let clusterCategoryColors: string[] = []
@@ -398,37 +406,39 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     switch (opaqueType) {
         case 'pMap':
         case 'cMap':
+            track(value.data)
             const furthest = furthestColor(value.ramp.map(x => x[1]))
             const pcMapRamp = computeRampToDisplay(value)
             ramp = pcMapRamp
-            colors = value.data.map(val => interpolateColor(value.ramp, pcMapRamp.value.scale.forward(val), furthest))
+            colors = track(value.data.map(val => interpolateColor(value.ramp, pcMapRamp.value.scale.forward(val), furthest)))
             break
         case 'clusterMap':
+            track(value.data)
             const clusterRamp = computeRampToDisplay(value)
             ramp = clusterRamp
 
             // Discretize by scaled values to match the same bins used in legend interpolations.
-            clusterCategoryColors = clusterRamp.value.interpolations.map(x => interpolateColor(value.ramp, clusterRamp.value.scale.forward(x)))
-            clusterRampBins = value.data.map(val => computeClusterRampBin(val, clusterRamp))
-            colors = clusterRampBins.map(binIdx => clusterCategoryColors[binIdx])
+            clusterCategoryColors = track(clusterRamp.value.interpolations.map(x => interpolateColor(value.ramp, clusterRamp.value.scale.forward(x))))
+            clusterRampBins = track(value.data.map(val => computeClusterRampBin(val, clusterRamp)))
+            colors = track(clusterRampBins.map(binIdx => clusterCategoryColors[binIdx]))
             break
         case 'cMapRGB':
-            colors = value.dataR.map((r, i) => doRender({
+            [value.dataA, value.dataR, value.dataG, value.dataB].forEach(track)
+            colors = track(value.dataR.map((r, i) => doRender({
                 r,
                 g: value.dataG[i],
                 b: value.dataB[i],
                 a: value.dataA[i],
-            }))
+            })))
             ramp = { type: 'label', value: value.label }
             break
     }
 
     let features: GeoJSON.Feature[]
     let mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode
-    let destroy: () => void
     switch (opaqueType) {
         case 'clusterMap':
-            const clusterPoints: Point[] = Array.from(value.data.entries()).map(([i, dataValue]) => {
+            const clusterPoints: Point[] = track(Array.from(value.data.entries()).map(([i, dataValue]) => {
                 return {
                     name: value.geo[i],
                     fillColor: colors[i],
@@ -437,9 +447,9 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                     rampBin: clusterRampBins[i],
                     statistic: dataValue,
                 }
-            })
+            }))
 
-            features = await pointsGeojson(geographyKind, universe, clusterPoints, cache)
+            features = track(await pointsGeojson(geographyKind, universe, clusterPoints, cache))
 
             return {
                 features,
@@ -470,16 +480,10 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                     </SyauClusterMap>
                 ),
                 ramp,
-                destroy: () => {
-                    clusterPoints.length = 0
-                    features.length = 0
-                    colors.length = 0
-                    value.data.length = 0
-                    value.geo.length = 0
-                },
+                destroy,
             }
         case 'pMap':
-            const points: Point[] = Array.from(value.data.entries()).map(([i, dataValue]) => {
+            const points: Point[] = track(Array.from(value.data.entries()).map(([i, dataValue]) => {
                 return {
                     name: value.geo[i],
                     fillColor: colors[i],
@@ -487,24 +491,16 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                     radius: Math.sqrt(value.relativeArea[i]) * value.maxRadius,
                     statistic: dataValue,
                 }
-            })
+            }))
 
-            features = await pointsGeojson(geographyKind, universe, points, cache)
+            features = track(await pointsGeojson(geographyKind, universe, points, cache))
 
             mapChildren = (fs, clickable) => <PointFeatureCollection features={fs} clickable={clickable} />
-
-            destroy = () => {
-                points.length = 0
-                features.length = 0
-                value.data.length = 0
-                colors.length = 0
-                value.geo.length = 0
-            }
 
             break
         case 'cMap':
         case 'cMapRGB':
-            const polys: Polygon[] = Array.from(colors.entries()).map(([i, color]) => {
+            const polys: Polygon[] = track(Array.from(colors.entries()).map(([i, color]) => {
                 let meta
                 switch (opaqueType) {
                     case 'cMap':
@@ -523,28 +519,11 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                     weight: value.outline.weight,
                     ...meta,
                 }
-            })
+            }))
 
-            features = await polygonsGeojson(geographyKind, universe, polys, cache)
+            features = track(await polygonsGeojson(geographyKind, universe, polys, cache))
 
             mapChildren = (fs, clickable) => <PolygonFeatureCollection features={fs} clickable={clickable} />
-
-            destroy = () => {
-                features.length = 0
-                colors.length = 0
-                switch (opaqueType) {
-                    case 'cMap':
-                        value.data.length = 0
-                        break
-                    case 'cMapRGB':
-                        value.dataA.length = 0
-                        value.dataR.length = 0
-                        value.dataG.length = 0
-                        value.dataB.length = 0
-                }
-                value.geo.length = 0
-                polys.length = 0
-            }
 
             break
     }
