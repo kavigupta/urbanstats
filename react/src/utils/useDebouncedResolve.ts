@@ -86,6 +86,12 @@ export function useDebouncedResolve<T, U>(
 
     const { result, loading } = useOrderedResolve(currentGenerator, 'useDebouncedResolve - executing')
 
+    // Send the UI twice so that React clears out old data, see https://github.com/facebook/react/issues/36176
+    const [, setCounter] = useState(0)
+    useEffect(() => {
+        setCounter(c => c + 1)
+    }, [result, loading])
+
     return result !== undefined
         ? options.ui(result, loading)
         : options.ui(options.initial, loading)
