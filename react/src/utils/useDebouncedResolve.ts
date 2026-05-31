@@ -49,7 +49,7 @@ export function useDebouncedResolve<T, U>(
 
     const computeNewGenerator = useCallback((previousGenerator: Promise<T>): Promise<T> => {
         const result = compute(() => previousGenerator)
-        void result.then(() => {
+        void result.finally(() => {
             previousGenerator = undefined as never // So that the reference is not retained in the computation
         })
         return result
