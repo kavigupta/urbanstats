@@ -253,10 +253,10 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     }, 'Percentile', 'Returns the percentile value from a vector. Takes a percentile value (between 0 and 100) as the second argument and optional weights as a named argument.'),
     createQuantileFunction('inverseQuantile', (values, x, weights) => {
         return weightedInverseQuantile(values, weights, x)
-    }, 'Inverse Quantile', 'Returns the quantile (between 0 and 1) of a given value within a vector. Takes the value as the second argument and optional weights as a named argument.'),
+    }, 'Inverse Quantile', 'Returns the quantile (between 0 and 1) of a given value within a vector. Takes the value as the second argument and optional weights as a named argument. Pass the same vector as both arguments to broadcast over it, ranking each element as a quantile within the vector.'),
     createQuantileFunction('inversePercentile', (values, x, weights) => {
         return weightedInverseQuantile(values, weights, x) * 100
-    }, 'Inverse Percentile', 'Returns the percentile (between 0 and 100) of a given value within a vector. Takes the value as the second argument and optional weights as a named argument.'),
+    }, 'Inverse Percentile', 'Returns the percentile (between 0 and 100) of a given value within a vector. Takes the value as the second argument and optional weights as a named argument. Pass the same vector as both arguments to broadcast over it, ranking each element as a percentile within the vector.'),
     ['toNumber', toNumber],
     ['toString', toString],
     ['regression', regression(10)],
