@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { TestUtils } from './TestUtils'
 import { useOrderedResolve } from './useOrderedResolve'
@@ -14,7 +14,7 @@ import { useOrderedResolve } from './useOrderedResolve'
  * @template U - The type of the UI component returned by the ui function
  *
  * @param compute - An async function that performs the computation. Receives the previous
- *                  promise as an optional parameter to allow for chaining or cancellation.
+ *                  promise through a getter to allow for chaining or cancellation.
  * @param options - Configuration object containing:
  *   - initial: The initial value to use before any computation completes
  *   - interval: The minimum time in milliseconds between compute function calls
@@ -40,18 +40,26 @@ import { useOrderedResolve } from './useOrderedResolve'
  * ```
  */
 export function useDebouncedResolve<T, U>(
-    compute: (prev: Promise<T>) => Promise<T>,
+    compute: (prev: () => Promise<T>) => Promise<T>,
     options: { initial: T, interval: number, ui: (t: T, loading: boolean) => U },
 ): U {
     const updateTime = useRef(0) // We've never updated before
 
     const [currentGenerator, setCurrentGenerator] = useState<Promise<T>>(Promise.resolve(options.initial))
 
+    const computeNewGenerator = useCallback((previousGenerator: Promise<T>): Promise<T> => {
+        const result = compute(() => previousGenerator)
+        void result.then(() => {
+            previousGenerator = undefined as never // So that the reference is not retained in the computation
+        })
+        return result
+    }, [compute])
+
     useEffect(() => {
         const timeSinceUpdate = Date.now() - updateTime.current
         if (timeSinceUpdate > options.interval) {
             updateTime.current = Date.now()
-            setCurrentGenerator(previousGenerator => compute(previousGenerator))
+            setCurrentGenerator(computeNewGenerator)
             return
         }
         else {
@@ -60,7 +68,7 @@ export function useDebouncedResolve<T, U>(
 
             updateTime.current = Date.now()
             const timeout = setTimeout(() => {
-                setCurrentGenerator(previousGenerator => compute(previousGenerator))
+                setCurrentGenerator(computeNewGenerator)
                 if (!finishedLoading) {
                     finishedLoading = true
                     void TestUtils.shared.finishLoading('useDebouncedResolve - waiting')
@@ -74,7 +82,7 @@ export function useDebouncedResolve<T, U>(
                 }
             }
         }
-    }, [compute, options.interval])
+    }, [computeNewGenerator, options.interval])
 
     const { result, loading } = useOrderedResolve(currentGenerator, 'useDebouncedResolve - executing')
 
