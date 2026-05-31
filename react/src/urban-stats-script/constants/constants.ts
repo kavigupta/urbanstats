@@ -1,4 +1,3 @@
-import { DefaultWeakMap } from '../../utils/DefaultWeakMap'
 import { Context } from '../context'
 import { renderType, USSRawValue, USSValue, DocumentationTable, createConstantExpression } from '../types-values'
 
@@ -61,32 +60,32 @@ function createTwoNumberToNumberFunction(
     }] satisfies [string, USSValue]
 }
 
-// This makes the assumption that USS vectors are immutable (at least when being broadcast)
-const cache = new WeakMap<number[], number>()
+type Weights = number[] | undefined // undefined: Vector of 1s
 
-function validateWeights(weights: number[], values: number[]): number {
+function validateWeights(weights: Weights, values: number[]): number {
+    if (weights === undefined) {
+        return values.length
+    }
     if (values.length !== weights.length) {
         throw new Error('Values and weights must have the same length')
     }
-    let cachedResult: number | undefined
-    if ((cachedResult = cache.get(weights)) !== undefined) {
-        return cachedResult
+    let totalWeight = 0
+    for (const weight of weights) {
+        if (isNaN(weight)) {
+            throw new Error('Weights must not contain NaN')
+        }
+        if (weight < 0) {
+            throw new Error('Weights must not contain negative values')
+        }
+        totalWeight += weight
     }
-    if (weights.some(weight => isNaN(weight))) {
-        throw new Error('Weights must not contain NaN')
-    }
-    if (weights.some(weight => weight < 0)) {
-        throw new Error('Weights must not contain negative values')
-    }
-    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0)
     if (totalWeight === 0) {
         throw new Error('Total weight cannot be zero')
     }
-    cache.set(weights, totalWeight)
     return totalWeight
 }
 
-function weightedQuantile(values: number[], weights: number[], quantile: number): number {
+function weightedQuantile(values: number[], weights: Weights, quantile: number): number {
     const totalWeight = validateWeights(weights, values)
     if (quantile < 0 || quantile > 1) {
         throw new Error('Quantile must be between 0 and 1')
@@ -94,7 +93,7 @@ function weightedQuantile(values: number[], weights: number[], quantile: number)
     if (values.length === 0) {
         return NaN
     }
-    const sortedPairs = values.map((value, index) => [value, weights[index]])
+    const sortedPairs = values.map((value, index) => [value, weights?.[index] ?? 1])
     sortedPairs.sort((a, b) => a[0] - b[0])
     const targetWeight = quantile * totalWeight
     let cumulativeWeight = 0
@@ -111,16 +110,16 @@ function weightedQuantile(values: number[], weights: number[], quantile: number)
     return sortedPairs[sortedPairs.length - 1][0] // fallback
 }
 
-function weightedInverseQuantile(values: number[], weights: number[], x: number): number {
+function weightedInverseQuantile(values: number[], weights: Weights, x: number): number {
     const totalWeight = validateWeights(weights, values)
     let belowWeight = 0
     let equalWeight = 0
     for (let i = 0; i < values.length; i++) {
         if (values[i] < x) {
-            belowWeight += weights[i]
+            belowWeight += weights?.[i] ?? 1
         }
         else if (values[i] === x) {
-            equalWeight += weights[i]
+            equalWeight += weights?.[i] ?? 1
         }
     }
     return (belowWeight + equalWeight) / (totalWeight + equalWeight)
@@ -152,12 +151,10 @@ function createVectorToNumberFunction(
     }] satisfies [string, USSValue]
 }
 
-const defaultWeights = new DefaultWeakMap<number, number[]>(length => Array.from({ length }, () => 1))
-
 // Factory function to create weighted vector functions
 function createWeightedVectorFunction(
     name: string,
-    calculationFunction: (values: number[], weights: number[]) => number,
+    calculationFunction: (values: number[], weights: Weights) => number,
     humanReadableName: string,
     longDescription: string,
 ): [string, USSValue] {
@@ -169,7 +166,7 @@ function createWeightedVectorFunction(
             if (values.length === 0) {
                 return NaN
             }
-            const weights = namedArgs.weights ? (namedArgs.weights as number[]) : defaultWeights.get(values.length)
+            const weights = namedArgs.weights ? (namedArgs.weights as number[]) : undefined
             return calculationFunction(values, weights)
         },
         documentation: {
@@ -183,7 +180,7 @@ function createWeightedVectorFunction(
 // Factory function to create quantile/percentile functions with extra positional argument
 function createQuantileFunction(
     name: string,
-    calculationFunction: (values: number[], quantileValue: number, weights: number[]) => number,
+    calculationFunction: (values: number[], quantileValue: number, weights: Weights) => number,
     humanReadableName: string,
     longDescription: string,
 ): [string, USSValue] {
@@ -196,7 +193,7 @@ function createQuantileFunction(
             if (values.length === 0) {
                 return NaN
             }
-            const weights = namedArgs.weights ? (namedArgs.weights as number[]) : defaultWeights.get(values.length)
+            const weights = namedArgs.weights ? (namedArgs.weights as number[]) : undefined
             return calculationFunction(values, quantileValue, weights)
         },
         documentation: {
@@ -241,7 +238,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     createVectorToNumberFunction('max', values => Math.max(...values), -Infinity, 'Vector Maximum', 'Returns the largest number in a vector.'),
     createWeightedVectorFunction('mean', (values, weights) => {
         const totalWeight = validateWeights(weights, values)
-        return values.reduce((sum, value, index) => sum + value * weights[index], 0) / totalWeight
+        return values.reduce((sum, value, index) => sum + value * (weights?.[index] ?? 1), 0) / totalWeight
     }, 'Mean', 'Returns the arithmetic mean (average) of all numbers in a vector. If weights are provided as a named argument, returns the weighted mean.'),
     createWeightedVectorFunction('median', (values, weights) => {
         return weightedQuantile(values, weights, 0.5)
