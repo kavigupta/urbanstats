@@ -102,6 +102,21 @@ function weightedQuantile(values: number[], weights: number[], quantile: number)
     return sortedPairs[sortedPairs.length - 1][0] // fallback
 }
 
+function weightedInverseQuantile(values: number[], weights: number[], x: number): number {
+    const totalWeight = validateWeights(weights, values)
+    let belowWeight = 0
+    let equalWeight = 0
+    for (let i = 0; i < values.length; i++) {
+        if (values[i] < x) {
+            belowWeight += weights[i]
+        }
+        else if (values[i] === x) {
+            equalWeight += weights[i]
+        }
+    }
+    return (belowWeight + equalWeight) / (totalWeight + equalWeight)
+}
+
 // Factory function to create vector-to-number functions
 function createVectorToNumberFunction(
     name: string,
@@ -228,6 +243,12 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
         const q = p / 100
         return weightedQuantile(values, weights, q)
     }, 'Percentile', 'Returns the percentile value from a vector. Takes a percentile value (between 0 and 100) as the second argument and optional weights as a named argument.'),
+    createQuantileFunction('inverseQuantile', (values, x, weights) => {
+        return weightedInverseQuantile(values, weights, x)
+    }, 'Inverse Quantile', 'Returns the quantile (between 0 and 1) of a given value within a vector. Takes the value as the second argument and optional weights as a named argument.'),
+    createQuantileFunction('inversePercentile', (values, x, weights) => {
+        return weightedInverseQuantile(values, weights, x) * 100
+    }, 'Inverse Percentile', 'Returns the percentile (between 0 and 100) of a given value within a vector. Takes the value as the second argument and optional weights as a named argument.'),
     ['toNumber', toNumber],
     ['toString', toString],
     ['regression', regression(10)],
