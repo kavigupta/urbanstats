@@ -1,3 +1,4 @@
+import { DefaultWeakMap } from '../../utils/DefaultWeakMap'
 import { Context } from '../context'
 import { renderType, USSRawValue, USSValue, DocumentationTable, createConstantExpression } from '../types-values'
 
@@ -60,9 +61,16 @@ function createTwoNumberToNumberFunction(
     }] satisfies [string, USSValue]
 }
 
+// This makes the assumption that USS vectors are immutable (at least when being broadcast)
+const cache = new WeakMap<number[], number>()
+
 function validateWeights(weights: number[], values: number[]): number {
     if (values.length !== weights.length) {
         throw new Error('Values and weights must have the same length')
+    }
+    let cachedResult: number | undefined
+    if ((cachedResult = cache.get(weights)) !== undefined) {
+        return cachedResult
     }
     if (weights.some(weight => isNaN(weight))) {
         throw new Error('Weights must not contain NaN')
@@ -74,6 +82,7 @@ function validateWeights(weights: number[], values: number[]): number {
     if (totalWeight === 0) {
         throw new Error('Total weight cannot be zero')
     }
+    cache.set(weights, totalWeight)
     return totalWeight
 }
 
@@ -143,6 +152,8 @@ function createVectorToNumberFunction(
     }] satisfies [string, USSValue]
 }
 
+const defaultWeights = new DefaultWeakMap<number, number[]>(length => Array.from({ length }, () => 1))
+
 // Factory function to create weighted vector functions
 function createWeightedVectorFunction(
     name: string,
@@ -158,7 +169,7 @@ function createWeightedVectorFunction(
             if (values.length === 0) {
                 return NaN
             }
-            const weights = namedArgs.weights ? (namedArgs.weights as number[]) : Array.from({ length: values.length }, () => 1)
+            const weights = namedArgs.weights ? (namedArgs.weights as number[]) : defaultWeights.get(values.length)
             return calculationFunction(values, weights)
         },
         documentation: {
@@ -185,7 +196,7 @@ function createQuantileFunction(
             if (values.length === 0) {
                 return NaN
             }
-            const weights = namedArgs.weights ? (namedArgs.weights as number[]) : Array.from({ length: values.length }, () => 1)
+            const weights = namedArgs.weights ? (namedArgs.weights as number[]) : defaultWeights.get(values.length)
             return calculationFunction(values, quantileValue, weights)
         },
         documentation: {
