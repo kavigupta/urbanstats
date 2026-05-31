@@ -11,5 +11,5 @@ test('USA zip and back', async (t) => {
     await replaceInput(t, 'ZIP', 'Subnational Region')
     await waitForLoading()
 
-    await t.expect(await memoryUsage(t, target => target.type === 'page')).lt(79_000_000)
+    await t.expect(await memoryUsage(t, target => target.type === 'page')).lt(65_000_000)
 })
