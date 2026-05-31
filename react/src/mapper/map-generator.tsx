@@ -46,7 +46,7 @@ const mapUpdateInterval = 500
 export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): MapGenerator {
     const cache = useRef<MapCache>({})
 
-    const compute = useCallback((previousGenerator: Promise<MapGenerator<{ loading: boolean }>>) => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator }), [mapSettings])
+    const compute = useCallback((previousGenerator: () => Promise<MapGenerator<{ loading: boolean }>>) => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator }), [mapSettings])
 
     return useDebouncedResolve(
         compute,
@@ -75,7 +75,7 @@ export interface MapGenerator<T = unknown> {
     assignments: AssignmentsResult
 }
 
-async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { mapSettings: MapSettings, cache: MapCache, previousGenerator: Promise<MapGenerator<{ loading: boolean }>> }): Promise<MapGenerator<{ loading: boolean }>> {
+async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { mapSettings: MapSettings, cache: MapCache, previousGenerator: () => Promise<MapGenerator<{ loading: boolean }>> }): Promise<MapGenerator<{ loading: boolean }>> {
     if (mapSettings.geographyKind === undefined || mapSettings.universe === undefined) {
         return {
             ui: ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
@@ -88,7 +88,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
     const parseErrors = getAllParseErrors(stmts)
     if (parseErrors.length > 0) {
-        const prev = await previousGenerator
+        const prev = await previousGenerator()
         return {
             ...prev,
             errors: parseErrors.map(e => ({ ...e, kind: 'error' })),
@@ -98,7 +98,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
     const execResult = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: mapSettings.geographyKind, universe: mapSettings.universe }, stmts })
 
     if (execResult.resultingValue === undefined) {
-        const prev = await previousGenerator
+        const prev = await previousGenerator()
         return {
             ...prev,
             errors: execResult.error,
