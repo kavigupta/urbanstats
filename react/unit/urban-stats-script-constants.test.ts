@@ -114,6 +114,8 @@ void test('constant listing', (): void => {
             '([number], number; weights: [number] = null) -> number': [
                 'quantile',
                 'percentile',
+                'inverseQuantile',
+                'inversePercentile',
             ],
 
             '(any; ) -> number': [

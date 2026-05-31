@@ -176,6 +176,23 @@ void test('evaluate basic expressions', (): void => {
         evaluate(parseExpr('percentile([1, 2, 3, 4, 5], 75, weights=[1, 1, 1, 1, 2])'), emptyContext()),
         undocValue(5, numType),
     )
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('inverseQuantile([1, 2, 3, 4, 5], 1, weights=[2, 1, 1, 1, 1])'), emptyContext()),
+        undocValue(0.25, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('inverseQuantile([1, 2, 3, 4, 5], 5, weights=[1, 1, 1, 1, 2])'), emptyContext()),
+        undocValue(0.75, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('inversePercentile([1, 2, 3, 4, 5], 1, weights=[2, 1, 1, 1, 1])'), emptyContext()),
+        undocValue(25, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('inversePercentile([1, 2, 3, 4, 5], 5, weights=[1, 1, 1, 1, 2])'), emptyContext()),
+        undocValue(75, numType),
+    )
 })
 
 void test('evaluate basic variable expressions', (): void => {
