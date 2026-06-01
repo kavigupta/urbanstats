@@ -22,7 +22,7 @@ export function pageDescriptor({ stat, view }: StatSettings): PageDescriptor & {
         universe: stat.universe === 'world' ? undefined : stat.universe,
         edit: view.edit,
         sort_column: view.sortColumn,
-        // Needs `undefined` since used with `Navigator.unsafeUpdatePageDescriptor`
+        // Needs `undefined` since used with `Navigator.unsafeUpdateCurrentDescriptor`
         ...(stat.type === 'uss' ? { uss: unparse(stat.uss), statname: undefined } : { statname: stat.statName, uss: undefined }),
     }
 }
