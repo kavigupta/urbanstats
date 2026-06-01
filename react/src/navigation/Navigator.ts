@@ -347,10 +347,6 @@ export class Navigator {
 
     unsafeUpdateCurrentDescriptor(newDescriptor: Partial<PageDescriptor> & { kind: PageDescriptor['kind'] }, options: { history: 'replaceState' | 'pushState' }): void {
         assert(this.pageState.current.descriptor.kind === newDescriptor.kind, 'heterogenous unsafe update')
-        for (const key of Object.keys(this.pageState.current.descriptor)) {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- Object is repopulated immediately after
-            delete (this.pageState.current.descriptor as never)[key]
-        }
         for (const key of Object.keys(newDescriptor)) {
             this.pageState.current.descriptor[key] = newDescriptor[key]
         }
