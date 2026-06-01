@@ -101,6 +101,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         const prev = await previousGenerator()
         return {
             ...prev,
+            assignments: execResult.assignments,
             errors: execResult.error,
         }
     }
