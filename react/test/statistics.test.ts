@@ -1198,3 +1198,11 @@ test('numeric amount preserved when searching to new stat page', async (t) => {
     await t.expect(amountSelector.value).eql('100')
     await t.expect((await getAllLongnames()).length).eql(100)
 })
+
+urbanstatsFixture('custom node, x = 1', `${target}/statistic.html?uss=customNode%28%22x+%3D+1%5Cn%22%29&article_type=Subnational+Region&start=1&amount=20&universe=USA&edit=true`)
+
+test('assignments displayed on error result', async (t) => {
+    await t.hover(Selector('span').withText(/^x/))
+    await t.wait(1000)
+    await t.expect(Selector('pre').withExactText('1').count).eql(1)
+})

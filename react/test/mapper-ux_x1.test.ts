@@ -413,3 +413,9 @@ mapper(() => test)('autoux reorder insets', { universe: 'USA', code: 'customNode
     await t.dragToElement(dragHandle(3), dragHandle(2))
     await t.expect(insets()).eql(['Guam', 'Puerto Rico + USVI', 'Alaska', 'Hawaii', 'Continental USA'])
 })
+
+mapper(() => test)('assignments displayed on error result', { code: 'x=1' }, async (t) => {
+    await t.hover(Selector('span').withText(/^x/))
+    await t.wait(1000)
+    await t.expect(Selector('pre').withExactText('1').count).eql(1)
+})
