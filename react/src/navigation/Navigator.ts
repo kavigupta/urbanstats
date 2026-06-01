@@ -348,7 +348,14 @@ export class Navigator {
     unsafeUpdateCurrentDescriptor(newDescriptor: Partial<PageDescriptor> & { kind: PageDescriptor['kind'] }, options: { history: 'replaceState' | 'pushState' }): void {
         assert(this.pageState.current.descriptor.kind === newDescriptor.kind, 'heterogenous unsafe update')
         for (const key of Object.keys(newDescriptor)) {
-            this.pageState.current.descriptor[key] = newDescriptor[key]
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Undefined is used to clear fields
+            if (newDescriptor[key] === undefined) {
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- Undefined is used to clear fields
+                delete (this.pageState.current.descriptor as never)[key]
+            }
+            else {
+                this.pageState.current.descriptor[key] = newDescriptor[key]
+            }
         }
         history[options.history]({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(this.pageState.current.descriptor))
     }
