@@ -1199,6 +1199,16 @@ test('numeric amount preserved when searching to new stat page', async (t) => {
     await t.expect((await getAllLongnames()).length).eql(100)
 })
 
+test('add column then navigate', async (t) => {
+    await addColumn(t, 'density')
+    await goBack()
+    await waitForLoading()
+    await t.expect(Selector('.subheadertext').textContent).eql('Population [US Census]')
+    await goForward()
+    await waitForLoading()
+    await t.expect(Selector('.subheadertext').textContent).eql('Population [US Census], PW Density (r=1km)')
+})
+
 urbanstatsFixture('custom node, x = 1', `${target}/statistic.html?uss=customNode%28%22x+%3D+1%5Cn%22%29&article_type=Subnational+Region&start=1&amount=20&universe=USA&edit=true`)
 
 test('assignments displayed on error result', async (t) => {
