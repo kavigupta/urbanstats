@@ -158,4 +158,32 @@ def get_custom_quizzes():
                 "Cold Springs CDP, Nevada, USA",
             ),
         ],
+        # 1024
+        1024: [
+            custom_quiz_question(
+                "Undergrad %",
+                "Oneida County, New York, USA",
+                "Two Rivers city, Wisconsin, USA",
+            ),
+            custom_quiz_question(
+                "White %",
+                "Four Corners CDP, Florida, USA",
+                "Eight Mile Grove precinct [CCD], Cass County, Nebraska, USA",
+            ),
+            custom_quiz_question(
+                "PW Mean Elevation",
+                "Sixteen Mile Stand CDP, Ohio, USA",
+                "Km 32 Urban Center, Brazil",
+            ),
+            custom_quiz_question(
+                "PW Mean PM2.5 Pollution",
+                "Cote 64 Indian Reserve, Division No. 9, Saskatchewan, Canada",
+                "TX-HD128 (2023), USA",
+            ),
+            custom_quiz_question(
+                "PW Density (r=1km)",
+                "King George No. 256 Rural Municipality, Division No. 7, Saskatchewan, Canada",
+                "NH-HD512 (2023), USA",
+            ),
+        ],
     }
