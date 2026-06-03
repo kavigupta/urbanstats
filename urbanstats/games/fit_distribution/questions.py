@@ -70,8 +70,18 @@ def invalid_values(values):
 
 
 def _compute_adjusted_difficulties(
-    qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
+    qt,
+    col_to_difficulty,
+    intl_difficulty,
+    diff_ranges,
+    excluded_universes,
+    *,
+    descriptor_by_col,
 ):
+    descriptors = [descriptor_by_col[stat_col] for stat_col in qt.data.columns]
+    excluded_cols = [
+        bool(set(d.exclude_geography_types) & set(qt.regions)) for d in descriptors
+    ]
     max_pct_diff = max(max(x) for x in diff_ranges)
     values = np.array(qt.data).T
     invalid_mask = invalid_values(values)
@@ -81,6 +91,9 @@ def _compute_adjusted_difficulties(
     )
     raw_pct_diff[invalid_mask] = np.inf
     raw_pct_diff[raw_pct_diff > max_pct_diff] = np.inf
+    if any(excluded_cols):
+        raw_pct_diff[excluded_cols, :, :] = np.inf
+
     adj_pct_diff = raw_pct_diff / _compute_difficulty_multipliers(
         qt, col_to_difficulty, intl_difficulty, excluded_universes
     )
@@ -88,10 +101,21 @@ def _compute_adjusted_difficulties(
 
 
 def _compute_adjusted_difficulty_masks(
-    qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
+    qt,
+    col_to_difficulty,
+    intl_difficulty,
+    diff_ranges,
+    excluded_universes,
+    *,
+    descriptor_by_col,
 ):
     adj_difficulties = _compute_adjusted_difficulties(
-        qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
+        qt,
+        col_to_difficulty,
+        intl_difficulty,
+        diff_ranges,
+        excluded_universes,
+        descriptor_by_col=descriptor_by_col,
     )
     return [
         (lo <= adj_difficulties) & (adj_difficulties < hi) for lo, hi in diff_ranges
@@ -106,13 +130,20 @@ def classify_questions(
     col_to_difficulty,
     intl_difficulty,
     diff_ranges,
-    excluded_universes
+    excluded_universes,
+    descriptor_by_col,
 ):
+    # pylint: disable=too-many-locals
     remap_stats = np.array([stat_to_index[stat] for stat in qt.data])
     remap_geos = np.array([geo_to_index[geo] for geo in qt.data.index])
     results = []
     for mask in _compute_adjusted_difficulty_masks(
-        qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
+        qt,
+        col_to_difficulty,
+        intl_difficulty,
+        diff_ranges,
+        excluded_universes,
+        descriptor_by_col=descriptor_by_col,
     ):
         stat_indices, a_indices, b_indices = np.where(mask)
         a_lt_b_mask = a_indices < b_indices

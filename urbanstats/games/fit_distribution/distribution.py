@@ -7,6 +7,8 @@ import torch
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
+from urbanstats.games.quiz_columns import get_quiz_stats
+
 from .questions import ValidQuizQuestions, classify_questions
 
 
@@ -45,21 +47,58 @@ class QuizQuestionPossibilities:
         huniform = np.log(len(p))
         return huniform - hactual
 
+    @cached_property
+    def num_canadas_mask(self):
+        geo_is_canada = np.array(
+            [geo.split(", ")[-1] == "Canada" for geo in self.all_geographies]
+        ).astype(int)
+        num_canadas = [
+            geo_is_canada[q.geography_index_a] + geo_is_canada[q.geography_index_b]
+            for q in self.questions_by_number
+        ]
+        return num_canadas
+
+    def limit_canada_hinge_loss(self, ps, *, do_print):
+        """
+        Hinge loss that says
+            - at most 15% of questions can be Canada vs Canada and
+            - at most 20% can be Canada vs anything
+        """
+        num_canadas = self.num_canadas_mask
+        prob_canada_vs_canada = torch.mean(
+            torch.stack([p[i == 2].sum() for p, i in zip(ps, num_canadas)])
+        )
+        prob_canada_vs_anything = torch.mean(
+            torch.stack([p[i >= 1].sum() for p, i in zip(ps, num_canadas)])
+        )
+        if do_print:
+            print(
+                f"Canada vs Canada: {prob_canada_vs_canada.item():.2%},"
+                f" Canada vs Anything: {prob_canada_vs_anything.item():.2%}"
+            )
+        hinge_loss = torch.relu(prob_canada_vs_canada - 0.15) + torch.relu(
+            prob_canada_vs_anything - 0.20
+        )
+        return hinge_loss
+
     def train(self, geo_target, stat_target, weight_h=0.1, weight_s=10):
+        # pylint: disable=too-many-locals
         g_target = torch.tensor(geo_target, dtype=torch.float32)
         s_target = torch.tensor(stat_target, dtype=torch.float32)
         p = torch.ones(len(self), requires_grad=True, dtype=torch.float32)
         opt = torch.optim.Adam([p], lr=0.5)
         prev = float("inf")
         for idx in range(1000):
+            do_print = idx % 10 == 0
             ps = self._probabilities_each_torch(p)
             g, s = self._aggregate_torch(ps)
             loss = (
                 weight_s * self.delta(s_target, s)
                 + self.delta(g_target, g)
                 + weight_h * sum(self.h(pi) for pi in ps) / len(ps)
+                + self.limit_canada_hinge_loss(ps, do_print=do_print)
             )
-            if idx % 10 == 0:
+            if do_print:
                 print(idx, loss.item())
                 if (loss.item() - prev) / prev > -0.01:
                     break
@@ -84,7 +123,7 @@ class QuizQuestionPossibilities:
 
 
 @permacache(
-    "urbanstats/games/fit_distribution/compute_quiz_question_possibilities_3",
+    "urbanstats/games/fit_distribution/compute_quiz_question_possibilities_4",
     key_function=dict(
         tables_by_type=stable_hash,
     ),
@@ -96,6 +135,7 @@ def _compute_quiz_question_possibilities(
     intl_difficulty,
     diff_ranges,
     excluded_universes,
+    descriptor_by_col,
 ):
     all_stats = sorted({s for qt in tables_by_type.values() for s in qt.data}, key=str)
     all_geographies = sorted(
@@ -115,6 +155,7 @@ def _compute_quiz_question_possibilities(
                 intl_difficulty=intl_difficulty,
                 diff_ranges=diff_ranges,
                 excluded_universes=excluded_universes,
+                descriptor_by_col=descriptor_by_col,
             )
         )
     questions_by_number = [ValidQuizQuestions.join(x) for x in zip(*questions)]
@@ -135,12 +176,14 @@ def train_quiz_question_weights(
     compute_stat_target,
     excluded_universes,
 ):
+    descriptor_by_col = {k: d for k, d, _ in get_quiz_stats()}
     qqp = _compute_quiz_question_possibilities(
         tables_by_type,
         col_to_difficulty=col_to_difficulty,
         intl_difficulty=intl_difficulty,
         diff_ranges=diff_ranges,
         excluded_universes=excluded_universes,
+        descriptor_by_col=descriptor_by_col,
     )
     geo_target = compute_geo_target(qqp, tables_by_type)
     stat_target = compute_stat_target(qqp, tables_by_type)
@@ -152,11 +195,12 @@ def train_quiz_question_weights(
         intl_difficulty=intl_difficulty,
         diff_ranges=diff_ranges,
         excluded_universes=excluded_universes,
+        descriptor_by_col=descriptor_by_col,
     )
 
 
 @permacache(
-    "urbanstats/games/fit_distribution/distribution/_train_quiz_question_weights_cached_3",
+    "urbanstats/games/fit_distribution/distribution/_train_quiz_question_weights_cached_4",
     key_function=dict(
         tables_by_type=stable_hash, geo_target=stable_hash, stat_target=stable_hash
     ),
@@ -170,6 +214,7 @@ def _train_quiz_question_weights_cached(
     intl_difficulty,
     diff_ranges,
     excluded_universes,
+    descriptor_by_col,
 ):
     qqp = _compute_quiz_question_possibilities(
         tables_by_type,
@@ -177,6 +222,7 @@ def _train_quiz_question_weights_cached(
         intl_difficulty=intl_difficulty,
         diff_ranges=diff_ranges,
         excluded_universes=excluded_universes,
+        descriptor_by_col=descriptor_by_col,
     )
     ps = qqp.train(geo_target, stat_target)
     return dict(ps=ps, geo_target=geo_target, stat_target=stat_target, qqp=qqp)

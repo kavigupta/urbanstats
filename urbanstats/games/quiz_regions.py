@@ -14,6 +14,7 @@ class QuizTable:
     universes: pd.Series
     local_region_mask: pd.Series
     weight_internal: pd.Series
+    regions: List[str]
 
     def __permacache_hash__(self):
         return stable_hash(
@@ -22,6 +23,7 @@ class QuizTable:
                 universes=self.universes,
                 local_region_mask=self.local_region_mask,
                 weight_internal=self.weight_internal,
+                regions=self.regions,
             )
         )
 
@@ -48,6 +50,7 @@ class QuizRegion:
             result["universes"],
             result["local_region_mask"],
             result.apply(self.internal_weighting_function, axis=1),
+            self.regions,
         )
 
 

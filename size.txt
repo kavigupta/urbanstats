@@ -510,3 +510,12 @@ Congressional representatives just data (#1964)
 775     order
 1388    data
 3241    total
+
+Several juxtafixes to juxtasampling (#2028)
+
+125     consolidated
+178     quiz_sampling_info
+685     shape
+788     order
+1388    data
+3293    total

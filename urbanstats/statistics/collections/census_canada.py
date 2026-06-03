@@ -61,7 +61,9 @@ class CensusCanada(CanadaStatistics):
     def quiz_question_descriptors(self):
         result = {
             "population_2021_canada": QuizQuestionDescriptor(
-                "higher population", POPULATION
+                "higher population",
+                POPULATION,
+                exclude_geography_types=("Subnational Region",),
             ),
             "density_2021_pw_1_canada": QuizQuestionDescriptor(
                 "higher population-weighted density (r=1km)" + DENSITY_EXPLANATION_PW,
