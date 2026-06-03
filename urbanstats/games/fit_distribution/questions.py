@@ -2,8 +2,6 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from urbanstats.games.quiz_columns import get_quiz_stats
-
 
 @dataclass
 class ValidQuizQuestions:
@@ -72,9 +70,14 @@ def invalid_values(values):
 
 
 def _compute_adjusted_difficulties(
-    qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
+    qt,
+    col_to_difficulty,
+    intl_difficulty,
+    diff_ranges,
+    excluded_universes,
+    *,
+    descriptor_by_col,
 ):
-    descriptor_by_col = {k: d for k, d, _ in get_quiz_stats()}
     descriptors = [descriptor_by_col[stat_col] for stat_col in qt.data.columns]
     excluded_cols = [
         bool(set(d.exclude_geography_types) & set(qt.regions)) for d in descriptors
@@ -98,10 +101,21 @@ def _compute_adjusted_difficulties(
 
 
 def _compute_adjusted_difficulty_masks(
-    qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
+    qt,
+    col_to_difficulty,
+    intl_difficulty,
+    diff_ranges,
+    excluded_universes,
+    *,
+    descriptor_by_col,
 ):
     adj_difficulties = _compute_adjusted_difficulties(
-        qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
+        qt,
+        col_to_difficulty,
+        intl_difficulty,
+        diff_ranges,
+        excluded_universes,
+        descriptor_by_col=descriptor_by_col,
     )
     return [
         (lo <= adj_difficulties) & (adj_difficulties < hi) for lo, hi in diff_ranges
@@ -116,13 +130,20 @@ def classify_questions(
     col_to_difficulty,
     intl_difficulty,
     diff_ranges,
-    excluded_universes
+    excluded_universes,
+    descriptor_by_col,
 ):
+    # pylint: disable=too-many-locals
     remap_stats = np.array([stat_to_index[stat] for stat in qt.data])
     remap_geos = np.array([geo_to_index[geo] for geo in qt.data.index])
     results = []
     for mask in _compute_adjusted_difficulty_masks(
-        qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
+        qt,
+        col_to_difficulty,
+        intl_difficulty,
+        diff_ranges,
+        excluded_universes,
+        descriptor_by_col=descriptor_by_col,
     ):
         stat_indices, a_indices, b_indices = np.where(mask)
         a_lt_b_mask = a_indices < b_indices

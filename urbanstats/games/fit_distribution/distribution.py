@@ -7,6 +7,8 @@ import torch
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
 
+from urbanstats.games.quiz_columns import get_quiz_stats
+
 from .questions import ValidQuizQuestions, classify_questions
 
 
@@ -80,6 +82,7 @@ class QuizQuestionPossibilities:
         return hinge_loss
 
     def train(self, geo_target, stat_target, weight_h=0.1, weight_s=10):
+        # pylint: disable=too-many-locals
         g_target = torch.tensor(geo_target, dtype=torch.float32)
         s_target = torch.tensor(stat_target, dtype=torch.float32)
         p = torch.ones(len(self), requires_grad=True, dtype=torch.float32)
@@ -132,6 +135,7 @@ def _compute_quiz_question_possibilities(
     intl_difficulty,
     diff_ranges,
     excluded_universes,
+    descriptor_by_col,
 ):
     all_stats = sorted({s for qt in tables_by_type.values() for s in qt.data}, key=str)
     all_geographies = sorted(
@@ -151,6 +155,7 @@ def _compute_quiz_question_possibilities(
                 intl_difficulty=intl_difficulty,
                 diff_ranges=diff_ranges,
                 excluded_universes=excluded_universes,
+                descriptor_by_col=descriptor_by_col,
             )
         )
     questions_by_number = [ValidQuizQuestions.join(x) for x in zip(*questions)]
@@ -171,12 +176,14 @@ def train_quiz_question_weights(
     compute_stat_target,
     excluded_universes,
 ):
+    descriptor_by_col = {k: d for k, d, _ in get_quiz_stats()}
     qqp = _compute_quiz_question_possibilities(
         tables_by_type,
         col_to_difficulty=col_to_difficulty,
         intl_difficulty=intl_difficulty,
         diff_ranges=diff_ranges,
         excluded_universes=excluded_universes,
+        descriptor_by_col=descriptor_by_col,
     )
     geo_target = compute_geo_target(qqp, tables_by_type)
     stat_target = compute_stat_target(qqp, tables_by_type)
@@ -188,6 +195,7 @@ def train_quiz_question_weights(
         intl_difficulty=intl_difficulty,
         diff_ranges=diff_ranges,
         excluded_universes=excluded_universes,
+        descriptor_by_col=descriptor_by_col,
     )
 
 
@@ -206,6 +214,7 @@ def _train_quiz_question_weights_cached(
     intl_difficulty,
     diff_ranges,
     excluded_universes,
+    descriptor_by_col,
 ):
     qqp = _compute_quiz_question_possibilities(
         tables_by_type,
@@ -213,6 +222,7 @@ def _train_quiz_question_weights_cached(
         intl_difficulty=intl_difficulty,
         diff_ranges=diff_ranges,
         excluded_universes=excluded_universes,
+        descriptor_by_col=descriptor_by_col,
     )
     ps = qqp.train(geo_target, stat_target)
     return dict(ps=ps, geo_target=geo_target, stat_target=stat_target, qqp=qqp)
