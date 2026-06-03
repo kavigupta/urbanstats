@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Hindu % [StatCan]",
+      "stat_path": "religion_hindu_canada",
+      "question": "higher % of people who are Hindu",
+      "longname_a": "Edmonton CMA, AB, Canada",
+      "longname_b": "St. Catharines - Niagara CMA, ON, Canada",
+      "stat_a": 0.02264650621812644,
+      "stat_b": 0.005193706449831381
+    },
+    "b": {
+      "stat_column": "Household Income < $50k %",
+      "stat_path": "household_income_under_50k",
+      "question": "higher % of households who have household income under $50k",
+      "longname_a": "GA-10 (2025), USA",
+      "longname_b": "TX-24 (2023), USA",
+      "stat_a": 0.4005519264742124,
+      "stat_b": 0.2249723261639413
+    },
+    "a_ease": 0.41402714932126694,
+    "b_ease": 0.8201492537313433
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Graduate degree [25-64] %",
+      "stat_path": "education_grad_canada",
+      "question": "higher % of people between 25 and 64 who have a graduate degree",
+      "longname_a": "Saskatoon City, Division No. 11, Saskatchewan, Canada",
+      "longname_b": "Winnipeg City, Division No. 11, Manitoba, Canada",
+      "stat_a": 0.10383438343834386,
+      "stat_b": 0.07792490802579129
+    },
+    "b": {
+      "stat_column": "Food preparation and serving related occupations %",
+      "stat_path": "occupation_food_preparation_and_serving_related_occupations",
+      "question": "higher % of workers employed as food preparers or servers!TOOLTIP cooks, waiters, bartenders, fast food workers, etc.",
+      "longname_a": "VA-06 (2023), USA",
+      "longname_b": "TX-13 (2023), USA",
+      "stat_a": 0.054404584661608996,
+      "stat_b": 0.06417561663493306
+    },
+    "a_ease": 0.15649606299212598,
+    "b_ease": 0.5580708661417323
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Household Size",
+      "stat_path": "household_size_pw",
+      "question": "higher average population weighted household size!TOOLTIP The average household size a person is in; i.e., the average over all people of the number of people in their household. This is population-weighted, meaning that if there is one household of 3 and three households of 1, the average household size is 2, not 1.5.",
+      "longname_a": "Baton Rouge LA Media Market, USA",
+      "longname_b": "Fresno-Visalia CA Media Market, USA",
+      "stat_a": 3.181904605952349,
+      "stat_b": 3.989041150770336
+    },
+    "b": {
+      "stat_column": "Snowfall [rain-equivalent]",
+      "stat_path": "snowfall_4",
+      "question": "higher snowfall (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "California, USA",
+      "longname_b": "Coahuila de Zaragoza, Mexico",
+      "stat_a": 0.005139371523100086,
+      "stat_b": 0.0013531870763126871
+    },
+    "a_ease": 0.4024024024024024,
+    "b_ease": 0.832579185520362
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Arthritis %",
+      "stat_path": "ARTHRITIS_cdc_2",
+      "question": "higher % of adults with arthritis",
+      "longname_a": "Adams County, Colorado, USA",
+      "longname_b": "Galveston County, Texas, USA",
+      "stat_a": 0.21267789308853965,
+      "stat_b": 0.2400050850114326
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Airport",
+      "stat_path": "mean_dist_Airport_updated",
+      "question": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+      "longname_a": "Port St. Lucie [Urban Area], FL, USA",
+      "longname_b": "Greenville [Urban Area], SC, USA",
+      "stat_a": 67.83619148352233,
+      "stat_b": 17.311784145902514
+    },
+    "a_ease": 0.8417910447761194,
+    "b_ease": 0.36079545454545453
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Cohabiting With Partner (Gay) %",
+      "stat_path": "sors_cohabiting_partnered_gay",
+      "question": "higher % of people who are gay and cohabiting with a partner/spouse",
+      "longname_a": "Columbus city, Ohio, USA",
+      "longname_b": "Corpus Christi city, Texas, USA",
+      "stat_a": 0.010199385450118146,
+      "stat_b": 0.006920213398101212
+    },
+    "b": {
+      "stat_column": "Mobility disability %",
+      "stat_path": "MOBILITY_cdc_2",
+      "question": "higher % of adults with a mobility disability",
+      "longname_a": "Miami city, Florida, USA",
+      "longname_b": "Gilbert town, Arizona, USA",
+      "stat_a": 0.14800279890634727,
+      "stat_b": 0.07570148842337375
+    },
+    "a_ease": 0.8754373687893632,
+    "b_ease": 0.4572072072072072
+  }
+]
