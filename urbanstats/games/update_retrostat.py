@@ -18,7 +18,7 @@ def compute_last_retrostat_week_generable():
     for retro_week in itertools.count(1):
         questions = day_for_week(questions_week_for_retrostat(retro_week))
         if max(questions) >= days_finished:
-            return retro_week - 1, questions[-1] - 7
+            return retro_week - 1
     raise RuntimeError("Unreachable")
 
 
@@ -30,7 +30,8 @@ def create_retrostats(folder, retrostat_up_to):
 
 
 def main(path):
-    week, day = compute_last_retrostat_week_generable()
+    week = compute_last_retrostat_week_generable()
+    day = int(compute_fractional_days("Pacific/Kiritimati"))
     copy_up_to("juxtastat", day)
     create_retrostats(os.path.join(path, "retrostat"), week)
     copy_up_to("retrostat", week, folder=path)
