@@ -21,7 +21,8 @@ def get_quiz_stats():
                     stat = [
                         (source, col)
                         for source, col in stat
-                        if not isinstance(all_descriptors[col], QuizQuestionSkip)
+                        if col in all_descriptors
+                        and not isinstance(all_descriptors[col], QuizQuestionSkip)
                     ]
                     if not stat:
                         continue
