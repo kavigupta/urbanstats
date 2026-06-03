@@ -117,7 +117,7 @@ class QuizQuestionPossibilities:
 
 
 @permacache(
-    "urbanstats/games/fit_distribution/compute_quiz_question_possibilities_3",
+    "urbanstats/games/fit_distribution/compute_quiz_question_possibilities_4",
     key_function=dict(
         tables_by_type=stable_hash,
     ),

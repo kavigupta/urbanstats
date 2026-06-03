@@ -281,7 +281,11 @@ class Census2020(CensusForPreviousYear):
 
     def quiz_question_descriptors(self):
         return {
-            "population": QuizQuestionDescriptor("higher population", POPULATION),
+            "population": QuizQuestionDescriptor(
+                "higher population",
+                POPULATION,
+                exclude_geography_types=("Subnational Region",),
+            ),
             "ad_1": QuizQuestionDescriptor(
                 "higher population-weighted density (r=1km)" + DENSITY_EXPLANATION_PW,
                 POPULATION_DENSITY,

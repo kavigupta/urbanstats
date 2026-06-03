@@ -13,6 +13,7 @@ class QuizQuestionDescriptor:
     name: str
     collection: QuizQuestionCollection
     difficulty_multiplier_val: float | None = None
+    exclude_geography_types: tuple[str] = ()
 
     @classmethod
     def several(cls, collection, key_to_name, difficulty_multipliers=None):

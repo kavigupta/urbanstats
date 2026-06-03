@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from urbanstats.games.quiz_columns import get_quiz_stats
+
 
 @dataclass
 class ValidQuizQuestions:
@@ -72,6 +74,11 @@ def invalid_values(values):
 def _compute_adjusted_difficulties(
     qt, col_to_difficulty, intl_difficulty, diff_ranges, excluded_universes
 ):
+    descriptor_by_col = {k: d for k, d, _ in get_quiz_stats()}
+    descriptors = [descriptor_by_col[stat_col] for stat_col in qt.data.columns]
+    excluded_cols = [
+        bool(set(d.exclude_geography_types) & set(qt.regions)) for d in descriptors
+    ]
     max_pct_diff = max(max(x) for x in diff_ranges)
     values = np.array(qt.data).T
     invalid_mask = invalid_values(values)
@@ -81,6 +88,9 @@ def _compute_adjusted_difficulties(
     )
     raw_pct_diff[invalid_mask] = np.inf
     raw_pct_diff[raw_pct_diff > max_pct_diff] = np.inf
+    if any(excluded_cols):
+        raw_pct_diff[excluded_cols, :, :] = np.inf
+
     adj_pct_diff = raw_pct_diff / _compute_difficulty_multipliers(
         qt, col_to_difficulty, intl_difficulty, excluded_universes
     )
