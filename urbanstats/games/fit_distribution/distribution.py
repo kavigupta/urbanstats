@@ -56,7 +56,7 @@ class QuizQuestionPossibilities:
         ]
         return num_canadas
 
-    def limit_canada_hinge_loss(self, ps):
+    def limit_canada_hinge_loss(self, ps, *, do_print):
         """
         Hinge loss that says
             - at most 15% of questions can be Canada vs Canada and
@@ -69,9 +69,11 @@ class QuizQuestionPossibilities:
         prob_canada_vs_anything = torch.mean(
             torch.stack([p[i >= 1].sum() for p, i in zip(ps, num_canadas)])
         )
-        print(
-            f"Canada vs Canada: {prob_canada_vs_canada.item():.2%}, Canada vs Anything: {prob_canada_vs_anything.item():.2%}"
-        )
+        if do_print:
+            print(
+                f"Canada vs Canada: {prob_canada_vs_canada.item():.2%},"
+                f" Canada vs Anything: {prob_canada_vs_anything.item():.2%}"
+            )
         hinge_loss = torch.relu(prob_canada_vs_canada - 0.15) + torch.relu(
             prob_canada_vs_anything - 0.20
         )
@@ -84,15 +86,16 @@ class QuizQuestionPossibilities:
         opt = torch.optim.Adam([p], lr=0.5)
         prev = float("inf")
         for idx in range(1000):
+            do_print = idx % 10 == 0
             ps = self._probabilities_each_torch(p)
             g, s = self._aggregate_torch(ps)
             loss = (
                 weight_s * self.delta(s_target, s)
                 + self.delta(g_target, g)
                 + weight_h * sum(self.h(pi) for pi in ps) / len(ps)
-                + self.limit_canada_hinge_loss(ps)
+                + self.limit_canada_hinge_loss(ps, do_print=do_print)
             )
-            if idx % 10 == 0:
+            if do_print:
                 print(idx, loss.item())
                 if (loss.item() - prev) / prev > -0.01:
                     break
