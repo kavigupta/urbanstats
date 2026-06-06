@@ -223,11 +223,7 @@ def construct_variable_objects(
         )
 
     var_names = [obj["varName"] for obj in variable_objects]
-    duplicated = [
-        item
-        for item, count in json.loads(json.dumps(Counter(var_names))).items()
-        if count > 1
-    ]
+    duplicated = [item for item, count in Counter(var_names).items() if count > 1]
     if duplicated:
         raise ValueError(
             f"Duplicated variable names in statistics: {duplicated}. "
