@@ -1,11 +1,8 @@
 import hashlib
-import json
 import os
 import shutil
 import subprocess
-from typing import Any, Dict, List, Set, Union
-
-import tqdm.auto as tqdm
+from typing import Set, Union
 
 from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,

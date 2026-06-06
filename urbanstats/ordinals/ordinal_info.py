@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Union
+from typing import Any, Dict, List, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
@@ -17,7 +17,9 @@ class OrdinalInfoForColumn:
     ordinal: csc_matrix
     percentile: csc_matrix
     values: csc_matrix
-    counts: np.ndarray  # number of non-NaN values per universe-type, length len(universe_type)
+    counts: (
+        np.ndarray
+    )  # number of non-NaN values per universe-type, length len(universe_type)
 
 
 @dataclass
