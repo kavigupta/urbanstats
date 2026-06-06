@@ -2,7 +2,7 @@ import hashlib
 import os
 import shutil
 import subprocess
-from typing import Set, Union
+from typing import FrozenSet, Set, Union
 
 from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
@@ -188,7 +188,7 @@ BUILD_STEPS = frozenset({"shapes", "articles", "index", "ordering", "sitemap", "
 
 # pylint: disable-next=too-many-branches,too-many-statements
 def build_urbanstats(
-    site_folder: str, *, steps: Union[Set[str], frozenset[str]], mode: str
+    site_folder: str, *, steps: Union[Set[str], FrozenSet[str]], mode: str
 ) -> None:
     check_proto_hash()
     print("Steps to run:", *steps, "scripts")

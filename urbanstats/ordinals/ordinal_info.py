@@ -176,7 +176,6 @@ def compute_ordinal_info(
         # We do not do this for other values, to preserve stability of sorting etc
         non_nan = ~np.isnan(filt_table[stat_col].array)
         counts_per_ut.append(np.sum(non_nan))
-        # mask = mask[non_nan]
         filt_table_non_nan = filt_table.iloc[non_nan]
         ut_idx_arr_non_nan = ut_idx_arr[non_nan]
 
