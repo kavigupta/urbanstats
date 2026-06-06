@@ -278,7 +278,7 @@ def deduplicate_and_sort_representatives(
         key=lambda rwt: (
             rwt.start_term,
             rwt.end_term,
-            str(rwt.representative.name),
+            rwt.representative.name,
             rwt.district_longname,
         )
     )

@@ -120,9 +120,7 @@ def create_article_gzip(
 
     u_to_i = universe_to_idx()
     universe_idxs = [
-        u_to_i[u]
-        for u in row.universes
-        if u in u_to_i and u not in ZERO_POPULATION_UNIVERSES
+        u_to_i[u] for u in row.universes if u not in ZERO_POPULATION_UNIVERSES
     ]
 
     counts_this = counts_overall[:, universe_idxs]
