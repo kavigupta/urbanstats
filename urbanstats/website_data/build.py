@@ -74,7 +74,7 @@ def link_scripts_folder(site_folder: str, mode: str) -> None:
     if os.path.islink(f"{site_folder}/scripts"):
         os.unlink(f"{site_folder}/scripts")
     else:
-        shutil.rmtree(f"{site_folder}/scripts", ignore_errors=True)
+        shutil.rmtree(f"{site_folder}/scripts")
     if mode == "dev":
         os.symlink(f"{os.getcwd()}/dist", f"{site_folder}/scripts", True)
     else:
