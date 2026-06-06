@@ -1,5 +1,6 @@
 import gzip
 import os
+from typing import Any, List, Tuple
 
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
@@ -17,7 +18,7 @@ from ..utils import output_typescript
 use = [x.meta["type"] for x in shapefiles.values()]
 
 
-def produce_results(row_geo):
+def produce_results(row_geo: Any) -> data_files_pb2.Feature:
     res = row_geo.geometry
     geo = convert_to_protobuf(res)
     return geo
@@ -32,9 +33,13 @@ def produce_results(row_geo):
     ),
 )
 def produce_all_results_from_tables(
-    loaded_shapefile, longnames, universes, limit=5 * 1024 * 1024
-):
-    simplify_amount = 0
+    loaded_shapefile: Any,
+    longnames: List[str],
+    universes: List[List[int]],
+    limit: int = 5 * 1024 * 1024,
+) -> Tuple[bytes, float]:
+    simplify_amount = 0.0
+    shapes = None
     while simplify_amount < 20 / 3600:
         shapes = produce_results_from_tables_at_simplify_amount(
             loaded_shapefile, longnames, universes, simplify_amount
@@ -46,12 +51,16 @@ def produce_all_results_from_tables(
             if simplify_amount == 0
             else simplify_amount * 1.5
         )
+    assert shapes is not None
     return shapes.SerializeToString(), simplify_amount
 
 
 def produce_results_from_tables_at_simplify_amount(
-    loaded_shapefile, longnames, universes, simplify_amount
-):
+    loaded_shapefile: Any,
+    longnames: List[str],
+    universes: List[List[int]],
+    simplify_amount: float,
+) -> data_files_pb2.ConsolidatedShapes:
     geo_table = loaded_shapefile.load_file()
 
     geo_table = geo_table.set_index("longname")
@@ -77,24 +86,24 @@ def produce_results_from_tables_at_simplify_amount(
     return shapes
 
 
-def produce_results_for_type(folder, typ):
+def produce_results_for_type(folder: str, typ: str) -> None:
     print(typ)
-    folder = f"{folder}/consolidated/"
+    folder_path = f"{folder}/consolidated/"
     try:
-        os.makedirs(folder)
+        os.makedirs(folder_path)
     except FileExistsError:
         pass
     full = shapefile_without_ordinals()
     data_table = full[full.type == typ]
     data_table, shapes, simplification = compute_geography(typ, data_table)
     print(f'Simplification amount: {simplification * 3600:.0f}" of arc')
-    path = f"{folder}/shapes__{typ}.gz"
+    path = f"{folder_path}/shapes__{typ}.gz"
     ensure_writeable(path)
     with gzip.GzipFile(path, "wb", mtime=0) as f:
         f.write(shapes)
 
 
-def compute_geography(typ, data_table):
+def compute_geography(typ: str, data_table: Any) -> Tuple[Any, bytes, float]:
     [loaded_shapefile] = [x for x in shapefiles.values() if x.meta["type"] == typ]
     longnames = sorted(data_table.longname)
     universe_to_idx = {universe: idx for idx, universe in enumerate(all_universes())}
@@ -118,11 +127,11 @@ def compute_geography(typ, data_table):
     return data_table, shapes, simplification
 
 
-def full_consolidated_data(folder):
+def full_consolidated_data(folder: str) -> None:
     for typ in use:
         produce_results_for_type(folder, typ)
 
 
-def output_names(mapper_folder):
+def output_names(mapper_folder: str) -> None:
     with open(f"{mapper_folder}/used_geographies.ts", "w") as f:
         output_typescript(use, f)

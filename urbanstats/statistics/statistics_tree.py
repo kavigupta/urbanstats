@@ -1,7 +1,7 @@
 # pylint: disable=too-many-lines
 
 from dataclasses import dataclass, field
-from types import NoneType
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.data.gpw import GPW_RADII
@@ -22,7 +22,7 @@ class Source:
     priority: int
     variable_suffix: str
 
-    def json(self):
+    def json(self) -> Dict[str, Any]:
         return {"category": self.category, "name": self.name}
 
 
@@ -32,24 +32,26 @@ class MultiSource:
     Represent a statistic that is available from multiple sources.
     """
 
-    by_source: dict[str | NoneType, str]
-    multi_source_colname: str = None
-    indented_name: str = None
+    by_source: Dict[Optional[Source], Union[str, Tuple[str, ...]]]
+    multi_source_colname: Optional[str] = None
+    indented_name: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if None in self.by_source:
             assert len(self.by_source) == 1
         for source, col in self.by_source.items():
             assert isinstance(source, Source) or source is None
             assert isinstance(col, (str, tuple))
 
-    def internal_statistics(self):
+    def internal_statistics(self) -> List[Union[str, Tuple[str, ...]]]:
         return list(self.by_source.values())
 
-    def name_to_category(self, category_id):
+    def name_to_category(
+        self, category_id: str
+    ) -> Dict[Union[str, Tuple[str, ...]], str]:
         return {col: category_id for col in self.by_source.values()}
 
-    def flatten(self, name_map, names):
+    def flatten(self, name_map: Dict[str, str], names: List[str]) -> Dict[str, Any]:
         result = []
         for source, col in self.by_source.items():
             result.append(
@@ -63,14 +65,14 @@ class MultiSource:
         output["indentedName"] = self.indented_name
         return output
 
-    def canonical_column(self):
+    def canonical_column(self) -> Union[str, Tuple[str, ...]]:
         if self.multi_source_colname is not None:
             return self.multi_source_colname
         assert len(self.by_source) == 1
         col = next(iter(self.by_source.values()))
         return col
 
-    def compute_name(self, name_map):
+    def compute_name(self, name_map: Dict[str, str]) -> str:
         return name_map[self.canonical_column()]
 
 
@@ -81,13 +83,13 @@ class MetadataMultiSource(MultiSource):
     metadata_value_type: str = field(kw_only=True)
     metadata_name: str = field(kw_only=True)
 
-    def internal_statistics(self):
+    def internal_statistics(self) -> List[Any]:
         return []
 
-    def name_to_category(self, category_id):
+    def name_to_category(self, category_id: str) -> Dict[Any, str]:
         return {}
 
-    def flatten(self, name_map, names):
+    def flatten(self, name_map: Dict[str, str], names: List[str]) -> Dict[str, Any]:
         output = {
             "name": self.metadata_name,
             "stats": [
@@ -103,7 +105,7 @@ class MetadataMultiSource(MultiSource):
         output["indentedName"] = self.indented_name
         return output
 
-    def compute_name(self, name_map):
+    def compute_name(self, name_map: Dict[str, str]) -> str:
         return self.metadata_name
 
 
@@ -113,17 +115,17 @@ class StatisticGroup:
     Represents a statistic that is available for multiple years.
     """
 
-    by_year: dict[int | NoneType, list[MultiSource]]
-    group_name_statcol: str = None
-    group_name: str = None
+    by_year: Dict[Optional[int], List[MultiSource]]
+    group_name_statcol: Optional[str] = None
+    group_name: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         for year, cols in self.by_year.items():
             assert year in {2000, 2010, 2020, None}
             assert isinstance(cols, list)
             assert all(isinstance(col, MultiSource) for col in cols), cols
 
-    def internal_statistics(self):
+    def internal_statistics(self) -> List[Union[str, Tuple[str, ...]]]:
         return [
             col
             for multi_sources in self.by_year.values()
@@ -131,7 +133,9 @@ class StatisticGroup:
             for col in multi_source.internal_statistics()
         ]
 
-    def name_to_category(self, category_id):
+    def name_to_category(
+        self, category_id: str
+    ) -> Dict[Union[str, Tuple[str, ...]], str]:
         result = {}
         for _, stats in self.by_year.items():
             for stat_by_source in stats:
@@ -139,7 +143,12 @@ class StatisticGroup:
         return result
 
     @staticmethod
-    def flatten_year(year, stats, name_map, names):
+    def flatten_year(
+        year: Optional[int],
+        stats: List[MultiSource],
+        name_map: Dict[str, str],
+        names: List[str],
+    ) -> Dict[str, Any]:
         assert isinstance(year, int) or year is None, year
         stats_processed = []
         for stat in stats:
@@ -147,10 +156,10 @@ class StatisticGroup:
 
         return {"year": year, "stats_by_source": stats_processed}
 
-    def flatten(self, name_map, group_id):
-        group_id = get_statistic_column_path(group_id)
+    def flatten(self, name_map: Dict[str, str], group_id: str) -> Dict[str, Any]:
+        group_id_path = get_statistic_column_path(group_id)
         return {
-            "id": group_id,
+            "id": group_id_path,
             "name": self.compute_group_name(name_map),
             "contents": [
                 self.flatten_year(year, stats, name_map, list(name_map))
@@ -158,14 +167,14 @@ class StatisticGroup:
             ],
         }
 
-    def compute_group_name(self, name_map):
+    def compute_group_name(self, name_map: Dict[str, str]) -> str:
         if self.group_name is not None:
             assert self.group_name_statcol is None
             return self.group_name
         short_statcol = self.group_name_statcol
         if short_statcol is None:
-            year = None if None in self.by_year else max(self.by_year)
-            short_statcol = self.by_year[year][0].by_source[None]
+            year_to_use = None if None in self.by_year else max(self.by_year)
+            short_statcol = self.by_year[year_to_use][0].by_source[None]
         group_name = name_map[short_statcol]
         if len(self.by_year) > 1:
             for year in self.by_year:
@@ -183,29 +192,31 @@ class StatisticCategory:
     """
 
     name: str
-    contents: dict[str, StatisticGroup]
+    contents: Dict[str, StatisticGroup]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         assert isinstance(self.name, str), self
         assert isinstance(self.contents, dict)
         assert all(
             isinstance(value, StatisticGroup) for value in self.contents.values()
         )
 
-    def internal_statistics(self):
+    def internal_statistics(self) -> List[Union[str, Tuple[str, ...]]]:
         return [
             col
             for group in self.contents.values()
             for col in group.internal_statistics()
         ]
 
-    def name_to_category(self, category_id):
+    def name_to_category(
+        self, category_id: str
+    ) -> Dict[Union[str, Tuple[str, ...]], str]:
         result = {}
         for _, group in self.contents.items():
             result.update(group.name_to_category(category_id))
         return result
 
-    def flatten(self, category_id, name_map):
+    def flatten(self, category_id: str, name_map: Dict[str, str]) -> Dict[str, Any]:
         return {
             "id": category_id,
             "name": self.name,
@@ -222,35 +233,35 @@ class StatisticTree:
     Represents the entire tree of statistics.
     """
 
-    categories: dict[str, StatisticCategory]
+    categories: Dict[str, StatisticCategory]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         assert isinstance(self.categories, dict)
         assert all(isinstance(key, str) for key in self.categories)
         assert all(
             isinstance(value, StatisticCategory) for value in self.categories.values()
         )
 
-    def internal_statistics(self):
+    def internal_statistics(self) -> List[Union[str, Tuple[str, ...]]]:
         return [
             col
             for category in self.categories.values()
             for col in category.internal_statistics()
         ]
 
-    def name_to_category(self):
+    def name_to_category(self) -> Dict[Union[str, Tuple[str, ...]], str]:
         result = {}
         for category_id, category in self.categories.items():
             result.update(category.name_to_category(category_id))
         return result
 
-    def flatten(self, name_map):
+    def flatten(self, name_map: Dict[str, str]) -> List[Dict[str, Any]]:
         return [
             category.flatten(category_id, name_map)
             for category_id, category in self.categories.items()
         ]
 
-    def all_sources(self):
+    def all_sources(self) -> List[Source]:
         result = []
         for category in self.categories.values():
             for group in category.contents.values():
@@ -258,19 +269,21 @@ class StatisticTree:
                     for stat in stats:
                         for source in stat.by_source:
                             result.append(source)
-        deduplicated_sources = []
+        deduplicated_sources: List[Source] = []
         for source in result:
             if source not in deduplicated_sources and source is not None:
                 deduplicated_sources.append(source)
         return deduplicated_sources
 
 
-def single_source(col_name, indented_name=None):
+def single_source(
+    col_name: Union[str, Tuple[str, ...]], indented_name: Optional[str] = None
+) -> MultiSource:
     return MultiSource({None: col_name}, indented_name=indented_name)
 
 
-def census_basics(col_name, *, change):
-    results = {
+def census_basics(col_name: str, *, change: bool) -> Dict[str, StatisticGroup]:
+    results: Dict[Optional[int], List[MultiSource]] = {
         2020: [single_source(col_name, indented_name="2020")],
     }
     for year in [2010, 2000]:
@@ -281,11 +294,11 @@ def census_basics(col_name, *, change):
                     f"{col_name}_change_{year}", indented_name=f"{year}-2020 Change"
                 )
             )
-    results = StatisticGroup(results)
-    return {col_name: results}
+    group = StatisticGroup(results)
+    return {col_name: group}
 
 
-def census_segregation(col_name):
+def census_segregation(col_name: str) -> Dict[str, StatisticGroup]:
     return {
         col_name: StatisticGroup(
             {
@@ -307,7 +320,7 @@ def census_segregation(col_name):
     }
 
 
-def just_2020(*col_names, year=2020):
+def just_2020(*col_names: str, year: int = 2020) -> Dict[str, StatisticGroup]:
     return {
         col_name: StatisticGroup(
             {year: [single_source(col_name, indented_name="2020")]}
@@ -316,7 +329,9 @@ def just_2020(*col_names, year=2020):
     }
 
 
-def just_2020_with_canada(*col_names, year=2020):
+def just_2020_with_canada(
+    *col_names: str, year: int = 2020
+) -> Dict[str, StatisticGroup]:
     return {
         col_name: StatisticGroup(
             {
@@ -337,7 +352,9 @@ def just_2020_with_canada(*col_names, year=2020):
     }
 
 
-def just_2020_category(cat_key, cat_name, *col_names, year=2020):
+def just_2020_category(
+    cat_key: str, cat_name: str, *col_names: str, year: int = 2020
+) -> Dict[str, StatisticCategory]:
     return {
         cat_key: StatisticCategory(
             name=cat_name,
@@ -346,7 +363,9 @@ def just_2020_category(cat_key, cat_name, *col_names, year=2020):
     }
 
 
-def just_2020_category_with_canada(cat_key, cat_name, *col_names, year=2020):
+def just_2020_category_with_canada(
+    cat_key: str, cat_name: str, *col_names: str, year: int = 2020
+) -> Dict[str, StatisticCategory]:
     return {
         cat_key: StatisticCategory(
             name=cat_name,
@@ -370,9 +389,11 @@ population_ghsl = Source(
 )
 
 
-def census_basics_with_ghs_and_canada(col_name, gpw_name, canada_name, *, change):
+def census_basics_with_ghs_and_canada(
+    col_name: str, gpw_name: Optional[str], canada_name: str, *, change: bool
+) -> Dict[str, StatisticGroup]:
     result = census_basics(col_name, change=change)
-    by_source = {
+    by_source: Dict[Optional[Source], Union[str, Tuple[str, ...]]] = {
         population_census: col_name,
         population_canada: canada_name,
         population_ghsl: gpw_name,
@@ -412,11 +433,13 @@ def census_basics_with_ghs_and_canada(col_name, gpw_name, canada_name, *, change
     return result
 
 
-def census_basics_with_canada(col_name, canada_name=None, *, change):
+def census_basics_with_canada(
+    col_name: str, canada_name: Optional[str] = None, *, change: bool
+) -> Dict[str, StatisticGroup]:
     if canada_name is None:
         canada_name = f"{col_name}_canada"
     result = census_basics(col_name, change=change)
-    by_source = {
+    by_source: Dict[Optional[Source], Union[str, Tuple[str, ...]]] = {
         population_census: col_name,
         population_canada: canada_name,
     }
@@ -427,7 +450,7 @@ def census_basics_with_canada(col_name, canada_name=None, *, change):
     return result
 
 
-def geographic_ids_metadata_category():
+def geographic_ids_metadata_category() -> Dict[str, StatisticCategory]:
     metadata = export_metadata_types()
     contents = {}
 
@@ -460,7 +483,7 @@ def geographic_ids_metadata_category():
     }
 
 
-def congressional_representatives_metadata_group():
+def congressional_representatives_metadata_group() -> StatisticGroup:
     metadata = export_metadata_types()
     [entry] = [
         entry

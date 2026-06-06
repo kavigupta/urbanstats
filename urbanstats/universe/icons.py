@@ -3,6 +3,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+from typing import Any, Dict, Tuple
 
 import requests
 import us
@@ -29,7 +30,7 @@ internal_country_to_wikipedia = {
 }
 
 
-def download_and_convert_flag(wikipedia_page, out_path):
+def download_and_convert_flag(wikipedia_page: str, out_path: str) -> None:
     out = flags_folder + out_path + ".png"
     if os.path.exists(out):
         return
@@ -50,7 +51,7 @@ def download_and_convert_flag(wikipedia_page, out_path):
         run_conversion(out, f.name)
 
 
-def run_conversion(png_path, svg_path):
+def run_conversion(png_path: str, svg_path: str) -> None:
     subprocess.run(
         [
             "inkscape",
@@ -64,13 +65,13 @@ def run_conversion(png_path, svg_path):
     )
 
 
-def state_flag_name(state):
+def state_flag_name(state: Any) -> str:
     if state.name == "Georgia":
         return "File:Flag_of_Georgia_(U.S._state).svg"
     return f"File:Flag_of_{state.name.replace(' ', '_')}.svg"
 
 
-def download_all_us_state_flags():
+def download_all_us_state_flags() -> None:
     # download_and_convert_flag("File:Flag_of_Alabama.svg", "Alabama, USA")
     for state in us.states.STATES_AND_TERRITORIES:
         download_and_convert_flag(
@@ -79,13 +80,13 @@ def download_all_us_state_flags():
         )
 
 
-def province_flag_name(province):
+def province_flag_name(province: str) -> str:
     if province == "Northwest Territories, Canada":
         return "File:Flag_of_the_Northwest_Territories.svg"
     return f"File:Flag_of_{province.replace(', Canada', '').replace(' ', '_')}.svg"
 
 
-def download_all_canadian_province_flags():
+def download_all_canadian_province_flags() -> None:
     for province in universe_by_universe_type()["province"]:
         download_and_convert_flag(
             province_flag_name(province),
@@ -93,13 +94,13 @@ def download_all_canadian_province_flags():
         )
 
 
-def download_all_country_flags():
+def download_all_country_flags() -> None:
     for name in COUNTRIES:
         wikiname = internal_country_to_wikipedia.get(name, name.replace(" ", "_"))
         download_and_convert_flag(f"File:Flag_of_{wikiname}.svg", name)
 
 
-def convert_continent_flags():
+def convert_continent_flags() -> None:
     for continent in CONTINENTS:
         out = f"{flags_folder}{continent}.png"
         if os.path.exists(out):
@@ -107,7 +108,7 @@ def convert_continent_flags():
         run_conversion(out, f"icons/continent-flags/{continent}.svg")
 
 
-def download_all_flags():
+def download_all_flags() -> None:
     download_all_country_flags()
     download_all_us_state_flags()
     download_all_canadian_province_flags()
@@ -123,7 +124,7 @@ def download_all_flags():
     assert not missing, missing
 
 
-def download_all_search_icons():
+def download_all_search_icons() -> None:
     os.makedirs(search_icons_folder, exist_ok=True)
     for s in shapefiles.values():
         typ = s.meta["type"]
@@ -137,7 +138,7 @@ def download_all_search_icons():
     )
 
 
-def place_icons_in_site_folder(site_folder):
+def place_icons_in_site_folder(site_folder: str) -> None:
     download_all_flags()
     download_all_search_icons()
     for folder in [flags_folder, search_icons_folder]:
@@ -149,19 +150,19 @@ def place_icons_in_site_folder(site_folder):
             shutil.copy(os.path.join(folder, f), os.path.join(site_folder, folder))
 
 
-def get_image_dimensions(image_path):
+def get_image_dimensions(image_path: str) -> Tuple[int, int]:
     with Image.open(image_path) as img:
         return img.size
 
 
-def all_image_dimensions():
+def all_image_dimensions() -> Dict[str, Tuple[int, int]]:
     result = {}
     for u in all_universes():
         result[u] = get_image_dimensions(os.path.join(flags_folder, u + ".png"))
     return result
 
 
-def all_image_aspect_ratios():
+def all_image_aspect_ratios() -> Dict[str, float]:
     dimensions = all_image_dimensions()
     return {k: v[0] / v[1] for k, v in dimensions.items()}
 

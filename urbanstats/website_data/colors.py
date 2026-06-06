@@ -1,3 +1,5 @@
+from typing import Any, Tuple
+
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
@@ -32,7 +34,7 @@ related_button_colors = {
 }
 
 
-def compute_text_size(text, font):
+def compute_text_size(text: str, font: Any) -> Tuple[int, int]:
     """
     Compute the size of the text when rendered in the given font.
     """
@@ -40,20 +42,20 @@ def compute_text_size(text, font):
     width *= 10
     height *= 10
 
-    img = Image.new("RGB", (width, height), "white")
-    draw = ImageDraw.Draw(img)
+    img_raw = Image.new("RGB", (width, height), "white")
+    draw = ImageDraw.Draw(img_raw)
     draw.text((0, 0), text, font=font, fill="black")
-    img = np.array(img)
-    img = img.mean(axis=2)
-    img = img < 200
+    img = np.array(img_raw)
+    img_mean = img.mean(axis=2)
+    img_mask = img_mean < 200
     # return img
-    row, col = np.where(img)
+    row, col = np.where(img_mask)
     min_row, max_row = row.min(), row.max()
     min_col, max_col = col.min(), col.max()
     return max_col + min_col, max_row + min_row
 
 
-def search_flag(abbrev, color, multiplier=1):
+def search_flag(abbrev: str, color: str, multiplier: float = 1) -> Image.Image:
     """
     Make a "search flag", which is a square with a series of letters in it.
 
@@ -80,7 +82,7 @@ def search_flag(abbrev, color, multiplier=1):
     return flag
 
 
-def compute_search_flag(shapefile):
+def compute_search_flag(shapefile: Any) -> Image.Image:
     """
     Compute the search flag for a given shapefile.
     """

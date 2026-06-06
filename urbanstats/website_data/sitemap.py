@@ -4,23 +4,27 @@ import os
 from urllib.parse import urlencode
 
 import numpy as np
+import pandas as pd
 import tqdm.auto as tqdm
 
 from urbanstats.ordinals.ordering_info_outputter import reorganize_counts
+from urbanstats.ordinals.ordinal_info import OrdinalInfo
 from urbanstats.statistics.output_statistics_metadata import (
     statistic_internal_to_display_name,
 )
 from urbanstats.statistics.statistics_tree import statistics_tree
 
 
-def output_sitemap(site_folder, articles, ordinal_info):
+def output_sitemap(
+    site_folder: str, articles: pd.DataFrame, ordinal_info: OrdinalInfo
+) -> None:
     all_sitemap_urls = (
         top_level_pages() + article_urls(articles) + statistic_urls(ordinal_info)
     )
 
     # Delete existing sitemaps in sitemaps folder
-    for f in glob.glob(f"{site_folder}/sitemaps/*"):
-        os.remove(f)
+    for existing_f in glob.glob(f"{site_folder}/sitemaps/*"):
+        os.remove(existing_f)
 
     # 50k is max number of entries in a sitemap
     max_entries = 50000
@@ -33,13 +37,13 @@ def output_sitemap(site_folder, articles, ordinal_info):
                 "\n".join(all_sitemap_urls[start : start + max_entries]).encode("utf-8")
             )
 
-    with open(f"{site_folder}/robots.txt", "w") as f:
-        f.write(
+    with open(f"{site_folder}/robots.txt", "w") as f_robots:
+        f_robots.write(
             "\n".join([f"Sitemap: https://urbanstats.org/{path}" for path in paths])
         )
 
 
-def top_level_pages():
+def top_level_pages() -> list[str]:
     return [
         "https://urbanstats.org",
         "https://urbanstats.org/about.html",
@@ -57,7 +61,7 @@ def top_level_pages():
     ]
 
 
-def article_urls(articles):
+def article_urls(articles: pd.DataFrame) -> list[str]:
     category_masks = {}
     for category_id, category in statistics_tree.categories.items():
         stats = [articles[stat] for stat in category.internal_statistics()]
@@ -78,7 +82,7 @@ def article_urls(articles):
     return result
 
 
-def statistic_urls(ordinal_info):
+def statistic_urls(ordinal_info: OrdinalInfo) -> list[str]:
     result = []
     # We want the same counts that are output to the site
     counts = reorganize_counts(ordinal_info, ordinal_info.counts_by_type_universe_col())

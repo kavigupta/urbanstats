@@ -1,5 +1,6 @@
 import os
 from collections import Counter
+from typing import Any, List, Tuple
 
 import numpy as np
 import tqdm.auto as tqdm
@@ -11,7 +12,7 @@ from urbanstats.statistics.output_statistics_metadata import internal_statistic_
 from urbanstats.universe.universe_list import all_universes
 
 
-def default_universe_by_stat_geo(table):
+def default_universe_by_stat_geo(table: Any) -> List[Tuple[int, int, int]]:
     result = []
     universe_to_idx = {k: i for i, k in enumerate(all_universes())}
     for typ, tidx in tqdm.tqdm(type_ordering_idx.items()):
@@ -33,12 +34,14 @@ def default_universe_by_stat_geo(table):
     return result
 
 
-def most_common(seq):
+def most_common(seq: Any) -> Any:
     x, _ = sorted(Counter(seq).items(), key=lambda x: (x[1], x[0]))[-1]
     return x
 
 
-def compress_default_universes(triples):
+def compress_default_universes(
+    triples: List[Tuple[int, int, int]]
+) -> data_files_pb2.DefaultUniverseTable:
     most_common_overall = most_common(u for _, _, u in triples)
     triples = [x for x in triples if x[2] != most_common_overall]
     f = data_files_pb2.DefaultUniverseTable()
@@ -49,7 +52,9 @@ def compress_default_universes(triples):
     return f
 
 
-def output_default_universe_by_stat_geo(table, site_folder):
+def output_default_universe_by_stat_geo(table: Any, site_folder: str) -> None:
     res = default_universe_by_stat_geo(table)
-    res = compress_default_universes(res)
-    write_gzip(res, os.path.join(site_folder, "default_universe_by_stat_geo.gz"))
+    res_compressed = compress_default_universes(res)
+    write_gzip(
+        res_compressed, os.path.join(site_folder, "default_universe_by_stat_geo.gz")
+    )
