@@ -2,6 +2,7 @@ import hashlib
 import os
 import shutil
 import subprocess
+from typing import FrozenSet, Set, Union
 
 from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
@@ -56,7 +57,7 @@ from ..utils import output_typescript
 from .colors import hue_colors, related_button_colors
 
 
-def check_proto_hash():
+def check_proto_hash() -> None:
     with open("data_files.proto", "rb") as f:
         h = hashlib.sha256(f.read()).hexdigest()
     if h == proto_hash:
@@ -66,7 +67,7 @@ def check_proto_hash():
     )
 
 
-def link_scripts_folder(site_folder, mode):
+def link_scripts_folder(site_folder: str, mode: str) -> None:
     if os.path.islink(f"{site_folder}/scripts"):
         os.unlink(f"{site_folder}/scripts")
     else:
@@ -77,7 +78,7 @@ def link_scripts_folder(site_folder, mode):
         shutil.copytree("dist", f"{site_folder}/scripts")
 
 
-def create_react_jsons():
+def create_react_jsons() -> None:
     with open("react/src/data/map_relationship.ts", "w") as f:
         output_typescript(map_relationships_by_type, f)
 
@@ -164,7 +165,7 @@ def create_react_jsons():
         )
 
 
-def build_react_site(site_folder, mode):
+def build_react_site(site_folder: str, mode: str) -> None:
     if mode != "ci":
         # In ci, we cache the node_modules
         subprocess.run(
@@ -186,7 +187,9 @@ BUILD_STEPS = frozenset({"shapes", "articles", "index", "ordering", "sitemap", "
 
 
 # pylint: disable-next=too-many-branches,too-many-statements
-def build_urbanstats(site_folder, *, steps, mode):
+def build_urbanstats(
+    site_folder: str, *, steps: Union[Set[str], FrozenSet[str]], mode: str
+) -> None:
     check_proto_hash()
     print("Steps to run:", *steps, "scripts")
 
@@ -241,10 +244,10 @@ def build_urbanstats(site_folder, *, steps, mode):
         full_consolidated_data(site_folder)
         export_centroids(site_folder, shapefiles, all_ordinals())
 
-        with open("react/src/data/syau_suffixes.ts", "w") as f:
+        with open("react/src/data/syau_suffixes.ts", "w") as f_suffixes:
             output_typescript(
                 get_suffixes_from_table(shapefile_without_ordinals()),
-                f,
+                f_suffixes,
                 data_type="string[]",
             )
 
@@ -275,11 +278,11 @@ def build_urbanstats(site_folder, *, steps, mode):
         "oauth-callback",
         "screenshot-diff-viewer",
     ]:
-        with open(f"{site_folder}/{entrypoint}.html", "w") as f:
-            f.write(html_index())
+        with open(f"{site_folder}/{entrypoint}.html", "w") as f_entry:
+            f_entry.write(html_index())
 
-    with open(f"{site_folder}/quiz.html", "w") as f:
-        f.write(
+    with open(f"{site_folder}/quiz.html", "w") as f_quiz:
+        f_quiz.write(
             html_index(
                 title="Juxtastat",
                 image="https://urbanstats.org/juxtastat-link-preview.png",  # Image url must be absolute, or gets messed up from juxtastat.org
@@ -287,8 +290,8 @@ def build_urbanstats(site_folder, *, steps, mode):
             )
         )
 
-    with open(f"{site_folder}/syau.html", "w") as f:
-        f.write(
+    with open(f"{site_folder}/syau.html", "w") as f_syau:
+        f_syau.write(
             html_index(
                 title="So you're an urbanist?",
                 image="https://urbanstats.org/syau-link-preview.png",
@@ -329,11 +332,11 @@ def build_urbanstats(site_folder, *, steps, mode):
     shutil.copy("icons/main/duplicate.png", f"{site_folder}/")
     shutil.copy("icons/main/arrow-right.png", f"{site_folder}/")
 
-    with open(f"{site_folder}/CNAME", "w") as f:
-        f.write("urbanstats.org")
+    with open(f"{site_folder}/CNAME", "w") as f_cname:
+        f_cname.write("urbanstats.org")
 
-    with open(f"{site_folder}/.nojekyll", "w") as f:
-        f.write("")
+    with open(f"{site_folder}/.nojekyll", "w") as f_nojekyll:
+        f_nojekyll.write("")
 
     build_react_site(site_folder, mode)
 
@@ -341,10 +344,10 @@ def build_urbanstats(site_folder, *, steps, mode):
 
 
 def html_index(
-    title="Urban Stats",
-    image="/link-preview.png",
-    description="Urban Stats is a database of statistics related to density, housing, race, transportation, elections, and climate change.",
-):
+    title: str = "Urban Stats",
+    image: str = "/link-preview.png",
+    description: str = "Urban Stats is a database of statistics related to density, housing, race, transportation, elections, and climate change.",
+) -> str:
     return f"""<!DOCTYPE html>
 <html>
   <head>
