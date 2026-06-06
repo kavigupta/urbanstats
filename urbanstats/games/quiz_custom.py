@@ -24,7 +24,9 @@ def backmap_stat_column_name() -> Dict[str, str]:
     return results
 
 
-def custom_quiz_question(stat_column_name: str, longname_a: str, longname_b: str) -> Dict[str, Any]:
+def custom_quiz_question(
+    stat_column_name: str, longname_a: str, longname_b: str
+) -> Dict[str, Any]:
     t = shapefile()
     stat_column_internal = backmap_stat_column_name()[stat_column_name]
     stat_column_question = stat_to_quiz_name()[stat_column_internal]

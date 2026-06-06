@@ -45,7 +45,9 @@ def compute_all_centroids(shapefiles: Dict[str, Any]) -> pd.Series:
     )
 
 
-def export_centroids(folder: str, shapefiles: Dict[str, Any], ordering_info: Any) -> None:
+def export_centroids(
+    folder: str, shapefiles: Dict[str, Any], ordering_info: Any
+) -> None:
     centroids = compute_all_centroids(shapefiles)
     for (universe, typ), idx in tqdm.tqdm(ordering_info.universe_type_to_idx.items()):
         longnames_for_ut = ordering_info.longnames[

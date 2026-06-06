@@ -1,4 +1,4 @@
-from typing import Union, Tuple
+from typing import Tuple, Union
 
 
 def get_statistic_column_path(column: Union[str, Tuple[str, ...]]) -> str:

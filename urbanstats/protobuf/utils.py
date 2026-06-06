@@ -7,7 +7,9 @@ from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 from . import data_files_pb2
 
 
-def save_article_ordering_list(longnames: List[str], path: str, longname_to_type: Mapping[str, str]) -> None:
+def save_article_ordering_list(
+    longnames: List[str], path: str, longname_to_type: Mapping[str, str]
+) -> None:
     types = [longname_to_type[x] for x in longnames]
     res = data_files_pb2.ArticleOrderingList()
     for x in longnames:
@@ -17,7 +19,9 @@ def save_article_ordering_list(longnames: List[str], path: str, longname_to_type
     write_gzip(res, path)
 
 
-def save_universes_list_by_type(longnames: List[str], longname_to_universe: Mapping[str, List[str]], path: str) -> None:
+def save_universes_list_by_type(
+    longnames: List[str], longname_to_universe: Mapping[str, List[str]], path: str
+) -> None:
     # pylint: disable=import-outside-toplevel,cyclic-import
     from urbanstats.website_data.create_article_gzips import universe_to_idx
 
@@ -42,7 +46,14 @@ def save_universes_list_all(table: Any, ordinals: Any, site_folder: str) -> None
         )
 
 
-def save_search_index(longnames: List[str], types: List[str], is_usas: List[bool], path: str, *, symlinks: Dict[str, str]) -> None:
+def save_search_index(
+    longnames: List[str],
+    types: List[str],
+    is_usas: List[bool],
+    path: str,
+    *,
+    symlinks: Dict[str, str],
+) -> None:
     longname_to_index = {x: i for i, x in enumerate(longnames)}
     types_list, is_usas_list = list(types), list(is_usas)
     orders = [type_ordering_idx[typ] for typ in types_list]

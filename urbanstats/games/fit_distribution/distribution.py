@@ -23,7 +23,9 @@ class QuizQuestionPossibilities:
         # p = torch.tensor(np.log(np.concatenate(ps)), dtype=torch.float32)
         return [x.numpy() for x in self._aggregate_torch(ps_torch)]
 
-    def _aggregate_torch(self, ps: List[torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
+    def _aggregate_torch(
+        self, ps: List[torch.Tensor]
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         g = torch.zeros(len(self.all_geographies))
         for q, p_q in zip(self.questions_by_number, ps):
             g.index_add_(0, torch.tensor(q.geography_index_a), p_q)
@@ -58,7 +60,9 @@ class QuizQuestionPossibilities:
         ]
         return num_canadas
 
-    def limit_canada_hinge_loss(self, ps: List[torch.Tensor], *, do_print: bool) -> torch.Tensor:
+    def limit_canada_hinge_loss(
+        self, ps: List[torch.Tensor], *, do_print: bool
+    ) -> torch.Tensor:
         """
         Hinge loss that says
             - at most 15% of questions can be Canada vs Canada and
@@ -81,7 +85,13 @@ class QuizQuestionPossibilities:
         )
         return hinge_loss
 
-    def train(self, geo_target: np.ndarray, stat_target: np.ndarray, weight_h: float = 0.1, weight_s: float = 10) -> List[np.ndarray]:
+    def train(
+        self,
+        geo_target: np.ndarray,
+        stat_target: np.ndarray,
+        weight_h: float = 0.1,
+        weight_s: float = 10,
+    ) -> List[np.ndarray]:
         # pylint: disable=too-many-locals
         g_target = torch.tensor(geo_target, dtype=torch.float32)
         s_target = torch.tensor(stat_target, dtype=torch.float32)
@@ -172,8 +182,12 @@ def train_quiz_question_weights(
     col_to_difficulty: Dict[Any, float],
     intl_difficulty: float,
     diff_ranges: List[Tuple[float, float]],
-    compute_geo_target: Callable[[QuizQuestionPossibilities, Dict[str, Any]], np.ndarray],
-    compute_stat_target: Callable[[QuizQuestionPossibilities, Dict[str, Any]], np.ndarray],
+    compute_geo_target: Callable[
+        [QuizQuestionPossibilities, Dict[str, Any]], np.ndarray
+    ],
+    compute_stat_target: Callable[
+        [QuizQuestionPossibilities, Dict[str, Any]], np.ndarray
+    ],
     excluded_universes: List[str],
 ) -> Dict[str, Any]:
     descriptor_by_col = {k: d for k, d, _ in get_quiz_stats()}

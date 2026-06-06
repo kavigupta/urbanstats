@@ -1,4 +1,5 @@
 import json
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 from permacache import permacache, stable_hash
@@ -7,9 +8,6 @@ from urbanstats.games.quiz import check_quiz_is_guaranteed_past
 from urbanstats.games.quiz_analysis import get_full_statistics, questions
 
 from .fixed import retrostat as fixed_up_to
-
-
-from typing import Any, Dict, List, Tuple
 
 
 def week_for_day(day: int) -> int:
@@ -107,7 +105,8 @@ def generate_retrostats(folder: str) -> None:
         output_retrostat(folder, retrostat_week, out)
 
 
-def output_retrostat(folder: str, retrostat_week: int, out: List[Dict[str, Any]]) -> None:
+def output_retrostat(
+    folder: str, retrostat_week: int, out: List[Dict[str, Any]]
+) -> None:
     with open(f"{folder}/{retrostat_week}", "w") as f_out:
         json.dump(out, f_out, indent=2)
-

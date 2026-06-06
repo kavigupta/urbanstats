@@ -51,7 +51,9 @@ class OrdinalInfo:
         # return: ordinal -> index in `full[filter for ut]`
         return np.argsort(result)
 
-    def compute_values_and_percentiles(self, universe: str, typ: str, col: str) -> np.ndarray:
+    def compute_values_and_percentiles(
+        self, universe: str, typ: str, col: str
+    ) -> np.ndarray:
         idx = self.universe_type_to_idx[universe, typ]
         mask = self.universe_type_masks[:, idx]
         # values selected: alphabetical index within ut -> value
@@ -110,7 +112,9 @@ def type_matches(table_type: Sequence[str], t: str) -> np.ndarray:
         universe_type=stable_hash,
     ),
 )
-def compute_universe_type_masks(table: Any, universe_type: List[Tuple[str, str]]) -> csc_matrix:
+def compute_universe_type_masks(
+    table: Any, universe_type: List[Tuple[str, str]]
+) -> csc_matrix:
     """
     Computes a mask for each universe type in the universe_type list.
 
@@ -146,7 +150,12 @@ def compute_universe_type_masks(table: Any, universe_type: List[Tuple[str, str]]
         stat_col=stable_hash,
     ),
 )
-def compute_ordinal_info(universe_type_masks: csc_matrix, universe_typ: List[Tuple[str, str]], table: Any, stat_col: str) -> OrdinalInfoForColumn:
+def compute_ordinal_info(
+    universe_type_masks: csc_matrix,
+    universe_typ: List[Tuple[str, str]],
+    table: Any,
+    stat_col: str,
+) -> OrdinalInfoForColumn:
     # pylint: disable=too-many-locals
     table_sorted = sort_by_column(table, stat_col)
     ordinal, percentile, values = [[] for _ in range(3)]
@@ -169,16 +178,22 @@ def compute_ordinal_info(universe_type_masks: csc_matrix, universe_typ: List[Tup
         filt_table_non_nan = filt_table.iloc[non_nan]
         ut_idx_arr_non_nan = ut_idx_arr[non_nan]
 
-        cum_pop = np.cumsum(filt_table_non_nan.best_population_estimate.array[::-1])[::-1]
+        cum_pop = np.cumsum(filt_table_non_nan.best_population_estimate.array[::-1])[
+            ::-1
+        ]
         if cum_pop.size > 0:
             cum_pop /= cum_pop[0]
 
         cum_pop *= 100
         cum_pop_uint8 = cum_pop.astype(np.uint8)
 
-        percentile.append((filt_table_non_nan.index[:-1], ut_idx_arr_non_nan[1:], cum_pop_uint8[1:]))
+        percentile.append(
+            (filt_table_non_nan.index[:-1], ut_idx_arr_non_nan[1:], cum_pop_uint8[1:])
+        )
     ordinal_res, percentile_res, values_res = [
-        to_csc_matrix(arr, dtype=dtype, shape=(table_sorted.shape[0], len(universe_typ)))
+        to_csc_matrix(
+            arr, dtype=dtype, shape=(table_sorted.shape[0], len(universe_typ))
+        )
         for arr, dtype in zip(
             [ordinal, percentile, values], [np.int32, np.uint8, np.float32]
         )
@@ -187,7 +202,9 @@ def compute_ordinal_info(universe_type_masks: csc_matrix, universe_typ: List[Tup
     return OrdinalInfoForColumn(ordinal_res, percentile_res, values_res, counts)
 
 
-def fully_complete_ordinals(sorted_by_name: Any, universe_typ: List[Tuple[str, str]]) -> OrdinalInfo:
+def fully_complete_ordinals(
+    sorted_by_name: Any, universe_typ: List[Tuple[str, str]]
+) -> OrdinalInfo:
     universe_type_masks = compute_universe_type_masks(sorted_by_name, universe_typ)
     return OrdinalInfo(
         universe_typ,
@@ -235,6 +252,10 @@ def sort_by_column(sorted_by_name: Any, stat_col: str) -> Any:
     return selected_and_sorted
 
 
-def to_csc_matrix(arr: List[Tuple[np.ndarray, np.ndarray, np.ndarray]], dtype: Any, shape: Tuple[int, int]) -> csc_matrix:
+def to_csc_matrix(
+    arr: List[Tuple[np.ndarray, np.ndarray, np.ndarray]],
+    dtype: Any,
+    shape: Tuple[int, int],
+) -> csc_matrix:
     row_idxs, col_idxs, data = [np.concatenate(x) for x in zip(*arr)]
     return csc_matrix((data, (row_idxs, col_idxs)), dtype=dtype, shape=shape)

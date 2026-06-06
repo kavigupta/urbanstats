@@ -3,6 +3,7 @@ import json
 import os
 import shutil
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pytz
@@ -19,9 +20,6 @@ from urbanstats.utils import output_typescript
 
 from .fixed import juxtastat as fixed_up_to
 from .quiz_custom import get_custom_quizzes
-
-
-from typing import Any, Dict, List, Optional, Tuple, Union
 
 
 def generate_quiz(seed: Union[int, str, Tuple[str, int]]) -> List[Dict[str, Any]]:

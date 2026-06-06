@@ -1,8 +1,8 @@
 from functools import lru_cache
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
-from typing import Any, Dict, List, Tuple
 
 from urbanstats.games.fit_distribution.distribution import QuizQuestionPossibilities
 from urbanstats.games.quiz_question_distribution import MIN_POP, MIN_POP_INTERNATIONAL
@@ -14,7 +14,9 @@ from .quiz_regions import QuizTable, region_map
 
 
 @lru_cache()
-def compute_quiz_question_distribution() -> Tuple[np.ndarray, QuizQuestionPossibilities, List[DiscreteDistribution]]:
+def compute_quiz_question_distribution() -> (
+    Tuple[np.ndarray, QuizQuestionPossibilities, List[DiscreteDistribution]]
+):
     geographies_by_type = compute_geographies_by_type()
     lookup_table = pd.concat([x.data for x in geographies_by_type.values()])
     prob_res = quiz_question_weights(geographies_by_type)

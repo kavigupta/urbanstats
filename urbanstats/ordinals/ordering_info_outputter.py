@@ -1,4 +1,5 @@
 from typing import Any, Callable, Dict, List, Mapping, Tuple, Union
+
 import tqdm.auto as tqdm
 
 from urbanstats.ordinals.compress_counts import compress_counts, mapify
@@ -99,7 +100,13 @@ def output_data_files(order_info: Any, site_folder: str, typ: str) -> List[int]:
     return outputter.fields
 
 
-def output_indices(ordinal_info: Any, site_folder: str, universe: str, *, longname_to_type: Mapping[str, str]) -> Dict[str, Dict[str, int]]:
+def output_indices(
+    ordinal_info: Any,
+    site_folder: str,
+    universe: str,
+    *,
+    longname_to_type: Mapping[str, str],
+) -> Dict[str, Dict[str, int]]:
     order_backmap = {}
     for typ in sorted(
         {t for u, t in ordinal_info.universe_type if t != "overall" and u == universe}
@@ -119,7 +126,11 @@ def output_indices(ordinal_info: Any, site_folder: str, universe: str, *, longna
 
 
 def output_ordering_for_universe(
-    ordinal_info: Any, site_folder: str, universe: str, *, longname_to_type: Mapping[str, str]
+    ordinal_info: Any,
+    site_folder: str,
+    universe: str,
+    *,
+    longname_to_type: Mapping[str, str],
 ) -> Tuple[Dict[str, List[int]], Dict[str, List[int]]]:
     output_indices(
         ordinal_info, site_folder, universe, longname_to_type=longname_to_type
@@ -143,7 +154,9 @@ def output_ordering_for_universe(
     return order_map, data_map
 
 
-def reorganize_counts_for_universe(ordinal_info: Any, counts: Any, universe: str) -> List[Tuple[Tuple[str, str], int]]:
+def reorganize_counts_for_universe(
+    ordinal_info: Any, counts: Any, universe: str
+) -> List[Tuple[Tuple[str, str], int]]:
     counts_reorganized = {}
     for col in internal_statistic_names():
         if (universe, "overall") in counts[col]:
@@ -157,7 +170,9 @@ def reorganize_counts_for_universe(ordinal_info: Any, counts: Any, universe: str
     return list(counts_reorganized.items())
 
 
-def reorganize_counts(ordinal_info: Any, counts: Any) -> Dict[str, List[Tuple[Tuple[str, str], int]]]:
+def reorganize_counts(
+    ordinal_info: Any, counts: Any
+) -> Dict[str, List[Tuple[Tuple[str, str], int]]]:
     return {
         u: reorganize_counts_for_universe(ordinal_info, counts, u)
         for u in tqdm.tqdm(all_universes(), desc="counting")
@@ -172,7 +187,9 @@ def output_order(ordinal_info: Any, output_folder: str) -> None:
     write_gzip(res_proto, f"{output_folder}/counts.gz")
 
 
-def create_counts_protobuf(res: Dict[str, Dict[str, List[List[int]]]]) -> data_files_pb2.CountsByArticleUniverseAndType:
+def create_counts_protobuf(
+    res: Dict[str, Dict[str, List[List[int]]]]
+) -> data_files_pb2.CountsByArticleUniverseAndType:
     counts_by_ut = data_files_pb2.CountsByArticleUniverseAndType()
     for universe, by_u in res.items():
         counts_by_ut.universe.append(universe)
@@ -186,7 +203,9 @@ def create_counts_protobuf(res: Dict[str, Dict[str, List[List[int]]]]) -> data_f
     return counts_by_ut
 
 
-def output_ordering(site_folder: str, ordinal_info: Any, *, longname_to_type: Mapping[str, str]) -> None:
+def output_ordering(
+    site_folder: str, ordinal_info: Any, *, longname_to_type: Mapping[str, str]
+) -> None:
     order_map_all = {}
     data_map_all = {}
     for universe in all_universes():
@@ -204,4 +223,6 @@ def output_ordering(site_folder: str, ordinal_info: Any, *, longname_to_type: Ma
             mapify(order_map_all), f_order, data_type="Record<string, number[]>"
         )
     with open("react/src/data/data_links.ts", "w") as f_data:
-        output_typescript(mapify(data_map_all), f_data, data_type="Record<string, number[]>")
+        output_typescript(
+            mapify(data_map_all), f_data, data_type="Record<string, number[]>"
+        )

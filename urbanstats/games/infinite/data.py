@@ -1,15 +1,14 @@
 import json
 import os
 import shutil
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 import tqdm.auto as tqdm
 from permacache import stable_hash
 
-from typing import Any, Dict, List, Tuple
-
-from urbanstats.games.fit_distribution.questions import ValidQuizQuestions
 from urbanstats.games.fit_distribution.distribution import QuizQuestionPossibilities
+from urbanstats.games.fit_distribution.questions import ValidQuizQuestions
 from urbanstats.games.quiz_columns import stat_to_quiz_name
 from urbanstats.games.quiz_question_distribution import quiz_question_weights
 from urbanstats.games.quiz_sampling import (
@@ -28,7 +27,9 @@ tronche_size = 100_000
 version_info = "juxtastat_version.json"
 
 
-def output_tronche(tronche_vqq: ValidQuizQuestions, tronche_p: np.ndarray, tronche_path: str) -> float:
+def output_tronche(
+    tronche_vqq: ValidQuizQuestions, tronche_p: np.ndarray, tronche_path: str
+) -> float:
     tronche_total_p = tronche_p.sum()
     tronche_p = tronche_p / tronche_total_p
     binned_probs = -(np.log(tronche_p) / 0.1).round().astype(np.int64)
@@ -43,7 +44,9 @@ def output_tronche(tronche_vqq: ValidQuizQuestions, tronche_p: np.ndarray, tronc
     return float(tronche_total_p)
 
 
-def output_quiz_question(q: ValidQuizQuestions, p: np.ndarray, site_folder: str, question_folder: str) -> List[Dict[str, Any]]:
+def output_quiz_question(
+    q: ValidQuizQuestions, p: np.ndarray, site_folder: str, question_folder: str
+) -> List[Dict[str, Any]]:
     idxs = compute_order(q)
 
     tronche_descriptors = []
@@ -87,7 +90,9 @@ def quiz_sampling_data() -> data_files_pb2.QuizFullData:
     return qfd
 
 
-def filter_for_prob_over_threshold(q: ValidQuizQuestions, p: np.ndarray, *, threshold: float) -> Tuple[ValidQuizQuestions, np.ndarray]:
+def filter_for_prob_over_threshold(
+    q: ValidQuizQuestions, p: np.ndarray, *, threshold: float
+) -> Tuple[ValidQuizQuestions, np.ndarray]:
     sorted_p = np.sort(p[:])
     [[idx, *_]] = np.where(np.cumsum(sorted_p) > threshold)
     thresh = sorted_p[idx]

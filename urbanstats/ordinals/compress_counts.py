@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Sequence, Tuple, Union
+
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 
 
@@ -16,7 +17,9 @@ def compress_counts_sequence(counts: Sequence[int]) -> List[List[int]]:
     return result
 
 
-def compress_counts(counts: Dict[str, List[Tuple[Tuple[str, str], int]]]) -> Dict[str, Dict[str, List[List[int]]]]:
+def compress_counts(
+    counts: Dict[str, List[Tuple[Tuple[str, str], int]]]
+) -> Dict[str, Dict[str, List[List[int]]]]:
     statcols = list(internal_statistic_names())
     counts_new = {}
     for k in counts:

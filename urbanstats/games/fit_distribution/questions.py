@@ -47,7 +47,10 @@ def universe_overlap_mask(qt: Any, excluded_universes: List[str]) -> np.ndarray:
 
 
 def _compute_difficulty_multipliers(
-    qt: Any, col_to_difficulty: Dict[Any, float], intl_difficulty: float, excluded_universes: List[str]
+    qt: Any,
+    col_to_difficulty: Dict[Any, float],
+    intl_difficulty: float,
+    excluded_universes: List[str],
 ) -> np.ndarray:
     # pylint: disable=unsupported-assignment-operation
     # diffmults is a numpy array
