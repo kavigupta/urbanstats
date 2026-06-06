@@ -1,9 +1,12 @@
-from typing import Counter
+from typing import Any, Counter, Dict, List, Union
 
 import numpy as np
 import pandas as pd
 
-from urbanstats.games.fit_distribution.distribution import train_quiz_question_weights
+from urbanstats.games.fit_distribution.distribution import (
+    QuizQuestionPossibilities,
+    train_quiz_question_weights,
+)
 from urbanstats.games.quiz_columns import get_quiz_stats, stat_to_difficulty
 from urbanstats.universe.universe_list import (
     default_universes,
@@ -24,16 +27,24 @@ MIN_POP_INTERNATIONAL = 2_500_000
 
 
 # vulture: ignore -- used in notebooks
-def compute_difficulty(stat_a, stat_b, stat_column_original, a, b):
+def compute_difficulty(
+    stat_a: float,
+    stat_b: float,
+    stat_column_original: Union[str, tuple],
+    a: str,
+    b: str,
+) -> float:
     diffmult = stat_to_difficulty()[stat_column_original]
     if not any(x.endswith("USA") or x.endswith("Canada") for x in (a, b)):
         diffmult = INTERNATIONAL_DIFFICULTY_MULTIPLIER
     diff = abs(stat_a - stat_b) / min(abs(stat_a), abs(stat_b)) * 100
     diff = diff / diffmult
-    return diff
+    return float(diff)
 
 
-def compute_geo_target(qqp, geographies_by_type):
+def compute_geo_target(
+    qqp: QuizQuestionPossibilities, geographies_by_type: Dict[str, Any]
+) -> np.ndarray:
     geo_weight = pd.concat(
         [
             qt.weight_internal
@@ -48,7 +59,7 @@ def compute_geo_target(qqp, geographies_by_type):
     return geo_target
 
 
-def compute_stat_target(qqp):
+def compute_stat_target(qqp: QuizQuestionPossibilities) -> np.ndarray:
     collections = collections_each(qqp)
     count_collections = Counter(collections)
     stat_target = np.array(
@@ -58,15 +69,15 @@ def compute_stat_target(qqp):
     return stat_target
 
 
-def collections_each(qqp):
-    collections = {
+def collections_each(qqp: QuizQuestionPossibilities) -> List[Any]:
+    collections_map = {
         col: descriptor.collection for col, descriptor, _ in get_quiz_stats()
     }
-    collections = [collections[x] for x in qqp.all_stats]
+    collections = [collections_map[x] for x in qqp.all_stats]
     return collections
 
 
-def collections_index(qqp):
+def collections_index(qqp: QuizQuestionPossibilities) -> np.ndarray:
     collections = collections_each(qqp)
     collection_to_i = {
         col: i for i, col in enumerate(sorted(set(collections), key=str))
@@ -74,7 +85,7 @@ def collections_index(qqp):
     return np.array([collection_to_i[x] for x in collections])
 
 
-def quiz_question_weights(tables_by_type):
+def quiz_question_weights(tables_by_type: Dict[str, Any]) -> Dict[str, Any]:
     result = train_quiz_question_weights(
         tables_by_type,
         col_to_difficulty=stat_to_difficulty(),
@@ -90,7 +101,7 @@ def quiz_question_weights(tables_by_type):
     return result
 
 
-def _test_question_nonexistence(qqp):
+def _test_question_nonexistence(qqp: QuizQuestionPossibilities) -> None:
     """
     Check that certain known-bad questions do not exist in the generated quiz questions.
     """
@@ -103,7 +114,9 @@ def _test_question_nonexistence(qqp):
     )
 
 
-def _assert_does_not_exist(qqp, geo_a, geo_b, stat):
+def _assert_does_not_exist(
+    qqp: QuizQuestionPossibilities, geo_a: str, geo_b: str, stat: str
+) -> None:
     geo_a_i = qqp.all_geographies.index(geo_a)
     geo_b_i = qqp.all_geographies.index(geo_b)
     stat_i = qqp.all_stats.index(stat)

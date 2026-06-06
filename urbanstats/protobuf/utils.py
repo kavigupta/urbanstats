@@ -1,12 +1,13 @@
 import gzip
 import os
+from typing import Any, Dict, List, Mapping
 
 from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 
 from . import data_files_pb2
 
 
-def save_article_ordering_list(longnames, path, longname_to_type):
+def save_article_ordering_list(longnames: List[str], path: str, longname_to_type: Mapping[str, str]) -> None:
     types = [longname_to_type[x] for x in longnames]
     res = data_files_pb2.ArticleOrderingList()
     for x in longnames:
@@ -16,7 +17,7 @@ def save_article_ordering_list(longnames, path, longname_to_type):
     write_gzip(res, path)
 
 
-def save_universes_list_by_type(longnames, longname_to_universe, path):
+def save_universes_list_by_type(longnames: List[str], longname_to_universe: Mapping[str, List[str]], path: str) -> None:
     # pylint: disable=import-outside-toplevel,cyclic-import
     from urbanstats.website_data.create_article_gzips import universe_to_idx
 
@@ -31,7 +32,7 @@ def save_universes_list_by_type(longnames, longname_to_universe, path):
     write_gzip(res, path)
 
 
-def save_universes_list_all(table, ordinals, site_folder):
+def save_universes_list_all(table: Any, ordinals: Any, site_folder: str) -> None:
     utoi = dict(zip(table.longname, table.universes))
     for typ in ordinals.types:
         save_universes_list_by_type(
@@ -41,12 +42,12 @@ def save_universes_list_all(table, ordinals, site_folder):
         )
 
 
-def save_search_index(longnames, types, is_usas, path, *, symlinks):
+def save_search_index(longnames: List[str], types: List[str], is_usas: List[bool], path: str, *, symlinks: Dict[str, str]) -> None:
     longname_to_index = {x: i for i, x in enumerate(longnames)}
-    types, is_usas = list(types), list(is_usas)
-    orders = [type_ordering_idx[typ] for typ in types]
+    types_list, is_usas_list = list(types), list(is_usas)
+    orders = [type_ordering_idx[typ] for typ in types_list]
     res = data_files_pb2.SearchIndex()
-    for name, order, is_usa in zip(longnames, orders, is_usas):
+    for name, order, is_usa in zip(longnames, orders, is_usas_list):
         res.elements.append(name)
         res.metadata.append(
             data_files_pb2.SearchIndexMetadata(
@@ -58,27 +59,28 @@ def save_search_index(longnames, types, is_usas, path, *, symlinks):
         idx = longname_to_index[target]
         res.metadata.append(
             data_files_pb2.SearchIndexMetadata(
-                type=orders[idx], is_usa=is_usas[idx], is_symlink=True
+                type=orders[idx], is_usa=is_usas_list[idx], is_symlink=True
             )
         )
     write_gzip(res, path)
 
 
-def ensure_writeable(path):
+def ensure_writeable(path: str) -> None:
     folder = os.path.dirname(path)
-    try:
-        os.makedirs(folder)
-    except FileExistsError:
-        pass
+    if folder:
+        try:
+            os.makedirs(folder)
+        except FileExistsError:
+            pass
 
 
-def write_gzip(proto, path):
+def write_gzip(proto: Any, path: str) -> None:
     ensure_writeable(path)
     with gzip.GzipFile(path, "wb", mtime=0) as f:
         f.write(proto.SerializeToString())
 
 
-def write_gzip_bytes(bytestring, path):
+def write_gzip_bytes(bytestring: bytes, path: str) -> None:
     ensure_writeable(path)
     with gzip.GzipFile(path, "wb", mtime=0) as f:
         f.write(bytestring)

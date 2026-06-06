@@ -2,17 +2,19 @@ from functools import lru_cache
 
 import numpy as np
 import pandas as pd
+from typing import Any, Dict, List, Tuple
 
+from urbanstats.games.fit_distribution.distribution import QuizQuestionPossibilities
 from urbanstats.games.quiz_question_distribution import MIN_POP, MIN_POP_INTERNATIONAL
 from urbanstats.utils import DiscreteDistribution
 from urbanstats.website_data.table import shapefile_without_ordinals
 
 from .quiz_question_distribution import collections_index, quiz_question_weights
-from .quiz_regions import region_map
+from .quiz_regions import QuizTable, region_map
 
 
 @lru_cache()
-def compute_quiz_question_distribution():
+def compute_quiz_question_distribution() -> Tuple[np.ndarray, QuizQuestionPossibilities, List[DiscreteDistribution]]:
     geographies_by_type = compute_geographies_by_type()
     lookup_table = pd.concat([x.data for x in geographies_by_type.values()])
     prob_res = quiz_question_weights(geographies_by_type)
@@ -23,7 +25,7 @@ def compute_quiz_question_distribution():
     return data, qqp, ps
 
 
-def compute_geographies_by_type():
+def compute_geographies_by_type() -> Dict[str, QuizTable]:
     t = shapefile_without_ordinals().copy()
     t["local_region_mask"] = t.universes.apply(lambda x: "Canada" in x or "USA" in x)
     filtered_for_pop = t[
@@ -37,7 +39,7 @@ def compute_geographies_by_type():
     return geographies_by_type
 
 
-def sample_quiz_indices(rng):
+def sample_quiz_indices(rng: Any) -> np.ndarray:
     _, qqp, ps = compute_quiz_question_distribution()
     while True:
         indices = np.array([pi.sample(rng, 10) for pi in ps])
@@ -49,7 +51,7 @@ def sample_quiz_indices(rng):
                 return indices[:, i]
 
 
-def sample_quiz(rng):
+def sample_quiz(rng: Any) -> List[Dict[str, Any]]:
     data, qqp, _ = compute_quiz_question_distribution()
     indices = sample_quiz_indices(rng)
     quiz = []

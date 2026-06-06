@@ -1,4 +1,7 @@
-def get_statistic_column_path(column):
+from typing import Union, Tuple
+
+
+def get_statistic_column_path(column: Union[str, Tuple[str, ...]]) -> str:
     """
     Return a sanitized version of the column name for use in a URL.
     """

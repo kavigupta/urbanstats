@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -30,14 +30,14 @@ class OrdinalInfo:
     longnames: np.ndarray
 
     @cached_property
-    def longname_to_idx(self):
+    def longname_to_idx(self) -> Dict[str, int]:
         return {name: idx for idx, name in enumerate(self.longnames)}
 
     @property
-    def types(self):
+    def types(self) -> List[str]:
         return sorted({t for _, t in self.universe_type})
 
-    def compute_ordinals(self, universe, typ, col):
+    def compute_ordinals(self, universe: str, typ: str, col: str) -> np.ndarray:
         idx = self.universe_type_to_idx[universe, typ]
         mask = self.universe_type_masks[:, idx]
         # ordinals selected: alphabetical index within ut -> ordinal
@@ -51,7 +51,7 @@ class OrdinalInfo:
         # return: ordinal -> index in `full[filter for ut]`
         return np.argsort(result)
 
-    def compute_values_and_percentiles(self, universe, typ, col):
+    def compute_values_and_percentiles(self, universe: str, typ: str, col: str) -> np.ndarray:
         idx = self.universe_type_to_idx[universe, typ]
         mask = self.universe_type_masks[:, idx]
         # values selected: alphabetical index within ut -> value
@@ -61,21 +61,21 @@ class OrdinalInfo:
         reordering = np.argsort(index_order)
         return values_selected[reordering]
 
-    def counts_by_typ_universe(self, col):
+    def counts_by_typ_universe(self, col: str) -> Dict[Tuple[str, str], int]:
         return dict(zip(self.universe_type, self.by_column[col].counts))
 
-    def counts_by_type_universe_col(self):
+    def counts_by_type_universe_col(self) -> Dict[str, Dict[Tuple[str, str], int]]:
         return {
             col: self.counts_by_typ_universe(col) for col in tqdm.tqdm(self.by_column)
         }
 
-    def ordered_names(self, universe, typ):
+    def ordered_names(self, universe: str, typ: str) -> List[str]:
         mask = self.universe_type_masks[:, self.universe_type_to_idx[universe, typ]]
         indices = mask.indices
-        ordering = np.argsort(self.index_order.iloc[indices])
-        return np.array(self.longnames.iloc[indices])[ordering].tolist()
+        ordering = np.argsort(self.index_order[indices])
+        return np.array(self.longnames[indices])[ordering].tolist()
 
-    def percentiles_by_universe(self, typ, column):
+    def percentiles_by_universe(self, typ: str, column: str) -> List[np.ndarray]:
         all_u = all_universes()
         relevant_universes = sorted(
             {u for u, t in self.universe_type if t == typ and u in all_u},
@@ -93,14 +93,14 @@ class OrdinalInfo:
         index_order = np.array(self.index_order[mask_inhabited])
         reindex = np.argsort(index_order)
         # pylint: disable=not-an-iterable
-        percentiles_jagged = [percentiles_jagged[i] for i in reindex]
-        return percentiles_jagged
+        percentiles_jagged_reordered = [percentiles_jagged[i] for i in reindex]
+        return percentiles_jagged_reordered
 
 
-def type_matches(table_type, t):
+def type_matches(table_type: Sequence[str], t: str) -> np.ndarray:
     if t == "overall":
         return np.ones(len(table_type), dtype=np.bool_)
-    return table_type == t
+    return np.array(table_type) == t
 
 
 @permacache(
@@ -110,7 +110,7 @@ def type_matches(table_type, t):
         universe_type=stable_hash,
     ),
 )
-def compute_universe_type_masks(table, universe_type):
+def compute_universe_type_masks(table: Any, universe_type: List[Tuple[str, str]]) -> csc_matrix:
     """
     Computes a mask for each universe type in the universe_type list.
 
@@ -135,30 +135,6 @@ def compute_universe_type_masks(table, universe_type):
     return universe_type_mask
 
 
-# def compute_ordinal_info(universe_type_masks, universe_typ, sorted_by_col):
-#     table, stat_col = sorted_by_col
-#     ordinal, percentile, values = [
-#         lil_matrix((table.shape[0], len(universe_typ)), dtype=dtype)
-#         for dtype in (np.int32, np.float64, np.float64)
-#     ]
-#     universe_type_masks_permuted = universe_type_masks[table.index]
-#     for ut_idx in tqdm.trange(len(universe_typ)):
-#         mask = universe_type_masks_permuted[:, ut_idx].indices
-#         mask.sort()
-#         filt_table = table.iloc[mask]
-
-#         cum_pop = np.cumsum(filt_table.best_population_estimate.array[::-1])[::-1]
-#         cum_pop /= cum_pop[0]
-
-#         ordinal[filt_table.index, ut_idx] = np.arange(len(filt_table))
-#         percentile[filt_table.index[:-1], ut_idx] = cum_pop[1:]
-#         values[filt_table.index, ut_idx] = filt_table[stat_col]
-#     ordinal, percentile, values = [
-#         csc_matrix(arr) for arr in (ordinal, percentile, values)
-#     ]
-#     return ordinal, percentile, values
-
-
 @permacache(
     "urbanstats/ordinals/ordinal_info/compute_ordinal_info_13",
     key_function=dict(
@@ -170,16 +146,16 @@ def compute_universe_type_masks(table, universe_type):
         stat_col=stable_hash,
     ),
 )
-def compute_ordinal_info(universe_type_masks, universe_typ, table, stat_col):
+def compute_ordinal_info(universe_type_masks: csc_matrix, universe_typ: List[Tuple[str, str]], table: Any, stat_col: str) -> OrdinalInfoForColumn:
     # pylint: disable=too-many-locals
-    table = sort_by_column(table, stat_col)
+    table_sorted = sort_by_column(table, stat_col)
     ordinal, percentile, values = [[] for _ in range(3)]
     counts_per_ut = []
-    universe_type_masks_permuted = universe_type_masks[table.index]
+    universe_type_masks_permuted = universe_type_masks[table_sorted.index]
     for ut_idx in range(len(universe_typ)):
         mask = universe_type_masks_permuted[:, ut_idx].indices
         mask.sort()
-        filt_table = table.iloc[mask]
+        filt_table = table_sorted.iloc[mask]
 
         ut_idx_arr = np.zeros(len(filt_table), dtype=np.int64) + ut_idx
         values.append((filt_table.index, ut_idx_arr, filt_table[stat_col]))
@@ -189,29 +165,29 @@ def compute_ordinal_info(universe_type_masks, universe_typ, table, stat_col):
         # We do not do this for other values, to preserve stability of sorting etc
         non_nan = ~np.isnan(filt_table[stat_col].array)
         counts_per_ut.append(np.sum(non_nan))
-        mask = mask[non_nan]
-        filt_table = filt_table.iloc[non_nan]
-        ut_idx_arr = ut_idx_arr[non_nan]
+        # mask = mask[non_nan]
+        filt_table_non_nan = filt_table.iloc[non_nan]
+        ut_idx_arr_non_nan = ut_idx_arr[non_nan]
 
-        cum_pop = np.cumsum(filt_table.best_population_estimate.array[::-1])[::-1]
+        cum_pop = np.cumsum(filt_table_non_nan.best_population_estimate.array[::-1])[::-1]
         if cum_pop.size > 0:
             cum_pop /= cum_pop[0]
 
         cum_pop *= 100
-        cum_pop = cum_pop.astype(np.uint8)
+        cum_pop_uint8 = cum_pop.astype(np.uint8)
 
-        percentile.append((filt_table.index[:-1], ut_idx_arr[1:], cum_pop[1:]))
-    ordinal, percentile, values = [
-        to_csc_matrix(arr, dtype=dtype, shape=(table.shape[0], len(universe_typ)))
+        percentile.append((filt_table_non_nan.index[:-1], ut_idx_arr_non_nan[1:], cum_pop_uint8[1:]))
+    ordinal_res, percentile_res, values_res = [
+        to_csc_matrix(arr, dtype=dtype, shape=(table_sorted.shape[0], len(universe_typ)))
         for arr, dtype in zip(
             [ordinal, percentile, values], [np.int32, np.uint8, np.float32]
         )
     ]
     counts = np.array(counts_per_ut, dtype=np.int64)
-    return OrdinalInfoForColumn(ordinal, percentile, values, counts)
+    return OrdinalInfoForColumn(ordinal_res, percentile_res, values_res, counts)
 
 
-def fully_complete_ordinals(sorted_by_name, universe_typ):
+def fully_complete_ordinals(sorted_by_name: Any, universe_typ: List[Tuple[str, str]]) -> OrdinalInfo:
     universe_type_masks = compute_universe_type_masks(sorted_by_name, universe_typ)
     return OrdinalInfo(
         universe_typ,
@@ -236,7 +212,7 @@ def fully_complete_ordinals(sorted_by_name, universe_typ):
     )
 
 
-def sort_by_column(sorted_by_name, stat_col):
+def sort_by_column(sorted_by_name: Any, stat_col: str) -> Any:
     relevant = pd.DataFrame(
         {
             stat_col: sorted_by_name[stat_col],
@@ -259,6 +235,6 @@ def sort_by_column(sorted_by_name, stat_col):
     return selected_and_sorted
 
 
-def to_csc_matrix(arr, dtype, shape):
+def to_csc_matrix(arr: List[Tuple[np.ndarray, np.ndarray, np.ndarray]], dtype: Any, shape: Tuple[int, int]) -> csc_matrix:
     row_idxs, col_idxs, data = [np.concatenate(x) for x in zip(*arr)]
     return csc_matrix((data, (row_idxs, col_idxs)), dtype=dtype, shape=shape)

@@ -1,4 +1,5 @@
 import os
+from typing import Any, Dict
 
 import pandas as pd
 import tqdm.auto as tqdm
@@ -8,7 +9,7 @@ from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 
 
-def compute_internal_point(geo):
+def compute_internal_point(geo: Any) -> Any:
     geo = geo.buffer(0)
     centroid = geo.centroid
     if geo.contains(centroid):
@@ -28,7 +29,7 @@ def compute_internal_point(geo):
     key_function=dict(sf=lambda x: x.hash_key),
     multiprocess_safe=True,
 )
-def compute_centroids(sf):
+def compute_centroids(sf: Any) -> pd.Series:
     sf_fr = sf.load_file()
     sf_fr = sf_fr.set_index("longname")
     centroids = [
@@ -38,13 +39,13 @@ def compute_centroids(sf):
     return pd.Series(centroids, index=sf_fr.index)
 
 
-def compute_all_centroids(shapefiles):
+def compute_all_centroids(shapefiles: Dict[str, Any]) -> pd.Series:
     return pd.concat(
         [compute_centroids(sf) for sf in tqdm.tqdm(shapefiles.values())], axis=0
     )
 
 
-def export_centroids(folder, shapefiles, ordering_info):
+def export_centroids(folder: str, shapefiles: Dict[str, Any], ordering_info: Any) -> None:
     centroids = compute_all_centroids(shapefiles)
     for (universe, typ), idx in tqdm.tqdm(ordering_info.universe_type_to_idx.items()):
         longnames_for_ut = ordering_info.longnames[
