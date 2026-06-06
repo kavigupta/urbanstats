@@ -39,6 +39,7 @@ def compute_statistics_for_shapefile(
     metadata_providers: Any = default_metadata_column_providers,
     statistic_collections: Any = default_statistic_collections,
 ) -> pd.DataFrame:
+    # pylint: disable=too-many-locals
     print("Computing statistics for", sf.hash_key)
     sf_fr = sf.load_file()
     result = sf_fr[sf.available_columns(include_intermediates=False)].copy()

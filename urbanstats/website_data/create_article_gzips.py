@@ -183,6 +183,7 @@ def create_article_gzip(
 def create_article_gzips(
     site_folder: str, full: Any, ordering: Any, symlinks: Dict[str, str]
 ) -> None:
+    # pylint: disable=too-many-locals
     long_to_short = dict(zip(full.longname, full.shortname))
     long_to_pop = dict(zip(full.longname, full.population))
     long_to_type = dict(zip(full.longname, full.type))
