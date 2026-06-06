@@ -3,7 +3,7 @@ import math
 import urllib.request
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import pandas as pd
 import tqdm.auto as tqdm
@@ -20,9 +20,9 @@ from urbanstats.metadata.metadata_columns import (
 
 @dataclass(frozen=True)
 class Representative:
-    name: str
-    wikipedia_page: str
-    party: str
+    name: Optional[str]
+    wikipedia_page: Optional[str]
+    party: Optional[str]
 
 
 @dataclass(frozen=True)
@@ -33,25 +33,25 @@ class RepresentativeWithTerms:
     end_term: int
 
 
-def district_shortname_to_state_and_district(shortname: str):
+def district_shortname_to_state_and_district(shortname: str) -> Tuple[str, str]:
     # `shortname` is formatted as "ST-DD (YYYY)" for congressional districts.
     district_key = shortname.split(" ")[0]
     state_abbr, district = district_key.split("-", 1)
     return state_abbr, normalize_district(district)
 
 
-def normalize_district(district):
-    district = str(district).strip()
-    if not district:
+def normalize_district(district: Any) -> str:
+    district_str = str(district).strip()
+    if not district_str:
         return "AL"
-    if district.upper() in {"AL", "AT LARGE", "AT-LARGE"}:
+    if district_str.upper() in {"AL", "AT LARGE", "AT-LARGE"}:
         return "AL"
-    if district.isdigit():
-        return f"{int(district):02d}"
-    return district
+    if district_str.isdigit():
+        return f"{int(district_str):02d}"
+    return district_str
 
 
-def clean_optional_str(value):
+def clean_optional_str(value: Any) -> Optional[str]:
     if value is None:
         return None
     if isinstance(value, float) and math.isnan(value):
@@ -63,7 +63,7 @@ def clean_optional_str(value):
     "urbanstats/metadata/congressional_representatives/load_party_pages",
     key_function=dict(version=str),
 )
-def load_party_pages(*, version):
+def load_party_pages(*, version: str) -> Dict[str, Dict[str, str]]:
     party_pages_url = (
         "https://raw.githubusercontent.com/kavigupta/"
         f"all-congressional-representatives/{version}/party_pages.json"
@@ -83,7 +83,9 @@ def load_party_pages(*, version):
     "urbanstats/metadata/congressional_representatives/load_representatives_by_district_3",
     key_function=dict(version=str),
 )
-def load_representatives_by_district(*, version):
+def load_representatives_by_district(
+    *, version: str
+) -> Dict[Tuple[str, str], Dict[int, List[Representative]]]:
     representatives_url = (
         "https://raw.githubusercontent.com/kavigupta/"
         f"all-congressional-representatives/{version}/representatives.csv"
@@ -97,13 +99,15 @@ def load_representatives_by_district(*, version):
     table["district_norm"] = table["district"].map(normalize_district)
     table["term_start_year"] = table["term"].astype(int).map(to_year)
 
-    result = defaultdict(lambda: defaultdict(list))
+    result_default: Dict[
+        Tuple[str, str], Dict[int, List[Representative]]
+    ] = defaultdict(lambda: defaultdict(list))
     for row in table.itertuples(index=False):
         if isinstance(row.representative_name, float) and math.isnan(
             row.representative_name
         ):
             continue
-        result[(row.state_abbr, row.district_norm)][row.term_start_year].append(
+        result_default[(row.state_abbr, row.district_norm)][row.term_start_year].append(
             Representative(
                 name=clean_optional_str(row.representative_name),
                 wikipedia_page=clean_optional_str(row.representative_wikipedia_page),
@@ -113,12 +117,17 @@ def load_representatives_by_district(*, version):
 
     return {
         district_key: dict(sorted(representatives_by_year.items(), key=lambda x: x[0]))
-        for district_key, representatives_by_year in result.items()
+        for district_key, representatives_by_year in result_default.items()
     }
 
 
 def representatives_for_district(
-    state_abbr: str, district: str, start_year, end_year, *, representatives_csv_version
+    state_abbr: str,
+    district: str,
+    start_year: int,
+    end_year: int,
+    *,
+    representatives_csv_version: str,
 ) -> Dict[int, List[Representative]]:
     representatives = load_representatives_by_district(
         version=representatives_csv_version
@@ -136,8 +145,8 @@ def representatives_for_district(
     key_function=dict(sf=lambda x: x.hash_key),
 )
 def compute_representatives_for_shapefile(
-    sf: Shapefile, *, representatives_csv_version
-) -> List[dict]:
+    sf: Shapefile, *, representatives_csv_version: str
+) -> Tuple[List[str], List[Dict[int, List[Representative]]]]:
     table = sf.load_file()
     results = []
     pbar = tqdm.tqdm(total=len(table), desc="Computing representatives for districts")
@@ -164,7 +173,13 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
         f"congressional_representatives_structured_{representatives_csv_version}_v68"
     )
 
-    def compute_metadata_columns(self, *, shapefile, shapefiles, shapefile_table):
+    def compute_metadata_columns(
+        self,
+        *,
+        shapefile: Shapefile,
+        shapefiles: Dict[str, Shapefile],
+        shapefile_table: pd.DataFrame,
+    ) -> List[MetadataColumnResult]:
         has_representatives = set(shapefile.special_data_sources) & {
             "congressional_representatives",
             "congressional_representatives_indirect",
@@ -181,23 +196,33 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
             )
         ]
 
-    def all_relationships(self, shapefiles, key_a, key_b):
+    def all_relationships(
+        self, shapefiles: Dict[str, Shapefile], key_a: str, key_b: str
+    ) -> List[Tuple[str, str]]:
         # pylint: disable=import-outside-toplevel,cyclic-import
         from urbanstats.geometry.relationship import create_relationships_dispatch
 
-        a_contains_b, b_contains_a, a_intersects_b, _ = create_relationships_dispatch(
+        res = create_relationships_dispatch(
             shapefiles, key_a, key_b, check_temporal=False
         )
+        a_contains_b, b_contains_a, a_intersects_b, _ = res
         return [*a_contains_b, *b_contains_a, *a_intersects_b]
 
-    def name_to_representatives_for_shapefile(self, shapefile):
+    def name_to_representatives_for_shapefile(
+        self, shapefile: Shapefile
+    ) -> Dict[str, Dict[int, List[Representative]]]:
         names, representatives_by_row = compute_representatives_for_shapefile(
             shapefile,
             representatives_csv_version=self.representatives_csv_version,
         )
         return dict(zip(names, representatives_by_row))
 
-    def compute_metadata_columns_indirect(self, shapefile, shapefile_table, shapefiles):
+    def compute_metadata_columns_indirect(
+        self,
+        shapefile: Shapefile,
+        shapefile_table: pd.DataFrame,
+        shapefiles: Dict[str, Shapefile],
+    ) -> List[List[RepresentativeWithTerms]]:
         [key_self] = [key for key, value in shapefiles.items() if value == shapefile]
 
         other_keys = [
@@ -205,7 +230,7 @@ class CongressionalRepresentativesMetadataProvider(MetadataColumnProvider):
             for key, sf_other in shapefiles.items()
             if "congressional_representatives" in sf_other.special_data_sources
         ]
-        results = defaultdict(list)
+        results: Dict[str, List[RepresentativeWithTerms]] = defaultdict(list)
         for key_other in other_keys:
             relationships = self.all_relationships(shapefiles, key_self, key_other)
             if not relationships:
@@ -236,22 +261,24 @@ def deduplicate_and_sort_representatives(
     representatives_with_terms: List[RepresentativeWithTerms],
 ) -> List[RepresentativeWithTerms]:
     # Sort representatives by start_term, then end_term, then name
-    by_representative = defaultdict(set)
+    by_representative: Dict[
+        Tuple[Representative, str], Set[RepresentativeWithTerms]
+    ] = defaultdict(set)
     for rep_with_terms in representatives_with_terms:
         by_representative[
             (rep_with_terms.representative, rep_with_terms.district_longname)
         ].add(rep_with_terms)
-    result = []
-    for rwts in by_representative.values():
-        rwts = merge_adjacent_terms(
-            sorted(rwts, key=lambda rwt: (rwt.start_term, rwt.end_term))
+    result: List[RepresentativeWithTerms] = []
+    for rwts_set in by_representative.values():
+        rwts_list = merge_adjacent_terms(
+            sorted(list(rwts_set), key=lambda rwt: (rwt.start_term, rwt.end_term))
         )
-        result.extend(rwts)
+        result.extend(rwts_list)
     result.sort(
         key=lambda rwt: (
             rwt.start_term,
             rwt.end_term,
-            rwt.representative.name,
+            str(rwt.representative.name),
             rwt.district_longname,
         )
     )
@@ -265,6 +292,8 @@ def merge_adjacent_terms(
         assert (
             rwt.start_term == rwt.end_term
         ), f"Expected single-term representative, got {rwt.start_term} to {rwt.end_term}"
+    if not rwts:
+        return []
     merged = [rwts[0]]
     for rwt in rwts[1:]:
         last = merged[-1]

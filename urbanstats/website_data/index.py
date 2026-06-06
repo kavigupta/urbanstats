@@ -1,6 +1,7 @@
 import json
 import re
 import unicodedata
+from typing import Any, List
 
 from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 from urbanstats.geometry.relationship import type_to_type_category
@@ -23,15 +24,15 @@ type_category_to_priority = {
 }
 
 
-def type_to_priority_list():
-    result = [None] * len(type_ordering_idx)
+def type_to_priority_list() -> List[int]:
+    result: List[Any] = [None] * len(type_ordering_idx)
     for typ, idx in type_ordering_idx.items():
         result[idx] = type_category_to_priority[type_to_type_category[typ]]
     assert None not in result
     return result
 
 
-def export_index(full, site_folder):
+def export_index(full: Any, site_folder: str) -> None:
     save_search_index(
         full.longname,
         full.type,
@@ -47,7 +48,7 @@ def export_index(full, site_folder):
         json.dump(list(full.best_population_estimate), f)
 
 
-def normalize(s):
+def normalize(s: str) -> str:
     # in javascript: return a.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     s = s.lower()
     s = unicodedata.normalize("NFD", s)

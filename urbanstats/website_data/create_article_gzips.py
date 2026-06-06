@@ -1,5 +1,6 @@
 import itertools
 from functools import lru_cache
+from typing import Any, Dict, List, Set, Tuple
 
 import numpy as np
 
@@ -16,13 +17,15 @@ from urbanstats.universe.universe_list import all_universes
 from urbanstats.website_data.sharding import build_shards_from_callback
 
 
-def isnan(x):
+def isnan(x: Any) -> bool:
     if isinstance(x, (float, np.float64, np.float32)):
-        return np.isnan(x)
+        return bool(np.isnan(x))
     return False
 
 
-def metadata_for_article(row, representative_table_builder):
+def metadata_for_article(
+    row: Any, representative_table_builder: "RepresentativeTableBuilder"
+) -> List[Any]:
     metadata = []
     for i, (key, metadata_type) in enumerate(metadata_types.items()):
         if key not in row or row[key] != row[key] or row[key] is None:
@@ -37,14 +40,14 @@ def metadata_for_article(row, representative_table_builder):
 
 
 class RepresentativeTableBuilder:
-    def __init__(self):
-        self._representative_key_to_index = {}
-        self._district_to_index = {}
-        self._term_keys_by_representative = {}
-        self.representatives = []
-        self.districts = []
+    def __init__(self) -> None:
+        self._representative_key_to_index: Dict[Any, int] = {}
+        self._district_to_index: Dict[str, int] = {}
+        self._term_keys_by_representative: Dict[Any, Set[Tuple[int, int, int]]] = {}
+        self.representatives: List[data_files_pb2.CongressionalRepresentative] = []
+        self.districts: List[data_files_pb2.CongressionalDistrict] = []
 
-    def index_for(self, representative_with_terms):
+    def index_for(self, representative_with_terms: Any) -> int:
         representative = representative_with_terms.representative
         if representative not in self._representative_key_to_index:
             self._representative_key_to_index[representative] = len(
@@ -81,7 +84,7 @@ class RepresentativeTableBuilder:
 
         return self._representative_key_to_index[representative]
 
-    def to_proto(self):
+    def to_proto(self) -> data_files_pb2.CongressionalRepresentativeTable:
         result = data_files_pb2.CongressionalRepresentativeTable()
         result.representatives.extend(self.representatives)
         result.districts.extend(self.districts)
@@ -89,17 +92,17 @@ class RepresentativeTableBuilder:
 
 
 def create_article_gzip(
-    row,
+    row: Any,
     *,
-    relationships,
-    long_to_short,
-    long_to_population,
-    long_to_type,
-    long_to_idx,
-    flat_ords,
-    counts_overall,
-    representative_table_builder,
-):
+    relationships: Dict[str, Dict[str, Set[str]]],
+    long_to_short: Dict[str, str],
+    long_to_population: Dict[str, float],
+    long_to_type: Dict[str, str],
+    long_to_idx: Dict[str, int],
+    flat_ords: Any,
+    counts_overall: np.ndarray,
+    representative_table_builder: RepresentativeTableBuilder,
+) -> data_files_pb2.Article:
     # pylint: disable=too-many-locals,too-many-arguments
     statistic_names = internal_statistic_names()
     idxs = [i for i, x in enumerate(statistic_names) if not isnan(row[x])]
@@ -117,7 +120,9 @@ def create_article_gzip(
 
     u_to_i = universe_to_idx()
     universe_idxs = [
-        u_to_i[u] for u in row.universes if u not in ZERO_POPULATION_UNIVERSES
+        u_to_i[u]
+        for u in row.universes
+        if u in u_to_i and u not in ZERO_POPULATION_UNIVERSES
     ]
 
     counts_this = counts_overall[:, universe_idxs]
@@ -158,14 +163,14 @@ def create_article_gzip(
         data.extra_stats.append(extra_stat.create(row))
     for relationship_type in relationships:
         for_this = relationships[relationship_type].get(row.longname, set())
-        for_this = [x for x in for_this if x in long_to_population]
-        for_this = sorted(
-            for_this, key=lambda x: order_key_for_relatioships(x, long_to_type[x])
+        for_this_list = [x for x in for_this if x in long_to_population]
+        for_this_list = sorted(
+            for_this_list, key=lambda x: order_key_for_relatioships(x, long_to_type[x])
         )
         # add to map with key relationship_type
         related_buttons = data.related.add()
         related_buttons.relationship_type = relationship_type
-        for x in for_this:
+        for x in for_this_list:
             related_button = related_buttons.buttons.add()
             related_button.longname = x
             related_button.shortname = long_to_short[x]
@@ -175,7 +180,9 @@ def create_article_gzip(
     return data
 
 
-def create_article_gzips(site_folder, full, ordering, symlinks):
+def create_article_gzips(
+    site_folder: str, full: Any, ordering: Any, symlinks: Dict[str, str]
+) -> None:
     long_to_short = dict(zip(full.longname, full.shortname))
     long_to_pop = dict(zip(full.longname, full.population))
     long_to_type = dict(zip(full.longname, full.type))
@@ -187,7 +194,7 @@ def create_article_gzips(site_folder, full, ordering, symlinks):
     representative_table_builder = RepresentativeTableBuilder()
 
     counts = ordering.counts_by_type_universe_col()
-    counts_overall = {
+    counts_overall_dict = {
         column: {
             typ: count
             for (typ, universe), count in for_column.items()
@@ -198,14 +205,14 @@ def create_article_gzips(site_folder, full, ordering, symlinks):
     }
     counts_overall = np.array(
         [
-            [counts_overall[col].get(universe, 0) for universe in all_universes()]
+            [counts_overall_dict[col].get(universe, 0) for universe in all_universes()]
             for col in internal_statistic_names()
         ]
     )
 
     longnames = list(full.longname)
 
-    def get_article(longname):
+    def get_article(longname: str) -> data_files_pb2.Article:
         row = full.iloc[long_to_idx[longname]]
         return create_article_gzip(
             row,
@@ -229,16 +236,16 @@ def create_article_gzips(site_folder, full, ordering, symlinks):
 
 
 @lru_cache(maxsize=None)
-def universe_to_idx():
+def universe_to_idx() -> Dict[str, int]:
     return {u: i for i, u in enumerate(all_universes())}
 
 
-def order_key_for_relatioships(longname, typ):
+def order_key_for_relatioships(longname: str, typ: str) -> Tuple[int, str]:
     processed_longname = longname
     return ordering_idx[typ], processed_longname
 
 
-def extra_stats():
+def extra_stats() -> Dict[int, Any]:
     result = {}
     for statistic_collection in statistic_collections:
         result.update(statistic_collection.extra_stats())
@@ -247,7 +254,7 @@ def extra_stats():
     return extra
 
 
-def pack_index_vector(idxs):
+def pack_index_vector(idxs: List[int]) -> List[int]:
     bool_array = np.zeros(max(idxs) + 1, dtype=np.bool_)
     bool_array[idxs] = True
     return np.packbits(bool_array, bitorder="little").tolist()

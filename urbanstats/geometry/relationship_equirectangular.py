@@ -1,5 +1,6 @@
 import math
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import tqdm.auto as tqdm
@@ -34,12 +35,12 @@ OVERLAP_FOR_CONTAINS = 0.95
 OVERLAP_FOR_INTERSECTS = 0.05
 
 
-def _lat_deg_from_rle_row(row):
+def _lat_deg_from_rle_row(row: int) -> float:
     """Latitude (degrees) at center of this RLE row (3 arcsec grid)."""
     return from_row_idx(row + 0.5, RESOLUTION_3ARCSEC)
 
 
-def _cell_area_m2(row):
+def _cell_area_m2(row: int) -> float:
     """Area in m² of one cell in this row (equirectangular)."""
     lat_deg = _lat_deg_from_rle_row(row)
     lat_rad = math.radians(lat_deg)
@@ -48,18 +49,18 @@ def _cell_area_m2(row):
 
 @dataclass
 class LandRleSummary:
-    land_rle: dict
-    buffered_land_rle: dict
+    land_rle: Dict[int, List[Tuple[int, int]]]
+    buffered_land_rle: Dict[int, List[Tuple[int, int]]]
     area: float
     population: float
-    buffered_bounds: tuple[int, int, int, int]
+    buffered_bounds: Tuple[int, int, int, int]
 
 
 @permacache(
     "population_density/relationship_equirectangular/land_rle_summaries_for_shapefile_4",
     key_function=dict(shapefile=lambda s: s.hash_key),
 )
-def land_rle_summaries_for_shapefile(shapefile):
+def land_rle_summaries_for_shapefile(shapefile: Any) -> Dict[str, LandRleSummary]:
     """
     Compute LandRleSummary for every geometry in a Shapefile object.
 
@@ -89,7 +90,9 @@ def land_rle_summaries_for_shapefile(shapefile):
         shapefile_b=lambda s: s.hash_key,
     ),
 )
-def compute_relationships(shapefile_a, shapefile_b):
+def compute_relationships(
+    shapefile_a: Any, shapefile_b: Any
+) -> Dict[str, List[Tuple[str, str]]]:
     print(
         "Computing relationships between",
         shapefile_a.hash_key,
@@ -103,7 +106,7 @@ def compute_relationships(shapefile_a, shapefile_b):
     rles_a = [summaries_a[k].buffered_land_rle for k in keys_a]
     rles_b = [summaries_b[k].buffered_land_rle for k in keys_b]
     pairs = rle_spatial_join(rles_a, rles_b)
-    relationships = {
+    relationships: Dict[str, List[Tuple[str, str]]] = {
         "same_geography": [],
         "a_contains_b": [],
         "a_contained_by_b": [],
@@ -116,7 +119,7 @@ def compute_relationships(shapefile_a, shapefile_b):
     return relationships
 
 
-def classify_relationship(summary_a: LandRleSummary, summary_b: LandRleSummary):
+def classify_relationship(summary_a: LandRleSummary, summary_b: LandRleSummary) -> str:
     # pylint: disable=too-many-locals
     intersection = intersect_rle_runs(summary_a.land_rle, summary_b.land_rle)
     if not intersection:
@@ -128,9 +131,9 @@ def classify_relationship(summary_a: LandRleSummary, summary_b: LandRleSummary):
     # In general, we do not want to compute population unless we have to,
     # it involves reading from a zarr and is therefore very expensive.
 
-    _inter_pop = None
+    _inter_pop: Optional[float] = None
 
-    def get_inter_pop():
+    def get_inter_pop() -> float:
         nonlocal _inter_pop
         if _inter_pop is None:
             _inter_pop = rc.population_of(intersection)
@@ -175,7 +178,9 @@ def classify_relationship(summary_a: LandRleSummary, summary_b: LandRleSummary):
 @permacache(
     "population_density/relationship_equirectangular/compute_population_for_rle",
 )
-def compute_population_for_rle(rle, resolution):
+def compute_population_for_rle(
+    rle: Dict[int, List[Tuple[int, int]]], resolution: int
+) -> float:
     zarr = load_full_ghs_zarr(resolution)
     rows, lon_starts, lon_ends = rle_arrays_from_dict(rle)
     row_sel, col_sel = exract_raster_points(
@@ -191,13 +196,15 @@ class RelationshipComputer:
     a contains b iff both are >= 95% of b's.
     """
 
+    _singleton: "RelationshipComputer"
+
     @classmethod
-    def singleton(cls):
+    def singleton(cls) -> "RelationshipComputer":
         if not hasattr(cls, "_singleton"):
             cls._singleton = cls()
         return cls._singleton
 
-    def __init__(self):
+    def __init__(self) -> None:
         raw_rle = coastlines_rle()
         # Filter out extreme latitudes where the equirectangular approximation and
         # population raster are not intended to be used.
@@ -210,15 +217,17 @@ class RelationshipComputer:
         self._resolution = RESOLUTION_3ARCSEC
         assert self._resolution == RESOLUTION_3ARCSEC
 
-    def clip_to_land(self, rle):
+    def clip_to_land(
+        self, rle: Dict[int, List[Tuple[int, int]]]
+    ) -> Dict[int, List[Tuple[int, int]]]:
         """Intersect RLE with land mask; returns dict format."""
         return intersect_rle_runs(rle, self._land_rle)
 
-    def population_of(self, rle):
+    def population_of(self, rle: Dict[int, List[Tuple[int, int]]]) -> float:
         """Sum population in grid cells covered by the RLE."""
         return compute_population_for_rle(rle, self._resolution)
 
-    def area_of(self, rle):
+    def area_of(self, rle: Dict[int, List[Tuple[int, int]]]) -> float:
         """Area in m² of cells covered by the RLE (equirectangular)."""
         total = 0.0
         for row, intervals in rle.items():
@@ -231,7 +240,7 @@ class RelationshipComputer:
     "population_density/relationship_equirectangular/compute_containment_2",
     key_function=dict(rle=stable_hash),
 )
-def land_rle_summary(rle):
+def land_rle_summary(rle: Dict[int, List[Tuple[int, int]]]) -> LandRleSummary:
     """
     Compute summary information for an RLE relative to land:
 
@@ -267,7 +276,7 @@ def land_rle_summary(rle):
     # we add 1 to the radius because we want to ensure
     # that, even for very small geometries. Otherwise we
     # will miss a bunch of "borders"
-    def radius_fn(y):
+    def radius_fn(y: int) -> float:
         lat_here = _lat_deg_from_rle_row(y)
         cos_lat = math.cos(math.radians(lat_here))
         return ry / cos_lat + 1
