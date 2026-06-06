@@ -39,7 +39,7 @@ def produce_all_results_from_tables(
     limit: int = 5 * 1024 * 1024,
 ) -> Tuple[bytes, float]:
     simplify_amount = 0.0
-    shapes = data_files_pb2.ConsolidatedShapes()
+    shapes = None
     while simplify_amount < 20 / 3600:
         shapes = produce_results_from_tables_at_simplify_amount(
             loaded_shapefile, longnames, universes, simplify_amount
@@ -51,6 +51,7 @@ def produce_all_results_from_tables(
             if simplify_amount == 0
             else simplify_amount * 1.5
         )
+    assert shapes is not None
     return shapes.SerializeToString(), simplify_amount
 
 
