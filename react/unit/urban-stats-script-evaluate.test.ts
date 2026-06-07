@@ -1632,13 +1632,33 @@ void test('test scale functions with parameters', () => {
         center: 3,
     })
 
-    // Test linearScale with inconsistent center (outside range)
+    // Test linearScale with inconsistent center (outside or at range boundaries)
     const linearWithInconsistentCenter = evaluate(parseExpr('linearScale(min=0, max=10, center=11)'), emptyContext())
     const inconsistentScaleFn = linearWithInconsistentCenter.value as { type: 'opaque', value: Scale }
     assert.throws(
         () => inconsistentScaleFn.value([1, 2, 3]),
         (err: Error): boolean => {
-            return err.message.includes('Inconsistent parameters: center 11 is outside the range [min, max] = [0, 10]')
+            return err.message.includes('Inconsistent parameters: center 11 must be strictly between min 0 and max 10')
+        },
+    )
+
+    // Test linearScale with center at boundary (min)
+    const linearWithCenterAtMin = evaluate(parseExpr('linearScale(min=0, max=10, center=0)'), emptyContext())
+    const centerAtMinScaleFn = linearWithCenterAtMin.value as { type: 'opaque', value: Scale }
+    assert.throws(
+        () => centerAtMinScaleFn.value([1, 2, 3]),
+        (err: Error): boolean => {
+            return err.message.includes('Inconsistent parameters: center 0 must be strictly between min 0 and max 10')
+        },
+    )
+
+    // Test linearScale with center at boundary (max)
+    const linearWithCenterAtMax = evaluate(parseExpr('linearScale(min=0, max=10, center=10)'), emptyContext())
+    const centerAtMaxScaleFn = linearWithCenterAtMax.value as { type: 'opaque', value: Scale }
+    assert.throws(
+        () => centerAtMaxScaleFn.value([1, 2, 3]),
+        (err: Error): boolean => {
+            return err.message.includes('Inconsistent parameters: center 10 must be strictly between min 0 and max 10')
         },
     )
 
@@ -1648,7 +1668,17 @@ void test('test scale functions with parameters', () => {
     assert.throws(
         () => inconsistentMinCenterScaleFn.value([1, 2, 3]),
         (err: Error): boolean => {
-            return err.message.includes('Inconsistent parameters: center 5 is less than min 10')
+            return err.message.includes('Inconsistent parameters: center 5 must be strictly greater than min 10')
+        },
+    )
+
+    // Test linearScale with center equal to min
+    const linearWithCenterEqMin = evaluate(parseExpr('linearScale(min=10, center=10)'), emptyContext())
+    const centerEqMinScaleFn = linearWithCenterEqMin.value as { type: 'opaque', value: Scale }
+    assert.throws(
+        () => centerEqMinScaleFn.value([1, 2, 3]),
+        (err: Error): boolean => {
+            return err.message.includes('Inconsistent parameters: center 10 must be strictly greater than min 10')
         },
     )
 
@@ -1658,9 +1688,40 @@ void test('test scale functions with parameters', () => {
     assert.throws(
         () => inconsistentMaxCenterScaleFn.value([1, 2, 3]),
         (err: Error): boolean => {
-            return err.message.includes('Inconsistent parameters: center 10 is greater than max 5')
+            return err.message.includes('Inconsistent parameters: center 10 must be strictly less than max 5')
         },
     )
+
+    // Test linearScale with center equal to max
+    const linearWithCenterEqMax = evaluate(parseExpr('linearScale(max=5, center=5)'), emptyContext())
+    const centerEqMaxScaleFn = linearWithCenterEqMax.value as { type: 'opaque', value: Scale }
+    assert.throws(
+        () => centerEqMaxScaleFn.value([1, 2, 3]),
+        (err: Error): boolean => {
+            return err.message.includes('Inconsistent parameters: center 5 must be strictly less than max 5')
+        },
+    )
+
+    // Test decreasing scale with both min and max
+    const decreasingMinMax = evaluate(parseExpr('linearScale(min=10, max=0)'), emptyContext())
+    const decreasingMinMaxFn = decreasingMinMax.value as { type: 'opaque', value: Scale }
+    assert.throws(
+        () => decreasingMinMaxFn.value([1, 2, 3]),
+        (err: Error): boolean => {
+            return err.message.includes('Inconsistent parameters: min 10 must be less than or equal to max 0')
+        },
+    )
+
+    // Test tie with only center - should produce a 0-width scale (min=max=center)
+    const tieOnlyCenter = evaluate(parseExpr('linearScale(center=5)'), emptyContext())
+    const tieOnlyCenterFn = tieOnlyCenter.value as { type: 'opaque', value: Scale }
+    const tieDescriptor = tieOnlyCenterFn.value([5, 5, 5])
+    assert.deepStrictEqual(tieDescriptor, {
+        kind: 'linear',
+        min: 5,
+        max: 5,
+        center: 5,
+    })
 
     // Test scale instantiation and forward/inverse mapping
     const scaleInstance = instantiate(linearWithMinMaxDescriptor)
@@ -1894,7 +1955,7 @@ void test('test log scale functions with parameters', () => {
     assert.throws(
         () => inconsistentLogScaleFn.value([1, 2, 3]),
         (err: Error): boolean => {
-            return err.message.includes('Inconsistent parameters: center 5.298317366548036 is outside the range [min, max] = [0, 4.605170185988092]')
+            return err.message.includes('Inconsistent parameters: center 5.298317366548036 must be strictly between min 0 and max 4.605170185988092')
         },
     )
 })

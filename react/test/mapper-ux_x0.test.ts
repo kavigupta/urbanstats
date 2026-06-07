@@ -59,8 +59,8 @@ const errorInSubfield = (testFn: () => TestFn) => (category: string, errorCausin
 
 errorInSubfield(() => test)('syntax', 'linearScale(max=)', 'Unexpected bracket ) at 1:17')
 errorInSubfield(() => test)('semantic', 'linearScale(max=2 + "hi")', 'Invalid types for operator +: number and string at 1:17-24')
-errorInSubfield(() => test)('semantic-min-center', 'linearScale(min=10, center=5)', 'Inconsistent parameters: center 5 is less than min 10')
-errorInSubfield(() => test)('semantic-max-center', 'linearScale(max=5, center=10)', 'Inconsistent parameters: center 10 is greater than max 5')
+errorInSubfield(() => test)('semantic-min-center', 'linearScale(min=10, center=10)', 'Inconsistent parameters: center 10 must be strictly greater than min 10')
+errorInSubfield(() => test)('semantic-max-center', 'linearScale(max=5, center=5)', 'Inconsistent parameters: center 5 must be strictly less than max 5')
 
 const errorInSubsubfield = (testFn: () => TestFn) => (category: string, errorCausingCode: string, error: string): void => {
     mapper(testFn)(`${category} error in subsubfield`, { code: 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {

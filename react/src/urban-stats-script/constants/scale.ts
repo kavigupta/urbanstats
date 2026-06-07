@@ -73,29 +73,31 @@ export function instantiate(descriptor: ScaleDescriptor): ScaleInstance {
 const linearScale: Scale = (values: number[], min?: number, max?: number, center?: number) => {
     values = values.filter(value => typeof value === 'number' && !isNaN(value) && isFinite(value))
 
+    if (min !== undefined && max !== undefined && min > max) {
+        throw new Error(`Inconsistent parameters: min ${min} must be less than or equal to max ${max}`)
+    }
+
     let computedMin = min ?? Math.min(...values)
     let computedMax = max ?? Math.max(...values)
 
     if (center !== undefined) {
-        // If min and max are both provided, only error if center is outside [min, max]
         if (min !== undefined && max !== undefined) {
-            if (center < Math.min(min, max) - 1e-10 || center > Math.max(min, max) + 1e-10) {
-                throw new Error(`Inconsistent parameters: center ${center} is outside the range [min, max] = [${min}, ${max}]`)
+            if (center <= min + 1e-10 || center >= max - 1e-10) {
+                throw new Error(`Inconsistent parameters: center ${center} must be strictly between min ${min} and max ${max}`)
             }
-            // Otherwise, just use min, center, max as given
             computedMin = min
             computedMax = max
         }
         else if (min !== undefined) {
-            if (center < min - 1e-10) {
-                throw new Error(`Inconsistent parameters: center ${center} is less than min ${min}`)
+            if (center <= min + 1e-10) {
+                throw new Error(`Inconsistent parameters: center ${center} must be strictly greater than min ${min}`)
             }
             computedMin = min
             computedMax = 2 * center - min
         }
         else if (max !== undefined) {
-            if (center > max + 1e-10) {
-                throw new Error(`Inconsistent parameters: center ${center} is greater than max ${max}`)
+            if (center >= max - 1e-10) {
+                throw new Error(`Inconsistent parameters: center ${center} must be strictly less than max ${max}`)
             }
             computedMax = max
             computedMin = 2 * center - max
