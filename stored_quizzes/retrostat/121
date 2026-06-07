@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Work From Home %",
+      "stat_path": "transportation_means_worked_at_home",
+      "question": "higher % of people who work from home",
+      "longname_a": "TX-16 (2023), USA",
+      "longname_b": "NC-04 (2025), USA",
+      "stat_a": 0.05841089511877968,
+      "stat_b": 0.17780859674917318
+    },
+    "b": {
+      "stat_column": "Healthcare support occupations %",
+      "stat_path": "occupation_healthcare_support_occupations",
+      "question": "higher % of workers employed in healthcare support occupations!TOOLTIP nursing assistants, orderlies, home health aides, massage therapists, dental assistants, etc.",
+      "longname_a": "Charleston-North Charleston MSA, SC, USA",
+      "longname_b": "Salem MSA, OR, USA",
+      "stat_a": 0.02044611101524887,
+      "stat_b": 0.05515072486001364
+    },
+    "a_ease": 0.7368728121353559,
+    "b_ease": 0.31181102362204727
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual income < C$50k %",
+      "stat_path": "individual_income_under_50cad",
+      "question": "higher % of people who have individual income under C$50k",
+      "longname_a": "Toronto CMA, ON, Canada",
+      "longname_b": "Calgary CMA, AB, Canada",
+      "stat_a": 0.5999481039607285,
+      "stat_b": 0.5488383256955162
+    },
+    "b": {
+      "stat_column": "Commute Walk %",
+      "stat_path": "transportation_means_walk",
+      "question": "higher % of people who commute by walking",
+      "longname_a": "TN-05 (2023), USA",
+      "longname_b": "OR-03 (2023), USA",
+      "stat_a": 0.00791673492903212,
+      "stat_b": 0.03176143510915629
+    },
+    "a_ease": 0.34438955539872973,
+    "b_ease": 0.7777777777777778
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Vacancy %",
+      "stat_path": "vacancy",
+      "question": "higher % of units that are vacant!TOOLTIP Vacancy is the % of housing units that were not occupied on April 1, 2020 (census night). This includes vacation homes but does *not* include units that were not occupied due to the pandemic, the census attempted to account for this.",
+      "longname_a": "Toledo [Urban Area], OH-MI, USA",
+      "longname_b": "Barnstable Town [Urban Area], MA, USA",
+      "stat_a": 0.08574597651152675,
+      "stat_b": 0.31626390192127246
+    },
+    "b": {
+      "stat_column": "Renter %",
+      "stat_path": "rent_or_own_rent",
+      "question": "higher % of people who are renters",
+      "longname_a": "FL-17 (2023), USA",
+      "longname_b": "TX-18 (2023), USA",
+      "stat_a": 0.22834537323555765,
+      "stat_b": 0.5168975675489873
+    },
+    "a_ease": 0.28807947019867547,
+    "b_ease": 0.7875
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Gen Z %",
+      "stat_path": "generation_genz",
+      "question": "higher % of people who are gen z!TOOLTIP born between 1997 and 2011",
+      "longname_a": "CA-26 (2023), USA",
+      "longname_b": "PA-02 (2023), USA",
+      "stat_a": 0.20833458280192096,
+      "stat_b": 0.18934984489906886
+    },
+    "b": {
+      "stat_column": "Born in state of residence %",
+      "stat_path": "birthplace_us_state",
+      "question": "higher % of people who were born in their state of residence",
+      "longname_a": "Pennsylvania, USA",
+      "longname_b": "California, USA",
+      "stat_a": 0.7163622866465382,
+      "stat_b": 0.5639635776527565
+    },
+    "a_ease": 0.44926470588235295,
+    "b_ease": 0.8605600933488915
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Individual income > C$100k %",
+      "stat_path": "individual_income_above_100_cad",
+      "question": "higher % of people who have individual income over C$100k",
+      "longname_a": "Alberta, Canada",
+      "longname_b": "Quebec, Canada",
+      "stat_a": 0.14524028327469102,
+      "stat_b": 0.08231851538038679
+    },
+    "b": {
+      "stat_column": "Fair or poor self-rated health status %",
+      "stat_path": "GHLTH_cdc_2",
+      "question": "higher % of adults with a fair or poor self-rated health status",
+      "longname_a": "Marin County, California, USA",
+      "longname_b": "Cameron County, Texas, USA",
+      "stat_a": 0.1226292379548915,
+      "stat_b": 0.30098485066540204
+    },
+    "a_ease": 0.46194225721784776,
+    "b_ease": 0.8739018087855297
+  }
+]

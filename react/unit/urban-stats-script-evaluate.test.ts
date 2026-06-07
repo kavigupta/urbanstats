@@ -3,7 +3,7 @@ import { test } from 'node:test'
 
 import { getRamps } from '../src/mapper/ramps'
 import { colorType } from '../src/urban-stats-script/constants/color'
-import { CMap, CMapRGB, Outline, PMap } from '../src/urban-stats-script/constants/map'
+import { CMap, CMapRGB, ClusterMap, Outline, PMap } from '../src/urban-stats-script/constants/map'
 import { regressionType, regressionResultType } from '../src/urban-stats-script/constants/regr'
 import { instantiate, ScaleDescriptor, Scale } from '../src/urban-stats-script/constants/scale'
 import { Table, TableColumn } from '../src/urban-stats-script/constants/table'
@@ -175,6 +175,23 @@ void test('evaluate basic expressions', (): void => {
     assert.deepStrictEqual(
         evaluate(parseExpr('percentile([1, 2, 3, 4, 5], 75, weights=[1, 1, 1, 1, 2])'), emptyContext()),
         undocValue(5, numType),
+    )
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('inverseQuantile([1, 2, 3, 4, 5], 1, weights=[2, 1, 1, 1, 1])'), emptyContext()),
+        undocValue(0.25, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('inverseQuantile([1, 2, 3, 4, 5], 5, weights=[1, 1, 1, 1, 2])'), emptyContext()),
+        undocValue(0.75, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('inversePercentile([1, 2, 3, 4, 5], 1, weights=[2, 1, 1, 1, 1])'), emptyContext()),
+        undocValue(25, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('inversePercentile([1, 2, 3, 4, 5], 5, weights=[1, 1, 1, 1, 2])'), emptyContext()),
+        undocValue(75, numType),
     )
 })
 
@@ -1381,6 +1398,7 @@ void test('test basic map', () => {
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
+    assert.deepStrictEqual(resultMapRaw.opacity, 1)
     assertScale(resultMapRaw.scale, [1, 1.5, 2, 2.5, 3], [0, 0.25, 0.5, 0.75, 1])
     assert.deepStrictEqual(effects, [{
         type: 'warning',
@@ -1441,6 +1459,8 @@ void test('test basic RGB map', () => {
     assert.deepStrictEqual(resultMapRaw.dataR, [0.1, 0.5, 0.9])
     assert.deepStrictEqual(resultMapRaw.dataG, [0.2, 0.6, 0.8])
     assert.deepStrictEqual(resultMapRaw.dataB, [0.3, 0.7, 0.7])
+    assert.deepStrictEqual(resultMapRaw.dataA, [1, 1, 1])
+    assert.deepStrictEqual(resultMapRaw.opacity, 1)
     assert.deepStrictEqual(resultMapRaw.label, 'RGB Test Map')
 })
 
@@ -2192,6 +2212,39 @@ pMap(data=data, scale=logScale(), ramp=rampUridis, relativeArea=population, maxR
     assert.deepStrictEqual(
         effects, [],
     )
+})
+
+void test('test map opacity channel', () => {
+    const cMapResult = evaluate(parseExpr('cMap(geo=geo, data=[1, 2, 3], scale=linearScale(), ramp=rampBone, opacity=0.25, label="x")'), emptyContextWithInsets())
+    assert.deepStrictEqual(cMapResult.type, { type: 'opaque', name: 'cMap' })
+    const cMapRaw = (cMapResult.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(cMapRaw.opacity, 0.25)
+
+    const cMapRGBResult = evaluate(parseExpr('cMapRGB(geo=geo, dataR=[0.1, 0.2, 0.3], dataG=[0.4, 0.5, 0.6], dataB=[0.7, 0.8, 0.9], dataA=[0.2, 0.5, 0.8], opacity=0.6, label="x")'), emptyContextWithInsets())
+    assert.deepStrictEqual(cMapRGBResult.type, { type: 'opaque', name: 'cMapRGB' })
+    const cMapRGBRaw = (cMapRGBResult.value as { type: 'opaque', value: CMapRGB }).value
+    assert.deepStrictEqual(cMapRGBRaw.dataA, [0.2, 0.5, 0.8])
+    assert.deepStrictEqual(cMapRGBRaw.opacity, 0.6)
+
+    const [ctx] = contextForTestIfStatement()
+    const pMapResult = evaluate(parseExpr('pMap(data=[1, 2, 3, 4, 5], scale=linearScale(), ramp=rampBone, opacity=0.4, label="x")'), ctx)
+    assert.deepStrictEqual(pMapResult.type, { type: 'opaque', name: 'pMap' })
+    const pMapRaw = (pMapResult.value as { type: 'opaque', value: PMap }).value
+    assert.deepStrictEqual(pMapRaw.opacity, 0.4)
+
+    const clusterMapOpacityResult = evaluate(parseExpr('clusterMap(data=[1, 2, 3, 4, 5], scale=linearScale(), ramp=rampBone, opacity=0.33, label="x")'), ctx)
+    assert.deepStrictEqual(clusterMapOpacityResult.type, { type: 'opaque', name: 'clusterMap' })
+    const clusterMapOpacityRaw = (clusterMapOpacityResult.value as { type: 'opaque', value: ClusterMap }).value
+    assert.deepStrictEqual(clusterMapOpacityRaw.opacity, 0.33)
+})
+
+void test('clusterMap relativeArea not population and clusterRadiusSpacing', () => {
+    const [ctx] = contextForTestIfStatement()
+    const r = evaluate(parseExpr('clusterMap(data=[1, 2, 3, 4, 5], scale=linearScale(), ramp=rampViridis, relativeArea=density_pw_1km, clusterRadiusSpacing=0.15, label="x")'), ctx)
+    assert.deepStrictEqual(r.type, { type: 'opaque', name: 'clusterMap' })
+    const raw = (r.value as { type: 'opaque', value: ClusterMap }).value
+    assert.deepStrictEqual(raw.clusterRadiusSpacing, 0.15)
+    assert.deepStrictEqual(raw.data, [1, 2, 3, 4, 5])
 })
 
 void test('test basic column with name', () => {

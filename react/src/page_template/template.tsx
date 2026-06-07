@@ -2,7 +2,7 @@ import React, { ReactNode, useEffect, useRef, useState } from 'react'
 
 import { exportToCSV, CSVExportData } from '../components/csv-export'
 import { Header } from '../components/header'
-import { ScreenshotContext } from '../components/screenshot'
+import { ScreenshotContext, ScreenshotContextType } from '../components/screenshot'
 import { Sidebar } from '../components/sidebar'
 import '../common.css'
 import '../components/article.css'
@@ -19,14 +19,16 @@ export function PageTemplate({
     csvExportCallback = undefined,
     children,
     showFooter = true,
+    topPanel = true,
 }: {
-    screencap?: (currentUniverse: string | undefined, colors: Colors) => Promise<void>
+    screencap?: (currentUniverse: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType) => Promise<void>
     csvExportCallback?: CSVExportData
     children?: React.ReactNode
     showFooter?: boolean
+    topPanel?: boolean
 }): ReactNode {
     const [hamburgerOpen, setHamburgerOpen] = useState(false)
-    const [screenshotMode, setScreenshotMode] = useState(false)
+    const screenshotContext = useRef<ScreenshotContextType>(new Set())
     const colors = useColors()
     const mobileLayout = useMobileLayout()
     const hideSidebarDesktop = useHideSidebarDesktop()
@@ -34,6 +36,9 @@ export function PageTemplate({
     const styleElement = useStyleElement()
     useEffect(() => {
         styleElement(document.documentElement)
+        if (TestUtils.shared.isTesting) {
+            document.documentElement.setAttribute('spellcheck', 'false')
+        }
         document.body.style.backgroundColor = colors.background
         document.body.style.color = colors.textMain
     }, [styleElement, colors.background, colors.textMain])
@@ -65,26 +70,18 @@ export function PageTemplate({
             return
         }
         try {
-            await screencap(currentUniverse, colors)
+            await screencap(currentUniverse, colors, screenshotContext.current)
         }
         catch (e) {
             console.error(e)
         }
     }
 
-    const initiateScreenshot = (currentUniverse: string | undefined): void => {
-        setScreenshotMode(true)
-        setTimeout(async () => {
-            await doScreencap(currentUniverse)
-            setScreenshotMode(false)
-        })
-    }
-
     // https://stackoverflow.com/a/55451665
     const runningInTestCafe = (window as unknown as { '%hammerhead%': unknown })['%hammerhead%'] !== undefined
 
     return (
-        <ScreenshotContext.Provider value={screenshotMode}>
+        <ScreenshotContext.Provider value={screenshotContext.current}>
             <meta name="viewport" content="width=device-width, initial-scale=0.75" />
             <div
                 className={mobileLayout ? 'main_panel_mobile' : 'main_panel'}
@@ -103,15 +100,19 @@ export function PageTemplate({
                     zoom: mobileLayout && runningInTestCafe ? 0.75 : undefined,
                 }}
             >
-                <Header
-                    hamburgerOpen={hamburgerOpen}
-                    setHamburgerOpen={setHamburgerOpen}
-                    hasScreenshot={hasScreenshotButton}
-                    hasCSV={hasCSVButton}
-                    initiateScreenshot={(currentUniverse) => { initiateScreenshot(currentUniverse) }}
-                    exportCSV={exportCSV}
-                />
-                <div style={{ marginBlockEnd: '16px' }}></div>
+                {topPanel && (
+                    <>
+                        <Header
+                            hamburgerOpen={hamburgerOpen}
+                            setHamburgerOpen={setHamburgerOpen}
+                            hasScreenshot={hasScreenshotButton}
+                            hasCSV={hasCSVButton}
+                            initiateScreenshot={(currentUniverse) => { void doScreencap(currentUniverse) }}
+                            exportCSV={exportCSV}
+                        />
+                        <div style={{ marginBlockEnd: '16px' }}></div>
+                    </>
+                )}
                 <BodyPanel
                     hamburgerOpen={hamburgerOpen}
                     mainContent={children}
@@ -145,7 +146,7 @@ function TemplateFooter(): ReactNode {
 function Version(): ReactNode {
     return (
         <span id="current-version">
-            {TestUtils.shared.isTesting ? '<VERSION>' : '31.1.1'}
+            {TestUtils.shared.isTesting ? '<VERSION>' : '31.8.3'}
         </span>
     )
 }
@@ -153,7 +154,7 @@ function Version(): ReactNode {
 function LastUpdated(): ReactNode {
     return (
         <span id="last-updated">
-            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2026-02-01'}
+            {TestUtils.shared.isTesting ? '<LAST UPDATED>' : '2026-06-03'}
         </span>
     )
 }

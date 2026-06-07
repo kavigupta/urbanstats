@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any, Tuple
 
 import numpy as np
 import tqdm.auto as tqdm
@@ -13,7 +14,7 @@ class FlatOrdinals:
     ordinals_flat: np.ndarray  # sum(u)
     percentiles_flat: np.ndarray  # sum(u)
 
-    def query(self, longname_idx):
+    def query(self, longname_idx: int) -> Tuple[np.ndarray, np.ndarray]:
         start = self.start_in_array_each[longname_idx]
         length = self.length_each[longname_idx]
 
@@ -25,7 +26,7 @@ class FlatOrdinals:
         return ordinals, percentiles
 
 
-def compute_flat_ordinals(full, ordering):
+def compute_flat_ordinals(full: Any, ordering: Any) -> FlatOrdinals:
     universes_each = (
         full[["longname", "type", "universes"]].set_index("longname").loc[full.longname]
     )
@@ -44,13 +45,17 @@ def compute_flat_ordinals(full, ordering):
     ordinals_flat = np.array(
         [
             np.array(ordering.by_column[k].ordinal[idx_in_sorted, ut_idxs])[0]
-            for k in tqdm.tqdm(internal_statistic_names())
+            for k in tqdm.tqdm(
+                internal_statistic_names(), desc="Computing flat ordinals"
+            )
         ]
     )
     percentiles_flat = np.array(
         [
             np.array(ordering.by_column[k].percentile[idx_in_sorted, ut_idxs])[0]
-            for k in tqdm.tqdm(internal_statistic_names())
+            for k in tqdm.tqdm(
+                internal_statistic_names(), desc="Computing flat percentiles"
+            )
         ]
     )
     return FlatOrdinals(

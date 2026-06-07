@@ -131,12 +131,12 @@ test('copy friend email link', async (t) => {
         {
             text: 'Link copied to clipboard!',
             type: 'alert',
-            url: 'http://localhost:8000/quiz.html#date=650',
+            url: `${target}/quiz.html#date=650`,
         },
         {
             text: 'Enter your name:',
             type: 'prompt',
-            url: 'http://localhost:8000/quiz.html#date=650',
+            url: `${target}/quiz.html#date=650`,
         },
     ])
     await t.expect(copies).eql([friendEmailLink])
@@ -149,7 +149,7 @@ test('paste friend email link', async (t) => {
         {
             text: 'Friend added: spudwaffle !',
             type: 'alert',
-            url: 'http://localhost:8000/quiz.html#date=650',
+            url: `${target}/quiz.html#date=650`,
         },
     ])
     const friends = await friendsText()

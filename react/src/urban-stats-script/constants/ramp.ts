@@ -9,12 +9,12 @@ import { Color, hexToColor, rgbColorExpression, doRender } from './color-utils'
 
 export type RampT = [number, string][]
 
-export const rampType = {
+const rampType = {
     type: 'opaque',
     name: 'ramp',
 } satisfies USSType
 
-export function constructRamp(ramp: [number, Color][]): USSRawValue {
+function constructRamp(ramp: [number, Color][]): USSRawValue {
     if (ramp[0][0] !== 0 || ramp[ramp.length - 1][0] !== 1) {
         throw new Error('Ramp must start at 0 and end at 1')
     }
@@ -30,7 +30,7 @@ export function constructRamp(ramp: [number, Color][]): USSRawValue {
     }
 }
 
-export function divergingRamp(first: Color, last: Color, middle: Color = { r: 1, g: 1, b: 1, a: 1 }): USSRawValue {
+function divergingRamp(first: Color, last: Color, middle: Color = { r: 1, g: 1, b: 1, a: 1 }): USSRawValue {
     const ramp: [number, Color][] = [
         [0, first],
         [0.5, middle],
@@ -39,7 +39,7 @@ export function divergingRamp(first: Color, last: Color, middle: Color = { r: 1,
     return constructRamp(ramp)
 }
 
-export function reverseRamp(ramp: RampT): RampT {
+function reverseRamp(ramp: RampT): RampT {
     return ramp.slice().reverse().map(([value, color]) => [1 - value, color]) as RampT
 }
 

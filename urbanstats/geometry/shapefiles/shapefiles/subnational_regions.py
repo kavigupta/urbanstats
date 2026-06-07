@@ -90,6 +90,5 @@ SUBNATIONAL_REGIONS = Shapefile(
         ),
     ],
     include_in_syau=True,
-    metadata_columns=["geoid", "iso"],
     wikidata_sourcer=SimpleWikidataSourcer("wdt:P300", "iso"),
 )

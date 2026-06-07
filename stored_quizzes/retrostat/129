@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "High blood pressure %",
+      "stat_path": "BPHIGH_cdc_2",
+      "question": "higher % of adults with high blood pressure",
+      "longname_a": "OK-04 (2023), USA",
+      "longname_b": "WI-01 (2023), USA",
+      "stat_a": 0.35706161084647947,
+      "stat_b": 0.2983531218201643
+    },
+    "b": {
+      "stat_column": "High windspeed (>10mph) days %",
+      "stat_path": "wind_speed_over_10mph_4",
+      "question": "higher % of days with wind speed over 10mph (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "India",
+      "longname_b": "Honduras",
+      "stat_a": 0.07979310162311089,
+      "stat_b": 0.02244815159535804
+    },
+    "a_ease": 0.7412353923205343,
+    "b_ease": 0.325
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Uninsured %",
+      "stat_path": "insurance_coverage_none",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "IN-09 (2023), USA",
+      "longname_b": "HI-01 (2023), USA",
+      "stat_a": 0.08653714280423681,
+      "stat_b": 0.04760579033388979
+    },
+    "b": {
+      "stat_column": "Educational instruction, and library occupations %",
+      "stat_path": "occupation_educational_instruction,_and_library_occupations",
+      "question": "higher % of workers employed in educational instruction, and library occupations!TOOLTIP teachers, tutors, professors, librarians, and archivists",
+      "longname_a": "Lubbock [Urban Area], TX, USA",
+      "longname_b": "Greensboro [Urban Area], NC, USA",
+      "stat_a": 0.09360633576802979,
+      "stat_b": 0.07485685702618473
+    },
+    "a_ease": 0.632313829787234,
+    "b_ease": 0.23
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Employed in Professional, scientific, and technical services %",
+      "stat_path": "industry_professional,_scientific,_and_technical_services",
+      "question": "higher % of workers employed in the professional, scientific, and technical services industry!TOOLTIP legal services, accounting services, architectural services, engineering services, computer systems design services, management consulting services, etc.",
+      "longname_a": "Wichita Falls TX & Lawton OK Media Market, USA",
+      "longname_b": "St. Louis MO Media Market, USA",
+      "stat_a": 0.03228121340161227,
+      "stat_b": 0.06918339190752311
+    },
+    "b": {
+      "stat_column": "Born in us outside state %",
+      "stat_path": "birthplace_us_not_state",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "Collin County, Texas, USA",
+      "longname_b": "Nassau County, New York, USA",
+      "stat_a": 0.3520169536411399,
+      "stat_b": 0.07107329482425014
+    },
+    "a_ease": 0.7869481765834933,
+    "b_ease": 0.38166666666666665
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Divorced %",
+      "stat_path": "marriage_divorced",
+      "question": "higher % of people who are divorced",
+      "longname_a": "WV-02 (2023), USA",
+      "longname_b": "UT-01 (2023), USA",
+      "stat_a": 0.13014440915036096,
+      "stat_b": 0.09420545415478522
+    },
+    "b": {
+      "stat_column": "Electricity heating %",
+      "stat_path": "heating_electricity",
+      "question": "!FULL Which has a larger % of homes heated using electricity?",
+      "longname_a": "Michigan, USA",
+      "longname_b": "Mississippi, USA",
+      "stat_a": 0.10606319819470345,
+      "stat_b": 0.5786629338555688
+    },
+    "a_ease": 0.8025265957446809,
+    "b_ease": 0.3993920972644377
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2021-2025 Swing 2-Coalition Margin",
+      "stat_path": "2021-2025 Swing-coalition_margin",
+      "question": "!FULL Which swung less towards the right-of-center parties between the 2021 and 2025 elections?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "Edmonton City, Division No. 11, Alberta, Canada",
+      "longname_b": "Brampton City, Peel Regional municipality, Ontario, Canada",
+      "stat_a": -0.09500669035443926,
+      "stat_b": -0.3234817468391121
+    },
+    "b": {
+      "stat_column": "Median Commute Time (min)",
+      "stat_path": "transportation_commute_time_median",
+      "question": "higher median commute time",
+      "longname_a": "NM-01 (2023), USA",
+      "longname_b": "CA-48 (2023), USA",
+      "stat_a": 21.144878014647535,
+      "stat_b": 29.137590414974547
+    },
+    "a_ease": 0.4350769230769231,
+    "b_ease": 0.8567708333333334
+  }
+]

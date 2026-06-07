@@ -1,11 +1,13 @@
 from dataclasses import dataclass
 from functools import cached_property
-from typing import List
+from typing import Any, Callable, Dict, List, Tuple
 
 import numpy as np
 import torch
 import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
+
+from urbanstats.games.quiz_columns import get_quiz_stats
 
 from .questions import ValidQuizQuestions, classify_questions
 
@@ -16,12 +18,14 @@ class QuizQuestionPossibilities:
     all_geographies: List[str]
     all_stats: List[str]
 
-    def aggregate(self, ps):
-        ps = [torch.tensor(p, dtype=torch.float32) for p in ps]
+    def aggregate(self, ps: List[np.ndarray]) -> List[np.ndarray]:
+        ps_torch = [torch.tensor(p, dtype=torch.float32) for p in ps]
         # p = torch.tensor(np.log(np.concatenate(ps)), dtype=torch.float32)
-        return [x.numpy() for x in self._aggregate_torch(ps)]
+        return [x.numpy() for x in self._aggregate_torch(ps_torch)]
 
-    def _aggregate_torch(self, ps):
+    def _aggregate_torch(
+        self, ps: List[torch.Tensor]
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         g = torch.zeros(len(self.all_geographies))
         for q, p_q in zip(self.questions_by_number, ps):
             g.index_add_(0, torch.tensor(q.geography_index_a), p_q)
@@ -33,33 +37,78 @@ class QuizQuestionPossibilities:
         s = s / len(self.questions_by_number)
         return g, s
 
-    def _probabilities_each_torch(self, p):
-        ps = [torch.softmax(p[rang], axis=0) for rang in self.normalization_ranges]
+    def _probabilities_each_torch(self, p: torch.Tensor) -> List[torch.Tensor]:
+        ps = [torch.softmax(p[rang], dim=0) for rang in self.normalization_ranges]
         return ps
 
-    def delta(self, p, q):
+    def delta(self, p: torch.Tensor, q: torch.Tensor) -> torch.Tensor:
         return (p * (torch.log(p) - torch.log(q))).sum()
 
-    def h(self, p):
+    def h(self, p: torch.Tensor) -> torch.Tensor:
         hactual = (-p * torch.log(p)).sum()
-        huniform = np.log(len(p))
+        huniform = torch.tensor(np.log(len(p)))
         return huniform - hactual
 
-    def train(self, geo_target, stat_target, weight_h=0.1, weight_s=10):
+    @cached_property
+    def num_canadas_mask(self) -> List[np.ndarray]:
+        geo_is_canada = np.array(
+            [geo.split(", ")[-1] == "Canada" for geo in self.all_geographies]
+        ).astype(int)
+        num_canadas = [
+            geo_is_canada[q.geography_index_a] + geo_is_canada[q.geography_index_b]
+            for q in self.questions_by_number
+        ]
+        return num_canadas
+
+    def limit_canada_hinge_loss(
+        self, ps: List[torch.Tensor], *, do_print: bool
+    ) -> torch.Tensor:
+        """
+        Hinge loss that says
+            - at most 15% of questions can be Canada vs Canada and
+            - at most 20% can be Canada vs anything
+        """
+        num_canadas = self.num_canadas_mask
+        prob_canada_vs_canada = torch.mean(
+            torch.stack([p[i == 2].sum() for p, i in zip(ps, num_canadas)])
+        )
+        prob_canada_vs_anything = torch.mean(
+            torch.stack([p[i >= 1].sum() for p, i in zip(ps, num_canadas)])
+        )
+        if do_print:
+            print(
+                f"Canada vs Canada: {prob_canada_vs_canada.item():.2%},"
+                f" Canada vs Anything: {prob_canada_vs_anything.item():.2%}"
+            )
+        hinge_loss = torch.relu(prob_canada_vs_canada - 0.15) + torch.relu(
+            prob_canada_vs_anything - 0.20
+        )
+        return hinge_loss
+
+    def train(
+        self,
+        geo_target: np.ndarray,
+        stat_target: np.ndarray,
+        weight_h: float = 0.1,
+        weight_s: float = 10,
+    ) -> List[np.ndarray]:
+        # pylint: disable=too-many-locals
         g_target = torch.tensor(geo_target, dtype=torch.float32)
         s_target = torch.tensor(stat_target, dtype=torch.float32)
         p = torch.ones(len(self), requires_grad=True, dtype=torch.float32)
         opt = torch.optim.Adam([p], lr=0.5)
         prev = float("inf")
         for idx in range(1000):
+            do_print = idx % 10 == 0
             ps = self._probabilities_each_torch(p)
             g, s = self._aggregate_torch(ps)
             loss = (
                 weight_s * self.delta(s_target, s)
                 + self.delta(g_target, g)
                 + weight_h * sum(self.h(pi) for pi in ps) / len(ps)
+                + self.limit_canada_hinge_loss(ps, do_print=do_print)
             )
-            if idx % 10 == 0:
+            if do_print:
                 print(idx, loss.item())
                 if (loss.item() - prev) / prev > -0.01:
                     break
@@ -71,7 +120,7 @@ class QuizQuestionPossibilities:
         return [x.detach().numpy() for x in ps]
 
     @cached_property
-    def normalization_ranges(self):
+    def normalization_ranges(self) -> List[slice]:
         res = []
         start = 0
         for q in self.questions_by_number:
@@ -79,24 +128,25 @@ class QuizQuestionPossibilities:
             start += len(q)
         return res
 
-    def __len__(self):
+    def __len__(self) -> int:
         return sum(len(q) for q in self.questions_by_number)
 
 
 @permacache(
-    "urbanstats/games/fit_distribution/compute_quiz_question_possibilities_3",
+    "urbanstats/games/fit_distribution/compute_quiz_question_possibilities_4",
     key_function=dict(
         tables_by_type=stable_hash,
     ),
 )
 def _compute_quiz_question_possibilities(
-    tables_by_type,
+    tables_by_type: Dict[str, Any],
     *,
-    col_to_difficulty,
-    intl_difficulty,
-    diff_ranges,
-    excluded_universes,
-):
+    col_to_difficulty: Dict[Any, float],
+    intl_difficulty: float,
+    diff_ranges: List[Tuple[float, float]],
+    excluded_universes: List[str],
+    descriptor_by_col: Dict[str, Any],
+) -> QuizQuestionPossibilities:
     all_stats = sorted({s for qt in tables_by_type.values() for s in qt.data}, key=str)
     all_geographies = sorted(
         {s for qt in tables_by_type.values() for s in qt.data.index}, key=str
@@ -115,6 +165,7 @@ def _compute_quiz_question_possibilities(
                 intl_difficulty=intl_difficulty,
                 diff_ranges=diff_ranges,
                 excluded_universes=excluded_universes,
+                descriptor_by_col=descriptor_by_col,
             )
         )
     questions_by_number = [ValidQuizQuestions.join(x) for x in zip(*questions)]
@@ -126,21 +177,27 @@ def _compute_quiz_question_possibilities(
 
 
 def train_quiz_question_weights(
-    tables_by_type,
+    tables_by_type: Dict[str, Any],
     *,
-    col_to_difficulty,
-    intl_difficulty,
-    diff_ranges,
-    compute_geo_target,
-    compute_stat_target,
-    excluded_universes,
-):
+    col_to_difficulty: Dict[Any, float],
+    intl_difficulty: float,
+    diff_ranges: List[Tuple[float, float]],
+    compute_geo_target: Callable[
+        [QuizQuestionPossibilities, Dict[str, Any]], np.ndarray
+    ],
+    compute_stat_target: Callable[
+        [QuizQuestionPossibilities, Dict[str, Any]], np.ndarray
+    ],
+    excluded_universes: List[str],
+) -> Dict[str, Any]:
+    descriptor_by_col = {k: d for k, d, _ in get_quiz_stats()}
     qqp = _compute_quiz_question_possibilities(
         tables_by_type,
         col_to_difficulty=col_to_difficulty,
         intl_difficulty=intl_difficulty,
         diff_ranges=diff_ranges,
         excluded_universes=excluded_universes,
+        descriptor_by_col=descriptor_by_col,
     )
     geo_target = compute_geo_target(qqp, tables_by_type)
     stat_target = compute_stat_target(qqp, tables_by_type)
@@ -152,31 +209,34 @@ def train_quiz_question_weights(
         intl_difficulty=intl_difficulty,
         diff_ranges=diff_ranges,
         excluded_universes=excluded_universes,
+        descriptor_by_col=descriptor_by_col,
     )
 
 
 @permacache(
-    "urbanstats/games/fit_distribution/distribution/_train_quiz_question_weights_cached_3",
+    "urbanstats/games/fit_distribution/distribution/_train_quiz_question_weights_cached_4",
     key_function=dict(
         tables_by_type=stable_hash, geo_target=stable_hash, stat_target=stable_hash
     ),
 )
 def _train_quiz_question_weights_cached(
-    tables_by_type,
-    geo_target,
-    stat_target,
+    tables_by_type: Dict[str, Any],
+    geo_target: np.ndarray,
+    stat_target: np.ndarray,
     *,
-    col_to_difficulty,
-    intl_difficulty,
-    diff_ranges,
-    excluded_universes,
-):
+    col_to_difficulty: Dict[Any, float],
+    intl_difficulty: float,
+    diff_ranges: List[Tuple[float, float]],
+    excluded_universes: List[str],
+    descriptor_by_col: Dict[str, Any],
+) -> Dict[str, Any]:
     qqp = _compute_quiz_question_possibilities(
         tables_by_type,
         col_to_difficulty=col_to_difficulty,
         intl_difficulty=intl_difficulty,
         diff_ranges=diff_ranges,
         excluded_universes=excluded_universes,
+        descriptor_by_col=descriptor_by_col,
     )
     ps = qqp.train(geo_target, stat_target)
     return dict(ps=ps, geo_target=geo_target, stat_target=stat_target, qqp=qqp)

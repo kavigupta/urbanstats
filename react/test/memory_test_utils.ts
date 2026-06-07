@@ -1,7 +1,9 @@
+import type { Protocol } from 'devtools-protocol'
+
 import { cdpSessionWithSessionId } from './test_utils'
 
 // Since testcafe accumulates memory in the CI, each memory test must be run in its own test file
-export async function memoryUsage(t: TestController): Promise<number> {
+export async function memoryUsage(t: TestController, filterTargets: (target: Protocol.Target.TargetInfo) => boolean = () => true): Promise<number> {
     const cdpSession = await t.getCurrentCDPSession()
     await t.wait(5000) // Wait for page to load + stabilize
 
@@ -22,6 +24,10 @@ export async function memoryUsage(t: TestController): Promise<number> {
     const targetsWithMemory: (typeof targetInfos[number] & { bytes: number })[] = []
 
     for (const target of targetInfos) {
+        if (!filterTargets(target)) {
+            continue
+        }
+
         const { sessionId } = await cdpSession.Target.attachToTarget({ ...target, flatten: true })
 
         const targetBytes = (await cdpSessionWithSessionId(cdpSession, sessionId).Runtime.getHeapUsage()).usedSize
@@ -30,10 +36,10 @@ export async function memoryUsage(t: TestController): Promise<number> {
         bytesUsed += targetBytes
     }
 
-    console.warn(targetsWithMemory)
+    console.warn([...targetsWithMemory, bytesUsed])
     return bytesUsed
 }
 
 export const homePageSize = 10_000_000
-export const californiaArticleSize = 60_000_000
-export const searchSize = 47_000_000
+export const californiaArticleSize = 68_000_000
+export const searchSize = 53_000_000

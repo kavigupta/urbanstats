@@ -1,0 +1,138 @@
+import math
+import re
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Type
+
+from urbanstats.metadata.congressional_representatives import (
+    Representative,
+    RepresentativeWithTerms,
+)
+from urbanstats.protobuf import data_files_pb2
+
+
+class MetadataColumn(ABC):
+    @abstractmethod
+    def create(
+        self, idx: int, value: Any, representative_table_builder: Optional[Any] = None
+    ) -> Optional[data_files_pb2.Metadata]:
+        pass
+
+    @abstractmethod
+    def export(self) -> Dict[str, Any]:
+        pass
+
+
+@dataclass
+class ExternalLinkMetadata(MetadataColumn):
+    site: str
+    link_prefix: str
+    normalizer: Optional[str] = None
+    show_in_metadata_table: bool = False
+
+    def create(
+        self, idx: int, value: Any, representative_table_builder: Optional[Any] = None
+    ) -> data_files_pb2.Metadata:
+        return data_files_pb2.Metadata(metadata_index=idx, string_value=value)
+
+    def export(self) -> Dict[str, Any]:
+        return dict(
+            site=self.site,
+            link_prefix=self.link_prefix,
+            normalizer=self.normalizer,
+            show_in_metadata_table=self.show_in_metadata_table,
+        )
+
+
+@dataclass
+class DisplayedMetadata(MetadataColumn):
+    typ: Type[Any]
+    name: str
+    show_in_metadata_table: bool = True
+    value_kind: str = "string"
+    category: str = field(kw_only=True)
+    data_credit_explanation_page: str = field(kw_only=True)
+
+    def create(
+        self, idx: int, value: Any, representative_table_builder: Optional[Any] = None
+    ) -> data_files_pb2.Metadata:
+        assert isinstance(
+            value, self.typ
+        ), f"Expected {self.typ}, got {type(value)} for value {value}"
+        assert self.typ == str
+        return data_files_pb2.Metadata(metadata_index=idx, string_value=value)
+
+    def export(self) -> Dict[str, Any]:
+        return dict(
+            name=self.name,
+            setting_key=setting_key(self.name),
+            show_in_metadata_table=self.show_in_metadata_table,
+            value_kind=self.value_kind,
+            category=self.category,
+            data_credit_explanation_page=self.data_credit_explanation_page,
+        )
+
+
+def setting_key(name: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+    return f"show_metadata_{slug}"
+
+
+def normalize_optional_string(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    if isinstance(value, float) and math.isnan(value):
+        return None
+    text = str(value)
+    assert text not in {"<NA>", "nan", "None"}, f"Unexpected string value: {text}"
+    if not text:
+        return None
+    return text
+
+
+def congressional_representative_proto(
+    representative: Representative,
+) -> data_files_pb2.CongressionalRepresentative:
+    assert isinstance(
+        representative, Representative
+    ), f"Expected Representative, got {type(representative)}"
+    message_kwargs: Dict[str, Any] = dict(
+        name=normalize_optional_string(representative.name) or ""
+    )
+    wikipedia_page = normalize_optional_string(representative.wikipedia_page)
+    if wikipedia_page is not None:
+        message_kwargs["wikipedia_page"] = wikipedia_page
+    party = normalize_optional_string(representative.party)
+    if party is not None:
+        message_kwargs["party"] = party
+    return data_files_pb2.CongressionalRepresentative(**message_kwargs)
+
+
+@dataclass
+class CongressionalRepresentativesMetadata(DisplayedMetadata):
+    value_kind: str = "congressional_representatives"
+
+    def create(
+        self,
+        idx: int,
+        value: List[RepresentativeWithTerms],
+        representative_table_builder: Optional[Any] = None,
+    ) -> Optional[data_files_pb2.Metadata]:
+        if not value:
+            return None
+
+        assert (
+            representative_table_builder is not None
+        ), "representative_table_builder is required for congressional representative metadata"
+
+        return data_files_pb2.Metadata(
+            metadata_index=idx,
+            congressional_representatives=[
+                data_files_pb2.CongressionalRepresentativePointer(
+                    representative_idx=representative_table_builder.index_for(val),
+                    start_term=val.start_term,
+                    end_term=val.end_term,
+                )
+                for val in value
+            ],
+        )

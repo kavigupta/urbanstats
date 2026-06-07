@@ -25,7 +25,10 @@ URBAN_AREAS = Shapefile(
     filter=lambda x: True,
     meta=dict(type="Urban Area", source="Census", type_category="Census"),
     does_overlap_self=False,
-    special_data_sources=[("census", "urban area")],
+    special_data_sources=[
+        ("census", "urban area"),
+        "congressional_representatives_indirect",
+    ],
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="URBA",
@@ -34,6 +37,5 @@ URBAN_AREAS = Shapefile(
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
     ),
     include_in_syau=True,
-    metadata_columns=["geoid"],
     wikidata_sourcer=SimpleWikidataSourcer("wdt:P12704", "geoid"),
 )

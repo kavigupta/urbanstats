@@ -11,7 +11,10 @@ ZCTAs = Shapefile(
     additional_columns_computer={"geoid": lambda x: x.GEOID10},
     meta=dict(type="ZIP", source="Census", type_category="Small"),
     does_overlap_self=False,
-    special_data_sources=[("census", "zip code tabulation area")],
+    special_data_sources=[
+        ("census", "zip code tabulation area"),
+        "congressional_representatives_indirect",
+    ],
     universe_provider=us_domestic_provider(),
     subset_masks={"USA": SelfSubset()},
     abbreviation="ZIP",
@@ -20,6 +23,5 @@ ZCTAs = Shapefile(
         link="https://www.census.gov/geographies/mapping-files/time-series/geo/carto-boundary-file.html",
     ),
     include_in_syau=False,
-    metadata_columns=["geoid"],
     wikidata_sourcer=None,
 )

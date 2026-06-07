@@ -1,8 +1,11 @@
-from dataclasses import dataclass
-from types import NoneType
+# pylint: disable=too-many-lines
+
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from urbanstats.data.census_blocks import RADII
 from urbanstats.data.gpw import GPW_RADII
+from urbanstats.metadata.export import export_metadata_types
 
 from .stat_path import get_statistic_column_path
 
@@ -19,7 +22,7 @@ class Source:
     priority: int
     variable_suffix: str
 
-    def json(self):
+    def json(self) -> Dict[str, Any]:
         return {"category": self.category, "name": self.name}
 
 
@@ -29,28 +32,31 @@ class MultiSource:
     Represent a statistic that is available from multiple sources.
     """
 
-    by_source: dict[str | NoneType, str]
-    multi_source_colname: str = None
-    indented_name: str = None
+    by_source: Dict[Optional[Source], Union[str, Tuple[str, ...]]]
+    multi_source_colname: Optional[str] = None
+    indented_name: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if None in self.by_source:
             assert len(self.by_source) == 1
         for source, col in self.by_source.items():
             assert isinstance(source, Source) or source is None
             assert isinstance(col, (str, tuple))
 
-    def internal_statistics(self):
+    def internal_statistics(self) -> List[Union[str, Tuple[str, ...]]]:
         return list(self.by_source.values())
 
-    def name_to_category(self, category_id):
+    def name_to_category(
+        self, category_id: str
+    ) -> Dict[Union[str, Tuple[str, ...]], str]:
         return {col: category_id for col in self.by_source.values()}
 
-    def flatten(self, name_map, names):
+    def flatten(self, name_map: Dict[str, str], names: List[str]) -> Dict[str, Any]:
         result = []
         for source, col in self.by_source.items():
             result.append(
                 {
+                    "kind": "data",
                     "source": source.json() if source is not None else None,
                     "column": names.index(col),
                 }
@@ -59,15 +65,48 @@ class MultiSource:
         output["indentedName"] = self.indented_name
         return output
 
-    def canonical_column(self):
+    def canonical_column(self) -> Union[str, Tuple[str, ...]]:
         if self.multi_source_colname is not None:
             return self.multi_source_colname
         assert len(self.by_source) == 1
         col = next(iter(self.by_source.values()))
         return col
 
-    def compute_name(self, name_map):
+    def compute_name(self, name_map: Dict[str, str]) -> str:
         return name_map[self.canonical_column()]
+
+
+@dataclass
+class MetadataMultiSource(MultiSource):
+    metadata_index: int = field(kw_only=True)
+    metadata_path: str = field(kw_only=True)
+    metadata_value_type: str = field(kw_only=True)
+    metadata_name: str = field(kw_only=True)
+
+    def internal_statistics(self) -> List[Any]:
+        return []
+
+    def name_to_category(self, category_id: str) -> Dict[Any, str]:
+        return {}
+
+    def flatten(self, name_map: Dict[str, str], names: List[str]) -> Dict[str, Any]:
+        output = {
+            "name": self.metadata_name,
+            "stats": [
+                {
+                    "kind": "metadata",
+                    "source": None,
+                    "path": self.metadata_path,
+                    "metadata_index": self.metadata_index,
+                    "value_type": self.metadata_value_type,
+                }
+            ],
+        }
+        output["indentedName"] = self.indented_name
+        return output
+
+    def compute_name(self, name_map: Dict[str, str]) -> str:
+        return self.metadata_name
 
 
 @dataclass
@@ -76,17 +115,17 @@ class StatisticGroup:
     Represents a statistic that is available for multiple years.
     """
 
-    by_year: dict[int | NoneType, list[MultiSource]]
-    group_name_statcol: str = None
-    group_name: str = None
+    by_year: Dict[Optional[int], List[MultiSource]]
+    group_name_statcol: Optional[str] = None
+    group_name: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         for year, cols in self.by_year.items():
             assert year in {2000, 2010, 2020, None}
             assert isinstance(cols, list)
             assert all(isinstance(col, MultiSource) for col in cols), cols
 
-    def internal_statistics(self):
+    def internal_statistics(self) -> List[Union[str, Tuple[str, ...]]]:
         return [
             col
             for multi_sources in self.by_year.values()
@@ -94,7 +133,9 @@ class StatisticGroup:
             for col in multi_source.internal_statistics()
         ]
 
-    def name_to_category(self, category_id):
+    def name_to_category(
+        self, category_id: str
+    ) -> Dict[Union[str, Tuple[str, ...]], str]:
         result = {}
         for _, stats in self.by_year.items():
             for stat_by_source in stats:
@@ -102,7 +143,12 @@ class StatisticGroup:
         return result
 
     @staticmethod
-    def flatten_year(year, stats, name_map, names):
+    def flatten_year(
+        year: Optional[int],
+        stats: List[MultiSource],
+        name_map: Dict[str, str],
+        names: List[str],
+    ) -> Dict[str, Any]:
         assert isinstance(year, int) or year is None, year
         stats_processed = []
         for stat in stats:
@@ -110,10 +156,10 @@ class StatisticGroup:
 
         return {"year": year, "stats_by_source": stats_processed}
 
-    def flatten(self, name_map, group_id):
-        group_id = get_statistic_column_path(group_id)
+    def flatten(self, name_map: Dict[str, str], group_id: str) -> Dict[str, Any]:
+        group_id_path = get_statistic_column_path(group_id)
         return {
-            "id": group_id,
+            "id": group_id_path,
             "name": self.compute_group_name(name_map),
             "contents": [
                 self.flatten_year(year, stats, name_map, list(name_map))
@@ -121,14 +167,14 @@ class StatisticGroup:
             ],
         }
 
-    def compute_group_name(self, name_map):
+    def compute_group_name(self, name_map: Dict[str, str]) -> str:
         if self.group_name is not None:
             assert self.group_name_statcol is None
             return self.group_name
         short_statcol = self.group_name_statcol
         if short_statcol is None:
-            year = None if None in self.by_year else max(self.by_year)
-            short_statcol = self.by_year[year][0].by_source[None]
+            year_to_use = None if None in self.by_year else max(self.by_year)
+            short_statcol = self.by_year[year_to_use][0].by_source[None]
         group_name = name_map[short_statcol]
         if len(self.by_year) > 1:
             for year in self.by_year:
@@ -146,29 +192,31 @@ class StatisticCategory:
     """
 
     name: str
-    contents: dict[str, StatisticGroup]
+    contents: Dict[str, StatisticGroup]
 
-    def __post_init__(self):
-        assert isinstance(self.name, str)
+    def __post_init__(self) -> None:
+        assert isinstance(self.name, str), self
         assert isinstance(self.contents, dict)
         assert all(
             isinstance(value, StatisticGroup) for value in self.contents.values()
         )
 
-    def internal_statistics(self):
+    def internal_statistics(self) -> List[Union[str, Tuple[str, ...]]]:
         return [
             col
             for group in self.contents.values()
             for col in group.internal_statistics()
         ]
 
-    def name_to_category(self, category_id):
+    def name_to_category(
+        self, category_id: str
+    ) -> Dict[Union[str, Tuple[str, ...]], str]:
         result = {}
         for _, group in self.contents.items():
             result.update(group.name_to_category(category_id))
         return result
 
-    def flatten(self, category_id, name_map):
+    def flatten(self, category_id: str, name_map: Dict[str, str]) -> Dict[str, Any]:
         return {
             "id": category_id,
             "name": self.name,
@@ -185,35 +233,35 @@ class StatisticTree:
     Represents the entire tree of statistics.
     """
 
-    categories: dict[str, StatisticCategory]
+    categories: Dict[str, StatisticCategory]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         assert isinstance(self.categories, dict)
         assert all(isinstance(key, str) for key in self.categories)
         assert all(
             isinstance(value, StatisticCategory) for value in self.categories.values()
         )
 
-    def internal_statistics(self):
+    def internal_statistics(self) -> List[Union[str, Tuple[str, ...]]]:
         return [
             col
             for category in self.categories.values()
             for col in category.internal_statistics()
         ]
 
-    def name_to_category(self):
+    def name_to_category(self) -> Dict[Union[str, Tuple[str, ...]], str]:
         result = {}
         for category_id, category in self.categories.items():
             result.update(category.name_to_category(category_id))
         return result
 
-    def flatten(self, name_map):
+    def flatten(self, name_map: Dict[str, str]) -> List[Dict[str, Any]]:
         return [
             category.flatten(category_id, name_map)
             for category_id, category in self.categories.items()
         ]
 
-    def all_sources(self):
+    def all_sources(self) -> List[Source]:
         result = []
         for category in self.categories.values():
             for group in category.contents.values():
@@ -221,19 +269,21 @@ class StatisticTree:
                     for stat in stats:
                         for source in stat.by_source:
                             result.append(source)
-        deduplicated_sources = []
+        deduplicated_sources: List[Source] = []
         for source in result:
             if source not in deduplicated_sources and source is not None:
                 deduplicated_sources.append(source)
         return deduplicated_sources
 
 
-def single_source(col_name, indented_name=None):
+def single_source(
+    col_name: Union[str, Tuple[str, ...]], indented_name: Optional[str] = None
+) -> MultiSource:
     return MultiSource({None: col_name}, indented_name=indented_name)
 
 
-def census_basics(col_name, *, change):
-    results = {
+def census_basics(col_name: str, *, change: bool) -> Dict[str, StatisticGroup]:
+    results: Dict[Optional[int], List[MultiSource]] = {
         2020: [single_source(col_name, indented_name="2020")],
     }
     for year in [2010, 2000]:
@@ -244,11 +294,11 @@ def census_basics(col_name, *, change):
                     f"{col_name}_change_{year}", indented_name=f"{year}-2020 Change"
                 )
             )
-    results = StatisticGroup(results)
-    return {col_name: results}
+    group = StatisticGroup(results)
+    return {col_name: group}
 
 
-def census_segregation(col_name):
+def census_segregation(col_name: str) -> Dict[str, StatisticGroup]:
     return {
         col_name: StatisticGroup(
             {
@@ -270,7 +320,7 @@ def census_segregation(col_name):
     }
 
 
-def just_2020(*col_names, year=2020):
+def just_2020(*col_names: str, year: int = 2020) -> Dict[str, StatisticGroup]:
     return {
         col_name: StatisticGroup(
             {year: [single_source(col_name, indented_name="2020")]}
@@ -279,7 +329,9 @@ def just_2020(*col_names, year=2020):
     }
 
 
-def just_2020_with_canada(*col_names, year=2020):
+def just_2020_with_canada(
+    *col_names: str, year: int = 2020
+) -> Dict[str, StatisticGroup]:
     return {
         col_name: StatisticGroup(
             {
@@ -300,7 +352,9 @@ def just_2020_with_canada(*col_names, year=2020):
     }
 
 
-def just_2020_category(cat_key, cat_name, *col_names, year=2020):
+def just_2020_category(
+    cat_key: str, cat_name: str, *col_names: str, year: int = 2020
+) -> Dict[str, StatisticCategory]:
     return {
         cat_key: StatisticCategory(
             name=cat_name,
@@ -309,7 +363,9 @@ def just_2020_category(cat_key, cat_name, *col_names, year=2020):
     }
 
 
-def just_2020_category_with_canada(cat_key, cat_name, *col_names, year=2020):
+def just_2020_category_with_canada(
+    cat_key: str, cat_name: str, *col_names: str, year: int = 2020
+) -> Dict[str, StatisticCategory]:
     return {
         cat_key: StatisticCategory(
             name=cat_name,
@@ -333,9 +389,11 @@ population_ghsl = Source(
 )
 
 
-def census_basics_with_ghs_and_canada(col_name, gpw_name, canada_name, *, change):
+def census_basics_with_ghs_and_canada(
+    col_name: str, gpw_name: Optional[str], canada_name: str, *, change: bool
+) -> Dict[str, StatisticGroup]:
     result = census_basics(col_name, change=change)
-    by_source = {
+    by_source: Dict[Optional[Source], Union[str, Tuple[str, ...]]] = {
         population_census: col_name,
         population_canada: canada_name,
         population_ghsl: gpw_name,
@@ -344,8 +402,107 @@ def census_basics_with_ghs_and_canada(col_name, gpw_name, canada_name, *, change
     result[col_name].by_year[2020] = [
         MultiSource(by_source, col_name, indented_name="2020")
     ]
+    # Also add Canadian 2011 data directly associated with 2010 US census
+    assert "_2021_" in canada_name, f"{canada_name!r}"
+    canada_2011_name = canada_name.replace("_2021_", "_2011_")
+    result[col_name].by_year[2010] = [
+        MultiSource(
+            {
+                population_census: f"{col_name}_2010",
+                population_canada: canada_2011_name,
+            },
+            f"{col_name}_2010",
+            indented_name="2010",
+        )
+    ]
+    if change:
+        # Add both US and Canadian change statistics
+        result[col_name].by_year[2010].append(
+            MultiSource(
+                {
+                    population_census: f"{col_name}_change_2010",
+                    population_canada: canada_2011_name.replace(
+                        "_2011_", "_change_2011_"
+                    ),
+                },
+                f"{col_name}_change_2010",
+                indented_name="2010-2020 Change",
+            )
+        )
     result[col_name].group_name_statcol = col_name
     return result
+
+
+def census_basics_with_canada(
+    col_name: str, canada_name: Optional[str] = None, *, change: bool
+) -> Dict[str, StatisticGroup]:
+    if canada_name is None:
+        canada_name = f"{col_name}_canada"
+    result = census_basics(col_name, change=change)
+    by_source: Dict[Optional[Source], Union[str, Tuple[str, ...]]] = {
+        population_census: col_name,
+        population_canada: canada_name,
+    }
+    result[col_name].by_year[2020] = [
+        MultiSource(by_source, col_name, indented_name="2020")
+    ]
+    result[col_name].group_name_statcol = col_name
+    return result
+
+
+def geographic_ids_metadata_category() -> Dict[str, StatisticCategory]:
+    metadata = export_metadata_types()
+    contents = {}
+
+    for entry in metadata["displayed_metadata"]:
+        if not entry["show_in_metadata_table"]:
+            continue
+        if entry["category"] != "geoid":
+            continue
+        metadata_path = get_statistic_column_path(f"metadata_{entry['setting_key']}")
+        contents[metadata_path] = StatisticGroup(
+            {
+                None: [
+                    MetadataMultiSource(
+                        by_source={None: metadata_path},
+                        metadata_index=entry["index"],
+                        metadata_path=metadata_path,
+                        metadata_value_type="string",
+                        metadata_name=entry["name"],
+                    )
+                ]
+            },
+            group_name=entry["name"],
+        )
+
+    return {
+        "geoid": StatisticCategory(
+            name="Geographic Identifiers",
+            contents=contents,
+        )
+    }
+
+
+def congressional_representatives_metadata_group() -> StatisticGroup:
+    metadata = export_metadata_types()
+    [entry] = [
+        entry
+        for entry in metadata["displayed_metadata"]
+        if entry["setting_key"] == "show_metadata_representatives"
+    ]
+    source = MetadataMultiSource(
+        by_source={
+            None: get_statistic_column_path("metadata_show_metadata_representatives")
+        },
+        metadata_index=entry["index"],
+        metadata_path=get_statistic_column_path(
+            "metadata_show_metadata_representatives"
+        ),
+        metadata_value_type="string",
+        metadata_name="Congressional Representatives",
+    )
+
+    return StatisticGroup({None: [source]}, group_name="Congressional Representatives")
 
 
 statistics_tree = StatisticTree(
@@ -378,30 +535,59 @@ statistics_tree = StatisticTree(
         "race": StatisticCategory(
             name="Race",
             contents={
-                **census_basics("white", change=False),
-                **census_basics("hispanic", change=False),
-                **census_basics("black", change=False),
-                **census_basics("asian", change=False),
-                **census_basics("native", change=False),
-                **census_basics("hawaiian_pi", change=False),
-                **census_basics("other / mixed", change=False),
+                **census_basics_with_canada("white", change=False),
+                **census_basics_with_canada("hispanic", change=False),
+                **census_basics_with_canada("black", change=False),
+                **census_basics_with_canada("asian", change=False),
+                **census_basics_with_canada("native", change=False),
+                **census_basics_with_canada("hawaiian_pi", change=False),
+                **census_basics_with_canada("other / mixed", change=False),
                 **census_segregation("homogeneity_250"),
                 **census_segregation("segregation_250"),
                 **census_segregation("segregation_250_10"),
             },
         ),
-        **just_2020_category(
-            "national_origin",
-            "National Origin",
-            "citizenship_citizen_by_birth",
-            "citizenship_citizen_by_naturalization",
-            "citizenship_not_citizen",
-            "birthplace_non_us",
-            "birthplace_us_not_state",
-            "birthplace_us_state",
-            "language_english_only",
-            "language_spanish",
-            "language_other",
+        "national_origin": StatisticCategory(
+            name="National Origin",
+            contents={
+                **just_2020_with_canada(
+                    "citizenship_citizen_by_birth",
+                    "citizenship_citizen_by_naturalization",
+                    "citizenship_not_citizen",
+                ),
+                **just_2020(
+                    "birthplace_non_us",
+                    "birthplace_us_not_state",
+                    "birthplace_us_state",
+                ),
+                **just_2020_with_canada(
+                    "language_english_only",
+                    "language_spanish",
+                ),
+                **just_2020(
+                    "language_french_canada",
+                    "language_other_non_french_canada",
+                ),
+                **just_2020(
+                    "language_other",
+                ),
+            },
+        ),
+        "religion": StatisticCategory(
+            name="Religion",
+            contents={
+                **just_2020(
+                    "religion_no_religion_canada",
+                    "religion_catholic_canada",
+                    "religion_protestant_canada",
+                    "religion_hindu_canada",
+                    "religion_jewish_canada",
+                    "religion_muslim_canada",
+                    "religion_sikh_canada",
+                    "religion_buddhist_canada",
+                    "religion_other_canada",
+                ),
+            },
         ),
         **just_2020_category(
             "education",
@@ -415,6 +601,9 @@ statistics_tree = StatisticTree(
             "education_field_stem",
             "education_field_humanities",
             "education_field_business",
+            "education_field_stem_canada",
+            "education_field_humanities_canada",
+            "education_field_business_canada",
             "female_hs_gap_4",
             "female_ugrad_gap_4",
             "female_grad_gap_4",
@@ -435,6 +624,7 @@ statistics_tree = StatisticTree(
             "median_household_income",
             "poverty_below_line",
             "lico_at_canada",
+            "lim_at_canada",
             "household_income_under_50k",
             "household_income_50k_to_100k",
             "household_income_over_100k",
@@ -451,7 +641,8 @@ statistics_tree = StatisticTree(
         "housing": StatisticCategory(
             name="Housing",
             contents={
-                **census_basics("housing_per_pop", change=False),
+                **census_basics_with_canada("housing_per_pop", change=False),
+                **census_basics_with_canada("housing_per_person", change=False),
                 **census_basics("vacancy", change=False),
                 **just_2020(
                     "rent_burden_under_20",
@@ -469,19 +660,26 @@ statistics_tree = StatisticTree(
                     "year_built_1990_to_1999",
                     "year_built_2000_to_2009",
                     "year_built_2010_or_later",
+                ),
+                **just_2020_with_canada(
+                    "household_size_pw",
+                ),
+                **just_2020_with_canada(
                     "rent_or_own_rent",
+                ),
+                **just_2020(
+                    "rent_burden_over_30_canada",
                 ),
             },
         ),
         "transportation": StatisticCategory(
             name="Transportation",
             contents={
-                **just_2020(
-                    "transportation_means_car",
-                    "transportation_means_bike",
-                    "transportation_means_walk",
-                    "transportation_means_transit",
-                    "transportation_means_worked_at_home",
+                **just_2020_with_canada(
+                    "transportation_means_car_no_wfh",
+                    "transportation_means_bike_no_wfh",
+                    "transportation_means_walk_no_wfh",
+                    "transportation_means_transit_no_wfh",
                 ),
                 **just_2020_with_canada(
                     "transportation_commute_time_median",
@@ -568,34 +766,49 @@ statistics_tree = StatisticTree(
             "industry_utilities",
             "industry_wholesale_trade",
         ),
-        **just_2020_category(
-            "occupation",
-            "Occupation",
-            "occupation_architecture_and_engineering_occupations",
-            "occupation_computer_and_mathematical_occupations",
-            "occupation_life,_physical,_and_social_science_occupations",
-            "occupation_arts,_design,_entertainment,_sports,_and_media_occupations",
-            "occupation_community_and_social_service_occupations",
-            "occupation_educational_instruction,_and_library_occupations",
-            "occupation_legal_occupations",
-            "occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations",
-            "occupation_health_technologists_and_technicians",
-            "occupation_business_and_financial_operations_occupations",
-            "occupation_management_occupations",
-            "occupation_construction_and_extraction_occupations",
-            "occupation_farming,_fishing,_and_forestry_occupations",
-            "occupation_installation,_maintenance,_and_repair_occupations",
-            "occupation_material_moving_occupations",
-            "occupation_production_occupations",
-            "occupation_transportation_occupations",
-            "occupation_office_and_administrative_support_occupations",
-            "occupation_sales_and_related_occupations",
-            "occupation_building_and_grounds_cleaning_and_maintenance_occupations",
-            "occupation_food_preparation_and_serving_related_occupations",
-            "occupation_healthcare_support_occupations",
-            "occupation_personal_care_and_service_occupations",
-            "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors",
-            "occupation_law_enforcement_workers_including_supervisors",
+        "occupation": StatisticCategory(
+            name="Occupation",
+            contents={
+                **just_2020(
+                    "occupation_architecture_and_engineering_occupations",
+                    "occupation_computer_and_mathematical_occupations",
+                    "occupation_life,_physical,_and_social_science_occupations",
+                    "occupation_arts,_design,_entertainment,_sports,_and_media_occupations",
+                    "occupation_community_and_social_service_occupations",
+                    "occupation_educational_instruction,_and_library_occupations",
+                    "occupation_legal_occupations",
+                    "occupation_health_diagnosing_and_treating_practitioners_and_other_technical_occupations",
+                    "occupation_health_technologists_and_technicians",
+                    "occupation_business_and_financial_operations_occupations",
+                    "occupation_management_occupations",
+                    "occupation_construction_and_extraction_occupations",
+                    "occupation_farming,_fishing,_and_forestry_occupations",
+                    "occupation_installation,_maintenance,_and_repair_occupations",
+                    "occupation_material_moving_occupations",
+                    "occupation_production_occupations",
+                    "occupation_transportation_occupations",
+                    "occupation_office_and_administrative_support_occupations",
+                    "occupation_sales_and_related_occupations",
+                    "occupation_building_and_grounds_cleaning_and_maintenance_occupations",
+                    "occupation_food_preparation_and_serving_related_occupations",
+                    "occupation_healthcare_support_occupations",
+                    "occupation_personal_care_and_service_occupations",
+                    "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors",
+                    "occupation_law_enforcement_workers_including_supervisors",
+                ),
+                **just_2020(
+                    "occupation_legislative_and_senior_management_canada",
+                    "occupation_business_finance_and_administration_canada",
+                    "occupation_natural_and_applied_sciences_canada",
+                    "occupation_health_canada",
+                    "occupation_education_law_social_community_government_canada",
+                    "occupation_art_culture_recreation_sport_canada",
+                    "occupation_sales_and_service_canada",
+                    "occupation_trades_transport_equipment_canada",
+                    "occupation_natural_resources_agriculture_canada",
+                    "occupation_manufacturing_utilities_canada",
+                ),
+            },
         ),
         "relationships": StatisticCategory(
             name="Relationships",
@@ -640,7 +853,134 @@ statistics_tree = StatisticTree(
                         ],
                     },
                     group_name="US Presidential Election",
-                )
+                ),
+                "canada_general_election_coalition_margin": StatisticGroup(
+                    {
+                        2020: [
+                            single_source(col_name, indented_name=indented_name)
+                            for (col_name, indented_name) in [
+                                (("2015GE", "coalition_margin"), "2015"),
+                                (
+                                    ("2015-2019 Swing", "coalition_margin"),
+                                    "2015-2019 Swing",
+                                ),
+                                (("2019GE", "coalition_margin"), "2019"),
+                                (
+                                    ("2019-2021 Swing", "coalition_margin"),
+                                    "2019-2021 Swing",
+                                ),
+                                (("2021GE", "coalition_margin"), "2021"),
+                                (
+                                    ("2021-2025 Swing", "coalition_margin"),
+                                    "2021-2025 Swing",
+                                ),
+                                (("2025GE", "coalition_margin"), "2025"),
+                            ]
+                        ],
+                    },
+                    group_name="Canadian GE: 2-Coalition Margin",
+                ),
+                "canada_general_election_lib": StatisticGroup(
+                    {
+                        2020: [
+                            single_source(col_name, indented_name=indented_name)
+                            for (col_name, indented_name) in [
+                                (("2015GE", "V_LIB"), "2015"),
+                                (("2015-2019 Swing", "V_LIB"), "2015-2019 Swing"),
+                                (("2019GE", "V_LIB"), "2019"),
+                                (("2019-2021 Swing", "V_LIB"), "2019-2021 Swing"),
+                                (("2021GE", "V_LIB"), "2021"),
+                                (("2021-2025 Swing", "V_LIB"), "2021-2025 Swing"),
+                                (("2025GE", "V_LIB"), "2025"),
+                            ]
+                        ],
+                    },
+                    group_name="Canadian GE: Liberal",
+                ),
+                "canada_general_election_con": StatisticGroup(
+                    {
+                        2020: [
+                            single_source(col_name, indented_name=indented_name)
+                            for (col_name, indented_name) in [
+                                (("2015GE", "V_CON"), "2015"),
+                                (("2015-2019 Swing", "V_CON"), "2015-2019 Swing"),
+                                (("2019GE", "V_CON"), "2019"),
+                                (("2019-2021 Swing", "V_CON"), "2019-2021 Swing"),
+                                (("2021GE", "V_CON"), "2021"),
+                                (("2021-2025 Swing", "V_CON"), "2021-2025 Swing"),
+                                (("2025GE", "V_CON"), "2025"),
+                            ]
+                        ],
+                    },
+                    group_name="Canadian GE: Conservative",
+                ),
+                "canada_general_election_ndp": StatisticGroup(
+                    {
+                        2020: [
+                            single_source(col_name, indented_name=indented_name)
+                            for (col_name, indented_name) in [
+                                (("2015GE", "V_NDP"), "2015"),
+                                (("2015-2019 Swing", "V_NDP"), "2015-2019 Swing"),
+                                (("2019GE", "V_NDP"), "2019"),
+                                (("2019-2021 Swing", "V_NDP"), "2019-2021 Swing"),
+                                (("2021GE", "V_NDP"), "2021"),
+                                (("2021-2025 Swing", "V_NDP"), "2021-2025 Swing"),
+                                (("2025GE", "V_NDP"), "2025"),
+                            ]
+                        ],
+                    },
+                    group_name="Canadian GE: NDP",
+                ),
+                "canada_general_election_bq": StatisticGroup(
+                    {
+                        2020: [
+                            single_source(col_name, indented_name=indented_name)
+                            for (col_name, indented_name) in [
+                                (("2015GE", "V_BQ"), "2015"),
+                                (("2015-2019 Swing", "V_BQ"), "2015-2019 Swing"),
+                                (("2019GE", "V_BQ"), "2019"),
+                                (("2019-2021 Swing", "V_BQ"), "2019-2021 Swing"),
+                                (("2021GE", "V_BQ"), "2021"),
+                                (("2021-2025 Swing", "V_BQ"), "2021-2025 Swing"),
+                                (("2025GE", "V_BQ"), "2025"),
+                            ]
+                        ],
+                    },
+                    group_name="Canadian GE: Bloc Québécois",
+                ),
+                "canada_general_election_grn": StatisticGroup(
+                    {
+                        2020: [
+                            single_source(col_name, indented_name=indented_name)
+                            for (col_name, indented_name) in [
+                                (("2015GE", "V_GRN"), "2015"),
+                                (("2015-2019 Swing", "V_GRN"), "2015-2019 Swing"),
+                                (("2019GE", "V_GRN"), "2019"),
+                                (("2019-2021 Swing", "V_GRN"), "2019-2021 Swing"),
+                                (("2021GE", "V_GRN"), "2021"),
+                                (("2021-2025 Swing", "V_GRN"), "2021-2025 Swing"),
+                                (("2025GE", "V_GRN"), "2025"),
+                            ]
+                        ],
+                    },
+                    group_name="Canadian GE: Green",
+                ),
+                "canada_general_election_ppc": StatisticGroup(
+                    {
+                        2020: [
+                            single_source(col_name, indented_name=indented_name)
+                            for (col_name, indented_name) in [
+                                (("2019GE", "V_PPC"), "2019"),
+                                (("2019-2021 Swing", "V_PPC"), "2019-2021 Swing"),
+                                (("2021GE", "V_PPC"), "2021"),
+                                (("2021-2025 Swing", "V_PPC"), "2021-2025 Swing"),
+                                (("2025GE", "V_PPC"), "2025"),
+                            ]
+                        ],
+                    },
+                    group_name="Canadian GE: PPC",
+                ),
+                "metadata_show_metadata_congressional_representatives": congressional_representatives_metadata_group(),
             },
         ),
         **just_2020_category(
@@ -694,6 +1034,7 @@ statistics_tree = StatisticTree(
             "insurance_coverage_govt",
             "insurance_coverage_private",
         ),
+        **geographic_ids_metadata_category(),
         "other_densities": StatisticCategory(
             name="Other Density Metrics",
             contents={
@@ -718,6 +1059,11 @@ statistics_tree = StatisticTree(
             "mean_high_temp_winter_4",
             "mean_high_temp_fall_4",
             "mean_high_temp_spring_4",
+            "transportation_means_car",
+            "transportation_means_bike",
+            "transportation_means_walk",
+            "transportation_means_transit",
+            "transportation_means_worked_at_home",
         ),
     }
 )

@@ -96,6 +96,23 @@ class GlobalWeatherStatistics(GeographicStatistics):
     def explanation_page_for_each_statistic(self):
         return self.same_for_each_name("weather")
 
+    def deprecation_for_each_statistic(self):
+        result = self.same_for_each_name(None)
+        vname = self.varname_for_each_statistic()
+        nname = self.name_for_each_statistic()
+        replaced_by = {
+            "mean_high_temp_winter_4": "mean_high_temp_djf",
+            "mean_high_temp_spring_4": "mean_high_temp_mam",
+            "mean_high_temp_summer_4": "mean_high_temp_jja",
+            "mean_high_temp_fall_4": "mean_high_temp_son",
+        }
+        for old, new in replaced_by.items():
+            result[old] = (
+                f"Use {vname[new]} ({nname[new]}) instead,"
+                " which uses month-based seasons instead and is valid in the southern hemisphere"
+            )
+        return result
+
     def quiz_question_descriptors(self):
         shortnames = {
             "mean_high_temp_4": "higher mean daily high temperature (population weighted)",

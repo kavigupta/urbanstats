@@ -3,16 +3,18 @@ import path from 'path'
 import { gzipSync, gunzipSync } from 'zlib'
 
 import chalkTemplate from 'chalk-template'
+import type { Protocol } from 'devtools-protocol'
 import downloadsFolder from 'downloads-folder'
 import { ClientFunction, Selector } from 'testcafe'
 import xmlFormat from 'xml-formatter'
 
+import { port } from '../port'
 import type { TestWindow } from '../src/utils/TestUtils'
 import { checkString } from '../src/utils/checkString'
 
 import { urlFromCode } from './mapper-utils'
 
-export const target = process.env.URBANSTATS_TEST_TARGET ?? 'http://localhost:8000'
+export const target = process.env.URBANSTATS_TEST_TARGET ?? `http://localhost:${port()}`
 export const searchField = Selector('input').withAttribute('placeholder', 'Search Urban Stats')
 export const getLocation = ClientFunction(() => document.location.href)
 export const getLocationWithoutSettings = ClientFunction(() => {
@@ -87,19 +89,25 @@ export async function waitForQuizLoading(t: TestController): Promise<void> {
 }
 
 export async function waitForLoading(): Promise<void> {
-    return ClientFunction(() => (window as unknown as TestWindow).testUtils.waitForLoading())()
+    return ClientFunction(() => (window as unknown as TestWindow).testUtils.waitForLoading('test_utils'))()
 }
 
-async function prepForImage(t: TestController, options: { hover: boolean }): Promise<void> {
+async function prepForImage(t: TestController, options: { hover: boolean, removeEntireMap: boolean }): Promise<void> {
     if (options.hover) {
-        await t.hover('#searchbox') // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
+        await t.hover('body', { offsetX: 0, offsetY: 0 }) // Ensure the mouse pointer isn't hovering over any elements that change appearance when hovered over
     }
     await t.eval(() => {
-        // disable the map, so that we're not testing the tiles
-        for (const x of Array.from(document.getElementsByClassName('maplibregl-canvas-container'))) {
-            if (x instanceof HTMLElement) {
-                x.style.visibility = 'hidden'
+        if (options.removeEntireMap) {
+            // disable the map, so that we're not testing the tiles
+            for (const x of Array.from(document.getElementsByClassName('maplibregl-canvas-container'))) {
+                if (x instanceof HTMLElement) {
+                    x.style.visibility = 'hidden'
+                }
             }
+        }
+        else {
+            // disable the basemap layers, so that we're not testing the tiles
+            (window as unknown as TestWindow).testUtils.disableBasemapLayers()
         }
 
         for (const x of Array.from(document.getElementsByClassName('juxtastat-user-id'))) {
@@ -107,11 +115,14 @@ async function prepForImage(t: TestController, options: { hover: boolean }): Pro
         }
 
         // remove the flashing text caret
-        document.querySelectorAll('input[type=text]').forEach((element) => { element.setAttribute('style', `${element.getAttribute('style')} caret-color: transparent;`) })
+        document.querySelectorAll('input[type=text],textarea,[contenteditable]:not([contenteditable="false"])').forEach((element) => { element.setAttribute('style', `${element.getAttribute('style')} caret-color: transparent;`) })
 
         // stop all animations (intended for moving spinners)
         document.querySelectorAll('[style*=animation]').forEach((element) => { (element as HTMLElement).style.animation = 'none' })
-    })
+
+        // hide corners on some elements where having corners causes screenshot comparison flakes
+        document.querySelectorAll('[data-test-hide-corners]').forEach((element) => { (element as HTMLElement).style.borderRadius = '0px' })
+    }, { dependencies: { options } })
 }
 
 let screenshotNumber = 0
@@ -121,13 +132,13 @@ function screenshotPath(t: TestController): string {
     return `${t.browser.name}/${t.test.name}-${screenshotNumber}.png`
 }
 
-type ScreencapOptions = { wait?: boolean, fullPage?: boolean } & ({ selector?: undefined } | ({ selector?: Selector } & TakeElementScreenshotOptions))
+type ScreencapOptions = { wait?: boolean, fullPage?: boolean, removeEntireMap?: boolean } & ({ selector?: undefined } | ({ selector?: Selector } & TakeElementScreenshotOptions))
 
-export async function screencap(t: TestController, { fullPage = true, wait = true, selector, ...options }: ScreencapOptions = {}): Promise<void> {
+export async function screencap(t: TestController, { fullPage = true, wait = true, selector, removeEntireMap = true, ...options }: ScreencapOptions = {}): Promise<void> {
     if (wait) {
         await waitForLoading()
     }
-    await prepForImage(t, { hover: fullPage })
+    await prepForImage(t, { hover: fullPage, removeEntireMap })
     if (selector !== undefined) {
         await t.takeElementScreenshot(selector, screenshotPath(t), options)
     }
@@ -259,7 +270,10 @@ async function printConsoleMessages(t: TestController): Promise<void> {
     consoleEnabled.add(cdp)
     cdp.Console.on('messageAdded', (event) => {
         const timestamp = new Date().toISOString()
-        if (event.message.text.includes('[failtest]')) {
+        if (
+            event.message.text.includes('[failtest]')
+            || event.message.text.includes('Encountered two children with the same key') // This React error only shows up in dev mode, but it's helpful to catch when running tests locally.
+        ) {
             failTestConsoleMessages.push(event.message.text)
         }
         let text: string
@@ -398,10 +412,6 @@ export async function createComparison(t: TestController, searchTerm: string, ex
     await t.pressKey('enter')
 }
 
-export async function getAllElements(selector: Selector): Promise<NodeSnapshot[]> {
-    return Promise.all(Array.from({ length: await selector.count }).map((_, i) => selector.nth(i)()))
-}
-
 export function mapFeatureName(r: RegExp): Promise<string | undefined> {
     return ClientFunction(() => {
         for (const { features } of (window as unknown as TestWindow).testUtils.clickableMaps.values()) {
@@ -481,4 +491,49 @@ export const mapper = (testFn: () => TestFn) => (
     // use Iceland and Urban Center as a quick test (less data to load)
     urbanstatsFixture(`quick-${code}`, urlFromCode(geo, universe, code))
     testFn()(name, testBlock)
+}
+
+export const goBack = ClientFunction(() => { window.history.back() })
+export const goForward = ClientFunction(() => { window.history.forward() })
+export const getScroll = ClientFunction(() => window.scrollY)
+
+export function dragHandle(n: number): Selector {
+    return Selector('button[aria-roledescription="sortable"]:not([inert] *)').nth(n)
+}
+
+type RequestHandler = (request: Protocol.Network.Request) => 'continue' | 'fail'
+
+const interceptors = new WeakMap<object, (h: RequestHandler) => void>()
+
+// Exists to simplify request interception for tests, since Fetch CDP is carried over between tests
+export async function withInterceptedRequests(t: TestController, requestHandler: RequestHandler, testBlock: () => void | Promise<void>): Promise<void> {
+    const cdp = await t.getCurrentCDPSession()
+    let interceptor = interceptors.get(cdp)
+    if (interceptor === undefined) {
+        // Interceptor's default state is to continue
+        let interceptorRequestHandler: RequestHandler = () => 'continue'
+        interceptor = (newRequestHandler) => {
+            interceptorRequestHandler = newRequestHandler
+        }
+        cdp.Fetch.on('requestPaused', async ({ requestId, request }) => {
+            switch (interceptorRequestHandler(request)) {
+                case 'continue':
+                    await cdp.Fetch.continueRequest({ requestId })
+                    break
+                case 'fail':
+                    await cdp.Fetch.failRequest({ requestId, errorReason: 'BlockedByClient' })
+                    break
+            }
+        })
+        interceptors.set(cdp, interceptor)
+    }
+    interceptor(requestHandler)
+    await cdp.Fetch.enable({})
+    try {
+        await testBlock()
+    }
+    finally {
+        interceptor(() => 'continue')
+        await cdp.Fetch.disable()
+    }
 }

@@ -22,7 +22,7 @@ export interface Table {
     title?: string
 }
 
-export const columnType = {
+const columnType = {
     type: 'opaque',
     name: 'column',
 } satisfies USSType

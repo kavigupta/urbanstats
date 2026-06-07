@@ -10,16 +10,19 @@
 import compression from 'compression'
 import express from 'express'
 import proxy from 'express-http-proxy'
-import { Octokit } from 'octokit'
 import { z } from 'zod'
 
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
+import { port } from '../../port'
+
+import { github } from './github-utils'
 
 export async function startProxy(): Promise<void> {
+    const { octokit } = await github()
+
     /**
      * If the user is using a branch that also exists on densitydb, we should use it as well.
      *
-     * Otherwise, use `master`
+     * Otherwise, use `main`
      */
     const targetBranch = z.string().parse(process.env.URBANSTATS_BRANCH_NAME)
 
@@ -29,8 +32,8 @@ export async function startProxy(): Promise<void> {
     })
 
     const branch = remoteBranches.find(({ name }) => name === targetBranch)
-        ?? remoteBranches.find(({ name }) => name === 'master')
-        ?? (() => { throw new Error('No master branch') })()
+        ?? remoteBranches.find(({ name }) => name === 'main')
+        ?? (() => { throw new Error('No main branch') })()
 
     // This is useful for debugging in case the proxy isn't working
     console.warn(`Proxy is using branch ${branch.name} (${branch.commit.sha})`)
@@ -59,5 +62,5 @@ export async function startProxy(): Promise<void> {
         }),
     )
 
-    app.listen(8000)
+    app.listen(port())
 }

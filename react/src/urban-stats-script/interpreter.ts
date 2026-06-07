@@ -43,6 +43,13 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
             const varName = expr.name.node
             const res = env.getVariable(varName)
             if (res !== undefined) {
+                if (res.documentation?.deprecated) {
+                    env.effect({
+                        type: 'warning',
+                        message: `Deprecated: ${res.documentation.deprecated}`,
+                        location: expr.name.location,
+                    })
+                }
                 return res
             }
             throw env.error(`Undefined variable: ${varName}`, expr.name.location)
@@ -180,7 +187,7 @@ export function execute(expr: UrbanStatsASTStatement, env: Context): USSValue {
     }
 }
 
-export function evaluateLHS(lhs: UrbanStatsASTLHS, value: USSValue, env: Context): void {
+function evaluateLHS(lhs: UrbanStatsASTLHS, value: USSValue, env: Context): void {
     switch (lhs.type) {
         case 'identifier':
             const varName = lhs.name.node

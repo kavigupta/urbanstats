@@ -23,4 +23,5 @@ MEDIA_MARKETS = Shapefile(
     ),
     include_in_syau=True,
     wikidata_sourcer=None,
+    special_data_sources=["congressional_representatives_indirect"],
 )

@@ -380,7 +380,7 @@ void test('parse custom nodes', (): void => {
     )
     assert.deepStrictEqual(
         unparse(parseProgram(`x = [1, 2, 3]
-            customNode("x * x")`), { simplify: true }),
+            customNode("x * x")`), { simplify: 'basic' }),
         'x = [1, 2, 3];\nx * x',
     )
 })
@@ -400,7 +400,7 @@ void test('unparse multi-line customNode', (): void => {
     )
     assert.deepStrictEqual(
         unparse(parseProgram(`x = [1, 2, 3]
-            customNode("y = x * x\\ny")`), { simplify: true }),
+            customNode("y = x * x\\ny")`), { simplify: 'basic' }),
         'x = [1, 2, 3];\ny = x * x\ny',
     )
 })
@@ -413,7 +413,7 @@ void test('unparse multi-line customNode in an expressional context', (): void =
         'x = [1, 2, 3];\n2 + customNode("y = x * x\\ny")',
     )
     assert.deepStrictEqual(
-        unparse(program, { simplify: true }),
+        unparse(program, { simplify: 'basic' }),
         'x = [1, 2, 3];\n2 + do { y = x * x; y }',
     )
 })
@@ -579,7 +579,7 @@ void test('unparse condition', (): void => {
         'condition (x)\ny = 2;\nz = 3',
     )
     assert.deepStrictEqual(
-        unparse(parseProgram('condition (customNode("x")); y = 2; z = 3'), { simplify: true }),
+        unparse(parseProgram('condition (customNode("x")); y = 2; z = 3'), { simplify: 'basic' }),
         'condition (x)\ny = 2;\nz = 3',
     )
 })
@@ -694,7 +694,7 @@ void test('unparse', (): void => {
         unparse({ type: 'statements', result: [
             { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '', entireLoc: noLocation } },
             { type: 'expression', value: { type: 'customNode', expr: { type: 'statements', result: [], entireLoc: noLocation }, originalCode: '', entireLoc: noLocation } },
-        ], entireLoc: noLocation }, { simplify: true }),
+        ], entireLoc: noLocation }, { simplify: 'basic' }),
         '',
     )
     assert.deepStrictEqual(
@@ -702,7 +702,7 @@ void test('unparse', (): void => {
         'condition (true)\nx = 2;\ny = 3',
     )
     assert.deepStrictEqual(
-        parseThenUnparse('condition(true); x = 2; y = 3', { simplify: true }),
+        parseThenUnparse('condition(true); x = 2; y = 3', { simplify: 'basic' }),
         'x = 2;\ny = 3',
     )
     assert.deepStrictEqual(
@@ -710,7 +710,7 @@ void test('unparse', (): void => {
         'customNode("x = 2\\ny = 3")',
     )
     assert.deepStrictEqual(
-        parseThenUnparse('customNode("x = 2\\ny = 3")', { simplify: true }),
+        parseThenUnparse('customNode("x = 2\\ny = 3")', { simplify: 'basic' }),
         'x = 2\ny = 3',
     )
     assert.deepStrictEqual(

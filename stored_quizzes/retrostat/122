@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2020 Presidential Election",
+      "stat_path": "2020 Presidential Election-margin",
+      "question": "!FULL Which voted more for Biden in the 2020 presidential election?",
+      "longname_a": "Spokane Urban Center, USA",
+      "longname_b": "Rochester (New York) Urban Center, USA",
+      "stat_a": 0.10037623538680666,
+      "stat_b": 0.38956274627045356
+    },
+    "b": {
+      "stat_column": "Uninsured %",
+      "stat_path": "insurance_coverage_none",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "Phoenix-Mesa-Scottsdale [Urban Area], AZ, USA",
+      "longname_b": "Baltimore [Urban Area], MD, USA",
+      "stat_a": 0.13673248555030804,
+      "stat_b": 0.06517774097178715
+    },
+    "a_ease": 0.7516025641025641,
+    "b_ease": 0.3450815360336665
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Private Insurance %",
+      "stat_path": "insurance_coverage_private",
+      "question": "higher % of people who are on private insurance!TOOLTIP The denominator for this statistic is the the total number of adults, including those without health insurance coverage.",
+      "longname_a": "Kansas, USA",
+      "longname_b": "New York, USA",
+      "stat_a": 0.7704522039214194,
+      "stat_b": 0.686794906387519
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Airport",
+      "stat_path": "mean_dist_Airport_updated",
+      "question": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+      "longname_a": "OH-03 (2023), USA",
+      "longname_b": "TX-05 (2023), USA",
+      "stat_a": 9.89357721421434,
+      "stat_b": 35.966763066768216
+    },
+    "a_ease": 0.2848545636910732,
+    "b_ease": 0.7038777908343126
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Utility gas heating %",
+      "stat_path": "heating_utility_gas",
+      "question": "!FULL Which has a larger % of homes heated using utility gas?",
+      "longname_a": "Durham County, North Carolina, USA",
+      "longname_b": "Marin County, California, USA",
+      "stat_a": 0.36005031560235706,
+      "stat_b": 0.6831226140274858
+    },
+    "b": {
+      "stat_column": "Mean high temp",
+      "stat_path": "mean_high_temp_4",
+      "question": "higher mean daily high temperature (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Mauritania",
+      "longname_b": "Guatemala",
+      "stat_a": 89.32672173008662,
+      "stat_b": 77.52450813824692
+    },
+    "a_ease": 0.23019057171514543,
+    "b_ease": 0.631246712256707
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Hispanic %",
+      "stat_path": "hispanic",
+      "question": "higher % of people who are Hispanic",
+      "longname_a": "Ogden-Clearfield MSA, UT, USA",
+      "longname_b": "Tuscaloosa MSA, AL, USA",
+      "stat_a": 0.13515182129426953,
+      "stat_b": 0.05173523821203017
+    },
+    "b": {
+      "stat_column": "Median Commute Time (min)",
+      "stat_path": "transportation_commute_time_median",
+      "question": "higher median commute time",
+      "longname_a": "MD-04 (2023), USA",
+      "longname_b": "AL-05 (2025), USA",
+      "stat_a": 33.29419998644603,
+      "stat_b": 22.424933405222298
+    },
+    "a_ease": 0.3547008547008547,
+    "b_ease": 0.7784131522516083
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Transit %",
+      "stat_path": "transportation_means_transit",
+      "question": "higher % of people who commute by transit",
+      "longname_a": "WA-05 (2023), USA",
+      "longname_b": "VA-06 (2023), USA",
+      "stat_a": 0.019366004068501884,
+      "stat_b": 0.008039345147213293
+    },
+    "b": {
+      "stat_column": "White %",
+      "stat_path": "white",
+      "question": "higher % of people who are White",
+      "longname_a": "TX-07 (2023), USA",
+      "longname_b": "NY-24 (2025), USA",
+      "stat_a": 0.27436970900419433,
+      "stat_b": 0.8768744264586452
+    },
+    "a_ease": 0.3094900849858357,
+    "b_ease": 0.7916885849552867
+  }
+]

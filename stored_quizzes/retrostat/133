@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Non-citizen %",
+      "stat_path": "citizenship_not_citizen",
+      "question": "higher % of residents who are non-citizens",
+      "longname_a": "OH-08 (2023), USA",
+      "longname_b": "HI-02 (2023), USA",
+      "stat_a": 0.026395998586360783,
+      "stat_b": 0.061138889665200084
+    },
+    "b": {
+      "stat_column": "PW Mean % of parkland within 1km",
+      "stat_path": "park_percent_1km_v2",
+      "question": "!FULL Which has more access to parks (higher % of area within 1km of a park, population weighted)?",
+      "longname_a": "Greenville-Spartanburg SC-Asheville NC-Anderson SC Media Market, USA",
+      "longname_b": "Minot-Bismarck-Dickinson ND Media Market, USA",
+      "stat_a": 0.005735041373840088,
+      "stat_b": 0.015006853687957561
+    },
+    "a_ease": 0.6678346180798879,
+    "b_ease": 0.2664406779661017
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "No religion % [StatCan]",
+      "stat_path": "religion_no_religion_canada",
+      "question": "higher % of people with no religion",
+      "longname_a": "Winnipeg Urban Center, Canada",
+      "longname_b": "Toronto Urban Center, Canada",
+      "stat_a": 0.36744324274276235,
+      "stat_b": 0.27198961628224927
+    },
+    "b": {
+      "stat_column": "Binge drinking among adults %",
+      "stat_path": "BINGE_cdc_2",
+      "question": "higher % of adults who binge drink",
+      "longname_a": "Waco-Temple-Bryan TX Media Market, USA",
+      "longname_b": "Baltimore MD Media Market, USA",
+      "stat_a": 0.17993925030841126,
+      "stat_b": 0.15449357259763719
+    },
+    "a_ease": 0.23103212576896787,
+    "b_ease": 0.6346328195829556
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Pedestrian/Cyclist Fatalities Per Capita Per Year",
+      "stat_path": "traffic_fatalities_ped_last_decade_per_capita",
+      "question": "higher pedestrian/cyclist fatalities per capita between 2013 and 2022!TOOLTIP pedestrian and cyclist fatalities in the region, divided by the population of the region",
+      "longname_a": "Memphis MSA, TN-MS-AR, USA",
+      "longname_b": "Kennewick-Richland MSA, WA, USA",
+      "stat_a": 4.221714328186261e-05,
+      "stat_b": 9.55135003392376e-06
+    },
+    "b": {
+      "stat_column": "Public Insurance %",
+      "stat_path": "insurance_coverage_govt",
+      "question": "higher % of people who are on public insurance!TOOLTIP The denominator for this statistic is the the total number of adults, including those without health insurance coverage.",
+      "longname_a": "MT-01 (2023), USA",
+      "longname_b": "GA-07 (2025), USA",
+      "stat_a": 0.19199628371717492,
+      "stat_b": 0.04749904775513297
+    },
+    "a_ease": 0.7990430622009569,
+    "b_ease": 0.39661016949152544
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Undergrad STEM [25-64] % [StatCan]",
+      "stat_path": "education_field_stem_canada",
+      "question": "higher % of people between 25 and 64 who have a STEM degree, as a percentage of the overall population",
+      "longname_a": "Halifax Population Center, NS, Canada",
+      "longname_b": "Hamilton Population Center, ON, Canada",
+      "stat_a": 0.1838616487364401,
+      "stat_b": 0.14814104925350577
+    },
+    "b": {
+      "stat_column": "Mean high temp",
+      "stat_path": "mean_high_temp_4",
+      "question": "higher mean daily high temperature (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Recife Urban Center, Brazil",
+      "longname_b": "Guiyang (Guizhou Sheng) Urban Center, China",
+      "stat_a": 82.76026066907826,
+      "stat_b": 65.14840934696457
+    },
+    "a_ease": 0.3263825929283772,
+    "b_ease": 0.7902813299232737
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Household Size",
+      "stat_path": "household_size_pw",
+      "question": "higher average population weighted household size!TOOLTIP The average household size a person is in; i.e., the average over all people of the number of people in their household. This is population-weighted, meaning that if there is one household of 3 and three households of 1, the average household size is 2, not 1.5.",
+      "longname_a": "MO-05 (2023), USA",
+      "longname_b": "CO-08 (2023), USA",
+      "stat_a": 3.1090503483485397,
+      "stat_b": 3.594959561159522
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km) Change (2010-2020)",
+      "stat_path": "ad_1_change_2010",
+      "question": "higher % increase in population-weighted density (r=1km) from 2010 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Syracuse NY Media Market, USA",
+      "longname_b": "Boston MA (Manchester NH) Media Market, USA",
+      "stat_a": 0.023359335866287526,
+      "stat_b": 0.11053367061093179
+    },
+    "a_ease": 0.2950245269796776,
+    "b_ease": 0.7935222672064778
+  }
+]

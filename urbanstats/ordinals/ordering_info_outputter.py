@@ -1,6 +1,9 @@
+from typing import Any, Callable, Dict, List, Mapping, Tuple
+
 import tqdm.auto as tqdm
 
 from urbanstats.ordinals.compress_counts import compress_counts, mapify
+from urbanstats.ordinals.ensure_ordering import ensure_correct_ordering
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import save_article_ordering_list, write_gzip
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
@@ -11,8 +14,14 @@ from urbanstats.utils import output_typescript
 
 class ProtobufOutputter:
     def __init__(
-        self, protobuf_class, protobuf_field, site_folder, path_fn, *, limit=10**6
-    ):
+        self,
+        protobuf_class: Any,
+        protobuf_field: str,
+        site_folder: str,
+        path_fn: Callable[[int], str],
+        *,
+        limit: int = 10**6,
+    ) -> None:
         self.protobuf_class = protobuf_class
         self.protobuf_field = protobuf_field
         self.site_folder = site_folder
@@ -22,17 +31,17 @@ class ProtobufOutputter:
         self.size = 0
         self.count_each = 0
         self.proto = self.protobuf_class()
-        self.fields = []
+        self.fields: List[int] = []
 
-    def with_name(self, name):
+    def with_name(self, name: str) -> Any:
         self.proto.statnames.append(name)
         return getattr(self.proto, self.protobuf_field).add()
 
-    def notify(self, size):
+    def notify(self, size: int) -> None:
         self.size += size
         self.count_each += 1
 
-    def flush(self, force=False):
+    def flush(self, force: bool = False) -> None:
         if self.size < self.limit and not force:
             return
         if self.size == 0:
@@ -45,7 +54,7 @@ class ProtobufOutputter:
         self.proto = self.protobuf_class()
 
 
-def output_order_files(order_info, site_folder, typ):
+def output_order_files(order_info: Any, site_folder: str, typ: str) -> List[int]:
     outputter = ProtobufOutputter(
         data_files_pb2.OrderLists,
         "order_lists",
@@ -63,7 +72,7 @@ def output_order_files(order_info, site_folder, typ):
     return outputter.fields
 
 
-def output_data_files(order_info, site_folder, typ):
+def output_data_files(order_info: Any, site_folder: str, typ: str) -> List[int]:
     # data_lists = data_files_pb2.DataLists()
     outputter = ProtobufOutputter(
         data_files_pb2.DataLists,
@@ -77,19 +86,27 @@ def output_data_files(order_info, site_folder, typ):
         ordered_values = order_info.compute_values_and_percentiles(
             "world", typ, statistic_column
         )
+        ordering = order_info.compute_ordinals("world", typ, statistic_column)
+        ordered_values = ensure_correct_ordering(ordered_values, ordering)
         percs_by_u = order_info.percentiles_by_universe(typ, statistic_column)
         data_list.value.extend(ordered_values)
         for pbu in percs_by_u:
             percentile_proto = data_list.population_percentile_by_universe.add()
             for p in pbu:
-                percentile_proto.population_percentile.append(int(p * 100))
+                percentile_proto.population_percentile.append(p)
         outputter.notify(data_list.ByteSize())
         outputter.flush()
     outputter.flush(force=True)
     return outputter.fields
 
 
-def output_indices(ordinal_info, site_folder, universe, *, longname_to_type):
+def output_indices(
+    ordinal_info: Any,
+    site_folder: str,
+    universe: str,
+    *,
+    longname_to_type: Mapping[str, str],
+) -> Dict[str, Dict[str, int]]:
     order_backmap = {}
     for typ in sorted(
         {t for u, t in ordinal_info.universe_type if t != "overall" and u == universe}
@@ -109,8 +126,12 @@ def output_indices(ordinal_info, site_folder, universe, *, longname_to_type):
 
 
 def output_ordering_for_universe(
-    ordinal_info, site_folder, universe, *, longname_to_type
-):
+    ordinal_info: Any,
+    site_folder: str,
+    universe: str,
+    *,
+    longname_to_type: Mapping[str, str],
+) -> Tuple[Dict[str, List[int]], Dict[str, List[int]]]:
     output_indices(
         ordinal_info, site_folder, universe, longname_to_type=longname_to_type
     )
@@ -133,7 +154,9 @@ def output_ordering_for_universe(
     return order_map, data_map
 
 
-def reorganize_counts_for_universe(ordinal_info, counts, universe):
+def reorganize_counts_for_universe(
+    ordinal_info: Any, counts: Any, universe: str
+) -> List[Tuple[Tuple[str, str], int]]:
     counts_reorganized = {}
     for col in internal_statistic_names():
         if (universe, "overall") in counts[col]:
@@ -147,22 +170,26 @@ def reorganize_counts_for_universe(ordinal_info, counts, universe):
     return list(counts_reorganized.items())
 
 
-def reorganize_counts(ordinal_info, counts):
+def reorganize_counts(
+    ordinal_info: Any, counts: Any
+) -> Dict[str, List[Tuple[Tuple[str, str], int]]]:
     return {
         u: reorganize_counts_for_universe(ordinal_info, counts, u)
         for u in tqdm.tqdm(all_universes(), desc="counting")
     }
 
 
-def output_order(ordinal_info, output_folder):
+def output_order(ordinal_info: Any, output_folder: str) -> None:
     counts_by_ut = ordinal_info.counts_by_type_universe_col()
     res_uncompressed = reorganize_counts(ordinal_info, counts_by_ut)
     res = compress_counts(res_uncompressed)
-    res = create_counts_protobuf(res)
-    write_gzip(res, f"{output_folder}/counts.gz")
+    res_proto = create_counts_protobuf(res)
+    write_gzip(res_proto, f"{output_folder}/counts.gz")
 
 
-def create_counts_protobuf(res):
+def create_counts_protobuf(
+    res: Dict[str, Dict[str, List[List[int]]]]
+) -> data_files_pb2.CountsByArticleUniverseAndType:
     counts_by_ut = data_files_pb2.CountsByArticleUniverseAndType()
     for universe, by_u in res.items():
         counts_by_ut.universe.append(universe)
@@ -176,7 +203,9 @@ def create_counts_protobuf(res):
     return counts_by_ut
 
 
-def output_ordering(site_folder, ordinal_info, *, longname_to_type):
+def output_ordering(
+    site_folder: str, ordinal_info: Any, *, longname_to_type: Mapping[str, str]
+) -> None:
     order_map_all = {}
     data_map_all = {}
     for universe in all_universes():
@@ -189,9 +218,11 @@ def output_ordering(site_folder, ordinal_info, *, longname_to_type):
         order_map_all.update(order_map)
         data_map_all.update(data_map)
     output_order(ordinal_info, site_folder)
-    with open("react/src/data/order_links.ts", "w") as f:
+    with open("react/src/data/order_links.ts", "w") as f_order:
         output_typescript(
-            mapify(order_map_all), f, data_type="Record<string, number[]>"
+            mapify(order_map_all), f_order, data_type="Record<string, number[]>"
         )
-    with open("react/src/data/data_links.ts", "w") as f:
-        output_typescript(mapify(data_map_all), f, data_type="Record<string, number[]>")
+    with open("react/src/data/data_links.ts", "w") as f_data:
+        output_typescript(
+            mapify(data_map_all), f_data, data_type="Record<string, number[]>"
+        )

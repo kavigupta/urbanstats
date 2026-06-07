@@ -5,6 +5,12 @@ export function displayType(universe: string, type: string): string {
 }
 
 export function pluralize(type: string): string {
+    // If the type ends with a parenthetical, pluralize the part before the parenthetical
+    let parenthesisMatch
+    if ((parenthesisMatch = /^(.+) (\(.+\))$/.exec(type)) !== null) {
+        return `${pluralize(parenthesisMatch[1])} ${parenthesisMatch[2]}`
+    }
+
     if (type.endsWith('y')) {
         return `${type.slice(0, -1)}ies`
     }

@@ -17,6 +17,18 @@ class ExtraStatistic(ABC):
         pass
 
 
+def is_invalid_histogram(histogram):
+    if isinstance(histogram, float):
+        # pylint: disable=comparison-with-itself
+        assert histogram != histogram, f"Non nan float: {histogram}"
+        # this is a check for nan
+        return True
+    if np.nansum(histogram) == 0:
+        # I don't know when this would happen but it seems as though it can
+        return True
+    return False
+
+
 @dataclass
 class HistogramSpec(ExtraStatistic):
     min_value: float
@@ -31,10 +43,7 @@ class HistogramSpec(ExtraStatistic):
         result.histogram.bin_size = self.bin_size
         histogram = data_row[self.key]
         # nan values are inserted when no histogram is available
-        if isinstance(histogram, float):
-            # this is a check for nan
-            # pylint: disable=comparison-with-itself
-            assert histogram != histogram
+        if is_invalid_histogram(histogram):
             return result
         histogram = normalize_to_uint16(histogram)
         result.histogram.counts.extend(histogram)
@@ -56,8 +65,7 @@ class TimeSeriesSpec(ExtraStatistic):
 
     def create(self, data_row):
         result = data_files_pb2.ExtraStatistic()
-        if isinstance(data_row[self.key], float):
-            assert data_row[self.key] != data_row[self.key]
+        if is_invalid_histogram(data_row[self.key]):
             return result
         result.timeseries.values.extend(data_row[self.key])
         return result
@@ -73,8 +81,7 @@ class MonthlyTimeSeriesSpec(ExtraStatistic):
 
     def create(self, data_row):
         result = data_files_pb2.ExtraStatistic()
-        if isinstance(data_row[self.key], float):
-            assert data_row[self.key] != data_row[self.key]
+        if is_invalid_histogram(data_row[self.key]):
             return result
         result.timeseries.values.extend(data_row[self.key])
         return result
@@ -92,8 +99,7 @@ class TemperatureHistogramSpec(ExtraStatistic):
 
     def create(self, data_row):
         result = data_files_pb2.ExtraStatistic()
-        if isinstance(data_row[self.key], float):
-            assert data_row[self.key] != data_row[self.key]
+        if is_invalid_histogram(data_row[self.key]):
             return result
         result.temperature_histogram.counts.extend(
             normalize_to_uint16(data_row[self.key])
@@ -110,7 +116,7 @@ class TemperatureHistogramSpec(ExtraStatistic):
 
 
 def normalize_to_uint16(histogram):
-    histogram = np.array(histogram)
+    histogram = np.nan_to_num(histogram, nan=0.0)
     histogram = histogram / histogram.sum()
     histogram = histogram * (2**16)
     histogram = histogram.round().astype(int)

@@ -1783,6 +1783,1033 @@ export const TemperatureHistogram = $root.TemperatureHistogram = (() => {
     return TemperatureHistogram;
 })();
 
+export const CongressionalRepresentative = $root.CongressionalRepresentative = (() => {
+
+    /**
+     * Properties of a CongressionalRepresentative.
+     * @exports ICongressionalRepresentative
+     * @interface ICongressionalRepresentative
+     * @property {string|null} [name] CongressionalRepresentative name
+     * @property {string|null} [wikipediaPage] CongressionalRepresentative wikipediaPage
+     * @property {string|null} [party] CongressionalRepresentative party
+     * @property {Array.<ITermIn>|null} [termIn] CongressionalRepresentative termIn
+     */
+
+    /**
+     * Constructs a new CongressionalRepresentative.
+     * @exports CongressionalRepresentative
+     * @classdesc Represents a CongressionalRepresentative.
+     * @implements ICongressionalRepresentative
+     * @constructor
+     * @param {ICongressionalRepresentative=} [properties] Properties to set
+     */
+    function CongressionalRepresentative(properties) {
+        this.termIn = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * CongressionalRepresentative name.
+     * @member {string} name
+     * @memberof CongressionalRepresentative
+     * @instance
+     */
+    CongressionalRepresentative.prototype.name = "";
+
+    /**
+     * CongressionalRepresentative wikipediaPage.
+     * @member {string|null|undefined} wikipediaPage
+     * @memberof CongressionalRepresentative
+     * @instance
+     */
+    CongressionalRepresentative.prototype.wikipediaPage = null;
+
+    /**
+     * CongressionalRepresentative party.
+     * @member {string|null|undefined} party
+     * @memberof CongressionalRepresentative
+     * @instance
+     */
+    CongressionalRepresentative.prototype.party = null;
+
+    /**
+     * CongressionalRepresentative termIn.
+     * @member {Array.<ITermIn>} termIn
+     * @memberof CongressionalRepresentative
+     * @instance
+     */
+    CongressionalRepresentative.prototype.termIn = $util.emptyArray;
+
+    // OneOf field names bound to virtual getters and setters
+    let $oneOfFields;
+
+    /**
+     * CongressionalRepresentative _wikipediaPage.
+     * @member {"wikipediaPage"|undefined} _wikipediaPage
+     * @memberof CongressionalRepresentative
+     * @instance
+     */
+    Object.defineProperty(CongressionalRepresentative.prototype, "_wikipediaPage", {
+        get: $util.oneOfGetter($oneOfFields = ["wikipediaPage"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * CongressionalRepresentative _party.
+     * @member {"party"|undefined} _party
+     * @memberof CongressionalRepresentative
+     * @instance
+     */
+    Object.defineProperty(CongressionalRepresentative.prototype, "_party", {
+        get: $util.oneOfGetter($oneOfFields = ["party"]),
+        set: $util.oneOfSetter($oneOfFields)
+    });
+
+    /**
+     * Creates a new CongressionalRepresentative instance using the specified properties.
+     * @function create
+     * @memberof CongressionalRepresentative
+     * @static
+     * @param {ICongressionalRepresentative=} [properties] Properties to set
+     * @returns {CongressionalRepresentative} CongressionalRepresentative instance
+     */
+    CongressionalRepresentative.create = function create(properties) {
+        return new CongressionalRepresentative(properties);
+    };
+
+    /**
+     * Encodes the specified CongressionalRepresentative message. Does not implicitly {@link CongressionalRepresentative.verify|verify} messages.
+     * @function encode
+     * @memberof CongressionalRepresentative
+     * @static
+     * @param {ICongressionalRepresentative} message CongressionalRepresentative message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CongressionalRepresentative.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+            writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+        if (message.wikipediaPage != null && Object.hasOwnProperty.call(message, "wikipediaPage"))
+            writer.uint32(/* id 2, wireType 2 =*/18).string(message.wikipediaPage);
+        if (message.party != null && Object.hasOwnProperty.call(message, "party"))
+            writer.uint32(/* id 3, wireType 2 =*/26).string(message.party);
+        if (message.termIn != null && message.termIn.length)
+            for (let i = 0; i < message.termIn.length; ++i)
+                $root.TermIn.encode(message.termIn[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified CongressionalRepresentative message, length delimited. Does not implicitly {@link CongressionalRepresentative.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof CongressionalRepresentative
+     * @static
+     * @param {ICongressionalRepresentative} message CongressionalRepresentative message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CongressionalRepresentative.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a CongressionalRepresentative message from the specified reader or buffer.
+     * @function decode
+     * @memberof CongressionalRepresentative
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {CongressionalRepresentative} CongressionalRepresentative
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CongressionalRepresentative.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.CongressionalRepresentative();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.name = reader.string();
+                    break;
+                }
+            case 2: {
+                    message.wikipediaPage = reader.string();
+                    break;
+                }
+            case 3: {
+                    message.party = reader.string();
+                    break;
+                }
+            case 4: {
+                    if (!(message.termIn && message.termIn.length))
+                        message.termIn = [];
+                    message.termIn.push($root.TermIn.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a CongressionalRepresentative message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof CongressionalRepresentative
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {CongressionalRepresentative} CongressionalRepresentative
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CongressionalRepresentative.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a CongressionalRepresentative message.
+     * @function verify
+     * @memberof CongressionalRepresentative
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    CongressionalRepresentative.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        let properties = {};
+        if (message.name != null && message.hasOwnProperty("name"))
+            if (!$util.isString(message.name))
+                return "name: string expected";
+        if (message.wikipediaPage != null && message.hasOwnProperty("wikipediaPage")) {
+            properties._wikipediaPage = 1;
+            if (!$util.isString(message.wikipediaPage))
+                return "wikipediaPage: string expected";
+        }
+        if (message.party != null && message.hasOwnProperty("party")) {
+            properties._party = 1;
+            if (!$util.isString(message.party))
+                return "party: string expected";
+        }
+        if (message.termIn != null && message.hasOwnProperty("termIn")) {
+            if (!Array.isArray(message.termIn))
+                return "termIn: array expected";
+            for (let i = 0; i < message.termIn.length; ++i) {
+                let error = $root.TermIn.verify(message.termIn[i]);
+                if (error)
+                    return "termIn." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a CongressionalRepresentative message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof CongressionalRepresentative
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {CongressionalRepresentative} CongressionalRepresentative
+     */
+    CongressionalRepresentative.fromObject = function fromObject(object) {
+        if (object instanceof $root.CongressionalRepresentative)
+            return object;
+        let message = new $root.CongressionalRepresentative();
+        if (object.name != null)
+            message.name = String(object.name);
+        if (object.wikipediaPage != null)
+            message.wikipediaPage = String(object.wikipediaPage);
+        if (object.party != null)
+            message.party = String(object.party);
+        if (object.termIn) {
+            if (!Array.isArray(object.termIn))
+                throw TypeError(".CongressionalRepresentative.termIn: array expected");
+            message.termIn = [];
+            for (let i = 0; i < object.termIn.length; ++i) {
+                if (typeof object.termIn[i] !== "object")
+                    throw TypeError(".CongressionalRepresentative.termIn: object expected");
+                message.termIn[i] = $root.TermIn.fromObject(object.termIn[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a CongressionalRepresentative message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof CongressionalRepresentative
+     * @static
+     * @param {CongressionalRepresentative} message CongressionalRepresentative
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    CongressionalRepresentative.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults)
+            object.termIn = [];
+        if (options.defaults)
+            object.name = "";
+        if (message.name != null && message.hasOwnProperty("name"))
+            object.name = message.name;
+        if (message.wikipediaPage != null && message.hasOwnProperty("wikipediaPage")) {
+            object.wikipediaPage = message.wikipediaPage;
+            if (options.oneofs)
+                object._wikipediaPage = "wikipediaPage";
+        }
+        if (message.party != null && message.hasOwnProperty("party")) {
+            object.party = message.party;
+            if (options.oneofs)
+                object._party = "party";
+        }
+        if (message.termIn && message.termIn.length) {
+            object.termIn = [];
+            for (let j = 0; j < message.termIn.length; ++j)
+                object.termIn[j] = $root.TermIn.toObject(message.termIn[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this CongressionalRepresentative to JSON.
+     * @function toJSON
+     * @memberof CongressionalRepresentative
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    CongressionalRepresentative.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for CongressionalRepresentative
+     * @function getTypeUrl
+     * @memberof CongressionalRepresentative
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    CongressionalRepresentative.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/CongressionalRepresentative";
+    };
+
+    return CongressionalRepresentative;
+})();
+
+export const TermIn = $root.TermIn = (() => {
+
+    /**
+     * Properties of a TermIn.
+     * @exports ITermIn
+     * @interface ITermIn
+     * @property {number|null} [startYear] TermIn startYear
+     * @property {number|null} [districtIdx] TermIn districtIdx
+     */
+
+    /**
+     * Constructs a new TermIn.
+     * @exports TermIn
+     * @classdesc Represents a TermIn.
+     * @implements ITermIn
+     * @constructor
+     * @param {ITermIn=} [properties] Properties to set
+     */
+    function TermIn(properties) {
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * TermIn startYear.
+     * @member {number} startYear
+     * @memberof TermIn
+     * @instance
+     */
+    TermIn.prototype.startYear = 0;
+
+    /**
+     * TermIn districtIdx.
+     * @member {number} districtIdx
+     * @memberof TermIn
+     * @instance
+     */
+    TermIn.prototype.districtIdx = 0;
+
+    /**
+     * Creates a new TermIn instance using the specified properties.
+     * @function create
+     * @memberof TermIn
+     * @static
+     * @param {ITermIn=} [properties] Properties to set
+     * @returns {TermIn} TermIn instance
+     */
+    TermIn.create = function create(properties) {
+        return new TermIn(properties);
+    };
+
+    /**
+     * Encodes the specified TermIn message. Does not implicitly {@link TermIn.verify|verify} messages.
+     * @function encode
+     * @memberof TermIn
+     * @static
+     * @param {ITermIn} message TermIn message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    TermIn.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.startYear != null && Object.hasOwnProperty.call(message, "startYear"))
+            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.startYear);
+        if (message.districtIdx != null && Object.hasOwnProperty.call(message, "districtIdx"))
+            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.districtIdx);
+        return writer;
+    };
+
+    /**
+     * Encodes the specified TermIn message, length delimited. Does not implicitly {@link TermIn.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof TermIn
+     * @static
+     * @param {ITermIn} message TermIn message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    TermIn.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a TermIn message from the specified reader or buffer.
+     * @function decode
+     * @memberof TermIn
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {TermIn} TermIn
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    TermIn.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.TermIn();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.startYear = reader.int32();
+                    break;
+                }
+            case 2: {
+                    message.districtIdx = reader.int32();
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a TermIn message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof TermIn
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {TermIn} TermIn
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    TermIn.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a TermIn message.
+     * @function verify
+     * @memberof TermIn
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    TermIn.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.startYear != null && message.hasOwnProperty("startYear"))
+            if (!$util.isInteger(message.startYear))
+                return "startYear: integer expected";
+        if (message.districtIdx != null && message.hasOwnProperty("districtIdx"))
+            if (!$util.isInteger(message.districtIdx))
+                return "districtIdx: integer expected";
+        return null;
+    };
+
+    /**
+     * Creates a TermIn message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof TermIn
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {TermIn} TermIn
+     */
+    TermIn.fromObject = function fromObject(object) {
+        if (object instanceof $root.TermIn)
+            return object;
+        let message = new $root.TermIn();
+        if (object.startYear != null)
+            message.startYear = object.startYear | 0;
+        if (object.districtIdx != null)
+            message.districtIdx = object.districtIdx | 0;
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a TermIn message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof TermIn
+     * @static
+     * @param {TermIn} message TermIn
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    TermIn.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.defaults) {
+            object.startYear = 0;
+            object.districtIdx = 0;
+        }
+        if (message.startYear != null && message.hasOwnProperty("startYear"))
+            object.startYear = message.startYear;
+        if (message.districtIdx != null && message.hasOwnProperty("districtIdx"))
+            object.districtIdx = message.districtIdx;
+        return object;
+    };
+
+    /**
+     * Converts this TermIn to JSON.
+     * @function toJSON
+     * @memberof TermIn
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    TermIn.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for TermIn
+     * @function getTypeUrl
+     * @memberof TermIn
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    TermIn.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/TermIn";
+    };
+
+    return TermIn;
+})();
+
+export const CongressionalDistrict = $root.CongressionalDistrict = (() => {
+
+    /**
+     * Properties of a CongressionalDistrict.
+     * @exports ICongressionalDistrict
+     * @interface ICongressionalDistrict
+     * @property {string|null} [longname] CongressionalDistrict longname
+     */
+
+    /**
+     * Constructs a new CongressionalDistrict.
+     * @exports CongressionalDistrict
+     * @classdesc Represents a CongressionalDistrict.
+     * @implements ICongressionalDistrict
+     * @constructor
+     * @param {ICongressionalDistrict=} [properties] Properties to set
+     */
+    function CongressionalDistrict(properties) {
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * CongressionalDistrict longname.
+     * @member {string} longname
+     * @memberof CongressionalDistrict
+     * @instance
+     */
+    CongressionalDistrict.prototype.longname = "";
+
+    /**
+     * Creates a new CongressionalDistrict instance using the specified properties.
+     * @function create
+     * @memberof CongressionalDistrict
+     * @static
+     * @param {ICongressionalDistrict=} [properties] Properties to set
+     * @returns {CongressionalDistrict} CongressionalDistrict instance
+     */
+    CongressionalDistrict.create = function create(properties) {
+        return new CongressionalDistrict(properties);
+    };
+
+    /**
+     * Encodes the specified CongressionalDistrict message. Does not implicitly {@link CongressionalDistrict.verify|verify} messages.
+     * @function encode
+     * @memberof CongressionalDistrict
+     * @static
+     * @param {ICongressionalDistrict} message CongressionalDistrict message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CongressionalDistrict.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.longname != null && Object.hasOwnProperty.call(message, "longname"))
+            writer.uint32(/* id 1, wireType 2 =*/10).string(message.longname);
+        return writer;
+    };
+
+    /**
+     * Encodes the specified CongressionalDistrict message, length delimited. Does not implicitly {@link CongressionalDistrict.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof CongressionalDistrict
+     * @static
+     * @param {ICongressionalDistrict} message CongressionalDistrict message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CongressionalDistrict.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a CongressionalDistrict message from the specified reader or buffer.
+     * @function decode
+     * @memberof CongressionalDistrict
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {CongressionalDistrict} CongressionalDistrict
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CongressionalDistrict.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.CongressionalDistrict();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.longname = reader.string();
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a CongressionalDistrict message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof CongressionalDistrict
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {CongressionalDistrict} CongressionalDistrict
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CongressionalDistrict.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a CongressionalDistrict message.
+     * @function verify
+     * @memberof CongressionalDistrict
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    CongressionalDistrict.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.longname != null && message.hasOwnProperty("longname"))
+            if (!$util.isString(message.longname))
+                return "longname: string expected";
+        return null;
+    };
+
+    /**
+     * Creates a CongressionalDistrict message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof CongressionalDistrict
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {CongressionalDistrict} CongressionalDistrict
+     */
+    CongressionalDistrict.fromObject = function fromObject(object) {
+        if (object instanceof $root.CongressionalDistrict)
+            return object;
+        let message = new $root.CongressionalDistrict();
+        if (object.longname != null)
+            message.longname = String(object.longname);
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a CongressionalDistrict message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof CongressionalDistrict
+     * @static
+     * @param {CongressionalDistrict} message CongressionalDistrict
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    CongressionalDistrict.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.defaults)
+            object.longname = "";
+        if (message.longname != null && message.hasOwnProperty("longname"))
+            object.longname = message.longname;
+        return object;
+    };
+
+    /**
+     * Converts this CongressionalDistrict to JSON.
+     * @function toJSON
+     * @memberof CongressionalDistrict
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    CongressionalDistrict.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for CongressionalDistrict
+     * @function getTypeUrl
+     * @memberof CongressionalDistrict
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    CongressionalDistrict.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/CongressionalDistrict";
+    };
+
+    return CongressionalDistrict;
+})();
+
+export const CongressionalRepresentativeTable = $root.CongressionalRepresentativeTable = (() => {
+
+    /**
+     * Properties of a CongressionalRepresentativeTable.
+     * @exports ICongressionalRepresentativeTable
+     * @interface ICongressionalRepresentativeTable
+     * @property {Array.<ICongressionalRepresentative>|null} [representatives] CongressionalRepresentativeTable representatives
+     * @property {Array.<ICongressionalDistrict>|null} [districts] CongressionalRepresentativeTable districts
+     */
+
+    /**
+     * Constructs a new CongressionalRepresentativeTable.
+     * @exports CongressionalRepresentativeTable
+     * @classdesc Represents a CongressionalRepresentativeTable.
+     * @implements ICongressionalRepresentativeTable
+     * @constructor
+     * @param {ICongressionalRepresentativeTable=} [properties] Properties to set
+     */
+    function CongressionalRepresentativeTable(properties) {
+        this.representatives = [];
+        this.districts = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * CongressionalRepresentativeTable representatives.
+     * @member {Array.<ICongressionalRepresentative>} representatives
+     * @memberof CongressionalRepresentativeTable
+     * @instance
+     */
+    CongressionalRepresentativeTable.prototype.representatives = $util.emptyArray;
+
+    /**
+     * CongressionalRepresentativeTable districts.
+     * @member {Array.<ICongressionalDistrict>} districts
+     * @memberof CongressionalRepresentativeTable
+     * @instance
+     */
+    CongressionalRepresentativeTable.prototype.districts = $util.emptyArray;
+
+    /**
+     * Creates a new CongressionalRepresentativeTable instance using the specified properties.
+     * @function create
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {ICongressionalRepresentativeTable=} [properties] Properties to set
+     * @returns {CongressionalRepresentativeTable} CongressionalRepresentativeTable instance
+     */
+    CongressionalRepresentativeTable.create = function create(properties) {
+        return new CongressionalRepresentativeTable(properties);
+    };
+
+    /**
+     * Encodes the specified CongressionalRepresentativeTable message. Does not implicitly {@link CongressionalRepresentativeTable.verify|verify} messages.
+     * @function encode
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {ICongressionalRepresentativeTable} message CongressionalRepresentativeTable message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CongressionalRepresentativeTable.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.representatives != null && message.representatives.length)
+            for (let i = 0; i < message.representatives.length; ++i)
+                $root.CongressionalRepresentative.encode(message.representatives[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+        if (message.districts != null && message.districts.length)
+            for (let i = 0; i < message.districts.length; ++i)
+                $root.CongressionalDistrict.encode(message.districts[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        return writer;
+    };
+
+    /**
+     * Encodes the specified CongressionalRepresentativeTable message, length delimited. Does not implicitly {@link CongressionalRepresentativeTable.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {ICongressionalRepresentativeTable} message CongressionalRepresentativeTable message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CongressionalRepresentativeTable.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a CongressionalRepresentativeTable message from the specified reader or buffer.
+     * @function decode
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {CongressionalRepresentativeTable} CongressionalRepresentativeTable
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CongressionalRepresentativeTable.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.CongressionalRepresentativeTable();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.representatives && message.representatives.length))
+                        message.representatives = [];
+                    message.representatives.push($root.CongressionalRepresentative.decode(reader, reader.uint32()));
+                    break;
+                }
+            case 2: {
+                    if (!(message.districts && message.districts.length))
+                        message.districts = [];
+                    message.districts.push($root.CongressionalDistrict.decode(reader, reader.uint32()));
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a CongressionalRepresentativeTable message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {CongressionalRepresentativeTable} CongressionalRepresentativeTable
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CongressionalRepresentativeTable.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a CongressionalRepresentativeTable message.
+     * @function verify
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    CongressionalRepresentativeTable.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.representatives != null && message.hasOwnProperty("representatives")) {
+            if (!Array.isArray(message.representatives))
+                return "representatives: array expected";
+            for (let i = 0; i < message.representatives.length; ++i) {
+                let error = $root.CongressionalRepresentative.verify(message.representatives[i]);
+                if (error)
+                    return "representatives." + error;
+            }
+        }
+        if (message.districts != null && message.hasOwnProperty("districts")) {
+            if (!Array.isArray(message.districts))
+                return "districts: array expected";
+            for (let i = 0; i < message.districts.length; ++i) {
+                let error = $root.CongressionalDistrict.verify(message.districts[i]);
+                if (error)
+                    return "districts." + error;
+            }
+        }
+        return null;
+    };
+
+    /**
+     * Creates a CongressionalRepresentativeTable message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {CongressionalRepresentativeTable} CongressionalRepresentativeTable
+     */
+    CongressionalRepresentativeTable.fromObject = function fromObject(object) {
+        if (object instanceof $root.CongressionalRepresentativeTable)
+            return object;
+        let message = new $root.CongressionalRepresentativeTable();
+        if (object.representatives) {
+            if (!Array.isArray(object.representatives))
+                throw TypeError(".CongressionalRepresentativeTable.representatives: array expected");
+            message.representatives = [];
+            for (let i = 0; i < object.representatives.length; ++i) {
+                if (typeof object.representatives[i] !== "object")
+                    throw TypeError(".CongressionalRepresentativeTable.representatives: object expected");
+                message.representatives[i] = $root.CongressionalRepresentative.fromObject(object.representatives[i]);
+            }
+        }
+        if (object.districts) {
+            if (!Array.isArray(object.districts))
+                throw TypeError(".CongressionalRepresentativeTable.districts: array expected");
+            message.districts = [];
+            for (let i = 0; i < object.districts.length; ++i) {
+                if (typeof object.districts[i] !== "object")
+                    throw TypeError(".CongressionalRepresentativeTable.districts: object expected");
+                message.districts[i] = $root.CongressionalDistrict.fromObject(object.districts[i]);
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a CongressionalRepresentativeTable message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {CongressionalRepresentativeTable} message CongressionalRepresentativeTable
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    CongressionalRepresentativeTable.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults) {
+            object.representatives = [];
+            object.districts = [];
+        }
+        if (message.representatives && message.representatives.length) {
+            object.representatives = [];
+            for (let j = 0; j < message.representatives.length; ++j)
+                object.representatives[j] = $root.CongressionalRepresentative.toObject(message.representatives[j], options);
+        }
+        if (message.districts && message.districts.length) {
+            object.districts = [];
+            for (let j = 0; j < message.districts.length; ++j)
+                object.districts[j] = $root.CongressionalDistrict.toObject(message.districts[j], options);
+        }
+        return object;
+    };
+
+    /**
+     * Converts this CongressionalRepresentativeTable to JSON.
+     * @function toJSON
+     * @memberof CongressionalRepresentativeTable
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    CongressionalRepresentativeTable.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for CongressionalRepresentativeTable
+     * @function getTypeUrl
+     * @memberof CongressionalRepresentativeTable
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    CongressionalRepresentativeTable.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/CongressionalRepresentativeTable";
+    };
+
+    return CongressionalRepresentativeTable;
+})();
+
 export const ExtraStatistic = $root.ExtraStatistic = (() => {
 
     /**
@@ -2098,6 +3125,256 @@ export const ExtraStatistic = $root.ExtraStatistic = (() => {
     return ExtraStatistic;
 })();
 
+export const CongressionalRepresentativePointer = $root.CongressionalRepresentativePointer = (() => {
+
+    /**
+     * Properties of a CongressionalRepresentativePointer.
+     * @exports ICongressionalRepresentativePointer
+     * @interface ICongressionalRepresentativePointer
+     * @property {number|null} [representativeIdx] CongressionalRepresentativePointer representativeIdx
+     * @property {number|null} [startTerm] CongressionalRepresentativePointer startTerm
+     * @property {number|null} [endTerm] CongressionalRepresentativePointer endTerm
+     */
+
+    /**
+     * Constructs a new CongressionalRepresentativePointer.
+     * @exports CongressionalRepresentativePointer
+     * @classdesc Represents a CongressionalRepresentativePointer.
+     * @implements ICongressionalRepresentativePointer
+     * @constructor
+     * @param {ICongressionalRepresentativePointer=} [properties] Properties to set
+     */
+    function CongressionalRepresentativePointer(properties) {
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * CongressionalRepresentativePointer representativeIdx.
+     * @member {number} representativeIdx
+     * @memberof CongressionalRepresentativePointer
+     * @instance
+     */
+    CongressionalRepresentativePointer.prototype.representativeIdx = 0;
+
+    /**
+     * CongressionalRepresentativePointer startTerm.
+     * @member {number} startTerm
+     * @memberof CongressionalRepresentativePointer
+     * @instance
+     */
+    CongressionalRepresentativePointer.prototype.startTerm = 0;
+
+    /**
+     * CongressionalRepresentativePointer endTerm.
+     * @member {number} endTerm
+     * @memberof CongressionalRepresentativePointer
+     * @instance
+     */
+    CongressionalRepresentativePointer.prototype.endTerm = 0;
+
+    /**
+     * Creates a new CongressionalRepresentativePointer instance using the specified properties.
+     * @function create
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {ICongressionalRepresentativePointer=} [properties] Properties to set
+     * @returns {CongressionalRepresentativePointer} CongressionalRepresentativePointer instance
+     */
+    CongressionalRepresentativePointer.create = function create(properties) {
+        return new CongressionalRepresentativePointer(properties);
+    };
+
+    /**
+     * Encodes the specified CongressionalRepresentativePointer message. Does not implicitly {@link CongressionalRepresentativePointer.verify|verify} messages.
+     * @function encode
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {ICongressionalRepresentativePointer} message CongressionalRepresentativePointer message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CongressionalRepresentativePointer.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.representativeIdx != null && Object.hasOwnProperty.call(message, "representativeIdx"))
+            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.representativeIdx);
+        if (message.startTerm != null && Object.hasOwnProperty.call(message, "startTerm"))
+            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.startTerm);
+        if (message.endTerm != null && Object.hasOwnProperty.call(message, "endTerm"))
+            writer.uint32(/* id 3, wireType 0 =*/24).int32(message.endTerm);
+        return writer;
+    };
+
+    /**
+     * Encodes the specified CongressionalRepresentativePointer message, length delimited. Does not implicitly {@link CongressionalRepresentativePointer.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {ICongressionalRepresentativePointer} message CongressionalRepresentativePointer message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    CongressionalRepresentativePointer.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a CongressionalRepresentativePointer message from the specified reader or buffer.
+     * @function decode
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {CongressionalRepresentativePointer} CongressionalRepresentativePointer
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CongressionalRepresentativePointer.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.CongressionalRepresentativePointer();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    message.representativeIdx = reader.int32();
+                    break;
+                }
+            case 2: {
+                    message.startTerm = reader.int32();
+                    break;
+                }
+            case 3: {
+                    message.endTerm = reader.int32();
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a CongressionalRepresentativePointer message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {CongressionalRepresentativePointer} CongressionalRepresentativePointer
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    CongressionalRepresentativePointer.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a CongressionalRepresentativePointer message.
+     * @function verify
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    CongressionalRepresentativePointer.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.representativeIdx != null && message.hasOwnProperty("representativeIdx"))
+            if (!$util.isInteger(message.representativeIdx))
+                return "representativeIdx: integer expected";
+        if (message.startTerm != null && message.hasOwnProperty("startTerm"))
+            if (!$util.isInteger(message.startTerm))
+                return "startTerm: integer expected";
+        if (message.endTerm != null && message.hasOwnProperty("endTerm"))
+            if (!$util.isInteger(message.endTerm))
+                return "endTerm: integer expected";
+        return null;
+    };
+
+    /**
+     * Creates a CongressionalRepresentativePointer message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {CongressionalRepresentativePointer} CongressionalRepresentativePointer
+     */
+    CongressionalRepresentativePointer.fromObject = function fromObject(object) {
+        if (object instanceof $root.CongressionalRepresentativePointer)
+            return object;
+        let message = new $root.CongressionalRepresentativePointer();
+        if (object.representativeIdx != null)
+            message.representativeIdx = object.representativeIdx | 0;
+        if (object.startTerm != null)
+            message.startTerm = object.startTerm | 0;
+        if (object.endTerm != null)
+            message.endTerm = object.endTerm | 0;
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a CongressionalRepresentativePointer message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {CongressionalRepresentativePointer} message CongressionalRepresentativePointer
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    CongressionalRepresentativePointer.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.defaults) {
+            object.representativeIdx = 0;
+            object.startTerm = 0;
+            object.endTerm = 0;
+        }
+        if (message.representativeIdx != null && message.hasOwnProperty("representativeIdx"))
+            object.representativeIdx = message.representativeIdx;
+        if (message.startTerm != null && message.hasOwnProperty("startTerm"))
+            object.startTerm = message.startTerm;
+        if (message.endTerm != null && message.hasOwnProperty("endTerm"))
+            object.endTerm = message.endTerm;
+        return object;
+    };
+
+    /**
+     * Converts this CongressionalRepresentativePointer to JSON.
+     * @function toJSON
+     * @memberof CongressionalRepresentativePointer
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    CongressionalRepresentativePointer.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for CongressionalRepresentativePointer
+     * @function getTypeUrl
+     * @memberof CongressionalRepresentativePointer
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    CongressionalRepresentativePointer.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/CongressionalRepresentativePointer";
+    };
+
+    return CongressionalRepresentativePointer;
+})();
+
 export const Metadata = $root.Metadata = (() => {
 
     /**
@@ -2106,6 +3383,7 @@ export const Metadata = $root.Metadata = (() => {
      * @interface IMetadata
      * @property {number|null} [metadataIndex] Metadata metadataIndex
      * @property {string|null} [stringValue] Metadata stringValue
+     * @property {Array.<ICongressionalRepresentativePointer>|null} [congressionalRepresentatives] Metadata congressionalRepresentatives
      */
 
     /**
@@ -2117,6 +3395,7 @@ export const Metadata = $root.Metadata = (() => {
      * @param {IMetadata=} [properties] Properties to set
      */
     function Metadata(properties) {
+        this.congressionalRepresentatives = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -2138,6 +3417,14 @@ export const Metadata = $root.Metadata = (() => {
      * @instance
      */
     Metadata.prototype.stringValue = null;
+
+    /**
+     * Metadata congressionalRepresentatives.
+     * @member {Array.<ICongressionalRepresentativePointer>} congressionalRepresentatives
+     * @memberof Metadata
+     * @instance
+     */
+    Metadata.prototype.congressionalRepresentatives = $util.emptyArray;
 
     // OneOf field names bound to virtual getters and setters
     let $oneOfFields;
@@ -2181,6 +3468,9 @@ export const Metadata = $root.Metadata = (() => {
             writer.uint32(/* id 1, wireType 0 =*/8).int32(message.metadataIndex);
         if (message.stringValue != null && Object.hasOwnProperty.call(message, "stringValue"))
             writer.uint32(/* id 2, wireType 2 =*/18).string(message.stringValue);
+        if (message.congressionalRepresentatives != null && message.congressionalRepresentatives.length)
+            for (let i = 0; i < message.congressionalRepresentatives.length; ++i)
+                $root.CongressionalRepresentativePointer.encode(message.congressionalRepresentatives[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
         return writer;
     };
 
@@ -2221,6 +3511,12 @@ export const Metadata = $root.Metadata = (() => {
                 }
             case 2: {
                     message.stringValue = reader.string();
+                    break;
+                }
+            case 3: {
+                    if (!(message.congressionalRepresentatives && message.congressionalRepresentatives.length))
+                        message.congressionalRepresentatives = [];
+                    message.congressionalRepresentatives.push($root.CongressionalRepresentativePointer.decode(reader, reader.uint32()));
                     break;
                 }
             default:
@@ -2267,6 +3563,15 @@ export const Metadata = $root.Metadata = (() => {
             if (!$util.isString(message.stringValue))
                 return "stringValue: string expected";
         }
+        if (message.congressionalRepresentatives != null && message.hasOwnProperty("congressionalRepresentatives")) {
+            if (!Array.isArray(message.congressionalRepresentatives))
+                return "congressionalRepresentatives: array expected";
+            for (let i = 0; i < message.congressionalRepresentatives.length; ++i) {
+                let error = $root.CongressionalRepresentativePointer.verify(message.congressionalRepresentatives[i]);
+                if (error)
+                    return "congressionalRepresentatives." + error;
+            }
+        }
         return null;
     };
 
@@ -2286,6 +3591,16 @@ export const Metadata = $root.Metadata = (() => {
             message.metadataIndex = object.metadataIndex | 0;
         if (object.stringValue != null)
             message.stringValue = String(object.stringValue);
+        if (object.congressionalRepresentatives) {
+            if (!Array.isArray(object.congressionalRepresentatives))
+                throw TypeError(".Metadata.congressionalRepresentatives: array expected");
+            message.congressionalRepresentatives = [];
+            for (let i = 0; i < object.congressionalRepresentatives.length; ++i) {
+                if (typeof object.congressionalRepresentatives[i] !== "object")
+                    throw TypeError(".Metadata.congressionalRepresentatives: object expected");
+                message.congressionalRepresentatives[i] = $root.CongressionalRepresentativePointer.fromObject(object.congressionalRepresentatives[i]);
+            }
+        }
         return message;
     };
 
@@ -2302,6 +3617,8 @@ export const Metadata = $root.Metadata = (() => {
         if (!options)
             options = {};
         let object = {};
+        if (options.arrays || options.defaults)
+            object.congressionalRepresentatives = [];
         if (options.defaults)
             object.metadataIndex = 0;
         if (message.metadataIndex != null && message.hasOwnProperty("metadataIndex"))
@@ -2310,6 +3627,11 @@ export const Metadata = $root.Metadata = (() => {
             object.stringValue = message.stringValue;
             if (options.oneofs)
                 object._stringValue = "stringValue";
+        }
+        if (message.congressionalRepresentatives && message.congressionalRepresentatives.length) {
+            object.congressionalRepresentatives = [];
+            for (let j = 0; j < message.congressionalRepresentatives.length; ++j)
+                object.congressionalRepresentatives[j] = $root.CongressionalRepresentativePointer.toObject(message.congressionalRepresentatives[j], options);
         }
         return object;
     };
@@ -2907,6 +4229,348 @@ export const Article = $root.Article = (() => {
     };
 
     return Article;
+})();
+
+export const ConsolidatedArticles = $root.ConsolidatedArticles = (() => {
+
+    /**
+     * Properties of a ConsolidatedArticles.
+     * @exports IConsolidatedArticles
+     * @interface IConsolidatedArticles
+     * @property {Array.<string>|null} [longnames] ConsolidatedArticles longnames
+     * @property {Array.<IArticle>|null} [articles] ConsolidatedArticles articles
+     * @property {Array.<string>|null} [symlinkLinkNames] ConsolidatedArticles symlinkLinkNames
+     * @property {Array.<string>|null} [symlinkTargetNames] ConsolidatedArticles symlinkTargetNames
+     */
+
+    /**
+     * Constructs a new ConsolidatedArticles.
+     * @exports ConsolidatedArticles
+     * @classdesc Represents a ConsolidatedArticles.
+     * @implements IConsolidatedArticles
+     * @constructor
+     * @param {IConsolidatedArticles=} [properties] Properties to set
+     */
+    function ConsolidatedArticles(properties) {
+        this.longnames = [];
+        this.articles = [];
+        this.symlinkLinkNames = [];
+        this.symlinkTargetNames = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * ConsolidatedArticles longnames.
+     * @member {Array.<string>} longnames
+     * @memberof ConsolidatedArticles
+     * @instance
+     */
+    ConsolidatedArticles.prototype.longnames = $util.emptyArray;
+
+    /**
+     * ConsolidatedArticles articles.
+     * @member {Array.<IArticle>} articles
+     * @memberof ConsolidatedArticles
+     * @instance
+     */
+    ConsolidatedArticles.prototype.articles = $util.emptyArray;
+
+    /**
+     * ConsolidatedArticles symlinkLinkNames.
+     * @member {Array.<string>} symlinkLinkNames
+     * @memberof ConsolidatedArticles
+     * @instance
+     */
+    ConsolidatedArticles.prototype.symlinkLinkNames = $util.emptyArray;
+
+    /**
+     * ConsolidatedArticles symlinkTargetNames.
+     * @member {Array.<string>} symlinkTargetNames
+     * @memberof ConsolidatedArticles
+     * @instance
+     */
+    ConsolidatedArticles.prototype.symlinkTargetNames = $util.emptyArray;
+
+    /**
+     * Creates a new ConsolidatedArticles instance using the specified properties.
+     * @function create
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {IConsolidatedArticles=} [properties] Properties to set
+     * @returns {ConsolidatedArticles} ConsolidatedArticles instance
+     */
+    ConsolidatedArticles.create = function create(properties) {
+        return new ConsolidatedArticles(properties);
+    };
+
+    /**
+     * Encodes the specified ConsolidatedArticles message. Does not implicitly {@link ConsolidatedArticles.verify|verify} messages.
+     * @function encode
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {IConsolidatedArticles} message ConsolidatedArticles message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ConsolidatedArticles.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.longnames != null && message.longnames.length)
+            for (let i = 0; i < message.longnames.length; ++i)
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.longnames[i]);
+        if (message.articles != null && message.articles.length)
+            for (let i = 0; i < message.articles.length; ++i)
+                $root.Article.encode(message.articles[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        if (message.symlinkLinkNames != null && message.symlinkLinkNames.length)
+            for (let i = 0; i < message.symlinkLinkNames.length; ++i)
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.symlinkLinkNames[i]);
+        if (message.symlinkTargetNames != null && message.symlinkTargetNames.length)
+            for (let i = 0; i < message.symlinkTargetNames.length; ++i)
+                writer.uint32(/* id 4, wireType 2 =*/34).string(message.symlinkTargetNames[i]);
+        return writer;
+    };
+
+    /**
+     * Encodes the specified ConsolidatedArticles message, length delimited. Does not implicitly {@link ConsolidatedArticles.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {IConsolidatedArticles} message ConsolidatedArticles message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ConsolidatedArticles.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a ConsolidatedArticles message from the specified reader or buffer.
+     * @function decode
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {ConsolidatedArticles} ConsolidatedArticles
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ConsolidatedArticles.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.ConsolidatedArticles();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.longnames && message.longnames.length))
+                        message.longnames = [];
+                    message.longnames.push(reader.string());
+                    break;
+                }
+            case 2: {
+                    if (!(message.articles && message.articles.length))
+                        message.articles = [];
+                    message.articles.push($root.Article.decode(reader, reader.uint32()));
+                    break;
+                }
+            case 3: {
+                    if (!(message.symlinkLinkNames && message.symlinkLinkNames.length))
+                        message.symlinkLinkNames = [];
+                    message.symlinkLinkNames.push(reader.string());
+                    break;
+                }
+            case 4: {
+                    if (!(message.symlinkTargetNames && message.symlinkTargetNames.length))
+                        message.symlinkTargetNames = [];
+                    message.symlinkTargetNames.push(reader.string());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a ConsolidatedArticles message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {ConsolidatedArticles} ConsolidatedArticles
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ConsolidatedArticles.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a ConsolidatedArticles message.
+     * @function verify
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    ConsolidatedArticles.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.longnames != null && message.hasOwnProperty("longnames")) {
+            if (!Array.isArray(message.longnames))
+                return "longnames: array expected";
+            for (let i = 0; i < message.longnames.length; ++i)
+                if (!$util.isString(message.longnames[i]))
+                    return "longnames: string[] expected";
+        }
+        if (message.articles != null && message.hasOwnProperty("articles")) {
+            if (!Array.isArray(message.articles))
+                return "articles: array expected";
+            for (let i = 0; i < message.articles.length; ++i) {
+                let error = $root.Article.verify(message.articles[i]);
+                if (error)
+                    return "articles." + error;
+            }
+        }
+        if (message.symlinkLinkNames != null && message.hasOwnProperty("symlinkLinkNames")) {
+            if (!Array.isArray(message.symlinkLinkNames))
+                return "symlinkLinkNames: array expected";
+            for (let i = 0; i < message.symlinkLinkNames.length; ++i)
+                if (!$util.isString(message.symlinkLinkNames[i]))
+                    return "symlinkLinkNames: string[] expected";
+        }
+        if (message.symlinkTargetNames != null && message.hasOwnProperty("symlinkTargetNames")) {
+            if (!Array.isArray(message.symlinkTargetNames))
+                return "symlinkTargetNames: array expected";
+            for (let i = 0; i < message.symlinkTargetNames.length; ++i)
+                if (!$util.isString(message.symlinkTargetNames[i]))
+                    return "symlinkTargetNames: string[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a ConsolidatedArticles message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {ConsolidatedArticles} ConsolidatedArticles
+     */
+    ConsolidatedArticles.fromObject = function fromObject(object) {
+        if (object instanceof $root.ConsolidatedArticles)
+            return object;
+        let message = new $root.ConsolidatedArticles();
+        if (object.longnames) {
+            if (!Array.isArray(object.longnames))
+                throw TypeError(".ConsolidatedArticles.longnames: array expected");
+            message.longnames = [];
+            for (let i = 0; i < object.longnames.length; ++i)
+                message.longnames[i] = String(object.longnames[i]);
+        }
+        if (object.articles) {
+            if (!Array.isArray(object.articles))
+                throw TypeError(".ConsolidatedArticles.articles: array expected");
+            message.articles = [];
+            for (let i = 0; i < object.articles.length; ++i) {
+                if (typeof object.articles[i] !== "object")
+                    throw TypeError(".ConsolidatedArticles.articles: object expected");
+                message.articles[i] = $root.Article.fromObject(object.articles[i]);
+            }
+        }
+        if (object.symlinkLinkNames) {
+            if (!Array.isArray(object.symlinkLinkNames))
+                throw TypeError(".ConsolidatedArticles.symlinkLinkNames: array expected");
+            message.symlinkLinkNames = [];
+            for (let i = 0; i < object.symlinkLinkNames.length; ++i)
+                message.symlinkLinkNames[i] = String(object.symlinkLinkNames[i]);
+        }
+        if (object.symlinkTargetNames) {
+            if (!Array.isArray(object.symlinkTargetNames))
+                throw TypeError(".ConsolidatedArticles.symlinkTargetNames: array expected");
+            message.symlinkTargetNames = [];
+            for (let i = 0; i < object.symlinkTargetNames.length; ++i)
+                message.symlinkTargetNames[i] = String(object.symlinkTargetNames[i]);
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a ConsolidatedArticles message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {ConsolidatedArticles} message ConsolidatedArticles
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    ConsolidatedArticles.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults) {
+            object.longnames = [];
+            object.articles = [];
+            object.symlinkLinkNames = [];
+            object.symlinkTargetNames = [];
+        }
+        if (message.longnames && message.longnames.length) {
+            object.longnames = [];
+            for (let j = 0; j < message.longnames.length; ++j)
+                object.longnames[j] = message.longnames[j];
+        }
+        if (message.articles && message.articles.length) {
+            object.articles = [];
+            for (let j = 0; j < message.articles.length; ++j)
+                object.articles[j] = $root.Article.toObject(message.articles[j], options);
+        }
+        if (message.symlinkLinkNames && message.symlinkLinkNames.length) {
+            object.symlinkLinkNames = [];
+            for (let j = 0; j < message.symlinkLinkNames.length; ++j)
+                object.symlinkLinkNames[j] = message.symlinkLinkNames[j];
+        }
+        if (message.symlinkTargetNames && message.symlinkTargetNames.length) {
+            object.symlinkTargetNames = [];
+            for (let j = 0; j < message.symlinkTargetNames.length; ++j)
+                object.symlinkTargetNames[j] = message.symlinkTargetNames[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this ConsolidatedArticles to JSON.
+     * @function toJSON
+     * @memberof ConsolidatedArticles
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    ConsolidatedArticles.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ConsolidatedArticles
+     * @function getTypeUrl
+     * @memberof ConsolidatedArticles
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ConsolidatedArticles.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/ConsolidatedArticles";
+    };
+
+    return ConsolidatedArticles;
 })();
 
 export const Coordinate = $root.Coordinate = (() => {
@@ -6861,6 +8525,8 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
      * @property {Array.<string>|null} [longnames] ConsolidatedShapes longnames
      * @property {Array.<IUniverses>|null} [universes] ConsolidatedShapes universes
      * @property {Array.<IFeature>|null} [shapes] ConsolidatedShapes shapes
+     * @property {Array.<string>|null} [symlinkLinkNames] ConsolidatedShapes symlinkLinkNames
+     * @property {Array.<string>|null} [symlinkTargetNames] ConsolidatedShapes symlinkTargetNames
      */
 
     /**
@@ -6875,6 +8541,8 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
         this.longnames = [];
         this.universes = [];
         this.shapes = [];
+        this.symlinkLinkNames = [];
+        this.symlinkTargetNames = [];
         if (properties)
             for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -6904,6 +8572,22 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
      * @instance
      */
     ConsolidatedShapes.prototype.shapes = $util.emptyArray;
+
+    /**
+     * ConsolidatedShapes symlinkLinkNames.
+     * @member {Array.<string>} symlinkLinkNames
+     * @memberof ConsolidatedShapes
+     * @instance
+     */
+    ConsolidatedShapes.prototype.symlinkLinkNames = $util.emptyArray;
+
+    /**
+     * ConsolidatedShapes symlinkTargetNames.
+     * @member {Array.<string>} symlinkTargetNames
+     * @memberof ConsolidatedShapes
+     * @instance
+     */
+    ConsolidatedShapes.prototype.symlinkTargetNames = $util.emptyArray;
 
     /**
      * Creates a new ConsolidatedShapes instance using the specified properties.
@@ -6938,6 +8622,12 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
         if (message.universes != null && message.universes.length)
             for (let i = 0; i < message.universes.length; ++i)
                 $root.Universes.encode(message.universes[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+        if (message.symlinkLinkNames != null && message.symlinkLinkNames.length)
+            for (let i = 0; i < message.symlinkLinkNames.length; ++i)
+                writer.uint32(/* id 4, wireType 2 =*/34).string(message.symlinkLinkNames[i]);
+        if (message.symlinkTargetNames != null && message.symlinkTargetNames.length)
+            for (let i = 0; i < message.symlinkTargetNames.length; ++i)
+                writer.uint32(/* id 5, wireType 2 =*/42).string(message.symlinkTargetNames[i]);
         return writer;
     };
 
@@ -6988,6 +8678,18 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
                     if (!(message.shapes && message.shapes.length))
                         message.shapes = [];
                     message.shapes.push($root.Feature.decode(reader, reader.uint32()));
+                    break;
+                }
+            case 4: {
+                    if (!(message.symlinkLinkNames && message.symlinkLinkNames.length))
+                        message.symlinkLinkNames = [];
+                    message.symlinkLinkNames.push(reader.string());
+                    break;
+                }
+            case 5: {
+                    if (!(message.symlinkTargetNames && message.symlinkTargetNames.length))
+                        message.symlinkTargetNames = [];
+                    message.symlinkTargetNames.push(reader.string());
                     break;
                 }
             default:
@@ -7050,6 +8752,20 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
                     return "shapes." + error;
             }
         }
+        if (message.symlinkLinkNames != null && message.hasOwnProperty("symlinkLinkNames")) {
+            if (!Array.isArray(message.symlinkLinkNames))
+                return "symlinkLinkNames: array expected";
+            for (let i = 0; i < message.symlinkLinkNames.length; ++i)
+                if (!$util.isString(message.symlinkLinkNames[i]))
+                    return "symlinkLinkNames: string[] expected";
+        }
+        if (message.symlinkTargetNames != null && message.hasOwnProperty("symlinkTargetNames")) {
+            if (!Array.isArray(message.symlinkTargetNames))
+                return "symlinkTargetNames: array expected";
+            for (let i = 0; i < message.symlinkTargetNames.length; ++i)
+                if (!$util.isString(message.symlinkTargetNames[i]))
+                    return "symlinkTargetNames: string[] expected";
+        }
         return null;
     };
 
@@ -7092,6 +8808,20 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
                 message.shapes[i] = $root.Feature.fromObject(object.shapes[i]);
             }
         }
+        if (object.symlinkLinkNames) {
+            if (!Array.isArray(object.symlinkLinkNames))
+                throw TypeError(".ConsolidatedShapes.symlinkLinkNames: array expected");
+            message.symlinkLinkNames = [];
+            for (let i = 0; i < object.symlinkLinkNames.length; ++i)
+                message.symlinkLinkNames[i] = String(object.symlinkLinkNames[i]);
+        }
+        if (object.symlinkTargetNames) {
+            if (!Array.isArray(object.symlinkTargetNames))
+                throw TypeError(".ConsolidatedShapes.symlinkTargetNames: array expected");
+            message.symlinkTargetNames = [];
+            for (let i = 0; i < object.symlinkTargetNames.length; ++i)
+                message.symlinkTargetNames[i] = String(object.symlinkTargetNames[i]);
+        }
         return message;
     };
 
@@ -7112,6 +8842,8 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
             object.longnames = [];
             object.shapes = [];
             object.universes = [];
+            object.symlinkLinkNames = [];
+            object.symlinkTargetNames = [];
         }
         if (message.longnames && message.longnames.length) {
             object.longnames = [];
@@ -7127,6 +8859,16 @@ export const ConsolidatedShapes = $root.ConsolidatedShapes = (() => {
             object.universes = [];
             for (let j = 0; j < message.universes.length; ++j)
                 object.universes[j] = $root.Universes.toObject(message.universes[j], options);
+        }
+        if (message.symlinkLinkNames && message.symlinkLinkNames.length) {
+            object.symlinkLinkNames = [];
+            for (let j = 0; j < message.symlinkLinkNames.length; ++j)
+                object.symlinkLinkNames[j] = message.symlinkLinkNames[j];
+        }
+        if (message.symlinkTargetNames && message.symlinkTargetNames.length) {
+            object.symlinkTargetNames = [];
+            for (let j = 0; j < message.symlinkTargetNames.length; ++j)
+                object.symlinkTargetNames[j] = message.symlinkTargetNames[j];
         }
         return object;
     };
@@ -9627,6 +11369,233 @@ export const DefaultUniverseTable = $root.DefaultUniverseTable = (() => {
     };
 
     return DefaultUniverseTable;
+})();
+
+export const ShardIndex = $root.ShardIndex = (() => {
+
+    /**
+     * Properties of a ShardIndex.
+     * @exports IShardIndex
+     * @interface IShardIndex
+     * @property {Array.<number>|null} [startingHashes] ShardIndex startingHashes
+     */
+
+    /**
+     * Constructs a new ShardIndex.
+     * @exports ShardIndex
+     * @classdesc Represents a ShardIndex.
+     * @implements IShardIndex
+     * @constructor
+     * @param {IShardIndex=} [properties] Properties to set
+     */
+    function ShardIndex(properties) {
+        this.startingHashes = [];
+        if (properties)
+            for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                if (properties[keys[i]] != null)
+                    this[keys[i]] = properties[keys[i]];
+    }
+
+    /**
+     * ShardIndex startingHashes.
+     * @member {Array.<number>} startingHashes
+     * @memberof ShardIndex
+     * @instance
+     */
+    ShardIndex.prototype.startingHashes = $util.emptyArray;
+
+    /**
+     * Creates a new ShardIndex instance using the specified properties.
+     * @function create
+     * @memberof ShardIndex
+     * @static
+     * @param {IShardIndex=} [properties] Properties to set
+     * @returns {ShardIndex} ShardIndex instance
+     */
+    ShardIndex.create = function create(properties) {
+        return new ShardIndex(properties);
+    };
+
+    /**
+     * Encodes the specified ShardIndex message. Does not implicitly {@link ShardIndex.verify|verify} messages.
+     * @function encode
+     * @memberof ShardIndex
+     * @static
+     * @param {IShardIndex} message ShardIndex message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ShardIndex.encode = function encode(message, writer) {
+        if (!writer)
+            writer = $Writer.create();
+        if (message.startingHashes != null && message.startingHashes.length) {
+            writer.uint32(/* id 1, wireType 2 =*/10).fork();
+            for (let i = 0; i < message.startingHashes.length; ++i)
+                writer.int32(message.startingHashes[i]);
+            writer.ldelim();
+        }
+        return writer;
+    };
+
+    /**
+     * Encodes the specified ShardIndex message, length delimited. Does not implicitly {@link ShardIndex.verify|verify} messages.
+     * @function encodeDelimited
+     * @memberof ShardIndex
+     * @static
+     * @param {IShardIndex} message ShardIndex message or plain object to encode
+     * @param {$protobuf.Writer} [writer] Writer to encode to
+     * @returns {$protobuf.Writer} Writer
+     */
+    ShardIndex.encodeDelimited = function encodeDelimited(message, writer) {
+        return this.encode(message, writer).ldelim();
+    };
+
+    /**
+     * Decodes a ShardIndex message from the specified reader or buffer.
+     * @function decode
+     * @memberof ShardIndex
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @param {number} [length] Message length if known beforehand
+     * @returns {ShardIndex} ShardIndex
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ShardIndex.decode = function decode(reader, length) {
+        if (!(reader instanceof $Reader))
+            reader = $Reader.create(reader);
+        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.ShardIndex();
+        while (reader.pos < end) {
+            let tag = reader.uint32();
+            switch (tag >>> 3) {
+            case 1: {
+                    if (!(message.startingHashes && message.startingHashes.length))
+                        message.startingHashes = [];
+                    if ((tag & 7) === 2) {
+                        let end2 = reader.uint32() + reader.pos;
+                        while (reader.pos < end2)
+                            message.startingHashes.push(reader.int32());
+                    } else
+                        message.startingHashes.push(reader.int32());
+                    break;
+                }
+            default:
+                reader.skipType(tag & 7);
+                break;
+            }
+        }
+        return message;
+    };
+
+    /**
+     * Decodes a ShardIndex message from the specified reader or buffer, length delimited.
+     * @function decodeDelimited
+     * @memberof ShardIndex
+     * @static
+     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+     * @returns {ShardIndex} ShardIndex
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    ShardIndex.decodeDelimited = function decodeDelimited(reader) {
+        if (!(reader instanceof $Reader))
+            reader = new $Reader(reader);
+        return this.decode(reader, reader.uint32());
+    };
+
+    /**
+     * Verifies a ShardIndex message.
+     * @function verify
+     * @memberof ShardIndex
+     * @static
+     * @param {Object.<string,*>} message Plain object to verify
+     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+     */
+    ShardIndex.verify = function verify(message) {
+        if (typeof message !== "object" || message === null)
+            return "object expected";
+        if (message.startingHashes != null && message.hasOwnProperty("startingHashes")) {
+            if (!Array.isArray(message.startingHashes))
+                return "startingHashes: array expected";
+            for (let i = 0; i < message.startingHashes.length; ++i)
+                if (!$util.isInteger(message.startingHashes[i]))
+                    return "startingHashes: integer[] expected";
+        }
+        return null;
+    };
+
+    /**
+     * Creates a ShardIndex message from a plain object. Also converts values to their respective internal types.
+     * @function fromObject
+     * @memberof ShardIndex
+     * @static
+     * @param {Object.<string,*>} object Plain object
+     * @returns {ShardIndex} ShardIndex
+     */
+    ShardIndex.fromObject = function fromObject(object) {
+        if (object instanceof $root.ShardIndex)
+            return object;
+        let message = new $root.ShardIndex();
+        if (object.startingHashes) {
+            if (!Array.isArray(object.startingHashes))
+                throw TypeError(".ShardIndex.startingHashes: array expected");
+            message.startingHashes = [];
+            for (let i = 0; i < object.startingHashes.length; ++i)
+                message.startingHashes[i] = object.startingHashes[i] | 0;
+        }
+        return message;
+    };
+
+    /**
+     * Creates a plain object from a ShardIndex message. Also converts values to other types if specified.
+     * @function toObject
+     * @memberof ShardIndex
+     * @static
+     * @param {ShardIndex} message ShardIndex
+     * @param {$protobuf.IConversionOptions} [options] Conversion options
+     * @returns {Object.<string,*>} Plain object
+     */
+    ShardIndex.toObject = function toObject(message, options) {
+        if (!options)
+            options = {};
+        let object = {};
+        if (options.arrays || options.defaults)
+            object.startingHashes = [];
+        if (message.startingHashes && message.startingHashes.length) {
+            object.startingHashes = [];
+            for (let j = 0; j < message.startingHashes.length; ++j)
+                object.startingHashes[j] = message.startingHashes[j];
+        }
+        return object;
+    };
+
+    /**
+     * Converts this ShardIndex to JSON.
+     * @function toJSON
+     * @memberof ShardIndex
+     * @instance
+     * @returns {Object.<string,*>} JSON object
+     */
+    ShardIndex.prototype.toJSON = function toJSON() {
+        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+    };
+
+    /**
+     * Gets the default type url for ShardIndex
+     * @function getTypeUrl
+     * @memberof ShardIndex
+     * @static
+     * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns {string} The default type url
+     */
+    ShardIndex.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+        if (typeUrlPrefix === undefined) {
+            typeUrlPrefix = "type.googleapis.com";
+        }
+        return typeUrlPrefix + "/ShardIndex";
+    };
+
+    return ShardIndex;
 })();
 
 export { $root as default };

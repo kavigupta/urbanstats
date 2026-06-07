@@ -1,5 +1,8 @@
 import { ClientFunction, Selector } from 'testcafe'
 
+import { sanitize } from '../src/utils/paths'
+import { shardBytesFullNum } from '../src/utils/shardHash'
+
 import {
     target, checkAllCategoryBoxes, checkTextboxes, comparisonPage, downloadImage,
     getLocationWithoutSettings, safeReload, screencap,
@@ -10,7 +13,13 @@ import {
     downloadOrCheckString,
     waitForLoading,
     downloadCSV,
+    withInterceptedRequests,
+    clickUniverseFlag,
 } from './test_utils'
+
+function articleUrl(longname: string): string {
+    return `/article.html?longname=${encodeURIComponent(longname).replace(/%20/g, '+')}`
+}
 
 urbanstatsFixture('longer article test', '/article.html?longname=California%2C+USA')
 
@@ -234,6 +243,14 @@ test('charlotte-all-stats', async (t) => {
     await screencap(t)
 })
 
+urbanstatsFixture('all stats test', `/article.html?longname=Toronto+CDR%2C+Ontario%2C+Canada`)
+
+test('toronto-cdr-all-stats', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await checkAllCategoryBoxes(t)
+    await screencap(t)
+})
+
 urbanstatsFixture('weather F', '/article.html?longname=California%2C+USA&s=jV3GG2h8Vfb')
 
 test('is F', async (t) => {
@@ -384,15 +401,90 @@ test('download-article-csv-settings-ignored', async (t) => {
 
 test('loading indicator', async (t) => {
     // Loading indicator appears when shape load fails or is delayed
-    const cdp = await t.getCurrentCDPSession()
+    await withInterceptedRequests(t, request => request.url.includes('shape') ? 'fail' : 'continue', async () => {
+        await t.click(Selector('button[data-test-id="1"]'))
+        await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
 
-    await cdp.Network.enable({})
-    await cdp.Network.setBlockedURLs({
-        urls: ['*shape*Roscoe'],
+        await screencap(t, { wait: false })
     })
+})
 
-    await t.click(Selector('button[data-test-id="1"]'))
-    await t.expect(Selector('[data-test-id=longLoad]').exists).ok()
+urbanstatsFixture('uncheck all years', '/article.html?longname=California%2C+USA')
 
-    await screencap(t, { wait: false })
+test('uncheck all years exits staged mode', async (t) => {
+    // Check all year checkboxes, then uncheck them, and verify that staged mode is exited (staging controls disappear)
+    await checkTextboxes(t, ['Geographic Identifiers'])
+    await waitForLoading()
+    const yearCheckbox = Selector('.checkbox-setting').withExactText('2020').find('input[type="checkbox"]')
+    await t.click(yearCheckbox)
+    await waitForLoading()
+    await t.click(yearCheckbox)
+})
+
+const edgeCaseHashes: { longname: string, expectedHash: number, expectedCompactness: string }[] = [
+    // hash collisions
+    { longname: 'NC-02 (1899), USA', expectedHash: 0xf4fbd73f, expectedCompactness: '0.151' },
+    { longname: 'East Earl township [CCD], Lancaster County, Pennsylvania, USA', expectedHash: 0xf4fbd73f, expectedCompactness: '0.460' },
+    { longname: 'Hilltop Neighborhood, Denver City, Colorado, USA', expectedHash: 0xb0c41bff, expectedCompactness: '0.408' },
+    { longname: 'Walland CDP, Tennessee, USA', expectedHash: 0xb0c41bff, expectedCompactness: '0.455' },
+    // early hashes
+    { longname: 'MO-03 (1973), USA', expectedHash: 0x0000a4ba, expectedCompactness: '0.395' },
+    { longname: 'Hpakant Metropolitan Cluster, Myanmar', expectedHash: 0x0000a758, expectedCompactness: '0.0309' },
+    // late hashes
+    { longname: 'Tilhar Metropolitan Cluster, India', expectedHash: 0xffffce8b, expectedCompactness: '0.0281' },
+    { longname: 'Patchogue-Medford Union Free School District, New York, USA', expectedHash: 0xfffff4b0, expectedCompactness: '0.428' },
+]
+
+urbanstatsFixture('edge case hashes', articleUrl(edgeCaseHashes[0].longname))
+
+test('hash collisions: hashes match and all pages load with correct compactness', async (t) => {
+    for (const entry of edgeCaseHashes) {
+        const h = shardBytesFullNum(sanitize(entry.longname))
+        await t.expect(h).eql(entry.expectedHash, `hash("${entry.longname}")`)
+    }
+    for (const entry of edgeCaseHashes) {
+        await t.navigateTo(articleUrl(entry.longname))
+        await checkAllCategoryBoxes(t)
+        await t.expect(Selector('span').withExactText(entry.expectedCompactness).exists).ok()
+    }
+})
+
+urbanstatsFixture('make sure ties in custom table are resolved appropriately', '/article.html?longname=33523%2C+USA&s=2cB5JjRm6YapUJ19cevM')
+
+async function getAllTexts(t: TestController, selector: Selector): Promise<string[]> {
+    await t.expect(selector.count).gt(0)
+    const count = await selector.count
+    const texts: string[] = []
+    for (let i = 0; i < count; i++) {
+        texts.push(await selector.nth(i).innerText)
+    }
+    return texts
+}
+
+async function testSameOrdinalPercentile(t: TestController): Promise<void> {
+    // pull the longname from "centered_text subheadertext" div
+    const longname = await Selector('div').withAttribute('class', 'centered_text subheadertext').nth(0).innerText
+    // pull the index: data-test-id="statistic-ordinal"
+    const index = await Selector('div').withAttribute('data-test-id', 'statistic-ordinal').nth(0).innerText
+    // navigate to the table
+    await t.click(Selector('a').withExactText('Coronary heart disease %'))
+    // // make sure a div with the text 33523, USA exists
+    // await t.expect(Selector('div').withExactText(longname).exists).ok()
+    const tableLongnames = await getAllTexts(t, Selector('a').withAttribute('data-test-id', 'statistic-panel-longname-link'))
+    const tableIndices = await getAllTexts(t, Selector('div').withAttribute('data-test-id', 'statistic-ordinal'))
+    await t.expect(tableLongnames).contains(longname)
+    const indexInTable = tableLongnames.indexOf(longname)
+    await t.expect(tableIndices[indexInTable]).eql(index.split(' ')[0])
+}
+
+test('custom table tie-breaking', async (t) => {
+    await testSameOrdinalPercentile(t)
+})
+
+test('custom table tie-breaking in universe', async (t) => {
+    // florida
+    await t
+        .click(Selector('img').withAttribute('class', 'universe-selector'))
+    await clickUniverseFlag(t, 'Florida, USA')
+    await testSameOrdinalPercentile(t)
 })

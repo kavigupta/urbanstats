@@ -1,12 +1,13 @@
 import domtoimage from 'dom-to-image-more'
 import { saveAs } from 'file-saver'
-import React, { createContext, ReactNode, useContext } from 'react'
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 
 import { universePath } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { loadImage } from '../utils/Image'
 import { TestUtils } from '../utils/TestUtils'
+import { totalOffset } from '../utils/layout'
 import { zIndex } from '../utils/zIndex'
 
 export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
@@ -71,14 +72,6 @@ export interface ScreencapElements {
     overallWidth: number
     elementsToRender: HTMLElement[]
     heightMultiplier?: number
-}
-
-export function totalOffset(element: Element | null): { top: number, left: number } {
-    if (!(element instanceof HTMLElement)) {
-        return { top: 0, left: 0 }
-    }
-    const parentOffset = totalOffset(element.offsetParent)
-    return { top: element.offsetTop + parentOffset.top, left: element.offsetLeft + parentOffset.left }
 }
 
 function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number, image: CanvasImageSource, x: number, y: number, w: number, h: number, testing: boolean): void {
@@ -174,69 +167,110 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, h
     return resultCanvas
 }
 
-export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors): Promise<void> {
-    const overallWidth = config.overallWidth
-    const heightMultiplier = config.heightMultiplier ?? 1
+export type ReadyForScreenshotCallback = () => void
 
-    const canvases = []
-    for (const ref of config.elementsToRender) {
-        try {
-            canvases.push(await screencapElement(ref, overallWidth, heightMultiplier))
-        }
-        catch (e) {
-            console.error(e)
-        }
+export type ScreenshotContextType = Set<(callback: ReadyForScreenshotCallback | undefined) => void>
+
+export async function withScreenshotMode<T>(context: ScreenshotContextType, fn: () => Promise<T>): Promise<T> {
+    // Tell all the components that we're screenshotting, and wait for them to be ready
+    await Promise.all(Array.from(context).map(setCallback => new Promise<void>((resolve) => { setCallback(() => resolve) })))
+    try {
+        return await fn()
     }
-
-    const canvas = document.createElement('canvas')
-
-    const padAround = 100
-    const padBetween = 50
-
-    const banner = await loadImage(colors.screenshotFooterUrl)
-
-    const bannerScale = overallWidth / banner.width
-    const bannerHeight = banner.height * bannerScale
-
-    canvas.width = padAround * 2 + overallWidth
-    canvas.height = padAround + padBetween * (canvases.length - 1) + canvases.reduce((a, b) => a + b.height, 0) + bannerHeight
-
-    const ctx = canvas.getContext('2d')!
-
-    ctx.fillStyle = colors.background
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-    let start = padAround
-    for (const elementCanvas of canvases) {
-        ctx.drawImage(elementCanvas, padAround, start)
-        start += elementCanvas.height + padBetween
+    finally {
+        // Move everything out of screenshot mode
+        context.forEach((setCallback) => { setCallback(undefined) })
     }
+}
 
-    start -= padBetween
+export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType, forceNonTesting: boolean = false): Promise<void> {
+    await withScreenshotMode(screenshotContext, async () => {
+        const overallWidth = config.overallWidth
+        const heightMultiplier = config.heightMultiplier ?? 1
 
-    ctx.drawImage(banner, padAround, start, overallWidth, bannerHeight)
+        const canvases = []
+        for (const ref of config.elementsToRender) {
+            try {
+                canvases.push(await screencapElement(ref, overallWidth, heightMultiplier, { testing: !forceNonTesting && TestUtils.shared.isTesting }))
+            }
+            catch (e) {
+                console.error(e)
+            }
+        }
 
-    if (universe !== undefined) {
-        const flag = new Image()
-        flag.src = universePath(universe)
-        await new Promise<void>((resolve) => {
-            flag.onload = () => { resolve() }
+        const canvas = document.createElement('canvas')
+
+        const padAround = 100
+        const padBetween = 50
+
+        const banner = await loadImage(colors.screenshotFooterUrl)
+
+        const bannerScale = overallWidth / banner.width
+        const bannerHeight = banner.height * bannerScale
+
+        canvas.width = padAround * 2 + overallWidth
+        canvas.height = padAround + padBetween * (canvases.length - 1) + canvases.reduce((a, b) => a + b.height, 0) + bannerHeight
+
+        const ctx = canvas.getContext('2d')!
+
+        ctx.fillStyle = colors.background
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        let start = padAround
+        for (const elementCanvas of canvases) {
+            ctx.drawImage(elementCanvas, padAround, start)
+            start += elementCanvas.height + padBetween
+        }
+
+        start -= padBetween
+
+        ctx.drawImage(banner, padAround, start, overallWidth, bannerHeight)
+
+        if (universe !== undefined) {
+            const flag = new Image()
+            flag.src = universePath(universe)
+            await new Promise<void>((resolve) => {
+                flag.onload = () => { resolve() }
+            })
+            // draw on bottom left, same height as banner
+            const flagHeight = bannerHeight / 2
+            const offset = flagHeight / 2
+            const flagWidth = flag.width * flagHeight / flag.height
+            drawImageIfNotTesting(ctx, canvases.length, flag, padAround + offset, start + offset, flagWidth, flagHeight, TestUtils.shared.isTesting)
+        }
+
+        canvas.toBlob(function (blob) {
+            saveAs(blob!, config.path)
         })
-        // draw on bottom left, same height as banner
-        const flagHeight = bannerHeight / 2
-        const offset = flagHeight / 2
-        const flagWidth = flag.width * flagHeight / flag.height
-        drawImageIfNotTesting(ctx, canvases.length, flag, padAround + offset, start + offset, flagWidth, flagHeight, TestUtils.shared.isTesting)
-    }
-
-    canvas.toBlob(function (blob) {
-        saveAs(blob!, config.path)
     })
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Context declaration
-export const ScreenshotContext = createContext(false)
+export const ScreenshotContext = createContext<ScreenshotContextType>(new Set())
 
+// When we're taking a screenshot, returns a callback that should be called when the component is ready for the screenshot
+// Using this, we can sync up all component readiness
+export function useScreenshotCallback(): ReadyForScreenshotCallback | undefined {
+    const context = useContext(ScreenshotContext)
+    const [callback, setCallback] = useState<ReadyForScreenshotCallback | undefined>(undefined)
+
+    useEffect(() => {
+        context.add(setCallback)
+        return () => {
+            context.delete(setCallback)
+        }
+    }, [context])
+
+    return callback
+}
+
+// Just running a `useEffect` should be good enough for most use cases
 export function useScreenshotMode(): boolean {
-    return useContext(ScreenshotContext)
+    const screenshotCallback = useScreenshotCallback()
+
+    useEffect(() => {
+        screenshotCallback?.()
+    }, [screenshotCallback])
+
+    return screenshotCallback !== undefined
 }

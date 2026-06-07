@@ -31,7 +31,7 @@ export function toRgb(color: Color): { r: number, g: number, b: number, a: numbe
     }
 }
 
-export function toHsv(color: Color): { h: number, s: number, v: number, a: number } {
+function toHsv(color: Color): { h: number, s: number, v: number, a: number } {
     if ('v' in color) {
         return color
     }

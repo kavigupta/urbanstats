@@ -1,4 +1,4 @@
-import { QuizDescriptorWithTime } from './quiz'
+import { type QuizDescriptorWithTime } from './quiz'
 
 const reference = new Date(2023, 8, 2) // 2023-09-02. 8 is September, since months are 0-indexed for some fucking reason
 

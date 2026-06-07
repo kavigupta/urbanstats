@@ -733,6 +733,430 @@ export class TemperatureHistogram implements ITemperatureHistogram {
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
+/** Properties of a CongressionalRepresentative. */
+export interface ICongressionalRepresentative {
+
+    /** CongressionalRepresentative name */
+    name?: (string|null);
+
+    /** CongressionalRepresentative wikipediaPage */
+    wikipediaPage?: (string|null);
+
+    /** CongressionalRepresentative party */
+    party?: (string|null);
+
+    /** CongressionalRepresentative termIn */
+    termIn?: (ITermIn[]|null);
+}
+
+/** Represents a CongressionalRepresentative. */
+export class CongressionalRepresentative implements ICongressionalRepresentative {
+
+    /**
+     * Constructs a new CongressionalRepresentative.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: ICongressionalRepresentative);
+
+    /** CongressionalRepresentative name. */
+    public name: string;
+
+    /** CongressionalRepresentative wikipediaPage. */
+    public wikipediaPage?: (string|null);
+
+    /** CongressionalRepresentative party. */
+    public party?: (string|null);
+
+    /** CongressionalRepresentative termIn. */
+    public termIn: ITermIn[];
+
+    /** CongressionalRepresentative _wikipediaPage. */
+    public _wikipediaPage?: "wikipediaPage";
+
+    /** CongressionalRepresentative _party. */
+    public _party?: "party";
+
+    /**
+     * Creates a new CongressionalRepresentative instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns CongressionalRepresentative instance
+     */
+    public static create(properties?: ICongressionalRepresentative): CongressionalRepresentative;
+
+    /**
+     * Encodes the specified CongressionalRepresentative message. Does not implicitly {@link CongressionalRepresentative.verify|verify} messages.
+     * @param message CongressionalRepresentative message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: ICongressionalRepresentative, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified CongressionalRepresentative message, length delimited. Does not implicitly {@link CongressionalRepresentative.verify|verify} messages.
+     * @param message CongressionalRepresentative message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: ICongressionalRepresentative, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a CongressionalRepresentative message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns CongressionalRepresentative
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): CongressionalRepresentative;
+
+    /**
+     * Decodes a CongressionalRepresentative message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns CongressionalRepresentative
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): CongressionalRepresentative;
+
+    /**
+     * Verifies a CongressionalRepresentative message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a CongressionalRepresentative message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns CongressionalRepresentative
+     */
+    public static fromObject(object: { [k: string]: any }): CongressionalRepresentative;
+
+    /**
+     * Creates a plain object from a CongressionalRepresentative message. Also converts values to other types if specified.
+     * @param message CongressionalRepresentative
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: CongressionalRepresentative, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this CongressionalRepresentative to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for CongressionalRepresentative
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a TermIn. */
+export interface ITermIn {
+
+    /** TermIn startYear */
+    startYear?: (number|null);
+
+    /** TermIn districtIdx */
+    districtIdx?: (number|null);
+}
+
+/** Represents a TermIn. */
+export class TermIn implements ITermIn {
+
+    /**
+     * Constructs a new TermIn.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: ITermIn);
+
+    /** TermIn startYear. */
+    public startYear: number;
+
+    /** TermIn districtIdx. */
+    public districtIdx: number;
+
+    /**
+     * Creates a new TermIn instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns TermIn instance
+     */
+    public static create(properties?: ITermIn): TermIn;
+
+    /**
+     * Encodes the specified TermIn message. Does not implicitly {@link TermIn.verify|verify} messages.
+     * @param message TermIn message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: ITermIn, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified TermIn message, length delimited. Does not implicitly {@link TermIn.verify|verify} messages.
+     * @param message TermIn message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: ITermIn, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a TermIn message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns TermIn
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): TermIn;
+
+    /**
+     * Decodes a TermIn message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns TermIn
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): TermIn;
+
+    /**
+     * Verifies a TermIn message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a TermIn message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns TermIn
+     */
+    public static fromObject(object: { [k: string]: any }): TermIn;
+
+    /**
+     * Creates a plain object from a TermIn message. Also converts values to other types if specified.
+     * @param message TermIn
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: TermIn, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this TermIn to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for TermIn
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a CongressionalDistrict. */
+export interface ICongressionalDistrict {
+
+    /** CongressionalDistrict longname */
+    longname?: (string|null);
+}
+
+/** Represents a CongressionalDistrict. */
+export class CongressionalDistrict implements ICongressionalDistrict {
+
+    /**
+     * Constructs a new CongressionalDistrict.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: ICongressionalDistrict);
+
+    /** CongressionalDistrict longname. */
+    public longname: string;
+
+    /**
+     * Creates a new CongressionalDistrict instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns CongressionalDistrict instance
+     */
+    public static create(properties?: ICongressionalDistrict): CongressionalDistrict;
+
+    /**
+     * Encodes the specified CongressionalDistrict message. Does not implicitly {@link CongressionalDistrict.verify|verify} messages.
+     * @param message CongressionalDistrict message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: ICongressionalDistrict, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified CongressionalDistrict message, length delimited. Does not implicitly {@link CongressionalDistrict.verify|verify} messages.
+     * @param message CongressionalDistrict message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: ICongressionalDistrict, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a CongressionalDistrict message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns CongressionalDistrict
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): CongressionalDistrict;
+
+    /**
+     * Decodes a CongressionalDistrict message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns CongressionalDistrict
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): CongressionalDistrict;
+
+    /**
+     * Verifies a CongressionalDistrict message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a CongressionalDistrict message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns CongressionalDistrict
+     */
+    public static fromObject(object: { [k: string]: any }): CongressionalDistrict;
+
+    /**
+     * Creates a plain object from a CongressionalDistrict message. Also converts values to other types if specified.
+     * @param message CongressionalDistrict
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: CongressionalDistrict, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this CongressionalDistrict to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for CongressionalDistrict
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a CongressionalRepresentativeTable. */
+export interface ICongressionalRepresentativeTable {
+
+    /** CongressionalRepresentativeTable representatives */
+    representatives?: (ICongressionalRepresentative[]|null);
+
+    /** CongressionalRepresentativeTable districts */
+    districts?: (ICongressionalDistrict[]|null);
+}
+
+/** Represents a CongressionalRepresentativeTable. */
+export class CongressionalRepresentativeTable implements ICongressionalRepresentativeTable {
+
+    /**
+     * Constructs a new CongressionalRepresentativeTable.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: ICongressionalRepresentativeTable);
+
+    /** CongressionalRepresentativeTable representatives. */
+    public representatives: ICongressionalRepresentative[];
+
+    /** CongressionalRepresentativeTable districts. */
+    public districts: ICongressionalDistrict[];
+
+    /**
+     * Creates a new CongressionalRepresentativeTable instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns CongressionalRepresentativeTable instance
+     */
+    public static create(properties?: ICongressionalRepresentativeTable): CongressionalRepresentativeTable;
+
+    /**
+     * Encodes the specified CongressionalRepresentativeTable message. Does not implicitly {@link CongressionalRepresentativeTable.verify|verify} messages.
+     * @param message CongressionalRepresentativeTable message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: ICongressionalRepresentativeTable, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified CongressionalRepresentativeTable message, length delimited. Does not implicitly {@link CongressionalRepresentativeTable.verify|verify} messages.
+     * @param message CongressionalRepresentativeTable message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: ICongressionalRepresentativeTable, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a CongressionalRepresentativeTable message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns CongressionalRepresentativeTable
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): CongressionalRepresentativeTable;
+
+    /**
+     * Decodes a CongressionalRepresentativeTable message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns CongressionalRepresentativeTable
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): CongressionalRepresentativeTable;
+
+    /**
+     * Verifies a CongressionalRepresentativeTable message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a CongressionalRepresentativeTable message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns CongressionalRepresentativeTable
+     */
+    public static fromObject(object: { [k: string]: any }): CongressionalRepresentativeTable;
+
+    /**
+     * Creates a plain object from a CongressionalRepresentativeTable message. Also converts values to other types if specified.
+     * @param message CongressionalRepresentativeTable
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: CongressionalRepresentativeTable, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this CongressionalRepresentativeTable to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for CongressionalRepresentativeTable
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
 /** Properties of an ExtraStatistic. */
 export interface IExtraStatistic {
 
@@ -851,6 +1275,115 @@ export class ExtraStatistic implements IExtraStatistic {
     public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
+/** Properties of a CongressionalRepresentativePointer. */
+export interface ICongressionalRepresentativePointer {
+
+    /** CongressionalRepresentativePointer representativeIdx */
+    representativeIdx?: (number|null);
+
+    /** CongressionalRepresentativePointer startTerm */
+    startTerm?: (number|null);
+
+    /** CongressionalRepresentativePointer endTerm */
+    endTerm?: (number|null);
+}
+
+/** Represents a CongressionalRepresentativePointer. */
+export class CongressionalRepresentativePointer implements ICongressionalRepresentativePointer {
+
+    /**
+     * Constructs a new CongressionalRepresentativePointer.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: ICongressionalRepresentativePointer);
+
+    /** CongressionalRepresentativePointer representativeIdx. */
+    public representativeIdx: number;
+
+    /** CongressionalRepresentativePointer startTerm. */
+    public startTerm: number;
+
+    /** CongressionalRepresentativePointer endTerm. */
+    public endTerm: number;
+
+    /**
+     * Creates a new CongressionalRepresentativePointer instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns CongressionalRepresentativePointer instance
+     */
+    public static create(properties?: ICongressionalRepresentativePointer): CongressionalRepresentativePointer;
+
+    /**
+     * Encodes the specified CongressionalRepresentativePointer message. Does not implicitly {@link CongressionalRepresentativePointer.verify|verify} messages.
+     * @param message CongressionalRepresentativePointer message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: ICongressionalRepresentativePointer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified CongressionalRepresentativePointer message, length delimited. Does not implicitly {@link CongressionalRepresentativePointer.verify|verify} messages.
+     * @param message CongressionalRepresentativePointer message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: ICongressionalRepresentativePointer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a CongressionalRepresentativePointer message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns CongressionalRepresentativePointer
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): CongressionalRepresentativePointer;
+
+    /**
+     * Decodes a CongressionalRepresentativePointer message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns CongressionalRepresentativePointer
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): CongressionalRepresentativePointer;
+
+    /**
+     * Verifies a CongressionalRepresentativePointer message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a CongressionalRepresentativePointer message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns CongressionalRepresentativePointer
+     */
+    public static fromObject(object: { [k: string]: any }): CongressionalRepresentativePointer;
+
+    /**
+     * Creates a plain object from a CongressionalRepresentativePointer message. Also converts values to other types if specified.
+     * @param message CongressionalRepresentativePointer
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: CongressionalRepresentativePointer, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this CongressionalRepresentativePointer to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for CongressionalRepresentativePointer
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
 /** Properties of a Metadata. */
 export interface IMetadata {
 
@@ -859,6 +1392,9 @@ export interface IMetadata {
 
     /** Metadata stringValue */
     stringValue?: (string|null);
+
+    /** Metadata congressionalRepresentatives */
+    congressionalRepresentatives?: (ICongressionalRepresentativePointer[]|null);
 }
 
 /** Represents a Metadata. */
@@ -875,6 +1411,9 @@ export class Metadata implements IMetadata {
 
     /** Metadata stringValue. */
     public stringValue?: (string|null);
+
+    /** Metadata congressionalRepresentatives. */
+    public congressionalRepresentatives: ICongressionalRepresentativePointer[];
 
     /** Metadata _stringValue. */
     public _stringValue?: "stringValue";
@@ -1108,6 +1647,121 @@ export class Article implements IArticle {
 
     /**
      * Gets the default type url for Article
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a ConsolidatedArticles. */
+export interface IConsolidatedArticles {
+
+    /** ConsolidatedArticles longnames */
+    longnames?: (string[]|null);
+
+    /** ConsolidatedArticles articles */
+    articles?: (IArticle[]|null);
+
+    /** ConsolidatedArticles symlinkLinkNames */
+    symlinkLinkNames?: (string[]|null);
+
+    /** ConsolidatedArticles symlinkTargetNames */
+    symlinkTargetNames?: (string[]|null);
+}
+
+/** Represents a ConsolidatedArticles. */
+export class ConsolidatedArticles implements IConsolidatedArticles {
+
+    /**
+     * Constructs a new ConsolidatedArticles.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IConsolidatedArticles);
+
+    /** ConsolidatedArticles longnames. */
+    public longnames: string[];
+
+    /** ConsolidatedArticles articles. */
+    public articles: IArticle[];
+
+    /** ConsolidatedArticles symlinkLinkNames. */
+    public symlinkLinkNames: string[];
+
+    /** ConsolidatedArticles symlinkTargetNames. */
+    public symlinkTargetNames: string[];
+
+    /**
+     * Creates a new ConsolidatedArticles instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns ConsolidatedArticles instance
+     */
+    public static create(properties?: IConsolidatedArticles): ConsolidatedArticles;
+
+    /**
+     * Encodes the specified ConsolidatedArticles message. Does not implicitly {@link ConsolidatedArticles.verify|verify} messages.
+     * @param message ConsolidatedArticles message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IConsolidatedArticles, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified ConsolidatedArticles message, length delimited. Does not implicitly {@link ConsolidatedArticles.verify|verify} messages.
+     * @param message ConsolidatedArticles message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IConsolidatedArticles, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a ConsolidatedArticles message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns ConsolidatedArticles
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ConsolidatedArticles;
+
+    /**
+     * Decodes a ConsolidatedArticles message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns ConsolidatedArticles
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ConsolidatedArticles;
+
+    /**
+     * Verifies a ConsolidatedArticles message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a ConsolidatedArticles message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns ConsolidatedArticles
+     */
+    public static fromObject(object: { [k: string]: any }): ConsolidatedArticles;
+
+    /**
+     * Creates a plain object from a ConsolidatedArticles message. Also converts values to other types if specified.
+     * @param message ConsolidatedArticles
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: ConsolidatedArticles, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this ConsolidatedArticles to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ConsolidatedArticles
      * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
      * @returns The default type url
      */
@@ -2746,6 +3400,12 @@ export interface IConsolidatedShapes {
 
     /** ConsolidatedShapes shapes */
     shapes?: (IFeature[]|null);
+
+    /** ConsolidatedShapes symlinkLinkNames */
+    symlinkLinkNames?: (string[]|null);
+
+    /** ConsolidatedShapes symlinkTargetNames */
+    symlinkTargetNames?: (string[]|null);
 }
 
 /** Represents a ConsolidatedShapes. */
@@ -2765,6 +3425,12 @@ export class ConsolidatedShapes implements IConsolidatedShapes {
 
     /** ConsolidatedShapes shapes. */
     public shapes: IFeature[];
+
+    /** ConsolidatedShapes symlinkLinkNames. */
+    public symlinkLinkNames: string[];
+
+    /** ConsolidatedShapes symlinkTargetNames. */
+    public symlinkTargetNames: string[];
 
     /**
      * Creates a new ConsolidatedShapes instance using the specified properties.
@@ -3789,6 +4455,103 @@ export class DefaultUniverseTable implements IDefaultUniverseTable {
 
     /**
      * Gets the default type url for DefaultUniverseTable
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
+}
+
+/** Properties of a ShardIndex. */
+export interface IShardIndex {
+
+    /** ShardIndex startingHashes */
+    startingHashes?: (number[]|null);
+}
+
+/** Represents a ShardIndex. */
+export class ShardIndex implements IShardIndex {
+
+    /**
+     * Constructs a new ShardIndex.
+     * @param [properties] Properties to set
+     */
+    constructor(properties?: IShardIndex);
+
+    /** ShardIndex startingHashes. */
+    public startingHashes: number[];
+
+    /**
+     * Creates a new ShardIndex instance using the specified properties.
+     * @param [properties] Properties to set
+     * @returns ShardIndex instance
+     */
+    public static create(properties?: IShardIndex): ShardIndex;
+
+    /**
+     * Encodes the specified ShardIndex message. Does not implicitly {@link ShardIndex.verify|verify} messages.
+     * @param message ShardIndex message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encode(message: IShardIndex, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Encodes the specified ShardIndex message, length delimited. Does not implicitly {@link ShardIndex.verify|verify} messages.
+     * @param message ShardIndex message or plain object to encode
+     * @param [writer] Writer to encode to
+     * @returns Writer
+     */
+    public static encodeDelimited(message: IShardIndex, writer?: $protobuf.Writer): $protobuf.Writer;
+
+    /**
+     * Decodes a ShardIndex message from the specified reader or buffer.
+     * @param reader Reader or buffer to decode from
+     * @param [length] Message length if known beforehand
+     * @returns ShardIndex
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ShardIndex;
+
+    /**
+     * Decodes a ShardIndex message from the specified reader or buffer, length delimited.
+     * @param reader Reader or buffer to decode from
+     * @returns ShardIndex
+     * @throws {Error} If the payload is not a reader or valid buffer
+     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+     */
+    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ShardIndex;
+
+    /**
+     * Verifies a ShardIndex message.
+     * @param message Plain object to verify
+     * @returns `null` if valid, otherwise the reason why it is not
+     */
+    public static verify(message: { [k: string]: any }): (string|null);
+
+    /**
+     * Creates a ShardIndex message from a plain object. Also converts values to their respective internal types.
+     * @param object Plain object
+     * @returns ShardIndex
+     */
+    public static fromObject(object: { [k: string]: any }): ShardIndex;
+
+    /**
+     * Creates a plain object from a ShardIndex message. Also converts values to other types if specified.
+     * @param message ShardIndex
+     * @param [options] Conversion options
+     * @returns Plain object
+     */
+    public static toObject(message: ShardIndex, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+    /**
+     * Converts this ShardIndex to JSON.
+     * @returns JSON object
+     */
+    public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for ShardIndex
      * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
      * @returns The default type url
      */

@@ -3,6 +3,7 @@ import path from 'path'
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import NodePolyfillPlugin from 'node-polyfill-webpack-plugin'
 import { rspack } from "@rspack/core"
+import { port } from "./port.js"
 
 const isProduction = process.env.NODE_ENV === 'production'
 
@@ -65,7 +66,7 @@ export default env => ({
             directory: env.directory,
         },
         compress: true,
-        port: 8000,
+        port: port(),
         devMiddleware: {
             writeToDisk: true,
         },
@@ -73,18 +74,26 @@ export default env => ({
             '.local'
         ],
     },
+    watchOptions: {
+        ignored: env.directory
+    },
     performance: {
         hints: isProduction ? 'error' : false,
-        maxAssetSize: 1_500_000,
-        maxEntrypointSize: 1_500_000
+        maxAssetSize: 1_200_000,
+        maxEntrypointSize: 1_200_000,
+        assetFilter: asset => asset !== 'quiz_infinite.js' && !asset.endsWith('.map')
     },
     optimization: {
         splitChunks: {
             cacheGroups: {
-                someLib: {
+                maplibre: {
                     test: /maplibre/,
                     name: 'maplibre',
                 },
+                quiz_infinite: {
+                    test: /data\/quiz_infinite\.ts$/,
+                    name: 'quiz_infinite'
+                }
             },
         },
         minimizer: [

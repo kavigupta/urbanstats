@@ -67,12 +67,12 @@ export const richTextDocumentType = {
     name: 'richTextDocument',
 } satisfies USSType
 
-export const richTextSegmentType = {
+const richTextSegmentType = {
     type: 'opaque',
     name: 'richTextSegment',
 } satisfies USSType
 
-export const constructRichTextDocumentValue: USSValue = {
+const constructRichTextDocumentValue: USSValue = {
     type: {
         type: 'function',
         posArgs: [
@@ -99,15 +99,16 @@ export const constructRichTextDocumentValue: USSValue = {
         longDescription: 'Creates a rich text document from a list of rich text segments.',
         selectorRendering: { kind: 'subtitleLongDescription' },
         customConstructor: true,
+        isDefault: true,
     },
 } satisfies USSValue
 
-export const richTextListType = {
+const richTextListType = {
     type: 'opaque',
     name: 'richTextList',
 } satisfies USSType
 
-export const richTextAlignType = {
+const richTextAlignType = {
     type: 'opaque',
     name: 'richTextAlign',
 } satisfies USSType
@@ -187,7 +188,7 @@ const richTextSegmentConstructorType: USSType = {
     returnType: { type: 'concrete', value: richTextSegmentType },
 }
 
-export const constructRichTextStringSegmentValue: USSValue = {
+const constructRichTextStringSegmentValue: USSValue = {
     type: richTextSegmentConstructorType,
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const text = posArgs[0] as string
@@ -207,10 +208,11 @@ export const constructRichTextStringSegmentValue: USSValue = {
         longDescription: 'Creates a rich text segment containing a plain string. The string can have optional formatting attributes.',
         selectorRendering: { kind: 'subtitleLongDescription' },
         customConstructor: true,
+        isDefault: true,
     },
 } satisfies USSValue
 
-export const constructRichTextFormulaSegmentValue: USSValue = {
+const constructRichTextFormulaSegmentValue: USSValue = {
     type: richTextSegmentConstructorType,
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const formula = posArgs[0] as string
@@ -233,7 +235,7 @@ export const constructRichTextFormulaSegmentValue: USSValue = {
     },
 } satisfies USSValue
 
-export const constructRichTextImageSegmentValue: USSValue = {
+const constructRichTextImageSegmentValue: USSValue = {
     type: richTextSegmentConstructorType,
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const image = posArgs[0] as string
@@ -280,6 +282,7 @@ function alignConstant(value: RichTextAttributes['align']): USSValue {
             longDescription: `Specifies the alignment of the text as ${value === '' ? 'left' : value}.`,
             selectorRendering: { kind: 'subtitleLongDescription' },
             customConstructor: false,
+            isDefault: value === '',
         },
     }
 }
@@ -306,6 +309,7 @@ function listConstant(value: RichTextAttributes['list']): USSValue {
             longDescription: `Specifies the list type as ${value || 'none'}.`,
             selectorRendering: { kind: 'subtitleLongDescription' },
             customConstructor: false,
+            isDefault: value === 'bullet',
         },
     }
 }

@@ -72,6 +72,7 @@
     font-size: 12px;
     vertical-align: middle;
     border-radius: 50%;
+    max-height: calc(2em - 1px);
 }
 
 .sidebar-section-content .sidebar-section-content .expandButton {

@@ -1,3 +1,4 @@
+from urbanstats.statistics.collections.canada_election import CanadaElectionStatistics
 from urbanstats.statistics.collections.cdc_statistics import CDCStatistics
 from urbanstats.statistics.collections.census import (
     Census2000,
@@ -7,6 +8,26 @@ from urbanstats.statistics.collections.census import (
     CensusChange2010,
 )
 from urbanstats.statistics.collections.census_canada import CensusCanada
+from urbanstats.statistics.collections.census_canada_citizenship import (
+    CensusCanadaCitizenship,
+)
+from urbanstats.statistics.collections.census_canada_education_field import (
+    CensusCanadaEducationField,
+)
+from urbanstats.statistics.collections.census_canada_housing_rent import (
+    CensusCanadaHousingPerPerson,
+    CensusCanadaHousingRent,
+)
+from urbanstats.statistics.collections.census_canada_language import (
+    CensusCanadaLanguage,
+)
+from urbanstats.statistics.collections.census_canada_occupation import (
+    CensusCanadaOccupation,
+)
+from urbanstats.statistics.collections.census_canada_race import CensusCanadaRace
+from urbanstats.statistics.collections.census_canada_religion import (
+    CensusCanadaReligion,
+)
 from urbanstats.statistics.collections.census_canada_same_as_us import (
     census_canada_same_as_us,
 )
@@ -23,6 +44,7 @@ from urbanstats.statistics.collections.generation import GenerationStatistics
 from urbanstats.statistics.collections.geographic import AreaAndCompactnessStatistics
 from urbanstats.statistics.collections.gpw import GPWStatistics
 from urbanstats.statistics.collections.heating import HouseHeating
+from urbanstats.statistics.collections.household_size import HouseholdSizeStatistics
 from urbanstats.statistics.collections.housing_rent import HousingRent
 from urbanstats.statistics.collections.housing_rent_burden import HousingRentBurden
 from urbanstats.statistics.collections.housing_rent_or_own import HousingRentOrOwn
@@ -80,6 +102,7 @@ statistic_collections = (
     Census2000(),
     CensusChange2000(),
     CensusCanada(),
+    CanadaElectionStatistics(),
     GPWStatistics(),
     SegregationStatistics(),
     NationalOriginCitizenshipStatistics(),
@@ -96,6 +119,7 @@ statistic_collections = (
     HousingRentBurden(),
     HousingRent(),
     HousingYearBuiltStatistics(),
+    HouseholdSizeStatistics(),
     TransportationModeStatistics(),
     TransportationCommuteTimeStatistics(),
     TransportationVehicleOwnershipStatistics(),
@@ -114,8 +138,16 @@ statistic_collections = (
     InsuranceTypeStatistics(),
     MarriageStatistics(),
     ElevationHillinessStatistics(),
-    *census_canada_same_as_us,
     *census_canada_simple,
+    *census_canada_same_as_us,
+    CensusCanadaRace(),
+    CensusCanadaCitizenship(),
+    CensusCanadaLanguage(),
+    CensusCanadaEducationField(),
+    CensusCanadaHousingRent(),
+    CensusCanadaHousingPerPerson(),
+    CensusCanadaReligion(),
+    CensusCanadaOccupation(),
     PollutionStatistics(),
     IMHELifeExpectancyStatistics(),
 )

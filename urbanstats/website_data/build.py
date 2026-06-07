@@ -2,6 +2,7 @@ import hashlib
 import os
 import shutil
 import subprocess
+from typing import FrozenSet, Set, Union
 
 from urbanstats.consolidated_data.produce_consolidated_data import (
     full_consolidated_data,
@@ -20,7 +21,8 @@ from urbanstats.geometry.shapefiles.shapefiles_list import (
     shapefiles,
 )
 from urbanstats.mapper.ramp import output_ramps
-from urbanstats.metadata import export_metadata_types
+from urbanstats.metadata.congressional_representatives import load_party_pages
+from urbanstats.metadata.export import export_metadata_types
 from urbanstats.ordinals.ordering_info_outputter import output_ordering
 from urbanstats.protobuf.data_files_pb2_hash import proto_hash
 from urbanstats.protobuf.utils import save_universes_list_all
@@ -39,7 +41,6 @@ from urbanstats.universe.universe_list import all_universes, default_universes
 from urbanstats.website_data.centroids import export_centroids
 from urbanstats.website_data.create_article_gzips import (
     create_article_gzips,
-    create_symlink_gzips,
     extra_stats,
 )
 from urbanstats.website_data.default_universe_by_stat_geo import (
@@ -56,7 +57,7 @@ from ..utils import output_typescript
 from .colors import hue_colors, related_button_colors
 
 
-def check_proto_hash():
+def check_proto_hash() -> None:
     with open("data_files.proto", "rb") as f:
         h = hashlib.sha256(f.read()).hexdigest()
     if h == proto_hash:
@@ -66,7 +67,7 @@ def check_proto_hash():
     )
 
 
-def link_scripts_folder(site_folder, mode):
+def link_scripts_folder(site_folder: str, mode: str) -> None:
     if os.path.islink(f"{site_folder}/scripts"):
         os.unlink(f"{site_folder}/scripts")
     else:
@@ -77,7 +78,7 @@ def link_scripts_folder(site_folder, mode):
         shutil.copytree("dist", f"{site_folder}/scripts")
 
 
-def create_react_jsons():
+def create_react_jsons() -> None:
     with open("react/src/data/map_relationship.ts", "w") as f:
         output_typescript(map_relationships_by_type, f)
 
@@ -105,6 +106,9 @@ def create_react_jsons():
 
     with open("react/src/data/metadata.ts", "w") as f:
         output_typescript(export_metadata_types(), f)
+
+    with open("react/src/data/party_pages.ts", "w") as f:
+        output_typescript(load_party_pages(version="main"), f)
 
     with open("react/src/data/explanation_industry_occupation_table.ts", "w") as f:
         output_typescript(
@@ -161,7 +165,7 @@ def create_react_jsons():
         )
 
 
-def build_react_site(site_folder, mode):
+def build_react_site(site_folder: str, mode: str) -> None:
     if mode != "ci":
         # In ci, we cache the node_modules
         subprocess.run(
@@ -179,38 +183,16 @@ def build_react_site(site_folder, mode):
     link_scripts_folder(site_folder, mode)
 
 
-# pylint: disable-next=too-many-branches,too-many-arguments,too-many-statements
-def build_urbanstats(
-    site_folder,
-    *,
-    no_geo=False,
-    no_data=False,
-    no_juxta=False,
-    no_data_jsons=False,
-    no_index=False,
-    no_sitemap=False,
-    no_ordering=False,
-    mode=None,
-):
-    if not mode:
-        print("Must pass --mode=dev,prod,ci")
-        return
+BUILD_STEPS = frozenset({"shapes", "articles", "index", "ordering", "sitemap", "juxta"})
 
+
+# pylint: disable-next=too-many-branches,too-many-statements
+def build_urbanstats(
+    site_folder: str, *, steps: Union[Set[str], FrozenSet[str]], mode: str
+) -> None:
     check_proto_hash()
-    if not no_geo:
-        print("Producing geometry jsons")
-    if not no_data_jsons and not no_data:
-        print("Producing data for each article")
-    if not no_index and not no_data:
-        print("Producing index")
-    if not no_ordering and not no_data:
-        print("Producing ordering")
-    if not no_sitemap and not no_data:
-        print("Producing sitemap")
-    if not no_data:
-        print("Producing summary data")
-    if not no_juxta:
-        print("Producing juxta quizzes")
+    print("Steps to run:", *steps, "scripts")
+
     for sub in [
         "index",
         "r",
@@ -228,44 +210,44 @@ def build_urbanstats(
         except FileExistsError:
             pass
 
-    if not no_geo:
+    if "shapes" in steps:
         produce_all_geometry_json(
-            f"{site_folder}/shape", set(shapefile_without_ordinals().longname)
+            f"{site_folder}/shape",
+            set(shapefile_without_ordinals().longname),
+            symlinks=compute_symlinks(),
         )
 
-    if not no_data:
-        if not no_data_jsons:
-            create_article_gzips(
-                site_folder, shapefile_without_ordinals(), all_ordinals()
-            )
-            create_symlink_gzips(site_folder, compute_symlinks())
+    if "articles" in steps:
+        create_article_gzips(
+            site_folder,
+            shapefile_without_ordinals(),
+            all_ordinals(),
+            symlinks=compute_symlinks(),
+        )
 
-        if not no_index:
-            export_index(shapefile_without_ordinals(), site_folder)
+    if "index" in steps:
+        export_index(shapefile_without_ordinals(), site_folder)
 
-        if not no_ordering:
-            table = shapefile_without_ordinals()
-            save_universes_list_all(
-                table,
-                all_ordinals(),
-                site_folder,
-            )
-            output_ordering(
-                site_folder,
-                all_ordinals(),
-                longname_to_type=dict(zip(table.longname, table.type)),
-            )
+    if "ordering" in steps:
+        table = shapefile_without_ordinals()
+        save_universes_list_all(
+            table,
+            all_ordinals(),
+            site_folder,
+        )
+        output_ordering(
+            site_folder,
+            all_ordinals(),
+            longname_to_type=dict(zip(table.longname, table.type)),
+        )
 
         full_consolidated_data(site_folder)
         export_centroids(site_folder, shapefiles, all_ordinals())
 
-        if not no_sitemap:
-            output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
-
-        with open("react/src/data/syau_suffixes.ts", "w") as f:
+        with open("react/src/data/syau_suffixes.ts", "w") as f_suffixes:
             output_typescript(
                 get_suffixes_from_table(shapefile_without_ordinals()),
-                f,
+                f_suffixes,
                 data_type="string[]",
             )
 
@@ -273,7 +255,10 @@ def build_urbanstats(
 
         output_default_universe_by_stat_geo(shapefile_without_ordinals(), site_folder)
 
-    if not no_juxta:
+    if "sitemap" in steps:
+        output_sitemap(site_folder, shapefile_without_ordinals(), all_ordinals())
+
+    if "juxta" in steps:
         output_quiz_sampling_info(site_folder, "quiz_sampling_info")
         generate_quizzes(f"{site_folder}/quiz/")
 
@@ -293,11 +278,11 @@ def build_urbanstats(
         "oauth-callback",
         "screenshot-diff-viewer",
     ]:
-        with open(f"{site_folder}/{entrypoint}.html", "w") as f:
-            f.write(html_index())
+        with open(f"{site_folder}/{entrypoint}.html", "w") as f_entry:
+            f_entry.write(html_index())
 
-    with open(f"{site_folder}/quiz.html", "w") as f:
-        f.write(
+    with open(f"{site_folder}/quiz.html", "w") as f_quiz:
+        f_quiz.write(
             html_index(
                 title="Juxtastat",
                 image="https://urbanstats.org/juxtastat-link-preview.png",  # Image url must be absolute, or gets messed up from juxtastat.org
@@ -305,8 +290,8 @@ def build_urbanstats(
             )
         )
 
-    with open(f"{site_folder}/syau.html", "w") as f:
-        f.write(
+    with open(f"{site_folder}/syau.html", "w") as f_syau:
+        f_syau.write(
             html_index(
                 title="So you're an urbanist?",
                 image="https://urbanstats.org/syau-link-preview.png",
@@ -347,11 +332,11 @@ def build_urbanstats(
     shutil.copy("icons/main/duplicate.png", f"{site_folder}/")
     shutil.copy("icons/main/arrow-right.png", f"{site_folder}/")
 
-    with open(f"{site_folder}/CNAME", "w") as f:
-        f.write("urbanstats.org")
+    with open(f"{site_folder}/CNAME", "w") as f_cname:
+        f_cname.write("urbanstats.org")
 
-    with open(f"{site_folder}/.nojekyll", "w") as f:
-        f.write("")
+    with open(f"{site_folder}/.nojekyll", "w") as f_nojekyll:
+        f_nojekyll.write("")
 
     build_react_site(site_folder, mode)
 
@@ -359,10 +344,10 @@ def build_urbanstats(
 
 
 def html_index(
-    title="Urban Stats",
-    image="/link-preview.png",
-    description="Urban Stats is a database of statistics related to density, housing, race, transportation, elections, and climate change.",
-):
+    title: str = "Urban Stats",
+    image: str = "/link-preview.png",
+    description: str = "Urban Stats is a database of statistics related to density, housing, race, transportation, elections, and climate change.",
+) -> str:
     return f"""<!DOCTYPE html>
 <html>
   <head>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useObserverSets } from './useObserverSets'
 
 export class Property<T> {
     private _value: T
@@ -21,17 +21,7 @@ export class Property<T> {
 
     /* eslint-disable react-hooks/rules-of-hooks -- Custom hook method */
     use(): T {
-        const [, setCounter] = useState(0)
-        useEffect(() => {
-            const observer = (): void => {
-                setCounter(counter => counter + 1)
-            }
-            this.observers.add(observer)
-            return () => {
-                this.observers.delete(observer)
-            }
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- Needs this as the property can change around the effect
-        }, [this])
+        useObserverSets([this.observers])
         return this.value
     }
     /* eslint-enable react-hooks/rules-of-hooks */

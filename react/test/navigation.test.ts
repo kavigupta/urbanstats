@@ -1,6 +1,6 @@
 import { ClientFunction, RequestHook, Selector } from 'testcafe'
 
-import { clickMapFeature, flaky, getLocation, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult } from './test_utils'
+import { clickMapFeature, flaky, getLocation, getScroll, goBack, goForward, openInNewTabModifiers, screencap, searchField, target, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult } from './test_utils'
 
 urbanstatsFixture('navigation test', '/')
 
@@ -18,17 +18,15 @@ test('two randoms mobile', async (t) => {
     await t.expect(Selector('a').withExactText('Weighted by Population (US only)').exists).notOk()
 })
 
-const goBack = ClientFunction(() => { window.history.back() })
-const goForward = ClientFunction(() => { window.history.forward() })
-const getScroll = ClientFunction(() => window.scrollY)
-
 test('maintain and restore scroll position back-forward', async (t) => {
     await t.navigateTo('/article.html?longname=Texas%2C+USA')
-    await t.expect(Selector('.headertext').withText(/Texas/).exists).ok() // Must wait for Texas to load, otherwise scrolling on the loading page is ineffective
+    await flaky(t, async () => {
+        await t.expect(Selector('.headertext').withText(/Texas/).exists).ok() // Must wait for Texas to load, otherwise scrolling on the loading page is ineffective
+    })
     await t.scroll(0, 200)
     await t.click(Selector('a').withExactText('Population'))
     await screencap(t) // For debugging why the next step fails sometimes
-    await t.expect(Selector('.subheadertext').withExactText('Population').exists).ok()
+    await t.expect(Selector('.subheadertext').withExactText('Population [US Census]').exists).ok()
     await t.expect(getScroll()).eql(0) // Resets scroll on different page type
     await t.scroll(0, 100)
     await t.click(Selector('a').withText(/New York/))
@@ -46,19 +44,19 @@ test('maintain and restore scroll position back-forward', async (t) => {
     await t.expect(Selector('.headertext').withText(/New York/).exists).ok()
     await t.expect(getScroll()).eql(400)
     await goBack()
-    await t.expect(Selector('.subheadertext').withExactText('Population').exists).ok()
+    await t.expect(Selector('.subheadertext').withExactText('Population [US Census]').exists).ok()
     await t.expect(getScroll()).eql(100)
     await goForward()
     await t.expect(Selector('.headertext').withText(/New York/).exists).ok()
     await t.expect(getScroll()).eql(400)
     await goBack()
-    await t.expect(Selector('.subheadertext').withExactText('Population').exists).ok()
+    await t.expect(Selector('.subheadertext').withExactText('Population [US Census]').exists).ok()
     await t.expect(getScroll()).eql(100)
     await goBack()
     await t.expect(Selector('.headertext').withText(/Texas/).exists).ok()
     await t.expect(getScroll()).eql(200)
     await goForward()
-    await t.expect(Selector('.subheadertext').withExactText('Population').exists).ok()
+    await t.expect(Selector('.subheadertext').withExactText('Population [US Census]').exists).ok()
     await t.expect(getScroll()).eql(100)
 })
 
@@ -99,13 +97,18 @@ test('going to related resets scroll', async (t) => {
     await t.expect(t.eval(() => window.scrollY)).eql(0)
 })
 
-test('using pointers preserves scroll', async (t) => {
+test('using pointers preserves the scroll position of the pointer', async (t) => {
     const lastPointer = Selector('button[data-test-id="1"]').nth(-1)
     await t.hover(lastPointer)
-    const scrollBefore: unknown = await t.eval(() => window.scrollY)
+    const getLastPointerViewportTop = ClientFunction(() => {
+        const els = document.querySelectorAll('button[data-test-id="1"]')
+        const last = els[els.length - 1]
+        return last.getBoundingClientRect().top
+    })
+    const viewportTopBefore: number = await getLastPointerViewportTop()
     await t.click(lastPointer)
     await waitForLoading()
-    await t.expect(t.eval(() => window.scrollY)).eql(scrollBefore)
+    await t.expect(getLastPointerViewportTop()).eql(viewportTopBefore)
 })
 
 // Artificially induce lag for cetrain requests for testing purposes
@@ -184,8 +187,8 @@ test('quick load', async (t) => {
     await t.pressKey('enter')
     await t.expect(Selector('[data-test-id=quickLoad]').exists).ok()
     await screencap(t, { fullPage: false, wait: false })
-    // one request for the article, one for the symlinks
-    await t.expect(delayRequests.removeFilter()).eql(2)
+    // there are no longer symlinks in separate files, so it's just one request
+    await t.expect(delayRequests.removeFilter()).eql(1)
     await t.expect(Selector('[data-test-id=quickLoad]').exists).notOk()
 })
 

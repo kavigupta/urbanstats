@@ -14,7 +14,7 @@ export interface Inset {
     name?: string
 }
 
-export const insetType = {
+const insetType = {
     type: 'opaque',
     name: 'inset',
 } satisfies USSType
@@ -34,7 +34,7 @@ export const boundsType = {
     ]),
 } satisfies USSType
 
-export function constructInset(
+function constructInset(
     screenBounds: { west: number, east: number, north: number, south: number },
     mapBounds: { west: number, east: number, north: number, south: number },
     mainMap: boolean,
@@ -53,7 +53,7 @@ export function constructInset(
     }
 }
 
-export function constructInsets(insetList: Inset[]): USSRawValue {
+function constructInsets(insetList: Inset[]): USSRawValue {
     return {
         type: 'opaque',
         opaqueType: 'insets',

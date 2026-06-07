@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Any, Dict, List
 
 import numpy as np
 
@@ -11,11 +12,11 @@ from urbanstats.website_data.table import shapefile_without_ordinals
 
 
 @lru_cache(maxsize=None)
-def shapefile():
+def shapefile() -> Any:
     return shapefile_without_ordinals().set_index("longname")
 
 
-def backmap_stat_column_name():
+def backmap_stat_column_name() -> Dict[str, str]:
     results = {v: k for k, v in statistic_internal_to_display_name().items()}
     legacy = all_legacy_statistic_names()
     for k, v in legacy.items():
@@ -23,7 +24,9 @@ def backmap_stat_column_name():
     return results
 
 
-def custom_quiz_question(stat_column_name, longname_a, longname_b):
+def custom_quiz_question(
+    stat_column_name: str, longname_a: str, longname_b: str
+) -> Dict[str, Any]:
     t = shapefile()
     stat_column_internal = backmap_stat_column_name()[stat_column_name]
     stat_column_question = stat_to_quiz_name()[stat_column_internal]
@@ -38,16 +41,21 @@ def custom_quiz_question(stat_column_name, longname_a, longname_b):
     )
 
 
-def extract(row, column):
+def extract(row: Any, column: str) -> float:
+    deprecated_columns = ["transportation_means_car"]
+    if column in deprecated_columns:
+        return float(row[column])
     [cols] = [z for x, _, z in get_quiz_stats() if x == column]
     vals = [row[col] for col in cols]
+    vals = [v for v in vals if not np.isnan(v)]
+    assert vals, f"No non-nan values for column {column} in row {row.name}"
     # get the one non-nan value
-    [val] = [v for v in vals if not np.isnan(v)]
+    [val] = vals
     return float(val)
 
 
 @lru_cache(maxsize=None)
-def get_custom_quizzes():
+def get_custom_quizzes() -> Dict[int, List[Dict[str, Any]]]:
     return {
         # april fool's day 2024
         212: [
@@ -123,6 +131,62 @@ def get_custom_quizzes():
                 "Commute Car %",
                 "Hellertown borough, Pennsylvania, USA",
                 "66616, USA",
+            ),
+        ],
+        # april fool's day 2026
+        942: [
+            custom_quiz_question(
+                "PW Mean Elevation",
+                "Mountain Province, Philippines",
+                "Delta, Nigeria",
+            ),
+            custom_quiz_question(
+                "PW Density (r=4km)",
+                "New York Urban Center, USA",
+                "Bujumbura Rural, Burundi",
+            ),
+            custom_quiz_question(
+                "Employed in Educational services %",
+                "College Station city, Texas, USA",
+                "Cotton County, Oklahoma, USA",
+            ),
+            custom_quiz_question(
+                "PW Mean PM2.5 Pollution",
+                "Bela Vista Metropolitan Cluster, Brazil-Paraguay",
+                "Industrial Metropolitan Cluster, India",
+            ),
+            custom_quiz_question(
+                "Mean high temp",
+                "Hot Springs city, Arkansas, USA",
+                "Cold Springs CDP, Nevada, USA",
+            ),
+        ],
+        # 1024
+        1024: [
+            custom_quiz_question(
+                "Undergrad %",
+                "Oneida County, New York, USA",
+                "Two Rivers city, Wisconsin, USA",
+            ),
+            custom_quiz_question(
+                "White %",
+                "Four Corners CDP, Florida, USA",
+                "Eight Mile Grove precinct [CCD], Cass County, Nebraska, USA",
+            ),
+            custom_quiz_question(
+                "PW Mean Elevation",
+                "Sixteen Mile Stand CDP, Ohio, USA",
+                "Km 32 Urban Center, Brazil",
+            ),
+            custom_quiz_question(
+                "PW Mean PM2.5 Pollution",
+                "Cote 64 Indian Reserve, Division No. 9, Saskatchewan, Canada",
+                "TX-HD128 (2023), USA",
+            ),
+            custom_quiz_question(
+                "PW Density (r=1km)",
+                "King George No. 256 Rural Municipality, Division No. 7, Saskatchewan, Canada",
+                "NH-HD512 (2023), USA",
             ),
         ],
     }

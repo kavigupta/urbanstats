@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useId } from 'react'
+import React, { AnchorHTMLAttributes, ReactNode, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 
 import relatedButtonColors from '../data/relatedButtonColors'
 import type_ordering_idx from '../data/type_ordering_idx'
@@ -9,6 +9,7 @@ import { useColors } from '../page_template/colors'
 import { relationshipKey, useSettings } from '../page_template/settings'
 import { useUniverse } from '../universe'
 import { DefaultMap } from '../utils/DefaultMap'
+import { withButtonRole } from '../utils/a11y'
 import { mixWithBackground } from '../utils/color'
 import { assert } from '../utils/defensive'
 import { useMobileLayout } from '../utils/responsive'
@@ -38,8 +39,22 @@ function useRelatedColor(rowType: string, colorIntensity: number): string {
 
 function RelatedButton(props: { region: Region }): ReactNode {
     const currentUniverse = useUniverse()
-    const colors = useColors()
     const navContext = useContext(Navigator.Context)
+    return (
+        <RelatedButtonLayout
+            rowType={props.region.rowType}
+            {...navContext.link(
+                { kind: 'article', longname: props.region.longname, universe: currentUniverse },
+                { scroll: { kind: 'position', top: 0 } },
+            )}
+        >
+            {props.region.shortname}
+        </RelatedButtonLayout>
+    )
+}
+
+function RelatedButtonLayout({ rowType, children, ...anchorProps }: { rowType: string, children: ReactNode } & AnchorHTMLAttributes<HTMLAnchorElement>): ReactNode {
+    const colors = useColors()
     return (
         <li style={{
             display: 'flex',
@@ -48,21 +63,19 @@ function RelatedButton(props: { region: Region }): ReactNode {
         >
             <a
                 className="serif"
+                {...anchorProps}
                 style={{
                     color: colors.textMain,
-                    backgroundColor: useRelatedColor(props.region.rowType, 1),
+                    backgroundColor: useRelatedColor(rowType, 1),
                     textDecoration: 'none',
                     padding: '2px 6px 2px 6px',
                     borderRadius: '5px',
                     fontWeight: 400,
                     fontSize: useMobileLayout() ? '12pt' : '8pt',
+                    ...anchorProps.style,
                 }}
-                {...navContext.link(
-                    { kind: 'article', longname: props.region.longname, universe: currentUniverse },
-                    { scroll: { kind: 'position', top: 0 } },
-                )}
             >
-                {props.region.shortname}
+                {children}
             </a>
         </li>
     )
@@ -86,17 +99,88 @@ function Label(props: { checkId: string, children: ReactNode, fontWeight: number
     )
 }
 
-function RelationshipGroup(props: { regions: Region[], checkId: string, relationshipType: string, groupIndex: number, buttonType: string, numGroups: number }): ReactNode {
-    function displayName(name: string): string {
-        name = name.replaceAll('_', ' ')
-        // title case
-        name = name.replace(/\w\S*/g, function (txt) {
-            return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase()
-        })
-        return name
+const maxRegions = 10
+
+function ExpandButton(props: { rowType: string, expanded: boolean, onToggle: () => void, description: string }): ReactNode {
+    const colors = useColors()
+    // Want to maintain vertical position relative to the button
+    const scrollAdjustRef = useRef<{ element: Element, top: number } | null>(null)
+
+    useLayoutEffect(() => {
+        if (scrollAdjustRef.current) {
+            const { element, top } = scrollAdjustRef.current
+            scrollAdjustRef.current = null
+            window.scrollBy(0, element.getBoundingClientRect().top - top)
+        }
+    })
+
+    const handleToggle = (event: React.MouseEvent | React.KeyboardEvent): void => {
+        const target = event.currentTarget as Element
+        scrollAdjustRef.current = { element: target, top: target.getBoundingClientRect().top }
+        props.onToggle()
     }
 
+    return (
+        <RelatedButtonLayout
+            {...withButtonRole(`${props.expanded ? 'Collapse' : 'Expand'} ${props.description}`, handleToggle)}
+            rowType={props.rowType}
+            style={{
+                cursor: 'pointer',
+                border: `1px solid ${colors.borderShadow}`,
+                backgroundColor: colors.slightlyDifferentBackground,
+                display: 'flex',
+            }}
+        >
+            {!props.expanded && (
+                <div style={{ marginRight: '0.5em' }}>
+                    More
+                </div>
+            )}
+            <div style={{
+                width: '1em',
+                aspectRatio: 1,
+                backgroundImage: 'url("./arrow-right.png")',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '100%',
+                transform: props.expanded ? `rotate(180deg)` : `rotate(0deg)`,
+
+            }}
+            />
+            {props.expanded && (
+                <div style={{ marginLeft: '0.5em' }}>
+                    Less
+                </div>
+            )}
+        </RelatedButtonLayout>
+    )
+}
+
+function displayName(name: string): string {
+    name = name.replaceAll('_', ' ')
+    // title case
+    name = name.replace(/\w\S*/g, function (txt) {
+        return txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase()
+    })
+    return name
+}
+
+function RelationshipGroup(props: {
+    regions: Region[]
+    checkId: string
+    relationshipType: string
+    groupIndex: number
+    buttonType: string
+    numGroups: number
+    isSearching: boolean
+}): ReactNode {
     const backgroundColor = useRelatedColor(props.buttonType, props.groupIndex % 2 === 0 ? 0.3 : 0.4)
+
+    const [expanded, setExpanded] = useState(false)
+
+    useEffect(() => {
+        setExpanded(false)
+    }, [props.relationshipType])
 
     return (
         <ul
@@ -121,7 +205,7 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
                 {displayName(props.relationshipType)}
             </Label>
             {
-                props.regions.map((row, i) => (
+                (expanded || props.isSearching ? props.regions : props.regions.slice(0, maxRegions)).map((row, i) => (
                     <RelatedButton
                         key={i}
                         region={row}
@@ -129,6 +213,14 @@ function RelationshipGroup(props: { regions: Region[], checkId: string, relation
                 ),
                 )
             }
+            {props.regions.length > maxRegions && !props.isSearching && (
+                <ExpandButton
+                    rowType={props.regions[0].rowType}
+                    expanded={expanded}
+                    onToggle={() => { setExpanded(e => !e) }}
+                    description={displayName(props.relationshipType)}
+                />
+            )}
         </ul>
     )
 }
@@ -139,6 +231,7 @@ function Row(props: {
     regions: Map<string, Region[]>
     rowIndex: number
     totalRows: number
+    isSearching: boolean
 }): ReactNode {
     const settingKey = relationshipKey(props.articleType, props.buttonType)
 
@@ -198,6 +291,7 @@ function Row(props: {
                                 groupIndex={i}
                                 buttonType={props.buttonType}
                                 numGroups={props.regions.size}
+                                isSearching={props.isSearching}
                             />
                         )
                     })
@@ -211,9 +305,20 @@ export function Related(props: { articleType: string, related: { relationshipTyp
     // buttons[rowType][relationshipType] = <list of buttons>
     const showSettings = useSettings(['show_historical_cds', 'show_person_circles'])
     const buttons = new DefaultMap<string, DefaultMap<string, Region[]>>(() => new DefaultMap(() => []))
+
+    const universe = useUniverse()
+    assert(universe !== undefined, 'no universe')
+
+    const [searchTerm, setSearchTerm] = useState('')
+
+    const searchMatch = (target: string): boolean => target.toLowerCase().includes(searchTerm.toLowerCase())
+
     for (const relateds of props.related) {
+        const relationshipMatches = searchMatch(displayName(relateds.relationshipType))
         for (const button of relateds.buttons) {
-            buttons.get(button.rowType).get(relateds.relationshipType).push(button)
+            if (relationshipMatches || searchMatch(displayType(universe, button.rowType)) || searchMatch(button.longname) || searchMatch(button.shortname)) {
+                buttons.get(button.rowType).get(relateds.relationshipType).push(button)
+            }
         }
     }
 
@@ -230,17 +335,39 @@ export function Related(props: { articleType: string, related: { relationshipTyp
             articleType={props.articleType}
             rowIndex={i}
             totalRows={buttonKeys.length}
+            isSearching={searchTerm !== ''}
         />
     ))
 
     return (
-        <ul style={{
-            margin: '1em 0',
-            paddingInlineStart: '0px',
-            listStyleType: 'none',
-        }}
-        >
-            {elements}
-        </ul>
+        <>
+            <input
+                type="text"
+                placeholder="Filter Related Regions"
+                className="serif"
+                style={{
+                    paddingLeft: '1.25em',
+                    marginBottom: '0.5em',
+                    marginTop: '1em',
+                    fontSize: '16px',
+                    width: '100%',
+                }}
+                onFocus={e => setTimeout(() => {
+                    e.target.select()
+                }, 0)}
+                value={searchTerm}
+                onChange={(e) => { setSearchTerm(e.target.value) }}
+                data-test-id="related-search"
+            />
+            <ul style={{
+                marginBottom: '1em',
+                marginTop: 0,
+                paddingInlineStart: '0px',
+                listStyleType: 'none',
+            }}
+            >
+                {elements}
+            </ul>
+        </>
     )
 }

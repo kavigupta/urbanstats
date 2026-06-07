@@ -8,12 +8,12 @@ export function notWaiting<T>(x: T | typeof waiting): x is T {
 }
 
 // Turns an array of promies into a property that updates with their ordered results
-export function promiseStream<T>(promises: Promise<T>[]): Property<(T | typeof waiting)[]> {
+export function promiseStream<T>(promises: Promise<T>[], label: string): Property<(T | typeof waiting)[]> {
     const values = Array.from<T | typeof waiting>({ length: promises.length }).fill(waiting)
     const result = new Property<(T | typeof waiting)[]>(Array.from(values))
 
-    TestUtils.shared.startLoading()
-    void Promise.allSettled(promises).finally(() => TestUtils.shared.finishLoading())
+    TestUtils.shared.startLoading(label)
+    void Promise.allSettled(promises).finally(() => TestUtils.shared.finishLoading(label))
 
     for (const [i, promise] of promises.entries()) {
         void promise.then((value) => {

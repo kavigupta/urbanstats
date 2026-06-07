@@ -43,15 +43,55 @@ message TemperatureHistogram {
     repeated int32 counts = 4;
 }
 
+message CongressionalRepresentative {
+    string name = 1;
+    optional string wikipedia_page = 2;
+    optional string party = 3;
+    repeated TermIn term_in = 4;
+}
+
+message TermIn {
+    // the start of the period during which this representative served in
+    // this district. For example if a representative served in CA-27 from 2013-2022
+    // and CA-28 from 2023-2026, there would be two TermIn's, one with start_year 2013
+    // and district_idx corresponding to CA-27, and another with start_year 2023 and
+    // district_idx corresponding to CA-28. The end of the period is implicitly the next
+    // start_year for this representative, or infinity if there is no next start_year.
+    int32 start_year = 1;
+    int32 district_idx = 2; // index into CongressionalRepresentativeTable.districts
+}
+
+message CongressionalDistrict {
+    string longname = 1;
+}
+
+message CongressionalRepresentativeTable {
+    repeated CongressionalRepresentative representatives = 1;
+    repeated CongressionalDistrict districts = 2;
+}
+
 message ExtraStatistic {
     optional Histogram histogram = 1;
     optional TimeSeries timeseries = 2;
     optional TemperatureHistogram temperature_histogram = 3;
 }
 
+// a particular representative covering a particular area
+// for certain terms, used in that area's metadata
+message CongressionalRepresentativePointer {
+    int32 representative_idx = 1;
+    // inclusive term starting, inclusive term ending
+    // i.e., 2023 and 2025 means the representative served in the 2023-2024
+    // and 2025-2026 congresses, but not the 2027-2028 congress representing
+    // this particular area
+    int32 start_term = 2;
+    int32 end_term = 3;
+}
+
 message Metadata {
     int32 metadata_index = 1;
     optional string string_value = 2;
+    repeated CongressionalRepresentativePointer congressional_representatives = 3;
 }
 
 message Article {
@@ -66,6 +106,14 @@ message Article {
     repeated string universes = 7;
     repeated ExtraStatistic extra_stats = 8;
     repeated Metadata metadata = 11;
+}
+
+// used exclusively for shards
+message ConsolidatedArticles {
+    repeated string longnames = 1;
+    repeated Article articles = 2;
+    repeated string symlink_link_names = 3;
+    repeated string symlink_target_names = 4;
 }
 
 
@@ -158,6 +206,10 @@ message ConsolidatedShapes {
     repeated string longnames = 1;
     repeated Universes universes = 3;
     repeated Feature shapes = 2;
+    // these are not used in the consolidated/ folder mapping shapes, but are used
+    // in the shards.
+    repeated string symlink_link_names = 4;
+    repeated string symlink_target_names = 5;
 }
 
 // quiz sampling data
@@ -208,4 +260,9 @@ message DefaultUniverseTriple {
 message DefaultUniverseTable {
     optional int32 most_common_universe_idx = 1;
     repeated DefaultUniverseTriple exceptions = 2;
+}
+
+// Shard index: sorted array of hash values (int32, same as 8-char hex hash) that start each shard (for binary search).
+message ShardIndex {
+    repeated int32 starting_hashes = 1;
 }

@@ -1,6 +1,9 @@
 import { UrbanStatsASTExpression, UrbanStatsASTStatement, locationOf, unify } from '../../urban-stats-script/ast'
+import type { AutoUXNodeMetadata } from '../../urban-stats-script/autoux-node-metadata'
+import { longMessage } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
-import { parseNoErrorAsCustomNode, unparse } from '../../urban-stats-script/parser'
+import * as l from '../../urban-stats-script/literal-parser'
+import { parse, parseNoErrorAsCustomNode, unparse } from '../../urban-stats-script/parser'
 import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 
 import { parseExpr } from './parseExpr'
@@ -10,12 +13,16 @@ export const idPreamble = `${rootBlockIdent}p`
 export const idCondition = `${rootBlockIdent}c`
 export const idOutput = `${rootBlockIdent}o`
 
+export type PreambleCustomNode = UrbanStatsASTExpression & { type: 'customNode' }
+export type PreambleAutoUXNode = UrbanStatsASTExpression & { type: 'autoUXNode', expr: PreambleCustomNode, metadata: AutoUXNodeMetadata }
+export type PreambleNode = PreambleCustomNode | PreambleAutoUXNode
+
 export type MapUSS = UrbanStatsASTExpression & { type: 'customNode' } |
     (UrbanStatsASTStatement &
     {
         type: 'statements'
         result: [
-                UrbanStatsASTStatement & { type: 'expression', value: UrbanStatsASTExpression & { type: 'customNode' } },
+                UrbanStatsASTStatement & { type: 'expression', value: PreambleNode },
                 UrbanStatsASTStatement & { type: 'condition', rest: [UrbanStatsASTStatement & { type: 'expression' }] },
         ]
     })
@@ -23,8 +30,23 @@ export type MapUSS = UrbanStatsASTExpression & { type: 'customNode' } |
 const cMap = { type: 'opaque', name: 'cMap', allowCustomExpression: false } satisfies USSType
 const cMapRGB = { type: 'opaque', name: 'cMapRGB', allowCustomExpression: false } satisfies USSType
 const pMap = { type: 'opaque', name: 'pMap', allowCustomExpression: false } satisfies USSType
+const clusterMap = { type: 'opaque', name: 'clusterMap', allowCustomExpression: false } satisfies USSType
 
-export const validMapperOutputs = [cMap, cMapRGB, pMap] satisfies USSType[]
+export const validMapperOutputs = [cMap, cMapRGB, pMap, clusterMap] satisfies USSType[]
+
+function parsePreambleCustomNodeAsMapUSS(stmt: UrbanStatsASTStatement): PreambleNode | undefined {
+    if (stmt.type !== 'expression') {
+        return undefined
+    }
+    const expr = stmt.value
+    if (expr.type === 'customNode') {
+        return expr
+    }
+    if (expr.type === 'autoUXNode' && expr.expr.type === 'customNode') {
+        return { ...expr, expr: expr.expr }
+    }
+    return undefined
+}
 
 export function convertToMapUss(uss: UrbanStatsASTStatement): MapUSS {
     if (uss.type === 'expression' && uss.value.type === 'customNode') {
@@ -32,27 +54,33 @@ export function convertToMapUss(uss: UrbanStatsASTStatement): MapUSS {
     }
     if (uss.type === 'statements'
         && uss.result.length === 2
-        && uss.result[0].type === 'expression'
-        && uss.result[0].value.type === 'customNode'
         && uss.result[1].type === 'condition'
         && uss.result[1].rest.length === 1
         && uss.result[1].rest[0].type === 'expression') {
-        return {
-            ...uss,
-            result: [
-                {
-                    ...uss.result[0],
-                    value: uss.result[0].value,
-                },
-                {
-                    ...uss.result[1],
-                    rest: [uss.result[1].rest[0]],
-                },
-            ],
+        const preambleValue = parsePreambleCustomNodeAsMapUSS(uss.result[0])
+        if (preambleValue !== undefined) {
+            return {
+                ...uss,
+                result: [
+                    { type: 'expression', value: preambleValue },
+                    {
+                        ...uss.result[1],
+                        rest: [uss.result[1].rest[0]],
+                    },
+                ],
+            }
         }
     }
     // Support arbitrary scripts
     return parseNoErrorAsCustomNode(unparse(uss), rootBlockIdent)
+}
+
+export function mapUSSFromString(rawString: string): MapUSS {
+    const uss = parse(rawString)
+    if (uss.type === 'error') {
+        throw new Error(uss.errors.map(error => longMessage({ kind: 'error', ...error }, true)).join(', '))
+    }
+    return convertToMapUss(uss)
 }
 
 export function makeStatements<const T extends UrbanStatsASTStatement[]>(elements: T, identFallback?: string): UrbanStatsASTStatement & { type: 'statements', result: T } {
@@ -67,10 +95,10 @@ export function makeStatements<const T extends UrbanStatsASTStatement[]>(element
     }
 }
 
-export function attemptParseCondition(conditionStmt: UrbanStatsASTStatement | undefined): { conditionRest: UrbanStatsASTStatement[], conditionExpr: UrbanStatsASTExpression } {
+function attemptParseCondition(conditionStmt: UrbanStatsASTStatement | undefined): { conditionRest: UrbanStatsASTStatement[], conditionExpr: UrbanStatsASTExpression } {
     let stmts = conditionStmt !== undefined ? [conditionStmt] : []
     if (conditionStmt?.type === 'condition') {
-        const conditionText = unparse(conditionStmt.condition, { simplify: true })
+        const conditionText = unparse(conditionStmt.condition, { simplify: 'auto-ux' })
         if (conditionText.trim() !== 'true') {
             return {
                 conditionExpr: parseNoErrorAsCustomNode(conditionText, idCondition, [{ type: 'vector', elementType: { type: 'boolean' } }]),
@@ -110,9 +138,17 @@ export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, ty
     return {
         type: 'statements',
         result: [
-            { type: 'expression', value: parseNoErrorAsCustomNode(unparse(preamble, { simplify: true }), idPreamble) },
+            { type: 'expression', value: parseNoErrorAsCustomNode(unparse(preamble, { simplify: 'auto-ux' }), idPreamble) },
             condition,
         ] as const,
         entireLoc: locationOf(stmt),
     } satisfies UrbanStatsASTStatement
+}
+
+export function mapUssParser<T>(lastExpr: l.LiteralExprParser<T>, types: USSType[]) {
+    const statementsSchema = l.lastExpression(l.reparse(idOutput, types, lastExpr))
+    const customNodeSchema = l.reparse(rootBlockIdent, types, l.customNode(l.lastExpression(lastExpr)))
+    return (uss: MapUSS, typeEnvironment: TypeEnvironment): T => {
+        return uss.type === 'statements' ? statementsSchema.parse(uss, typeEnvironment) : customNodeSchema.parse(uss, typeEnvironment)
+    }
 }

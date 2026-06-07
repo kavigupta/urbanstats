@@ -49,6 +49,7 @@ void test('constant listing', (): void => {
             ],
             'Unit': [
                 'unitPercentage',
+                'unitPercentageChange',
                 'unitFatalities',
                 'unitFatalitiesPerCapita',
                 'unitDensity',
@@ -64,6 +65,19 @@ void test('constant listing', (): void => {
                 'unitNumber',
                 'unitUsd',
                 'unitMinutes',
+                'unitPartyPctBlue',
+                'unitPartyPctRed',
+                'unitPartyPctOrange',
+                'unitPartyPctTeal',
+                'unitPartyPctGreen',
+                'unitPartyPctPurple',
+                'unitPartyChangeBlue',
+                'unitPartyChangeRed',
+                'unitPartyChangeOrange',
+                'unitPartyChangeTeal',
+                'unitPartyChangeGreen',
+                'unitPartyChangePurple',
+                'unitLeftMargin',
             ],
             '(number; ) -> number': [
                 'abs',
@@ -100,6 +114,8 @@ void test('constant listing', (): void => {
             '([number], number; weights: [number] = null) -> number': [
                 'quantile',
                 'percentile',
+                'inverseQuantile',
+                'inversePercentile',
             ],
 
             '(any; ) -> number': [
@@ -537,14 +553,17 @@ void test('constant listing', (): void => {
                 'linearScale',
                 'logScale',
             ],
-            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMap': [
+            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), opacity: number = 1, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMap': [
                 'cMap',
             ],
-            '(; dataR: [number], dataG: [number], dataB: [number], label: string, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMapRGB': [
+            '(; dataR: [number], dataG: [number], dataB: [number], dataA: [number] = null, label: string, unit: Unit = null, geo: [geoFeatureHandle] = geo, outline: outline = constructOutline(color=colorBlack, weight=0), opacity: number = 1, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> cMapRGB': [
                 'cMapRGB',
             ],
-            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = null, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> pMap': [
+            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 10, relativeArea: [number] = null, opacity: number = 1, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> pMap': [
                 'pMap',
+            ],
+            '(; data: [number], scale: scale, ramp: ramp, label: string = null, unit: Unit = null, geo: [geoCentroidHandle] = geoCentroid, maxRadius: number = 30, relativeArea: [number] = population, clusterRadiusSpacing: number = 0, opacity: number = 1, basemap: basemap = osmBasemap(), insets: insets = defaultInsets, textBoxes: [textBox] = null) -> clusterMap': [
+                'clusterMap',
             ],
             '(; color: color = rgb(0, 0, 0), weight: number = 0.5) -> outline': [
                 'constructOutline',

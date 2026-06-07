@@ -1,11 +1,12 @@
 import itertools
 from functools import lru_cache
+from typing import Any, Dict, List, Set, Tuple
 
 import numpy as np
-import tqdm.auto as tqdm
 
 from urbanstats.geometry.relationship import full_relationships, ordering_idx
-from urbanstats.metadata import metadata_types
+from urbanstats.metadata.metadata_column import congressional_representative_proto
+from urbanstats.metadata.metadata_list import metadata_types
 from urbanstats.ordinals.flat_ordinals import compute_flat_ordinals
 from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
@@ -13,45 +14,100 @@ from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
 from urbanstats.universe.universe_constants import ZERO_POPULATION_UNIVERSES
 from urbanstats.universe.universe_list import all_universes
-from urbanstats.website_data.sharding import (
-    all_foldernames,
-    create_filename,
-    create_foldername,
-)
+from urbanstats.website_data.sharding import build_shards_from_callback
 
 
-def isnan(x):
+def isnan(x: Any) -> bool:
     if isinstance(x, (float, np.float64, np.float32)):
-        return np.isnan(x)
+        return bool(np.isnan(x))
     return False
 
 
-def metadata_for_article(row):
+def metadata_for_article(
+    row: Any, representative_table_builder: "RepresentativeTableBuilder"
+) -> List[Any]:
     metadata = []
     for i, (key, metadata_type) in enumerate(metadata_types.items()):
-        if row[key] != row[key] or row[key] is None:
+        if key not in row or row[key] != row[key] or row[key] is None:
             continue
-        metadata.append(metadata_type.create(i, row[key]))
+        metadata_value = metadata_type.create(
+            i, row[key], representative_table_builder=representative_table_builder
+        )
+        if metadata_value is None:
+            continue
+        metadata.append(metadata_value)
     return metadata
 
 
+class RepresentativeTableBuilder:
+    def __init__(self) -> None:
+        self._representative_key_to_index: Dict[Any, int] = {}
+        self._district_to_index: Dict[str, int] = {}
+        self._term_keys_by_representative: Dict[Any, Set[Tuple[int, int, int]]] = {}
+        self.representatives: List[data_files_pb2.CongressionalRepresentative] = []
+        self.districts: List[data_files_pb2.CongressionalDistrict] = []
+
+    def index_for(self, representative_with_terms: Any) -> int:
+        representative = representative_with_terms.representative
+        if representative not in self._representative_key_to_index:
+            self._representative_key_to_index[representative] = len(
+                self.representatives
+            )
+            self.representatives.append(
+                congressional_representative_proto(representative)
+            )
+            self._term_keys_by_representative[representative] = set()
+
+        representative_proto = self.representatives[
+            self._representative_key_to_index[representative]
+        ]
+        district_longname = representative_with_terms.district_longname
+        if district_longname not in self._district_to_index:
+            self._district_to_index[district_longname] = len(self.districts)
+            self.districts.append(
+                data_files_pb2.CongressionalDistrict(longname=district_longname)
+            )
+
+        term_key = (
+            representative_with_terms.start_term,
+            representative_with_terms.end_term,
+            self._district_to_index[district_longname],
+        )
+        if term_key not in self._term_keys_by_representative[representative]:
+            self._term_keys_by_representative[representative].add(term_key)
+            # For each run we just store the start term. see protobuf file
+            # for details on what we are doing (the end term is implicit).
+            representative_proto.term_in.add(
+                start_year=representative_with_terms.start_term,
+                district_idx=self._district_to_index[district_longname],
+            )
+
+        return self._representative_key_to_index[representative]
+
+    def to_proto(self) -> data_files_pb2.CongressionalRepresentativeTable:
+        result = data_files_pb2.CongressionalRepresentativeTable()
+        result.representatives.extend(self.representatives)
+        result.districts.extend(self.districts)
+        return result
+
+
 def create_article_gzip(
-    folder,
-    row,
+    row: Any,
     *,
-    relationships,
-    long_to_short,
-    long_to_population,
-    long_to_type,
-    long_to_idx,
-    flat_ords,
-    counts_overall,
-):
+    relationships: Dict[str, Dict[str, Set[str]]],
+    long_to_short: Dict[str, str],
+    long_to_population: Dict[str, float],
+    long_to_type: Dict[str, str],
+    long_to_idx: Dict[str, int],
+    flat_ords: Any,
+    counts_overall: np.ndarray,
+    representative_table_builder: RepresentativeTableBuilder,
+) -> data_files_pb2.Article:
     # pylint: disable=too-many-locals,too-many-arguments
     statistic_names = internal_statistic_names()
     idxs = [i for i, x in enumerate(statistic_names) if not isnan(row[x])]
     data = data_files_pb2.Article()
-    data.metadata.extend(metadata_for_article(row))
+    data.metadata.extend(metadata_for_article(row, representative_table_builder))
     # vulture: ignore -- not actually creating a field. this is from protobuf
     data.statistic_indices_packed = bytes(pack_index_vector(idxs))
     data.shortname = row.shortname
@@ -100,47 +156,32 @@ def create_article_gzip(
                 fol.article_universes_idx = article_universes_idx
                 # vulture: ignore -- not actually creating a field. this is from protobuf
                 fol.is_first = ordinal_overall == 1
-            statrow.percentile_by_population_by_universe.append(
-                int(percentile_by_type * 100)
-            )
+            statrow.percentile_by_population_by_universe.append(percentile_by_type)
     for _, extra_stat in sorted(extra_stats().items()):
         data.extra_stats.append(extra_stat.create(row))
     for relationship_type in relationships:
         for_this = relationships[relationship_type].get(row.longname, set())
-        for_this = [x for x in for_this if x in long_to_population]
-        for_this = sorted(
-            for_this, key=lambda x: order_key_for_relatioships(x, long_to_type[x])
+        for_this_list = [x for x in for_this if x in long_to_population]
+        for_this_list = sorted(
+            for_this_list, key=lambda x: order_key_for_relatioships(x, long_to_type[x])
         )
         # add to map with key relationship_type
         related_buttons = data.related.add()
         related_buttons.relationship_type = relationship_type
-        for x in for_this:
+        for x in for_this_list:
             related_button = related_buttons.buttons.add()
             related_button.longname = x
             related_button.shortname = long_to_short[x]
             # vulture: ignore -- not actually creating a field. this is from protobuf
             related_button.row_type = long_to_type[x]
 
-    name = create_filename(row.longname, "gz")
-    write_gzip(data, f"{folder}/{name}")
-    return name
+    return data
 
 
-def create_symlink_gzips(site_folder, symlinks):
-    results_by_folder = {k: [] for k in all_foldernames()}
-    for link_name, target_name in symlinks.items():
-        folder = create_foldername(link_name)
-        results_by_folder[folder].append((link_name, target_name))
-    for folder, links in results_by_folder.items():
-        data = data_files_pb2.Symlinks()
-        for link_name, target_name in links:
-            data.link_name.append(link_name)
-            data.target_name.append(target_name)
-        name = folder + ".symlinks.gz"
-        write_gzip(data, f"{site_folder}/data/{name}")
-
-
-def create_article_gzips(site_folder, full, ordering):
+def create_article_gzips(
+    site_folder: str, full: Any, ordering: Any, symlinks: Dict[str, str]
+) -> None:
+    # pylint: disable=too-many-locals
     long_to_short = dict(zip(full.longname, full.shortname))
     long_to_pop = dict(zip(full.longname, full.population))
     long_to_type = dict(zip(full.longname, full.type))
@@ -149,9 +190,10 @@ def create_article_gzips(site_folder, full, ordering):
     flat_ords = compute_flat_ordinals(full, ordering)
 
     relationships = full_relationships(long_to_type)
+    representative_table_builder = RepresentativeTableBuilder()
 
     counts = ordering.counts_by_type_universe_col()
-    counts_overall = {
+    counts_overall_dict = {
         column: {
             typ: count
             for (typ, universe), count in for_column.items()
@@ -162,15 +204,16 @@ def create_article_gzips(site_folder, full, ordering):
     }
     counts_overall = np.array(
         [
-            [counts_overall[col].get(universe, 0) for universe in all_universes()]
+            [counts_overall_dict[col].get(universe, 0) for universe in all_universes()]
             for col in internal_statistic_names()
         ]
     )
 
-    for i in tqdm.trange(full.shape[0], desc="creating pages"):
-        row = full.iloc[i]
-        create_article_gzip(
-            f"{site_folder}/data",
+    longnames = list(full.longname)
+
+    def get_article(longname: str) -> data_files_pb2.Article:
+        row = full.iloc[long_to_idx[longname]]
+        return create_article_gzip(
             row,
             relationships=relationships,
             long_to_short=long_to_short,
@@ -179,20 +222,29 @@ def create_article_gzips(site_folder, full, ordering):
             long_to_idx=long_to_idx,
             flat_ords=flat_ords,
             counts_overall=counts_overall,
+            representative_table_builder=representative_table_builder,
         )
+
+    build_shards_from_callback(
+        f"{site_folder}/data", "data", longnames, get_article, symlinks=symlinks
+    )
+    write_gzip(
+        representative_table_builder.to_proto(),
+        f"{site_folder}/index/representatives.gz",
+    )
 
 
 @lru_cache(maxsize=None)
-def universe_to_idx():
+def universe_to_idx() -> Dict[str, int]:
     return {u: i for i, u in enumerate(all_universes())}
 
 
-def order_key_for_relatioships(longname, typ):
+def order_key_for_relatioships(longname: str, typ: str) -> Tuple[int, str]:
     processed_longname = longname
     return ordering_idx[typ], processed_longname
 
 
-def extra_stats():
+def extra_stats() -> Dict[int, Any]:
     result = {}
     for statistic_collection in statistic_collections:
         result.update(statistic_collection.extra_stats())
@@ -201,7 +253,7 @@ def extra_stats():
     return extra
 
 
-def pack_index_vector(idxs):
+def pack_index_vector(idxs: List[int]) -> List[int]:
     bool_array = np.zeros(max(idxs) + 1, dtype=np.bool_)
     bool_array[idxs] = True
     return np.packbits(bool_array, bitorder="little").tolist()

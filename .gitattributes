@@ -1,3 +1,4 @@
+*.png merge=png-merge
 *.ipynb linguist-vendored
 react/src/data/** linguist-vendored
 react/package-lock.json linguist-vendored

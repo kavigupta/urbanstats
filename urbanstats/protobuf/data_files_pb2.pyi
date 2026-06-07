@@ -1,7 +1,7 @@
 # pylint: skip-file
+from collections.abc import Iterable as _Iterable
+from collections.abc import Mapping as _Mapping
 from typing import ClassVar as _ClassVar
-from typing import Iterable as _Iterable
-from typing import Mapping as _Mapping
 from typing import Optional as _Optional
 from typing import Union as _Union
 
@@ -99,6 +99,56 @@ class TemperatureHistogram(_message.Message):
     counts: _containers.RepeatedScalarFieldContainer[int]
     def __init__(self, counts: _Optional[_Iterable[int]] = ...) -> None: ...
 
+class CongressionalRepresentative(_message.Message):
+    __slots__ = ("name", "wikipedia_page", "party", "term_in")
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    WIKIPEDIA_PAGE_FIELD_NUMBER: _ClassVar[int]
+    PARTY_FIELD_NUMBER: _ClassVar[int]
+    TERM_IN_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    wikipedia_page: str
+    party: str
+    term_in: _containers.RepeatedCompositeFieldContainer[TermIn]
+    def __init__(
+        self,
+        name: _Optional[str] = ...,
+        wikipedia_page: _Optional[str] = ...,
+        party: _Optional[str] = ...,
+        term_in: _Optional[_Iterable[_Union[TermIn, _Mapping]]] = ...,
+    ) -> None: ...
+
+class TermIn(_message.Message):
+    __slots__ = ("start_year", "district_idx")
+    START_YEAR_FIELD_NUMBER: _ClassVar[int]
+    DISTRICT_IDX_FIELD_NUMBER: _ClassVar[int]
+    start_year: int
+    district_idx: int
+    def __init__(
+        self, start_year: _Optional[int] = ..., district_idx: _Optional[int] = ...
+    ) -> None: ...
+
+class CongressionalDistrict(_message.Message):
+    __slots__ = ("longname",)
+    LONGNAME_FIELD_NUMBER: _ClassVar[int]
+    longname: str
+    def __init__(self, longname: _Optional[str] = ...) -> None: ...
+
+class CongressionalRepresentativeTable(_message.Message):
+    __slots__ = ("representatives", "districts")
+    REPRESENTATIVES_FIELD_NUMBER: _ClassVar[int]
+    DISTRICTS_FIELD_NUMBER: _ClassVar[int]
+    representatives: _containers.RepeatedCompositeFieldContainer[
+        CongressionalRepresentative
+    ]
+    districts: _containers.RepeatedCompositeFieldContainer[CongressionalDistrict]
+    def __init__(
+        self,
+        representatives: _Optional[
+            _Iterable[_Union[CongressionalRepresentative, _Mapping]]
+        ] = ...,
+        districts: _Optional[_Iterable[_Union[CongressionalDistrict, _Mapping]]] = ...,
+    ) -> None: ...
+
 class ExtraStatistic(_message.Message):
     __slots__ = ("histogram", "timeseries", "temperature_histogram")
     HISTOGRAM_FIELD_NUMBER: _ClassVar[int]
@@ -114,14 +164,38 @@ class ExtraStatistic(_message.Message):
         temperature_histogram: _Optional[_Union[TemperatureHistogram, _Mapping]] = ...,
     ) -> None: ...
 
+class CongressionalRepresentativePointer(_message.Message):
+    __slots__ = ("representative_idx", "start_term", "end_term")
+    REPRESENTATIVE_IDX_FIELD_NUMBER: _ClassVar[int]
+    START_TERM_FIELD_NUMBER: _ClassVar[int]
+    END_TERM_FIELD_NUMBER: _ClassVar[int]
+    representative_idx: int
+    start_term: int
+    end_term: int
+    def __init__(
+        self,
+        representative_idx: _Optional[int] = ...,
+        start_term: _Optional[int] = ...,
+        end_term: _Optional[int] = ...,
+    ) -> None: ...
+
 class Metadata(_message.Message):
-    __slots__ = ("metadata_index", "string_value")
+    __slots__ = ("metadata_index", "string_value", "congressional_representatives")
     METADATA_INDEX_FIELD_NUMBER: _ClassVar[int]
     STRING_VALUE_FIELD_NUMBER: _ClassVar[int]
+    CONGRESSIONAL_REPRESENTATIVES_FIELD_NUMBER: _ClassVar[int]
     metadata_index: int
     string_value: str
+    congressional_representatives: _containers.RepeatedCompositeFieldContainer[
+        CongressionalRepresentativePointer
+    ]
     def __init__(
-        self, metadata_index: _Optional[int] = ..., string_value: _Optional[str] = ...
+        self,
+        metadata_index: _Optional[int] = ...,
+        string_value: _Optional[str] = ...,
+        congressional_representatives: _Optional[
+            _Iterable[_Union[CongressionalRepresentativePointer, _Mapping]]
+        ] = ...,
     ) -> None: ...
 
 class Article(_message.Message):
@@ -175,6 +249,24 @@ class Article(_message.Message):
         universes: _Optional[_Iterable[str]] = ...,
         extra_stats: _Optional[_Iterable[_Union[ExtraStatistic, _Mapping]]] = ...,
         metadata: _Optional[_Iterable[_Union[Metadata, _Mapping]]] = ...,
+    ) -> None: ...
+
+class ConsolidatedArticles(_message.Message):
+    __slots__ = ("longnames", "articles", "symlink_link_names", "symlink_target_names")
+    LONGNAMES_FIELD_NUMBER: _ClassVar[int]
+    ARTICLES_FIELD_NUMBER: _ClassVar[int]
+    SYMLINK_LINK_NAMES_FIELD_NUMBER: _ClassVar[int]
+    SYMLINK_TARGET_NAMES_FIELD_NUMBER: _ClassVar[int]
+    longnames: _containers.RepeatedScalarFieldContainer[str]
+    articles: _containers.RepeatedCompositeFieldContainer[Article]
+    symlink_link_names: _containers.RepeatedScalarFieldContainer[str]
+    symlink_target_names: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(
+        self,
+        longnames: _Optional[_Iterable[str]] = ...,
+        articles: _Optional[_Iterable[_Union[Article, _Mapping]]] = ...,
+        symlink_link_names: _Optional[_Iterable[str]] = ...,
+        symlink_target_names: _Optional[_Iterable[str]] = ...,
     ) -> None: ...
 
 class Coordinate(_message.Message):
@@ -345,18 +437,30 @@ class Universes(_message.Message):
     def __init__(self, universe_idxs: _Optional[_Iterable[int]] = ...) -> None: ...
 
 class ConsolidatedShapes(_message.Message):
-    __slots__ = ("longnames", "universes", "shapes")
+    __slots__ = (
+        "longnames",
+        "universes",
+        "shapes",
+        "symlink_link_names",
+        "symlink_target_names",
+    )
     LONGNAMES_FIELD_NUMBER: _ClassVar[int]
     UNIVERSES_FIELD_NUMBER: _ClassVar[int]
     SHAPES_FIELD_NUMBER: _ClassVar[int]
+    SYMLINK_LINK_NAMES_FIELD_NUMBER: _ClassVar[int]
+    SYMLINK_TARGET_NAMES_FIELD_NUMBER: _ClassVar[int]
     longnames: _containers.RepeatedScalarFieldContainer[str]
     universes: _containers.RepeatedCompositeFieldContainer[Universes]
     shapes: _containers.RepeatedCompositeFieldContainer[Feature]
+    symlink_link_names: _containers.RepeatedScalarFieldContainer[str]
+    symlink_target_names: _containers.RepeatedScalarFieldContainer[str]
     def __init__(
         self,
         longnames: _Optional[_Iterable[str]] = ...,
         universes: _Optional[_Iterable[_Union[Universes, _Mapping]]] = ...,
         shapes: _Optional[_Iterable[_Union[Feature, _Mapping]]] = ...,
+        symlink_link_names: _Optional[_Iterable[str]] = ...,
+        symlink_target_names: _Optional[_Iterable[str]] = ...,
     ) -> None: ...
 
 class QuizDataForStat(_message.Message):
@@ -476,3 +580,9 @@ class DefaultUniverseTable(_message.Message):
         most_common_universe_idx: _Optional[int] = ...,
         exceptions: _Optional[_Iterable[_Union[DefaultUniverseTriple, _Mapping]]] = ...,
     ) -> None: ...
+
+class ShardIndex(_message.Message):
+    __slots__ = ("starting_hashes",)
+    STARTING_HASHES_FIELD_NUMBER: _ClassVar[int]
+    starting_hashes: _containers.RepeatedScalarFieldContainer[int]
+    def __init__(self, starting_hashes: _Optional[_Iterable[int]] = ...) -> None: ...

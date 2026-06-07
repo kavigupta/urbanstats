@@ -1,5 +1,7 @@
 import type maplibregl from 'maplibre-gl'
 
+import { keptByNoBasemap } from '../components/map-common-utils'
+
 /**
  * Indicates whether we're e2e testing.
  *
@@ -39,7 +41,7 @@ export class TestUtils {
         }
     }
 
-    readonly maps = new Map<string, WeakRef<maplibregl.Map>>()
+    readonly maps = new Map<string, maplibregl.Map>()
 
     readonly clickableMaps = new Map<string, {
         clickFeature: (name: string) => void
@@ -49,8 +51,9 @@ export class TestUtils {
     private loadingCounter = 0
     private loadingCallbacks: (() => void)[] = []
 
-    startLoading(): void {
+    startLoading(label: string): void {
         this.loadingCounter++
+        debugWait(`startLoading ${this.loadingCounter} ${label}`)
     }
 
     private async eventLoopIters(iters: number): Promise<void> {
@@ -59,17 +62,19 @@ export class TestUtils {
         }
     }
 
-    async finishLoading(): Promise<void> {
+    async finishLoading(label: string): Promise<void> {
         await this.eventLoopIters(10)
         this.loadingCounter--
+        debugWait(`stopLoading ${this.loadingCounter} ${label}`)
         if (this.loadingCounter === 0) {
             this.loadingCallbacks.forEach((callback) => { callback() })
             this.loadingCallbacks = []
         }
     }
 
-    async waitForLoading(): Promise<void> {
+    async waitForLoading(label: string): Promise<void> {
         await this.eventLoopIters(10)
+        debugWait(`waitForLoading ${this.loadingCounter} ${label}`)
         if (this.loadingCounter === 0) {
             return Promise.resolve()
         }
@@ -77,6 +82,18 @@ export class TestUtils {
             return new Promise((resolve) => {
                 this.loadingCallbacks.push(resolve)
             })
+        }
+    }
+
+    disableBasemapLayers(): void {
+        for (const map of this.maps.values()) {
+            const layers = map.getLayersOrder()
+            for (const layerId of layers) {
+                const layer = map.getLayer(layerId)
+                if (layer && !keptByNoBasemap(layer)) {
+                    map.setLayoutProperty(layerId, 'visibility', 'none')
+                }
+            }
         }
     }
 }
@@ -87,3 +104,12 @@ export interface TestWindow {
 }
 
 (window as unknown as TestWindow).testUtils = TestUtils.shared
+
+const debugWaitForLoading: boolean = false
+
+function debugWait(msg: string): void {
+    if (debugWaitForLoading) {
+        // eslint-disable-next-line no-console -- Debug
+        console.log(msg)
+    }
+}

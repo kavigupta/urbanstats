@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Catholic % [StatCan]",
+      "stat_path": "religion_catholic_canada",
+      "question": "higher % of people who are Catholic",
+      "longname_a": "Toronto City, Toronto CDR, Ontario, Canada",
+      "longname_b": "Vancouver City, Greater Vancouver Regional district, British Columbia, Canada",
+      "stat_a": 0.24240519312063552,
+      "stat_b": 0.14521820012760678
+    },
+    "b": {
+      "stat_column": "Employed in Administrative and support and waste management services %",
+      "stat_path": "industry_administrative_and_support_and_waste_management_services",
+      "question": "higher % of workers employed in the administrative/support/waste management services industries!TOOLTIP office administrative services, employment services, business support services, waste management and remediation services, etc.",
+      "longname_a": "Arizona, USA",
+      "longname_b": "Illinois, USA",
+      "stat_a": 0.05517015201309552,
+      "stat_b": 0.040276928737599714
+    },
+    "a_ease": 0.671358629130967,
+    "b_ease": 0.2691249312052834
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Housing Cost/Income > 30% [StatCan]",
+      "stat_path": "rent_burden_over_30_canada",
+      "question": "higher % of households spending 30% or more of income on shelter costs",
+      "longname_a": "Hamilton Population Center, ON, Canada",
+      "longname_b": "Montr\u00e9al Population Center, QC, Canada",
+      "stat_a": 0.23270046205563488,
+      "stat_b": 0.20015931739334258
+    },
+    "b": {
+      "stat_column": "Electricity heating %",
+      "stat_path": "heating_electricity",
+      "question": "!FULL Which has a larger % of homes heated using electricity?",
+      "longname_a": "Texas, USA",
+      "longname_b": "Alaska, USA",
+      "stat_a": 0.6093096558595911,
+      "stat_b": 0.13041744036126685
+    },
+    "a_ease": 0.29989327641408753,
+    "b_ease": 0.7074607329842932
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "LIM-AT %",
+      "stat_path": "lim_at_canada",
+      "question": "higher % of people who are low income based on the Low-income measure, after tax (LIM-AT)",
+      "longname_a": "Ontario, Canada",
+      "longname_b": "Saskatchewan, Canada",
+      "stat_a": 0.10113965507281186,
+      "stat_b": 0.1320718095644884
+    },
+    "b": {
+      "stat_column": "2008 Presidential Election",
+      "stat_path": "2008 Presidential Election-margin",
+      "question": "!FULL Which voted more for Obama in the 2008 presidential election?",
+      "longname_a": "Toledo MSA, OH, USA",
+      "longname_b": "Grand Rapids-Wyoming MSA, MI, USA",
+      "stat_a": 0.23464189684673598,
+      "stat_b": -0.06838201718300836
+    },
+    "a_ease": 0.7926292629262927,
+    "b_ease": 0.38310893512851896
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Divorced %",
+      "stat_path": "marriage_divorced",
+      "question": "higher % of people who are divorced",
+      "longname_a": "KY-04 (2023), USA",
+      "longname_b": "CA-19 (2023), USA",
+      "stat_a": 0.12125973957333429,
+      "stat_b": 0.09485328641742737
+    },
+    "b": {
+      "stat_column": "Undergrad Humanities %",
+      "stat_path": "education_field_humanities",
+      "question": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+      "longname_a": "WI-07 (2023), USA",
+      "longname_b": "PA-04 (2023), USA",
+      "stat_a": 0.089633507669513,
+      "stat_b": 0.15225028755138187
+    },
+    "a_ease": 0.3940774487471526,
+    "b_ease": 0.8404840484048405
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Muslim % [StatCan]",
+      "stat_path": "religion_muslim_canada",
+      "question": "higher % of people who are Muslim",
+      "longname_a": "Simcoe County, Ontario, Canada",
+      "longname_b": "Capital Regional district, British Columbia, Canada",
+      "stat_a": 0.013772611936930244,
+      "stat_b": 0.008589741275898392
+    },
+    "b": {
+      "stat_column": "Born in us outside state %",
+      "stat_path": "birthplace_us_not_state",
+      "question": "higher % of people who were born in the US and outside their state of residence",
+      "longname_a": "AR-02 (2023), USA",
+      "longname_b": "CA-38 (2023), USA",
+      "stat_a": 0.30128407010138775,
+      "stat_b": 0.07803813548511965
+    },
+    "a_ease": 0.5451045104510451,
+    "b_ease": 0.10672358591248667
+  }
+]

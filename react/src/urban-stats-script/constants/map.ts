@@ -18,11 +18,12 @@ export interface Outline {
     weight: number
 }
 
-interface CommonMap {
+export interface CommonMap {
     geo: string[]
     data: number[]
     scale: ScaleDescriptor
     ramp: RampT
+    opacity: number
     label: string
     basemap: Basemap
     insets: Inset[]
@@ -39,6 +40,8 @@ export interface CMapRGB {
     dataR: number[]
     dataG: number[]
     dataB: number[]
+    dataA: number[]
+    opacity: number
     label: string
     basemap: Basemap
     insets: Inset[]
@@ -52,19 +55,30 @@ export interface PMap extends CommonMap {
     relativeArea: number[]
 }
 
-export const cMapType = {
+export interface ClusterMap extends CommonMap {
+    maxRadius: number
+    relativeArea: number[]
+    clusterRadiusSpacing: number
+}
+
+const cMapType = {
     type: 'opaque',
     name: 'cMap',
 } satisfies USSType
 
-export const cMapRGBType = {
+const cMapRGBType = {
     type: 'opaque',
     name: 'cMapRGB',
 } satisfies USSType
 
-export const pMapType = {
+const pMapType = {
     type: 'opaque',
     name: 'pMap',
+} satisfies USSType
+
+const clusterMapType = {
+    type: 'opaque',
+    name: 'clusterMap',
 } satisfies USSType
 
 export const constructOutline = {
@@ -108,7 +122,7 @@ function mapConstructorArguments(
 ): Record<string, NamedFunctionArgumentWithDocumentation> {
     const dataType = { type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } } } satisfies NamedFunctionArgumentWithDocumentation
     const dataArgs: Record<string, NamedFunctionArgumentWithDocumentation> = isRGB
-        ? { dataR: dataType, dataG: dataType, dataB: dataType }
+        ? { dataR: dataType, dataG: dataType, dataB: dataType, dataA: { ...dataType, defaultValue: createConstantExpression(null) } }
         : {
                 data: dataType,
                 scale: { type: { type: 'concrete', value: { type: 'opaque', name: 'scale' } } },
@@ -135,6 +149,10 @@ function mapConstructorArguments(
             },
         },
         ...intermediateArgs,
+        opacity: {
+            type: { type: 'concrete', value: { type: 'number' } },
+            defaultValue: parseNoErrorAsExpression('1', ''),
+        },
         basemap: {
             type: { type: 'concrete', value: basemapType },
             defaultValue: { type: 'call', fn: { type: 'identifier', name: { node: 'osmBasemap', location: noLocation } }, args: [], entireLoc: noLocation },
@@ -180,8 +198,18 @@ function computeCommonMap(
     const basemap = (namedArgs.basemap as { type: 'opaque', opaqueType: 'basemap', value: Basemap }).value
     const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Inset[] }).value
     const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: string } } | null
-    const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
+    let unit: UnitType | undefined
+    if (unitArg) {
+        unit = unitArg.value.unit as UnitType
+    }
+    else {
+        const inferredUnit = originalArgs.namedArgs.data.documentation?.unit
+        if (inferredUnit !== undefined) {
+            unit = inferredUnit
+        }
+    }
     const textBoxes = (namedArgs.textBoxes as { value: TextBox }[] | null ?? []).map(({ value }) => value)
+    const opacity = Math.max(0, Math.min(1, namedArgs.opacity as number))
 
     if (geo.length !== data.length) {
         throw new Error(`geo and data must have the same length: ${geo.length} and ${data.length}`)
@@ -199,16 +227,17 @@ function computeCommonMap(
         })
     }
 
-    return { geo, data, scale: scaleInstance, ramp, label: label ?? '[Unlabeled Map]', basemap, insets, unit, textBoxes }
+    return { geo, data, scale: scaleInstance, ramp, opacity, label: label ?? '[Unlabeled Map]', basemap, insets, unit, textBoxes }
 }
 
 const namedArgDocumentation = {
     data: 'Data',
     scale: 'Scale',
     ramp: 'Ramp',
+    opacity: 'Opacity',
     label: 'Label',
     geo: 'Geography',
-    basemap: 'Basemap',
+    basemap: 'Basemap Options',
     insets: 'Insets',
     unit: 'Unit',
     textBoxes: 'Text Boxes',
@@ -269,30 +298,7 @@ export const pMap: USSValue = {
         const relativeArea = namedArgs.relativeArea as number[] | null
 
         const commonMap = computeCommonMap(true, namedArgs, originalArgs, ctx)
-
-        const amount = commonMap.data.length
-
-        // Handle relativeArea: fill with 1s if not present, normalize to max 1
-        let normalizedRelativeArea: number[]
-        if (relativeArea === null) {
-            // If relativeArea is null, fill with 1s
-            normalizedRelativeArea = Array.from({ length: amount }, () => 1)
-        }
-        else if (relativeArea.length !== amount) {
-            throw new Error(`relativeArea must have the same length as geo: ${relativeArea.length} and ${amount}`)
-        }
-        else {
-            // Replace negative values with 0
-            const sanitizedRelativeArea = relativeArea.map(area => Math.max(0, area))
-            // Normalize relativeArea so max value is 1
-            const maxRelativeArea = Math.max(...sanitizedRelativeArea)
-            if (maxRelativeArea > 0) {
-                normalizedRelativeArea = sanitizedRelativeArea.map((area: number) => area / maxRelativeArea)
-            }
-            else {
-                normalizedRelativeArea = Array.from({ length: amount }, () => 1)
-            }
-        }
+        const normalizedRelativeArea = normalizeRelativeArea(relativeArea, commonMap.data.length)
 
         return {
             type: 'opaque',
@@ -313,6 +319,73 @@ export const pMap: USSValue = {
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
+
+export const clusterMap: USSValue = {
+    type: {
+        type: 'function',
+        posArgs: [],
+        namedArgs: mapConstructorArguments(true, false, {
+            maxRadius: {
+                type: { type: 'concrete', value: { type: 'number' } },
+                defaultValue: parseNoErrorAsExpression('30', ''),
+            },
+            relativeArea: {
+                type: { type: 'concrete', value: { type: 'vector', elementType: { type: 'number' } } },
+                defaultValue: parseNoErrorAsExpression('population', ''),
+            },
+            clusterRadiusSpacing: {
+                type: { type: 'concrete', value: { type: 'number' } },
+                defaultValue: parseNoErrorAsExpression('0', ''),
+            },
+        }),
+        returnType: { type: 'concrete', value: clusterMapType },
+    },
+    value: (ctx, posArgs, namedArgs, originalArgs) => {
+        const maxRadius = namedArgs.maxRadius as number
+        const relativeArea = namedArgs.relativeArea as number[] | null
+        const clusterRadiusSpacing = namedArgs.clusterRadiusSpacing as number
+        if (clusterRadiusSpacing < 0) {
+            throw new Error(`clusterRadiusSpacing must be non-negative: ${clusterRadiusSpacing}`)
+        }
+
+        const commonMap = computeCommonMap(true, namedArgs, originalArgs, ctx)
+        const normalizedRelativeArea = normalizeRelativeArea(relativeArea, commonMap.data.length)
+
+        return {
+            type: 'opaque',
+            opaqueType: 'clusterMap',
+            value: { ...commonMap, maxRadius, relativeArea: normalizedRelativeArea, clusterRadiusSpacing } satisfies ClusterMap,
+        }
+    },
+    documentation: {
+        humanReadableName: 'Clustered Point Map',
+        category: 'map',
+        isDefault: true,
+        namedArgs: {
+            ...namedArgDocumentation,
+            maxRadius: 'Max Radius',
+            relativeArea: 'Relative Area',
+            clusterRadiusSpacing: 'Spacing between Cluster circles (%)',
+        },
+        longDescription: 'Creates a point map that clusters nearby points at lower zoom levels and expands to individual points when zoomed in. Uses the same data and styling parameters as pMap, with additional clustering controls.',
+        selectorRendering: { kind: 'subtitleLongDescription' },
+    },
+} satisfies USSValue
+
+function normalizeRelativeArea(relativeArea: number[] | null, amount: number): number[] {
+    if (relativeArea === null) {
+        return Array.from({ length: amount }, () => 1)
+    }
+    if (relativeArea.length !== amount) {
+        throw new Error(`relativeArea must have the same length as geo: ${relativeArea.length} and ${amount}`)
+    }
+    const sanitizedRelativeArea = relativeArea.map(area => Math.max(0, area))
+    const maxRelativeArea = Math.max(...sanitizedRelativeArea)
+    if (maxRelativeArea > 0) {
+        return sanitizedRelativeArea.map((area: number) => area / maxRelativeArea)
+    }
+    return Array.from({ length: amount }, () => 1)
+}
 
 export const cMapRGB: USSValue = {
     type: {
@@ -349,14 +422,23 @@ export const cMapRGB: USSValue = {
         const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: string } } | null
         const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
         const textBoxes = (namedArgs.textBoxes as { value: TextBox }[] | null ?? []).map(({ value }) => value)
+        const opacity = Math.max(0, Math.min(1, namedArgs.opacity as number))
+
+        const dataARaw = namedArgs.dataA as number[] | null
+        const dataA: number[] = dataARaw === null
+            ? Array.from({ length: geo.length }, () => 1)
+            : clipValues(dataARaw)
 
         if (geo.length !== dataR.length || geo.length !== dataG.length || geo.length !== dataB.length) {
             throw new Error(`geo, dataR, dataG, and dataB must have the same length: ${geo.length}, ${dataR.length}, ${dataG.length}, ${dataB.length}`)
         }
+        if (dataARaw !== null && geo.length !== dataA.length) {
+            throw new Error(`geo and dataA must have the same length: ${geo.length} and ${dataA.length}`)
+        }
         return {
             type: 'opaque',
             opaqueType: 'cMapRGB',
-            value: { geo, dataR, dataG, dataB, label, basemap, insets, unit, outline, textBoxes } satisfies CMapRGB,
+            value: { geo, dataR, dataG, dataB, dataA, opacity, label, basemap, insets, unit, outline, textBoxes } satisfies CMapRGB,
         }
     },
     documentation: {
@@ -367,10 +449,12 @@ export const cMapRGB: USSValue = {
             dataR: 'Red Data (0-1)',
             dataG: 'Green Data (0-1)',
             dataB: 'Blue Data (0-1)',
+            dataA: 'Alpha Data (0-1)',
+            opacity: 'Opacity',
             label: 'Label',
             geo: 'Geography',
             outline: 'Outline',
-            basemap: 'Basemap',
+            basemap: 'Basemap Options',
             insets: 'Insets',
             unit: 'Unit',
             textBoxes: 'Text Boxes',

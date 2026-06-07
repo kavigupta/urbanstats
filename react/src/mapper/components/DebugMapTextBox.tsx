@@ -5,8 +5,8 @@ import { MapTextBoxComponent, Selection, SelectionContext } from '../../mapper/c
 import { OverrideTheme, useColors } from '../../page_template/colors'
 import { PageTemplate } from '../../page_template/template'
 import { defaults, TextBox } from '../../urban-stats-script/constants/text-box'
-import { useUndoRedo } from '../../urban-stats-script/editor-utils'
 import { Property } from '../../utils/Property'
+import { useUndoRedo } from '../../utils/useUndoRedo'
 
 const newLabel: TextBox = {
     bottomLeft: [0.25, 0.25],

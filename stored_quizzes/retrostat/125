@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Uninsured %",
+      "stat_path": "insurance_coverage_none",
+      "question": "higher % of people who are uninsured",
+      "longname_a": "San Antonio [Urban Area], TX, USA",
+      "longname_b": "Flint [Urban Area], MI, USA",
+      "stat_a": 0.20728188458699254,
+      "stat_b": 0.07983086767383132
+    },
+    "b": {
+      "stat_column": "Self-care disability %",
+      "stat_path": "SELFCARE_cdc_2",
+      "question": "higher % of adults with a self-care disability",
+      "longname_a": "San Francisco-Oakland-Hayward MSA, CA, USA",
+      "longname_b": "Greensboro-High Point MSA, NC, USA",
+      "stat_a": 0.028213042213191843,
+      "stat_b": 0.04557645707764696
+    },
+    "a_ease": 0.29445397369925674,
+    "b_ease": 0.7064144736842105
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Utility gas heating %",
+      "stat_path": "heating_utility_gas",
+      "question": "!FULL Which has a larger % of homes heated using utility gas?",
+      "longname_a": "Anne Arundel County, Maryland, USA",
+      "longname_b": "Sacramento County, California, USA",
+      "stat_a": 0.37094854790463444,
+      "stat_b": 0.595469701414575
+    },
+    "b": {
+      "stat_column": "2012-2016 Swing",
+      "stat_path": "2012-2016 Swing-margin",
+      "question": "!FULL Which swung less towards Republicans from 2012 to 2016?",
+      "longname_a": "Wayne County, Michigan, USA",
+      "longname_b": "Santa Cruz County, California, USA",
+      "stat_a": -0.09539833943691123,
+      "stat_b": 0.03175982265263233
+    },
+    "a_ease": 0.27876631079478054,
+    "b_ease": 0.713469387755102
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean distance to nearest Hospital",
+      "stat_path": "mean_dist_Hospital_updated",
+      "question": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
+      "longname_a": "MN-05 (2023), USA",
+      "longname_b": "NY-21 (2025), USA",
+      "stat_a": 3.0688586162767093,
+      "stat_b": 12.617195251934584
+    },
+    "b": {
+      "stat_column": "Rent/Income < 20%",
+      "stat_path": "rent_burden_under_20",
+      "question": "higher % of people whose rent is less than 20% of their income",
+      "longname_a": "La Crosse-Eau Claire WI Media Market, USA",
+      "longname_b": "Shreveport LA Media Market, USA",
+      "stat_a": 0.33966996907932157,
+      "stat_b": 0.2629762823599403
+    },
+    "a_ease": 0.8702770780856424,
+    "b_ease": 0.46737841043890865
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Rent/Income < 20%",
+      "stat_path": "rent_burden_under_20",
+      "question": "higher % of people whose rent is less than 20% of their income",
+      "longname_a": "Erie County, Pennsylvania, USA",
+      "longname_b": "Nassau County, New York, USA",
+      "stat_a": 0.28119308595025905,
+      "stat_b": 0.2287559043208917
+    },
+    "b": {
+      "stat_column": "Graduate degree [25-64] %",
+      "stat_path": "education_grad_canada",
+      "question": "higher % of people between 25 and 64 who have a graduate degree",
+      "longname_a": "Laval Ville, Laval Territory, Quebec, Canada",
+      "longname_b": "Brampton City, Peel Regional municipality, Ontario, Canada",
+      "stat_a": 0.0688586980572643,
+      "stat_b": 0.11055276381909546
+    },
+    "a_ease": 0.8807565789473685,
+    "b_ease": 0.4540727902946274
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2016-2020 Swing",
+      "stat_path": "2016-2020 Swing-margin",
+      "question": "!FULL Which swung towards Democrats more from 2016 to 2020?",
+      "longname_a": "Philadelphia-Camden-Wilmington MSA, PA-NJ-DE-MD, USA",
+      "longname_b": "Denver-Aurora-Lakewood MSA, CO, USA",
+      "stat_a": 0.018938431657454402,
+      "stat_b": 0.0935702497658501
+    },
+    "b": {
+      "stat_column": "Only English at Home %",
+      "stat_path": "language_english_only",
+      "question": "higher % of people who only speak English at home",
+      "longname_a": "Harlingen-Weslaco-Brownsville-Mcallen TX Media Market, USA",
+      "longname_b": "Fargo-Valley City ND Media Market, USA",
+      "stat_a": 0.21048335776256283,
+      "stat_b": 0.9367519189107044
+    },
+    "a_ease": 0.5125427594070695,
+    "b_ease": 0.9365351629502573
+  }
+]

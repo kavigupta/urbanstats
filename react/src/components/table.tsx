@@ -1,16 +1,18 @@
-import { useSortable } from '@dnd-kit/sortable'
+import { closestCenter, DndContext, DragEndEvent, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
 import { ArticleOrderingListInternal, loadOrdering } from '../load_json'
 import './table.css'
 import { Navigator } from '../navigation/Navigator'
-import { statisticDescriptor } from '../navigation/links'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { Universe, useUniverse } from '../universe'
+import { withButtonRole } from '../utils/a11y'
 import { assert } from '../utils/defensive'
+import { sanitize } from '../utils/paths'
 import { useComparisonHeadStyle, useMobileLayout } from '../utils/responsive'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 import { displayType } from '../utils/text'
@@ -32,7 +34,7 @@ import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCell
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
-export const leftBarMargin = 0.02
+const leftBarMargin = 0.02
 
 const tableRowStyle: React.CSSProperties = {
     display: 'flex',
@@ -64,29 +66,31 @@ export interface CommonLayoutInformation {
     ordinalColumnPadding: number
 }
 
+interface ColumnLayoutCell {
+    columnIdentifier: ColumnIdentifier
+    widthPercentage: number
+    content: () => ReactNode
+    style: CSSProperties
+}
+
 interface ColumnLayoutProps {
-    cells: {
-        columnIdentifier: ColumnIdentifier
-        widthPercentage: number
-        content: ReactNode
-        style: CSSProperties
-    }[]
+    cells: ColumnLayoutCell[]
     onlyColumns?: string[]
     blankColumns?: string[]
     totalWidth: number
 }
 
 // Lays out column content
-export function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
+function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
     const cellPercentages: number[] = []
-    const cellContents = []
+    const cellContents: { content: () => ReactNode, style: CSSProperties }[] = []
     for (const { widthPercentage, columnIdentifier, content, style } of props.cells) {
         if (props.onlyColumns && !props.onlyColumns.includes(columnIdentifier)) {
             continue
         }
         cellPercentages.push(widthPercentage)
         if (props.blankColumns?.includes(columnIdentifier)) {
-            cellContents.push({ content: <span></span>, style })
+            cellContents.push({ content: () => <span></span>, style })
         }
         else {
             cellContents.push({ content, style })
@@ -104,7 +108,7 @@ export function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
             const sty: React.CSSProperties = { width: `${cellPercentages[i]}%`, padding: '1px', ...style }
             return (
                 <div key={i} style={sty}>
-                    {content}
+                    {content()}
                 </div>
             )
         },
@@ -118,6 +122,7 @@ export interface SuperHeaderHorizontalProps {
     showBottomBar: boolean
     leftSpacerWidth: number
     groupNames?: (string | undefined)[]
+    handleReorder?: (from: number, to: number) => void
 }
 
 export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactNode {
@@ -143,24 +148,83 @@ export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactN
         )
     }
 
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 1 } }),
+        useSensor(TouchSensor, { activationConstraint: { delay: 50, tolerance: 0 } }),
+    )
+
+    const handleDragEnd = (event: DragEndEvent): void => {
+        const { active, over } = event
+        if (over && active.id !== over.id) {
+            props.handleReorder?.(parseInt(active.id as string), parseInt(over.id as string))
+        }
+    }
+
     const getBarColor = (idx: number): string | undefined => {
         const spec = props.headerSpecs[idx]
         return spec.highlightIndex !== undefined ? colorFromCycle(colors.hueColors, spec.highlightIndex) : undefined
     }
+
+    const cellsRow = (
+        <div style={{ display: 'flex' }}>
+            <div style={{ width: `${props.leftSpacerWidth}%` }} />
+            {props.handleReorder
+                ? (
+                        <SortableContext items={props.headerSpecs.map((_, idx) => idx.toString())} strategy={horizontalListSortingStrategy}>
+                            {props.headerSpecs.map((cellSpec, idx) => {
+                                const nonDraggableSpec: CellSpec = cellSpec.type === 'comparison-longname' ? { ...cellSpec, draggable: false } : cellSpec
+                                return (
+                                    <SortableHeaderCell key={idx} id={idx.toString()} width={props.widthsEach[idx]}>
+                                        <Cell {...nonDraggableSpec} width={100} />
+                                    </SortableHeaderCell>
+                                )
+                            })}
+                        </SortableContext>
+                    )
+                : props.headerSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} width={props.widthsEach[idx]} />)}
+        </div>
+    )
+
     return (
         <>
             {props.groupNames && <SuperHeaderGroupNames leftSpacerWidth={props.leftSpacerWidth} groupNames={props.groupNames} widthsEach={props.widthsEach} />}
             {bars(getBarColor)}
-            <div style={{ display: 'flex' }}>
-                <div style={{ width: `${props.leftSpacerWidth}%` }} />
-                {props.headerSpecs.map((cellSpec, idx) => <Cell key={idx} {...cellSpec} width={props.widthsEach[idx]} />)}
-            </div>
+            {props.handleReorder
+                ? (
+                        <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
+                            {cellsRow}
+                        </DndContext>
+                    )
+                : cellsRow}
             {props.showBottomBar && bars(getBarColor)}
         </>
     )
 }
 
-export function SuperHeaderGroupNames(props: { leftSpacerWidth: number, groupNames: (string | undefined)[], widthsEach: number[] }): ReactNode {
+function SortableHeaderCell({ id, width, children }: { id: string, width: number, children: ReactNode }): ReactNode {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+    return (
+        <div
+            ref={setNodeRef}
+            data-test-id="sortable-column-header"
+            style={{
+                width: `${width}%`,
+                display: 'flex',
+                transform: CSS.Transform.toString(transform),
+                transition: isDragging ? transition : 'none',
+                opacity: isDragging ? 0.5 : 1,
+                touchAction: 'none',
+                cursor: 'grab',
+            }}
+            {...attributes}
+            {...listeners}
+        >
+            {children}
+        </div>
+    )
+}
+
+function SuperHeaderGroupNames(props: { leftSpacerWidth: number, groupNames: (string | undefined)[], widthsEach: number[] }): ReactNode {
     if (props.groupNames.every(groupName => groupName === undefined)) {
         return null
     }
@@ -286,7 +350,7 @@ function makeOrdinalStyle(colors: Colors, isHeader: boolean, columnWidthsInfo?: 
     ]
 }
 
-export function StatisticHeaderCells(props: {
+function StatisticHeaderCells(props: {
     simpleOrdinals: boolean
     totalWidth: number
     onlyColumns?: ColumnIdentifier[]
@@ -301,7 +365,7 @@ export function StatisticHeaderCells(props: {
         {
             columnIdentifier: 'statval',
             widthPercentage: 15 + 10,
-            content: (
+            content: () => (
                 <span className="serif value">
                     Value
                 </span>
@@ -311,7 +375,7 @@ export function StatisticHeaderCells(props: {
         {
             widthPercentage: props.simpleOrdinals ? 7 : 17,
             columnIdentifier: 'statistic_percentile',
-            content: (
+            content: () => (
                 <div className="serif" key="ordinal" style={percentileStyle}>
                     {
                         (props.simpleOrdinals ? '%ile' : 'Percentile')
@@ -324,7 +388,7 @@ export function StatisticHeaderCells(props: {
         {
             widthPercentage: props.simpleOrdinals ? 8 : 25,
             columnIdentifier: 'statistic_ordinal',
-            content: (
+            content: () => (
                 <div className="serif" key="statistic_ordinal" style={ordinalStyle}>
                     {
                         (props.simpleOrdinals ? 'Ord' : 'Ordinal')
@@ -352,14 +416,14 @@ function PointerHeaderCells(props: { ordinalStyle: CSSProperties }): ColumnLayou
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_in_class',
-        content: <span className="serif" style={props.ordinalStyle}>Within Type</span>,
+        content: () => <span className="serif" style={props.ordinalStyle}>Within Type</span>,
         style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
 
     }
     const pointerOverallCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_overall',
-        content: <span className="serif" style={props.ordinalStyle}>Overall</span>,
+        content: () => <span className="serif" style={props.ordinalStyle}>Overall</span>,
         style: { textAlign: 'center', display: 'flex', justifyContent: 'center' },
     }
 
@@ -408,7 +472,7 @@ function PointerHeaderSelectorCell(): ColumnLayoutProps['cells'][number] {
     return {
         widthPercentage: 8,
         columnIdentifier: preferredPointerCell,
-        content: (
+        content: () => (
             <>
                 <select
                     style={selectStyle}
@@ -445,75 +509,102 @@ export function StatisticRowCells(props: {
 }): ReactNode {
     const colors = useColors()
     const [ordinalStyle, percentileStyle] = makeOrdinalStyle(colors, false, props.columnWidthsInfo)
+    const pointerRowCells = PointerRowCells({ ordinalStyle, row: props.row, longname: props.longname })
 
-    const cells = [
-        {
-            widthPercentage: 15,
+    const cells: ColumnLayoutProps['cells'] = []
+
+    if (props.row.kind === 'metadata') {
+        const metadataRow = props.row
+        cells.push({
+            widthPercentage: 25,
             columnIdentifier: 'statval',
-            content: (
-                <span className="serif value testing-statistic-value">
-                    <Statistic
-                        statname={props.row.statname}
-                        value={props.row.statval}
-                        isUnit={false}
-                        style={props.statisticStyle ?? {}}
-                        unit={props.row.unit}
-                    />
-                </span>
-            ),
-            style: { textAlign: 'right' },
-        },
-        {
-            widthPercentage: 10,
-            columnIdentifier: 'statval_unit',
-            content: (
-                <div className="value_unit">
-                    <span className="serif value">
+            content: () => {
+                const statval = metadataRow.statval
+                if (typeof statval === 'string') {
+                    return <span className="serif value testing-statistic-value">{statval}</span>
+                }
+                return <span className="serif value testing-statistic-value">See term table below</span>
+            },
+            style: { textAlign: 'center' },
+        })
+    }
+    else {
+        const statisticRow = props.row
+        cells.push(
+            {
+                widthPercentage: 15,
+                columnIdentifier: 'statval',
+                content: () => (
+                    <span className="serif value testing-statistic-value">
                         <Statistic
-                            statname={props.row.statname}
-                            value={props.row.statval}
-                            isUnit={true}
-                            unit={props.row.unit}
+                            statname={statisticRow.statname}
+                            value={statisticRow.statval}
+                            isUnit={false}
+                            style={props.statisticStyle ?? {}}
+                            unit={statisticRow.unit}
                         />
                     </span>
-                </div>
-            ),
-            style: { textAlign: 'right' },
-        },
-        {
-            widthPercentage: props.simpleOrdinals ? 7 : 17,
-            columnIdentifier: 'statistic_percentile',
-            content: (
-                <div className="serif" style={percentileStyle}>
-                    <Percentile
-                        ordinal={props.row.ordinal}
-                        total={props.row.totalCountInClass}
-                        percentileByPopulation={props.row.percentileByPopulation}
-                        simpleOrdinals={props.simpleOrdinals}
-                    />
-                </div>
-            ),
-            style: { textAlign: 'right' },
-        },
-        {
-            widthPercentage: props.simpleOrdinals ? 8 : 25,
-            columnIdentifier: 'statistic_ordinal',
-            content: (
-                <div className="serif" style={ordinalStyle}>
-                    <Ordinal
-                        ordinal={props.row.ordinal}
-                        total={props.row.totalCountInClass}
-                        type={props.row.articleType}
-                        statpath={props.row.statpath}
-                        simpleOrdinals={props.simpleOrdinals}
-                        onNavigate={props.onNavigate}
-                    />
-                </div>
-            ),
-            style: { textAlign: 'right' },
-        },
-        ...PointerRowCells({ ordinalStyle, row: props.row, longname: props.longname }),
-    ] satisfies ColumnLayoutProps['cells']
+                ),
+                style: { textAlign: 'right' },
+            },
+            {
+                widthPercentage: 10,
+                columnIdentifier: 'statval_unit',
+                content: () => (
+                    <div className="value_unit">
+                        <span className="serif value">
+                            <Statistic
+                                statname={statisticRow.statname}
+                                value={statisticRow.statval}
+                                isUnit={true}
+                                unit={statisticRow.unit}
+                            />
+                        </span>
+                    </div>
+                ),
+                style: { textAlign: 'right' },
+            },
+        )
+    }
+
+    if (props.row.kind === 'statistic') {
+        const statisticRow = props.row
+        cells.push(
+            {
+                widthPercentage: props.simpleOrdinals ? 7 : 17,
+                columnIdentifier: 'statistic_percentile',
+                content: () => (
+                    <div className="serif" style={percentileStyle}>
+                        <Percentile
+                            ordinal={statisticRow.ordinal}
+                            total={statisticRow.totalCountInClass}
+                            percentileByPopulation={statisticRow.percentileByPopulation}
+                            simpleOrdinals={props.simpleOrdinals}
+                        />
+                    </div>
+                ),
+                style: { textAlign: 'right' },
+            },
+            {
+                widthPercentage: props.simpleOrdinals ? 8 : 25,
+                columnIdentifier: 'statistic_ordinal',
+                content: () => (
+                    <div className="serif" style={ordinalStyle}>
+                        <Ordinal
+                            ordinal={statisticRow.ordinal}
+                            total={statisticRow.totalCountInClass}
+                            type={statisticRow.articleType}
+                            statpath={statisticRow.statpath}
+                            simpleOrdinals={props.simpleOrdinals}
+                            onNavigate={props.onNavigate}
+                        />
+                    </div>
+                ),
+                style: { textAlign: 'right' },
+            },
+            ...pointerRowCells,
+        )
+    }
 
     return (
         <>
@@ -536,20 +627,29 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: StatisticCel
 
     const statpath = props.row.statpath
 
+    if (props.row.kind !== 'statistic') {
+        return []
+    }
     if (statpath === undefined) {
         return []
     }
+    // Capture narrowed values so TypeScript understands them inside the `content` closures.
+    const ordinal = props.row.ordinal
+    const totalCountInClass = props.row.totalCountInClass
+    const totalCountOverall = props.row.totalCountOverall
+    const overallFirstLast = props.row.overallFirstLast
+    const articleType = props.row.articleType
 
     const pointerInClassCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_in_class',
-        content: (
+        content: () => (
             <span key="pointer_in_class" className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
                 <PointerButtonsIndex
-                    ordinal={props.row.ordinal}
+                    ordinal={ordinal}
                     statpath={statpath}
-                    type={props.row.articleType}
-                    total={props.row.totalCountInClass}
+                    type={articleType}
+                    total={totalCountInClass}
                     longname={props.longname}
                 />
             </span>
@@ -560,14 +660,14 @@ function PointerRowCells(props: { ordinalStyle: CSSProperties, row: StatisticCel
     const pointerOverallCell: ColumnLayoutProps['cells'][number] = {
         widthPercentage: 8,
         columnIdentifier: 'pointer_overall',
-        content: (
+        content: () => (
             <span className="serif" style={{ display: 'flex', ...props.ordinalStyle }}>
                 <PointerButtonsIndex
                     statpath={statpath}
                     type="overall"
-                    total={props.row.totalCountOverall}
+                    total={totalCountOverall}
                     longname={props.longname}
-                    overallFirstLast={props.row.overallFirstLast}
+                    overallFirstLast={overallFirstLast}
                 />
             </span>
         ),
@@ -624,7 +724,7 @@ function ManipulationButton({ color: buttonColor, onClick, text, image }: { colo
     )
 }
 
-export function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify, sharedTypeOfAllArticles }: {
+function HeadingDisplay({ longname, includeDelete, onDelete, onReplace, manipulationJustify, sharedTypeOfAllArticles }: {
     longname: string
     includeDelete: boolean
     onDelete: () => void
@@ -798,34 +898,52 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                         longname={props.longname}
                         currentUniverse={props.currentUniverse}
                         center={props.center}
-                        displayName={props.displayName ?? props.renderedStatname}
+                        displayName={displayName(props)}
                         footnoteSymbol={props.footnoteSymbol}
                     />
                     {props.sortInfo && (
-                        <span
-                            style={{
-                                cursor: 'pointer',
-                                height: '16px',
-                                marginLeft: props.transpose ? '0' : 'auto',
-                            }}
-                            onClick={props.sortInfo.onSort}
-                        >
-                            <ArrowUpOrDown direction={props.sortInfo.sortDirection} shouldAppearInScreenshot={false} />
-                        </span>
+                        <SortButton {...props} sortInfo={props.sortInfo} />
                     )}
+                    {props.handleDelete && <DeleteButton handleDelete={props.handleDelete} />}
                 </span>
             </div>
         </>
     )
 }
 
-export function ExpansionButton(props: { row: ArticleRow }): ReactNode {
+function displayName(props: StatisticNameCellProps): string {
+    return props.displayName ?? props.renderedStatname
+}
+
+function SortButton(props: StatisticNameCellProps & { sortInfo: NonNullable<StatisticNameCellProps['sortInfo']> }): ReactNode {
+    const sortButtonLabel = `Sort by ${displayName(props)}${
+        props.sortInfo.sortDirection === 'up'
+            ? ', currently ascending'
+            : props.sortInfo.sortDirection === 'down' ? ', currently descending' : ''
+    }`
+
+    return (
+        <span
+            {...withButtonRole(sortButtonLabel, props.sortInfo.onSort)}
+            style={{
+                cursor: 'pointer',
+                height: '16px',
+                marginLeft: props.transpose ? '0' : 'auto',
+            }}
+        >
+            <ArrowUpOrDown direction={props.sortInfo.sortDirection} shouldAppearInScreenshot={false} />
+        </span>
+    )
+}
+
+function ExpansionButton(props: { row: ArticleRow }): ReactNode {
     const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
     return (
         <div
+            {...withButtonRole(`${expanded ? 'Collapse' : 'Expand'} ${props.row.statname}`, () => { setExpanded(!expanded) })}
             className="expand-toggle"
-            onClick={() => { setExpanded(!expanded) }}
+            aria-expanded={expanded}
             style={articleStatnameButtonStyle(colors)}
         >
             {expanded ? '-' : '+'}
@@ -833,7 +951,7 @@ export function ExpansionButton(props: { row: ArticleRow }): ReactNode {
     )
 }
 
-export function StatisticName(props: {
+function StatisticName(props: {
     row?: ArticleRow
     longname: string
     currentUniverse: Universe
@@ -844,30 +962,44 @@ export function StatisticName(props: {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
 
-    const link = (
-        <a
-            style={{ textDecoration: 'none', color: colors.textMain }}
-            {
-                ...(
-                    props.row === undefined
-                        ? {}
-                        : navContext.link(statisticDescriptor({
+    const link = props.row?.kind === 'metadata'
+        ? (
+                <a
+                    style={{ textDecoration: 'none', color: colors.textMain }}
+                    {...navContext.link(
+                        { kind: 'dataCredit', hash: `#explanation_${sanitize(props.row.dataCreditExplanationPage)}` },
+                        { scroll: { kind: 'none' } },
+                    )}
+                    data-test-id="statistic-link"
+                >
+                    {props.displayName}
+                </a>
+            )
+        : props.row?.kind === 'statistic'
+            ? (
+                    <a
+                        style={{ textDecoration: 'none', color: colors.textMain }}
+                        {...navContext.link({
+                            kind: 'statistic',
                             universe: props.currentUniverse,
-                            statDesc: { type: 'simple-statistic', statname: props.row.statname },
-                            articleType: props.row.articleType,
+                            statname: props.row.statname,
+                            article_type: props.row.articleType,
                             start: props.row.ordinal,
                             amount: 20,
                             order: 'descending',
                             highlight: props.longname,
-                            sortColumn: 0,
-                        }), { scroll: { kind: 'position', top: 0 } })
+                            sort_column: 0,
+                        }, { scroll: { kind: 'position', top: 0 } })}
+                        data-test-id="statistic-link"
+                    >
+                        {props.displayName}
+                    </a>
                 )
-            }
-            data-test-id="statistic-link"
-        >
-            {props.displayName}
-        </a>
-    )
+            : (
+                    <span style={{ color: colors.textMain }} data-test-id="statistic-link">
+                        {props.displayName}
+                    </span>
+                )
     const screenshotMode = useScreenshotMode()
     const elements = [link]
     if (props.row?.extraStat !== undefined && !screenshotMode) {
@@ -908,7 +1040,7 @@ export function StatisticName(props: {
     return link
 }
 
-export function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undefined }): ReactNode {
+function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undefined }): ReactNode {
     const colors = useColors()
 
     return (
@@ -1056,6 +1188,14 @@ function ordinalWidthInEm(ordinal: number, total: number, type: string, universe
 
 export function computeSizesForRow(row: StatisticCellRenderingInfo, universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
     // Compute the size of the ordinal and percentile text
+    if (row.kind !== 'statistic') {
+        return {
+            percentileColumnWidthEm: 0,
+            ordinalColumnWidthEm: 0,
+            ordinalColumnPadding: 0,
+        }
+    }
+
     const [ordinalColumnWidthEm, ordinalColumnPadding] = ordinalWidthInEm(row.totalCountInClass, row.totalCountInClass, row.articleType, universe, simpleOrdinals)
     const percentileTextSample = percentileText(row.percentileByPopulation, simpleOrdinals)
     const percentileColumnWidthEm = measureTextWidthEm(percentileTextSample)
@@ -1176,20 +1316,15 @@ function PointerButtonIndex(props: {
     const navigation = useContext(Navigator.Context)
     const showSettings = useSettings(['show_historical_cds', 'show_person_circles'])
     const onClick = async (): Promise<void> => {
-        /* eslint-disable no-console -- Debugging test failure */
-        console.log(`Click on pointer button! props=${JSON.stringify(props)}`)
         const data = await props.getData()
         let pos = data.longnames.indexOf(props.longname) + props.direction
-        console.log(`Starting position=${pos}`)
         while (pos >= 0 && pos < props.total) {
             const name = data.longnames[pos]
             const type = data.typeIndices[pos]
-            console.log(`name=${name}`)
             if (!isAllowedToBeShown(type, showSettings)) {
                 pos += props.direction
                 continue
             }
-            console.log(`navigate to ${name}`)
             void navigation.navigate({
                 kind: 'article',
                 longname: name,
@@ -1197,7 +1332,6 @@ function PointerButtonIndex(props: {
             }, { history: 'push', scroll: { kind: 'element', element: buttonRef.current! } })
             return
         }
-        /* eslint-enable no-console */
     }
 
     const buttonStyle: React.CSSProperties = {
@@ -1241,7 +1375,7 @@ function PointerButtonIndex(props: {
     )
 }
 
-export function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearInScreenshot: boolean }): ReactNode {
+function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearInScreenshot: boolean }): ReactNode {
     const isScreenshot = useScreenshotMode()
 
     if (isScreenshot && !props.shouldAppearInScreenshot) {
@@ -1260,5 +1394,34 @@ export function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', should
             image = '/sort-both.png'
             break
     }
-    return <img src={image} className="testing-order-swap" alt={props.direction} style={{ width: '16px', height: '16px' }} />
+    return <img src={image} className="testing-order-swap" alt={props.direction} style={{ width: '16px', height: '16px', display: 'block' }} />
+}
+
+function DeleteButton({ handleDelete }: { handleDelete: () => void }): ReactNode {
+    const isScreenshot = useScreenshotMode()
+    if (isScreenshot) {
+        return null
+    }
+    const size = 16
+    return (
+        <button
+            aria-label="Delete column"
+            data-test-id="delete-column"
+            onPointerDown={(e) => { e.stopPropagation() }}
+            onClick={() => { handleDelete() }}
+            style={{
+                border: 'none',
+                cursor: 'pointer',
+                padding: '2px 4px',
+                backgroundImage: 'url("/close-red-small.png")',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: size,
+                width: size,
+                height: size,
+                backgroundColor: 'transparent',
+            }}
+        >
+        </button>
+    )
 }

@@ -31,6 +31,7 @@ HRRs = Shapefile(
     data_credit=data_credit,
     include_in_syau=False,
     wikidata_sourcer=None,
+    special_data_sources=["congressional_representatives_indirect"],
 )
 HSAs = Shapefile(
     hash_key="hospital_service_areas_2",
@@ -53,6 +54,7 @@ HSAs = Shapefile(
     data_credit=data_credit,
     include_in_syau=False,
     wikidata_sourcer=None,
+    special_data_sources=["congressional_representatives_indirect"],
 )
 hospital_shapefiles = dict(
     hospital_referral_regions=HRRs,

@@ -9,13 +9,15 @@ export type USSExecutionDescriptor = { kind: 'generic' } | { kind: 'mapper', geo
 export interface USSExecutionRequest { descriptor: USSExecutionDescriptor, stmts: UrbanStatsASTStatement }
 export type AsyncInterpretationError = EditorError[]
 
+export type AssignmentsResult = Map<string, USSValue>
+
 export interface USSExecutionResult<Value extends USSValue = USSValue> {
     resultingValue?: Value
     error: AsyncInterpretationError
-    context: Map<string, USSValue>
+    assignments: AssignmentsResult
 }
 
-export function executeAsync(request: { descriptor: { kind: 'mapper', geographyKind: typeof validGeographies[number], universe: Universe }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' } }>>
+export function executeAsync(request: { descriptor: { kind: 'mapper', geographyKind: typeof validGeographies[number], universe: Universe }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' | 'clusterMap' } }>>
 export function executeAsync(request: { descriptor: { kind: 'statistics', geographyKind: typeof validGeographies[number], universe: Universe }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: USSOpaqueValue & { opaqueType: 'table' } }>>
 export function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult>
 export async function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult> {

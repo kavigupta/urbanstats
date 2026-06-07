@@ -6,9 +6,7 @@ import { IFrameInput } from '../../utils/IFrameInput'
 import { zIndex } from '../../utils/zIndex'
 
 import '../../common.css'
-
-export const labelPadding = '4px'
-
+import { labelPadding } from './Selector'
 export interface RenderResult { text: string, node?: (highlighted: boolean) => ReactNode }
 
 export const cannotParse = Symbol('cannotParse')

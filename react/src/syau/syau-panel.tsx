@@ -1,15 +1,17 @@
-import React, { ReactNode, useContext } from 'react'
+import React, { ReactNode, useContext, useRef } from 'react'
 
 import '../common.css'
 
 import { buttonStyle, GenericShareButton } from '../components/GenericShareButton'
 import { CountsByUT } from '../components/countsByArticleType'
+import { createScreenshot } from '../components/screenshot'
 import { CheckboxSetting } from '../components/sidebar'
 import { Navigator } from '../navigation/Navigator'
 import { useColors, useJuxtastatColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { PageTemplate } from '../page_template/template'
 import { Universe } from '../universe'
+import { sanitize } from '../utils/paths'
 import { useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
 import { pluralize } from '../utils/text'
 
@@ -31,8 +33,24 @@ export type SYAUHistory = Record<SYAUHistoryKey, SYAUHistoryForGame>
 export function SYAUPanel(props: { typ?: string, universe?: Universe, counts: CountsByUT, syauData?: SYAUData }): ReactNode {
     const headerClass = useHeaderTextClass()
     const subHeaderClass = useSubHeaderTextClass()
+    const mapCaptureRef = useRef<HTMLDivElement>(null)
+
     return (
-        <PageTemplate>
+        <PageTemplate
+            screencap={props.syauData !== undefined
+                ? (...args) => {
+                        const el = mapCaptureRef.current
+                        if (el === null) {
+                            return Promise.resolve()
+                        }
+                        return createScreenshot({
+                            path: `syau-${sanitize(`${props.typ!}-${props.universe!}`)}.png`,
+                            overallWidth: el.offsetWidth * 4,
+                            elementsToRender: [el],
+                        }, ...args, true)
+                    }
+                : undefined}
+        >
             <div className={headerClass}>So you&apos;re an urbanist?</div>
             <div className={subHeaderClass}>
                 Name every
@@ -47,7 +65,12 @@ export function SYAUPanel(props: { typ?: string, universe?: Universe, counts: Co
                     : (
                             <div>
                                 <div style={{ marginBlockEnd: '1em' }} />
-                                <SYAUGame typ={props.typ!} universe={props.universe!} syauData={props.syauData} />
+                                <SYAUGame
+                                    typ={props.typ!}
+                                    universe={props.universe!}
+                                    syauData={props.syauData}
+                                    mapCaptureRef={mapCaptureRef}
+                                />
                             </div>
                         )
             }
@@ -81,7 +104,12 @@ function GuessInputField(props: { guessCallback: (query: string) => boolean }): 
     )
 }
 
-export function SYAUGame(props: { typ: string, universe: Universe, syauData: SYAUData }): ReactNode {
+function SYAUGame(props: {
+    typ: string
+    universe: Universe
+    syauData: SYAUData
+    mapCaptureRef: React.RefObject<HTMLDivElement | null>
+}): ReactNode {
     const colors = useColors()
     const jColors = useJuxtastatColors()
     const [history, setHistory] = SYAULocalStorage.shared.useHistory(props.typ, props.universe)
@@ -136,16 +164,18 @@ export function SYAUGame(props: { typ: string, universe: Universe, syauData: SYA
                 </div>
                 <div style={{ marginBlockEnd: '1em' }} />
             </div>
-            <SYAUMap
-                longnames={props.syauData.longnames}
-                population={props.syauData.populations}
-                populationOrdinals={props.syauData.populationOrdinals}
-                centroids={props.syauData.centroids}
-                isGuessed={isGuessed}
-                guessedColor={jColors.correct}
-                notGuessedColor={jColors.incorrect}
-                voroniHighlightColor={colors.hueColors.blue}
-            />
+            <div ref={props.mapCaptureRef as React.Ref<HTMLDivElement>} style={{ width: '100%' }}>
+                <SYAUMap
+                    longnames={props.syauData.longnames}
+                    population={props.syauData.populations}
+                    populationOrdinals={props.syauData.populationOrdinals}
+                    centroids={props.syauData.centroids}
+                    isGuessed={isGuessed}
+                    guessedColor={jColors.correct}
+                    notGuessedColor={jColors.incorrect}
+                    voroniHighlightColor={colors.hueColors.blue}
+                />
+            </div>
             <div style={{ marginBlockEnd: '1em' }} />
             <div style={{ display: 'flex', justifyContent: 'center', margin: 'auto' }}>
                 <div style={{ display: 'inline-block' }}>

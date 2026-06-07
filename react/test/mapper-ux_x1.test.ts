@@ -1,14 +1,14 @@
-import { Selector } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
 import { nthEditor, typeInEditor } from './editor_test_utils'
-import { getCodeFromMainField, getInput, replaceInput, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { checkTextboxesDirect, downloadImage, getLocation, mapper, screencap, target, urbanstatsFixture, waitForLoading, withHamburgerMenu } from './test_utils'
+import { checkSelector, getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript, urlFromCode } from './mapper-utils'
+import { checkTextboxesDirect, downloadImage, dragHandle, getLocation, mapper, screencap, target, urbanstatsFixture, waitForLoading, withHamburgerMenu } from './test_utils'
 
 urbanstatsFixture('mapper default', `${target}/mapper.html`)
 
 test('mobile appearance', async (t) => {
     await t.resizeWindow(400, 800)
-    await screencap(t, { selector: Selector('.content_panel_mobile') })
+    await screencap(t, { selector: Selector('.content_panel_mobile'), removeEntireMap: false })
 })
 
 test('showing a popover does not clip in split view', async (t) => {
@@ -18,7 +18,7 @@ test('showing a popover does not clip in split view', async (t) => {
     const doc = Selector('div').withText(/^Creates a linear scale/)
     const editor = Selector('#test-editor-body')
     await t.expect((await doc.boundingClientRect).right).lt((await editor.boundingClientRect).right)
-    await screencap(t, { fullPage: false, selector: Selector('[data-test=split-left]') }) // Fullpage false so we don't hover and close the popover
+    await screencap(t, { fullPage: false, selector: Selector('[data-test=split-left]'), removeEntireMap: false }) // Fullpage false so we don't hover and close the popover
 })
 
 for (const platform of ['desktop', 'mobile']) {
@@ -27,7 +27,7 @@ for (const platform of ['desktop', 'mobile']) {
             await t.resizeWindow(400, 800)
         }
         await withHamburgerMenu(t, async () => {
-            await screencap(t)
+            await screencap(t, { removeEntireMap: false })
             await t.click(Selector('a').withExactText('Home'))
             await t.expect(getLocation()).eql(`${target}/`)
         })
@@ -42,14 +42,14 @@ test('change theme setting in sidebar menu', async (t) => {
     })
 })
 
-for (const constant of ['linearScale', 'rampUridis']) {
+for (const { constant, docSubpage } of [{ constant: 'linearScale', docSubpage: 'scale' }, { constant: 'rampUridis', docSubpage: 'ramp' }] as const) {
     test(`hover editor click link to documentation of constant ${constant}`, async (t) => {
         await toggleCustomScript(t)
         await t.hover(Selector('span').withExactText(constant))
-        await screencap(t, { fullPage: false })
+        await screencap(t, { fullPage: false, removeEntireMap: false })
         await t.click(Selector('a').withExactText(constant))
-        await t.expect(getLocation()).eql(`${target}/uss-documentation.html#constant-${constant}`)
-        await screencap(t, { fullPage: false })
+        await t.expect(getLocation()).eql(`${target}/uss-documentation.html?doc=${docSubpage}#${constant}`)
+        await screencap(t, { fullPage: false, removeEntireMap: false })
     })
 }
 
@@ -78,7 +78,7 @@ mapper(() => test)('universe navigation', { code: `cMap(
     basemap=noBasemap()
 )` }, async (t) => {
     await waitForLoading()
-    await screencap(t)
+    await screencap(t, { removeEntireMap: false })
     await downloadImage(t)
     const universeSelector = Selector('.universe-selector')
     // assert the current universe in the mapper settings is Iceland
@@ -88,7 +88,7 @@ mapper(() => test)('universe navigation', { code: `cMap(
     // Step 1: change universe via universe selector in the mapper settings
     await replaceInput(t, 'Iceland', 'Denmark')
     await waitForLoading()
-    await screencap(t)
+    await screencap(t, { removeEntireMap: false })
     await downloadImage(t)
     await t.expect(universeSelector.getAttribute('alt')).eql('Denmark') // change reflected in universe selector
     await t.expect(getInput('Denmark').exists).ok() // change reflected in mapper settings
@@ -96,7 +96,7 @@ mapper(() => test)('universe navigation', { code: `cMap(
     await t.click(universeSelector)
     await t.click(Selector('div').withExactText('Ireland').nth(0))
     await waitForLoading()
-    await screencap(t)
+    await screencap(t, { removeEntireMap: false })
     await downloadImage(t)
     await t.expect(universeSelector.getAttribute('alt')).eql('Ireland') // change reflected in universe selector
     await t.expect(getInput('Ireland').exists).ok() // change reflected in mapper settings
@@ -106,14 +106,112 @@ mapper(() => test)('add custom elements to vector', { code: 'pMap(data=density_p
     await toggleCustomScript(t)
     await checkTextboxesDirect(t, ['Insets'])
     await replaceInput(t, 'Iceland', 'Custom Expression', 1)
-    await t.click(Selector('button[data-test-id="test-add-vector-element-button"]'))
+    await t.click(Selector('button[data-test-id="test-add-vector-element-button"]:not([inert] *)'))
 })
 
 mapper(() => test)('add non-custom elements to vector', { code: 'pMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     await toggleCustomScript(t)
     await checkTextboxesDirect(t, ['Insets'])
     await replaceInput(t, 'Iceland', 'Custom Inset', 1)
-    await t.click(Selector('button[data-test-id="test-add-vector-element-button"]'))
+    await t.click(Selector('button[data-test-id="test-add-vector-element-button"]:not([inert] *)'))
+})
+
+mapper(() => test)('custom ramp can be rebuilt after deleting all elements', { code: 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    await t.resizeWindow(2200, 1600)
+    await waitForLoading()
+    await toggleCustomScript(t)
+    await replaceInput(t, 'Uridis', 'Custom Ramp')
+
+    const rampVectorEditor = Selector('#auto-ux-editor-ro_ramp_pos_0:not([inert] *)')
+    const removeElementButton = rampVectorEditor.find('button[title="Remove element"]')
+    while (await removeElementButton.count > 0) {
+        const button = removeElementButton.nth((await removeElementButton.count) - 1)
+        await t.scrollIntoView(button)
+        await t.click(button)
+    }
+    await t.expect(removeElementButton.count).eql(0)
+    await t.wait(250)
+
+    const addElementButton = rampVectorEditor.find('button[data-test-id="test-add-vector-element-button"]')
+    await t.expect(addElementButton.exists).ok()
+    await t.scrollIntoView(addElementButton)
+    await t.click(addElementButton)
+    await t.wait(250)
+    await t.scrollIntoView(addElementButton)
+    await t.click(addElementButton)
+
+    const valueInputs = rampVectorEditor.find('input[placeholder="Enter number"]')
+    await t.expect(valueInputs.count).eql(2)
+    await t.click(valueInputs.nth(1))
+    await t.selectText(valueInputs.nth(1))
+    await t.typeText(valueInputs.nth(1), '1')
+    await t.pressKey('enter')
+
+    await toggleCustomScript(t)
+    const code = await getCodeFromMainField()
+    await t.expect(code).contains('constructRamp([')
+    await t.expect(code).contains('{value: 0, color: colorBlack}')
+    await t.expect(code).contains('{value: 1, color: colorBlack}')
+    await t.expect(getErrors()).eql([])
+})
+
+mapper(() => test)('custom ramp intermediate deletions keep code valid', { code: 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    await t.resizeWindow(2200, 1600)
+    await waitForLoading()
+    if (await checkSelector(/^Enable custom script/).checked) {
+        await toggleCustomScript(t)
+    }
+    await replaceInput(t, 'Uridis', 'Custom Ramp')
+
+    const rampVectorEditor = Selector('#auto-ux-editor-ro_ramp_pos_0:not([inert] *)')
+    const removeElementButton = rampVectorEditor.find('button[title="Remove element"]')
+    await t.expect(removeElementButton.count).eql(5)
+
+    for (let i = 0; i < 3; i++) {
+        const middleButton = removeElementButton.nth(1)
+        await t.scrollIntoView(middleButton)
+        await t.click(middleButton)
+    }
+
+    await toggleCustomScript(t)
+    const code = await getCodeFromMainField()
+    await t.expect(code).eql(`cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=constructRamp([
+        {value: 0, color: rgb(0.592, 0.353, 0.765)},
+        {value: 1, color: rgb(0.722, 0.639, 0.184)}
+    ])
+)
+`)
+    await t.expect(getErrors()).eql([])
+})
+
+mapper(() => test)('label resize sync', { code: `cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampGistRainbow,
+    textBoxes=[
+        textBox(
+            screenBounds={north: 0.75, east: 0.75, south: 0.25, west: 0.25},
+            text=rtfDocument([rtfString("some text\\n")]),
+            backgroundColor=rgb(1, 0.973, 0.941),
+            borderColor=rgb(0.2, 0.2, 0.2),
+            borderWidth=1
+        )
+    ]
+)` }, async (t) => {
+    await t.resizeWindow(400, 800)
+    await toggleCustomScript(t)
+    await t.eval(() => {
+        const textArea: HTMLTextAreaElement = document.querySelector('textarea:not([inert] *)')!
+        textArea.style.height = '200px'
+    })
+    await t.expect(ClientFunction(() => {
+        const addElementButton = Array.from(document.querySelectorAll('[data-test-id="test-add-vector-element-button"]:not([inert] *)')).pop()!
+        const exportPngButton = Array.from(document.querySelectorAll('button:not([inert] *)')).find(button => button.textContent === 'Export as PNG')!
+        return addElementButton.getBoundingClientRect().bottom < exportPngButton.getBoundingClientRect().top
+    })()).ok()
 })
 
 // Tests for Convert to Table button
@@ -270,4 +368,54 @@ mapper(() => test)('convert mapper to table and back preserves fields', { code: 
 )
 `
     await t.expect(code).eql(expectedCode)
+})
+
+mapper(() => test)('deprecation warning for deprecated transportation statistic', { code: 'pMap(data=commute_walk_incl_wfh, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    const warning = 'Deprecated: Use commute_walk (Commute Walk %) instead, which excludes work-from-home from the denominator and is more accurate for comparisons'
+    await waitForLoading()
+    await t.expect(getErrors()).eql([`${warning} at 1:11-31`])
+    await toggleCustomScript(t)
+    await waitForLoading()
+    await t.expect(getErrors()).eql([warning])
+})
+
+mapper(() => test)('deprecation warning for deprecated weather statistic', { code: 'pMap(data=high_temp_fall, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    const warning = 'Deprecated: Use high_temp_son (Mean high temperature in Sep/Oct/Nov) instead, which uses month-based seasons instead and is valid in the southern hemisphere'
+    await toggleCustomScript(t)
+    await t.expect(getErrors()).eql([warning])
+})
+
+mapper(() => test)('preamble checkbox stays checked when preamble is cleared', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    const preamble = checkSelector(/^Preamble/)
+    await t.expect(preamble.checked).notOk()
+    await t.click(preamble)
+    await t.expect(preamble.checked).ok()
+
+    // Type some preamble code
+    await typeInEditor(t, 0, 'myVar = 42', true)
+    await t.expect(preamble.checked).ok()
+
+    // Clear the preamble via backspace (ctrl+a backspace in helper)
+    await typeInEditor(t, 0, '', true)
+    await t.expect(preamble.checked).ok()
+
+    // Undo should not unexpectedly uncheck the preamble
+    await t.pressKey('ctrl+z')
+    await t.expect(preamble.checked).ok()
+})
+
+mapper(() => test)('autoux reorder insets', { universe: 'USA', code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    await t.click(checkSelector(/Insets/))
+    await t.scrollIntoView(dragHandle(4))
+    await t.dragToElement(dragHandle(0), dragHandle(4))
+    const insets = ClientFunction(() => Array.from(document.querySelectorAll('[id^="auto-ux-editor-ro_insets_pos_0_el_"]:not([inert] *) input[type="text"]')).map(input => (input as HTMLInputElement).value))
+    await t.expect(insets()).eql(['Guam', 'Puerto Rico + USVI', 'Hawaii', 'Alaska', 'Continental USA'])
+    await t.dragToElement(dragHandle(3), dragHandle(2))
+    await t.expect(insets()).eql(['Guam', 'Puerto Rico + USVI', 'Alaska', 'Hawaii', 'Continental USA'])
+})
+
+mapper(() => test)('assignments displayed on error result', { code: 'x=1' }, async (t) => {
+    await t.hover(Selector('span').withText(/^x/))
+    await t.wait(1000)
+    await t.expect(Selector('pre').withExactText('1').count).eql(1)
 })

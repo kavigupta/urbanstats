@@ -1,0 +1,19 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "test/scripts/save-durations.ts",
+    "test/**/*.test.ts",
+    "unit/**/*.test.ts"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "test/**/*.{ts,tsx}",
+    "unit/**/*.{ts,tsx}"
+  ],
+  "ignore": [
+    "src/data/**",
+    "src/utils/protos.d.ts",
+    "src/utils/urbanstats-persistent-data.d.ts",
+    "src/utils/google-drive.d.ts"
+  ]
+}

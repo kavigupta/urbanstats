@@ -3,13 +3,39 @@ import React, { ReactNode } from 'react'
 import { formatToSignificantFigures, separateNumber } from '../utils/text'
 import { UnitType } from '../utils/unit'
 
-import { ElectionResult } from './display-stats'
+import { ElectionResult, GenericPartyChange, GenericPartyPercentage, LeftMargin } from './display-stats'
+
+type RenderInequality = (value: number, inequality: 'leq' | 'geq') => string
 
 export interface UnitDisplay {
     renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
         value: ReactNode
         unit: ReactNode
     }
+    renderInequality: RenderInequality
+}
+
+// Default render inequality
+const renderInequality: RenderInequality = (value, inequality) => {
+    switch (inequality) {
+        case 'leq':
+            return '\u2264' /* ≤ */
+        case 'geq':
+            return '\u2265' /* ≥ */
+    }
+}
+
+const renderMarginInequality: RenderInequality = (value, inequality) => {
+    // Negative values actually display as positive for election results, and default to R for 0, which means that greater than 0 is less than R margin
+    if (value <= 0) {
+        switch (inequality) {
+            case 'geq':
+                return renderInequality(value, 'leq')
+            case 'leq':
+                return renderInequality(value, 'geq')
+        }
+    }
+    return renderInequality(value, inequality)
 }
 
 export function getUnitDisplay(unitType: UnitType): UnitDisplay {
@@ -22,6 +48,24 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>%</span>,
                     }
                 },
+                renderInequality,
+            }
+        case 'percentageChange':
+            return {
+                renderValue: (value: number) => {
+                    const displayValue = (value * 100).toFixed(2)
+                    const sign = value >= 0 ? '+' : ''
+                    return {
+                        value: (
+                            <span>
+                                {sign}
+                                {displayValue}
+                            </span>
+                        ),
+                        unit: <span>%</span>,
+                    }
+                },
+                renderInequality,
             }
         case 'fatalities':
             return {
@@ -31,6 +75,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>&nbsp;</span>,
                     }
                 },
+                renderInequality,
             }
         case 'fatalitiesPerCapita':
             return {
@@ -40,6 +85,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>/100k</span>,
                     }
                 },
+                renderInequality,
             }
         case 'density':
             return {
@@ -68,6 +114,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         ),
                     }
                 },
+                renderInequality,
             }
         case 'population':
             return {
@@ -97,6 +144,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         }
                     }
                 },
+                renderInequality,
             }
         case 'area':
             return {
@@ -156,6 +204,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit,
                     }
                 },
+                renderInequality,
             }
         case 'distanceInKm':
             return {
@@ -171,6 +220,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit,
                     }
                 },
+                renderInequality,
             }
         case 'distanceInM':
             return {
@@ -186,6 +236,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>{unitName}</span>,
                     }
                 },
+                renderInequality,
             }
         case 'democraticMargin':
             return {
@@ -195,6 +246,51 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>%</span>,
                     }
                 },
+                renderInequality: renderMarginInequality,
+            }
+        case 'partyPctBlue':
+        case 'partyPctRed':
+        case 'partyPctOrange':
+        case 'partyPctTeal':
+        case 'partyPctGreen':
+        case 'partyPctPurple': {
+            const capturedUnitType = unitType
+            return {
+                renderValue: (value: number) => {
+                    return {
+                        value: <GenericPartyPercentage value={value} unitType={capturedUnitType} />,
+                        unit: <span>%</span>,
+                    }
+                },
+                renderInequality,
+            }
+        }
+        case 'partyChangeBlue':
+        case 'partyChangeRed':
+        case 'partyChangeOrange':
+        case 'partyChangeTeal':
+        case 'partyChangeGreen':
+        case 'partyChangePurple': {
+            const capturedUnitType = unitType
+            return {
+                renderValue: (value: number) => {
+                    return {
+                        value: <GenericPartyChange value={value} unitType={capturedUnitType} />,
+                        unit: <span>%</span>,
+                    }
+                },
+                renderInequality,
+            }
+        }
+        case 'leftMargin':
+            return {
+                renderValue: (value: number) => {
+                    return {
+                        value: <LeftMargin value={value} />,
+                        unit: <span>%</span>,
+                    }
+                },
+                renderInequality: renderMarginInequality,
             }
         case 'temperature':
             return {
@@ -210,6 +306,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit,
                     }
                 },
+                renderInequality,
             }
         case 'time':
             return {
@@ -227,6 +324,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>&nbsp;</span>,
                     }
                 },
+                renderInequality,
             }
         case 'distancePerYear':
             return {
@@ -247,6 +345,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         ),
                     }
                 },
+                renderInequality,
             }
         case 'contaminantLevel':
             return {
@@ -261,6 +360,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         ),
                     }
                 },
+                renderInequality,
             }
         case 'number':
             return {
@@ -270,6 +370,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         unit: <span>&nbsp;</span>,
                     }
                 },
+                renderInequality,
             }
         case 'usd':
             return {
@@ -319,6 +420,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         }
                     }
                 },
+                renderInequality,
             }
         case 'minutes':
             return {
@@ -345,55 +447,80 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                         }
                     }
                 },
+                renderInequality,
             }
     }
 }
 
-export function classifyStatistic(statname: string): UnitType {
-    if (statname.includes('%') || statname.includes('Change') || statname.includes('(Grade)')) {
-        return 'percentage'
+export function getUnit(unit: UnitType): ReactNode {
+    switch (unit) {
+        case 'percentage':
+        case 'percentageChange':
+            return <span>%</span>
+        case 'fatalities':
+            return <span>fatalities</span>
+        case 'fatalitiesPerCapita':
+            return <span>fatalities per capita</span>
+        case 'density':
+            return (
+                <span>
+                    people per&nbsp;km
+                    <sup>2</sup>
+                </span>
+            )
+        case 'population':
+            return <span>people</span>
+        case 'area':
+            return (
+                <span>
+                    km
+                    <sup>2</sup>
+                </span>
+            )
+        case 'distanceInKm':
+            return <span>km</span>
+        case 'distanceInM':
+            return <span>m</span>
+        case 'democraticMargin':
+            return <span>% margin</span>
+        case 'temperature':
+            return <span>&deg;F</span>
+        case 'time':
+            return <span>time</span>
+        case 'distancePerYear':
+            return (
+                <span>
+                    m/yr
+                </span>
+            )
+        case 'contaminantLevel':
+            return (
+                <span>
+                    &mu;g/m
+                    <sup>3</sup>
+                </span>
+            )
+        case 'number':
+            return <span>&nbsp;</span>
+        case 'usd':
+            return <span>$</span>
+        case 'minutes':
+            return <span>minutes</span>
+        case 'partyPctBlue':
+        case 'partyPctRed':
+        case 'partyPctOrange':
+        case 'partyPctTeal':
+        case 'partyPctGreen':
+        case 'partyPctPurple':
+            return <span>%</span>
+        case 'partyChangeBlue':
+        case 'partyChangeRed':
+        case 'partyChangeOrange':
+        case 'partyChangeTeal':
+        case 'partyChangeGreen':
+        case 'partyChangePurple':
+            return <span>% change</span>
+        case 'leftMargin':
+            return <span>% left margin</span>
     }
-    if (statname.includes('Total') && statname.includes('Fatalities')) {
-        return 'fatalities'
-    }
-    if (statname.includes('Fatalities Per Capita')) {
-        return 'fatalitiesPerCapita'
-    }
-    if (statname.includes('Density')) {
-        return 'density'
-    }
-    if (statname.includes('Elevation')) {
-        return 'distanceInM'
-    }
-    if (statname.startsWith('Population')) {
-        return 'population'
-    }
-    if (statname === 'Area') {
-        return 'area'
-    }
-    if (statname.includes('Mean distance')) {
-        return 'distanceInKm'
-    }
-    if (statname.includes('Election') || statname.includes('Swing')) {
-        return 'democraticMargin'
-    }
-    if (statname.includes('high temp') || statname.includes('low temp') || statname.includes('high heat index') || statname.includes('dewpt')) {
-        return 'temperature'
-    }
-    if (statname === 'Mean sunny hours') {
-        return 'time'
-    }
-    if (statname === 'Rainfall' || statname === 'Snowfall [rain-equivalent]') {
-        return 'distancePerYear'
-    }
-    if (statname.includes('Pollution')) {
-        return 'contaminantLevel'
-    }
-    if (statname.includes('(USD)')) {
-        return 'usd'
-    }
-    if (statname.includes('(min)')) {
-        return 'minutes'
-    }
-    return 'number'
 }

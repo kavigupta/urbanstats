@@ -143,5 +143,6 @@ export const constructTextBoxValue: USSValue = {
         longDescription: 'Create a text box on the map with specified screen bounds (bounding box of the inset on the screen, where bottom left corner has (0, 0) and top right corner has (1, 1))',
         selectorRendering: { kind: 'subtitleLongDescription' },
         customConstructor: true,
+        isDefault: true,
     },
 } satisfies USSValue

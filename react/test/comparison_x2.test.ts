@@ -9,6 +9,8 @@ const japan = 'Japan'
 const indonesia = 'Indonesia'
 const brazil = 'Brazil'
 
+const sortableButton = Selector('[role="button"][aria-roledescription="sortable"]')
+
 urbanstatsFixture('drag and drop basic reordering', comparisonPage([china, usa, japan]))
 
 test('drag and drop basic reordering desktop', async (t) => {
@@ -30,8 +32,8 @@ urbanstatsFixture('drag and drop transpose mode', `${target}/comparison.html?lon
 test('drag and drop transpose mode desktop', async (t) => {
     await screencap(t)
 
-    const firstHeader = Selector('[role="button"]').nth(0)
-    const secondHeader = Selector('[role="button"]').nth(1)
+    const firstHeader = sortableButton.nth(0)
+    const secondHeader = sortableButton.nth(1)
 
     await t.dragToElement(firstHeader, secondHeader)
 
@@ -48,8 +50,8 @@ test('drag and drop multiple reorderings', async (t) => {
 
     await screencap(t)
 
-    const chinaHeader = Selector('[role="button"]').nth(0)
-    const brazilHeader = Selector('[role="button"]').nth(4)
+    const chinaHeader = sortableButton.nth(0)
+    const brazilHeader = sortableButton.nth(4)
 
     await t.dragToElement(chinaHeader, brazilHeader)
 
@@ -58,8 +60,8 @@ test('drag and drop multiple reorderings', async (t) => {
     await t.expect(getLocationWithoutSettings())
         .eql(comparisonPage([usa, japan, indonesia, brazil, china]))
 
-    const japanHeader = Selector('[role="button"]').nth(1)
-    const usaHeader = Selector('[role="button"]').nth(0)
+    const japanHeader = sortableButton.nth(1)
+    const usaHeader = sortableButton.nth(0)
 
     await t.dragToElement(japanHeader, usaHeader)
 

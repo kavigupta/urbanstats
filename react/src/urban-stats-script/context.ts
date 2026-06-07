@@ -47,6 +47,10 @@ export class Context {
         return this.#variables.entries()
     }
 
+    constantEntries(): IterableIterator<[string, USSValue]> {
+        return this.#constants.entries()
+    }
+
     evolveVariables(variables: Map<string, USSValue>): Context {
         return new Context(
             this.#effect,

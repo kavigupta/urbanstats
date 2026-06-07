@@ -38,6 +38,14 @@ mapper(() => test)('manipulate insets', { code: 'cMap(data=density_pw_1km, scale
     )
 })
 
+mapper(() => test)('cluster map enable insets', { code: 'clusterMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    await toggleCustomScript(t)
+    await t.expect(getErrors()).eql([])
+    await checkBox(t, /^Insets/)
+    await t.expect(getErrors()).eql([])
+    await screencap(t, { removeEntireMap: false })
+})
+
 const errorInSubfield = (testFn: () => TestFn) => (category: string, errorCausingCode: string, error: string): void => {
     mapper(testFn)(`${category} error in subfield`, { code: 'cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
         await toggleCustomScript(t)
@@ -45,7 +53,7 @@ const errorInSubfield = (testFn: () => TestFn) => (category: string, errorCausin
         await replaceInput(t, 'Linear Scale', 'Custom Expression')
         await typeInEditor(t, 0, errorCausingCode, true)
         await t.expect(getErrors()).eql([error])
-        await screencap(t)
+        await screencap(t, { removeEntireMap: false })
     })
 }
 
@@ -60,7 +68,7 @@ const errorInSubsubfield = (testFn: () => TestFn) => (category: string, errorCau
         await replaceInput(t, 'Constant', 'Custom Expression')
         await typeInEditor(t, 0, errorCausingCode, true)
         await t.expect(getErrors()).eql([error])
-        await screencap(t)
+        await screencap(t, { removeEntireMap: false })
     })
 }
 
@@ -203,7 +211,7 @@ mapper(() => test)('custom ramp', { code: 'customNode("");\ncondition (true)\ncM
     // eslint-disable-next-line no-restricted-syntax -- Test color
     await t.typeText(Selector('input[type="color"]:not([inert] *)'), '#ff0000')
     await replaceInput(t, '0.353', '1')
-    await screencap(t, { selector: Selector('#auto-ux-editor-ro_ramp') })
+    await screencap(t, { selector: Selector('#auto-ux-editor-ro_ramp'), removeEntireMap: false })
     await replaceInput(t, 'Custom Ramp', 'Custom Expression')
     await t.expect(nthEditor(0).textContent).eql(`constructRamp([
     {value: 0, color: rgb(1, 0, 0)},
@@ -236,6 +244,26 @@ mapper(() => test)('do not re quote when selecting custom expression again', { c
     await t.pressKey('ctrl+z')
     await t.expect(getInput('Uridis').exists).ok()
 })
+
+for (const [typedValue, errorCase, inCode, simplifiedValue] of [['0.001', false, '0.001', '0.001'], ['23.000', false, '23', '23'], ['23a', true, 'toNumber("23a")', '23a']] as const) {
+    mapper(() => test)(`${typedValue} through custom expression toggle to ${simplifiedValue}`, { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+        const messages = errorCase ? ['Error while executing function: Error: Expected a number or a string that can be converted to a number, got 23a'] : []
+        await checkBox(t, /^max/)
+        await replaceInput(t, '0', typedValue)
+        await t.expect(getErrors()).eql(messages)
+        if (errorCase) {
+            await screencap(t, { removeEntireMap: false })
+        }
+        await toggleCustomScript(t)
+        await t.expect(nthEditor(0).textContent).contains(inCode)
+        await toggleCustomScript(t)
+        if (errorCase) {
+            await screencap(t, { removeEntireMap: false })
+        }
+        await t.expect(getErrors()).eql(messages)
+        await t.expect(getInput(simplifiedValue).exists).ok()
+    })
+}
 
 mapper(() => test)('selection preserved on reload', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=constructRamp([{value: 0, color: rgb(customNode("\\"abc\\""), 0.353, 0.765)}, {value: 0.25, color: rgb(0.353, 0.49, 0.765)}, {value: 0.5, color: rgb(0.027, 0.647, 0.686)}, {value: 0.75, color: rgb(0.541, 0.765, 0.353)}, {value: 1, color: rgb(0.722, 0.639, 0.184)}]))' }, async (t) => {
     async function checkErrors(): Promise<void> {
@@ -316,7 +344,7 @@ mapper(() => test)('custom rendering for selector options', { code: 'customNode(
     const inputSelector = getInput('Uridis')
     await t.typeText(inputSelector, 'Custom', { replace: true })
     await t.hover(Selector('div').withExactText('Autumn'))
-    await screencap(t, { fullPage: false, selector: Selector('#auto-ux-editor-ro_ramp:not([inert] *)') })
+    await screencap(t, { fullPage: false, selector: Selector('#auto-ux-editor-ro_ramp:not([inert] *)'), removeEntireMap: false })
 })
 
 const expectedExportOutput = `meta(kind="mapper", universe="USA", geographyKind="Urban Area")
@@ -368,6 +396,11 @@ mapper(() => test)('import', { code: 'customNode("");\ncondition (true)\ncMap(da
 mapper(() => test)('disable basemap', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, basemap=osmBasemap())', universe: 'USA', geo: 'Subnational Region' }, async (t) => {
     await replaceInput(t, 'OSM Basemap', 'No Basemap')
     await downloadPNG(t)
+})
+
+mapper(() => test)('disable basemap labels', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis, basemap=osmBasemap())', universe: 'USA', geo: 'Subnational Region' }, async (t) => {
+    await checkBox(t, /Disable Basemap Labels/)
+    await t.expect(Selector('#auto-ux-editor-ro_basemap_noLabels input').value).eql('true')
 })
 
 mapper(() => test)('preamble checkbox syncs with undo/redo operations', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {

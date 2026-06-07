@@ -1,6 +1,16 @@
 import numpy as np
 import shapely
+import shapely.ops
+import tqdm.auto as tqdm
 from permacache import permacache, stable_hash
+
+# Per-resolution row offsets that align the working grid with the
+# global population raster.
+# This is necessary because the population raster doesn't start at the north pole
+ROW_OFFSET = {
+    1200: 1089,
+    120: 1,
+}
 
 
 def to_col_idx(lon, resolution):
@@ -22,7 +32,8 @@ def to_row_idx(lat, resolution):
     :param resolution: Resolution of the grid, as pixels per degree.
     :return: Row index corresponding to the given latitude.
     """
-    return (90 - lat) * resolution
+    base = (90 - lat) * resolution
+    return base - ROW_OFFSET[resolution]
 
 
 def from_row_idx(row, resolution):
@@ -33,7 +44,21 @@ def from_row_idx(row, resolution):
     :param resolution: Resolution of the grid, as pixels per degree.
     :return: Latitude value corresponding to the given row index.
     """
-    return 90 - row / resolution
+    return 90 - (row + ROW_OFFSET[resolution]) / resolution
+
+
+def safe_intersection(multilines, shape):
+    try:
+        return multilines.intersection(shape)
+    except shapely.errors.GEOSException:
+        pass
+    shape = shapely.make_valid(shape)
+    try:
+        return multilines.intersection(shape)
+    except shapely.errors.GEOSException:
+        pass
+    shape = shape.buffer(0)
+    return multilines.intersection(shape)
 
 
 @permacache(
@@ -54,8 +79,10 @@ def rasterize_using_lines(shape, resolution):
                 iff
             exists i st lat_start[i] == to_row_idx(y, res) and lon_start[i] <= to_col_idx(x, res) <= lon_end[i]
     """
+    if shape.is_empty:
+        return [], [], []
     multilines = compute_multilines(shape, resolution)
-    intersections = multilines.intersection(shape)
+    intersections = safe_intersection(multilines, shape)
     if isinstance(intersections, shapely.geometry.LineString):
         intersections = [intersections]
     elif isinstance(
@@ -85,15 +112,11 @@ def rasterize_using_lines(shape, resolution):
     lon_start = lon_start[mask]
     lon_end = lon_end[mask]
     # see notebooks/gpw-alignment.ipynb to confirm these are correct.
-    if resolution == 1200:
-        # 60 * 60 * 180 // 3 - global_map.shape[0] = 2178, half of this is 1089
-        rows = rows - 1089
-    elif resolution == 120:
-        rows = rows - 1
     return rows, lon_start, lon_end
 
 
 def compute_multilines(shape, resolution):
+    assert not shape.is_empty, "Shape is empty"
     # Get the bounds of the shape
     minx, miny, maxx, maxy = shape.bounds
     minx -= 1 / resolution
@@ -102,12 +125,10 @@ def compute_multilines(shape, resolution):
     maxy += 1 / resolution
 
     # flipped because the grid is flipped
-    yidxs = np.arange(
-        min(to_row_idx(miny, resolution) + 1, 180 * resolution - 1),
-        max(to_row_idx(maxy, resolution), 0) - 1,
-        -1,
-        dtype=np.int32,
-    )
+    top = min(to_row_idx(miny, resolution) + 1, 180 * resolution - 1)
+    bot = max(to_row_idx(maxy, resolution), 0)
+    assert top >= bot, f"Invalid bounds: {minx}, {miny}, {maxx}, {maxy}"
+    yidxs = np.arange(top, bot - 1, -1, dtype=np.int32)
 
     # place the lines in the middle of the pixels
     ys = from_row_idx(yidxs + 0.5, resolution)
@@ -122,7 +143,9 @@ def exract_raster_points(
     if len(lats) == 0:
         return np.array([], dtype=np.int32), np.array([], dtype=np.int32)
     row_selected_all, col_selected_all = [], []
-    for i in range(0, len(lats), chunk_size):
+    for i in tqdm.trange(
+        0, len(lats), chunk_size, desc="Extracting raster points", delay=10
+    ):
         row_selected = np.concatenate(
             [
                 np.repeat(np.int32(row_idx), lon_end - lon_start + 1)
@@ -141,9 +164,10 @@ def exract_raster_points(
                 )
             ]
         )
-        mask = require_positive_in[row_selected, col_selected] > 0
-        row_selected = row_selected[mask]
-        col_selected = col_selected[mask]
+        if require_positive_in is not None:
+            mask = require_positive_in[row_selected, col_selected] > 0
+            row_selected = row_selected[mask]
+            col_selected = col_selected[mask]
         row_selected_all.append(row_selected)
         col_selected_all.append(col_selected)
     row_selected_all, col_selected_all = np.concatenate(

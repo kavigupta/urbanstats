@@ -1,4 +1,4 @@
-import { Selector } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
 import { checkCode, getSelectionAnchor, getSelectionFocus, nthEditor, result, selectionIsNthEditor, typeTextWithKeys } from './editor_test_utils'
 import { safeReload, screencap, target, urbanstatsFixture } from './test_utils'
@@ -76,6 +76,51 @@ test('deletes whole indent', async (t) => {
     await t.click(nthEditor(0))
     await typeTextWithKeys(t, 'if (true) {\n\t"hello"\n}⬆➡➡➡\b')
     await t.expect(nthEditor(0).textContent).eql('if (true) {\n"hello"\n}\n')
+})
+
+test('enter inserts newline', async (t) => {
+    await t.click(nthEditor(0))
+    await typeTextWithKeys(t, '1 + 2\n3 + 4')
+    await t.expect(nthEditor(0).textContent).eql('1 + 2\n3 + 4\n')
+    await t.expect(result.textContent).eql('7')
+})
+
+test('backspace deletes newline', async (t) => {
+    await t.click(nthEditor(0))
+    await typeTextWithKeys(t, '"hi"\n"there"')
+    await t.expect(nthEditor(0).textContent).eql('"hi"\n"there"\n')
+    // Move to start of second line and backspace to join lines
+    await t.pressKey('home')
+    await t.pressKey('backspace')
+    await t.expect(nthEditor(0).textContent).eql('"hi""there"\n')
+})
+
+test('backspace deletes selection spanning newline', async (t) => {
+    await t.click(nthEditor(0))
+    await typeTextWithKeys(t, '"ab"\n"cd"')
+    // Chaining doesn't work correctly here
+    for (const key of 'left left shift+left shift+left shift+left shift+left shift+left backspace'.split(' ')) {
+        await t.pressKey(key)
+    }
+    await t.expect(nthEditor(0).textContent).eql('"ad"\n')
+})
+
+test('delete removes newline forward', async (t) => {
+    await t.click(nthEditor(0))
+    await typeTextWithKeys(t, '"ab"\n"cd"')
+    // Move to end of first line and press delete
+    await typeTextWithKeys(t, '⌂⬆␃⌦')
+    await t.expect(nthEditor(0).textContent).eql('"ab""cd"\n')
+})
+
+test('delete removes selection spanning newline', async (t) => {
+    await t.click(nthEditor(0))
+    await typeTextWithKeys(t, '"ab"\n"cd"')
+    // Chaining doesn't work correctly here
+    for (const key of 'left left shift+left shift+left shift+left shift+left shift+left delete'.split(' ')) {
+        await t.pressKey(key)
+    }
+    await t.expect(nthEditor(0).textContent).eql('"ad"\n')
 })
 
 test('autocomplete pi with enter', async (t) => {
@@ -207,4 +252,37 @@ test('show documentation popover', async (t) => {
     // Continuing to type should reopen autocomplete
     await typeTextWithKeys(t, 'n')
     await t.expect(Selector('div').withExactText('colorPink').exists).ok() // Autocomplete menu
+})
+
+test('show values of constants and variables in popovers', async (t) => {
+    await t.click(nthEditor(0))
+    await typeTextWithKeys(t, 'tau = 2 * pi')
+
+    await t.hover(Selector('span').withText(/^pi/))
+    await t.wait(1000)
+
+    // Value of pi should show up in the docs, and we should be able to select it
+    await t.expect(ClientFunction(() => {
+        const divs = Array.from(document.querySelectorAll('pre'))
+        for (const div of divs) {
+            if (div.textContent === '3.141592653589793') {
+                const range = document.createRange()
+                range.selectNodeContents(div)
+                const selection = window.getSelection()!
+                selection.removeAllRanges()
+                selection.addRange(range)
+                return window.getSelection()?.toString() === '3.141592653589793'
+            }
+        }
+        return false
+    })()).ok()
+
+    await t.hover(nthEditor(0))
+
+    // We should also be able to inspect the value of tau
+    await t.hover(Selector('span').withText(/^tau/))
+    await t.wait(1000)
+
+    // There should be 3 onscreen (2 editors, one popover)
+    await t.expect(Selector('pre').withExactText('6.283185307179586').count).eql(3)
 })

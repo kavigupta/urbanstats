@@ -1,10 +1,10 @@
 import Color from 'color'
-import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
-import { Basemap as BasemapComponent, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
-import { screencapElement, ScreenshotContext } from '../components/screenshot'
+import { Basemap as BasemapComponent, CommonMaplibreMap, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
+import { screencapElement, ScreenshotContext, ScreenshotContextType, withScreenshotMode } from '../components/screenshot'
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
@@ -13,69 +13,56 @@ import { consolidatedShapeLink, indexLink } from '../navigation/links'
 import { RelativeLoader } from '../navigation/loading'
 import { Colors, colorThemes } from '../page_template/color-themes'
 import { OverrideTheme, useColors } from '../page_template/colors'
+import { ClusterScaleProvider } from '../syau/cluster-scale-context'
 import { loadCentroids } from '../syau/load'
+import { ClusterMap as SyauClusterMap } from '../syau/syau-cluster-map'
 import { Universe } from '../universe'
 import { getAllParseErrors } from '../urban-stats-script/ast'
 import { doRender } from '../urban-stats-script/constants/color-utils'
 import { Inset } from '../urban-stats-script/constants/insets'
+import { CommonMap } from '../urban-stats-script/constants/map'
 import { instantiate } from '../urban-stats-script/constants/scale'
 import { TextBox } from '../urban-stats-script/constants/text-box'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { USSOpaqueValue } from '../urban-stats-script/types-values'
-import { executeAsync } from '../urban-stats-script/workerManager'
+import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
 import { loadImage } from '../utils/Image'
 import { editIndex, EditSeq } from '../utils/array-edits'
 import { furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
 import { ConsolidatedShapes, Feature, ICoordinate } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
-import { useOrderedResolve } from '../utils/useOrderedResolve'
+import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
 import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar'
 import { InsetMap } from './components/InsetMap'
 import { AddTextBox, MapTextBoxComponent } from './components/MapTextBox'
 import { loadInsets } from './context'
-import { splitLayoutContext } from './settings/EditMapperPanel'
 import { Basemap, computeUSS, MapSettings } from './settings/utils'
 
 const mapUpdateInterval = 500
 
 export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): MapGenerator {
     const cache = useRef<MapCache>({})
-    const updateTime = useRef(Date.now())
 
-    const [currentGenerator, setCurrentGenerator] = useState<Promise<MapGenerator<{ loading: boolean }>>>(() => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator: undefined }))
+    const compute = useCallback((previousGenerator: () => Promise<MapGenerator<{ loading: boolean }>>) => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator }), [mapSettings])
 
-    useEffect(() => {
-        const timeSinceMapUpdate = Date.now() - updateTime.current
-        if (timeSinceMapUpdate > mapUpdateInterval) {
-            updateTime.current = Date.now()
-            setCurrentGenerator(previousGenerator => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator }))
-            return
-        }
-        else {
-            updateTime.current = Date.now()
-            const timeout = setTimeout(() => {
-                setCurrentGenerator(previousGenerator => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator }))
-            }, mapUpdateInterval - timeSinceMapUpdate)
-            return () => {
-                clearTimeout(timeout)
-            }
-        }
-    }, [mapSettings]) // Do not change this effect list!!
-
-    const { result, loading } = useOrderedResolve(currentGenerator)
-
-    return result !== undefined
-        ? {
-                ...result,
-                ui: props => result.ui({ ...props, loading }),
-            }
-        : {
-                ui: () => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
+    return useDebouncedResolve(
+        compute,
+        {
+            interval: mapUpdateInterval,
+            initial: {
+                ui: ({ loading }) => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
                 errors: [],
-            }
+                assignments: new Map(),
+            },
+            ui: (generator, loading) => ({
+                ...generator,
+                ui: props => generator.ui({ ...props, loading }),
+            }),
+        },
+    )
 }
 
 type MapUIProps<T> = T & ({ mode: 'view' } | { mode: 'uss' } | { mode: 'insets', editInsets: EditSeq<Inset> } | { mode: 'textBoxes', editTextBoxes: EditSeq<TextBox> })
@@ -85,15 +72,15 @@ export interface MapGenerator<T = unknown> {
     exportGeoJSON?: () => string
     exportCSV?: CSVExportData
     errors: EditorError[]
+    assignments: AssignmentsResult
 }
 
-async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { mapSettings: MapSettings, cache: MapCache, previousGenerator: Promise<MapGenerator<{ loading: boolean }>> | undefined }): Promise<MapGenerator<{ loading: boolean }>> {
-    const emptyMap = ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> })
-
+async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { mapSettings: MapSettings, cache: MapCache, previousGenerator: () => Promise<MapGenerator<{ loading: boolean }>> }): Promise<MapGenerator<{ loading: boolean }>> {
     if (mapSettings.geographyKind === undefined || mapSettings.universe === undefined) {
         return {
-            ui: emptyMap,
+            ui: ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
             errors: [{ kind: 'error', type: 'error', value: 'Select a Universe and Geography Kind', location: noLocation }],
+            assignments: new Map(),
         }
     }
 
@@ -101,10 +88,9 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
     const parseErrors = getAllParseErrors(stmts)
     if (parseErrors.length > 0) {
-        const prev = await previousGenerator
+        const prev = await previousGenerator()
         return {
             ...prev,
-            ui: prev?.ui ?? emptyMap,
             errors: parseErrors.map(e => ({ ...e, kind: 'error' })),
         }
     }
@@ -112,10 +98,10 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
     const execResult = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: mapSettings.geographyKind, universe: mapSettings.universe }, stmts })
 
     if (execResult.resultingValue === undefined) {
-        const prev = await previousGenerator
+        const prev = await previousGenerator()
         return {
             ...prev,
-            ui: prev?.ui ?? emptyMap,
+            assignments: execResult.assignments,
             errors: execResult.error,
         }
     }
@@ -123,7 +109,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
     const mapResultMain = execResult.resultingValue.value
 
     const csvExportCallback: CSVExportData = () => {
-        const csvData = generateMapperCSVData(mapResultMain, execResult.context)
+        const csvData = generateMapperCSVData(mapResultMain, execResult.assignments)
         const csvFilename = `${mapSettings.geographyKind}-${mapSettings.universe}-data.csv`
         return {
             csvData,
@@ -131,7 +117,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         }
     }
 
-    const { features, mapChildren, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache })
+    const { features, mapComponentCreator, ramp } = await loadMapResult({ mapResultMain, universe: mapSettings.universe, geographyKind: mapSettings.geographyKind, cache })
 
     function MapComponent({ props, exportImageRef }: { props: MapUIProps<{ loading: boolean }>, exportImageRef: (fn: () => Promise<HTMLCanvasElement>) => void }): ReactNode {
         const mapsRef: (MapRef | null)[] = []
@@ -150,24 +136,34 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             }]
         })
 
-        const insetMaps = insetsFeatures.map(({ inset, insetFeatures }, i, insets) => {
-            return (
-                <InsetMap
-                    i={i}
-                    key={i}
-                    inset={inset}
-                    ref={e => mapsRef[i] = e}
-                    container={mapsContainerRef}
-                    numInsets={insets.length}
-                    editInset={props.mode === 'insets'
-                        ? editIndex(props.editInsets, i)
-                        : undefined}
-                    interactive={props.mode !== 'textBoxes'}
-                >
-                    {mapChildren(insetFeatures, ['uss', 'view'].includes(props.mode))}
-                </InsetMap>
-            )
-        })
+        const insetMaps = (
+            <ClusterScaleProvider numInsets={insetsFeatures.length}>
+                {(i: number) => {
+                    const { inset, insetFeatures } = insetsFeatures[i]
+                    return (
+                        <InsetMap
+                            i={i}
+                            inset={inset}
+                            ref={e => mapsRef[i] = e}
+                            container={mapsContainerRef}
+                            numInsets={insetsFeatures.length}
+                            editInset={props.mode === 'insets'
+                                ? editIndex(props.editInsets, i)
+                                : undefined}
+                            interactive={props.mode !== 'textBoxes'}
+                        >
+                            {(mapLibreProps, mC, ref) => mapComponentCreator(
+                                mapLibreProps,
+                                mC,
+                                ref,
+                                insetFeatures,
+                                ['uss', 'view'].includes(props.mode),
+                            )}
+                        </InsetMap>
+                    )
+                }}
+            </ClusterScaleProvider>
+        )
 
         const visibleInsets = insetsFeatures.map(({ inset }) => inset)
 
@@ -178,24 +174,21 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             />
         )
 
-        const [screenshotMode, setScreenshotMode] = useState(false)
+        const screenshotContext = useRef<ScreenshotContextType>(new Set())
 
         const colors = useColors()
 
         exportImageRef(async () => {
-            setScreenshotMode(true)
             const restoreMaps = mapsRef.map(r => r!.getMap()).map(prepareMapForImageExport)
-            return new Promise((resolve) => {
-                setTimeout(async () => {
-                    const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
 
-                    const image = await mapImageExport(elementCanvas, mapResultMain.value.basemap, colors)
-
-                    resolve(image)
-                    setScreenshotMode(false)
-                    restoreMaps.forEach((restore) => { restore() })
-                })
+            const image = await withScreenshotMode(screenshotContext.current, async () => {
+                const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
+                return mapImageExport(elementCanvas, mapResultMain.value.basemap, colors)
             })
+
+            restoreMaps.forEach((restore) => { restore() })
+
+            return image
         })
 
         const textBoxes = props.mode === 'insets'
@@ -216,7 +209,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                 )
 
         return (
-            <ScreenshotContext.Provider value={screenshotMode}>
+            <ScreenshotContext.Provider value={screenshotContext.current}>
                 <MapLayout
                     maps={insetMaps}
                     loading={props.loading}
@@ -244,6 +237,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                 exportImage: () => exportImage(),
             }
         },
+        assignments: execResult.assignments,
     }
 }
 
@@ -353,7 +347,14 @@ function EmptyMapLayout({ universe, loading }: { universe?: Universe, loading: b
                     numInsets={insets.length}
                     interactive={false}
                 >
-                    {null}
+                    {(mapLibreProps, mC, ref) => (
+                        <CommonMaplibreMap
+                            ref={ref}
+                            {...mapLibreProps}
+                        >
+                            {mC}
+                        </CommonMaplibreMap>
+                    )}
                 </InsetMap>
             ))}
             textBoxes={null}
@@ -364,30 +365,48 @@ function EmptyMapLayout({ universe, loading }: { universe?: Universe, loading: b
     )
 }
 
+type MapComponentCreator = (
+    mapLibreProps: React.ComponentProps<typeof CommonMaplibreMap>,
+    otherMapChildren: ReactNode,
+    ref: React.Ref<MapRef>,
+    fs: GeoJSON.Feature[],
+    clickable: boolean,
+) => ReactNode
+
 async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, geographyKind, cache }:
 {
-    mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' }
+    mapResultMain: USSOpaqueValue & { opaqueType: 'cMap' | 'cMapRGB' | 'pMap' | 'clusterMap' }
     universe: Universe
     geographyKind: typeof valid_geographies[number]
     cache: MapCache
-}): Promise<{ features: GeoJSON.Feature[], mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode, ramp: RampToDisplay }> {
+}): Promise<{ features: GeoJSON.Feature[], mapComponentCreator: MapComponentCreator, ramp: RampToDisplay }> {
     let ramp: RampToDisplay
     let colors: string[]
+    let clusterCategoryColors: string[] = []
+    let clusterRampBins: number[] = []
     switch (opaqueType) {
         case 'pMap':
         case 'cMap':
-            const scale = instantiate(value.scale)
             const furthest = furthestColor(value.ramp.map(x => x[1]))
-            const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-            ramp = { type: 'ramp', value: { ramp: value.ramp, interpolations, scale, label: value.label, unit: value.unit } }
-            colors = value.data.map(val => interpolateColor(value.ramp, scale.forward(val), furthest))
+            const pcMapRamp = computeRampToDisplay(value)
+            ramp = pcMapRamp
+            colors = value.data.map(val => interpolateColor(value.ramp, pcMapRamp.value.scale.forward(val), furthest))
+            break
+        case 'clusterMap':
+            const clusterRamp = computeRampToDisplay(value)
+            ramp = clusterRamp
+
+            // Discretize by scaled values to match the same bins used in legend interpolations.
+            clusterCategoryColors = clusterRamp.value.interpolations.map(x => interpolateColor(value.ramp, clusterRamp.value.scale.forward(x)))
+            clusterRampBins = value.data.map(val => computeClusterRampBin(val, clusterRamp))
+            colors = clusterRampBins.map(binIdx => clusterCategoryColors[binIdx])
             break
         case 'cMapRGB':
             colors = value.dataR.map((r, i) => doRender({
                 r,
                 g: value.dataG[i],
                 b: value.dataB[i],
-                a: 1,
+                a: value.dataA[i],
             }))
             ramp = { type: 'label', value: value.label }
             break
@@ -396,12 +415,56 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     let features: GeoJSON.Feature[]
     let mapChildren: (fs: GeoJSON.Feature[], clickable: boolean) => ReactNode
     switch (opaqueType) {
+        case 'clusterMap':
+            const clusterPoints: Point[] = Array.from(value.data.entries()).map(([i, dataValue]) => {
+                return {
+                    name: value.geo[i],
+                    fillColor: colors[i],
+                    fillOpacity: value.opacity,
+                    radius: Math.sqrt(value.relativeArea[i]) * value.maxRadius,
+                    rampBin: clusterRampBins[i],
+                    statistic: dataValue,
+                }
+            })
+
+            features = await pointsGeojson(geographyKind, universe, clusterPoints, cache)
+
+            return {
+                features,
+                mapComponentCreator: (mapLibreProps, otherMapChildren, ref, fs) => (
+                    <SyauClusterMap
+                        centroids={fs.map((f) => {
+                            const [lon, lat] = (f.geometry as GeoJSON.Point).coordinates
+                            return { lon, lat } satisfies ICoordinate
+                        })}
+                        categories={fs.map(f => f.properties!.rampBin as number)}
+                        pieChartSizeFor={fs.map((f) => {
+                            const radius = f.properties?.radius as number | undefined
+                            return radius === undefined ? 1 : radius ** 2
+                        })}
+                        categoryColors={clusterCategoryColors}
+                        clusterMarkerLabel={() => ''}
+                        unclusteredMarkerLabel={() => ''}
+                        maxClusterRadius={value.maxRadius}
+                        markerOpacity={value.opacity}
+                        computeRelativeArea={(area, maxArea) => (maxArea > 0 ? area / maxArea : 1)}
+                        clusterRadiusSpacing={value.clusterRadiusSpacing}
+                        mapLibreProps={mapLibreProps}
+                        mapRef={ref}
+                        basemap={value.basemap}
+                        doZoom={false}
+                    >
+                        {otherMapChildren}
+                    </SyauClusterMap>
+                ),
+                ramp,
+            }
         case 'pMap':
             const points: Point[] = Array.from(value.data.entries()).map(([i, dataValue]) => {
                 return {
                     name: value.geo[i],
                     fillColor: colors[i],
-                    fillOpacity: 1,
+                    fillOpacity: value.opacity,
                     radius: Math.sqrt(value.relativeArea[i]) * value.maxRadius,
                     statistic: dataValue,
                 }
@@ -428,7 +491,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
                 return {
                     name: value.geo[i],
                     fillColor: color,
-                    fillOpacity: 1,
+                    fillOpacity: value.opacity,
                     color: doRender(value.outline.color),
                     weight: value.outline.weight,
                     ...meta,
@@ -444,17 +507,42 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
 
     return {
         features,
-        mapChildren: (fs, clickable) => (
-            <>
-                {mapChildren(fs, clickable)}
-                <BasemapComponent basemap={value.basemap} />
-            </>
+        mapComponentCreator: (mapLibreProps, otherMapChildren, ref, fs, clickable) => (
+
+            <CommonMaplibreMap
+                ref={ref}
+                {...mapLibreProps}
+            >
+                <>
+                    {mapChildren(fs, clickable)}
+                    <BasemapComponent basemap={value.basemap} />
+                </>
+                {otherMapChildren}
+            </CommonMaplibreMap>
+
         ),
         ramp,
     }
 }
 
+function computeClusterRampBin(val: number, clusterRamp: RampToDisplay & { type: 'ramp' }): number {
+    const t = clusterRamp.value.scale.forward(val) * (clusterRamp.value.interpolations.length - 1)
+    const roundedT = Math.round(t)
+    const clamped = Math.max(0, Math.min(clusterRamp.value.interpolations.length - 1, roundedT))
+    return clamped
+}
+
+function computeRampToDisplay(value: CommonMap): RampToDisplay & { type: 'ramp' } {
+    const scale = instantiate(value.scale)
+    const hasValuesClampedToStart = value.data.some(val => scale.forward(val) < 0)
+    const hasValuesClampedToEnd = value.data.some(val => scale.forward(val) > 1)
+    const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
+    return { type: 'ramp', value: { ramp: value.ramp, interpolations, scale, label: value.label, unit: value.unit, hasValuesClampedToStart, hasValuesClampedToEnd } }
+}
+
 const canonicalWidth = 1200
+
+export const transformContext = createContext({ selfDetermineHeight: false })
 
 function TransformConstantWidth({ children }: { children: ReactNode }): ReactNode {
     const [layout, setLayout] = useState({ scale: 1, top: 0, left: 0, selfDeterminedHeight: 0 })
@@ -488,7 +576,7 @@ function TransformConstantWidth({ children }: { children: ReactNode }): ReactNod
     }, [])
 
     return (
-        <div ref={ref} style={{ ...(useContext(splitLayoutContext) ? { position: 'absolute' } : { height: layout.selfDeterminedHeight }), inset: 0 }}>
+        <div ref={ref} style={{ ...(useContext(transformContext).selfDetermineHeight ? { height: layout.selfDeterminedHeight } : { position: 'absolute' }), inset: 0 }}>
             <div
                 ref={childRef}
                 style={{
@@ -532,6 +620,7 @@ interface Point {
     fillColor: string
     fillOpacity: number
     radius: number
+    rampBin?: number
 
     [meta: string]: unknown
 

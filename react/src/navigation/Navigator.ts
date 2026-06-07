@@ -5,6 +5,7 @@ import { discordFix } from '../discord-fix'
 import { Settings } from '../page_template/settings'
 import { StatPath } from '../page_template/statistic-tree'
 import { TestUtils } from '../utils/TestUtils'
+import { assert } from '../utils/defensive'
 
 import { ExceptionalPageDescriptor, loadPageDescriptor, PageData, PageDescriptor, pageDescriptorFromURL, pageDescriptorSchema, urlFromPageDescriptor } from './PageDescriptor'
 
@@ -47,6 +48,8 @@ export interface NavigationOptions {
     | { kind: 'position', top: number } // Scroll to a specific position
     | { kind: 'element', element: HTMLElement } // Scroll keeping a specific element in the same place
 }
+
+export interface NavLink { href: string, onClick: (e?: React.MouseEvent) => Promise<void> }
 
 export class Navigator {
     /* eslint-disable react-hooks/rules-of-hooks, no-restricted-syntax -- This is a logic class with custom hooks and core navigation functions */
@@ -184,7 +187,7 @@ export class Navigator {
         this.pageState = { kind: 'loading', loading: { descriptor: newDescriptor }, current: this.pageState.current, loadStartTime: Date.now() }
         this.pageStateObservers.forEach((observer) => { observer() })
         try {
-            TestUtils.shared.startLoading()
+            TestUtils.shared.startLoading('navigate')
 
             const { pageData, newPageDescriptor, effects } = await loadPageDescriptor(newDescriptor, Settings.shared)
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Async function, pageState can change during await
@@ -241,7 +244,7 @@ export class Navigator {
             this.pageStateObservers.forEach((observer) => { observer() })
         }
         finally {
-            void TestUtils.shared.finishLoading()
+            void TestUtils.shared.finishLoading('navigate')
         }
     }
 
@@ -296,7 +299,7 @@ export class Navigator {
     link(pageDescriptor: PageDescriptor, options: {
         scroll: NavigationOptions['scroll']
         postNavigationCallback?: () => void
-    }): { href: string, onClick: (e?: React.MouseEvent) => Promise<void> } {
+    }): NavLink {
         const url = urlFromPageDescriptor(pageDescriptor)
         return {
             href: url.pathname + url.search + url.hash,
@@ -342,27 +345,19 @@ export class Navigator {
         return useSyncExternalStore(this.subscribeToPageState, () => this.statPaths)
     }
 
-    setSettingsVector(newVector: string): void {
-        switch (this.pageState.current.descriptor.kind) {
-            case 'article':
-            case 'comparison':
-                this.pageState.current.descriptor.s = newVector
-                history.replaceState({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(this.pageState.current.descriptor))
-                break
-            default:
-                throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have a settings vector`)
+    unsafeUpdateCurrentDescriptor(newDescriptor: Partial<PageDescriptor> & { kind: PageDescriptor['kind'] }, options: { history: 'replaceState' | 'pushState' }): void {
+        assert(this.pageState.current.descriptor.kind === newDescriptor.kind, 'heterogenous unsafe update')
+        for (const key of Object.keys(newDescriptor)) {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Undefined is used to clear fields
+            if (newDescriptor[key] === undefined) {
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- Undefined is used to clear fields
+                delete (this.pageState.current.descriptor as never)[key]
+            }
+            else {
+                this.pageState.current.descriptor[key] = newDescriptor[key]
+            }
         }
-    }
-
-    setMapperSettings(newSettings: string): void {
-        switch (this.pageState.current.descriptor.kind) {
-            case 'mapper':
-                this.pageState.current.descriptor.settings = newSettings
-                history.replaceState({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(this.pageState.current.descriptor))
-                break
-            default:
-                throw new Error(`Page descriptor kind ${this.pageState.current.descriptor.kind} does not have mapper settings`)
-        }
+        history[options.history]({ pageDescriptor: this.pageState.current.descriptor, scrollPosition: window.scrollY }, '', urlFromPageDescriptor(this.pageState.current.descriptor))
     }
 
     useSubsequentLoading(): SubsequentLoadingState['kind'] {

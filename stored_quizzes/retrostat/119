@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Employed in Educational services %",
+      "stat_path": "industry_educational_services",
+      "question": "higher % of workers employed in the educational services industry!TOOLTIP elementary and secondary schools, colleges, universities,etc.",
+      "longname_a": "Indio-Palm Desert-Palm Springs [Urban Area], CA, USA",
+      "longname_b": "Lexington-Fayette [Urban Area], KY, USA",
+      "stat_a": 0.06934478628563343,
+      "stat_b": 0.14079817730845093
+    },
+    "b": {
+      "stat_column": "Commute Bike %",
+      "stat_path": "transportation_means_bike",
+      "question": "higher % of people who commute by bike",
+      "longname_a": "AZ-06 (2023), USA",
+      "longname_b": "MI-10 (2023), USA",
+      "stat_a": 0.01101546992318691,
+      "stat_b": 0.0020818347892671034
+    },
+    "a_ease": 0.6072364971158888,
+    "b_ease": 0.19662921348314608
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Mean sunny hours",
+      "stat_path": "hours_sunny_4",
+      "question": "!FULL Which has more hours of sun per day on average? (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Madrid Urban Center, Spain",
+      "longname_b": "Bogota Urban Center, Colombia",
+      "stat_a": 6.909792526373181,
+      "stat_b": 1.55739645078652
+    },
+    "b": {
+      "stat_column": "Obesity %",
+      "stat_path": "OBESITY_cdc_2",
+      "question": "higher % of adults with obesity",
+      "longname_a": "AZ-05 (2023), USA",
+      "longname_b": "FL-10 (2023), USA",
+      "stat_a": 0.2983583465613336,
+      "stat_b": 0.35925843432693344
+    },
+    "a_ease": 0.41119096509240244,
+    "b_ease": 0.8114856429463171
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2BR Rent > $1500 %",
+      "stat_path": "rent_2br_over_1500",
+      "question": "higher % of units with 2br rent over $1500",
+      "longname_a": "Savannah GA Media Market, USA",
+      "longname_b": "Lafayette LA Media Market, USA",
+      "stat_a": 0.11280996519928609,
+      "stat_b": 0.027999689754130152
+    },
+    "b": {
+      "stat_column": "LICO-AT %",
+      "stat_path": "lico_at_canada",
+      "question": "higher % of people who are low income based on the Low-income cut-offs, after tax (LICO-AT)",
+      "longname_a": "Montr\u00e9al Territory, Quebec, Canada",
+      "longname_b": "Halifax County, Nova Scotia, Canada",
+      "stat_a": 0.10930730104187711,
+      "stat_b": 0.0563296500023969
+    },
+    "a_ease": 0.8193743693239153,
+    "b_ease": 0.38698284561049445
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km) Change (2010-2020)",
+      "stat_path": "ad_1_change_2010",
+      "question": "higher % increase in population-weighted density (r=1km) from 2010 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Honolulu [Urban Area], HI, USA",
+      "longname_b": "Lubbock [Urban Area], TX, USA",
+      "stat_a": 0.02965133500794506,
+      "stat_b": 0.007982005639754557
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Hospital",
+      "stat_path": "mean_dist_Hospital_updated",
+      "question": "!FULL Which has less access to hospitals (higher population-weighted mean distance)?",
+      "longname_a": "Cincinnati OH Media Market, USA",
+      "longname_b": "Traverse City-Cadillac MI Media Market, USA",
+      "stat_a": 6.146211760176259,
+      "stat_b": 15.861453331048642
+    },
+    "a_ease": 0.43656207366984995,
+    "b_ease": 0.8388090349075975
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Diagnosed diabetes %",
+      "stat_path": "DIABETES_cdc_2",
+      "question": "higher % of adults with diagnosed diabetes",
+      "longname_a": "MS-02 (2023), USA",
+      "longname_b": "WI-02 (2023), USA",
+      "stat_a": 0.16529875827496654,
+      "stat_b": 0.06888070695941263
+    },
+    "b": {
+      "stat_column": "Pedestrian/Cyclist Fatalities Per Capita Per Year",
+      "stat_path": "traffic_fatalities_ped_last_decade_per_capita",
+      "question": "higher pedestrian/cyclist fatalities per capita between 2013 and 2022!TOOLTIP pedestrian and cyclist fatalities in the region, divided by the population of the region",
+      "longname_a": "PA-04 (2023), USA",
+      "longname_b": "NC-07 (2025), USA",
+      "stat_a": 1.1374556294248005e-05,
+      "stat_b": 3.500203172712899e-05
+    },
+    "a_ease": 0.859465128474043,
+    "b_ease": 0.4536152796725784
+  }
+]

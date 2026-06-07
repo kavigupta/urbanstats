@@ -16,7 +16,8 @@ import { loadFeatureFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
-import { defaultMapBorderRadius, mapBorderWidth, useScreenshotMode } from './screenshot'
+import { keptByNoBasemap } from './map-common-utils'
+import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback, useScreenshotMode } from './screenshot'
 
 import './map.css'
 
@@ -25,10 +26,15 @@ export const insetBorderWidth = 2
 
 void maplibregl.setRTLTextPlugin('https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.3.0/dist/mapbox-gl-rtl-text.js', true)
 
+export type CommonMapProps = MapProps & { testId?: string }
+
 // eslint-disable-next-line no-restricted-syntax -- Forwarded ref
-function _CommonMaplibreMap(props: MapProps, ref: React.Ref<MapRef>): ReactNode {
+function _CommonMaplibreMap(props: CommonMapProps, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
     const isScreenshotMode = useScreenshotMode()
+
+    const fallbackTestId = useId()
+    const testId = props.testId ?? fallbackTestId
 
     return (
         <Map
@@ -47,8 +53,51 @@ function _CommonMaplibreMap(props: MapProps, ref: React.Ref<MapRef>): ReactNode 
                 backgroundColor: isScreenshotMode ? 'transparent' : colors.slightlyDifferentBackground,
                 ...props.style,
             }}
-        />
+        >
+            {props.children}
+            <ExposeMapForTesting id={testId} />
+            <SynchronizeMapWithScreenshots />
+        </Map>
     )
+}
+
+function ExposeMapForTesting({ id }: { id: string }): ReactNode {
+    const map = useMap().current!.getMap()
+    useEffect(() => {
+        TestUtils.shared.maps.set(id, map)
+        return () => {
+            TestUtils.shared.maps.delete(id)
+        }
+    }, [map, id])
+    return null
+}
+
+function SynchronizeMapWithScreenshots(): ReactNode {
+    const { current: map } = useMap()
+
+    const screenshotCallback = useScreenshotCallback()
+
+    useEffect(() => {
+        if (screenshotCallback !== undefined && map) {
+            void (async () => {
+                while (!map.loaded()) {
+                    await Promise.any([
+                        map.once('idle'),
+                        map.once('remove'),
+                    ])
+                    if (map._removed) {
+                        return
+                    }
+                    // Map will sometimes return to idle but needs to load more
+                    await new Promise(resolve => setTimeout(resolve))
+                }
+            })().then(() => {
+                screenshotCallback()
+            })
+        }
+    }, [screenshotCallback, map])
+
+    return null
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Is a function component
@@ -89,7 +138,8 @@ export interface Polygon {
     [meta: string]: unknown
 }
 
-const urbanStatsLayerPrefix = 'urban-stats'
+// Probably useful to make sure we don't collide with premade layers
+export const urbanStatsLayerPrefix = 'urban-stats'
 
 function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
     return `${urbanStatsLayerPrefix}-polygons-${kind}-${id}`
@@ -97,8 +147,7 @@ function polygonsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
 
 export function PolygonFeatureCollection({ features, clickable }: { features: GeoJSON.Feature[], clickable: boolean }): ReactNode {
     const { current: map } = useMap()
-
-    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map])).result
+    const beforeId = useContentBeforeId(map)
 
     const collection: GeoJSON.FeatureCollection = useMemo(() => ({
         type: 'FeatureCollection',
@@ -109,9 +158,19 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
 
     useClickable({ id: polygonsId(id, 'fill'), features, clickable })
 
+    const isScreenshotMode = useScreenshotMode()
+
     return (
         <>
-            <Source id={polygonsId(id, 'source')} type="geojson" data={collection} />
+            <Source
+                // Must remount to apply tolerance changes
+                key={`source-${String(isScreenshotMode)}`}
+                id={polygonsId(id, 'source')}
+                type="geojson"
+                data={collection}
+                // Only use tolerance=0 in screenshot mode, as it takes a lot of memory
+                {...(isScreenshotMode ? { tolerance: 0 } : { })}
+            />
             <Layer
                 id={polygonsId(id, 'fill')}
                 type="fill"
@@ -120,7 +179,7 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
                     'fill-color': ['get', 'fillColor'],
                     'fill-opacity': ['get', 'fillOpacity'],
                 }}
-                beforeId={labelId}
+                beforeId={beforeId}
             />
             <Layer
                 id={polygonsId(id, 'outline')}
@@ -130,7 +189,7 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
                     'line-color': ['get', 'color'],
                     'line-width': ['get', 'weight'],
                 }}
-                beforeId={labelId}
+                beforeId={beforeId}
             />
         </>
     )
@@ -146,7 +205,8 @@ async function polygonGeojson(polygon: Polygon): Promise<GeoJSON.Feature> {
 }
 
 export function polygonFeatureCollection(polygons: Polygon[]): { use: () => (GeoJSON.Feature | typeof waiting)[] } {
-    return promiseStream(polygons.map(polygonGeojson))
+    const result = promiseStream(polygons.map(polygonGeojson), 'polygonFeatureCollection')
+    return result
 }
 
 async function waitForMapLoadedOrRemoved(map: MapRef): Promise<void> {
@@ -167,6 +227,19 @@ async function firstLabelId(map: MapRef): Promise<string | undefined> {
         }
     }
     return undefined
+}
+
+function useContentBeforeId(map: MapRef | undefined): string | undefined {
+    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map]), 'useContentBeforeId').result
+    const hasBasemapSubnationalsLayer = map?.getLayer(basemapSubnationalsId) !== undefined
+    if (hasBasemapSubnationalsLayer && labelId !== undefined) {
+        // If the basemap is in front of the label, then it hasn't moved yet, and we should actually place the content before the label
+        const layersOrder = map.getLayersOrder()
+        if (layersOrder.indexOf(basemapSubnationalsId) > layersOrder.indexOf(labelId)) {
+            return labelId
+        }
+    }
+    return hasBasemapSubnationalsLayer ? basemapSubnationalsId : labelId
 }
 
 class CustomAttributionControl extends maplibregl.AttributionControl {
@@ -198,9 +271,8 @@ function pointsId(id: string, kind: 'source' | 'fill' | 'outline'): string {
 
 export function PointFeatureCollection({ features, clickable }: { features: GeoJSON.Feature[], clickable: boolean }): ReactNode {
     const { current: map } = useMap()
+    const beforeId = useContentBeforeId(map)
     const id = useId()
-
-    const labelId = useOrderedResolve(useMemo(() => map !== undefined ? firstLabelId(map) : Promise.resolve(undefined), [map])).result
 
     const collection: GeoJSON.FeatureCollection = useMemo(() => ({
         type: 'FeatureCollection',
@@ -221,7 +293,7 @@ export function PointFeatureCollection({ features, clickable }: { features: GeoJ
                     'circle-opacity': ['get', 'fillOpacity'],
                     'circle-radius': ['get', 'radius'],
                 }}
-                beforeId={labelId}
+                beforeId={beforeId}
             />
         </>
     )
@@ -281,20 +353,19 @@ function useClickable({ id, clickable, features }: { id: string, clickable: bool
 // eslint-disable-next-line no-restricted-syntax -- This is the default maplibre background color
 const defaultBackgroundColor = '#f8f4f0'
 
+const basemapSubnationalsId = 'boundary_subn_overlayed'
+
 export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
     const map = useMap().current!
 
     const mapLoaded = useOrderedResolve(useMemo(async () => {
         await waitForMapLoadedOrRemoved(map)
         return true
-    }, [map])).result ?? false
+    }, [map]), 'BaseMap.mapLoaded').result ?? false
 
     useEffect(() => {
         if (mapLoaded) {
             for (const layerId of map.getLayersOrder()) {
-                if (layerId === 'background' || layerId.startsWith(urbanStatsLayerPrefix)) {
-                    continue
-                }
                 const layer = map.getLayer(layerId)!
                 map.getMap().setLayoutProperty(layerId, 'visibility', isVisible(basemap, layer) ? 'visible' : 'none')
             }
@@ -303,12 +374,12 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
         }
     }, [map, basemap, mapLoaded])
 
-    const labelId = useOrderedResolve(useMemo(() => firstLabelId(map), [map])).result
+    const labelId = useOrderedResolve(useMemo(() => firstLabelId(map), [map]), 'Basemap.firstLabel').result
 
     if (basemap.type === 'osm' && basemap.subnationalOutlines !== undefined) {
         return (
             <Layer
-                id="boundary_subn_overlayed"
+                id={basemapSubnationalsId}
                 type="line"
                 source="openmaptiles"
                 source-layer="boundary"
@@ -331,14 +402,11 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
     return null
 }
 
-function isVisible(basemap: Basemap, layer: { type: string }): boolean {
+function isVisible(basemap: Basemap, layer: { id: string, type: string, source: string }): boolean {
     switch (basemap.type) {
         case 'none':
-            return false
+            return keptByNoBasemap(layer)
         case 'osm':
-            if (basemap.noLabels && layer.type === 'symbol') {
-                return false
-            }
-            return true
+            return !(basemap.noLabels && layer.type === 'symbol')
     }
 }

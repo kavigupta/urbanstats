@@ -31,6 +31,10 @@ class StatisticCollection(ABC):
     def legacy_statistic_names(self):
         return {}
 
+    def deprecation_for_each_statistic(self):
+        """Returns a dictionary mapping statistic keys to deprecation messages (None if not deprecated)."""
+        return {name: None for name in self.internal_statistic_names_list()}
+
     @abstractmethod
     def name_for_each_statistic(self):
         pass

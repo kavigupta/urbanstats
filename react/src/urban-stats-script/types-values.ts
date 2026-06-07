@@ -1,16 +1,18 @@
 import type * as ArgEditButtons from '../mapper/settings/ArgEditButtons'
 import { Basemap } from '../mapper/settings/utils'
 import { assert } from '../utils/defensive'
+import { UnitType } from '../utils/unit'
 
 import { UrbanStatsASTExpression } from './ast'
 import { Color, deconstructColor, hexToColor } from './constants/color-utils'
-import { CMap, CMapRGB, Outline, PMap } from './constants/map'
+import { CMap, CMapRGB, ClusterMap, Outline, PMap } from './constants/map'
 import { RampT } from './constants/ramp'
 import { RichTextAttributes, RichTextDocument, RichTextSegment } from './constants/rich-text'
 import { Scale } from './constants/scale'
 import { Table, TableColumn } from './constants/table'
 import { TextBox } from './constants/text-box'
 import { Context } from './context'
+import { ConstantCategory } from './documentation-category'
 import { noLocation } from './location'
 import { unparse } from './parser'
 
@@ -27,6 +29,7 @@ export type USSOpaqueValue =
     | { type: 'opaque', opaqueType: 'cMap', value: CMap }
     | { type: 'opaque', opaqueType: 'cMapRGB', value: CMapRGB }
     | { type: 'opaque', opaqueType: 'pMap', value: PMap }
+    | { type: 'opaque', opaqueType: 'clusterMap', value: ClusterMap }
     | { type: 'opaque', opaqueType: 'table', value: Table }
     | { type: 'opaque', opaqueType: 'column', value: TableColumn }
     | { type: 'opaque', opaqueType: 'outline', value: Outline }
@@ -134,10 +137,6 @@ export type USSRawValue = (
     USSOpaqueValue
 )
 
-export const constantCategories = ['basic', 'color', 'math', 'regression', 'mapper', 'logic', 'map', 'scale', 'ramp', 'unit', 'inset', 'richText'] as const
-
-export type ConstantCategory = typeof constantCategories[number]
-
 export type DocumentationTable = 'mapper-data-variables' | 'predefined-colors' | 'unit-types' | 'predefined-ramps' | 'predefined-insets' | 'logarithm-functions' | 'trigonometric-functions'
 
 export type SelectorRendering = { kind: 'subtitleLongDescription' } | { kind: 'gradientBackground', ramp: RampT }
@@ -182,10 +181,16 @@ export interface Documentation {
      */
     fromStatisticColumn?: boolean
     /**
-     * True if this should be outputted in the context returned by the worker. If this is true, the value
-     * should also be serializable to JSON.
+     * If present, indicates that this variable/function is deprecated.
+     * The string should explain why it's deprecated and what alternatives to use.
      */
-    includedInOutputContext?: boolean
+    deprecated?: string
+    /**
+     * If present, describes the physical units of the underlying statistic
+     * This is primarily intended for statistics that originate from data
+     * columns; other USS constants will omit this field.
+     */
+    unit?: UnitType
 }
 
 export interface USSDocumentedType {
@@ -238,6 +243,10 @@ export function createConstantExpression(value: number | string | boolean | null
 
 export function unifyFunctionType(param: USSFunctionArgType, arg: USSType): boolean {
     if (param.type === 'concrete') {
+        if (param.value.type === 'vector' && arg.type === 'vector' && arg.elementType.type === 'elementOfEmptyVector') {
+            // Empty vector is valid for any vector params
+            return true
+        }
         return renderType(param.value) === renderType(arg)
     }
     return arg.type === 'number' || arg.type === 'string' || arg.type === 'boolean' || arg.type === 'null'
@@ -276,7 +285,7 @@ export function renderArgumentType(arg: USSFunctionArgType): string {
     return 'any'
 }
 
-export function renderKwargType(arg: { type: USSFunctionArgType, defaultValue?: UrbanStatsASTExpression }): string {
+function renderKwargType(arg: { type: USSFunctionArgType, defaultValue?: UrbanStatsASTExpression }): string {
     const type = renderArgumentType(arg.type)
     if (arg.defaultValue !== undefined) {
         return `${type} = ${unparse(arg.defaultValue)}`
@@ -373,6 +382,7 @@ export function renderValue(input: USSValue): string {
                     case 'pMap':
                     case 'cMap':
                     case 'cMapRGB':
+                    case 'clusterMap':
                     case 'table':
                     case 'column':
                     case 'basemap':
