@@ -1,7 +1,7 @@
 import { USSType, USSValue, createConstantExpression } from '../types-values'
 
 // Functions can't be send over the worker boundary, so instead we must send descriptors
-export interface LinearScaleDescriptor { kind: 'linear', min: number, max: number }
+export interface LinearScaleDescriptor { kind: 'linear', min: number, max: number, center?: number }
 
 export type ScaleDescriptor =
     LinearScaleDescriptor |
@@ -20,8 +20,8 @@ const scaleType = {
 
 export function instantiate(descriptor: ScaleDescriptor): ScaleInstance {
     switch (descriptor.kind) {
-        case 'linear':
-            const { min, max } = descriptor
+        case 'linear': {
+            const { min, max, center } = descriptor
             if (min === max) {
                 // just arbitrarily map min <=> 0.5
                 return {
@@ -30,11 +30,37 @@ export function instantiate(descriptor: ScaleDescriptor): ScaleInstance {
                 }
             }
             const range = max - min
+            const forward = (value: number) => (value - min) / range
+            const inverse = (t: number) => t * range + min
+
+            if (center !== undefined) {
+                const centerT = forward(center)
+                return {
+                    forward: (value: number) => {
+                        const t = forward(value)
+                        if (t < centerT) {
+                            return 0.5 * t / centerT
+                        }
+                        return 0.5 + 0.5 * (t - centerT) / (1 - centerT)
+                    },
+                    inverse: (normalized: number) => {
+                        let t
+                        if (normalized < 0.5) {
+                            t = (normalized / 0.5) * centerT
+                        }
+                        else {
+                            t = centerT + ((normalized - 0.5) / 0.5) * (1 - centerT)
+                        }
+                        return inverse(t)
+                    },
+                }
+            }
 
             return {
-                forward: (value: number) => (value - min) / range,
-                inverse: (value: number) => value * range + min,
+                forward,
+                inverse,
             }
+        }
         case 'log':
             const { forward, inverse } = instantiate(descriptor.linearScale)
             return {
@@ -85,6 +111,7 @@ const linearScale: Scale = (values: number[], min?: number, max?: number, center
         kind: 'linear',
         min: computedMin,
         max: computedMax,
+        center,
     }
 }
 
@@ -93,6 +120,10 @@ const logScale: Scale = (values: number[], min?: number, max?: number, center?: 
     const logMin = min !== undefined ? Math.log(min) : undefined
     const logMax = max !== undefined ? Math.log(max) : undefined
     const logCenter = center !== undefined ? Math.log(center) : undefined
+    // For log scale, ensure min, max, center are all > 0 if provided
+    if ((min !== undefined && min <= 0) || (max !== undefined && max <= 0) || (center !== undefined && center <= 0)) {
+        throw new Error('Log scale min, max, and center must be > 0')
+    }
     const linearScaleDescriptor = linearScale(logVals, logMin, logMax, logCenter) as LinearScaleDescriptor
     return {
         kind: 'log',
@@ -135,7 +166,7 @@ export const linearScaleValue: USSValue = {
         humanReadableName: 'Linear Scale',
         category: 'scale',
         isDefault: true,
-        longDescription: 'Creates a linear scale that maps numeric values to a range. If min/max are not specified, they are computed from the data. Center parameter can be used to create symmetric ranges.',
+        longDescription: 'Creates a linear scale that maps numeric values to a range. If min/max are not specified, they are computed from the data. If a center parameter is specified, it creates a piecewise linear scale that maps min to 0, center to 0.5, and max to 1.',
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
@@ -174,7 +205,7 @@ export const logScaleValue: USSValue = {
     documentation: {
         humanReadableName: 'Logarithmic Scale',
         category: 'scale',
-        longDescription: 'Creates a logarithmic scale that maps numeric values to a range using log transformation. Useful for data with wide ranges or exponential distributions. If min/max are not specified, they are computed from the data. Center parameter can be used to create symmetric ranges.',
+        longDescription: 'Creates a logarithmic scale that maps numeric values to a range using log transformation. Useful for data with wide ranges or exponential distributions. If min/max are not specified, they are computed from the data. If a center parameter is specified, it creates a piecewise scale that maps min to 0, center to 0.5, and max to 1 in log space.',
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
