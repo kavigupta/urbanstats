@@ -93,10 +93,6 @@ const logScale: Scale = (values: number[], min?: number, max?: number, center?: 
     const logMin = min !== undefined ? Math.log(min) : undefined
     const logMax = max !== undefined ? Math.log(max) : undefined
     const logCenter = center !== undefined ? Math.log(center) : undefined
-    // For log scale, ensure min, max, center are all > 0 if provided
-    if ((min !== undefined && min <= 0) || (max !== undefined && max <= 0) || (center !== undefined && center <= 0)) {
-        throw new Error('Log scale min, max, and center must be > 0')
-    }
     const linearScaleDescriptor = linearScale(logVals, logMin, logMax, logCenter) as LinearScaleDescriptor
     return {
         kind: 'log',
