@@ -2,7 +2,7 @@ import math
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Type
+from typing import Any, Dict, List, Optional, Type
 
 from urbanstats.metadata.congressional_representatives import (
     Representative,
@@ -13,11 +13,13 @@ from urbanstats.protobuf import data_files_pb2
 
 class MetadataColumn(ABC):
     @abstractmethod
-    def create(self, idx, value, representative_table_builder=None):
+    def create(
+        self, idx: int, value: Any, representative_table_builder: Optional[Any] = None
+    ) -> Optional[data_files_pb2.Metadata]:
         pass
 
     @abstractmethod
-    def export(self):
+    def export(self) -> Dict[str, Any]:
         pass
 
 
@@ -25,13 +27,15 @@ class MetadataColumn(ABC):
 class ExternalLinkMetadata(MetadataColumn):
     site: str
     link_prefix: str
-    normalizer: str = None
+    normalizer: Optional[str] = None
     show_in_metadata_table: bool = False
 
-    def create(self, idx, value, representative_table_builder=None):
+    def create(
+        self, idx: int, value: Any, representative_table_builder: Optional[Any] = None
+    ) -> data_files_pb2.Metadata:
         return data_files_pb2.Metadata(metadata_index=idx, string_value=value)
 
-    def export(self):
+    def export(self) -> Dict[str, Any]:
         return dict(
             site=self.site,
             link_prefix=self.link_prefix,
@@ -42,21 +46,23 @@ class ExternalLinkMetadata(MetadataColumn):
 
 @dataclass
 class DisplayedMetadata(MetadataColumn):
-    typ: Type
+    typ: Type[Any]
     name: str
     show_in_metadata_table: bool = True
     value_kind: str = "string"
     category: str = field(kw_only=True)
     data_credit_explanation_page: str = field(kw_only=True)
 
-    def create(self, idx, value, representative_table_builder=None):
+    def create(
+        self, idx: int, value: Any, representative_table_builder: Optional[Any] = None
+    ) -> data_files_pb2.Metadata:
         assert isinstance(
             value, self.typ
         ), f"Expected {self.typ}, got {type(value)} for value {value}"
         assert self.typ == str
         return data_files_pb2.Metadata(metadata_index=idx, string_value=value)
 
-    def export(self):
+    def export(self) -> Dict[str, Any]:
         return dict(
             name=self.name,
             setting_key=setting_key(self.name),
@@ -72,7 +78,7 @@ def setting_key(name: str) -> str:
     return f"show_metadata_{slug}"
 
 
-def normalize_optional_string(value):
+def normalize_optional_string(value: Any) -> Optional[str]:
     if value is None:
         return None
     if isinstance(value, float) and math.isnan(value):
@@ -84,11 +90,15 @@ def normalize_optional_string(value):
     return text
 
 
-def congressional_representative_proto(representative):
+def congressional_representative_proto(
+    representative: Representative,
+) -> data_files_pb2.CongressionalRepresentative:
     assert isinstance(
         representative, Representative
     ), f"Expected Representative, got {type(representative)}"
-    message_kwargs = dict(name=normalize_optional_string(representative.name) or "")
+    message_kwargs: Dict[str, Any] = dict(
+        name=normalize_optional_string(representative.name) or ""
+    )
     wikipedia_page = normalize_optional_string(representative.wikipedia_page)
     if wikipedia_page is not None:
         message_kwargs["wikipedia_page"] = wikipedia_page
@@ -104,10 +114,10 @@ class CongressionalRepresentativesMetadata(DisplayedMetadata):
 
     def create(
         self,
-        idx,
-        value: list[RepresentativeWithTerms],
-        representative_table_builder=None,
-    ):
+        idx: int,
+        value: List[RepresentativeWithTerms],
+        representative_table_builder: Optional[Any] = None,
+    ) -> Optional[data_files_pb2.Metadata]:
         if not value:
             return None
 

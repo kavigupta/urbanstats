@@ -4,6 +4,7 @@ written into a dictionary that map one to the other
 """
 
 from functools import lru_cache
+from typing import Dict
 
 from urbanstats.website_data.table import shapefile_without_ordinals
 
@@ -15,18 +16,18 @@ from .symlinks_from_historical_congressional_rename import (
 from .symlinks_from_subnational_usa_fixes import symlinks_from_subnational_usa_fixes
 
 
-def symlinks_most_recent_year():
+def symlinks_most_recent_year() -> Dict[str, str]:
     table = shapefile_without_ordinals()
     table = table[table.longname_sans_date != table.longname]
     sans_date_to_last_start_date = (
         table[["longname_sans_date", "start_date"]].groupby("longname_sans_date").max()
     )
-    sans_date_to_last_start_date = dict(
+    sans_date_to_last_start_date_dict = dict(
         zip(sans_date_to_last_start_date.index, sans_date_to_last_start_date.start_date)
     )
     table = table[
         table.start_date
-        == table.longname_sans_date.apply(sans_date_to_last_start_date.get)
+        == table.longname_sans_date.apply(sans_date_to_last_start_date_dict.get)
     ]
     sans_date_to_longname = dict(zip(table.longname_sans_date, table.longname))
     assert table.shape[0] == len(sans_date_to_longname), (
@@ -37,7 +38,7 @@ def symlinks_most_recent_year():
 
 
 @lru_cache(None)
-def compute_symlinks():
+def compute_symlinks() -> Dict[str, str]:
     real_names = set(shapefile_without_ordinals().longname)
     symlinks = {}
 

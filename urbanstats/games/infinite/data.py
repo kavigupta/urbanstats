@@ -1,11 +1,14 @@
 import json
 import os
 import shutil
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 import tqdm.auto as tqdm
 from permacache import stable_hash
 
+from urbanstats.games.fit_distribution.distribution import QuizQuestionPossibilities
+from urbanstats.games.fit_distribution.questions import ValidQuizQuestions
 from urbanstats.games.quiz_columns import stat_to_quiz_name
 from urbanstats.games.quiz_question_distribution import quiz_question_weights
 from urbanstats.games.quiz_sampling import (
@@ -24,7 +27,9 @@ tronche_size = 100_000
 version_info = "juxtastat_version.json"
 
 
-def output_tronche(tronche_vqq, tronche_p, tronche_path):
+def output_tronche(
+    tronche_vqq: ValidQuizQuestions, tronche_p: np.ndarray, tronche_path: str
+) -> float:
     tronche_total_p = tronche_p.sum()
     tronche_p = tronche_p / tronche_total_p
     binned_probs = -(np.log(tronche_p) / 0.1).round().astype(np.int64)
@@ -36,10 +41,12 @@ def output_tronche(tronche_vqq, tronche_p, tronche_path):
     tronche_proto.neg_log_prob_x10_basis = int(binned_probs.min())
     tronche_proto.neg_log_prob_x10_minus_basis.extend(binned_probs - binned_probs.min())
     write_gzip(tronche_proto, tronche_path)
-    return tronche_total_p
+    return float(tronche_total_p)
 
 
-def output_quiz_question(q, p, site_folder, question_folder):
+def output_quiz_question(
+    q: ValidQuizQuestions, p: np.ndarray, site_folder: str, question_folder: str
+) -> List[Dict[str, Any]]:
     idxs = compute_order(q)
 
     tronche_descriptors = []
@@ -55,7 +62,7 @@ def output_quiz_question(q, p, site_folder, question_folder):
     return tronche_descriptors
 
 
-def output_quiz_sampling_info(site_folder, subfolder):
+def output_quiz_sampling_info(site_folder: str, subfolder: str) -> None:
     qfd = quiz_sampling_data()
     juxta_version = output_quiz_sampling_probabilities_locally()
     write_gzip(qfd, f"stored_quizzes/quiz_sampling_info/{juxta_version}/data.gz")
@@ -67,13 +74,13 @@ def output_quiz_sampling_info(site_folder, subfolder):
             f"stored_quizzes/quiz_sampling_info/{version}",
             dest,
         )
-        with open(f"stored_quizzes/quiz_sampling_info/{version}.json", "r") as f:
-            by_version.append(json.load(f))
-    with open("react/src/data/quiz_infinite.ts", "w") as f:
-        output_typescript(by_version, f)
+        with open(f"stored_quizzes/quiz_sampling_info/{version}.json", "r") as f_json:
+            by_version.append(json.load(f_json))
+    with open("react/src/data/quiz_infinite.ts", "w") as f_ts:
+        output_typescript(by_version, f_ts)
 
 
-def quiz_sampling_data():
+def quiz_sampling_data() -> data_files_pb2.QuizFullData:
     data, *_ = compute_quiz_question_distribution()
     data = data.T
     qfd = data_files_pb2.QuizFullData()
@@ -83,7 +90,9 @@ def quiz_sampling_data():
     return qfd
 
 
-def filter_for_prob_over_threshold(q, p, *, threshold):
+def filter_for_prob_over_threshold(
+    q: ValidQuizQuestions, p: np.ndarray, *, threshold: float
+) -> Tuple[ValidQuizQuestions, np.ndarray]:
     sorted_p = np.sort(p[:])
     [[idx, *_]] = np.where(np.cumsum(sorted_p) > threshold)
     thresh = sorted_p[idx]
@@ -93,7 +102,7 @@ def filter_for_prob_over_threshold(q, p, *, threshold):
     return q, p
 
 
-def compute_order(q):
+def compute_order(q: ValidQuizQuestions) -> np.ndarray:
     sort_keys = (
         q.stat_indices,
         q.geography_index_a,
@@ -108,14 +117,14 @@ def compute_order(q):
     return idxs
 
 
-def output_quiz_sampling_probabilities_locally():
+def output_quiz_sampling_probabilities_locally() -> int:
     ps, qqp = quiz_data()
     hash_value = stable_hash((ps, qqp, "v1"))
     info = get_juxta_version_info()
     if hash_value not in dict(get_juxta_version_info()):
         info.append((hash_value, len(info)))
-        with open(version_info, "w") as f:
-            json.dump(info, f)
+        with open(version_info, "w") as f_ver:
+            json.dump(info, f_ver)
     juxta_version = dict(info)[hash_value]
     descriptors = []
     for i, (q, p) in enumerate(zip(qqp.questions_by_number, ps), start=1):
@@ -127,7 +136,7 @@ def output_quiz_sampling_probabilities_locally():
         )
 
     # internal_indices = [internal_statistic_names().index(s) for s in qqp.all_stats]
-    with open(f"stored_quizzes/quiz_sampling_info/{juxta_version}.json", "w") as f:
+    with open(f"stored_quizzes/quiz_sampling_info/{juxta_version}.json", "w") as f_info:
         json.dump(
             dict(
                 allGeographies=qqp.all_geographies,
@@ -139,19 +148,19 @@ def output_quiz_sampling_probabilities_locally():
                 questionDistribution=descriptors,
                 juxtaVersion=juxta_version,
             ),
-            f,
+            f_info,
         )
     return juxta_version
 
 
-def get_juxta_version_info():
+def get_juxta_version_info() -> List[Tuple[str, int]]:
     if not os.path.exists(version_info):
         return []
-    with open(version_info, "r") as f:
-        return json.load(f)
+    with open(version_info, "r") as f_ver:
+        return json.load(f_ver)
 
 
-def quiz_data():
+def quiz_data() -> Tuple[List[np.ndarray], QuizQuestionPossibilities]:
     qqw = quiz_question_weights(compute_geographies_by_type())
     ps = qqw["ps"]
     qqp = qqw["qqp"]

@@ -1,6 +1,7 @@
 import gzip
 import os
 from abc import ABC, abstractmethod
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import tqdm.auto as tqdm
 
@@ -13,11 +14,11 @@ SHARD_SIZE_LIMIT_SHAPE_BYTES = 8 * 1024
 SHARD_SIZE_LIMIT_DATA_BYTES = 64 * 1024
 
 
-def _unsigned_to_signed_int32(u):
+def _unsigned_to_signed_int32(u: int) -> int:
     return u if u < 2**31 else u - 2**32
 
 
-def shard_bytes_full(longname):
+def shard_bytes_full(longname: str) -> str:
     """Full 8-char hex hash for ordering; must match shardHash.ts"""
     bytes_ = longname.encode("utf-8")
     hash_ = 0
@@ -31,11 +32,11 @@ def shard_bytes_full(longname):
     return string
 
 
-def sanitize(x):
+def sanitize(x: str) -> str:
     return x.replace("/", " slash ")
 
 
-def shard_subfolder(shard_idx):
+def shard_subfolder(shard_idx: int) -> str:
     """Nested path for shard index: A/B where A is second-last hex digit, B is last hex digit. 256 -> 0/0."""
     s = format(shard_idx, "x")
     a = s[-2] if len(s) >= 2 else "0"
@@ -45,67 +46,75 @@ def shard_subfolder(shard_idx):
 
 class DataOrShape(ABC):
     @abstractmethod
-    def create_consolidated(self):
+    def create_consolidated(self) -> Any:
         pass
 
     @abstractmethod
-    def add_symlink(self, consolidated_proto, link_name, target_name):
+    def add_symlink(
+        self, consolidated_proto: Any, link_name: str, target_name: str
+    ) -> None:
         pass
 
     @abstractmethod
-    def add_proto(self, consolidated_proto, longname, proto):
+    def add_proto(self, consolidated_proto: Any, longname: str, proto: Any) -> None:
         pass
 
     @abstractmethod
-    def size_limit(self):
+    def size_limit(self) -> int:
         pass
 
 
 class ArticleData(DataOrShape):
-    def create_consolidated(self):
+    def create_consolidated(self) -> data_files_pb2.ConsolidatedArticles:
         return data_files_pb2.ConsolidatedArticles()
 
-    def add_symlink(self, consolidated_proto, link_name, target_name):
+    def add_symlink(
+        self, consolidated_proto: Any, link_name: str, target_name: str
+    ) -> None:
         consolidated_proto.symlink_link_names.append(link_name)
         consolidated_proto.symlink_target_names.append(target_name)
 
-    def add_proto(self, consolidated_proto, longname, proto):
+    def add_proto(self, consolidated_proto: Any, longname: str, proto: Any) -> None:
         consolidated_proto.longnames.append(longname)
         consolidated_proto.articles.append(proto)
 
-    def size_limit(self):
+    def size_limit(self) -> int:
         return SHARD_SIZE_LIMIT_DATA_BYTES
 
 
 class ShapeData(DataOrShape):
-    def create_consolidated(self):
+    def create_consolidated(self) -> data_files_pb2.ConsolidatedShapes:
         return data_files_pb2.ConsolidatedShapes()
 
-    def add_symlink(self, consolidated_proto, link_name, target_name):
+    def add_symlink(
+        self, consolidated_proto: Any, link_name: str, target_name: str
+    ) -> None:
         consolidated_proto.symlink_link_names.append(link_name)
         consolidated_proto.symlink_target_names.append(target_name)
 
-    def add_proto(self, consolidated_proto, longname, proto):
+    def add_proto(self, consolidated_proto: Any, longname: str, proto: Any) -> None:
         consolidated_proto.longnames.append(longname)
         consolidated_proto.shapes.append(proto)
 
-    def size_limit(self):
+    def size_limit(self) -> int:
         return SHARD_SIZE_LIMIT_SHAPE_BYTES
 
 
 class ShardBuilder:
-    def __init__(self, folder, type_label, data_or_shape: DataOrShape):
+    def __init__(
+        self, folder: str, type_label: str, data_or_shape: DataOrShape
+    ) -> None:
         self.folder = folder
         self.type_label = type_label
         self.data_or_shape = data_or_shape
         self.current_proto = self.data_or_shape.create_consolidated()
-        self.current_proto_bytes = None
+        self.current_proto_bytes: Optional[bytes] = None
         self.current_proto_size_estimate = 0
-        self.index_ranges = []
-        self.hash_start = None
-        self.hash_end = None
+        self.index_ranges: List[Tuple[str, str]] = []
+        self.hash_start: Optional[str] = None
+        self.hash_end: Optional[str] = None
 
-    def add_symlink(self, link_name, target_name):
+    def add_symlink(self, link_name: str, target_name: str) -> None:
         self.with_synchronization(
             lambda: self.data_or_shape.add_symlink(
                 self.current_proto, link_name, target_name
@@ -113,8 +122,8 @@ class ShardBuilder:
             item_name=link_name,
         )
 
-    def add_proto(self, longname, proto):
-        def add():
+    def add_proto(self, longname: str, proto: Any) -> None:
+        def add() -> None:
             self.data_or_shape.add_proto(self.current_proto, longname, proto)
             self.current_proto_size_estimate += len(
                 gzip.compress(proto.SerializeToString(), mtime=0)
@@ -122,14 +131,14 @@ class ShardBuilder:
 
         self.with_synchronization(add, item_name=longname)
 
-    def is_oversize(self, byte_string):
+    def is_oversize(self, byte_string: bytes) -> bool:
         if self.current_proto_size_estimate < 0.99 * self.data_or_shape.size_limit():
             return False
         return (
             len(gzip.compress(byte_string, mtime=0)) > self.data_or_shape.size_limit()
         )
 
-    def with_synchronization(self, func, item_name):
+    def with_synchronization(self, func: Callable[[], None], item_name: str) -> None:
         """
         Try to run func() and add its changes to the current proto.
 
@@ -152,17 +161,18 @@ class ShardBuilder:
                 self.hash_start = item_hash
             else:
                 assert (
-                    item_hash >= self.hash_end
+                    self.hash_end is not None and item_hash >= self.hash_end
                 ), f"Items out of order: {item_name} with hash {item_hash} < current end {self.hash_end}"
             self.hash_end = item_hash
 
-    def write_current_shard(self):
+    def write_current_shard(self) -> None:
         assert self.current_proto_bytes is not None, "No items added to current shard"
         assert (
             self.hash_start is not None and self.hash_end is not None
         ), "Hash range not set for current shard"
         index = len(self.index_ranges)
         subfolder = os.path.join(self.folder, shard_subfolder(index))
+        os.makedirs(subfolder, exist_ok=True)
         self.index_ranges.append((self.hash_start, self.hash_end))
         write_gzip_bytes(
             self.current_proto_bytes, os.path.join(subfolder, f"shard_{index}.gz")
@@ -173,8 +183,12 @@ class ShardBuilder:
 
 
 def build_shards_from_callback(
-    folder, type_label, longnames, get_proto_fn, symlinks=None
-):
+    folder: str,
+    type_label: str,
+    longnames: List[str],
+    get_proto_fn: Callable[[str], Any],
+    symlinks: Optional[Dict[str, str]] = None,
+) -> None:
     """
     Build size-based shards by requesting each proto from a callback. No full list of protos in memory.
 
@@ -204,6 +218,7 @@ def build_shards_from_callback(
         combined, desc=f"building {type_label} shards", unit="item"
     ):
         if kind == "symlink":
+            assert target is not None
             creator.add_symlink(name, target)
         else:
             creator.add_proto(name, get_proto_fn(name))

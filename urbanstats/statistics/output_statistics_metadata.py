@@ -1,6 +1,7 @@
 import json
+from collections import Counter
 from functools import lru_cache
-from typing import Counter
+from typing import Any, Dict, Iterable, List, Optional, Set
 
 from urbanstats.statistics.stat_path import get_statistic_column_path
 
@@ -10,13 +11,13 @@ from .statistics_tree import statistics_tree
 
 
 @lru_cache(maxsize=1)
-def statistic_internal_to_display_name():
+def statistic_internal_to_display_name() -> Dict[str, str]:
     """
     An ordered dictionary mapping internal statistic names to display names. The order used here is the order in which
     the statistics are stored in each row of the database.
     """
-    internal_to_source = {}
-    internal_to_display = {}
+    internal_to_source: Dict[str, Any] = {}
+    internal_to_display: Dict[str, str] = {}
 
     for statistic_collection in statistic_collections:
         internal_to_display.update(statistic_collection.name_for_each_statistic())
@@ -44,7 +45,7 @@ def statistic_internal_to_display_name():
 
 
 @lru_cache(maxsize=1)
-def internal_statistic_names_in_tree_order():
+def internal_statistic_names_in_tree_order() -> List[str]:
     """
     List of internal statistic names in the order they appear in the statistics tree.
     This preserves the natural order of the tree structure.
@@ -53,7 +54,7 @@ def internal_statistic_names_in_tree_order():
 
 
 @lru_cache(maxsize=1)
-def internal_statistic_names():
+def internal_statistic_names() -> List[str]:
     """
     List of internal statistic names in the order they are stored in the database. This is designed to be a
     stable order that does not change when you reorder the statistics in computation or display.
@@ -64,28 +65,27 @@ def internal_statistic_names():
     return sorted(statistics_tree.internal_statistics(), key=str)
 
 
-def get_statistic_categories():
+def get_statistic_categories() -> Dict[str, str]:
     """
     Map from internal statistic names to categories.
     """
     return statistics_tree.name_to_category()
 
 
-def get_explanation_page():
+def get_explanation_page() -> Dict[str, Optional[str]]:
     """
     Map from internal statistic names to explanation pages.
     """
-    result = {}
+    result: Dict[str, Optional[str]] = {}
 
     for statistic_collection in statistic_collections:
         result.update(statistic_collection.explanation_page_for_each_statistic())
 
-    result = {k: result[k] for k in statistic_internal_to_display_name()}
-    return result
+    return {k: result[k] for k in statistic_internal_to_display_name()}
 
 
-def get_deprecation_messages():
-    result = {}
+def get_deprecation_messages() -> Dict[str, Optional[str]]:
+    result: Dict[str, Optional[str]] = {}
 
     for statistic_collection in statistic_collections:
         result.update(statistic_collection.deprecation_for_each_statistic())
@@ -108,8 +108,11 @@ def get_deprecation_messages():
 
 
 def get_human_readable_name_for_variable(
-    stat, internal_to_actual_variable, multi_source_variable_names, multi_source_stats
-):
+    stat: str,
+    internal_to_actual_variable: Dict[str, str],
+    multi_source_variable_names: Set[str],
+    multi_source_stats: List[Any],
+) -> str:
     """
     Get the appropriate human-readable name for a variable, including source information for multi-source variables.
     """
@@ -132,23 +135,25 @@ def get_human_readable_name_for_variable(
     return base_name
 
 
-def statistic_variables_info():
+def statistic_variables_info() -> Dict[str, Any]:
     """
     Create the metadata files for the statistics.
     This is used to generate the TypeScript files that are used in the frontend.
     """
-    internal_to_variable = {}
+    internal_to_variable: Dict[str, str] = {}
     for statistic_collection in statistic_collections:
         internal_to_variable.update(statistic_collection.varname_for_each_statistic())
     assert set(internal_to_variable.keys()) == set(internal_statistic_names())
     internal_to_actual_variable = internal_to_variable.copy()
-    multi_source = {}
-    multi_source_variable_names = set()
+    multi_source: Dict[str, Any] = {}
+    multi_source_variable_names: Set[str] = set()
     multi_source_stats = list(multi_source_statistics())
     for stat in multi_source_stats:
-        ms_name = [internal_to_variable[s] for s in stat.by_source.values()]
-        assert len(set(ms_name)) == 1, f"Multiple variable names for {stat}: {ms_name}"
-        ms_name = ms_name[0]
+        ms_name_list = [internal_to_variable[s] for s in stat.by_source.values()]
+        assert (
+            len(set(ms_name_list)) == 1
+        ), f"Multiple variable names for {stat}: {ms_name_list}"
+        ms_name = ms_name_list[0]
         combo = []
         for source, s in sorted(stat.by_source.items(), key=lambda x: x[0].priority):
             variable = ms_name + "_" + source.variable_suffix
@@ -174,7 +179,9 @@ def statistic_variables_info():
     return result
 
 
-def _verify_no_deprecated_multi_source(multi_source, variable_objects):
+def _verify_no_deprecated_multi_source(
+    multi_source: Dict[str, Any], variable_objects: List[Dict[str, Any]]
+) -> None:
     deprecation_map = {
         var_obj["varName"]: var_obj["deprecated"]
         for var_obj in variable_objects
@@ -190,8 +197,10 @@ def _verify_no_deprecated_multi_source(multi_source, variable_objects):
 
 
 def construct_variable_objects(
-    internal_to_actual_variable, multi_source_variable_names, multi_source_stats
-):
+    internal_to_actual_variable: Dict[str, str],
+    multi_source_variable_names: Set[str],
+    multi_source_stats: List[Any],
+) -> List[Dict[str, Any]]:
     deprecation_messages = get_deprecation_messages()
     variable_objects = []
     for i, stat in enumerate(internal_statistic_names_in_tree_order()):
@@ -224,7 +233,7 @@ def construct_variable_objects(
     return variable_objects
 
 
-def multi_source_statistics():
+def multi_source_statistics() -> Iterable[Any]:
     for cat in statistics_tree.categories.values():
         for group in cat.contents.values():
             for by_year in group.by_year.values():
@@ -234,7 +243,7 @@ def multi_source_statistics():
                     yield stat
 
 
-def output_statistics_metadata():
+def output_statistics_metadata() -> None:
     with open("react/src/data/statistic_name_list.ts", "w") as f:
         output_typescript(list(statistic_internal_to_display_name().values()), f)
     with open("react/src/data/statistic_path_list.ts", "w") as f:
@@ -264,14 +273,14 @@ def output_statistics_metadata():
         )
 
 
-def all_legacy_statistic_names():
-    result = {}
+def all_legacy_statistic_names() -> Dict[str, str]:
+    result: Dict[str, str] = {}
     for statistic_collection in statistic_collections:
         result.update(statistic_collection.legacy_statistic_names())
     return result
 
 
-def export_statistics_tree(path):
+def export_statistics_tree(path: str) -> None:
     fst = statistics_tree.flatten(statistic_internal_to_display_name())
     sources = statistics_tree.all_sources()
     source_categories = list(dict.fromkeys([source.category for source in sources]))
@@ -286,12 +295,12 @@ def export_statistics_tree(path):
         }
         for category in source_categories
     ]
-    fst = json.dumps(fst, indent=4)
+    fst_str = json.dumps(fst, indent=4)
     with open(path, "w") as f:
         f.write(
             f"export const dataSources = {json.dumps(result, indent=4)} as const\n\n"
         )
-        f.write(f"export const rawStatsTree = {fst} as const\n")
+        f.write(f"export const rawStatsTree = {fst_str} as const\n")
 
 
 # Just ensuring that the columns have no errors

@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Any, Dict, List
 
 import numpy as np
 
@@ -11,11 +12,11 @@ from urbanstats.website_data.table import shapefile_without_ordinals
 
 
 @lru_cache(maxsize=None)
-def shapefile():
+def shapefile() -> Any:
     return shapefile_without_ordinals().set_index("longname")
 
 
-def backmap_stat_column_name():
+def backmap_stat_column_name() -> Dict[str, str]:
     results = {v: k for k, v in statistic_internal_to_display_name().items()}
     legacy = all_legacy_statistic_names()
     for k, v in legacy.items():
@@ -23,7 +24,9 @@ def backmap_stat_column_name():
     return results
 
 
-def custom_quiz_question(stat_column_name, longname_a, longname_b):
+def custom_quiz_question(
+    stat_column_name: str, longname_a: str, longname_b: str
+) -> Dict[str, Any]:
     t = shapefile()
     stat_column_internal = backmap_stat_column_name()[stat_column_name]
     stat_column_question = stat_to_quiz_name()[stat_column_internal]
@@ -38,7 +41,7 @@ def custom_quiz_question(stat_column_name, longname_a, longname_b):
     )
 
 
-def extract(row, column):
+def extract(row: Any, column: str) -> float:
     deprecated_columns = ["transportation_means_car"]
     if column in deprecated_columns:
         return float(row[column])
@@ -52,7 +55,7 @@ def extract(row, column):
 
 
 @lru_cache(maxsize=None)
-def get_custom_quizzes():
+def get_custom_quizzes() -> Dict[int, List[Dict[str, Any]]]:
     return {
         # april fool's day 2024
         212: [

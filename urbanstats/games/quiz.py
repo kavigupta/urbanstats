@@ -3,6 +3,7 @@ import json
 import os
 import shutil
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pytz
@@ -21,7 +22,7 @@ from .fixed import juxtastat as fixed_up_to
 from .quiz_custom import get_custom_quizzes
 
 
-def generate_quiz(seed):
+def generate_quiz(seed: Union[int, str, Tuple[str, int]]) -> List[Dict[str, Any]]:
     if isinstance(seed, tuple) and seed[0] == "daily":
         check_quiz_is_guaranteed_future(seed[1])
         cq = get_custom_quizzes()
@@ -32,12 +33,12 @@ def generate_quiz(seed):
     return sample_quiz(rng)
 
 
-def full_quiz(seed):
+def full_quiz(seed: Union[int, str, Tuple[str, int]]) -> List[Dict[str, Any]]:
     res = generate_quiz(seed)
     return finish_quiz(res)
 
 
-def finish_quiz(res):
+def finish_quiz(res: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     res = copy.deepcopy(res)
     outs = []
     for q in res:
@@ -51,7 +52,7 @@ def finish_quiz(res):
     return outs
 
 
-def check_quiz_is_guaranteed_future(number):
+def check_quiz_is_guaranteed_future(number: int) -> None:
     fractional_days = compute_fractional_days("Pacific/Kiritimati")
     if number <= fractional_days:
         raise RuntimeError(
@@ -59,21 +60,21 @@ def check_quiz_is_guaranteed_future(number):
         )
 
 
-def quiz_is_guaranteed_past(number):
+def quiz_is_guaranteed_past(number: int) -> Optional[float]:
     fractional_days = compute_fractional_days("US/Samoa")
     if number < fractional_days - 1:
         return None
     return fractional_days
 
 
-def compute_fractional_days(tz):
+def compute_fractional_days(tz: str) -> float:
     now = datetime.now(pytz.timezone(tz))
     beginning = pytz.timezone(tz).localize(datetime(2023, 9, 2))
     fractional_days = (now - beginning).total_seconds() / (24 * 60 * 60)
     return fractional_days
 
 
-def check_quiz_is_guaranteed_past(number):
+def check_quiz_is_guaranteed_past(number: int) -> None:
     fractional_days = quiz_is_guaranteed_past(number)
     if fractional_days is not None:
         raise RuntimeError(
@@ -81,29 +82,29 @@ def check_quiz_is_guaranteed_past(number):
         )
 
 
-def generate_quizzes(folder):
-    with open("react/src/data/quiz_names.ts", "w") as f:
+def generate_quizzes(folder: str) -> None:
+    with open("react/src/data/quiz_names.ts", "w") as f_names:
         output_typescript(
             [
                 stat_to_quiz_name().get(k, None)
                 for k in statistic_internal_to_display_name()
             ],
-            f,
+            f_names,
         )
 
-    def path(day):
+    def path(day: Union[int, str]) -> str:
         return os.path.join(folder, f"{day}")
 
     for i in range(fixed_up_to + 1):
         shutil.copy(f"stored_quizzes/juxtastat/{i}", path(i))
     for i in tqdm.trange(fixed_up_to + 1, 2000 + 1):
         outs = full_quiz(("daily", i))
-        with open(path(i), "w") as f:
-            json.dump(outs, f)
+        with open(path(i), "w") as f_quiz:
+            json.dump(outs, f_quiz)
 
 
 # vulture: ignore -- used by notebooks
-def display_question(question):
+def display_question(question: str) -> str:
     if "!TOOLTIP" in question:
         return question[: question.index("!TOOLTIP")].strip()
     if question.startswith("!FULL"):
