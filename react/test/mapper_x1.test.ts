@@ -172,4 +172,4 @@ cMap(
     ramp=rampUridis
 )`
 
-testCode(() => test, 'Subnational Region', 'USA', asymmetricCenterValue, 'asymmetric-center-value', true)
+testCode(() => test, 'Subnational Region', 'USA', asymmetricCenterValue, 'asymmetric-center-value')
