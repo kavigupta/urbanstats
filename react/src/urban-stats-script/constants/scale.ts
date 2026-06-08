@@ -74,7 +74,7 @@ const linearScale: Scale = (values: number[], min?: number, max?: number, center
     values = values.filter(value => typeof value === 'number' && !isNaN(value) && isFinite(value))
 
     if (min !== undefined && max !== undefined && min > max) {
-        throw new Error(`Inconsistent parameters: min ${min} must be less than or equal to max ${max}`)
+        throw new Error('Inconsistent parameters: min must be less than or equal to max.')
     }
 
     let computedMin = min ?? Math.min(...values)
@@ -83,21 +83,21 @@ const linearScale: Scale = (values: number[], min?: number, max?: number, center
     if (center !== undefined) {
         if (min !== undefined && max !== undefined) {
             if (center <= min + 1e-10 || center >= max - 1e-10) {
-                throw new Error(`Inconsistent parameters: center ${center} must be strictly between min ${min} and max ${max}`)
+                throw new Error('Inconsistent parameters: center must be strictly between min and max.')
             }
             computedMin = min
             computedMax = max
         }
         else if (min !== undefined) {
             if (center <= min + 1e-10) {
-                throw new Error(`Inconsistent parameters: center ${center} must be strictly greater than min ${min}`)
+                throw new Error('Inconsistent parameters: center must be strictly greater than min.')
             }
             computedMin = min
             computedMax = 2 * center - min
         }
         else if (max !== undefined) {
             if (center >= max - 1e-10) {
-                throw new Error(`Inconsistent parameters: center ${center} must be strictly less than max ${max}`)
+                throw new Error('Inconsistent parameters: center must be strictly less than max.')
             }
             computedMax = max
             computedMin = 2 * center - max

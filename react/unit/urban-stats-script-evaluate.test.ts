@@ -1638,7 +1638,7 @@ void test('test scale functions with parameters', () => {
     assert.throws(
         () => inconsistentScaleFn.value([1, 2, 3]),
         (err: Error): boolean => {
-            return err.message.includes('Inconsistent parameters: center 11 must be strictly between min 0 and max 10')
+            return err.message.includes('Inconsistent parameters: center must be strictly between min and max')
         },
     )
 
@@ -1648,7 +1648,7 @@ void test('test scale functions with parameters', () => {
     assert.throws(
         () => centerAtMinScaleFn.value([1, 2, 3]),
         (err: Error): boolean => {
-            return err.message.includes('Inconsistent parameters: center 0 must be strictly between min 0 and max 10')
+            return err.message.includes('Inconsistent parameters: center must be strictly between min and max')
         },
     )
 
@@ -1658,7 +1658,7 @@ void test('test scale functions with parameters', () => {
     assert.throws(
         () => centerAtMaxScaleFn.value([1, 2, 3]),
         (err: Error): boolean => {
-            return err.message.includes('Inconsistent parameters: center 10 must be strictly between min 0 and max 10')
+            return err.message.includes('Inconsistent parameters: center must be strictly between min and max')
         },
     )
 
@@ -1668,7 +1668,7 @@ void test('test scale functions with parameters', () => {
     assert.throws(
         () => inconsistentMinCenterScaleFn.value([1, 2, 3]),
         (err: Error): boolean => {
-            return err.message.includes('Inconsistent parameters: center 5 must be strictly greater than min 10')
+            return err.message.includes('Inconsistent parameters: center must be strictly greater than min')
         },
     )
 
@@ -1678,7 +1678,7 @@ void test('test scale functions with parameters', () => {
     assert.throws(
         () => centerEqMinScaleFn.value([1, 2, 3]),
         (err: Error): boolean => {
-            return err.message.includes('Inconsistent parameters: center 10 must be strictly greater than min 10')
+            return err.message.includes('Inconsistent parameters: center must be strictly greater than min')
         },
     )
 
@@ -1688,7 +1688,7 @@ void test('test scale functions with parameters', () => {
     assert.throws(
         () => inconsistentMaxCenterScaleFn.value([1, 2, 3]),
         (err: Error): boolean => {
-            return err.message.includes('Inconsistent parameters: center 10 must be strictly less than max 5')
+            return err.message.includes('Inconsistent parameters: center must be strictly less than max')
         },
     )
 
@@ -1698,7 +1698,7 @@ void test('test scale functions with parameters', () => {
     assert.throws(
         () => centerEqMaxScaleFn.value([1, 2, 3]),
         (err: Error): boolean => {
-            return err.message.includes('Inconsistent parameters: center 5 must be strictly less than max 5')
+            return err.message.includes('Inconsistent parameters: center must be strictly less than max')
         },
     )
 
@@ -1708,7 +1708,7 @@ void test('test scale functions with parameters', () => {
     assert.throws(
         () => decreasingMinMaxFn.value([1, 2, 3]),
         (err: Error): boolean => {
-            return err.message.includes('Inconsistent parameters: min 10 must be less than or equal to max 0')
+            return err.message.includes('Inconsistent parameters: min must be less than or equal to max')
         },
     )
 
@@ -1955,7 +1955,7 @@ void test('test log scale functions with parameters', () => {
     assert.throws(
         () => inconsistentLogScaleFn.value([1, 2, 3]),
         (err: Error): boolean => {
-            return err.message.includes('Inconsistent parameters: center 5.298317366548036 must be strictly between min 0 and max 4.605170185988092')
+            return err.message.includes('Inconsistent parameters: center must be strictly between min and max')
         },
     )
 })
