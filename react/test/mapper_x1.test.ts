@@ -164,3 +164,12 @@ test('cluster-map-population-filter-steps', async (t) => {
         await screencap(t, { removeEntireMap: false })
     }
 })
+
+const asymmetricCenterValue = `
+cMap(
+    data=density_pw_1km,
+    scale=linearScale(center=9000, max=9005, min=0),
+    ramp=rampUridis
+)`
+
+testCode(() => test, 'Subnational Region', 'USA', asymmetricCenterValue, 'asymmetric-center-value', true)
