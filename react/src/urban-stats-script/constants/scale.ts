@@ -30,8 +30,8 @@ export function instantiate(descriptor: ScaleDescriptor): ScaleInstance {
                 }
             }
             const range = max - min
-            const forward = (value: number) => (value - min) / range
-            const inverse = (t: number) => t * range + min
+            const forward = (value: number): number => (value - min) / range
+            const inverse = (t: number): number => t * range + min
 
             if (center !== undefined) {
                 const centerT = forward(center)
