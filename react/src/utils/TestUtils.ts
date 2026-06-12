@@ -2,6 +2,8 @@ import type maplibregl from 'maplibre-gl'
 
 import { keptByNoBasemap } from '../components/map-common-utils'
 
+import { makeDebugLogger } from './debug-logging'
+
 /**
  * Indicates whether we're e2e testing.
  *
@@ -105,11 +107,4 @@ export interface TestWindow {
 
 (window as unknown as TestWindow).testUtils = TestUtils.shared
 
-const debugWaitForLoading: boolean = false
-
-function debugWait(msg: string): void {
-    if (debugWaitForLoading) {
-        // eslint-disable-next-line no-console -- Debug
-        console.log(msg)
-    }
-}
+const debugWait = makeDebugLogger('waitForLoading')
