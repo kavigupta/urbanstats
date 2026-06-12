@@ -37,6 +37,8 @@ import { getTextBoxes, scriptWithNewTextBoxes } from './edit-text-boxes'
 import { validMapperOutputs } from './map-uss'
 import { MapEditorMode, MapSettings } from './utils'
 
+const debugLog = makeDebugLogger('mapExport')
+
 export interface ActionOptions { undoable?: boolean, update?: boolean }
 
 export function EditMapperPanel(props: { mapSettings: MapSettings, counts: CountsByUT }): ReactNode {
@@ -161,8 +163,6 @@ interface CommonEditorProps {
 
 function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
     const ui = mapGenerator.ui({ mode: 'uss' })
-
-    const debugLog = makeDebugLogger('mapExport')
 
     const exportImage = ui.exportImage
 
@@ -501,8 +501,6 @@ function offsetInsetInBounds<T extends Inset | TextBox>(inset: T, exclude: T[]):
 
 function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => string, mapSettings: MapSettings, typeEnvironment: TypeEnvironment }): ReactNode {
     const navContext = useContext(Navigator.Context)
-
-    const debugLog = makeDebugLogger('mapExport')
 
     const doPngExport = (): void => {
         debugLog('Export button clicked')
