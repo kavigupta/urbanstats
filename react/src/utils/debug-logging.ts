@@ -3,6 +3,7 @@ const enableDebugLogging = {
     searchPerformance: false,
     waitForLoading: false,
     undoRedo: false,
+    mapExport: true,
 }
 
 type Key = keyof typeof enableDebugLogging
@@ -10,7 +11,7 @@ type Key = keyof typeof enableDebugLogging
 export function makeDebugLogger(...categories: [Key, ...Key[]]): (...args: unknown[]) => void {
     if (categories.some(category => enableDebugLogging[category])) {
         // eslint-disable-next-line no-console -- Debug logging
-        return (...args) => { console.log(...args) }
+        return (...args) => { console.log(`[${categories.join(',')}]`, ...args) }
     }
     else {
         return () => undefined
