@@ -23,7 +23,7 @@ const continueButton = Selector('button').withExactText('Continue')
 const totpInput = Selector('input[type=tel]')
 
 const nextButton = Selector('button').withExactText('Next')
-const emailInput = Selector('input[type=email]:not([aria-hidden="true"])')
+const emailInput = Selector('input[type=text][aria-label*=email i]:not([aria-hidden="true"])')
 const passwordInput = Selector('input[type=password]')
 
 async function popTOTP(t: TestController): Promise<string> {
