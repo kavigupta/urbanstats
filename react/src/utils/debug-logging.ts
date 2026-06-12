@@ -3,6 +3,7 @@ const enableDebugLogging = {
     searchPerformance: false,
     waitForLoading: false,
     undoRedo: false,
+    mapExport: true,
 }
 
 type Key = keyof typeof enableDebugLogging
