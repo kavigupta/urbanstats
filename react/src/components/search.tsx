@@ -7,15 +7,18 @@ import { searchIconLink, typesInOrder } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useSettings } from '../page_template/settings'
 import '../common.css'
-import { SearchResult, SearchParams, debugPerformance, getIndexCacheKey, SearchIndexConfig } from '../search'
+import { SearchResult, SearchParams, getIndexCacheKey, SearchIndexConfig } from '../search'
 import type { SearchWorkerInputMessage, SearchWorkerOutputMessage, SearchWorkerStatus } from '../searchWorker'
 import { Universe, useUniverse } from '../universe'
 import { Property } from '../utils/Property'
 import { TestUtils } from '../utils/TestUtils'
+import { makeDebugLogger } from '../utils/debug-logging'
 
 import { GenericSearchBox } from './search-generic'
 
 const defaultWorkerStatusProperty = new Property<SearchWorkerStatus>({ status: 'ready' })
+
+const debugPerformance = makeDebugLogger('searchPerformance')
 
 export function SearchBox(props: {
     onChange?: (inp: string) => void

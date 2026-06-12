@@ -5,8 +5,8 @@ import order_links from './data/order_links'
 import statistic_path_list from './data/statistic_path_list'
 import universes_ordered from './data/universes_ordered'
 import { dataLink, indexLink, orderingDataLink, orderingLink, shapeLink } from './navigation/links'
-import { debugPerformance } from './search'
 import { Universe } from './universe'
+import { makeDebugLogger } from './utils/debug-logging'
 import { assert } from './utils/defensive'
 import {
     Article, ConsolidatedArticles, ConsolidatedShapes, CountsByArticleUniverseAndType, DataLists,
@@ -24,6 +24,8 @@ import {
     DefaultUniverseTable,
 } from './utils/protos'
 import { NormalizeProto } from './utils/types'
+
+const debugPerformance = makeDebugLogger('searchPerformance')
 
 // from https://stackoverflow.com/a/4117299/1549476
 

@@ -5,8 +5,10 @@ const enableDebugLogging = {
     undoRedo: false,
 }
 
-export function makeDebugLogger(category: keyof typeof enableDebugLogging): (...args: unknown[]) => void {
-    if (enableDebugLogging[category]) {
+type Key = keyof typeof enableDebugLogging
+
+export function makeDebugLogger(...categories: [Key, ...Key[]]): (...args: unknown[]) => void {
+    if (categories.some(category => enableDebugLogging[category])) {
         // eslint-disable-next-line no-console -- Debug logging
         return (...args) => { console.log(...args) }
     }
