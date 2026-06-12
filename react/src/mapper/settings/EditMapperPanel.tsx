@@ -14,6 +14,7 @@ import { documentLength } from '../../urban-stats-script/constants/rich-text'
 import { defaults, TextBox } from '../../urban-stats-script/constants/text-box'
 import { unparse } from '../../urban-stats-script/parser'
 import { TypeEnvironment } from '../../urban-stats-script/types-values'
+import { makeDebugLogger } from '../../utils/debug-logging'
 import { Property } from '../../utils/Property'
 import { TestUtils } from '../../utils/TestUtils'
 import { mixWithBackground } from '../../utils/color'
@@ -161,15 +162,22 @@ interface CommonEditorProps {
 function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, setMapEditorMode, mapGenerator }: CommonEditorProps & { counts: CountsByUT }): ReactNode {
     const ui = mapGenerator.ui({ mode: 'uss' })
 
+    const debugLog = makeDebugLogger('mapExport')
+
     const exportImage = ui.exportImage
 
     const exportPng = exportImage
         ? async () => {
+            debugLog('exportPng: requesting canvas from map generator')
             const canvas = await exportImage()
+            debugLog('exportPng: received canvas', canvas.width, 'x', canvas.height, ', encoding as PNG data URL')
             const pngDataUrl = canvas.toDataURL('image/png')
+            debugLog('exportPng: data URL length', pngDataUrl.length, ', fetching as blob')
             const data = await fetch(pngDataUrl)
             const pngData = await data.blob()
+            debugLog('exportPng: blob size', pngData.size, 'bytes, saving file')
             saveAsFile('map.png', pngData, 'image/png')
+            debugLog('exportPng: file saved')
         }
         : undefined
 
@@ -494,10 +502,15 @@ function offsetInsetInBounds<T extends Inset | TextBox>(inset: T, exclude: T[]):
 function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => string, mapSettings: MapSettings, typeEnvironment: TypeEnvironment }): ReactNode {
     const navContext = useContext(Navigator.Context)
 
+    const debugLog = makeDebugLogger('mapExport')
+
     const doPngExport = (): void => {
+        debugLog('Export button clicked')
         if (props.pngExport === undefined) {
+            debugLog('exportImage not ready, ignoring click')
             return
         }
+        debugLog('invoking exportPng')
         void props.pngExport()
     }
 

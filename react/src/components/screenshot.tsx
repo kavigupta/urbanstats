@@ -7,8 +7,11 @@ import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { loadImage } from '../utils/Image'
 import { TestUtils } from '../utils/TestUtils'
+import { makeDebugLogger } from '../utils/debug-logging'
 import { totalOffset } from '../utils/layout'
 import { zIndex } from '../utils/zIndex'
+
+const debugLog = makeDebugLogger('mapExport')
 
 export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
     const colors = useColors()
@@ -173,12 +176,22 @@ export type ScreenshotContextType = Set<(callback: ReadyForScreenshotCallback | 
 
 export async function withScreenshotMode<T>(context: ScreenshotContextType, fn: () => Promise<T>): Promise<T> {
     // Tell all the components that we're screenshotting, and wait for them to be ready
-    await Promise.all(Array.from(context).map(setCallback => new Promise<void>((resolve) => { setCallback(() => resolve) })))
+    debugLog('withScreenshotMode: notifying', context.size, 'subscriber(s), waiting for all to signal ready')
+    let resolvedCount = 0
+    await Promise.all(Array.from(context).map(setCallback => new Promise<void>((resolve) => {
+        setCallback(() => () => {
+            resolvedCount++
+            debugLog('withScreenshotMode: subscriber', resolvedCount, '/', context.size, 'ready')
+            resolve()
+        })
+    })))
+    debugLog('withScreenshotMode: all subscribers ready, running capture')
     try {
         return await fn()
     }
     finally {
         // Move everything out of screenshot mode
+        debugLog('withScreenshotMode: capture done, clearing screenshot mode for', context.size, 'subscriber(s)')
         context.forEach((setCallback) => { setCallback(undefined) })
     }
 }

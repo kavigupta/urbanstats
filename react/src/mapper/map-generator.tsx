@@ -27,6 +27,7 @@ import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
 import { USSOpaqueValue } from '../urban-stats-script/types-values'
 import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
+import { makeDebugLogger } from '../utils/debug-logging'
 import { loadImage } from '../utils/Image'
 import { editIndex, EditSeq } from '../utils/array-edits'
 import { furthestColor, interpolateColor } from '../utils/color'
@@ -42,6 +43,8 @@ import { loadInsets } from './context'
 import { Basemap, computeUSS, MapSettings } from './settings/utils'
 
 const mapUpdateInterval = 500
+
+const debugLog = makeDebugLogger('mapExport')
 
 export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): MapGenerator {
     const cache = useRef<MapCache>({})
@@ -179,14 +182,20 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
         const colors = useColors()
 
         exportImageRef(async () => {
+            debugLog('exportImage: starting PNG export,', mapsRef.length, 'inset map(s)')
             const restoreMaps = mapsRef.map(r => r!.getMap()).map(prepareMapForImageExport)
+            debugLog('exportImage: all maps prepared for export, entering screenshot mode')
 
             const image = await withScreenshotMode(screenshotContext.current, async () => {
+                debugLog('exportImage: screenshot mode active, capturing element canvas at', canonicalWidth * exportPixelRatio, 'px wide')
                 const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
+                debugLog('exportImage: screencapElement returned', elementCanvas.width, 'x', elementCanvas.height, 'canvas, compositing banner')
                 return mapImageExport(elementCanvas, mapResultMain.value.basemap, colors)
             })
 
+            debugLog('exportImage: screenshot mode exited, restoring', restoreMaps.length, 'map(s)')
             restoreMaps.forEach((restore) => { restore() })
+            debugLog('exportImage: export complete, final canvas', image.width, 'x', image.height)
 
             return image
         })
@@ -245,34 +254,42 @@ const exportPixelRatio = 4
 
 function prepareMapForImageExport(map: MapInstance): () => void {
     const originalPixelRatio = map.getPixelRatio()
+    debugLog('prepareMapForImageExport: setting pixel ratio', originalPixelRatio, '→', exportPixelRatio)
     map.setPixelRatio(exportPixelRatio)
 
     const attrib: HTMLElement | null = map.getContainer().querySelector('.maplibregl-ctrl-attrib')
     let resetAttrib: undefined | (() => void)
     if (attrib !== null) {
+        debugLog('prepareMapForImageExport: hiding attribution overlay')
         const prevDisplay = attrib.style.display
         attrib.style.display = 'none'
         resetAttrib = () => attrib.style.display = prevDisplay
     }
 
     return () => {
+        debugLog('prepareMapForImageExport: restoring pixel ratio', exportPixelRatio, '→', originalPixelRatio)
         map.setPixelRatio(originalPixelRatio)
         resetAttrib?.()
     }
 }
 
 async function mapImageExport(elementCanvas: HTMLCanvasElement, basemap: Basemap, colors: Colors): Promise<HTMLCanvasElement> {
+    debugLog('mapImageExport: element canvas size', elementCanvas.width, 'x', elementCanvas.height, 'basemap', basemap)
     const { backgroundColor, color } = styleFromBasemap(basemap, colors)
+    debugLog('mapImageExport: background color', backgroundColor, 'text color', color)
     const bannerUrl = color === undefined ? colors.screenshotFooterUrl : colorThemes[Color(color).l() < 50 ? 'Light Mode' : 'Dark Mode'].screenshotFooterUrl
+    debugLog('mapImageExport: loading banner from', bannerUrl)
     const bannerImage = await loadImage(bannerUrl)
     const bannerHeight = 50 * exportPixelRatio
     const bannerWidth = bannerImage.width * (bannerHeight / bannerImage.height)
     const bannerSquish = 10 * exportPixelRatio
+    debugLog('mapImageExport: banner natural size', bannerImage.width, 'x', bannerImage.height, '→ rendered', bannerWidth, 'x', bannerHeight, '(squish', bannerSquish, ')')
 
     const resultCanvas = document.createElement('canvas')
     const ctx = resultCanvas.getContext('2d')!
     resultCanvas.width = elementCanvas.width
     resultCanvas.height = elementCanvas.height + bannerHeight - bannerSquish
+    debugLog('mapImageExport: final canvas size', resultCanvas.width, 'x', resultCanvas.height)
 
     ctx.drawImage(elementCanvas, 0, 0)
 
@@ -287,6 +304,7 @@ async function mapImageExport(elementCanvas: HTMLCanvasElement, basemap: Basemap
         bannerHeight,
     )
 
+    debugLog('mapImageExport: done compositing')
     return resultCanvas
 }
 
