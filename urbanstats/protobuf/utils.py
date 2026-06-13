@@ -46,33 +46,22 @@ def save_universes_list_all(table: Any, ordinals: Any, site_folder: str) -> None
         )
 
 
-def save_search_index(
-    longnames: List[str],
-    types: List[str],
-    is_usas: List[bool],
-    path: str,
-    *,
-    symlinks: Dict[str, str],
-) -> None:
+def save_search_index(longnames, types, universe_idxs_list, path, *, symlinks):
     longname_to_index = {x: i for i, x in enumerate(longnames)}
-    types_list, is_usas_list = list(types), list(is_usas)
-    orders = [type_ordering_idx[typ] for typ in types_list]
+    types = list(types)
+    orders = [type_ordering_idx[typ] for typ in types]
     res = data_files_pb2.SearchIndex()
-    for name, order, is_usa in zip(longnames, orders, is_usas_list):
+    for name, order, universe_idxs in zip(longnames, orders, universe_idxs_list):
         res.elements.append(name)
-        res.metadata.append(
-            data_files_pb2.SearchIndexMetadata(
-                type=order, is_usa=is_usa, is_symlink=False
-            )
-        )
+        metadata = data_files_pb2.SearchIndexMetadata(type=order, is_symlink=False)
+        metadata.universe_idxs.extend(universe_idxs)
+        res.metadata.append(metadata)
     for name, target in symlinks.items():
         res.elements.append(name)
         idx = longname_to_index[target]
-        res.metadata.append(
-            data_files_pb2.SearchIndexMetadata(
-                type=orders[idx], is_usa=is_usas_list[idx], is_symlink=True
-            )
-        )
+        metadata = data_files_pb2.SearchIndexMetadata(type=orders[idx], is_symlink=True)
+        metadata.universe_idxs.extend(universe_idxs_list[idx])
+        res.metadata.append(metadata)
     write_gzip(res, path)
 
 

@@ -2583,11 +2583,11 @@ export interface ISearchIndexMetadata {
     /** SearchIndexMetadata type */
     type?: (number|null);
 
-    /** SearchIndexMetadata isUsa */
-    isUsa?: (number|null);
-
     /** SearchIndexMetadata isSymlink */
     isSymlink?: (number|null);
+
+    /** SearchIndexMetadata universeIdxs */
+    universeIdxs?: (number[]|null);
 }
 
 /** Represents a SearchIndexMetadata. */
@@ -2602,11 +2602,11 @@ export class SearchIndexMetadata implements ISearchIndexMetadata {
     /** SearchIndexMetadata type. */
     public type: number;
 
-    /** SearchIndexMetadata isUsa. */
-    public isUsa: number;
-
     /** SearchIndexMetadata isSymlink. */
     public isSymlink: number;
+
+    /** SearchIndexMetadata universeIdxs. */
+    public universeIdxs: number[];
 
     /**
      * Creates a new SearchIndexMetadata instance using the specified properties.
