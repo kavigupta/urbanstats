@@ -9,6 +9,7 @@ import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { useUniverse } from '../universe'
 import { TestUtils } from '../utils/TestUtils'
+import { makeDebugLogger } from '../utils/debug-logging'
 import { assert } from '../utils/defensive'
 import { promiseStream, waiting } from '../utils/promiseStream'
 import { Feature } from '../utils/protos'
@@ -17,7 +18,9 @@ import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { keptByNoBasemap } from './map-common-utils'
-import { defaultMapBorderRadius, mapBorderWidth, ScreenshotContext, useScreenshotMode } from './screenshot'
+import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback, useScreenshotMode } from './screenshot'
+
+const debugLog = makeDebugLogger('mapExport')
 
 import './map.css'
 
@@ -56,6 +59,7 @@ function _CommonMaplibreMap(props: CommonMapProps, ref: React.Ref<MapRef>): Reac
         >
             {props.children}
             <ExposeMapForTesting id={testId} />
+            <SynchronizeMapWithScreenshots />
         </Map>
     )
 }
@@ -68,6 +72,42 @@ function ExposeMapForTesting({ id }: { id: string }): ReactNode {
             TestUtils.shared.maps.delete(id)
         }
     }, [map, id])
+    return null
+}
+
+function SynchronizeMapWithScreenshots(): ReactNode {
+    const { current: map } = useMap()
+
+    const screenshotCallback = useScreenshotCallback('wait')
+
+    useEffect(() => {
+        if (screenshotCallback !== undefined && map) {
+            debugLog('SynchronizeMapWithScreenshots: screenshot mode entered, map.loaded()=', map.loaded())
+            void (async () => {
+                await new Promise(resolve => requestAnimationFrame(resolve))
+                let idleCount = 0
+                while (!map.loaded()) {
+                    idleCount++
+                    debugLog('SynchronizeMapWithScreenshots: map not loaded, waiting for idle (attempt', idleCount, ')')
+                    await Promise.any([
+                        map.once('idle'),
+                        map.once('remove'),
+                    ])
+                    if (map._removed) {
+                        debugLog('SynchronizeMapWithScreenshots: map was removed, aborting')
+                        return
+                    }
+                    debugLog('SynchronizeMapWithScreenshots: idle event received, map.loaded()=', map.loaded())
+                    // Map will sometimes return to idle but needs to load more
+                    await new Promise(resolve => requestAnimationFrame(resolve))
+                }
+                debugLog('SynchronizeMapWithScreenshots: map is loaded after', idleCount, 'idle wait(s), signaling ready')
+            })().then(() => {
+                screenshotCallback()
+            })
+        }
+    }, [screenshotCallback, map])
+
     return null
 }
 
@@ -129,36 +169,18 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
 
     useClickable({ id: polygonsId(id, 'fill'), features, clickable })
 
-    const screenshotContext = useContext(ScreenshotContext)
-
-    useEffect(() => {
-        if (screenshotContext.screenshotMode && map) {
-            screenshotContext.loading.add((async () => {
-                while (!map.loaded()) {
-                    await Promise.any([
-                        map.once('idle'),
-                        map.once('remove'),
-                    ])
-                    if (map._removed) {
-                        return
-                    }
-                    // Map will sometimes return to idle but needs to load more
-                    await new Promise(resolve => setTimeout(resolve))
-                }
-            })())
-        }
-    }, [screenshotContext, map])
+    const isScreenshotMode = useScreenshotMode()
 
     return (
         <>
             <Source
                 // Must remount to apply tolerance changes
-                key={`source-${String(screenshotContext.screenshotMode)}`}
+                key={`source-${String(isScreenshotMode)}`}
                 id={polygonsId(id, 'source')}
                 type="geojson"
                 data={collection}
                 // Only use tolerance=0 in screenshot mode, as it takes a lot of memory
-                {...(screenshotContext.screenshotMode ? { tolerance: 0 } : { })}
+                {...(isScreenshotMode ? { tolerance: 0 } : { })}
             />
             <Layer
                 id={polygonsId(id, 'fill')}

@@ -1,9 +1,12 @@
-import { createIndex, debugPerformance, SearchIndexConfig, SearchParams, SearchResult, simulateSlowSearchDelayMs } from './search'
+import { createIndex, SearchIndexConfig, SearchParams, SearchResult, simulateSlowSearchDelayMs } from './search'
+import { makeDebugLogger } from './utils/debug-logging'
 import { assert } from './utils/defensive'
 
 export type SearchWorkerInputMessage = { type: 'configure', config: SearchIndexConfig } | { type: 'search', params: SearchParams }
 export type SearchWorkerOutputMessage = { type: 'result', results: SearchResult[] } | { type: 'status', status: SearchWorkerStatus }
 export type SearchWorkerStatus = { status: 'ready' } | { status: 'loading', message: string }
+
+const debugPerformance = makeDebugLogger('searchPerformance')
 
 debugPerformance(`Search worker starting at timestamp ${Date.now()}`)
 

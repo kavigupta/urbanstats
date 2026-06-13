@@ -29,7 +29,7 @@ import { mapUSSFromStat } from './utils'
 const statUpdateInterval = 500
 
 export function useStatGenerator({ stat }: { stat: Statistic }): StatGenerator & { loading: boolean } {
-    const compute = useCallback((previousGenerator: Promise<StatGenerator>) => makeStatGenerator({ stat, previousGenerator }), [stat])
+    const compute = useCallback((previousGenerator: () => Promise<StatGenerator>) => makeStatGenerator({ stat, previousGenerator }), [stat])
 
     return useDebouncedResolve(
         compute,
@@ -56,12 +56,13 @@ export interface StatGenerator {
     assignments: AssignmentsResult
 }
 
-async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic, previousGenerator: Promise<StatGenerator> }): Promise<StatGenerator> {
-    const errorResult = async (errors: EditorError[]): Promise<StatGenerator> => {
-        const prev = await previousGenerator
+async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic, previousGenerator: () => Promise<StatGenerator> }): Promise<StatGenerator> {
+    const errorResult = async (errors: EditorError[], assignments: AssignmentsResult): Promise<StatGenerator> => {
+        const prev = await previousGenerator()
         return {
             ...prev,
             errors,
+            assignments,
         }
     }
 
@@ -71,7 +72,7 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
     const countErrors = checkArticleCount(counts, stat.universe, stat.articleType)
     if (countErrors.length > 0) {
         return {
-            ...(await previousGenerator),
+            ...(await previousGenerator()),
             data: undefined,
             errors: countErrors,
         }
@@ -87,7 +88,7 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
         const execErrors = exec.error
 
         if (exec.resultingValue === undefined) {
-            return await errorResult(execErrors)
+            return await errorResult(execErrors, exec.assignments)
         }
         const res = exec.resultingValue
 
@@ -100,7 +101,7 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
         if (table.columns.length === 0) {
             const error: EditorError = { type: 'error', value: 'Table has no columns', location: noLocation, kind: 'error' }
             const allErrors = [...execErrors, error]
-            return await errorResult(allErrors)
+            return await errorResult(allErrors, exec.assignments)
         }
 
         // Convert all columns to the data format
@@ -139,7 +140,7 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
     }
     catch (e) {
         const error: EditorError = { type: 'error', value: e instanceof Error ? e.message : 'Unknown error', location: noLocation, kind: 'error' }
-        return errorResult([error])
+        return errorResult([error], new Map())
     }
 }
 

@@ -1,5 +1,6 @@
 from collections import Counter
 from functools import lru_cache
+from typing import Any, Dict, Sequence
 
 import numpy as np
 import pandas as pd
@@ -33,11 +34,12 @@ from urbanstats.universe.universe_provider.compute_universes import (
     multiprocess_safe=True,
 )
 def compute_statistics_for_shapefile(
-    sf,
-    shapefiles,
-    metadata_providers=default_metadata_column_providers,
-    statistic_collections=default_statistic_collections,
-):
+    sf: Any,
+    shapefiles: Dict[str, Any],
+    metadata_providers: Any = default_metadata_column_providers,
+    statistic_collections: Any = default_statistic_collections,
+) -> pd.DataFrame:
+    # pylint: disable=too-many-locals
     print("Computing statistics for", sf.hash_key)
     sf_fr = sf.load_file()
     result = sf_fr[sf.available_columns(include_intermediates=False)].copy()
@@ -64,7 +66,7 @@ def compute_statistics_for_shapefile(
     for k in sf.meta:
         result[k] = sf.meta[k]
 
-    statistics = {}
+    statistics: Dict[str, Any] = {}
 
     for collection in statistic_collections:
         statistics.update(
@@ -77,31 +79,33 @@ def compute_statistics_for_shapefile(
             )
         )
 
-    statistics = pd.DataFrame(statistics)
-    result = pd.concat([result, statistics], axis=1)
+    statistics_df = pd.DataFrame(statistics)
+    result = pd.concat([result, statistics_df], axis=1)
     return result
 
 
-def combined_shapefile():
+def combined_shapefile() -> pd.DataFrame:
     full = []
     for k in tqdm.tqdm(shapefiles_list, desc="computing statistics"):
         t = compute_statistics_for_shapefile(shapefiles_list[k], shapefiles_list)
 
         full.append(t)
 
-    full = pd.concat(full)
-    full = full.reset_index(drop=True)
+    full_df = pd.concat(full)
+    full_df = full_df.reset_index(drop=True)
     # Simply abolish local government tbh. How is this a thing.
     # https://www.openstreetmap.org/user/Minh%20Nguyen/diary/398893#:~:text=An%20administrative%20area%E2%80%99s%20name%20is%20unique%20within%20its%20immediate%20containing%20area%20%E2%80%93%20false
     # Ban both of these from the database
-    full = full[full.longname != "Washington township [CCD], Union County, Ohio, USA"]
+    full_df = full_df[
+        full_df.longname != "Washington township [CCD], Union County, Ohio, USA"
+    ]
     # duplicates = {k: v for k, v in Counter(full.longname).items() if v > 1}
     # assert not duplicates, str(duplicates)
-    del full["type_category"]
-    return full
+    del full_df["type_category"]
+    return full_df
 
 
-def merge_population_estimates(full):
+def merge_population_estimates(full: pd.DataFrame) -> pd.DataFrame:
     popu = np.array(full.population)
     popu[np.isnan(popu)] = full.population_2021_canada[np.isnan(popu)]
     popu[np.isnan(popu)] = full.gpw_population[np.isnan(popu)]
@@ -109,7 +113,7 @@ def merge_population_estimates(full):
     return full
 
 
-def sort_shapefile(full):
+def sort_shapefile(full: pd.DataFrame) -> pd.DataFrame:
     full = full.sort_values("longname")
     full = full.sort_values("best_population_estimate", ascending=False, kind="stable")
     full = full[full.best_population_estimate > 0].reset_index(drop=True)
@@ -117,7 +121,7 @@ def sort_shapefile(full):
 
 
 @lru_cache(maxsize=None)
-def shapefile_without_ordinals():
+def shapefile_without_ordinals() -> pd.DataFrame:
     full = combined_shapefile()
     full = merge_population_estimates(full)
     full = sort_shapefile(full)
@@ -125,7 +129,7 @@ def shapefile_without_ordinals():
     return full
 
 
-def check(names):
+def check(names: Sequence[str]) -> None:
     counted = Counter(names)
     duplicates = [name for name, count in counted.items() if count > 1]
     assert not duplicates, f"Duplicate names: {duplicates}"

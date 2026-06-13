@@ -6,6 +6,7 @@ import { loadProtobuf } from './load_json'
 import { Universe } from './universe'
 import { DefaultMap } from './utils/DefaultMap'
 import { bitap, bitapPerformance, bitCount, Haystack, toHaystack, toNeedle, toSignature } from './utils/bitap'
+import { makeDebugLogger } from './utils/debug-logging'
 import { assert } from './utils/defensive'
 import { ISearchIndexMetadata } from './utils/protos'
 import { isAllowedToBeShown, ShowGeographySettings } from './utils/restricted-types'
@@ -19,23 +20,8 @@ export type SearchResult =
         typeIndex: number
         universeIndex: number }
 
-const debugSearch: boolean = false
-
-function debug(arg: unknown): void {
-    if (debugSearch) {
-        // eslint-disable-next-line no-console -- Debug logging
-        console.log(arg)
-    }
-}
-
-const debugSearchPerformance: boolean = false
-
-export function debugPerformance(arg: unknown): void {
-    if (debugSearchPerformance) {
-        // eslint-disable-next-line no-console -- Debug logging
-        console.log(arg)
-    }
-}
+const debug = makeDebugLogger('search')
+const debugPerformance = makeDebugLogger('searchPerformance')
 
 export const simulateSlowSearchDelayMs: number | undefined = undefined
 

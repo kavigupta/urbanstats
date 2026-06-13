@@ -176,6 +176,23 @@ void test('evaluate basic expressions', (): void => {
         evaluate(parseExpr('percentile([1, 2, 3, 4, 5], 75, weights=[1, 1, 1, 1, 2])'), emptyContext()),
         undocValue(5, numType),
     )
+
+    assert.deepStrictEqual(
+        evaluate(parseExpr('inverseQuantile([1, 2, 3, 4, 5], 1, weights=[2, 1, 1, 1, 1])'), emptyContext()),
+        undocValue(0.25, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('inverseQuantile([1, 2, 3, 4, 5], 5, weights=[1, 1, 1, 1, 2])'), emptyContext()),
+        undocValue(0.75, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('inversePercentile([1, 2, 3, 4, 5], 1, weights=[2, 1, 1, 1, 1])'), emptyContext()),
+        undocValue(25, numType),
+    )
+    assert.deepStrictEqual(
+        evaluate(parseExpr('inversePercentile([1, 2, 3, 4, 5], 5, weights=[1, 1, 1, 1, 2])'), emptyContext()),
+        undocValue(75, numType),
+    )
 })
 
 void test('evaluate basic variable expressions', (): void => {
@@ -1579,6 +1596,7 @@ void test('test scale functions with parameters', () => {
         kind: 'linear',
         min: 1,
         max: 5,
+        center: undefined,
     })
 
     // Test linearScale with min and max
@@ -1589,6 +1607,7 @@ void test('test scale functions with parameters', () => {
         kind: 'linear',
         min: 0,
         max: 10,
+        center: undefined,
     })
 
     // Test linearScale with consistent center
@@ -1599,17 +1618,110 @@ void test('test scale functions with parameters', () => {
         kind: 'linear',
         min: 0,
         max: 10,
+        center: 5,
     })
 
-    // Test linearScale with inconsistent center (should throw when called with data)
-    const linearWithInconsistentCenter = evaluate(parseExpr('linearScale(min=0, max=10, center=3)'), emptyContext())
+    // Test linearScale with asymmetric but valid center
+    const linearWithAsymmetricCenter = evaluate(parseExpr('linearScale(min=0, max=10, center=3)'), emptyContext())
+    const asymmetricScaleFn = linearWithAsymmetricCenter.value as { type: 'opaque', value: Scale }
+    const asymmetricDescriptor = asymmetricScaleFn.value([1, 2, 3, 4, 5])
+    assert.deepStrictEqual(asymmetricDescriptor, {
+        kind: 'linear',
+        min: 0,
+        max: 10,
+        center: 3,
+    })
+
+    // Test linearScale with inconsistent center (outside or at range boundaries)
+    const linearWithInconsistentCenter = evaluate(parseExpr('linearScale(min=0, max=10, center=11)'), emptyContext())
     const inconsistentScaleFn = linearWithInconsistentCenter.value as { type: 'opaque', value: Scale }
     assert.throws(
         () => inconsistentScaleFn.value([1, 2, 3]),
         (err: Error): boolean => {
-            return err.message.includes('Inconsistent parameters: center 3 does not equal (min + max) / 2 = 10 / 2')
+            return err.message.includes('Inconsistent parameters: center must be strictly between min and max')
         },
     )
+
+    // Test linearScale with center at boundary (min)
+    const linearWithCenterAtMin = evaluate(parseExpr('linearScale(min=0, max=10, center=0)'), emptyContext())
+    const centerAtMinScaleFn = linearWithCenterAtMin.value as { type: 'opaque', value: Scale }
+    assert.throws(
+        () => centerAtMinScaleFn.value([1, 2, 3]),
+        (err: Error): boolean => {
+            return err.message.includes('Inconsistent parameters: center must be strictly between min and max')
+        },
+    )
+
+    // Test linearScale with center at boundary (max)
+    const linearWithCenterAtMax = evaluate(parseExpr('linearScale(min=0, max=10, center=10)'), emptyContext())
+    const centerAtMaxScaleFn = linearWithCenterAtMax.value as { type: 'opaque', value: Scale }
+    assert.throws(
+        () => centerAtMaxScaleFn.value([1, 2, 3]),
+        (err: Error): boolean => {
+            return err.message.includes('Inconsistent parameters: center must be strictly between min and max')
+        },
+    )
+
+    // Test linearScale with inconsistent min and center
+    const linearWithInconsistentMinCenter = evaluate(parseExpr('linearScale(min=10, center=5)'), emptyContext())
+    const inconsistentMinCenterScaleFn = linearWithInconsistentMinCenter.value as { type: 'opaque', value: Scale }
+    assert.throws(
+        () => inconsistentMinCenterScaleFn.value([1, 2, 3]),
+        (err: Error): boolean => {
+            return err.message.includes('Inconsistent parameters: center must be strictly greater than min')
+        },
+    )
+
+    // Test linearScale with center equal to min
+    const linearWithCenterEqMin = evaluate(parseExpr('linearScale(min=10, center=10)'), emptyContext())
+    const centerEqMinScaleFn = linearWithCenterEqMin.value as { type: 'opaque', value: Scale }
+    assert.throws(
+        () => centerEqMinScaleFn.value([1, 2, 3]),
+        (err: Error): boolean => {
+            return err.message.includes('Inconsistent parameters: center must be strictly greater than min')
+        },
+    )
+
+    // Test linearScale with inconsistent max and center
+    const linearWithInconsistentMaxCenter = evaluate(parseExpr('linearScale(max=5, center=10)'), emptyContext())
+    const inconsistentMaxCenterScaleFn = linearWithInconsistentMaxCenter.value as { type: 'opaque', value: Scale }
+    assert.throws(
+        () => inconsistentMaxCenterScaleFn.value([1, 2, 3]),
+        (err: Error): boolean => {
+            return err.message.includes('Inconsistent parameters: center must be strictly less than max')
+        },
+    )
+
+    // Test linearScale with center equal to max
+    const linearWithCenterEqMax = evaluate(parseExpr('linearScale(max=5, center=5)'), emptyContext())
+    const centerEqMaxScaleFn = linearWithCenterEqMax.value as { type: 'opaque', value: Scale }
+    assert.throws(
+        () => centerEqMaxScaleFn.value([1, 2, 3]),
+        (err: Error): boolean => {
+            return err.message.includes('Inconsistent parameters: center must be strictly less than max')
+        },
+    )
+
+    // Test decreasing scale with both min and max
+    const decreasingMinMax = evaluate(parseExpr('linearScale(min=10, max=0)'), emptyContext())
+    const decreasingMinMaxFn = decreasingMinMax.value as { type: 'opaque', value: Scale }
+    assert.throws(
+        () => decreasingMinMaxFn.value([1, 2, 3]),
+        (err: Error): boolean => {
+            return err.message.includes('Inconsistent parameters: min must be less than or equal to max')
+        },
+    )
+
+    // Test tie with only center - should produce a 0-width scale (min=max=center)
+    const tieOnlyCenter = evaluate(parseExpr('linearScale(center=5)'), emptyContext())
+    const tieOnlyCenterFn = tieOnlyCenter.value as { type: 'opaque', value: Scale }
+    const tieDescriptor = tieOnlyCenterFn.value([5, 5, 5])
+    assert.deepStrictEqual(tieDescriptor, {
+        kind: 'linear',
+        min: 5,
+        max: 5,
+        center: 5,
+    })
 
     // Test scale instantiation and forward/inverse mapping
     const scaleInstance = instantiate(linearWithMinMaxDescriptor)
@@ -1620,6 +1732,19 @@ void test('test scale functions with parameters', () => {
     assert.strictEqual(scaleInstance.inverse(1), 10) // 1 maps back to max
     assert.strictEqual(scaleInstance.inverse(0.5), 5) // 0.5 maps back to center
 
+    // Test asymmetric scale instantiation
+    const asymmetricInstance = instantiate(asymmetricDescriptor)
+    assert.strictEqual(asymmetricInstance.forward(0), 0)
+    assert.strictEqual(asymmetricInstance.forward(3), 0.5)
+    assert.strictEqual(asymmetricInstance.forward(10), 1)
+    assert.strictEqual(asymmetricInstance.forward(1.5), 0.25)
+    assert.strictEqual(asymmetricInstance.forward(6.5), 0.75)
+    assert.strictEqual(asymmetricInstance.inverse(0), 0)
+    assert.strictEqual(asymmetricInstance.inverse(0.5), 3)
+    assert.strictEqual(asymmetricInstance.inverse(1), 10)
+    assert.ok(Math.abs(asymmetricInstance.inverse(0.25) - 1.5) < 1e-10)
+    assert.ok(Math.abs(asymmetricInstance.inverse(0.75) - 6.5) < 1e-10)
+
     // Test edge cases: single value
     const singleValueScale = evaluate(parseExpr('linearScale()'), emptyContext())
     const singleValueScaleFn = singleValueScale.value as { type: 'opaque', value: Scale }
@@ -1628,6 +1753,7 @@ void test('test scale functions with parameters', () => {
         kind: 'linear',
         min: 42,
         max: 42,
+        center: undefined,
     })
 
     // Test edge cases: empty array (should handle gracefully)
@@ -1638,6 +1764,7 @@ void test('test scale functions with parameters', () => {
         kind: 'linear',
         min: Infinity,
         max: -Infinity,
+        center: undefined,
     })
 
     // Test edge cases: NaN values are filtered out
@@ -1648,6 +1775,7 @@ void test('test scale functions with parameters', () => {
         kind: 'linear',
         min: 1,
         max: 5,
+        center: undefined,
     })
 
     // --- Additional tests for partial parameter specification ---
@@ -1658,6 +1786,7 @@ void test('test scale functions with parameters', () => {
         kind: 'linear',
         min: 2,
         max: 6,
+        center: undefined,
     })
     // Only max provided
     const linearOnlyMax = evaluate(parseExpr('linearScale(max=7)'), emptyContext())
@@ -1666,6 +1795,7 @@ void test('test scale functions with parameters', () => {
         kind: 'linear',
         min: 2,
         max: 7,
+        center: undefined,
     })
     // Only center provided
     const linearOnlyCenter = evaluate(parseExpr('linearScale(center=5)'), emptyContext())
@@ -1674,6 +1804,7 @@ void test('test scale functions with parameters', () => {
         kind: 'linear',
         min: 2,
         max: 8,
+        center: 5,
     })
     // min and max provided
     const linearMinMax = evaluate(parseExpr('linearScale(min=1, max=9)'), emptyContext())
@@ -1682,6 +1813,7 @@ void test('test scale functions with parameters', () => {
         kind: 'linear',
         min: 1,
         max: 9,
+        center: undefined,
     })
     // min and center provided
     const linearMinCenter = evaluate(parseExpr('linearScale(min=1, center=5)'), emptyContext())
@@ -1690,6 +1822,7 @@ void test('test scale functions with parameters', () => {
         kind: 'linear',
         min: 1,
         max: 9,
+        center: 5,
     })
     // max and center provided
     const linearMaxCenter = evaluate(parseExpr('linearScale(max=9, center=5)'), emptyContext())
@@ -1698,18 +1831,26 @@ void test('test scale functions with parameters', () => {
         kind: 'linear',
         min: 1,
         max: 9,
+        center: 5,
     })
 })
 
 function closeLogScale(
-    actual: { kind: 'log', linearScale: { kind: 'linear', min: number, max: number } },
-    expected: { kind: 'log', linearScale: { kind: 'linear', min: number, max: number } },
+    actual: { kind: 'log', linearScale: { kind: 'linear', min: number, max: number, center?: number } },
+    expected: { kind: 'log', linearScale: { kind: 'linear', min: number, max: number, center?: number } },
     tol = 1e-10,
 ): void {
     assert.strictEqual(actual.kind, expected.kind)
     assert.strictEqual(actual.linearScale.kind, expected.linearScale.kind)
     assert(Math.abs(actual.linearScale.min - expected.linearScale.min) < tol, `min: ${actual.linearScale.min} vs ${expected.linearScale.min}`)
     assert(Math.abs(actual.linearScale.max - expected.linearScale.max) < tol, `max: ${actual.linearScale.max} vs ${expected.linearScale.max}`)
+    if (expected.linearScale.center !== undefined) {
+        assert(actual.linearScale.center !== undefined, 'Expected center to be defined')
+        assert(Math.abs(actual.linearScale.center - expected.linearScale.center) < tol, `center: ${actual.linearScale.center} vs ${expected.linearScale.center}`)
+    }
+    else {
+        assert.strictEqual(actual.linearScale.center, undefined)
+    }
 }
 
 void test('test log scale functions with parameters', () => {
@@ -1724,6 +1865,7 @@ void test('test log scale functions with parameters', () => {
                 kind: 'linear',
                 min: 0, // log(1) = 0
                 max: Math.log(100), // log(100) = 4.605...
+                center: undefined,
             },
         })
     }
@@ -1742,6 +1884,7 @@ void test('test log scale functions with parameters', () => {
                 kind: 'linear',
                 min: Math.log(1), // log(1) = 0
                 max: Math.log(1000), // log(1000) = 6.908...
+                center: undefined,
             },
         })
     }
@@ -1758,8 +1901,9 @@ void test('test log scale functions with parameters', () => {
             kind: 'log',
             linearScale: {
                 kind: 'linear',
-                min: Math.log(1), // log(1) = 0
-                max: 2 * Math.log(10) - Math.log(1), // 2 * log(10) - log(1) = 2 * 2.303 - 0 = 4.606
+                min: Math.log(1),
+                max: 2 * Math.log(10) - Math.log(1),
+                center: Math.log(10),
             },
         })
     }
@@ -1770,14 +1914,15 @@ void test('test log scale functions with parameters', () => {
     // Test logScale with max and center
     const logWithMaxCenter = evaluate(parseExpr('logScale(max=100, center=10)'), emptyContext())
     const logWithMaxCenterFn = logWithMaxCenter.value as { type: 'opaque', value: Scale }
-    const logWithMaxCenterDescriptor = logWithMaxCenterFn.value([2, 5, 20])
+    const logWithMaxCenterDescriptor = logWithMaxCenterFn.value([1, 2, 5])
     if (logWithMaxCenterDescriptor.kind === 'log') {
         closeLogScale(logWithMaxCenterDescriptor, {
             kind: 'log',
             linearScale: {
                 kind: 'linear',
-                min: 2 * Math.log(10) - Math.log(100), // 2 * log(10) - log(100) = 2 * 2.303 - 4.605 = 0
-                max: Math.log(100), // log(100) = 4.605
+                min: 2 * Math.log(10) - Math.log(100),
+                max: Math.log(100),
+                center: Math.log(10),
             },
         })
     }
@@ -1785,23 +1930,34 @@ void test('test log scale functions with parameters', () => {
         assert.fail('Expected log scale descriptor')
     }
 
-    // Test logScale with only center (should use data bounds)
-    const logWithCenter = evaluate(parseExpr('logScale(center=10)'), emptyContext())
-    const logWithCenterFn = logWithCenter.value as { type: 'opaque', value: Scale }
-    const logWithCenterDescriptor = logWithCenterFn.value([2, 5, 50])
-    if (logWithCenterDescriptor.kind === 'log') {
-        closeLogScale(logWithCenterDescriptor, {
+    // Test logScale with min, max, and center
+    const logWithAll = evaluate(parseExpr('logScale(min=1, max=100, center=10)'), emptyContext())
+    const logWithAllFn = logWithAll.value as { type: 'opaque', value: Scale }
+    const logWithAllDescriptor = logWithAllFn.value([2, 5, 20])
+    if (logWithAllDescriptor.kind === 'log') {
+        closeLogScale(logWithAllDescriptor, {
             kind: 'log',
             linearScale: {
                 kind: 'linear',
-                min: Math.log(2),
-                max: Math.log(50),
+                min: Math.log(1),
+                max: Math.log(100),
+                center: Math.log(10),
             },
         })
     }
     else {
         assert.fail('Expected log scale descriptor')
     }
+
+    // Test logScale with inconsistent center (outside range)
+    const logWithInconsistentCenter = evaluate(parseExpr('logScale(min=1, max=100, center=200)'), emptyContext())
+    const inconsistentLogScaleFn = logWithInconsistentCenter.value as { type: 'opaque', value: Scale }
+    assert.throws(
+        () => inconsistentLogScaleFn.value([1, 2, 3]),
+        (err: Error): boolean => {
+            return err.message.includes('Inconsistent parameters: center must be strictly between min and max')
+        },
+    )
 })
 
 void test('custom node type checking', (): void => {

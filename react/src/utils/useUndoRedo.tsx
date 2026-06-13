@@ -1,6 +1,7 @@
 import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
 import { TestUtils } from './TestUtils'
+import { makeDebugLogger } from './debug-logging'
 import { useMobileLayout } from './responsive'
 import { zIndex } from './zIndex'
 
@@ -16,14 +17,7 @@ export interface UndoRedoOptions {
     onlyElement?: { current: HTMLElement | null }
 }
 
-const logMessages: boolean = false
-
-function debugUndo(arg: string): void {
-    if (logMessages) {
-        // eslint-disable-next-line no-console -- Conditionally logger
-        console.log(arg)
-    }
-}
+const debugUndo = makeDebugLogger('undoRedo')
 
 export function useUndoRedo<T, S>(
     initialState: T,

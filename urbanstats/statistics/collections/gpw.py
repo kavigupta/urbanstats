@@ -39,7 +39,11 @@ class GPWStatistics(InternationalStatistics):
 
     def quiz_question_descriptors(self):
         return {
-            "gpw_population": QuizQuestionDescriptor("higher population", POPULATION),
+            "gpw_population": QuizQuestionDescriptor(
+                "higher population",
+                POPULATION,
+                exclude_geography_types=("Subnational Region",),
+            ),
             "gpw_pw_density_4": QuizQuestionDescriptor(
                 "higher population-weighted density (r=4km)" + DENSITY_EXPLANATION_PW,
                 POPULATION_DENSITY,

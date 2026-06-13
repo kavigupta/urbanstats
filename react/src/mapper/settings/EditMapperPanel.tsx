@@ -17,6 +17,7 @@ import { TypeEnvironment } from '../../urban-stats-script/types-values'
 import { Property } from '../../utils/Property'
 import { TestUtils } from '../../utils/TestUtils'
 import { mixWithBackground } from '../../utils/color'
+import { makeDebugLogger } from '../../utils/debug-logging'
 import { assert } from '../../utils/defensive'
 import { mapperToTable } from '../../utils/page-conversion'
 import { useMobileLayout } from '../../utils/responsive'
@@ -35,6 +36,8 @@ import { doEditInsets, getInsets, InsetEdits, replaceInsets, swapInsets } from '
 import { getTextBoxes, scriptWithNewTextBoxes } from './edit-text-boxes'
 import { validMapperOutputs } from './map-uss'
 import { MapEditorMode, MapSettings } from './utils'
+
+const debugLog = makeDebugLogger('mapExport')
 
 export interface ActionOptions { undoable?: boolean, update?: boolean }
 
@@ -165,11 +168,16 @@ function USSMapEditor({ mapSettings, setMapSettings, counts, typeEnvironment, se
 
     const exportPng = exportImage
         ? async () => {
+            debugLog('exportPng: requesting canvas from map generator')
             const canvas = await exportImage()
+            debugLog('exportPng: received canvas', canvas.width, 'x', canvas.height, ', encoding as PNG data URL')
             const pngDataUrl = canvas.toDataURL('image/png')
+            debugLog('exportPng: data URL length', pngDataUrl.length, ', fetching as blob')
             const data = await fetch(pngDataUrl)
             const pngData = await data.blob()
+            debugLog('exportPng: blob size', pngData.size, 'bytes, saving file')
             saveAsFile('map.png', pngData, 'image/png')
+            debugLog('exportPng: file saved')
         }
         : undefined
 
@@ -495,9 +503,12 @@ function Export(props: { pngExport?: () => Promise<void>, geoJSONExport?: () => 
     const navContext = useContext(Navigator.Context)
 
     const doPngExport = (): void => {
+        debugLog('Export button clicked')
         if (props.pngExport === undefined) {
+            debugLog('exportImage not ready, ignoring click')
             return
         }
+        debugLog('invoking exportPng')
         void props.pngExport()
     }
 

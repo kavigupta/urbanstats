@@ -1,12 +1,15 @@
 import gzip
 import os
+from typing import Any, Dict, List, Mapping
 
 from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 
 from . import data_files_pb2
 
 
-def save_article_ordering_list(longnames, path, longname_to_type):
+def save_article_ordering_list(
+    longnames: List[str], path: str, longname_to_type: Mapping[str, str]
+) -> None:
     types = [longname_to_type[x] for x in longnames]
     res = data_files_pb2.ArticleOrderingList()
     for x in longnames:
@@ -16,7 +19,9 @@ def save_article_ordering_list(longnames, path, longname_to_type):
     write_gzip(res, path)
 
 
-def save_universes_list_by_type(longnames, longname_to_universe, path):
+def save_universes_list_by_type(
+    longnames: List[str], longname_to_universe: Mapping[str, List[str]], path: str
+) -> None:
     # pylint: disable=import-outside-toplevel,cyclic-import
     from urbanstats.website_data.create_article_gzips import universe_to_idx
 
@@ -31,7 +36,7 @@ def save_universes_list_by_type(longnames, longname_to_universe, path):
     write_gzip(res, path)
 
 
-def save_universes_list_all(table, ordinals, site_folder):
+def save_universes_list_all(table: Any, ordinals: Any, site_folder: str) -> None:
     utoi = dict(zip(table.longname, table.universes))
     for typ in ordinals.types:
         save_universes_list_by_type(
@@ -60,21 +65,22 @@ def save_search_index(longnames, types, universe_idxs_list, path, *, symlinks):
     write_gzip(res, path)
 
 
-def ensure_writeable(path):
+def ensure_writeable(path: str) -> None:
     folder = os.path.dirname(path)
-    try:
-        os.makedirs(folder)
-    except FileExistsError:
-        pass
+    if folder:
+        try:
+            os.makedirs(folder)
+        except FileExistsError:
+            pass
 
 
-def write_gzip(proto, path):
+def write_gzip(proto: Any, path: str) -> None:
     ensure_writeable(path)
     with gzip.GzipFile(path, "wb", mtime=0) as f:
         f.write(proto.SerializeToString())
 
 
-def write_gzip_bytes(bytestring, path):
+def write_gzip_bytes(bytestring: bytes, path: str) -> None:
     ensure_writeable(path)
     with gzip.GzipFile(path, "wb", mtime=0) as f:
         f.write(bytestring)

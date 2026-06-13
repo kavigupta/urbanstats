@@ -4,7 +4,7 @@ import { MapInstance, MapRef } from 'react-map-gl/maplibre'
 
 import { CSVExportData, generateMapperCSVData } from '../components/csv-export'
 import { Basemap as BasemapComponent, CommonMaplibreMap, PointFeatureCollection, Polygon, PolygonFeatureCollection } from '../components/map-common'
-import { screencapElement, ScreenshotContext, ScreenshotContextType } from '../components/screenshot'
+import { screencapElement, ScreenshotContext, ScreenshotContextType, withScreenshotMode } from '../components/screenshot'
 import valid_geographies from '../data/mapper/used_geographies'
 import universes_ordered from '../data/universes_ordered'
 import { loadProtobuf } from '../load_json'
@@ -31,6 +31,7 @@ import { loadImage } from '../utils/Image'
 import { editIndex, EditSeq } from '../utils/array-edits'
 import { furthestColor, interpolateColor } from '../utils/color'
 import { computeAspectRatioForInsets } from '../utils/coordinates'
+import { makeDebugLogger } from '../utils/debug-logging'
 import { ConsolidatedShapes, Feature, ICoordinate } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
@@ -43,10 +44,12 @@ import { Basemap, computeUSS, MapSettings } from './settings/utils'
 
 const mapUpdateInterval = 500
 
+const debugLog = makeDebugLogger('mapExport')
+
 export function useMapGenerator({ mapSettings }: { mapSettings: MapSettings }): MapGenerator {
     const cache = useRef<MapCache>({})
 
-    const compute = useCallback((previousGenerator: Promise<MapGenerator<{ loading: boolean }>>) => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator }), [mapSettings])
+    const compute = useCallback((previousGenerator: () => Promise<MapGenerator<{ loading: boolean }>>) => makeMapGenerator({ mapSettings, cache: cache.current, previousGenerator }), [mapSettings])
 
     return useDebouncedResolve(
         compute,
@@ -75,7 +78,7 @@ export interface MapGenerator<T = unknown> {
     assignments: AssignmentsResult
 }
 
-async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { mapSettings: MapSettings, cache: MapCache, previousGenerator: Promise<MapGenerator<{ loading: boolean }>> }): Promise<MapGenerator<{ loading: boolean }>> {
+async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { mapSettings: MapSettings, cache: MapCache, previousGenerator: () => Promise<MapGenerator<{ loading: boolean }>> }): Promise<MapGenerator<{ loading: boolean }>> {
     if (mapSettings.geographyKind === undefined || mapSettings.universe === undefined) {
         return {
             ui: ({ loading }: { loading: boolean }): { node: ReactNode } => ({ node: <EmptyMapLayout universe={mapSettings.universe} loading={loading} /> }),
@@ -88,7 +91,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
 
     const parseErrors = getAllParseErrors(stmts)
     if (parseErrors.length > 0) {
-        const prev = await previousGenerator
+        const prev = await previousGenerator()
         return {
             ...prev,
             errors: parseErrors.map(e => ({ ...e, kind: 'error' })),
@@ -98,9 +101,10 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
     const execResult = await executeAsync({ descriptor: { kind: 'mapper', geographyKind: mapSettings.geographyKind, universe: mapSettings.universe }, stmts })
 
     if (execResult.resultingValue === undefined) {
-        const prev = await previousGenerator
+        const prev = await previousGenerator()
         return {
             ...prev,
+            assignments: execResult.assignments,
             errors: execResult.error,
         }
     }
@@ -173,24 +177,25 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             />
         )
 
-        const [screenshotMode, setScreenshotMode] = useState<ScreenshotContextType>({ screenshotMode: false })
+        const screenshotContext = useRef<ScreenshotContextType>({ render: new Set(), wait: new Set() })
 
         const colors = useColors()
 
         exportImageRef(async () => {
-            const loading = new Set<Promise<void>>()
-            setScreenshotMode({ screenshotMode: true, loading })
+            debugLog('exportImage: starting PNG export,', mapsRef.length, 'inset map(s)')
             const restoreMaps = mapsRef.map(r => r!.getMap()).map(prepareMapForImageExport)
+            debugLog('exportImage: all maps prepared for export, entering screenshot mode')
 
-            await new Promise(resolve => setTimeout(resolve)) // Wait for the updates above to propagate
-            await Promise.all(loading) // Wait for loading triggered by the updates to complete
+            const image = await withScreenshotMode(screenshotContext.current, async () => {
+                debugLog('exportImage: screenshot mode active, capturing element canvas at', canonicalWidth * exportPixelRatio, 'px wide')
+                const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
+                debugLog('exportImage: screencapElement returned', elementCanvas.width, 'x', elementCanvas.height, 'canvas, compositing banner')
+                return mapImageExport(elementCanvas, mapResultMain.value.basemap, colors)
+            })
 
-            const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
-
-            const image = await mapImageExport(elementCanvas, mapResultMain.value.basemap, colors)
-
-            setScreenshotMode({ screenshotMode: false })
+            debugLog('exportImage: screenshot mode exited, restoring', restoreMaps.length, 'map(s)')
             restoreMaps.forEach((restore) => { restore() })
+            debugLog('exportImage: export complete, final canvas', image.width, 'x', image.height)
 
             return image
         })
@@ -213,7 +218,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
                 )
 
         return (
-            <ScreenshotContext.Provider value={screenshotMode}>
+            <ScreenshotContext.Provider value={screenshotContext.current}>
                 <MapLayout
                     maps={insetMaps}
                     loading={props.loading}
@@ -249,34 +254,42 @@ const exportPixelRatio = 4
 
 function prepareMapForImageExport(map: MapInstance): () => void {
     const originalPixelRatio = map.getPixelRatio()
+    debugLog('prepareMapForImageExport: setting pixel ratio', originalPixelRatio, '→', exportPixelRatio)
     map.setPixelRatio(exportPixelRatio)
 
     const attrib: HTMLElement | null = map.getContainer().querySelector('.maplibregl-ctrl-attrib')
     let resetAttrib: undefined | (() => void)
     if (attrib !== null) {
+        debugLog('prepareMapForImageExport: hiding attribution overlay')
         const prevDisplay = attrib.style.display
         attrib.style.display = 'none'
         resetAttrib = () => attrib.style.display = prevDisplay
     }
 
     return () => {
+        debugLog('prepareMapForImageExport: restoring pixel ratio', exportPixelRatio, '→', originalPixelRatio)
         map.setPixelRatio(originalPixelRatio)
         resetAttrib?.()
     }
 }
 
 async function mapImageExport(elementCanvas: HTMLCanvasElement, basemap: Basemap, colors: Colors): Promise<HTMLCanvasElement> {
+    debugLog('mapImageExport: element canvas size', elementCanvas.width, 'x', elementCanvas.height, 'basemap', basemap)
     const { backgroundColor, color } = styleFromBasemap(basemap, colors)
+    debugLog('mapImageExport: background color', backgroundColor, 'text color', color)
     const bannerUrl = color === undefined ? colors.screenshotFooterUrl : colorThemes[Color(color).l() < 50 ? 'Light Mode' : 'Dark Mode'].screenshotFooterUrl
+    debugLog('mapImageExport: loading banner from', bannerUrl)
     const bannerImage = await loadImage(bannerUrl)
     const bannerHeight = 50 * exportPixelRatio
     const bannerWidth = bannerImage.width * (bannerHeight / bannerImage.height)
     const bannerSquish = 10 * exportPixelRatio
+    debugLog('mapImageExport: banner natural size', bannerImage.width, 'x', bannerImage.height, '→ rendered', bannerWidth, 'x', bannerHeight, '(squish', bannerSquish, ')')
 
     const resultCanvas = document.createElement('canvas')
     const ctx = resultCanvas.getContext('2d')!
     resultCanvas.width = elementCanvas.width
     resultCanvas.height = elementCanvas.height + bannerHeight - bannerSquish
+    debugLog('mapImageExport: final canvas size', resultCanvas.width, 'x', resultCanvas.height)
 
     ctx.drawImage(elementCanvas, 0, 0)
 
@@ -291,6 +304,7 @@ async function mapImageExport(elementCanvas: HTMLCanvasElement, basemap: Basemap
         bannerHeight,
     )
 
+    debugLog('mapImageExport: done compositing')
     return resultCanvas
 }
 
