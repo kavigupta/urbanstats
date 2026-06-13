@@ -25,10 +25,13 @@ def special_case_extra_row_of_pixels(ref, act, name):
 
 DIFFERENCE_THRESHOLD = 15
 
+
 def special_case_small_total_difference(ref, act, name):
     """
     Ignore when images have a very small difference, typically due to aliasing.
     """
+    if ref.shape != act.shape:
+        return None
     # astype to handle underflow
     total_diff = np.abs(act.astype(np.int16) - ref.astype(np.int16)).sum()
     if total_diff <= DIFFERENCE_THRESHOLD:
