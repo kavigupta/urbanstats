@@ -84,8 +84,11 @@ function SynchronizeMapWithScreenshots(): ReactNode {
         if (screenshotCallback !== undefined && map) {
             debugLog('SynchronizeMapWithScreenshots: screenshot mode entered, map.loaded()=', map.loaded())
             void (async () => {
-                if (!map.loaded()) {
-                    debugLog('SynchronizeMapWithScreenshots: map not loaded, waiting for idle')
+                await new Promise(resolve => requestAnimationFrame(resolve))
+                let idleCount = 0
+                while (!map.loaded()) {
+                    idleCount++
+                    debugLog('SynchronizeMapWithScreenshots: map not loaded, waiting for idle (attempt', idleCount, ')')
                     await Promise.any([
                         map.once('idle'),
                         map.once('remove'),
@@ -95,11 +98,10 @@ function SynchronizeMapWithScreenshots(): ReactNode {
                         return
                     }
                     debugLog('SynchronizeMapWithScreenshots: idle event received, map.loaded()=', map.loaded())
+                    // Map will sometimes return to idle but needs to load more
+                    await new Promise(resolve => requestAnimationFrame(resolve))
                 }
-                else {
-                    debugLog('SynchronizeMapWithScreenshots: map already loaded')
-                }
-                debugLog('SynchronizeMapWithScreenshots: map is loaded, signaling ready')
+                debugLog('SynchronizeMapWithScreenshots: map is loaded after', idleCount, 'idle wait(s), signaling ready')
             })().then(() => {
                 screenshotCallback()
             })
