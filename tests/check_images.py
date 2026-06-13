@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 
 
-def special_case_extra_row_of_pixels(ref, act, name):
+def special_case_extra_row_of_pixels(ref, act, _name):
     """
     Handles the special case where one image has an extra row of pixels at the bottom
     that is identical to the row above it. This causes test flakes but does not reflect
