@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 
 
-def special_case_extra_row_of_pixels(ref, act):
+def special_case_extra_row_of_pixels(ref, act, _name):
     """
     Handles the special case where one image has an extra row of pixels at the bottom
     that is identical to the row above it. This causes test flakes but does not reflect
@@ -23,9 +23,27 @@ def special_case_extra_row_of_pixels(ref, act):
     return ref, act
 
 
-def special_case_handle(ref, act):
-    for fn in [special_case_extra_row_of_pixels]:
-        res = fn(ref, act)
+DIFFERENCE_THRESHOLD = 15
+
+
+def special_case_small_total_difference(ref, act, name):
+    """
+    Ignore when images have a very small difference, typically due to aliasing.
+    """
+    if ref.shape != act.shape:
+        return None
+    # astype to handle underflow
+    total_diff = np.abs(act.astype(np.int16) - ref.astype(np.int16)).sum()
+    if total_diff <= DIFFERENCE_THRESHOLD:
+        if total_diff > 0:
+            print(f"({name}) ignoring small total difference: {total_diff}")
+        return ref, ref
+    return None
+
+
+def special_case_handle(ref, act, name):
+    for fn in [special_case_extra_row_of_pixels, special_case_small_total_difference]:
+        res = fn(ref, act, name)
         if res is not None:
             ref, act = res
     return ref, act
@@ -43,8 +61,8 @@ def pad_images(ref, act):
     return ref, act
 
 
-def compute_delta_image(ref, act):
-    ref, act = special_case_handle(ref, act)
+def compute_delta_image(ref, act, name=""):
+    ref, act = special_case_handle(ref, act, name)
     ref, act = pad_images(ref, act)
     color = [255, 0, 255, 255]
     diff_mask = (act != ref).any(-1)
@@ -59,7 +77,7 @@ def compute_delta_image(ref, act):
 def test_paths(reference, actual, delta_path, changed_path):
     ref = np.array(Image.open(reference))
     act = np.array(Image.open(actual))
-    diff, delta = compute_delta_image(ref, act)
+    diff, delta = compute_delta_image(ref, act, name=reference)
     if not diff:
         return True
     os.makedirs(os.path.dirname(delta_path), exist_ok=True)
