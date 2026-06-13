@@ -78,12 +78,13 @@ function ExposeMapForTesting({ id }: { id: string }): ReactNode {
 function SynchronizeMapWithScreenshots(): ReactNode {
     const { current: map } = useMap()
 
-    const screenshotCallback = useScreenshotCallback()
+    const screenshotCallback = useScreenshotCallback('wait')
 
     useEffect(() => {
         if (screenshotCallback !== undefined && map) {
             debugLog('SynchronizeMapWithScreenshots: screenshot mode entered, map.loaded()=', map.loaded())
             void (async () => {
+                await new Promise(resolve => requestAnimationFrame(resolve))
                 let idleCount = 0
                 while (!map.loaded()) {
                     idleCount++
@@ -98,7 +99,7 @@ function SynchronizeMapWithScreenshots(): ReactNode {
                     }
                     debugLog('SynchronizeMapWithScreenshots: idle event received, map.loaded()=', map.loaded())
                     // Map will sometimes return to idle but needs to load more
-                    await new Promise(resolve => setTimeout(resolve))
+                    await new Promise(resolve => requestAnimationFrame(resolve))
                 }
                 debugLog('SynchronizeMapWithScreenshots: map is loaded after', idleCount, 'idle wait(s), signaling ready')
             })().then(() => {

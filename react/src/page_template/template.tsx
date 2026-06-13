@@ -28,7 +28,7 @@ export function PageTemplate({
     topPanel?: boolean
 }): ReactNode {
     const [hamburgerOpen, setHamburgerOpen] = useState(false)
-    const screenshotContext = useRef<ScreenshotContextType>(new Set())
+    const screenshotContext = useRef<ScreenshotContextType>({ render: new Set(), wait: new Set() })
     const colors = useColors()
     const mobileLayout = useMobileLayout()
     const hideSidebarDesktop = useHideSidebarDesktop()
