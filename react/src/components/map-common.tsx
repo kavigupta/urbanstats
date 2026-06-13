@@ -9,6 +9,7 @@ import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { useUniverse } from '../universe'
 import { TestUtils } from '../utils/TestUtils'
+import { makeDebugLogger } from '../utils/debug-logging'
 import { assert } from '../utils/defensive'
 import { promiseStream, waiting } from '../utils/promiseStream'
 import { Feature } from '../utils/protos'
@@ -18,6 +19,8 @@ import { useOrderedResolve } from '../utils/useOrderedResolve'
 
 import { keptByNoBasemap } from './map-common-utils'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback, useScreenshotMode } from './screenshot'
+
+const debugLog = makeDebugLogger('mapExport')
 
 import './map.css'
 
@@ -79,18 +82,25 @@ function SynchronizeMapWithScreenshots(): ReactNode {
 
     useEffect(() => {
         if (screenshotCallback !== undefined && map) {
+            debugLog('SynchronizeMapWithScreenshots: screenshot mode entered, map.loaded()=', map.loaded())
             void (async () => {
+                let idleCount = 0
                 while (!map.loaded()) {
+                    idleCount++
+                    debugLog('SynchronizeMapWithScreenshots: map not loaded, waiting for idle (attempt', idleCount, ')')
                     await Promise.any([
                         map.once('idle'),
                         map.once('remove'),
                     ])
                     if (map._removed) {
+                        debugLog('SynchronizeMapWithScreenshots: map was removed, aborting')
                         return
                     }
+                    debugLog('SynchronizeMapWithScreenshots: idle event received, map.loaded()=', map.loaded())
                     // Map will sometimes return to idle but needs to load more
                     await new Promise(resolve => setTimeout(resolve))
                 }
+                debugLog('SynchronizeMapWithScreenshots: map is loaded after', idleCount, 'idle wait(s), signaling ready')
             })().then(() => {
                 screenshotCallback()
             })
