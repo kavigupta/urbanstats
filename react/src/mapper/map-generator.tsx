@@ -177,7 +177,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator }: { map
             />
         )
 
-        const screenshotContext = useRef<ScreenshotContextType>(new Set())
+        const screenshotContext = useRef<ScreenshotContextType>({ render: new Set(), wait: new Set() })
 
         const colors = useColors()
 

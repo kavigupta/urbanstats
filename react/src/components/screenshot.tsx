@@ -172,16 +172,33 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, h
 
 export type ReadyForScreenshotCallback = () => void
 
-export type ScreenshotContextType = Set<(callback: ReadyForScreenshotCallback | undefined) => void>
+export interface ScreenshotContextType {
+    render: Set<(callback: ReadyForScreenshotCallback | undefined) => void>
+    wait: Set<(callback: ReadyForScreenshotCallback | undefined) => void>
+}
 
 export async function withScreenshotMode<T>(context: ScreenshotContextType, fn: () => Promise<T>): Promise<T> {
-    // Tell all the components that we're screenshotting, and wait for them to be ready
-    debugLog('withScreenshotMode: notifying', context.size, 'subscriber(s), waiting for all to signal ready')
-    let resolvedCount = 0
-    await Promise.all(Array.from(context).map(setCallback => new Promise<void>((resolve) => {
+    // Phase 1: trigger render callbacks (e.g. components that switch to screenshot UI),
+    // and wait for all to signal ready. This causes React to re-render and commit any
+    // DOM changes (like remounting map sources with tolerance=0) before phase 2 starts.
+    debugLog('withScreenshotMode: notifying', context.render.size, 'render subscriber(s)')
+    let renderResolved = 0
+    await Promise.all(Array.from(context.render).map(setCallback => new Promise<void>((resolve) => {
         setCallback(() => () => {
-            resolvedCount++
-            debugLog('withScreenshotMode: subscriber', resolvedCount, '/', context.size, 'ready')
+            renderResolved++
+            debugLog('withScreenshotMode: render subscriber', renderResolved, '/', context.render.size, 'ready')
+            resolve()
+        })
+    })))
+    debugLog('withScreenshotMode: all render subscribers ready, notifying', context.wait.size, 'wait subscriber(s)')
+
+    // Phase 2: trigger wait callbacks (e.g. waiting for map tiles/sources to finish rendering),
+    // which run after all render-phase DOM changes have been committed.
+    let waitResolved = 0
+    await Promise.all(Array.from(context.wait).map(setCallback => new Promise<void>((resolve) => {
+        setCallback(() => () => {
+            waitResolved++
+            debugLog('withScreenshotMode: wait subscriber', waitResolved, '/', context.wait.size, 'ready')
             resolve()
         })
     })))
@@ -191,8 +208,9 @@ export async function withScreenshotMode<T>(context: ScreenshotContextType, fn: 
     }
     finally {
         // Move everything out of screenshot mode
-        debugLog('withScreenshotMode: capture done, clearing screenshot mode for', context.size, 'subscriber(s)')
-        context.forEach((setCallback) => { setCallback(undefined) })
+        debugLog('withScreenshotMode: capture done, clearing screenshot mode')
+        context.render.forEach((setCallback) => { setCallback(undefined) })
+        context.wait.forEach((setCallback) => { setCallback(undefined) })
     }
 }
 
@@ -259,27 +277,29 @@ export async function createScreenshot(config: ScreencapElements, universe: stri
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Context declaration
-export const ScreenshotContext = createContext<ScreenshotContextType>(new Set())
+export const ScreenshotContext = createContext<ScreenshotContextType>({ render: new Set(), wait: new Set() })
 
-// When we're taking a screenshot, returns a callback that should be called when the component is ready for the screenshot
-// Using this, we can sync up all component readiness
-export function useScreenshotCallback(): ReadyForScreenshotCallback | undefined {
+// When we're taking a screenshot, returns a callback that should be called when the component is ready.
+// 'render' callbacks fire first (for UI changes like switching to screenshot layout).
+// 'wait' callbacks fire after all 'render' callbacks resolve (for async work like waiting for map tiles).
+export function useScreenshotCallback(kind: 'render' | 'wait'): ReadyForScreenshotCallback | undefined {
     const context = useContext(ScreenshotContext)
     const [callback, setCallback] = useState<ReadyForScreenshotCallback | undefined>(undefined)
 
     useEffect(() => {
-        context.add(setCallback)
+        const set = kind === 'render' ? context.render : context.wait
+        set.add(setCallback)
         return () => {
-            context.delete(setCallback)
+            set.delete(setCallback)
         }
-    }, [context])
+    }, [context, kind])
 
     return callback
 }
 
 // Just running a `useEffect` should be good enough for most use cases
 export function useScreenshotMode(): boolean {
-    const screenshotCallback = useScreenshotCallback()
+    const screenshotCallback = useScreenshotCallback('render')
 
     useEffect(() => {
         screenshotCallback?.()
