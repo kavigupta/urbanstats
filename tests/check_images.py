@@ -35,7 +35,8 @@ def special_case_small_total_difference(ref, act, name):
     # astype to handle underflow
     total_diff = np.abs(act.astype(np.int16) - ref.astype(np.int16)).sum()
     if total_diff <= DIFFERENCE_THRESHOLD:
-        print(f"({name}) ignoring small total difference: {total_diff}")
+        if total_diff > 0:
+            print(f"({name}) ignoring small total difference: {total_diff}")
         return ref, ref
     return None
 
