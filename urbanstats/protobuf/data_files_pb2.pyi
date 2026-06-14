@@ -1,3 +1,4 @@
+# pylint: skip-file
 from collections.abc import Iterable as _Iterable
 from collections.abc import Mapping as _Mapping
 from typing import ClassVar as _ClassVar

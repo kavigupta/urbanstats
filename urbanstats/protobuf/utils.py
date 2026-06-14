@@ -1,6 +1,6 @@
 import gzip
 import os
-from typing import Any, Dict, List, Mapping
+from typing import Any, List, Mapping
 
 from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 
