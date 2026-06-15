@@ -6,7 +6,9 @@ import { SearchIndex } from '../utils/protos'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 
 function universeIdx(universe: string): number {
-    return universes_ordered.indexOf(universe as typeof universes_ordered[number])
+    const idx = universes_ordered.indexOf(universe as typeof universes_ordered[number])
+    assert(idx !== -1, `Unknown universe: ${universe}`)
+    return idx
 }
 
 function inUniverse(index: SearchIndex, idx: number, filterUniverseIdx: number): boolean {
@@ -18,39 +20,27 @@ export async function byPopulation(universe: string | undefined): Promise<() => 
         loadProtobuf('/index/pages_all.gz', 'SearchIndex'),
         loadJSON('/index/best_population_estimate.json') as Promise<number[]>,
     ])
-    const totalWeight = populations.reduce((sum, x) => sum + x)
     const filterUniverseIdx = universe !== undefined ? universeIdx(universe) : undefined
 
-    return () => {
-        while (true) {
-            // Generate a random number between 0 and the total weight
-            const randomValue = Math.random() * totalWeight
-
-            // Find the destination based on the random value
-            let idx: number | undefined
-            let cumulativeWeight = 0
-
-            for (let i = 0; i < index.elements.length; i++) {
-                cumulativeWeight += populations[i]
-
-                if (randomValue < cumulativeWeight) {
-                    idx = i
-                    break
-                }
-            }
-
-            assert(idx !== undefined, 'Should not happen')
-
-            if (!valid(index, idx)) {
-                continue
-            }
-
-            if (filterUniverseIdx !== undefined && !inUniverse(index, idx, filterUniverseIdx)) {
-                continue
-            }
-
-            return index.elements[idx]
+    const entries: number[] = []
+    let filteredWeight = 0
+    for (let i = 0; i < index.elements.length; i++) {
+        if (valid(index, i) && (filterUniverseIdx === undefined || inUniverse(index, i, filterUniverseIdx))) {
+            entries.push(i)
+            filteredWeight += populations[i]
         }
+    }
+
+    return () => {
+        const randomValue = Math.random() * filteredWeight
+        let cumulativeWeight = 0
+        for (const i of entries) {
+            cumulativeWeight += populations[i]
+            if (randomValue < cumulativeWeight) {
+                return index.elements[i]
+            }
+        }
+        assert(false, 'Should not happen')
     }
 }
 
