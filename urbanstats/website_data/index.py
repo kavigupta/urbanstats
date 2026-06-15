@@ -75,6 +75,7 @@ def containing_universe_idxs(full: Any) -> List[List[int]]:
         for ln in full.longname
     ]
 
+
 def normalize(s: str) -> str:
     # in javascript: return a.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     s = s.lower()
