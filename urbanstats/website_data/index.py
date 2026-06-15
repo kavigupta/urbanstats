@@ -46,6 +46,7 @@ def export_index(full: Any, site_folder: str) -> None:
     with open(f"{site_folder}/index/best_population_estimate.json", "w") as f:
         json.dump(list(full.best_population_estimate), f)
 
+
 def containing_universe_idxs(full: Any) -> List[List[int]]:
     """
     Returns the list of universe indices for each geography, used for jumping to a random geography
@@ -66,10 +67,17 @@ def containing_universe_idxs(full: Any) -> List[List[int]]:
             utoi[u]
             for u in longname_to_universes[ln]
             if (
-                u not in full_longnames_set  # e.g. "world" — not a geographic entity, can't check containment
+                u
+                not in full_longnames_set  # e.g. "world" — not a geographic entity, can't check containment
                 or u == ln  # self-universe: geography is always in its own universe
-                or u in contained_by.get(ln, set())  # strict containment (95% area/population overlap)
-                or u in same_geography.get(ln, set())  # different shapefiles representing the same area
+                or u
+                in contained_by.get(
+                    ln, set()
+                )  # strict containment (95% area/population overlap)
+                or u
+                in same_geography.get(
+                    ln, set()
+                )  # different shapefiles representing the same area
             )
         ]
         for ln in full.longname
