@@ -597,6 +597,7 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             return await loadPageDescriptor({
                 kind: 'article',
                 longname,
+                universe: newDescriptor.universe,
             }, settings)
 
         case 'index':

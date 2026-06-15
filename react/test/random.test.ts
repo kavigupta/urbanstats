@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, getLocation, urbanstatsFixture, withHamburgerMenu, waitForLoading, checkTextboxes } from './test_utils'
+import { target, getLocation, urbanstatsFixture, withHamburgerMenu, waitForLoading, checkTextboxes, clickUniverseFlag } from './test_utils'
 
 const repeats = 15
 
@@ -76,16 +76,18 @@ test('sidebar-weighted-by-population-button', async (t) => {
 })
 
 test('sidebar-filter-to-universe-checkbox', async (t) => {
+    await t
+        .click(Selector('img').withAttribute('class', 'universe-selector'))
+    await clickUniverseFlag(t, 'California, USA')
+
     const unweightedLink = Selector('a').withExactText('Unweighted')
 
     // By default the checkbox is off — random links should not include a universe param
     await t.expect(unweightedLink.getAttribute('href')).notContains('universe')
 
-    // Enable "Filter to universe (USA)"
-    await checkTextboxes(t, ['Filter to universe (USA)'])
+    await checkTextboxes(t, ['Filter to universe (California, USA)'])
 
-    // Links should now carry universe=USA
-    await t.expect(unweightedLink.getAttribute('href')).contains('universe=USA')
+    await t.expect(unweightedLink.getAttribute('href')).contains(`universe=California%2C+USA`)
 
     // Navigating via the updated link should still land on an article
     await withHamburgerMenu(t, async () => {
@@ -93,4 +95,5 @@ test('sidebar-filter-to-universe-checkbox', async (t) => {
     })
     await waitForLoading()
     await assertIsArticle(t)
+    await t.expect(getLocation()).contains(`universe=California%2C+USA`)
 })
