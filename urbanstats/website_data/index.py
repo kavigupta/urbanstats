@@ -35,11 +35,9 @@ def type_to_priority_list() -> List[int]:
 
 def export_index(full, site_folder):
     utoi = universe_to_idx()
-    longname_to_containing_universes = dict(
-        zip(full.longname, full.containing_universes)
-    )
+    longname_to_universes = dict(zip(full.longname, full.universes))
     universe_idxs_list = [
-        [utoi[u] for u in longname_to_containing_universes[ln] if u in utoi]
+        [utoi[u] for u in longname_to_universes[ln] if u in utoi]
         for ln in full.longname
     ]
     save_search_index(

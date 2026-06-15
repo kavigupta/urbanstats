@@ -29,13 +29,3 @@ class CombinedUniverseProvider(UniverseProvider):
             for longname, universe in universes.items():
                 result[longname].extend(universe)
         return result
-
-    def containing_universes_for_shapefile(self, shapefiles, shapefile, shapefile_table):
-        result = {longname: [] for longname in shapefile_table.longname}
-        for provider in self.providers:
-            universes = provider.containing_universes_for_shapefile(
-                shapefiles, shapefile, shapefile_table
-            )
-            for longname, universe in universes.items():
-                result[longname].extend(universe)
-        return result

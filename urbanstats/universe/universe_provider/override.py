@@ -29,14 +29,3 @@ class OverrideUniverseProvider(UniverseProvider):
             assert isinstance(v, list), f"Value for key {k} is not a list"
             result[k] = v
         return result
-
-    def containing_universes_for_shapefile(self, shapefiles, shapefile, shapefile_table):
-        result = self.underlying.containing_universes_for_shapefile(
-            shapefiles, shapefile, shapefile_table
-        )
-        result = result.copy()
-        for k, v in self.overrides.items():
-            assert k in result, f"Key {k} not in shapefile table"
-            assert isinstance(v, list), f"Value for key {k} is not a list"
-            result[k] = v
-        return result

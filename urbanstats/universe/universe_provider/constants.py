@@ -30,7 +30,10 @@ class USContinentProvider(UniverseProvider):
             )
         )
 
-    def _derive_continents(self, ours_to_state, shapefiles):
+    def universes_for_shapefile(self, shapefiles, shapefile, shapefile_table):
+        ours_to_state = self.state_provider.universes_for_shapefile(
+            shapefiles, shapefile, shapefile_table
+        )
         state_to_continent = ContainedWithinUniverseProvider(
             ["continents"]
         ).universes_for_shapefile(
@@ -38,7 +41,8 @@ class USContinentProvider(UniverseProvider):
             shapefiles["subnational_regions"],
             shapefiles["subnational_regions"].load_file(),
         )
-        return {
+
+        ours_to_continent = {
             longname: sorted(
                 {
                     continent
@@ -49,17 +53,7 @@ class USContinentProvider(UniverseProvider):
             for longname, states in ours_to_state.items()
         }
 
-    def universes_for_shapefile(self, shapefiles, shapefile, shapefile_table):
-        ours_to_state = self.state_provider.universes_for_shapefile(
-            shapefiles, shapefile, shapefile_table
-        )
-        return self._derive_continents(ours_to_state, shapefiles)
-
-    def containing_universes_for_shapefile(self, shapefiles, shapefile, shapefile_table):
-        ours_to_state = self.state_provider.containing_universes_for_shapefile(
-            shapefiles, shapefile, shapefile_table
-        )
-        return self._derive_continents(ours_to_state, shapefiles)
+        return ours_to_continent
 
 
 def us_domestic_provider(overrides=None):

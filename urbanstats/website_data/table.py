@@ -17,7 +17,6 @@ from urbanstats.statistics.collections_list import (
     statistic_collections as default_statistic_collections,
 )
 from urbanstats.universe.universe_provider.compute_universes import (
-    compute_containing_universes_for_shapefile,
     compute_universes_for_shapefile,
 )
 
@@ -48,12 +47,6 @@ def compute_statistics_for_shapefile(
     longname_to_universes = compute_universes_for_shapefile(shapefiles, sf)
     result["universes"] = [
         longname_to_universes[longname] for longname in result.longname
-    ]
-    longname_to_containing_universes = compute_containing_universes_for_shapefile(
-        shapefiles, sf
-    )
-    result["containing_universes"] = [
-        longname_to_containing_universes[longname] for longname in result.longname
     ]
     if sf.wikidata_sourcer is not None:
         wikidata, wikipedia = compute_wikidata_and_wikipedia(sf, sf.wikidata_sourcer)

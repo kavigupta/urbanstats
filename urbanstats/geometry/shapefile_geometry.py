@@ -32,7 +32,7 @@ def overlays(a, b, a_size, b_size, **kwargs):
     return pd.concat(results).reset_index(drop=True)
 
 
-def compute_contained_in_direct(a_df, b_df, a_chunk_size, b_chunk_size, threshold):
+def compute_contained_in_direct(a_df, b_df, a_chunk_size, b_chunk_size):
     a_df = a_df.copy()
     a_df["idx"] = np.arange(a_df.shape[0])
     over = overlays(
@@ -45,7 +45,7 @@ def compute_contained_in_direct(a_df, b_df, a_chunk_size, b_chunk_size, threshol
     area = over.area
     area_elem = a_df.set_index("idx").geometry.to_crs("EPSG:2163").area
     pct = area / np.array(area_elem[over.idx])
-    over = over[pct > threshold]
+    over = over[pct > 0.05]
     result = {k: [] for k in a_df.longname}
     for st, reg in zip(over.longname_1, over.longname_2):
         result[reg].append(st)
