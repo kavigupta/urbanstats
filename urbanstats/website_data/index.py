@@ -3,6 +3,7 @@ import re
 import unicodedata
 from typing import Any, List
 
+from urbanstats.geometry.relationship import full_relationships
 from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 from urbanstats.geometry.relationship import type_to_type_category
 from urbanstats.protobuf.utils import save_search_index
@@ -33,17 +34,11 @@ def type_to_priority_list() -> List[int]:
     return result
 
 
-def export_index(full, site_folder):
-    utoi = universe_to_idx()
-    longname_to_universes = dict(zip(full.longname, full.universes))
-    universe_idxs_list = [
-        [utoi[u] for u in longname_to_universes[ln] if u in utoi]
-        for ln in full.longname
-    ]
+def export_index(full: Any, site_folder: str) -> None:
     save_search_index(
         full.longname,
         full.type,
-        universe_idxs_list,
+        containing_universe_idxs(full),
         f"{site_folder}/index/pages_all.gz",
         symlinks=compute_symlinks(),
     )
@@ -51,6 +46,34 @@ def export_index(full, site_folder):
     with open(f"{site_folder}/index/best_population_estimate.json", "w") as f:
         json.dump(list(full.best_population_estimate), f)
 
+def containing_universe_idxs(full: Any) -> List[List[int]]:
+    """
+    Returns the list of universe indices for each geography, used for jumping to a random geography
+    within a universe. Only includes universes that fully contain the geography — a geography that
+    merely intersects a universe boundary should not be reachable by a random jump in that universe.
+    """
+    utoi = universe_to_idx()
+    long_to_type = dict(zip(full.longname, full.type))
+    longname_to_universes = dict(zip(full.longname, full.universes))
+
+    rels = full_relationships(long_to_type)
+    contained_by = {k: set(vs) for k, vs in rels["contained_by"].items()}
+    same_geography = {k: set(vs) for k, vs in rels["same_geography"].items()}
+    full_longnames_set = set(full.longname)
+
+    return [
+        [
+            utoi[u]
+            for u in longname_to_universes[ln]
+            if (
+                u not in full_longnames_set  # e.g. "world" — not a geographic entity, can't check containment
+                or u == ln  # self-universe: geography is always in its own universe
+                or u in contained_by.get(ln, set())  # strict containment (95% area/population overlap)
+                or u in same_geography.get(ln, set())  # different shapefiles representing the same area
+            )
+        ]
+        for ln in full.longname
+    ]
 
 def normalize(s: str) -> str:
     # in javascript: return a.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
