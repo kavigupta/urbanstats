@@ -10,12 +10,12 @@ test('two randoms mobile', async (t) => {
      */
     await t.resizeWindow(400, 800)
     await t.click('.hamburgermenu')
-    await t.click(Selector('a').withExactText('Weighted by Population (US only)'))
-    await t.expect(Selector('a').withExactText('Weighted by Population (US only)').exists).notOk()
+    await t.click(Selector('a').withExactText('Weighted by Population'))
+    await t.expect(Selector('a').withExactText('Weighted by Population').exists).notOk()
     await t.click('.hamburgermenu')
-    await t.click(Selector('a').withExactText('Weighted by Population (US only)'))
+    await t.click(Selector('a').withExactText('Weighted by Population'))
     await waitForLoading()
-    await t.expect(Selector('a').withExactText('Weighted by Population (US only)').exists).notOk()
+    await t.expect(Selector('a').withExactText('Weighted by Population').exists).notOk()
 })
 
 test('maintain and restore scroll position back-forward', async (t) => {
