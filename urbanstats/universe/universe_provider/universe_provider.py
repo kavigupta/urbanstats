@@ -43,6 +43,15 @@ class UniverseProvider(ABC):
         :param shapefile_table: The table of the shapefile
         """
 
+    def containing_universes_for_shapefile(self, shapefiles, shapefile, shapefile_table):
+        """
+        Returns a dictionary mapping longnames to universes that fully contain the geography.
+
+        By default, delegates to universes_for_shapefile. Subclasses where containment
+        is determined geometrically should override this to use a higher intersection threshold.
+        """
+        return self.universes_for_shapefile(shapefiles, shapefile, shapefile_table)
+
 
 @dataclass
 class UrbanCenterlikeStateUniverseProvider(UniverseProvider):
