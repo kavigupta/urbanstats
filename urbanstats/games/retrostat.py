@@ -79,9 +79,7 @@ def get_question_pair(qdata: List[Dict[str, Any]]) -> Tuple[int, int]:
 
 
 @permacache("urbanstats/games/retrostat/generate_retrostat_3")
-def generate_retrostat(
-    retrostat_week: int, origin: str = "https://persistent.urbanstats.org"
-) -> List[Dict[str, Any]]:
+def generate_retrostat(retrostat_week: int, origin: str) -> List[Dict[str, Any]]:
     rng = np.random.RandomState(
         int(stable_hash(("retrostat_weekly", retrostat_week)), 16) % 2**32
     )
