@@ -2,10 +2,10 @@ import json
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
+import requests
 from permacache import permacache, stable_hash
 
 from urbanstats.games.quiz import check_quiz_is_guaranteed_past
-from urbanstats.games.quiz_analysis import get_full_statistics, questions
 
 from .fixed import retrostat as fixed_up_to
 
@@ -29,23 +29,28 @@ def questions_week_for_retrostat(retrostat_week: int) -> int:
     return retrostat_week + 7
 
 
-@permacache("urbanstats/games/retrostat/get_quiz_data_for_retroweek")
-def get_quiz_data_for_retroweek(retrostat_week: int) -> List[Dict[str, Any]]:
-    for day in day_for_week(questions_week_for_retrostat(retrostat_week)):
-        check_quiz_is_guaranteed_past(day)
-    result = get_full_statistics(after_problem=1, debug=False)
-    means = result[["problem", "score", *questions]].groupby("problem").mean()
+@permacache("urbanstats/games/retrostat/get_quiz_data_for_retroweek_2")
+def get_quiz_data_for_retroweek(
+    retrostat_week: int, origin: str
+) -> List[Dict[str, Any]]:
     qdata = []
-    for problem in means.index:
-        if week_for_day(problem) != questions_week_for_retrostat(retrostat_week):
-            continue
+    for problem in day_for_week(questions_week_for_retrostat(retrostat_week)):
+        check_quiz_is_guaranteed_past(problem)
+        response = requests.get(
+            f"{origin}/juxtastat/get_per_question_stats?day={problem}",
+            timeout=10,
+        )
+        response.raise_for_status()
+        stats = response.json()
+        total = stats["total"]
+        per_question = stats["per_question"]
         with open(f"stored_quizzes/juxtastat/{problem}") as f_quiz:
             quiz_qns = json.load(f_quiz)
-        for qcol, q in zip(questions, quiz_qns):
+        for q, correct_count in zip(quiz_qns, per_question):
             qdata.append(
                 dict(
                     q=q,
-                    ease=means.loc[problem, qcol],
+                    ease=correct_count / total,
                 )
             )
     return qdata
@@ -74,11 +79,13 @@ def get_question_pair(qdata: List[Dict[str, Any]]) -> Tuple[int, int]:
 
 
 @permacache("urbanstats/games/retrostat/generate_retrostat_3")
-def generate_retrostat(retrostat_week: int) -> List[Dict[str, Any]]:
+def generate_retrostat(
+    retrostat_week: int, origin: str = "https://persistent.urbanstats.org"
+) -> List[Dict[str, Any]]:
     rng = np.random.RandomState(
         int(stable_hash(("retrostat_weekly", retrostat_week)), 16) % 2**32
     )
-    qdata = get_quiz_data_for_retroweek(retrostat_week)
+    qdata = get_quiz_data_for_retroweek(retrostat_week, origin)
     qdata = sorted(qdata, key=lambda x: x["ease"])
     out = []
     for _ in range(5):

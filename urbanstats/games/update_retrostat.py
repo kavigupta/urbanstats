@@ -22,18 +22,18 @@ def compute_last_retrostat_week_generable() -> int:
     raise RuntimeError("Unreachable")
 
 
-def create_retrostats(folder: str, retrostat_up_to: int) -> None:
+def create_retrostats(folder: str, retrostat_up_to: int, origin: str) -> None:
     for retrostat_week in range(fixed_up_to + 1, retrostat_up_to + 1):
         print(retrostat_week)
-        out = generate_retrostat(retrostat_week)
+        out = generate_retrostat(retrostat_week, origin)
         output_retrostat(folder, retrostat_week, out)
 
 
-def main(path: str) -> None:
+def main(path: str, origin: str) -> None:
     week = compute_last_retrostat_week_generable()
     day = int(compute_fractional_days("Pacific/Kiritimati"))
     copy_up_to("juxtastat", day)
-    create_retrostats(os.path.join(path, "retrostat"), week)
+    create_retrostats(os.path.join(path, "retrostat"), week, origin)
     copy_up_to("retrostat", week, folder=path)
 
 
@@ -42,5 +42,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "path", help="Site folder path (e.g. site or react/test/density-db)"
     )
+    parser.add_argument(
+        "--origin",
+        default="https://persistent.urbanstats.org",
+        help="Origin URL for the persistent data server",
+    )
     args = parser.parse_args()
-    main(args.path)
+    main(args.path, args.origin)
