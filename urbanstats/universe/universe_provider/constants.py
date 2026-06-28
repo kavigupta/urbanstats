@@ -85,6 +85,6 @@ def canada_domestic_provider(overrides=None):
 INTERNATIONAL_PROVIDERS = [
     ConstantUniverseProvider(["world"]),
     ContainedWithinUniverseProvider(
-        ["continents", "countries"], longname_filter=["Antarctica"]
+        ["continents", "countries"], remove_universes=["Antarctica"]
     ),
 ]
