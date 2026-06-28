@@ -10,9 +10,6 @@ from urbanstats.special_cases.country_names import iso_to_country
 from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
 )
-from urbanstats.universe.universe_provider.constant_provider import (
-    ConstantUniverseProvider,
-)
 from urbanstats.universe.universe_provider.constants import INTERNATIONAL_PROVIDERS
 from urbanstats.universe.universe_provider.self_provider import SelfUniverseProvider
 
