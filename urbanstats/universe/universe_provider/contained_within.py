@@ -34,7 +34,9 @@ class ContainedWithinUniverseProvider(UniverseProvider):
         for c in self.contained_within:
             if shapefiles[c].hash_key == shapefile.hash_key:
                 continue
-            result_for_c = compute_contained_in(shapefile, shapefiles[c])
+            result_for_c = compute_contained_in(
+                shapefile, shapefiles[c], self.longname_filter
+            )
             for longname, universes in result_for_c.items():
                 universes = [u for u in universes if u not in remove_universes]
                 result_all[longname].extend(universes)
