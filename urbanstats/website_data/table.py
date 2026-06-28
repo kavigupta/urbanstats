@@ -121,9 +121,7 @@ def _check_no_bad_universes(full_df: pd.DataFrame) -> None:
             print(f"Universe: {universe}")
             for longname in longnames:
                 print(f"  {longname}")
-        print("Please remove these entries from the shapefiles.")
-        print("If you believe this is an error, please contact the maintainers.")
-        print("Exiting...")
+        raise ValueError("Bad universes found. See output above for details.")
 
 
 def merge_population_estimates(full: pd.DataFrame) -> pd.DataFrame:
