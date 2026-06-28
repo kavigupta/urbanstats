@@ -13,9 +13,7 @@ from urbanstats.universe.universe_provider.combined_universe_provider import (
 from urbanstats.universe.universe_provider.constant_provider import (
     ConstantUniverseProvider,
 )
-from urbanstats.universe.universe_provider.contained_within import (
-    ContainedWithinUniverseProvider,
-)
+from urbanstats.universe.universe_provider.constants import INTERNATIONAL_PROVIDERS
 from urbanstats.universe.universe_provider.self_provider import SelfUniverseProvider
 
 COUNTRIES = Shapefile(
@@ -31,8 +29,7 @@ COUNTRIES = Shapefile(
     chunk_size=1,
     universe_provider=CombinedUniverseProvider(
         [
-            ConstantUniverseProvider(["world"]),
-            ContainedWithinUniverseProvider(["continents"]),
+            *INTERNATIONAL_PROVIDERS,
             SelfUniverseProvider(),
         ]
     ),

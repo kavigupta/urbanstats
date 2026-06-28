@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from typing import List
 
-from permacache import drop_if_equal
-
 from urbanstats.compatibility.compatibility import permacache_with_remapping_pickle
 from urbanstats.geometry.shapefile_geometry import compute_contained_in_direct
 from urbanstats.universe.universe_list import universe_by_universe_type
@@ -15,18 +13,22 @@ class ContainedWithinUniverseProvider(UniverseProvider):
     longname_filter: List[str] = None
 
     def hash_key_details(self):
-        return tuple(self.contained_within), self.longname_filter
+        return tuple(self.contained_within), self.longname_filter, "version 2"
 
     def relevant_shapefiles(self):
         return self.contained_within
 
     def universes_for_shapefile(self, shapefiles, shapefile, shapefile_table):
+        longname_filter = (
+            set(self.longname_filter) if self.longname_filter is not None else set()
+        )
         result_all = {longname: [] for longname in shapefile_table.longname}
         for c in self.contained_within:
-            result_for_c = compute_contained_in(
-                shapefile, shapefiles[c], self.longname_filter
-            )
+            if shapefiles[c].hash_key == shapefile.hash_key:
+                continue
+            result_for_c = compute_contained_in(shapefile, shapefiles[c])
             for longname, universes in result_for_c.items():
+                universes = [u for u in universes if u not in longname_filter]
                 result_all[longname].extend(universes)
         return result_all
 
@@ -45,22 +47,15 @@ PROVINCE_PROVIDER = ContainedWithinUniverseProvider(
     key_function=dict(
         shapefile=lambda a: a.hash_key,
         universe_shapefile=lambda a: a.hash_key,
-        longname_filter=drop_if_equal(None),
     ),
 )
-def compute_contained_in(shapefile, universe_shapefile, longname_filter=None):
+def compute_contained_in(shapefile, universe_shapefile):
     """
     Compute the universes for a shapefile based on the universe shapefile. Specifically, a shape S is contained in
     a universe U if the area of the intersection of S and U is at least 5% of the area of S.
     """
     print("contained_in", shapefile.hash_key, universe_shapefile.hash_key)
     universe_df = universe_shapefile.load_file()
-    if longname_filter is not None:
-        universe_df_longnames = set(universe_df.longname)
-        missing = set(longname_filter) - universe_df_longnames
-        if missing:
-            raise ValueError(f"Missing longnames in universe shapefile: {missing}")
-        universe_df = universe_df[universe_df.longname.isin(longname_filter)]
     return compute_contained_in_direct(
         shapefile.load_file(),
         universe_df,
