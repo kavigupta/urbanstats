@@ -17,9 +17,11 @@ from urbanstats.statistics.collections_list import (
     statistic_collections as default_statistic_collections,
 )
 from urbanstats.universe.universe_constants import ZERO_POPULATION_UNIVERSES
+from urbanstats.universe.universe_list import all_universes
 from urbanstats.universe.universe_provider.compute_universes import (
     compute_universes_for_shapefile,
 )
+from urbanstats.universe.universe_provider.contained_within import compute_contained_in
 
 
 @permacache_with_remapping_pickle(
@@ -106,6 +108,24 @@ def combined_shapefile() -> pd.DataFrame:
     return full_df
 
 
+def _check_universes(full_df: pd.DataFrame) -> None:
+    s = shapefiles_list["subnational_regions"]
+    up = s.universe_provider.providers[2]
+    a = up.universes_for_shapefile(shapefiles_list, s, s.load_file())
+    b = compute_contained_in(s, s, up.longname_filter)
+    _check_no_bad_universes(full_df)
+    _check_self_contain_universes(full_df)
+
+
+def _check_self_contain_universes(full_df: pd.DataFrame) -> None:
+    by_longname = full_df.set_index("longname")
+    for universe in all_universes():
+        if universe not in by_longname.index:
+            continue
+        universes = by_longname.loc[universe].universes
+        assert universe in universes, f"{universe} not in {universes}"
+
+
 def _check_no_bad_universes(full_df: pd.DataFrame) -> None:
     bad_universes_to_longnames = {u: [] for u in ZERO_POPULATION_UNIVERSES}
     for longname, universes in zip(full_df.longname, full_df.universes):
@@ -145,7 +165,7 @@ def shapefile_without_ordinals() -> pd.DataFrame:
     full = merge_population_estimates(full)
     full = sort_shapefile(full)
     check(full.longname)
-    _check_no_bad_universes(full)
+    _check_universes(full)
     return full
 
 

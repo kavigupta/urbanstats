@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 
 from permacache import drop_if_equal
@@ -14,13 +14,15 @@ class ContainedWithinUniverseProvider(UniverseProvider):
     contained_within: List[str]
     longname_filter: List[str] = None
     remove_universes: List[str] = None
+    allow_self_universe: bool = field(kw_only=True)
 
     def hash_key_details(self):
         return (
             tuple(self.contained_within),
             self.longname_filter,
             self.remove_universes,
-            "version 3",
+            self.allow_self_universe,
+            "version 4",
         )
 
     def relevant_shapefiles(self):
@@ -32,7 +34,10 @@ class ContainedWithinUniverseProvider(UniverseProvider):
         )
         result_all = {longname: [] for longname in shapefile_table.longname}
         for c in self.contained_within:
-            if shapefiles[c].hash_key == shapefile.hash_key:
+            if (
+                shapefiles[c].hash_key == shapefile.hash_key
+                and not self.allow_self_universe
+            ):
                 continue
             result_for_c = compute_contained_in(
                 shapefile, shapefiles[c], self.longname_filter
@@ -44,11 +49,15 @@ class ContainedWithinUniverseProvider(UniverseProvider):
 
 
 STATE_PROVIDER = ContainedWithinUniverseProvider(
-    ["subnational_regions"], universe_by_universe_type()["state"]
+    ["subnational_regions"],
+    universe_by_universe_type()["state"],
+    allow_self_universe=True,
 )
 
 PROVINCE_PROVIDER = ContainedWithinUniverseProvider(
-    ["subnational_regions"], universe_by_universe_type()["province"]
+    ["subnational_regions"],
+    universe_by_universe_type()["province"],
+    allow_self_universe=True,
 )
 
 

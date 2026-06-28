@@ -35,7 +35,7 @@ class USContinentProvider(UniverseProvider):
             shapefiles, shapefile, shapefile_table
         )
         state_to_continent = ContainedWithinUniverseProvider(
-            ["continents"]
+            ["continents"], allow_self_universe=True  # irrelevant
         ).universes_for_shapefile(
             shapefiles,
             shapefiles["subnational_regions"],
@@ -85,6 +85,8 @@ def canada_domestic_provider(overrides=None):
 INTERNATIONAL_PROVIDERS = [
     ConstantUniverseProvider(["world"]),
     ContainedWithinUniverseProvider(
-        ["continents", "countries"], remove_universes=["Antarctica"]
+        ["continents", "countries"],
+        remove_universes=["Antarctica"],
+        allow_self_universe=False,  # handled separately for countries / continents.
     ),
 ]
