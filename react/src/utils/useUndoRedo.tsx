@@ -113,11 +113,13 @@ export function useUndoRedo<T, S>(
                 return
             }
 
-            if (isMac() ? e.key.toLowerCase() === 'z' && e.metaKey && !e.shiftKey : e.key.toLowerCase() === 'z' && e.ctrlKey) {
+            // !e.altKey: on Windows, Right Alt (AltGr) is reported as Ctrl+Alt. Polish users press
+            // Right Alt+Z/Y to type ż/ź, so we must not intercept Ctrl+Alt+Z/Y as undo/redo.
+            if (isMac() ? e.key.toLowerCase() === 'z' && e.metaKey && !e.shiftKey : e.key.toLowerCase() === 'z' && e.ctrlKey && !e.altKey) {
                 e.preventDefault()
                 doUndo()
             }
-            else if (isMac() ? e.key.toLowerCase() === 'z' && e.metaKey && e.shiftKey : e.key.toLowerCase() === 'y' && e.ctrlKey) {
+            else if (isMac() ? e.key.toLowerCase() === 'z' && e.metaKey && e.shiftKey : e.key.toLowerCase() === 'y' && e.ctrlKey && !e.altKey) {
                 e.preventDefault()
                 doRedo()
             }
