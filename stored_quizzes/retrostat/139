@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2015GE 2-Coalition Margin",
+      "stat_path": "2015GE-coalition_margin",
+      "question": "!FULL Which voted more for the left-of-center parties in the 2015 Canadian general election?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "London Population Center, ON, Canada",
+      "longname_b": "Calgary Population Center, AB, Canada",
+      "stat_a": 0.3488494775350217,
+      "stat_b": -0.14044264109684865
+    },
+    "b": {
+      "stat_column": "2020-2024 Swing",
+      "stat_path": "2020-2024 Swing-margin",
+      "question": "!FULL Which swung less towards Republicans from 2020 to 2024?",
+      "longname_a": "Richmond MSA, VA, USA",
+      "longname_b": "Denver-Aurora-Lakewood MSA, CO, USA",
+      "stat_a": -0.011386180180105399,
+      "stat_b": -0.03766979645746407
+    },
+    "a_ease": 0.7330508474576272,
+    "b_ease": 0.333011583011583
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Gen Z %",
+      "stat_path": "generation_genz",
+      "question": "higher % of people who are gen z!TOOLTIP born between 1997 and 2011",
+      "longname_a": "Placer County, California, USA",
+      "longname_b": "Lancaster County, Nebraska, USA",
+      "stat_a": 0.1817275747508306,
+      "stat_b": 0.2513260963905827
+    },
+    "b": {
+      "stat_column": "Household Income < $50k %",
+      "stat_path": "household_income_under_50k",
+      "question": "higher % of households who have household income under $50k",
+      "longname_a": "Horry County, South Carolina, USA",
+      "longname_b": "Howard County, Maryland, USA",
+      "stat_a": 0.4552221619653967,
+      "stat_b": 0.1589416877758665
+    },
+    "a_ease": 0.34194053208137715,
+    "b_ease": 0.7457627118644068
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Density (r=1km) Change (2000-2020)",
+      "stat_path": "ad_1_change_2000",
+      "question": "higher % increase in population-weighted density (r=1km) from 2000 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Billings MT Media Market, USA",
+      "longname_b": "Yakima-Pasco-Richland-Kennewick WA Media Market, USA",
+      "stat_a": 0.040145502602521255,
+      "stat_b": 0.13472174126466804
+    },
+    "b": {
+      "stat_column": "Undergrad Humanities %",
+      "stat_path": "education_field_humanities",
+      "question": "!FULL Which has more people with a humanities degree, as a percentage of the overall population?",
+      "longname_a": "Greater Bridgeport Planning Region, Connecticut, USA",
+      "longname_b": "Douglas County, Colorado, USA",
+      "stat_a": 0.12430604214951761,
+      "stat_b": 0.1594065617223171
+    },
+    "a_ease": 0.6158301158301158,
+    "b_ease": 0.2033898305084746
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Private Insurance %",
+      "stat_path": "insurance_coverage_private",
+      "question": "higher % of people who are on private insurance!TOOLTIP The denominator for this statistic is the the total number of adults, including those without health insurance coverage.",
+      "longname_a": "Iowa, USA",
+      "longname_b": "Nevada, USA",
+      "stat_a": 0.7606128083991665,
+      "stat_b": 0.6824166884384413
+    },
+    "b": {
+      "stat_column": "Population",
+      "stat_path": "population",
+      "question": "higher population",
+      "longname_a": "Greece",
+      "longname_b": "Albania",
+      "stat_a": 10510077.511154676,
+      "stat_b": 2867078.529839868
+    },
+    "a_ease": 0.4642857142857143,
+    "b_ease": 0.8657534246575342
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Material moving occupations %",
+      "stat_path": "occupation_material_moving_occupations",
+      "question": "higher % of workers employed as material movers!TOOLTIP forklift operators, stock clerks, conveyor operators, etc.",
+      "longname_a": "Stockton [Urban Area], CA, USA",
+      "longname_b": "Jacksonville [Urban Area], FL, USA",
+      "stat_a": 0.07898478488231314,
+      "stat_b": 0.043485852238061486
+    },
+    "b": {
+      "stat_column": "Asian %",
+      "stat_path": "asian",
+      "question": "higher % of people who are Asian",
+      "longname_a": "IL-11 (2023), USA",
+      "longname_b": "NJ-06 (2023), USA",
+      "stat_a": 0.08353047791029844,
+      "stat_b": 0.19248405206728633
+    },
+    "a_ease": 0.4697204968944099,
+    "b_ease": 0.8841940532081377
+  }
+]
