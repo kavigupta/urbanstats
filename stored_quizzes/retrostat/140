@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Employed in Educational services %",
+      "stat_path": "industry_educational_services",
+      "question": "higher % of workers employed in the educational services industry!TOOLTIP elementary and secondary schools, colleges, universities,etc.",
+      "longname_a": "Tampa city, Florida, USA",
+      "longname_b": "Phoenix city, Arizona, USA",
+      "stat_a": 0.08304937661864539,
+      "stat_b": 0.07363348035114327
+    },
+    "b": {
+      "stat_column": "Population Change (2000-2020)",
+      "stat_path": "population_change_2000",
+      "question": "higher % increase in population from 2000 to 2020",
+      "longname_a": "Trenton MSA, NJ, USA",
+      "longname_b": "New Orleans-Metairie MSA, LA, USA",
+      "stat_a": 0.10513852035721419,
+      "stat_b": -0.04924924835130662
+    },
+    "a_ease": 0.2634186622625929,
+    "b_ease": 0.6687555953446732
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Population Change (2000-2020)",
+      "stat_path": "population_change_2000",
+      "question": "higher % increase in population from 2000 to 2020",
+      "longname_a": "Greensboro-High Point-Winston Salem NC Media Market, USA",
+      "longname_b": "Palm Springs CA Media Market, USA",
+      "stat_a": 0.17773247029846978,
+      "stat_b": 0.38685966442995146
+    },
+    "b": {
+      "stat_column": "PW Mean Elevation",
+      "stat_path": "gridded_elevation",
+      "question": "higher population-weighted mean elevation !TOOLTIP Population weighted elevation/hilliness statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Paraguay",
+      "longname_b": "South Korea",
+      "stat_a": 179.9361572265625,
+      "stat_b": 54.2765998840332
+    },
+    "a_ease": 0.28594771241830064,
+    "b_ease": 0.693822739480752
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Renter %",
+      "stat_path": "rent_or_own_rent",
+      "question": "higher % of people who are renters",
+      "longname_a": "Minneapolis [Saint Paul] Urban Center, USA",
+      "longname_b": "Baton Rouge Urban Center, USA",
+      "stat_a": 0.391012302608094,
+      "stat_b": 0.4718612511070755
+    },
+    "b": {
+      "stat_column": "Public Insurance %",
+      "stat_path": "insurance_coverage_govt",
+      "question": "higher % of people who are on public insurance!TOOLTIP The denominator for this statistic is the the total number of adults, including those without health insurance coverage.",
+      "longname_a": "Somerset County, New Jersey, USA",
+      "longname_b": "Stanislaus County, California, USA",
+      "stat_a": 0.07846225468298836,
+      "stat_b": 0.30248279580404347
+    },
+    "a_ease": 0.24673202614379086,
+    "b_ease": 0.6511437908496732
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Employed in Construction %",
+      "stat_path": "industry_construction",
+      "question": "higher % of workers employed in the construction industry!TOOLTIP construction",
+      "longname_a": "Beaumont-Port Arthur MSA, TX, USA",
+      "longname_b": "Kansas City MSA, MO-KS, USA",
+      "stat_a": 0.12983126244570473,
+      "stat_b": 0.06753416795207574
+    },
+    "b": {
+      "stat_column": "Health technologists and technicians %",
+      "stat_path": "occupation_health_technologists_and_technicians",
+      "question": "higher % of workers employed as health technologists and technicians!TOOLTIP radiology technicians, lab technicians, hospital machinery technicians, etc.",
+      "longname_a": "NY-12 (2025), USA",
+      "longname_b": "MS-03 (2023), USA",
+      "stat_a": 0.007793766116196833,
+      "stat_b": 0.026527803978936452
+    },
+    "a_ease": 0.6775544388609716,
+    "b_ease": 0.2619047619047619
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "PW Mean Elevation",
+      "stat_path": "gridded_elevation",
+      "question": "higher population-weighted mean elevation !TOOLTIP Population weighted elevation/hilliness statistics are calculated by computing the statistic for each person in the region and then averaging the results.",
+      "longname_a": "Sixteen Mile Stand CDP, Ohio, USA",
+      "longname_b": "Km 32 Urban Center, Brazil",
+      "stat_a": 234.49079125198242,
+      "stat_b": 21.526994705200195
+    },
+    "b": {
+      "stat_column": "Only English at Home %",
+      "stat_path": "language_english_only",
+      "question": "higher % of people who only speak English at home",
+      "longname_a": "San Joaquin County, California, USA",
+      "longname_b": "Webb County, Texas, USA",
+      "stat_a": 0.5919656937181692,
+      "stat_b": 0.10204106806575462
+    },
+    "a_ease": 0.2615511551155115,
+    "b_ease": 0.6970998925886144
+  }
+]

@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Utility gas heating %",
+      "stat_path": "heating_utility_gas",
+      "question": "!FULL Which has a larger % of homes heated using utility gas?",
+      "longname_a": "Columbus city, Ohio, USA",
+      "longname_b": "Nashville-Davidson metropolitan government (balance), Tennessee, USA",
+      "stat_a": 0.6674163991054107,
+      "stat_b": 0.3173970458569314
+    },
+    "b": {
+      "stat_column": "2021GE 2-Coalition Margin",
+      "stat_path": "2021GE-coalition_margin",
+      "question": "!FULL Which voted more for the left-of-center parties in the 2021 Canadian general election?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "Division No. 1, Newfoundland and Labrador, Canada",
+      "longname_b": "Halton Regional municipality, Ontario, Canada",
+      "stat_a": 0.4683081448437785,
+      "stat_b": 0.1387255037658048
+    },
+    "a_ease": 0.6721311475409836,
+    "b_ease": 0.2556053811659193
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Stroke %",
+      "stat_path": "STROKE_cdc_2",
+      "question": "higher % of adults who have had a stroke",
+      "longname_a": "Boston MA (Manchester NH) Media Market, USA",
+      "longname_b": "Bluefield-Beckley-Oak Hill WV Media Market, USA",
+      "stat_a": 0.02554323581824315,
+      "stat_b": 0.04150285166546835
+    },
+    "b": {
+      "stat_column": "1BR Rent < $750 %",
+      "stat_path": "rent_1br_under_750",
+      "question": "higher % of units with 1br rent under $750",
+      "longname_a": "Virginia Beach city, Virginia, USA",
+      "longname_b": "Las Vegas city, Nevada, USA",
+      "stat_a": 0.07146689558965558,
+      "stat_b": 0.2698003872493795
+    },
+    "a_ease": 0.8031620553359684,
+    "b_ease": 0.3839218632607062
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Millennial %",
+      "stat_path": "generation_millenial",
+      "question": "higher % of people who are millennials!TOOLTIP born between 1982 and 1996",
+      "longname_a": "Sacramento Urban Center, USA",
+      "longname_b": "Waukegan Urban Center, USA",
+      "stat_a": 0.23044088499338838,
+      "stat_b": 0.20165828378831716
+    },
+    "b": {
+      "stat_column": "Household income > C$100k %",
+      "stat_path": "household_income_above_100_cad",
+      "question": "higher % of households that have household income over C$100k",
+      "longname_a": "Division No. 6, Alberta, Canada",
+      "longname_b": "Toronto CDR, Ontario, Canada",
+      "stat_a": 0.5149437847343751,
+      "stat_b": 0.420210202783956
+    },
+    "a_ease": 0.7146245059288537,
+    "b_ease": 0.21747042766151045
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Health technologists and technicians %",
+      "stat_path": "occupation_health_technologists_and_technicians",
+      "question": "higher % of workers employed as health technologists and technicians!TOOLTIP radiology technicians, lab technicians, hospital machinery technicians, etc.",
+      "longname_a": "Georgia, USA",
+      "longname_b": "Kentucky, USA",
+      "stat_a": 0.018924270918364558,
+      "stat_b": 0.023369403091592064
+    },
+    "b": {
+      "stat_column": "White %",
+      "stat_path": "white",
+      "question": "higher % of people who are White",
+      "longname_a": "VA-11 (2023), USA",
+      "longname_b": "FL-28 (2023), USA",
+      "stat_a": 0.48780046322675547,
+      "stat_b": 0.1508110152998943
+    },
+    "a_ease": 0.21562734785875282,
+    "b_ease": 0.71699604743083
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Citizen by Naturalization %",
+      "stat_path": "citizenship_citizen_by_naturalization",
+      "question": "higher % of residents who are citizens by naturalization",
+      "longname_a": "Palmdale Urban Center, USA",
+      "longname_b": "Albuquerque Urban Center, USA",
+      "stat_a": 0.09992632475395671,
+      "stat_b": 0.04699742916783753
+    },
+    "b": {
+      "stat_column": "% units built pre-1970",
+      "stat_path": "year_built_1969_or_earlier",
+      "question": "higher % of housing units built before 1970",
+      "longname_a": "Davenport [Urban Area], IA-IL, USA",
+      "longname_b": "Orlando [Urban Area], FL, USA",
+      "stat_a": 0.5722330522193687,
+      "stat_b": 0.15554246966377727
+    },
+    "a_ease": 0.37670609645131936,
+    "b_ease": 0.8303571428571429
+  }
+]
