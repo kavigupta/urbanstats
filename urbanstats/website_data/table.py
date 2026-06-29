@@ -21,7 +21,6 @@ from urbanstats.universe.universe_list import all_universes
 from urbanstats.universe.universe_provider.compute_universes import (
     compute_universes_for_shapefile,
 )
-from urbanstats.universe.universe_provider.contained_within import compute_contained_in
 
 
 @permacache_with_remapping_pickle(
