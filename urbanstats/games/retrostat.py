@@ -10,13 +10,6 @@ from urbanstats.games.quiz import check_quiz_is_guaranteed_past
 from .fixed import retrostat as fixed_up_to
 
 
-def week_for_day(day: int) -> int:
-    # 1-7 -> 1
-    # 8-14 -> 2
-    # 15-21 -> 3
-    return (day - 1) // 7 + 1
-
-
 def day_for_week(week: int) -> List[int]:
     # 1 -> 1-7
     # 2 -> 8-14
