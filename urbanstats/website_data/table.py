@@ -109,10 +109,6 @@ def combined_shapefile() -> pd.DataFrame:
 
 
 def _check_universes(full_df: pd.DataFrame) -> None:
-    s = shapefiles_list["subnational_regions"]
-    up = s.universe_provider.providers[2]
-    a = up.universes_for_shapefile(shapefiles_list, s, s.load_file())
-    b = compute_contained_in(s, s, up.longname_filter)
     _check_no_bad_universes(full_df)
     _check_self_contain_universes(full_df)
 
