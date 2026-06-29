@@ -65,13 +65,15 @@ def article_urls(articles: pd.DataFrame) -> list[str]:
     category_masks = {}
     for category_id, category in statistics_tree.categories.items():
         stats = [articles[stat] for stat in category.internal_statistics()]
+        if not stats:
+            continue
         category_masks[category_id] = ~np.isnan(stats).all(0)
     result = []
     for idx, longname in enumerate(
         tqdm.tqdm(articles.longname, desc="sitemap: articles")
     ):
-        for category_id, category in statistics_tree.categories.items():
-            if category_masks[category_id][idx]:
+        for category_id, mask in category_masks.items():
+            if mask[idx]:
                 params = {
                     "longname": longname,
                     "category": category_id,
