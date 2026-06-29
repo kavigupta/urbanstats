@@ -12,7 +12,6 @@ from urbanstats.protobuf import data_files_pb2
 from urbanstats.protobuf.utils import write_gzip
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
-from urbanstats.universe.universe_constants import ZERO_POPULATION_UNIVERSES
 from urbanstats.universe.universe_list import all_universes
 from urbanstats.website_data.sharding import build_shards_from_callback
 
@@ -119,9 +118,7 @@ def create_article_gzip(
     ords, percs = flat_ords.query(long_to_idx[row.longname])
 
     u_to_i = universe_to_idx()
-    universe_idxs = [
-        u_to_i[u] for u in row.universes if u not in ZERO_POPULATION_UNIVERSES
-    ]
+    universe_idxs = [u_to_i[u] for u in row.universes]
 
     counts_this = counts_overall[:, universe_idxs]
 
