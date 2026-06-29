@@ -23,13 +23,10 @@ from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTER
 from urbanstats.universe.universe_provider.combined_universe_provider import (
     CombinedUniverseProvider,
 )
-from urbanstats.universe.universe_provider.constant_provider import (
-    ConstantUniverseProvider,
-)
+from urbanstats.universe.universe_provider.constants import INTERNATIONAL_PROVIDERS
 from urbanstats.universe.universe_provider.contained_within import (
     PROVINCE_PROVIDER,
     STATE_PROVIDER,
-    ContainedWithinUniverseProvider,
 )
 from urbanstats.utils import to_cardinal_direction
 
@@ -620,8 +617,7 @@ def circle_shapefile_object(country_shapefile, population):
         special_data_sources=["international_gridded_data"],
         universe_provider=CombinedUniverseProvider(
             [
-                ConstantUniverseProvider(["world"]),
-                ContainedWithinUniverseProvider(["continents", "countries"]),
+                *INTERNATIONAL_PROVIDERS,
                 STATE_PROVIDER,
                 PROVINCE_PROVIDER,
             ]

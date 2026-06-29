@@ -16,13 +16,15 @@ from urbanstats.metadata.metadata_columns_list import (
 from urbanstats.statistics.collections_list import (
     statistic_collections as default_statistic_collections,
 )
+from urbanstats.universe.universe_constants import ZERO_POPULATION_UNIVERSES
+from urbanstats.universe.universe_list import all_universes
 from urbanstats.universe.universe_provider.compute_universes import (
     compute_universes_for_shapefile,
 )
 
 
 @permacache_with_remapping_pickle(
-    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_47",
+    "population_density/stats_for_shapefile/compute_statistics_for_shapefile_52",
     key_function=dict(
         sf=lambda x: x.hash_key,
         shapefiles=lambda x: {
@@ -105,6 +107,38 @@ def combined_shapefile() -> pd.DataFrame:
     return full_df
 
 
+def _check_universes(full_df: pd.DataFrame) -> None:
+    _check_no_bad_universes(full_df)
+    _check_self_contain_universes(full_df)
+
+
+def _check_self_contain_universes(full_df: pd.DataFrame) -> None:
+    by_longname = full_df.set_index("longname")
+    for universe in all_universes():
+        if universe not in by_longname.index:
+            continue
+        universes = by_longname.loc[universe].universes
+        assert universe in universes, f"{universe} not in {universes}"
+
+
+def _check_no_bad_universes(full_df: pd.DataFrame) -> None:
+    bad_universes_to_longnames = {u: [] for u in ZERO_POPULATION_UNIVERSES}
+    for longname, universes in zip(full_df.longname, full_df.universes):
+        for universe in universes:
+            if universe in bad_universes_to_longnames:
+                bad_universes_to_longnames[universe].append(longname)
+    bad_universes_to_longnames = {
+        k: v for k, v in bad_universes_to_longnames.items() if v
+    }
+    if bad_universes_to_longnames:
+        print("Bad universes found:")
+        for universe, longnames in bad_universes_to_longnames.items():
+            print(f"Universe: {universe}")
+            for longname in longnames:
+                print(f"  {longname}")
+        raise ValueError("Bad universes found. See output above for details.")
+
+
 def merge_population_estimates(full: pd.DataFrame) -> pd.DataFrame:
     popu = np.array(full.population)
     popu[np.isnan(popu)] = full.population_2021_canada[np.isnan(popu)]
@@ -126,6 +160,7 @@ def shapefile_without_ordinals() -> pd.DataFrame:
     full = merge_population_estimates(full)
     full = sort_shapefile(full)
     check(full.longname)
+    _check_universes(full)
     return full
 
 
