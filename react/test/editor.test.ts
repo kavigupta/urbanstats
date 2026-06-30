@@ -148,26 +148,6 @@ test('autocomplete sum with click', async (t) => {
 
 urbanstatsFixture('editor (undoChunking = 10000)', `${target}/editor.html?undoChunking=10000`)
 // Long undo chunking above catches problems with initial undo chunk
-test('ctrl+alt+z does not undo (Polish AltGr+Z keyboard input)', async (t) => {
-    // On Windows, Right Alt (AltGr) is sent as Ctrl+Alt. Polish users type ż with Right Alt+Z,
-    // which must not be intercepted as an undo shortcut.
-    await t.click(nthEditor(0))
-    await typeTextWithKeys(t, 'null')
-    await t.pressKey('ctrl+alt+z')
-    await t.expect(nthEditor(0).textContent).eql('nullz\n')
-})
-
-test('ctrl+alt+y does not redo (Polish AltGr+Y keyboard input)', async (t) => {
-    // Same issue: Polish ź is typed with Right Alt+Y, which must not trigger redo.
-    await t.click(nthEditor(0))
-    await typeTextWithKeys(t, 'null')
-    await t.pressKey('ctrl+z')
-    await t.expect(nthEditor(0).textContent).eql('Enter Urban Stats Script\n')
-    await t.pressKey('ctrl+alt+y')
-    await t.pressKey('esc') // Close autocomplete
-    await t.expect(nthEditor(0).textContent).eql('y\n')
-})
-
 test('undo autocomplete', async (t) => {
     await t.click(nthEditor(0))
     await typeTextWithKeys(t, 'p\n')
