@@ -1,7 +1,7 @@
 import React, { ReactNode, useEffect } from 'react'
 
 import { PageTemplate } from '../page_template/template'
-import { TestUtils } from '../utils/TestUtils'
+import { isMac } from '../utils/platform'
 
 import { Editor } from './Editor'
 import { useStandaloneEditorState } from './StandaloneEditor'
@@ -25,13 +25,12 @@ export function DebugEditorPanel(props: { undoChunking?: number }): ReactNode {
 
     useEffect(() => {
         const listener = (e: KeyboardEvent): void => {
-            const isMac = navigator.userAgent.includes('Mac') && !TestUtils.shared.isTesting
             // TestCafe doesn't send `e.code`, so we need to use `toLowerCase` otherwise the char is capitalized on Mac
-            if (e.key.toLowerCase() === 's' && (isMac ? e.metaKey : e.ctrlKey) && e.shiftKey) {
+            if (e.key.toLowerCase() === 's' && (isMac() ? e.metaKey : e.ctrlKey) && e.shiftKey) {
                 e.preventDefault()
                 setSelection([selection[1], selection[0]])
             }
-            if (e.key.toLowerCase() === 'd' && (isMac ? e.metaKey : e.ctrlKey) && e.shiftKey) {
+            if (e.key.toLowerCase() === 'd' && (isMac() ? e.metaKey : e.ctrlKey) && e.shiftKey) {
                 e.preventDefault()
                 setSelection([null, null])
             }

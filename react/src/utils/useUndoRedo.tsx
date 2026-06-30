@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
-import { TestUtils } from './TestUtils'
 import { makeDebugLogger } from './debug-logging'
+import { isMac } from './platform'
 import { useMobileLayout } from './responsive'
 import { zIndex } from './zIndex'
 
@@ -113,12 +113,11 @@ export function useUndoRedo<T, S>(
                 return
             }
 
-            const isMac = navigator.userAgent.includes('Mac') && !TestUtils.shared.isTesting
-            if (isMac ? e.key.toLowerCase() === 'z' && e.metaKey && !e.shiftKey : e.key.toLowerCase() === 'z' && e.ctrlKey) {
+            if (isMac() ? e.key.toLowerCase() === 'z' && e.metaKey && !e.shiftKey : e.key.toLowerCase() === 'z' && e.ctrlKey) {
                 e.preventDefault()
                 doUndo()
             }
-            else if (isMac ? e.key.toLowerCase() === 'z' && e.metaKey && e.shiftKey : e.key.toLowerCase() === 'y' && e.ctrlKey) {
+            else if (isMac() ? e.key.toLowerCase() === 'z' && e.metaKey && e.shiftKey : e.key.toLowerCase() === 'y' && e.ctrlKey) {
                 e.preventDefault()
                 doRedo()
             }
