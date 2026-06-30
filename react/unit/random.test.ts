@@ -40,6 +40,16 @@ void test('by-pop-usa-only', async () => {
         const article = getArticle()
         assertNoSpecials(article)
         assertNoSyminks(article)
-        assert.match(article, /.*USA.*/)
+        assert.match(article, /.+USA/)
+    }
+})
+
+void test('uniform-kenya-only', async () => {
+    const getArticle = await uniform('Kenya')
+    for (let count = 0; count < 10_000; count++) {
+        const article = getArticle()
+        assertNoSpecials(article)
+        assertNoSyminks(article)
+        assert.match(article, /.+Kenya/)
     }
 })

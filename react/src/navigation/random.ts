@@ -12,7 +12,7 @@ function universeIdx(universe: string): number {
 }
 
 function inUniverse(index: SearchIndex, idx: number, filterUniverseIdx: number): boolean {
-    return index.metadata[idx].universeIdxs?.includes(filterUniverseIdx) ?? false
+    return (index.metadata[idx].universeIdxs?.includes(filterUniverseIdx) ?? false) && index.elements[idx] !== universes_ordered[filterUniverseIdx]
 }
 
 export async function byPopulation(universe: string | undefined): Promise<() => string> {
