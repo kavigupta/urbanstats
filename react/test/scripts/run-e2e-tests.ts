@@ -7,6 +7,7 @@ import createTestCafe from 'testcafe'
 import { z } from 'zod'
 import { argumentParser } from 'zodcli'
 
+import { compareScreenshots } from './check-images'
 import { startProxy } from './ci_proxy'
 import { github } from './github-utils'
 import { runE2eTestsDocker } from './run-e2e-tests-docker'
@@ -214,14 +215,8 @@ async function maybeCompare(testFileId: TestFileId, success: boolean): Promise<b
         if (success) {
             await Promise.all(globSync(`screenshots/${testFileId}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
         }
-
-        const screenshotComparison = await execa('python', ['tests/check_images.py', `--test=${testFileId}`], {
-            cwd: '..',
-            stdio: 'inherit',
-            reject: false,
-        })
-
-        if (screenshotComparison.failed) {
+        const screenshotFailures = await compareScreenshots(testFileId, () => true)
+        if (screenshotFailures.size > 0) {
             return false
         }
     }
