@@ -47,17 +47,15 @@ export async function byPopulation(universe: string | undefined): Promise<() => 
 export async function uniform(universe: string | undefined): Promise<() => string> {
     const index = (await loadProtobuf('/index/pages_all.gz', 'SearchIndex'))
     const filterUniverseIdx = universe !== undefined ? universeIdx(universe) : undefined
-    return () => {
-        while (true) {
-            const randomIndex = Math.floor(Math.random() * index.elements.length)
-            if (!valid(index, randomIndex)) {
-                continue
-            }
-            if (filterUniverseIdx !== undefined && !inUniverse(index, randomIndex, filterUniverseIdx)) {
-                continue
-            }
-            return index.elements[randomIndex]
+    const entries: number[] = []
+    for (let i = 0; i < index.elements.length; i++) {
+        if (valid(index, i) && (filterUniverseIdx === undefined || inUniverse(index, i, filterUniverseIdx))) {
+            entries.push(i)
         }
+    }
+    return () => {
+        assert(entries.length > 0, `No valid entries for universe: ${universe}`)
+        return index.elements[entries[Math.floor(Math.random() * entries.length)]]
     }
 }
 

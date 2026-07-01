@@ -70,10 +70,7 @@ def containing_universe_idxs(full: Any) -> List[List[int]]:
                 u
                 not in full_longnames_set  # e.g. "world" — not a geographic entity, can't check containment
                 or u == ln  # self-universe: geography is always in its own universe
-                or u
-                in contained_by.get(
-                    ln, set()
-                )  # strict containment (95% area/population overlap)
+                or u in contained_by.get(ln, set())
                 or u
                 in same_geography.get(
                     ln, set()
