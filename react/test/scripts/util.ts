@@ -37,7 +37,8 @@ export const testHistorySchema = z.array(z.object({
     testFileId: z.string().transform(t => t as TestFileId),
     result: z.discriminatedUnion('status', [
         z.object({ status: z.literal('timeout'), timeLimitSeconds: z.number() }),
-        z.object({ status: z.enum(['success', 'failure']), duration: z.number() }),
+        z.object({ status: z.literal('success'), duration: z.number() }),
+        z.object({ status: z.literal('failure'), duration: z.number(), failedTestNames: z.array(z.string()).nullable().default(null) }),
     ]),
     retries: z.number(),
     github: z.optional(z.object({
