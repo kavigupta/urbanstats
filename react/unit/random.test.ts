@@ -17,7 +17,7 @@ function assertNoSyminks(article: string): void {
 const repeats = 500_000
 
 void test('uniform', async () => {
-    const getArticle = await uniform()
+    const getArticle = await uniform(undefined)
     for (let count = 0; count < repeats; count++) {
         const article = getArticle()
         assertNoSpecials(article)
@@ -26,7 +26,7 @@ void test('uniform', async () => {
 })
 
 void test('by-pop', async () => {
-    const getArticle = await byPopulation(false)
+    const getArticle = await byPopulation(undefined)
     for (let count = 0; count < repeats; count++) {
         const article = getArticle()
         assertNoSpecials(article)
@@ -35,11 +35,21 @@ void test('by-pop', async () => {
 })
 
 void test('by-pop-usa-only', async () => {
-    const getArticle = await byPopulation(true)
+    const getArticle = await byPopulation('USA')
     for (let count = 0; count < repeats; count++) {
         const article = getArticle()
         assertNoSpecials(article)
         assertNoSyminks(article)
-        assert.match(article, /.*USA.*/)
+        assert.match(article, /.+USA/)
+    }
+})
+
+void test('uniform-kenya-only', async () => {
+    const getArticle = await uniform('Kenya')
+    for (let count = 0; count < repeats; count++) {
+        const article = getArticle()
+        assertNoSpecials(article)
+        assertNoSyminks(article)
+        assert.match(article, /.+Kenya/)
     }
 })

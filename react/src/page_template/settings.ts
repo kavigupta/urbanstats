@@ -46,6 +46,7 @@ export type SettingsDictionary = {
     juxtastatCompactEmoji: boolean
     syauRequireEnter: boolean
     mapperSettingsColumnProp: number
+    randomFilterByCurrentUniverse: boolean
 }
 /* eslint-enable no-restricted-syntax */
 & { [G in GroupIdentifier as StatGroupKey<G>]: boolean }
@@ -104,6 +105,7 @@ export const defaultSettingsList = [
     ['juxtastatCompactEmoji', false],
     ['syauRequireEnter', false],
     ['mapperSettingsColumnProp', 0.3],
+    ['randomFilterByCurrentUniverse', false],
 ] as const
 
 // Having a default settings object allows us to statically check that we have default values for all settings

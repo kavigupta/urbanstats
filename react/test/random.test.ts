@@ -1,4 +1,6 @@
-import { target, getLocation, urbanstatsFixture } from './test_utils'
+import { Selector } from 'testcafe'
+
+import { target, getLocation, urbanstatsFixture, withHamburgerMenu, waitForLoading, checkTextboxes, clickUniverseFlag } from './test_utils'
 
 const repeats = 15
 
@@ -21,10 +23,19 @@ async function assertCorrect(t: TestController): Promise<void> {
     await assertNoSpecials(t)
 }
 
-urbanstatsFixture('random-usa-by-population', `${target}/random.html?sampleby=population&us_only=true`)
+urbanstatsFixture('random-usa-by-population', `${target}/random.html?sampleby=population&universe=USA`)
 
 for (let count = 0; count < repeats; count++) {
     test(`random-usa-by-population-${count}`, async (t) => {
+        await assertCorrect(t)
+        await t.expect(getLocation()).match(/.*USA.*/)
+    })
+}
+
+urbanstatsFixture('random-usa-by-population-compat', `${target}/random.html?sampleby=population&us_only=true`)
+
+for (let count = 0; count < repeats; count++) {
+    test(`random-usa-by-population-compat-${count}`, async (t) => {
         await assertCorrect(t)
         await t.expect(getLocation()).match(/.*USA.*/)
     })
@@ -45,3 +56,44 @@ for (let count = 0; count < repeats; count++) {
         await assertCorrect(t)
     })
 }
+
+urbanstatsFixture('random-sidebar', `${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
+
+test('sidebar-unweighted-button', async (t) => {
+    await withHamburgerMenu(t, async () => {
+        await t.click(Selector('a').withExactText('Unweighted'))
+    })
+    await waitForLoading()
+    await assertIsArticle(t)
+})
+
+test('sidebar-weighted-by-population-button', async (t) => {
+    await withHamburgerMenu(t, async () => {
+        await t.click(Selector('a').withExactText('Weighted by Population'))
+    })
+    await waitForLoading()
+    await assertIsArticle(t)
+})
+
+test('sidebar-filter-to-universe-checkbox', async (t) => {
+    await t
+        .click(Selector('img').withAttribute('class', 'universe-selector'))
+    await clickUniverseFlag(t, 'California, USA')
+
+    const unweightedLink = Selector('a').withExactText('Unweighted')
+
+    // By default the checkbox is off — random links should not include a universe param
+    await t.expect(unweightedLink.getAttribute('href')).notContains('universe')
+
+    await checkTextboxes(t, ['Filter to universe (California, USA)'])
+
+    await t.expect(unweightedLink.getAttribute('href')).contains(`universe=California%2C+USA`)
+
+    // Navigating via the updated link should still land on an article
+    await withHamburgerMenu(t, async () => {
+        await t.click(unweightedLink)
+    })
+    await waitForLoading()
+    await assertIsArticle(t)
+    await t.expect(getLocation()).contains(`universe=California%2C+USA`)
+})

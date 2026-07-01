@@ -1,58 +1,61 @@
+import universes_ordered from '../data/universes_ordered'
 import { loadJSON, loadProtobuf } from '../load_json'
 import { Settings } from '../page_template/settings'
+import { assert } from '../utils/defensive'
 import { SearchIndex } from '../utils/protos'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 
-export async function byPopulation(domesticOnly: boolean): Promise<() => string> {
+function universeIdx(universe: string): number {
+    const idx = universes_ordered.indexOf(universe as typeof universes_ordered[number])
+    assert(idx !== -1, `Unknown universe: ${universe}`)
+    return idx
+}
+
+function inUniverse(index: SearchIndex, idx: number, filterUniverseIdx: number): boolean {
+    return (index.metadata[idx].universeIdxs?.includes(filterUniverseIdx) ?? false) && index.elements[idx] !== universes_ordered[filterUniverseIdx]
+}
+
+export async function byPopulation(universe: string | undefined): Promise<() => string> {
     const [index, populations] = await Promise.all([
         loadProtobuf('/index/pages_all.gz', 'SearchIndex'),
         loadJSON('/index/best_population_estimate.json') as Promise<number[]>,
     ])
-    const totalWeight = populations.reduce((sum, x) => sum + x)
+    const filterUniverseIdx = universe !== undefined ? universeIdx(universe) : undefined
+
+    const entries: number[] = []
+    let filteredWeight = 0
+    for (let i = 0; i < index.elements.length; i++) {
+        if (valid(index, i) && (filterUniverseIdx === undefined || inUniverse(index, i, filterUniverseIdx))) {
+            entries.push(i)
+            filteredWeight += populations[i]
+        }
+    }
 
     return () => {
-        while (true) {
-        // Generate a random number between 0 and the total weight
-            const randomValue = Math.random() * totalWeight
-
-            // Find the destination based on the random value
-            let idx: number
-            let cumulativeWeight = 0
-
-            for (let i = 0; i < index.elements.length; i++) {
-                cumulativeWeight += populations[i]
-
-                if (randomValue < cumulativeWeight) {
-                    idx = i
-                    break
-                }
+        const randomValue = Math.random() * filteredWeight
+        let cumulativeWeight = 0
+        for (const i of entries) {
+            cumulativeWeight += populations[i]
+            if (randomValue < cumulativeWeight) {
+                return index.elements[i]
             }
-
-            if (!valid(index, idx!)) {
-                continue
-            }
-
-            // this is specifically looking for stuff that's only in the US.
-            // so it makes sense.
-            if (domesticOnly && !index.metadata[idx!].isUsa) {
-                continue
-            }
-
-            return index.elements[idx!]
         }
+        assert(false, 'Should not happen')
     }
 }
 
-export async function uniform(): Promise<() => string> {
+export async function uniform(universe: string | undefined): Promise<() => string> {
     const index = (await loadProtobuf('/index/pages_all.gz', 'SearchIndex'))
-    return () => {
-        while (true) {
-            const randomIndex = Math.floor(Math.random() * index.elements.length)
-            if (!valid(index, randomIndex)) {
-                continue
-            }
-            return index.elements[randomIndex]
+    const filterUniverseIdx = universe !== undefined ? universeIdx(universe) : undefined
+    const entries: number[] = []
+    for (let i = 0; i < index.elements.length; i++) {
+        if (valid(index, i) && (filterUniverseIdx === undefined || inUniverse(index, i, filterUniverseIdx))) {
+            entries.push(i)
         }
+    }
+    return () => {
+        assert(entries.length > 0, `No valid entries for universe: ${universe}`)
+        return index.elements[entries[Math.floor(Math.random() * entries.length)]]
     }
 }
 

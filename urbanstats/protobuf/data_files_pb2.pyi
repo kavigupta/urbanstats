@@ -350,18 +350,18 @@ class ArticleUniverseList(_message.Message):
     ) -> None: ...
 
 class SearchIndexMetadata(_message.Message):
-    __slots__ = ("type", "is_usa", "is_symlink")
+    __slots__ = ("type", "is_symlink", "universe_idxs")
     TYPE_FIELD_NUMBER: _ClassVar[int]
-    IS_USA_FIELD_NUMBER: _ClassVar[int]
     IS_SYMLINK_FIELD_NUMBER: _ClassVar[int]
+    UNIVERSE_IDXS_FIELD_NUMBER: _ClassVar[int]
     type: int
-    is_usa: int
     is_symlink: int
+    universe_idxs: _containers.RepeatedScalarFieldContainer[int]
     def __init__(
         self,
         type: _Optional[int] = ...,
-        is_usa: _Optional[int] = ...,
         is_symlink: _Optional[int] = ...,
+        universe_idxs: _Optional[_Iterable[int]] = ...,
     ) -> None: ...
 
 class SearchIndex(_message.Message):

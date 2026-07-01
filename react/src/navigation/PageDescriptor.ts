@@ -121,13 +121,18 @@ const statisticSchemaFromParams = z.union([
 
 const randomSchema = z.object({
     sampleby: z.union([z.literal('uniform'), z.literal('population')]),
-    us_only: z.boolean(),
+    universe: z.optional(universeSchema),
 })
 
 const randomSchemaForParams = z.object({
     sampleby: z.union([z.literal('uniform'), z.literal('population'), z.undefined().transform(() => 'uniform' as const)]),
-    us_only: z.union([z.literal('true').transform(() => true), z.literal('false').transform(() => false), z.undefined().transform(() => false)]),
-})
+    universe: z.optional(universeSchema).catch(undefined),
+    // Backward compat: us_only=true maps to universe=USA
+    us_only: z.optional(z.literal('true')),
+}).transform(({ sampleby, universe, us_only }) => ({
+    sampleby,
+    universe: universe ?? (us_only === 'true' ? 'USA' as const : undefined),
+}))
 
 // Should either have all or none friends parameters
 const quizSchema = z.intersection(
@@ -332,7 +337,7 @@ export function urlFromPageDescriptor(pageDescriptor: ExceptionalPageDescriptor)
             pathname = '/random.html'
             searchParams = {
                 sampleby: pageDescriptor.sampleby,
-                us_only: pageDescriptor.us_only ? 'true' : undefined,
+                universe: pageDescriptor.universe,
             }
             break
         case 'index':
@@ -582,16 +587,17 @@ export async function loadPageDescriptor(newDescriptor: PageDescriptor, settings
             let longname: string
             switch (newDescriptor.sampleby) {
                 case 'uniform':
-                    longname = (await uniform())()
+                    longname = (await uniform(newDescriptor.universe))()
                     break
                 case 'population':
-                    longname = (await byPopulation(newDescriptor.us_only))()
+                    longname = (await byPopulation(newDescriptor.universe))()
                     break
             }
 
             return await loadPageDescriptor({
                 kind: 'article',
                 longname,
+                universe: newDescriptor.universe,
             }, settings)
 
         case 'index':

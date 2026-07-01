@@ -8,6 +8,7 @@ import { Theme } from '../page_template/color-themes'
 import { useColors, useCurrentTheme } from '../page_template/colors'
 import { checkboxCategoryName, SettingsDictionary, sourceEnabledKey, TemperatureUnit, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
 import { useDataSourceCheckboxes } from '../page_template/statistic-settings'
+import { useUniverse } from '../universe'
 import { useMobileLayout } from '../utils/responsive'
 
 import { StagingControls } from './StagingControls'
@@ -44,6 +45,8 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
     const sidebarSectionContent = useSidebarSectionContentClassName()
 
     const navContext = useContext(Navigator.Context)
+    const currentUniverse = useUniverse()
+    const filterUniverse = useSetting('randomFilterByCurrentUniverse')[0] && currentUniverse !== undefined ? currentUniverse : undefined
 
     const fontSize = useSidebarFontSize()
 
@@ -95,13 +98,17 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                 <div style={sidebarSectionTitle}>Random</div>
                 <ul className={sidebarSectionContent}>
                     <li>
-                        <a style={linkStyle} {...navContext.link({ kind: 'random', sampleby: 'uniform', us_only: false }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>Unweighted</a>
+                        <a style={linkStyle} {...navContext.link({ kind: 'random', sampleby: 'uniform', universe: filterUniverse }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>Unweighted</a>
                     </li>
                     <li>
-                        <a style={linkStyle} {...navContext.link({ kind: 'random', sampleby: 'population', us_only: false }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>Weighted by Population</a>
+                        <a style={linkStyle} {...navContext.link({ kind: 'random', sampleby: 'population', universe: filterUniverse }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>Weighted by Population</a>
                     </li>
                     <li>
-                        <a style={linkStyle} {...navContext.link({ kind: 'random', sampleby: 'population', us_only: true }, { scroll: { kind: 'position', top: 0 }, postNavigationCallback: onNavigate })}>Weighted by Population (US only)</a>
+                        <CheckboxSetting
+                            settingKey="randomFilterByCurrentUniverse"
+                            fontSize={fontSize}
+                            name={`Filter to universe (${currentUniverse ?? 'world'})`}
+                        />
                     </li>
                 </ul>
             </div>
