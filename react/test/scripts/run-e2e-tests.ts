@@ -1,4 +1,5 @@
 import fs from 'fs/promises'
+import { Writable } from 'stream'
 
 import chalkTemplate from 'chalk-template'
 import { execa } from 'execa'
@@ -7,12 +8,13 @@ import createTestCafe from 'testcafe'
 import { z } from 'zod'
 import { argumentParser } from 'zodcli'
 
+import { compareScreenshots } from './check-images'
 import { startProxy } from './ci_proxy'
 import { github } from './github-utils'
 import { runE2eTestsDocker } from './run-e2e-tests-docker'
-import { errorPattern } from './screenshot-name'
+import { errorPattern, testCaseNameFromFile } from './screenshot-name'
 import { testCafePorts } from './testcafe-ports'
-import { booleanArgument, getTOTPWait, setTOTPWait, testFilePath, TestFileId, TestHistory, TestResult } from './util'
+import { booleanArgument, getTOTPWait, setTOTPWait, TestCaseName, TestFileId, testFilePath, TestHistory, TestResult } from './util'
 
 const options = argumentParser({
     options: z.object({
@@ -66,14 +68,16 @@ const gh = process.env.GITHUB_ACTIONS ? await github() : undefined
 for (const testFileId of testFileIds) {
     const numTries = options.tries * (await testFileDidChange(testFileId) ? 1 : 2)
     let retries = 0
-    let result: TestResult
+    let result: TestResult | undefined
 
     retry: while (true) {
         if (gh) {
             console.warn(`::group::${testFilePath(testFileId)} attempt ${retries + 1}`)
         }
         console.warn(chalkTemplate`{cyan ${testFilePath(testFileId)} attempt ${(retries + 1)} running...}`)
-        result = await runTest(testFileId)
+        result = await runTestFile(testFileId, testCaseName =>
+            result?.status === 'failure' && result.failedTestNames !== null ? result.failedTestNames.includes(testCaseName) : true,
+        )
         printResult({ testFileId, result, retries })
         switch (result.status) {
             case 'success':
@@ -152,7 +156,7 @@ async function testFileDidChange(testFileId: TestFileId): Promise<boolean> {
     })
 }
 
-async function runTest(testFileId: TestFileId): Promise<TestResult> {
+async function runTestFile(testFileId: TestFileId, filter: (testName: TestCaseName) => boolean): Promise<TestResult> {
     let runner = testcafe[options.live ? 'createLiveModeRunner' : 'createRunner']()
         .src(testFilePath(testFileId))
         // Refs https://source.chromium.org/chromium/chromium/src/+/main:content/web_test/browser/web_test_browser_main_runner.cc;l=295
@@ -168,6 +172,17 @@ async function runTest(testFileId: TestFileId): Promise<TestResult> {
         // Explicitly interpolate test here so we don't add the error to the directory
         // Pattern is only used for take on fail, we make our own pattern otherwise
         .screenshots(`screenshots/${testFileId}`, true, errorPattern)
+        .filter(testCaseName => filter(testCaseName as TestCaseName))
+
+    // Capture JSON report to identify which individual test cases failed
+    let jsonData = ''
+    const jsonWriter = new Writable({
+        write(chunk: Buffer, _encoding: string, callback: () => void) {
+            jsonData += chunk.toString()
+            callback()
+        },
+    })
+    runner = runner.reporter(['spec', { name: 'json', output: jsonWriter }])
 
     if (options.video) {
         runner = runner.video(`videos/${testFileId}`, {
@@ -175,8 +190,7 @@ async function runTest(testFileId: TestFileId): Promise<TestResult> {
         })
     }
 
-    // Remove artifacts for test
-    await Promise.all(globSync(`{screenshots,delta,videos,changed_screenshots}/${testFileId}/**`, { nodir: true }).map(file => fs.rm(file)))
+    await clearScreenshots(testFileId, filter)
 
     // Reset TOTP wait
     await setTOTPWait(testFileId, 0)
@@ -193,40 +207,44 @@ async function runTest(testFileId: TestFileId): Promise<TestResult> {
 
     const timeLimitSeconds = options.live ? 1_000_000 : (options.timeLimitSeconds ?? 10_000) * (await testFileDidChange(testFileId) ? 1 : 2)
 
-    const result = await withTimeout(runningTests, async () => timeLimitSeconds + await getTOTPWait(testFileId))
+    const rawResult = await withTimeout(runningTests, async () => timeLimitSeconds + await getTOTPWait(testFileId))
 
-    const comparisonResult = await maybeCompare(testFileId, result.status === 'success')
-
-    if (result.status === 'success' && !comparisonResult) {
-        return { ...result, status: 'failure' }
+    if (rawResult.status === 'timeout') {
+        return { status: 'timeout', timeLimitSeconds }
     }
 
-    if (result.status === 'timeout') {
-        return { ...result, timeLimitSeconds }
+    // Parse which test cases failed from the JSON report so we can retry only those
+    const reportSchema = z.string()
+        .transform((s): unknown => JSON.parse(s))
+        .pipe(z.object({
+            fixtures: z.array(z.object({
+                tests: z.array(z.object({
+                    name: z.string(),
+                    errs: z.array(z.unknown()),
+                    skipped: z.boolean(),
+                })),
+            })),
+        }))
+    const report = reportSchema.parse(jsonData)
+    const testcafeFailures = report.fixtures.flatMap(f =>
+        f.tests.filter(t => t.errs.length > 0 && !t.skipped).map(t => t.name),
+    )
+
+    if (rawResult.status === 'failure') {
+        return { status: 'failure', duration: rawResult.duration, failedTestNames: testcafeFailures }
     }
 
-    return result
-}
-
-async function maybeCompare(testFileId: TestFileId, success: boolean): Promise<boolean> {
+    // All testcafe tests passed — run screenshot comparison if enabled
     if (options.compare) {
-        // If there were no failures, delete any generated .error.png so they don't set off the comparison
-        if (success) {
-            await Promise.all(globSync(`screenshots/${testFileId}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
-        }
-
-        const screenshotComparison = await execa('python', ['tests/check_images.py', `--test=${testFileId}`], {
-            cwd: '..',
-            stdio: 'inherit',
-            reject: false,
-        })
-
-        if (screenshotComparison.failed) {
-            return false
+        // Remove on-fail error screenshots before comparing (they have no reference counterparts)
+        await Promise.all(globSync(`screenshots/${testFileId}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
+        const screenshotFailures = await compareScreenshots(testFileId, filter)
+        if (screenshotFailures.size > 0) {
+            return { status: 'failure', duration: rawResult.duration, failedTestNames: [...screenshotFailures] }
         }
     }
 
-    return true
+    return { status: 'success', duration: rawResult.duration }
 }
 
 async function withTimeout<T>(promise: Promise<T>, getTimeoutSeconds: () => Promise<number>): Promise<T | { status: 'timeout' }> {
@@ -241,4 +259,13 @@ async function withTimeout<T>(promise: Promise<T>, getTimeoutSeconds: () => Prom
         return { status: 'timeout' as const }
     })()
     return await Promise.race([promise, timeoutPromise])
+}
+
+async function clearScreenshots(testFileId: string, testCaseFilter: (testCaseName: TestCaseName) => boolean): Promise<void> {
+    const files = globSync(`{screenshots,delta,changed_screenshots}/${testFileId}/**`, { nodir: true })
+    await Promise.all(
+        files
+            .filter(f => testCaseFilter(testCaseNameFromFile(f)))
+            .map(f => fs.rm(f)),
+    )
 }
