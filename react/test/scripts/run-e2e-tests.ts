@@ -231,7 +231,15 @@ async function runTestFile(testFileId: TestFileId, filter: (testName: TestCaseNa
     )
 
     if (rawResult.status === 'failure') {
-        return { status: 'failure', duration: rawResult.duration, failedTestNames: testcafeFailures }
+        const failedNames = [...testcafeFailures]
+        if (options.compare) {
+            // Also compare screenshots for tests that passed testcafe, so regressions in passing tests aren't silently missed
+            const passedFilter = (name: TestCaseName): boolean => filter(name) && !testcafeFailures.includes(name)
+            await Promise.all(globSync(`screenshots/${testFileId}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
+            const screenshotFailures = await compareScreenshots(testFileId, passedFilter)
+            failedNames.push(...screenshotFailures)
+        }
+        return { status: 'failure', duration: rawResult.duration, failedTestNames: failedNames }
     }
 
     // All testcafe tests passed — run screenshot comparison if enabled
