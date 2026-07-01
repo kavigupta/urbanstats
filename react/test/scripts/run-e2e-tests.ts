@@ -230,28 +230,23 @@ async function runTestFile(testFileId: TestFileId, filter: (testName: TestCaseNa
         f.tests.filter(t => t.errs.length > 0 && !t.skipped).map(t => t.name),
     )
 
-    if (rawResult.status === 'failure') {
-        const failedNames = [...testcafeFailures]
-        if (options.compare) {
-            // Also compare screenshots for tests that passed testcafe, so regressions in passing tests aren't silently missed
-            const passedFilter = (name: TestCaseName): boolean => filter(name) && !testcafeFailures.includes(name)
-            await Promise.all(globSync(`screenshots/${testFileId}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
-            const screenshotFailures = await compareScreenshots(testFileId, passedFilter)
-            failedNames.push(...screenshotFailures)
-        }
-        return { status: 'failure', duration: rawResult.duration, failedTestNames: failedNames }
-    }
+    // When testcafe failed some tests, only compare screenshots for the tests that passed —
+    // the failing tests will be retried anyway, and their screenshots aren't meaningful yet.
+    const compareFilter = rawResult.status === 'failure'
+        ? (name: TestCaseName): boolean => filter(name) && !testcafeFailures.includes(name)
+        : filter
 
-    // All testcafe tests passed — run screenshot comparison if enabled
+    let screenshotFailures = new Set<string>()
     if (options.compare) {
         // Remove on-fail error screenshots before comparing (they have no reference counterparts)
         await Promise.all(globSync(`screenshots/${testFileId}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
-        const screenshotFailures = await compareScreenshots(testFileId, filter)
-        if (screenshotFailures.size > 0) {
-            return { status: 'failure', duration: rawResult.duration, failedTestNames: [...screenshotFailures] }
-        }
+        screenshotFailures = await compareScreenshots(testFileId, compareFilter)
     }
 
+    const allFailed = [...testcafeFailures, ...screenshotFailures]
+    if (rawResult.status === 'failure' || allFailed.length > 0) {
+        return { status: 'failure', duration: rawResult.duration, failedTestNames: allFailed }
+    }
     return { status: 'success', duration: rawResult.duration }
 }
 
