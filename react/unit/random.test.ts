@@ -46,7 +46,7 @@ void test('by-pop-usa-only', async () => {
 
 void test('uniform-kenya-only', async () => {
     const getArticle = await uniform('Kenya')
-    for (let count = 0; count < 10_000; count++) {
+    for (let count = 0; count < repeats; count++) {
         const article = getArticle()
         assertNoSpecials(article)
         assertNoSyminks(article)

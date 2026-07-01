@@ -69,7 +69,8 @@ def containing_universe_idxs(full: Any) -> List[List[int]]:
             if (
                 u
                 not in full_longnames_set  # e.g. "world" — not a geographic entity, can't check containment
-                or u == ln  # self-universe: geography is always in its own universe
+                or u
+                == ln  # self-universe: geography is always in its own universe. This gets filtered out in the random jumping case, but might be useful elsewhere
                 or u in contained_by.get(ln, set())
                 or u
                 in same_geography.get(
