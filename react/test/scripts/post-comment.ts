@@ -3,7 +3,7 @@ import assert from 'assert'
 import { z } from 'zod'
 
 import { github } from './github-utils'
-import { loadAndMergeTestHistories, testFile } from './util'
+import { loadAndMergeTestHistories, testFilePath } from './util'
 
 const env = z.object({
     ARTIFACT_ID: z.string(),
@@ -47,7 +47,7 @@ async function testsComment(): Promise<string | undefined> {
     const executions = (await loadAndMergeTestHistories()).filter((execution): execution is Required<typeof execution> => {
         assert(execution.github, 'Must be a Github test execution')
         return true
-    }).sort((a, b) => a.test.localeCompare(b.test))
+    }).sort((a, b) => a.testFileId.localeCompare(b.testFileId))
 
     const failedExecutions = executions.filter(execution => execution.result.status !== 'success')
 
@@ -55,7 +55,7 @@ async function testsComment(): Promise<string | undefined> {
         return
     }
 
-    const lines = await Promise.all(failedExecutions.map(async ({ test, result, retries, github: executionGithub }) => {
+    const lines = await Promise.all(failedExecutions.map(async ({ testFileId: test, result, retries, github: executionGithub }) => {
         const statusText = result.status === 'timeout'
             ? `timeout (limit: ${result.timeLimitSeconds}s)`
             : 'failure'
@@ -75,7 +75,7 @@ async function testsComment(): Promise<string | undefined> {
             throw new Error('Could not find the start of the test step in the logs')
         }
 
-        const lineIdx = logs.findIndex(line => line.includes(`##[group]${testFile(test)} attempt ${(retries + 1)}`))
+        const lineIdx = logs.findIndex(line => line.includes(`##[group]${testFilePath(test)} attempt ${(retries + 1)}`))
 
         if (lineIdx === -1) {
             throw new Error(`Couldn't find log line for ${test}`)

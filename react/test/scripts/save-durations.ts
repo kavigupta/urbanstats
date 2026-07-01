@@ -9,7 +9,7 @@ const durations: Record<string, number> = {}
 
 for (const result of await loadAndMergeTestHistories()) {
     assert(result.result.status === 'success', 'Cannot save durations if a test is unsuccessful')
-    durations[result.test] = result.result.duration
+    durations[result.testFileId] = result.result.duration
 }
 
 const { octokit } = await github(z.string().parse(process.env.FINE_GRAINED_TOKEN_FOR_VARIABLES))

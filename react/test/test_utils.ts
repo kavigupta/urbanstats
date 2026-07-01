@@ -13,6 +13,7 @@ import type { TestWindow } from '../src/utils/TestUtils'
 import { checkString } from '../src/utils/checkString'
 
 import { urlFromCode } from './mapper-utils'
+import { flakyErrorBasename, screenshotBasename } from './scripts/screenshot-name'
 
 export const target = process.env.URBANSTATS_TEST_TARGET ?? `http://localhost:${port()}`
 export const searchField = Selector('input').withAttribute('placeholder', 'Search Urban Stats')
@@ -129,7 +130,7 @@ let screenshotNumber = 0
 
 function screenshotPath(t: TestController): string {
     screenshotNumber++
-    return `${t.browser.name}/${t.test.name}-${screenshotNumber}.png`
+    return `${t.browser.name}/${screenshotBasename(t.test.name, screenshotNumber)}`
 }
 
 type ScreencapOptions = { wait?: boolean, fullPage?: boolean, removeEntireMap?: boolean } & ({ selector?: undefined } | ({ selector?: Selector } & TakeElementScreenshotOptions))
@@ -358,7 +359,7 @@ export async function flaky<T>(t: TestController, doThing: () => Promise<T>): Pr
         catch (error) {
             console.error(chalkTemplate`{red flaky failed with error}`, error)
             await t.takeScreenshot({
-                path: `${t.browser.name}/${t.test.name}.flaky.error.png`,
+                path: `${t.browser.name}/${flakyErrorBasename(t.test.name)}`,
                 fullPage: true,
             })
             if (Date.now() > start + 30 * 1000) {

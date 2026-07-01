@@ -34,7 +34,7 @@ export const repoInfo = {
 }
 
 export const testHistorySchema = z.array(z.object({
-    test: z.string(),
+    testFileId: z.string().transform(t => t as TestFileId),
     result: z.discriminatedUnion('status', [
         z.object({ status: z.literal('timeout'), timeLimitSeconds: z.number() }),
         z.object({ status: z.enum(['success', 'failure']), duration: z.number() }),
@@ -58,8 +58,8 @@ export async function loadAndMergeTestHistories(): Promise<TestHistory> {
     const rawResult = await Promise.all(historiesFiles.map(async (historyFile) => {
         const history = testHistorySchema.parse(JSON.parse(await fs.readFile(historyFile, 'utf-8')))
         for (const result of history) {
-            assert(!processedTests.has(result.test), 'Duplicate test histories!')
-            processedTests.add(result.test)
+            assert(!processedTests.has(result.testFileId), 'Duplicate test histories!')
+            processedTests.add(result.testFileId)
         }
         return history
     }))
@@ -67,6 +67,9 @@ export async function loadAndMergeTestHistories(): Promise<TestHistory> {
     return rawResult.flat()
 }
 
-export function testFile(test: string): string {
-    return `test/${test}.test.ts`
+export function testFilePath(testFileId: TestFileId): string {
+    return `test/${testFileId}.test.ts`
 }
+
+export type TestFileId = string & { testFileId: true }
+export type TestCaseName = string & { testCaseName: true }

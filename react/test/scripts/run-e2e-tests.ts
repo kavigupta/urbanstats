@@ -10,8 +10,9 @@ import { argumentParser } from 'zodcli'
 import { startProxy } from './ci_proxy'
 import { github } from './github-utils'
 import { runE2eTestsDocker } from './run-e2e-tests-docker'
+import { errorPattern } from './screenshot-name'
 import { testCafePorts } from './testcafe-ports'
-import { booleanArgument, getTOTPWait, setTOTPWait, testFile, TestHistory, TestResult } from './util'
+import { booleanArgument, getTOTPWait, setTOTPWait, testFilePath, TestFileId, TestHistory, TestResult } from './util'
 
 const options = argumentParser({
     options: z.object({
@@ -43,7 +44,7 @@ if (testFiles.length === 0) {
     process.exit(1)
 }
 
-const tests = testFiles.map(file => /test\/(.+)\.test\.ts/.exec(file)![1])
+const testFileIds = testFiles.map(file => /test\/(.+)\.test\.ts/.exec(file)![1] as TestFileId)
 
 if (options.headless) {
     // Start display subsystem to browser can run
@@ -62,28 +63,28 @@ const testHistory: TestHistory = []
 
 const gh = process.env.GITHUB_ACTIONS ? await github() : undefined
 
-for (const test of tests) {
-    const numTries = options.tries * (await testFileDidChange(test) ? 1 : 2)
+for (const testFileId of testFileIds) {
+    const numTries = options.tries * (await testFileDidChange(testFileId) ? 1 : 2)
     let retries = 0
     let result: TestResult
 
     retry: while (true) {
         if (gh) {
-            console.warn(`::group::${testFile(test)} attempt ${retries + 1}`)
+            console.warn(`::group::${testFilePath(testFileId)} attempt ${retries + 1}`)
         }
-        console.warn(chalkTemplate`{cyan ${testFile(test)} attempt ${(retries + 1)} running...}`)
-        result = await runTest(test)
-        printResult({ test, result, retries })
+        console.warn(chalkTemplate`{cyan ${testFilePath(testFileId)} attempt ${(retries + 1)} running...}`)
+        result = await runTest(testFileId)
+        printResult({ testFileId, result, retries })
         switch (result.status) {
             case 'success':
                 break retry
             case 'timeout':
             case 'failure':
                 if (retries + 1 === numTries) {
-                    console.error(chalkTemplate`{red ${testFile(test)} Out of retries}`)
+                    console.error(chalkTemplate`{red ${testFilePath(testFileId)} Out of retries}`)
                     break retry
                 }
-                console.warn(chalkTemplate`{red ${testFile(test)} failed... trying again}`)
+                console.warn(chalkTemplate`{red ${testFilePath(testFileId)} failed... trying again}`)
                 if (gh) {
                     console.warn(`::endgroup::`)
                 }
@@ -97,7 +98,7 @@ for (const test of tests) {
     }
 
     testHistory.push({
-        test,
+        testFileId,
         result,
         retries,
         github: gh && {
@@ -118,21 +119,21 @@ if (testHistory.some(({ result }) => result.status !== 'success')) {
 
 process.exit(0) // Needed to clean up subprocesses
 
-function printResult({ test, result, retries }: { test: string, result: TestResult, retries: number }): void {
+function printResult({ testFileId, result, retries }: { testFileId: TestFileId, result: TestResult, retries: number }): void {
     switch (result.status) {
         case 'success':
-            console.warn(chalkTemplate`{green.bold ${testFile(test)} succeeded (${retries} retries)}`)
+            console.warn(chalkTemplate`{green.bold ${testFilePath(testFileId)} succeeded (${retries} retries)}`)
             break
         case 'failure':
-            console.warn(chalkTemplate`{red.bold ${testFile(test)} failed (${retries} retries)}`)
+            console.warn(chalkTemplate`{red.bold ${testFilePath(testFileId)} failed (${retries} retries)}`)
             break
         case 'timeout':
-            console.error(chalkTemplate`{red ${testFile(test)} took too long! (allowed duration ${result.timeLimitSeconds}s) (${retries} retries)}`)
+            console.error(chalkTemplate`{red ${testFilePath(testFileId)} took too long! (allowed duration ${result.timeLimitSeconds}s) (${retries} retries)}`)
             break
     }
 }
 
-async function testFileDidChange(test: string): Promise<boolean> {
+async function testFileDidChange(testFileId: TestFileId): Promise<boolean> {
     if (options.baseRef === undefined) {
         // No baseRef defined, we're running on local, and don't want to retry there
         return true
@@ -141,7 +142,7 @@ async function testFileDidChange(test: string): Promise<boolean> {
         // We're running on CI with an unspecified base ref, we do want to retry there
         return false
     }
-    return await execa('git', ['diff', '--exit-code', `origin/${options.baseRef}`, '--', testFile(test)], { reject: false }).then(({ exitCode }) => {
+    return await execa('git', ['diff', '--exit-code', `origin/${options.baseRef}`, '--', testFilePath(testFileId)], { reject: false }).then(({ exitCode }) => {
         if (exitCode === 0 || exitCode === 1) {
             return exitCode === 1
         }
@@ -151,9 +152,9 @@ async function testFileDidChange(test: string): Promise<boolean> {
     })
 }
 
-async function runTest(test: string): Promise<TestResult> {
+async function runTest(testFileId: TestFileId): Promise<TestResult> {
     let runner = testcafe[options.live ? 'createLiveModeRunner' : 'createRunner']()
-        .src(testFile(test))
+        .src(testFilePath(testFileId))
         // Refs https://source.chromium.org/chromium/chromium/src/+/main:content/web_test/browser/web_test_browser_main_runner.cc;l=295
         .browsers([`chrome:${options.browser}${options.remoteDebuggingPort ? `:cdpPort=${options.remoteDebuggingPort}` : ''} ${[
             '--window-size=1400,800',
@@ -166,19 +167,19 @@ async function runTest(test: string): Promise<TestResult> {
         ].join(' ')}`])
         // Explicitly interpolate test here so we don't add the error to the directory
         // Pattern is only used for take on fail, we make our own pattern otherwise
-        .screenshots(`screenshots/${test}`, true, `\${BROWSER}/\${TEST}.error.png`)
+        .screenshots(`screenshots/${testFileId}`, true, errorPattern)
 
     if (options.video) {
-        runner = runner.video(`videos/${test}`, {
+        runner = runner.video(`videos/${testFileId}`, {
             pathPattern: '${BROWSER}/${TEST}.mp4',
         })
     }
 
     // Remove artifacts for test
-    await Promise.all(globSync(`{screenshots,delta,videos,changed_screenshots}/${test}/**`, { nodir: true }).map(file => fs.rm(file)))
+    await Promise.all(globSync(`{screenshots,delta,videos,changed_screenshots}/${testFileId}/**`, { nodir: true }).map(file => fs.rm(file)))
 
     // Reset TOTP wait
-    await setTOTPWait(test, 0)
+    await setTOTPWait(testFileId, 0)
 
     const runningTests = (async () => {
         const start = Date.now()
@@ -190,11 +191,11 @@ async function runTest(test: string): Promise<TestResult> {
         return { status: failed === 0 ? 'success' as const : 'failure' as const, duration: Date.now() - start }
     })()
 
-    const timeLimitSeconds = options.live ? 1_000_000 : (options.timeLimitSeconds ?? 10_000) * (await testFileDidChange(test) ? 1 : 2)
+    const timeLimitSeconds = options.live ? 1_000_000 : (options.timeLimitSeconds ?? 10_000) * (await testFileDidChange(testFileId) ? 1 : 2)
 
-    const result = await withTimeout(runningTests, async () => timeLimitSeconds + await getTOTPWait(test))
+    const result = await withTimeout(runningTests, async () => timeLimitSeconds + await getTOTPWait(testFileId))
 
-    const comparisonResult = await maybeCompare(test, result.status === 'success')
+    const comparisonResult = await maybeCompare(testFileId, result.status === 'success')
 
     if (result.status === 'success' && !comparisonResult) {
         return { ...result, status: 'failure' }
@@ -207,14 +208,14 @@ async function runTest(test: string): Promise<TestResult> {
     return result
 }
 
-async function maybeCompare(test: string, success: boolean): Promise<boolean> {
+async function maybeCompare(testFileId: TestFileId, success: boolean): Promise<boolean> {
     if (options.compare) {
         // If there were no failures, delete any generated .error.png so they don't set off the comparison
         if (success) {
-            await Promise.all(globSync(`screenshots/${test}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
+            await Promise.all(globSync(`screenshots/${testFileId}/**/*.error.png`, { nodir: true }).map(file => fs.rm(file)))
         }
 
-        const screenshotComparison = await execa('python', ['tests/check_images.py', `--test=${test}`], {
+        const screenshotComparison = await execa('python', ['tests/check_images.py', `--test=${testFileId}`], {
             cwd: '..',
             stdio: 'inherit',
             reject: false,
