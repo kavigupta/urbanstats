@@ -205,7 +205,7 @@ function UniverseSelector(): ReactNode {
 
     // If the tree goes out of focus, close the dropdown
     useEffect(() => {
-        const listener = (e: FocusEvent): void => {
+        const listener = (): void => {
             // Delay closing to allow focus again
             setTimeout(() => {
                 if (!divRef.current?.contains(document.activeElement)) {
@@ -289,6 +289,12 @@ function Flag(props: { height: number, onClick?: () => void, universe: string, c
                 onClick={props.onClick}
                 role={props.onClick && 'button'}
                 tabIndex={props.onClick && 0}
+                onKeyDown={props.onClick && ((e) => {
+                    if (e.key === ' ' || e.key === 'Enter') {
+                        e.preventDefault()
+                        props.onClick!()
+                    }
+                })}
             />
         </div>
     )
