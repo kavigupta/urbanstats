@@ -27,15 +27,20 @@ export function exportToCSV(data: string[][], filename: string): void {
 
 export function CSVButton(props: { onClick: () => void }): ReactNode {
     return (
-        <div
+        <button
+            type="button"
+            aria-label="Export as CSV"
             onClick={props.onClick}
             style={{
                 height: '100%',
                 cursor: 'pointer',
+                background: 'none',
+                border: 'none',
+                padding: 0,
             }}
         >
-            <img src="/csv.png" alt="CSV Export Button" style={{ height: '100%' }} />
-        </div>
+            <img src="/csv.png" alt="" style={{ height: '100%' }} />
+        </button>
     )
 }
 
