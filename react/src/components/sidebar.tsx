@@ -8,7 +8,7 @@ import { Theme } from '../page_template/color-themes'
 import { useColors, useCurrentTheme } from '../page_template/colors'
 import { checkboxCategoryName, SettingsDictionary, sourceEnabledKey, TemperatureUnit, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
 import { useDataSourceCheckboxes } from '../page_template/statistic-settings'
-import { useUniverse } from '../universe'
+import { humanReadableUniverse, useUniverse } from '../universe'
 import { useMobileLayout } from '../utils/responsive'
 
 import { StagingControls } from './StagingControls'
@@ -107,7 +107,7 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                         <CheckboxSetting
                             settingKey="randomFilterByCurrentUniverse"
                             fontSize={fontSize}
-                            name={`Filter to universe (${currentUniverse ?? 'world'})`}
+                            name={`Filter to universe (${humanReadableUniverse(currentUniverse ?? 'world')})`}
                         />
                     </li>
                 </ul>

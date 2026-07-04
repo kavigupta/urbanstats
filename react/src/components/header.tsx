@@ -8,7 +8,7 @@ import { Navigator } from '../navigation/Navigator'
 import { universePath } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useHeaderLogoKey, useHideSidebarDesktop } from '../page_template/utils'
-import { universeContext, useUniverse, useUniverseContext } from '../universe'
+import { humanReadableUniverse, universeContext, useUniverse, useUniverseContext } from '../universe'
 import { assert } from '../utils/defensive'
 import { useMobileLayout } from '../utils/responsive'
 import { zIndex } from '../utils/zIndex'
@@ -379,7 +379,7 @@ function UniverseDropdown(
                                 classNameToUse="universe-selector-option"
                             />
                             <div className="serif">
-                                {altUniverse === 'world' ? 'World' : altUniverse}
+                                {humanReadableUniverse(altUniverse)}
                             </div>
                         </div>
                     </div>
