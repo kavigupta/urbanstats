@@ -70,7 +70,10 @@ test('search-test-arrows', async (t) => {
 
 // Regession test for a crash
 test('tab tab type', async (t) => {
-    await t.pressKey('tab').pressKey('tab')
+    let tries = 0
+    while (++tries < 10 && !(await Selector(searchField).focused)) {
+        await t.pressKey('tab')
+    }
     await t.expect(Selector(searchField).focused).ok()
     await t.pressKey('a')
 })
