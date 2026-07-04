@@ -20,6 +20,14 @@ test('article-universe-selector-test-california', async (t) => {
         .eql(`${target}/article.html?longname=San+Marino+city%2C+California%2C+USA&universe=California%2C+USA`)
 })
 
+test('universe selector closes when loses focus', async (t) => {
+    await t
+        .click('img.universe-selector')
+    await t.expect(Selector('.universe-selector-option').exists).ok()
+    await t.click('body')
+    await t.expect(Selector('.universe-selector-option').exists).notOk()
+})
+
 urbanstatsFixture('article universe selector test international', `/article.html?longname=Delhi+%5BNew+Delhi%5D+Urban+Center%2C+India`)
 
 test('article-universe-selector-test-india', async (t) => {

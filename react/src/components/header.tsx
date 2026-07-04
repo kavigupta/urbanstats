@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
 import '../common.css'
 import './header.css'
@@ -201,6 +201,24 @@ function UniverseSelector(): ReactNode {
 
     const [dropdownOpen, setDropdownOpen] = React.useState(false)
 
+    const divRef = useRef<HTMLDivElement>(null)
+
+    // If the tree goes out of focus, close the dropdown
+    useEffect(() => {
+        const listener = (e: FocusEvent): void => {
+            // Delay closing to allow focus again
+            setTimeout(() => {
+                if (!divRef.current?.contains(document.activeElement)) {
+                    setDropdownOpen(false)
+                }
+            }, 150)
+        }
+        document.addEventListener('blur', listener, true)
+        return () => {
+            document.removeEventListener('blur', listener, true)
+        }
+    }, [])
+
     let dropdown = dropdownOpen
         ? (
                 <UniverseDropdown
@@ -229,7 +247,7 @@ function UniverseSelector(): ReactNode {
     )
 
     return (
-        <div style={{ marginBlockEnd: '0em', position: 'relative', width: `${width}px` }}>
+        <div ref={divRef} style={{ marginBlockEnd: '0em', position: 'relative', width: `${width}px` }}>
             <div style={
                 {
                     width,
@@ -269,6 +287,8 @@ function Flag(props: { height: number, onClick?: () => void, universe: string, c
                 width={`${usableWidth}px`}
                 className={props.classNameToUse}
                 onClick={props.onClick}
+                role={props.onClick && 'button'}
+                tabIndex={props.onClick && 0}
             />
         </div>
     )
