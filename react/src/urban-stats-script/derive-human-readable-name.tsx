@@ -6,9 +6,10 @@ import { assert } from '../utils/defensive'
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import * as l from './literal-parser'
 import { noLocation } from './location'
+import { expressionOperatorMap } from './operators'
 import { TypeEnvironment } from './types-values'
 
-export type HumanReadableElement = { type: 'atom', value: string } | { type: 'where' | 'superscript' | 'subscript', value: HumanReadableElement[] }
+export type HumanReadableElement = { type: 'atom', value: string } | { type: 'where' | 'superscript' | 'subscript' | 'parens', value: HumanReadableElement[] }
 
 function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTStatement, typeEnvironment: TypeEnvironment): HumanReadableElement[] | undefined {
     switch (ast.type) {
@@ -17,51 +18,62 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
         case 'autoUXNode':
             return humanReadableElements(ast.expr, typeEnvironment)
         case 'binaryOperator': {
-            const lhs = humanReadableElements(ast.left, typeEnvironment)
-            const rhs = humanReadableElements(ast.right, typeEnvironment)
+            // If a child expression is another operator, and it's lower precedence, then it should be wrapped in parenthesis for clarity
+            const wrapInParensIfLowerPrecedence = (expr: UrbanStatsASTExpression): HumanReadableElement[] | undefined => {
+                const value = humanReadableElements(expr, typeEnvironment)
+                if (value === undefined) return
+                if (expr.type === 'binaryOperator' && expressionOperatorMap.get(expr.operator.node)!.precedence < expressionOperatorMap.get(ast.operator.node)!.precedence) {
+                    return [{ type: 'parens', value }]
+                }
+                return value
+            }
+
+            const lhs = wrapInParensIfLowerPrecedence(ast.left)
+            const rhs = wrapInParensIfLowerPrecedence(ast.right)
             if (lhs === undefined || rhs === undefined) return
-            let operator: string
+            let humanReadableOperator: string
             switch (ast.operator.node) {
                 case '**':
                     return [...lhs, { type: 'superscript', value: rhs }]
                 case '/':
-                    operator = '÷'
+                    humanReadableOperator = '÷'
                     break
                 case '-':
-                    operator = '−'
+                    humanReadableOperator = '−'
                     break
                 case '==':
-                    operator = '='
+                    humanReadableOperator = '='
                     break
                 case '!=':
-                    operator = '≠'
+                    humanReadableOperator = '≠'
                     break
                 case '<':
-                    operator = '<'
+                    humanReadableOperator = '<'
                     break
                 case '>':
-                    operator = '>'
+                    humanReadableOperator = '>'
                     break
                 case '<=':
-                    operator = '≤'
+                    humanReadableOperator = '≤'
                     break
                 case '>=':
-                    operator = '≥'
+                    humanReadableOperator = '≥'
                     break
                 case '&':
-                    operator = 'and'
+                    humanReadableOperator = 'and'
                     break
                 case '|':
-                    operator = 'or'
+                    humanReadableOperator = 'or'
                     break
                 case '*':
-                    operator = '×'
+                    humanReadableOperator = '×'
                     break
                 case '+':
-                    operator = '+'
+                    humanReadableOperator = '+'
                     break
             }
-            return [...lhs, { type: 'atom', value: ` ${operator} ` }, ...rhs]
+
+            return [...lhs, { type: 'atom', value: ` ${humanReadableOperator} ` }, ...rhs]
         }
         case 'identifier':
             const identifierName = typeEnvironment.get(ast.name.node)?.documentation?.humanReadableName
@@ -140,7 +152,7 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
             // Consolidate adjacent wheres
             const last = rest.length > 0 ? rest[rest.length - 1] : undefined
             if (last?.type === 'where') {
-                return [...rest.slice(0, rest.length - 1), { type: 'where', value: last.value.concat(cond) }]
+                return [...rest.slice(0, rest.length - 1), { type: 'where', value: [...last.value, { type: 'atom', value: ' and ' }, ...cond] }]
             }
 
             return [...rest, { type: 'where', value: cond }]
@@ -166,8 +178,16 @@ function reify(elements: HumanReadableElement[]): ReactNode {
             case 'where':
                 return (
                     <>
-                        where
+                        {' where '}
                         {reify(element.value)}
+                    </>
+                )
+            case 'parens':
+                return (
+                    <>
+                        (
+                        {reify(element.value)}
+                        )
                     </>
                 )
         }
