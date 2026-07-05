@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react'
 
 import { ExtraStat } from './load-article'
 import { Histogram, transposeSettingsHeight } from './plots-histogram'
+import { MonthlyPlot } from './plots-monthly'
 import { TimeSeriesPlot } from './plots-timeseries'
 
 export interface PlotProps {
@@ -14,7 +15,7 @@ export interface PlotProps {
 }
 
 export function RenderedPlot({ statDescription, plotProps }: { statDescription: string, plotProps: PlotProps[] }): ReactNode {
-    const type = plotProps.reduce<undefined | 'histogram' | 'time_series'>((result, plot) => {
+    const type = plotProps.reduce<undefined | 'histogram' | 'time_series' | 'monthly_time_series'>((result, plot) => {
         if (result === undefined) {
             return plot.extraStat?.type
         }
@@ -65,6 +66,25 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
                     )}
                 />
             )
+        case 'monthly_time_series':
+            return (
+                <MonthlyPlot
+                    stats={plotProps.flatMap(
+                        (props) => {
+                            if (props.extraStat?.type !== 'monthly_time_series') {
+                                return []
+                            }
+                            return [
+                                {
+                                    shortname: props.shortname,
+                                    stat: props.extraStat,
+                                    color: props.color,
+                                },
+                            ]
+                        },
+                    )}
+                />
+            )
         case undefined:
             return null
     }
@@ -75,6 +95,8 @@ export function extraHeaderSpaceForVertical(spec: PlotProps): number {
         case 'histogram':
             return transposeSettingsHeight
         case 'time_series':
+            return 0
+        case 'monthly_time_series':
             return 0
         case undefined:
             return 0

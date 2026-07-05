@@ -29,7 +29,14 @@ export interface TimeSeriesExtraStat {
     timeSeries: number[]
 }
 
-export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat
+export interface MonthlyExtraStat {
+    type: 'monthly_time_series'
+    name: string
+    unit: '' | 'temperature'
+    monthlyValues: number[]
+}
+
+export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat | MonthlyExtraStat
 
 export type StatCol = (typeof stats)[number]
 
@@ -297,6 +304,18 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
                     counts: histogram.counts,
                     universeTotal: data.rows.find((_, universeRowIndex) => indices[universeRowIndex] === universeTotalIdx)!.statval!,
                 } as HistogramExtraStat
+            }
+            else if (spec.type === 'monthly_time_series') {
+                const timeseries = data.extraStats[extraStatIdx].timeseries
+                // absent when the underlying monthly data was invalid/NaN for this row -- omit the extra stat rather than crash
+                if (timeseries?.values) {
+                    extraStat = {
+                        type: 'monthly_time_series',
+                        name: spec.name,
+                        unit: spec.unit,
+                        monthlyValues: timeseries.values,
+                    } as MonthlyExtraStat
+                }
             }
         }
         const overallFirstLastThis = overallFirstOrLast.filter((x: IFirstOrLast) => x.articleRowIdx === rowIndex)
