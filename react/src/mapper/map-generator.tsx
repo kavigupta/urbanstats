@@ -116,7 +116,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
     }
 
     const mapResultMain = execResult.resultingValue.value
-    let label: string
+    let label: ReactNode
 
     if (mapResultMain.value.label === undefined) {
         const derivedLabel = deriveMapLabel(mapSettings.script.uss, typeEnvironment)
@@ -423,7 +423,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     universe: Universe
     geographyKind: typeof valid_geographies[number]
     cache: MapCache
-    label: string
+    label: ReactNode
 }): Promise<{ features: GeoJSON.Feature[], mapComponentCreator: MapComponentCreator, ramp: RampToDisplay }> {
     let ramp: RampToDisplay
     let colors: string[]
@@ -577,7 +577,7 @@ function computeClusterRampBin(val: number, clusterRamp: RampToDisplay & { type:
     return clamped
 }
 
-function computeRampToDisplay(value: CommonMap, label: string): RampToDisplay & { type: 'ramp' } {
+function computeRampToDisplay(value: CommonMap, label: ReactNode): RampToDisplay & { type: 'ramp' } {
     const scale = instantiate(value.scale)
     const hasValuesClampedToStart = value.data.some(val => scale.forward(val) < 0)
     const hasValuesClampedToEnd = value.data.some(val => scale.forward(val) > 1)

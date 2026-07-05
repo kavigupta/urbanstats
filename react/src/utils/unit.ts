@@ -1,3 +1,5 @@
+import { ReactNode } from 'react'
+
 export type UnitType = 'percentage' | 'percentageChange' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
     | 'area' | 'distanceInKm' | 'distanceInM' | 'democraticMargin' | 'temperature' | 'time' | 'distancePerYear'
     | 'contaminantLevel' | 'number' | 'usd' | 'minutes'
@@ -109,7 +111,10 @@ export function getUnitName(unitType: UnitType): string {
     }
 }
 
-export function classifyStatistic(statname: string): UnitType {
+export function classifyStatistic(statname: string | ReactNode): UnitType {
+    if (typeof statname !== 'string') {
+        return 'number'
+    }
     if (/20\d{2}GE/.test(statname) || /20\d{2}-20\d{2} Swing/.test(statname)) {
         // Canadian election statistics
         const isSwing = statname.includes('Swing')

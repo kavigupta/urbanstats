@@ -14,13 +14,13 @@ interface EmpiricalRamp {
     ramp: Keypoints
     scale: ScaleInstance
     interpolations: number[]
-    label: string
+    label: ReactNode
     unit?: UnitType
     hasValuesClampedToStart: boolean
     hasValuesClampedToEnd: boolean
 }
 
-export type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: string }
+export type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: ReactNode }
 
 export function styleFromBasemap(basemap: Basemap, colors: Colors): { backgroundColor: string, color?: string } {
     return basemap.type === 'none'
