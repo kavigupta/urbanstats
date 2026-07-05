@@ -2,6 +2,7 @@ import React, { ReactNode, useCallback, useMemo } from 'react'
 
 import { articleTypes, CountsByUT } from '../../components/countsByArticleType'
 import universes_ordered from '../../data/universes_ordered'
+import { humanReadableUniverse, Universe } from '../../universe'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 import { AssignmentsResult } from '../../urban-stats-script/workerManager'
@@ -31,7 +32,9 @@ export function MapperSettings({
 }): ReactNode {
     const uss = mapSettings.script.uss
 
-    const renderString = useCallback((universe: string | undefined) => ({ text: universe ?? '' }), [])
+    const renderUniverse = useCallback((universe: Universe | undefined) => ({ text: universe ? humanReadableUniverse(universe) : '' }), [])
+
+    const renderGeographyName = useCallback((geoName: string | undefined) => ({ text: geoName ?? '' }), [])
 
     const universes = useMemo(() => [undefined, ...universes_ordered], [])
 
@@ -47,7 +50,7 @@ export function MapperSettings({
             <BetterSelector
                 possibleValues={universes}
                 value={mapSettings.universe}
-                renderValue={renderString}
+                renderValue={renderUniverse}
                 onChange={
                     (newUniverse) => {
                         setMapSettings({
@@ -70,7 +73,7 @@ export function MapperSettings({
                     <BetterSelector
                         possibleValues={geographyKinds}
                         value={mapSettings.geographyKind}
-                        renderValue={renderString}
+                        renderValue={renderGeographyName}
                         onChange={
                             (newGeographyKind) => {
                                 setMapSettings({
