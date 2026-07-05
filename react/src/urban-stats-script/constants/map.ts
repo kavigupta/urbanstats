@@ -24,7 +24,7 @@ export interface CommonMap {
     scale: ScaleDescriptor
     ramp: RampT
     opacity: number
-    label: string
+    label: string | undefined
     basemap: Basemap
     insets: Inset[]
     unit?: UnitType
@@ -183,7 +183,6 @@ function computeCommonMap(
     isPmap: boolean,
     namedArgs: Record<string, USSRawValue>,
     originalArgs: OriginalFunctionArgs,
-    ctx: Context,
 ): CommonMap {
     const geoRaw = namedArgs.geo as USSRawValue[]
     const geo: string[] = geoRaw.map((g) => {
@@ -217,17 +216,7 @@ function computeCommonMap(
 
     const scaleInstance = scale(data)
 
-    const label = labelPassedIn ?? originalArgs.namedArgs.data.documentation?.humanReadableName
-
-    if (label === undefined) {
-        ctx.effect({
-            type: 'warning',
-            message: `Label could not be derived for map, please pass label="<your label here>" to ${isPmap ? 'pMap' : 'cMap'}(...)`,
-            location: noLocation,
-        })
-    }
-
-    return { geo, data, scale: scaleInstance, ramp, opacity, label: label ?? '[Unlabeled Map]', basemap, insets, unit, textBoxes }
+    return { geo, data, scale: scaleInstance, ramp, opacity, label: labelPassedIn ?? undefined, basemap, insets, unit, textBoxes }
 }
 
 const namedArgDocumentation = {
@@ -257,7 +246,7 @@ export const cMap: USSValue = {
     },
     value: (ctx, posArgs, namedArgs, originalArgs) => {
         const outline = (namedArgs.outline as { type: 'opaque', opaqueType: 'outline', value: Outline }).value
-        const commonMap = computeCommonMap(false, namedArgs, originalArgs, ctx)
+        const commonMap = computeCommonMap(false, namedArgs, originalArgs)
         return {
             type: 'opaque',
             opaqueType: 'cMap',
@@ -297,7 +286,7 @@ export const pMap: USSValue = {
         const maxRadius = namedArgs.maxRadius as number
         const relativeArea = namedArgs.relativeArea as number[] | null
 
-        const commonMap = computeCommonMap(true, namedArgs, originalArgs, ctx)
+        const commonMap = computeCommonMap(true, namedArgs, originalArgs)
         const normalizedRelativeArea = normalizeRelativeArea(relativeArea, commonMap.data.length)
 
         return {
@@ -348,7 +337,7 @@ export const clusterMap: USSValue = {
             throw new Error(`clusterRadiusSpacing must be non-negative: ${clusterRadiusSpacing}`)
         }
 
-        const commonMap = computeCommonMap(true, namedArgs, originalArgs, ctx)
+        const commonMap = computeCommonMap(true, namedArgs, originalArgs)
         const normalizedRelativeArea = normalizeRelativeArea(relativeArea, commonMap.data.length)
 
         return {

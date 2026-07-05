@@ -129,7 +129,7 @@ export function EditMapperPanel(props: { mapSettings: MapSettings, counts: Count
         return () => { selectionContext.observers.delete(observer) }
     }, [selectionContext, updateCurrentSelection])
 
-    const mapGenerator = useMapGenerator({ mapSettings: generatorMapSettings })
+    const mapGenerator = useMapGenerator({ mapSettings: generatorMapSettings, typeEnvironment })
 
     const commonProps: CommonEditorProps = {
         mapSettings,
