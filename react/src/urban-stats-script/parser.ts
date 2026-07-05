@@ -6,7 +6,7 @@ import { getAutoUXNodeMetadata } from './autoux-node-metadata'
 import { Context } from './context'
 import { AnnotatedToken, AnnotatedTokenWithValue, lex, Keyword, emptyLocation } from './lexer'
 import { noLocation, LocInfo, Block } from './location'
-import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
+import { BinaryOperatorSymbol, expressionOperatorMap, infixOperators, unaryOperators, UnaryOperatorSymbol } from './operators'
 import type { USSType } from './types-values'
 
 export interface Decorated<T> {
@@ -24,7 +24,7 @@ export interface UnparseOptions {
     wrap?: boolean
 }
 
-type USSInfixSequenceElement = { type: 'operator', operatorType: 'unary' | 'binary', value: Decorated<string> } | UrbanStatsASTExpression
+type USSInfixSequenceElement = { type: 'operator', operatorType: 'unary', value: Decorated<UnaryOperatorSymbol> } | { type: 'operator', operatorType: 'binary', value: Decorated<BinaryOperatorSymbol> } | UrbanStatsASTExpression
 
 export function toSExp(node: UrbanStatsAST): string {
     /**
@@ -330,6 +330,7 @@ class ParseState {
                     if (this.consumeOperator(...unaryOperators)) {
                         const operator = this.tokens[this.index - 1]
                         assert(operator.token.type === 'operator', 'Expected operator token')
+                        assert(unaryOperators.includes(operator.token.value), 'Expected operator token to be a unary operator')
                         operatorExpSequence.push({
                             type: 'operator',
                             operatorType: 'unary',
@@ -351,6 +352,7 @@ class ParseState {
                     if (this.consumeOperator(...infixOperators)) {
                         const operator = this.tokens[this.index - 1]
                         assert(operator.token.type === 'operator', 'Expected operator token')
+                        assert(infixOperators.includes(operator.token.value), 'Expected operator token to be a binary operator')
                         operatorExpSequence.push({
                             type: 'operator',
                             operatorType: 'binary',
