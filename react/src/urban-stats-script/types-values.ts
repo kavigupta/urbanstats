@@ -12,6 +12,7 @@ import { Scale } from './constants/scale'
 import { Table, TableColumn } from './constants/table'
 import { TextBox } from './constants/text-box'
 import { Context } from './context'
+import { HumanReadableElement } from './derive-human-readable-name'
 import { ConstantCategory } from './documentation-category'
 import { noLocation } from './location'
 import { unparse } from './parser'
@@ -140,8 +141,11 @@ export type USSRawValue = (
 export type DocumentationTable = 'mapper-data-variables' | 'predefined-colors' | 'unit-types' | 'predefined-ramps' | 'predefined-insets' | 'logarithm-functions' | 'trigonometric-functions'
 
 export type SelectorRendering = { kind: 'subtitleLongDescription' } | { kind: 'gradientBackground', ramp: RampT }
+
+export type HumanReadableName = string | HumanReadableElement[]
+
 export interface Documentation {
-    humanReadableName: string
+    humanReadableName: HumanReadableName
     priority?: number
     /**
      * True if this is the canonical default value for its type (e.g., the default ramp or scale).

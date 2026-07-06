@@ -3,6 +3,7 @@ import React, { CSSProperties, Fragment, ReactNode, useMemo } from 'react'
 import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
 import { Universe, useUniverse } from '../universe'
+import { HumanReadableName } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { Article } from '../utils/protos'
 
@@ -304,14 +305,14 @@ export interface StatisticPanelLongnameCellProps {
 
 export interface StatisticNameCellProps {
     row?: ArticleRow
-    renderedStatname: string
+    renderedStatname: HumanReadableName
     longname: string
     currentUniverse: Universe
     center?: boolean
     highlightIndex?: number
     transpose?: boolean
     isIndented?: boolean
-    displayName?: string
+    displayName?: HumanReadableName
     footnoteSymbol?: string
     sortInfo?: {
         sortDirection: 'up' | 'down' | 'both'

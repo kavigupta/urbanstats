@@ -10,6 +10,8 @@ import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { Universe, useUniverse } from '../universe'
+import { reifyReact, reifyString } from '../urban-stats-script/derive-human-readable-name'
+import { HumanReadableName } from '../urban-stats-script/types-values'
 import { withButtonRole } from '../utils/a11y'
 import { assert } from '../utils/defensive'
 import { sanitize } from '../utils/paths'
@@ -537,7 +539,7 @@ export function StatisticRowCells(props: {
                 content: () => (
                     <span className="serif value testing-statistic-value">
                         <Statistic
-                            statname={statisticRow.statname}
+                            statname={reifyString(statisticRow.statname)}
                             value={statisticRow.statval}
                             isUnit={false}
                             style={props.statisticStyle ?? {}}
@@ -554,7 +556,7 @@ export function StatisticRowCells(props: {
                     <div className="value_unit">
                         <span className="serif value">
                             <Statistic
-                                statname={statisticRow.statname}
+                                statname={reifyString(statisticRow.statname)}
                                 value={statisticRow.statval}
                                 isUnit={true}
                                 unit={statisticRow.unit}
@@ -911,7 +913,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
     )
 }
 
-function displayName(props: StatisticNameCellProps): string {
+function displayName(props: StatisticNameCellProps): HumanReadableName {
     return props.displayName ?? props.renderedStatname
 }
 
@@ -956,7 +958,7 @@ function StatisticName(props: {
     longname: string
     currentUniverse: Universe
     center?: boolean
-    displayName: string
+    displayName: HumanReadableName
     footnoteSymbol?: string
 }): ReactNode {
     const colors = useColors()
@@ -972,7 +974,7 @@ function StatisticName(props: {
                     )}
                     data-test-id="statistic-link"
                 >
-                    {props.displayName}
+                    {reifyReact(props.displayName)}
                 </a>
             )
         : props.row?.kind === 'statistic'
@@ -992,12 +994,12 @@ function StatisticName(props: {
                         }, { scroll: { kind: 'position', top: 0 } })}
                         data-test-id="statistic-link"
                     >
-                        {props.displayName}
+                        {reifyReact(props.displayName)}
                     </a>
                 )
             : (
                     <span style={{ color: colors.textMain }} data-test-id="statistic-link">
-                        {props.displayName}
+                        {reifyReact(props.displayName)}
                     </span>
                 )
     const screenshotMode = useScreenshotMode()

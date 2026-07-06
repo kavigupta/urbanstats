@@ -2,10 +2,10 @@ import { assert } from '../../utils/defensive'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../location'
-import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation, createConstantExpression } from '../types-values'
+import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation, createConstantExpression, HumanReadableName } from '../types-values'
 
 export interface TableColumn {
-    name: string
+    name: HumanReadableName
     values: number[]
     unit?: UnitType
 }

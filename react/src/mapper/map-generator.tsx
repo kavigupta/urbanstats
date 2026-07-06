@@ -26,7 +26,7 @@ import { TextBox } from '../urban-stats-script/constants/text-box'
 import { deriveMapLabel } from '../urban-stats-script/derive-human-readable-name'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
-import { TypeEnvironment, USSOpaqueValue } from '../urban-stats-script/types-values'
+import { HumanReadableName, TypeEnvironment, USSOpaqueValue } from '../urban-stats-script/types-values'
 import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
 import { loadImage } from '../utils/Image'
 import { editIndex, EditSeq } from '../utils/array-edits'
@@ -116,7 +116,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
     }
 
     const mapResultMain = execResult.resultingValue.value
-    let label: ReactNode
+    let label: HumanReadableName
 
     if (mapResultMain.value.label === undefined) {
         const derivedLabel = deriveMapLabel(mapSettings.script.uss, typeEnvironment)
@@ -423,7 +423,7 @@ async function loadMapResult({ mapResultMain: { opaqueType, value }, universe, g
     universe: Universe
     geographyKind: typeof valid_geographies[number]
     cache: MapCache
-    label: ReactNode
+    label: HumanReadableName
 }): Promise<{ features: GeoJSON.Feature[], mapComponentCreator: MapComponentCreator, ramp: RampToDisplay }> {
     let ramp: RampToDisplay
     let colors: string[]
@@ -577,7 +577,7 @@ function computeClusterRampBin(val: number, clusterRamp: RampToDisplay & { type:
     return clamped
 }
 
-function computeRampToDisplay(value: CommonMap, label: ReactNode): RampToDisplay & { type: 'ramp' } {
+function computeRampToDisplay(value: CommonMap, label: HumanReadableName): RampToDisplay & { type: 'ramp' } {
     const scale = instantiate(value.scale)
     const hasValuesClampedToStart = value.data.some(val => scale.forward(val) < 0)
     const hasValuesClampedToEnd = value.data.some(val => scale.forward(val) > 1)

@@ -111,10 +111,7 @@ export function getUnitName(unitType: UnitType): string {
     }
 }
 
-export function classifyStatistic(statname: string | ReactNode): UnitType {
-    if (typeof statname !== 'string') {
-        return 'number'
-    }
+export function classifyStatistic(statname: string): UnitType {
     if (/20\d{2}GE/.test(statname) || /20\d{2}-20\d{2} Swing/.test(statname)) {
         // Canadian election statistics
         const isSwing = statname.includes('Swing')

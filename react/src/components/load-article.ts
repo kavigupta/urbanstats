@@ -7,6 +7,7 @@ import paths from '../data/statistic_path_list'
 import { loadProtobuf } from '../load_json'
 import { StatGroupSettings, statIsEnabled } from '../page_template/statistic-settings'
 import { findAmbiguousSourcesAll, statParents, StatName, StatPath, statPathToOrder } from '../page_template/statistic-tree'
+import { HumanReadableName } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { Article, CongressionalRepresentativeTable, ICongressionalRepresentative, ICongressionalRepresentativePointer, IFirstOrLast, IMetadata } from '../utils/protos'
 import { UnitType } from '../utils/unit'
@@ -95,7 +96,7 @@ const dataCreditExplanationPageByMetadataIndex = new Map<number, string>(
 
 interface StatisticCellRenderingInfoCommon {
     articleType: string
-    statname: string
+    statname: HumanReadableName
     unit?: UnitType
     statpath?: StatPath
 }

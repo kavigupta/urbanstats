@@ -7,7 +7,7 @@ import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import * as l from './literal-parser'
 import { noLocation } from './location'
 import { expressionOperatorMap } from './operators'
-import { TypeEnvironment } from './types-values'
+import { HumanReadableName, TypeEnvironment } from './types-values'
 
 export type HumanReadableElement = { type: 'atom', value: string } | { type: 'where' | 'superscript' | 'subscript' | 'parens', value: HumanReadableElement[] }
 
@@ -78,7 +78,8 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
         case 'identifier':
             const identifierName = typeEnvironment.get(ast.name.node)?.documentation?.humanReadableName
             if (identifierName === undefined) return
-            return [{ type: 'atom', value: identifierName }]
+            if (typeof identifierName === 'string') return [{ type: 'atom', value: identifierName }]
+            return identifierName
         case 'constant':
             switch (ast.value.node.type) {
                 case 'humanReadableElements':
@@ -166,27 +167,28 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
     }
 }
 
-function reify(elements: HumanReadableElement[]): ReactNode {
+export function reifyReact(elements: HumanReadableElement[] | string): ReactNode {
+    if (typeof elements === 'string') return elements
     return elements.map((element) => {
         switch (element.type) {
             case 'atom':
                 return element.value
             case 'subscript':
-                return <sub>{reify(element.value)}</sub>
+                return <sub>{reifyReact(element.value)}</sub>
             case 'superscript':
-                return <sup>{reify(element.value)}</sup>
+                return <sup>{reifyReact(element.value)}</sup>
             case 'where':
                 return (
                     <>
                         {' where '}
-                        {reify(element.value)}
+                        {reifyReact(element.value)}
                     </>
                 )
             case 'parens':
                 return (
                     <>
                         (
-                        {reify(element.value)}
+                        {reifyReact(element.value)}
                         )
                     </>
                 )
@@ -194,7 +196,25 @@ function reify(elements: HumanReadableElement[]): ReactNode {
     })
 }
 
-export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): ReactNode | undefined {
+export function reifyString(elements: HumanReadableElement[] | string): string {
+    if (typeof elements === 'string') return elements
+    return elements.map((element) => {
+        switch (element.type) {
+            case 'atom':
+                return element.value
+            case 'subscript':
+                return `_{${reifyString(element.value)}}`
+            case 'superscript':
+                return `^{${reifyString(element.value)}}`
+            case 'where':
+                return ` where ${reifyString(element.value)}`
+            case 'parens':
+                return `(${reifyString(element.value)})`
+        }
+    }).join('')
+}
+
+export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): HumanReadableName | undefined {
     const schema = mapUssParser(l.edit(l.call({
         fn: l.ignore(),
         namedArgs: {
@@ -210,9 +230,7 @@ export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): R
         // Replace the map call with just the data description to simplify the label (we know it's a map)
         const withMapCallReplacedByDataLabel = result.edit({ type: 'constant', value: { node: { type: 'humanReadableElements', value: dataLabel }, location: noLocation } })
         assert(withMapCallReplacedByDataLabel !== undefined, 'should not happen')
-        const elements = humanReadableElements(withMapCallReplacedByDataLabel, typeEnvironment)
-        if (elements === undefined) return
-        return reify(elements)
+        return humanReadableElements(withMapCallReplacedByDataLabel, typeEnvironment)
     }
     catch (error) {
         if (error instanceof l.LiteralParseError) {
