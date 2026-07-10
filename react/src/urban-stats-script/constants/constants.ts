@@ -1,5 +1,6 @@
 import { Context } from '../context'
-import { renderType, USSRawValue, USSValue, DocumentationTable, createConstantExpression } from '../types-values'
+import { hre } from '../human-readable-template'
+import { renderType, USSRawValue, USSValue, DocumentationTable, createConstantExpression, HumanReadableName } from '../types-values'
 
 import { osmBasemap, noBasemap } from './basemap'
 import { hsv, renderColor, rgb, colorConstants } from './color'
@@ -20,7 +21,7 @@ type Constants = Map<string, USSValue>
 function createNumberToNumberFunction(
     name: string,
     mathFunction: (x: number) => number,
-    humanReadableName: string,
+    humanReadableName: HumanReadableName,
     longDescription: string,
     documentationTable?: DocumentationTable,
 ): [string, USSValue] {
@@ -214,17 +215,17 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['NaN', { type: { type: 'number' }, value: NaN, documentation: { humanReadableName: 'NaN', category: 'math', longDescription: 'Not a Number, a special numeric value representing an undefined or unrepresentable numeric result.' } }] satisfies [string, USSValue],
     ...colorConstants,
     ...unitConstants,
-    createNumberToNumberFunction('abs', Math.abs, 'Absolute Value', 'Returns the absolute value of a number (removes the negative sign).'),
-    createNumberToNumberFunction('sqrt', Math.sqrt, 'Square Root', 'Returns the square root of a number.'),
-    createNumberToNumberFunction('ln', Math.log, 'Natural Logarithm', 'Returns the natural logarithm (base e) of a number.', 'logarithm-functions'),
-    createNumberToNumberFunction('log10', Math.log10, 'Base-10 Logarithm', 'Returns the base-10 logarithm of a number.', 'logarithm-functions'),
-    createNumberToNumberFunction('log2', Math.log2, 'Base-2 Logarithm', 'Returns the base-2 logarithm of a number.', 'logarithm-functions'),
-    createNumberToNumberFunction('sin', Math.sin, 'Sine', 'Returns the sine of an angle in radians.', 'trigonometric-functions'),
-    createNumberToNumberFunction('cos', Math.cos, 'Cosine', 'Returns the cosine of an angle in radians.', 'trigonometric-functions'),
-    createNumberToNumberFunction('tan', Math.tan, 'Tangent', 'Returns the tangent of an angle in radians.'),
-    createNumberToNumberFunction('asin', Math.asin, 'Arcsine', 'Returns the arcsine (inverse sine) of a number in radians.'),
-    createNumberToNumberFunction('acos', Math.acos, 'Arccosine', 'Returns the arccosine (inverse cosine) of a number in radians.', 'trigonometric-functions'),
-    createNumberToNumberFunction('atan', Math.atan, 'Arctangent', 'Returns the arctangent (inverse tangent) of a number in radians.'),
+    createNumberToNumberFunction('abs', Math.abs, 'abs', 'Returns the absolute value of a number (removes the negative sign).'),
+    createNumberToNumberFunction('sqrt', Math.sqrt, 'sqrt', 'Returns the square root of a number.'),
+    createNumberToNumberFunction('ln', Math.log, 'ln', 'Returns the natural logarithm (base e) of a number.', 'logarithm-functions'),
+    createNumberToNumberFunction('log10', Math.log10, hre`log_{10}`, 'Returns the base-10 logarithm of a number.', 'logarithm-functions'),
+    createNumberToNumberFunction('log2', Math.log2, hre`log_{2}`, 'Returns the base-2 logarithm of a number.', 'logarithm-functions'),
+    createNumberToNumberFunction('sin', Math.sin, 'sin', 'Returns the sine of an angle in radians.', 'trigonometric-functions'),
+    createNumberToNumberFunction('cos', Math.cos, 'cos', 'Returns the cosine of an angle in radians.', 'trigonometric-functions'),
+    createNumberToNumberFunction('tan', Math.tan, 'tan', 'Returns the tangent of an angle in radians.'),
+    createNumberToNumberFunction('asin', Math.asin, hre`sin^{-1}`, 'Returns the arcsine (inverse sine) of a number in radians.'),
+    createNumberToNumberFunction('acos', Math.acos, hre`cos^{-1}`, 'Returns the arccosine (inverse cosine) of a number in radians.', 'trigonometric-functions'),
+    createNumberToNumberFunction('atan', Math.atan, hre`tan^{-1}`, 'Returns the arctangent (inverse tangent) of a number in radians.'),
     createNumberToNumberFunction('ceil', Math.ceil, 'Ceiling', 'Rounds a number up to the nearest integer.'),
     createNumberToNumberFunction('floor', Math.floor, 'Floor', 'Rounds a number down to the nearest integer.'),
     createNumberToNumberFunction('round', Math.round, 'Round', 'Rounds a number to the nearest integer.'),
