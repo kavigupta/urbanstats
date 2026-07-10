@@ -145,7 +145,7 @@ export type SelectorRendering = { kind: 'subtitleLongDescription' } | { kind: 'g
 export type HumanReadableName = string | HumanReadableElement[]
 
 export interface Documentation {
-    humanReadableName: HumanReadableName
+    humanReadableName: string
     priority?: number
     /**
      * True if this is the canonical default value for its type (e.g., the default ramp or scale).

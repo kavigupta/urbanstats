@@ -169,28 +169,28 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
 
 export function reifyReact(elements: HumanReadableElement[] | string): ReactNode {
     if (typeof elements === 'string') return elements
-    return elements.map((element) => {
+    return elements.map((element, index) => {
         switch (element.type) {
             case 'atom':
                 return element.value
             case 'subscript':
-                return <sub>{reifyReact(element.value)}</sub>
+                return <sub key={index}>{reifyReact(element.value)}</sub>
             case 'superscript':
-                return <sup>{reifyReact(element.value)}</sup>
+                return <sup key={index}>{reifyReact(element.value)}</sup>
             case 'where':
                 return (
-                    <>
+                    <React.Fragment key={index}>
                         {' where '}
                         {reifyReact(element.value)}
-                    </>
+                    </React.Fragment>
                 )
             case 'parens':
                 return (
-                    <>
+                    <React.Fragment key={index}>
                         (
                         {reifyReact(element.value)}
                         )
-                    </>
+                    </React.Fragment>
                 )
         }
     })
