@@ -157,7 +157,7 @@ export async function grabDownload(t: TestController, button: Selector, suffix: 
 }
 
 export async function downloadImage(t: TestController): Promise<void> {
-    const download = Selector('img').withAttribute('src', '/screenshot.png')
+    const download = Selector('button').withAttribute('aria-label', 'Take screenshot')
     await grabDownload(t, download, '.png')
 }
 
@@ -168,7 +168,7 @@ export async function downloadHistogram(t: TestController, nth: number): Promise
 
 export async function downloadCSV(t: TestController): Promise<string> {
     const laterThan = Date.now()
-    const csvButton = Selector('img').withAttribute('src', '/csv.png')
+    const csvButton = Selector('button').withAttribute('aria-label', 'Export as CSV')
     await t.click(csvButton)
 
     const downloadedFilePath = await waitForDownload(t, laterThan, '.csv')

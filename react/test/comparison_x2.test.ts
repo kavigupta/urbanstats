@@ -16,8 +16,8 @@ urbanstatsFixture('drag and drop basic reordering', comparisonPage([china, usa, 
 test('drag and drop basic reordering desktop', async (t) => {
     await screencap(t)
 
-    const firstHeader = Selector('[role="button"]').nth(0)
-    const secondHeader = Selector('[role="button"]').nth(1)
+    const firstHeader = sortableButton.nth(0)
+    const secondHeader = sortableButton.nth(1)
 
     await t.dragToElement(firstHeader, secondHeader)
 

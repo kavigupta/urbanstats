@@ -42,3 +42,12 @@ interface UniverseContext {
 export const universeContext = React.createContext<UniverseContext | undefined>(undefined)
 
 export const universeSchema = z.enum(universes_ordered)
+
+export function humanReadableUniverse(universe: Universe): string {
+    switch (universe) {
+        case 'world':
+            return 'World'
+        default:
+            return universe
+    }
+}

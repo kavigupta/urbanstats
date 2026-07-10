@@ -16,15 +16,20 @@ const debugLog = makeDebugLogger('mapExport')
 export function ScreenshotButton(props: { onClick: () => void }): ReactNode {
     const colors = useColors()
     const screencapButton = (
-        <div
+        <button
+            type="button"
+            aria-label="Take screenshot"
             onClick={props.onClick}
             style={{
                 height: '100%',
                 cursor: 'pointer',
+                background: 'none',
+                border: 'none',
+                padding: 0,
             }}
         >
-            <img src="/screenshot.png" alt="Screenshot Button" style={{ height: '100%' }} />
-        </div>
+            <img src="/screenshot.png" alt="" style={{ height: '100%' }} />
+        </button>
     )
     // if screenshot mode is on, put a loading circle over the image
     if (useScreenshotMode()) {

@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext, useState } from 'react'
+import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
 import '../common.css'
 import './header.css'
@@ -8,7 +8,7 @@ import { Navigator } from '../navigation/Navigator'
 import { universePath } from '../navigation/links'
 import { useColors } from '../page_template/colors'
 import { useHeaderLogoKey, useHideSidebarDesktop } from '../page_template/utils'
-import { universeContext, useUniverse, useUniverseContext } from '../universe'
+import { humanReadableUniverse, universeContext, useUniverse, useUniverseContext } from '../universe'
 import { assert } from '../utils/defensive'
 import { useMobileLayout } from '../utils/responsive'
 import { zIndex } from '../utils/zIndex'
@@ -201,6 +201,24 @@ function UniverseSelector(): ReactNode {
 
     const [dropdownOpen, setDropdownOpen] = React.useState(false)
 
+    const divRef = useRef<HTMLDivElement>(null)
+
+    // If the tree goes out of focus, close the dropdown
+    useEffect(() => {
+        const listener = (): void => {
+            // Delay closing to allow focus again
+            setTimeout(() => {
+                if (!divRef.current?.contains(document.activeElement)) {
+                    setDropdownOpen(false)
+                }
+            }, 150)
+        }
+        document.addEventListener('blur', listener, true)
+        return () => {
+            document.removeEventListener('blur', listener, true)
+        }
+    }, [])
+
     let dropdown = dropdownOpen
         ? (
                 <UniverseDropdown
@@ -229,7 +247,7 @@ function UniverseSelector(): ReactNode {
     )
 
     return (
-        <div style={{ marginBlockEnd: '0em', position: 'relative', width: `${width}px` }}>
+        <div ref={divRef} style={{ marginBlockEnd: '0em', position: 'relative', width: `${width}px` }}>
             <div style={
                 {
                     width,
@@ -269,6 +287,14 @@ function Flag(props: { height: number, onClick?: () => void, universe: string, c
                 width={`${usableWidth}px`}
                 className={props.classNameToUse}
                 onClick={props.onClick}
+                role={props.onClick && 'button'}
+                tabIndex={props.onClick && 0}
+                onKeyDown={props.onClick && ((e) => {
+                    if (e.key === ' ' || e.key === 'Enter') {
+                        e.preventDefault()
+                        props.onClick!()
+                    }
+                })}
             />
         </div>
     )
@@ -353,7 +379,7 @@ function UniverseDropdown(
                                 classNameToUse="universe-selector-option"
                             />
                             <div className="serif">
-                                {altUniverse === 'world' ? 'World' : altUniverse}
+                                {humanReadableUniverse(altUniverse)}
                             </div>
                         </div>
                     </div>
