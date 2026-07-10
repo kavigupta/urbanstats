@@ -4,12 +4,13 @@ import { GenericSearchBox } from '../components/search-generic'
 import { possibilities } from '../mapper/settings/parseExpr'
 import { Selection } from '../mapper/settings/selector-classifier'
 import { addColumn } from '../urban-stats-script/add-column'
-import { TypeEnvironment } from '../urban-stats-script/types-values'
+import { reifyReact, reifyString } from '../urban-stats-script/derive-human-readable-name'
+import { HumanReadableName, TypeEnvironment } from '../urban-stats-script/types-values'
 
 import { Statistic, StatSetter } from './types'
 import { mapUSSFromStat } from './utils'
 
-interface VariableSearchResult { name: string, displayName: string }
+interface VariableSearchResult { name: string, displayName: HumanReadableName }
 
 export function AddColumnSearchBox({ stat, set, typeEnvironment }: {
     stat: Statistic
@@ -22,7 +23,7 @@ export function AddColumnSearchBox({ stat, set, typeEnvironment }: {
         return (query: string): Promise<VariableSearchResult[]> => {
             const lowerQuery = query.toLowerCase()
             const filtered = allVariables.filter(v =>
-                v.displayName.toLowerCase().includes(lowerQuery)
+                reifyString(v.displayName).toLowerCase().includes(lowerQuery)
                 || v.name.toLowerCase().includes(lowerQuery),
             )
             return Promise.resolve(filtered)
@@ -61,7 +62,7 @@ export function AddColumnSearchBox({ stat, set, typeEnvironment }: {
             onMouseOver={onMouseOver}
             data-test-id={dataTestId}
         >
-            {currentMatch().displayName}
+            {reifyReact(currentMatch().displayName)}
         </div>
     )
 

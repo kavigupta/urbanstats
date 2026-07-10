@@ -10,6 +10,7 @@ import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-set
 import { statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { Universe, universeContext, useUniverse } from '../universe'
+import { HumanReadableName } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
 import { sanitize } from '../utils/paths'
 import { Article, IRelatedButtons } from '../utils/protos'
@@ -124,7 +125,7 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
 
 type NameSpec = Extract<CellSpec, { type: 'statistic-name' }>
 
-function getGroupAndDisplayNames(nameSpec: NameSpec, nameSpecs: NameSpec[]): [string | undefined, string] {
+function getGroupAndDisplayNames(nameSpec: NameSpec, nameSpecs: NameSpec[]): [string | undefined, HumanReadableName] {
     if (nameSpec.row === undefined) {
         return [undefined, nameSpec.renderedStatname]
     }
