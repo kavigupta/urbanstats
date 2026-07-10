@@ -1,5 +1,6 @@
 import { Context } from '../context'
-import { renderType, USSRawValue, USSValue, DocumentationTable, createConstantExpression } from '../types-values'
+import { hre } from '../human-readable-template'
+import { renderType, USSRawValue, USSValue, DocumentationTable, createConstantExpression, HumanReadableName } from '../types-values'
 
 import { osmBasemap, noBasemap } from './basemap'
 import { hsv, renderColor, rgb, colorConstants } from './color'
@@ -20,7 +21,7 @@ type Constants = Map<string, USSValue>
 function createNumberToNumberFunction(
     name: string,
     mathFunction: (x: number) => number,
-    humanReadableName: string,
+    humanReadableName: HumanReadableName,
     longDescription: string,
     documentationTable?: DocumentationTable,
 ): [string, USSValue] {
@@ -181,7 +182,7 @@ function createWeightedVectorFunction(
 function createQuantileFunction(
     name: string,
     calculationFunction: (values: number[], quantileValue: number, weights: Weights) => number,
-    humanReadableName: string,
+    humanReadableName: HumanReadableName,
     longDescription: string,
 ): [string, USSValue] {
     return [name, {
@@ -214,49 +215,49 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     ['NaN', { type: { type: 'number' }, value: NaN, documentation: { humanReadableName: 'NaN', category: 'math', longDescription: 'Not a Number, a special numeric value representing an undefined or unrepresentable numeric result.' } }] satisfies [string, USSValue],
     ...colorConstants,
     ...unitConstants,
-    createNumberToNumberFunction('abs', Math.abs, 'Absolute Value', 'Returns the absolute value of a number (removes the negative sign).'),
-    createNumberToNumberFunction('sqrt', Math.sqrt, 'Square Root', 'Returns the square root of a number.'),
-    createNumberToNumberFunction('ln', Math.log, 'Natural Logarithm', 'Returns the natural logarithm (base e) of a number.', 'logarithm-functions'),
-    createNumberToNumberFunction('log10', Math.log10, 'Base-10 Logarithm', 'Returns the base-10 logarithm of a number.', 'logarithm-functions'),
-    createNumberToNumberFunction('log2', Math.log2, 'Base-2 Logarithm', 'Returns the base-2 logarithm of a number.', 'logarithm-functions'),
-    createNumberToNumberFunction('sin', Math.sin, 'Sine', 'Returns the sine of an angle in radians.', 'trigonometric-functions'),
-    createNumberToNumberFunction('cos', Math.cos, 'Cosine', 'Returns the cosine of an angle in radians.', 'trigonometric-functions'),
-    createNumberToNumberFunction('tan', Math.tan, 'Tangent', 'Returns the tangent of an angle in radians.'),
-    createNumberToNumberFunction('asin', Math.asin, 'Arcsine', 'Returns the arcsine (inverse sine) of a number in radians.'),
-    createNumberToNumberFunction('acos', Math.acos, 'Arccosine', 'Returns the arccosine (inverse cosine) of a number in radians.', 'trigonometric-functions'),
-    createNumberToNumberFunction('atan', Math.atan, 'Arctangent', 'Returns the arctangent (inverse tangent) of a number in radians.'),
-    createNumberToNumberFunction('ceil', Math.ceil, 'Ceiling', 'Rounds a number up to the nearest integer.'),
-    createNumberToNumberFunction('floor', Math.floor, 'Floor', 'Rounds a number down to the nearest integer.'),
-    createNumberToNumberFunction('round', Math.round, 'Round', 'Rounds a number to the nearest integer.'),
-    createNumberToNumberFunction('exp', Math.exp, 'Exponential', 'Returns e raised to the power of the given number.'),
-    createNumberToNumberFunction('sign', Math.sign, 'Sign', 'Returns the sign of a number: 1 for positive, -1 for negative, 0 for zero.'),
+    createNumberToNumberFunction('abs', Math.abs, 'abs', 'Returns the absolute value of a number (removes the negative sign).'),
+    createNumberToNumberFunction('sqrt', Math.sqrt, 'sqrt', 'Returns the square root of a number.'),
+    createNumberToNumberFunction('ln', Math.log, 'ln', 'Returns the natural logarithm (base e) of a number.', 'logarithm-functions'),
+    createNumberToNumberFunction('log10', Math.log10, hre`log_{10}`, 'Returns the base-10 logarithm of a number.', 'logarithm-functions'),
+    createNumberToNumberFunction('log2', Math.log2, hre`log_{2}`, 'Returns the base-2 logarithm of a number.', 'logarithm-functions'),
+    createNumberToNumberFunction('sin', Math.sin, 'sin', 'Returns the sine of an angle in radians.', 'trigonometric-functions'),
+    createNumberToNumberFunction('cos', Math.cos, 'cos', 'Returns the cosine of an angle in radians.', 'trigonometric-functions'),
+    createNumberToNumberFunction('tan', Math.tan, 'tan', 'Returns the tangent of an angle in radians.'),
+    createNumberToNumberFunction('asin', Math.asin, hre`sin^{-1}`, 'Returns the arcsine (inverse sine) of a number in radians.'),
+    createNumberToNumberFunction('acos', Math.acos, hre`cos^{-1}`, 'Returns the arccosine (inverse cosine) of a number in radians.', 'trigonometric-functions'),
+    createNumberToNumberFunction('atan', Math.atan, hre`tan^{-1}`, 'Returns the arctangent (inverse tangent) of a number in radians.'),
+    createNumberToNumberFunction('ceil', Math.ceil, 'ceil', 'Rounds a number up to the nearest integer.'),
+    createNumberToNumberFunction('floor', Math.floor, 'floor', 'Rounds a number down to the nearest integer.'),
+    createNumberToNumberFunction('round', Math.round, 'round', 'Rounds a number to the nearest integer.'),
+    createNumberToNumberFunction('exp', Math.exp, 'exp', 'Returns e raised to the power of the given number.'),
+    createNumberToNumberFunction('sign', Math.sign, 'sign', 'Returns the sign of a number: 1 for positive, -1 for negative, 0 for zero.'),
     createNumberToNumberFunction('nanTo0', (x: number) => isNaN(x) ? 0 : x, 'NaN to Zero', 'Converts NaN values to 0, leaving other numbers unchanged.'),
-    createTwoNumberToNumberFunction('maximum', Math.max, 'Maximum', 'Returns the larger of two numbers.'),
-    createTwoNumberToNumberFunction('minimum', Math.min, 'Minimum', 'Returns the smaller of two numbers.'),
-    createVectorToNumberFunction('sum', values => values.reduce((a, b) => a + b, 0), 0, 'Sum', 'Returns the sum of all numbers in a vector.'),
-    createVectorToNumberFunction('min', values => Math.min(...values), Infinity, 'Vector Minimum', 'Returns the smallest number in a vector.'),
-    createVectorToNumberFunction('max', values => Math.max(...values), -Infinity, 'Vector Maximum', 'Returns the largest number in a vector.'),
+    createTwoNumberToNumberFunction('maximum', Math.max, 'max', 'Returns the larger of two numbers.'),
+    createTwoNumberToNumberFunction('minimum', Math.min, 'min', 'Returns the smaller of two numbers.'),
+    createVectorToNumberFunction('sum', values => values.reduce((a, b) => a + b, 0), 0, 'sum', 'Returns the sum of all numbers in a vector.'),
+    createVectorToNumberFunction('min', values => Math.min(...values), Infinity, 'min', 'Returns the smallest number in a vector.'),
+    createVectorToNumberFunction('max', values => Math.max(...values), -Infinity, 'max', 'Returns the largest number in a vector.'),
     createWeightedVectorFunction('mean', (values, weights) => {
         const totalWeight = validateWeights(weights, values)
         return values.reduce((sum, value, index) => sum + value * (weights?.[index] ?? 1), 0) / totalWeight
-    }, 'Mean', 'Returns the arithmetic mean (average) of all numbers in a vector. If weights are provided as a named argument, returns the weighted mean.'),
+    }, 'mean', 'Returns the arithmetic mean (average) of all numbers in a vector. If weights are provided as a named argument, returns the weighted mean.'),
     createWeightedVectorFunction('median', (values, weights) => {
         return weightedQuantile(values, weights, 0.5)
-    }, 'Median', 'Returns the median (middle value) of all numbers in a vector. For even-length vectors, returns the average of the two middle values. If weights are provided as a named argument, returns the weighted median.'),
+    }, 'median', 'Returns the median (middle value) of all numbers in a vector. For even-length vectors, returns the average of the two middle values. If weights are provided as a named argument, returns the weighted median.'),
     createQuantileFunction('quantile', (values, q, weights) => {
         return weightedQuantile(values, weights, q)
-    }, 'Quantile', 'Returns the quantile value from a vector. Takes a quantile value (between 0 and 1) as the second argument and optional weights as a named argument.'),
+    }, 'quantile', 'Returns the quantile value from a vector. Takes a quantile value (between 0 and 1) as the second argument and optional weights as a named argument.'),
     createQuantileFunction('percentile', (values, p, weights) => {
         // Convert percentile (0-100) to quantile (0-1)
         const q = p / 100
         return weightedQuantile(values, weights, q)
-    }, 'Percentile', 'Returns the percentile value from a vector. Takes a percentile value (between 0 and 100) as the second argument and optional weights as a named argument.'),
+    }, 'percentile', 'Returns the percentile value from a vector. Takes a percentile value (between 0 and 100) as the second argument and optional weights as a named argument.'),
     createQuantileFunction('inverseQuantile', (values, x, weights) => {
         return weightedInverseQuantile(values, weights, x)
-    }, 'Inverse Quantile', 'Returns the quantile (between 0 and 1) of a given value within a vector. Takes the value as the second argument and optional weights as a named argument. Pass the same vector as both arguments to broadcast over it, ranking each element as a quantile within the vector.'),
+    }, hre`quantile^{-1}`, 'Returns the quantile (between 0 and 1) of a given value within a vector. Takes the value as the second argument and optional weights as a named argument. Pass the same vector as both arguments to broadcast over it, ranking each element as a quantile within the vector.'),
     createQuantileFunction('inversePercentile', (values, x, weights) => {
         return weightedInverseQuantile(values, weights, x) * 100
-    }, 'Inverse Percentile', 'Returns the percentile (between 0 and 100) of a given value within a vector. Takes the value as the second argument and optional weights as a named argument. Pass the same vector as both arguments to broadcast over it, ranking each element as a percentile within the vector.'),
+    }, hre`percentile^{-1}`, 'Returns the percentile (between 0 and 100) of a given value within a vector. Takes the value as the second argument and optional weights as a named argument. Pass the same vector as both arguments to broadcast over it, ranking each element as a percentile within the vector.'),
     ['toNumber', toNumber],
     ['toString', toString],
     ['regression', regression(10)],

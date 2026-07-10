@@ -145,9 +145,11 @@ export function attemptParseAsTopLevel(stmt: MapUSS | UrbanStatsASTStatement, ty
     } satisfies UrbanStatsASTStatement
 }
 
-export function mapUssParser<T>(lastExpr: l.LiteralExprParser<T>, types: USSType[]) {
-    const statementsSchema = l.lastExpression(l.reparse(idOutput, types, lastExpr))
-    const customNodeSchema = l.reparse(rootBlockIdent, types, l.customNode(l.lastExpression(lastExpr)))
+// Exclude types to not reparse. When the USS is being stored, should always reparse
+export function mapUssParser<T>(lastExpr: l.LiteralExprParser<T>, types: USSType[] | 'dont-reparse') {
+    const statementsSchema = l.lastExpression(types !== 'dont-reparse' ? l.reparse(idOutput, types, lastExpr) : lastExpr)
+    const customNodeLastExpr = l.customNode(l.lastExpression(lastExpr))
+    const customNodeSchema = types !== 'dont-reparse' ? l.reparse(rootBlockIdent, types, customNodeLastExpr) : customNodeLastExpr
     return (uss: MapUSS, typeEnvironment: TypeEnvironment): T => {
         return uss.type === 'statements' ? statementsSchema.parse(uss, typeEnvironment) : customNodeSchema.parse(uss, typeEnvironment)
     }
