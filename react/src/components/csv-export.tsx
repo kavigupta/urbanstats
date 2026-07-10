@@ -171,7 +171,7 @@ export function generateStatisticsPanelCSVData(
     for (const col of data) {
         headerRow.push(reifyString(col.name))
         if (!hideOrdinalsPercentiles) {
-            headerRow.push(`${col.name} Ord`, `${col.name} percentile`)
+            headerRow.push(`${reifyString(col.name)} Ord`, `${reifyString(col.name)} percentile`)
         }
     }
 
