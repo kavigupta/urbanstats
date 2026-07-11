@@ -41,7 +41,7 @@ function processHistogramType(histogramType: HistogramType, histograms: Histogra
     return histogramType
 }
 
-export function Histogram(props: { histograms: HistogramProps[], statDescription: string, sharedTypeOfAllArticles?: string }): ReactNode {
+export function Histogram(props: { histograms: HistogramProps[], statDescription: string, sharedTypeOfAllArticles?: string, dashOrder?: string[] }): ReactNode {
     const [histogramTypeRaw] = useSetting('histogram_type')
     const histogramType = processHistogramType(histogramTypeRaw, props.histograms)
     const [useImperial] = useSetting('use_imperial')
@@ -62,14 +62,12 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
     const plotSpec = useCallback(
         (transpose: boolean) => {
             const title = new Set(props.histograms.map(h => h.shortname)).size === 1 ? props.histograms[0].shortname : ''
-            const colors = props.histograms.map(h => h.color)
-            const shortnames = props.histograms.map(h => h.shortname)
             const renderY = relative ? (y: number) => `${y.toFixed(2)}%` : (y: number) => renderNumberHighlyRounded(y, 2)
 
             const [xIdxStart, xIdxEnd] = histogramBounds(props.histograms)
             const xidxs = Array.from({ length: xIdxEnd - xIdxStart }, (_, i) => i + xIdxStart)
             const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial, transpose)
-            const [marks, maxValue] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose, systemColors)
+            const [marks, maxValue] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose, systemColors, props.dashOrder)
             marks.push(
                 ...xAxisMarks,
                 ...yAxis(maxValue, transpose),
@@ -78,10 +76,10 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
             const xlabel = `${props.statDescription} (/${useImperial ? 'mi' : 'km'}²)`
             const ylabel = relative ? '% of total' : 'Population'
             const ydomain: [number, number] = [maxValue * (-yPad), maxValue * (1 + yPad)]
-            marks.push(...manualLegend(props.histograms, transpose, colors, shortnames, systemColors))
+            marks.push(...manualLegend(props.histograms, transpose, systemColors, props.dashOrder))
             return { marks, xlabel, ylabel, ydomain }
         },
-        [props.histograms, binMin, binSize, relative, histogramType, useImperial, systemColors, props.statDescription],
+        [props.histograms, binMin, binSize, relative, histogramType, useImperial, systemColors, props.statDescription, props.dashOrder],
     )
 
     return (
@@ -92,15 +90,21 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
     )
 }
 
-function computeColorItems(shortnames: string[], colors: string[]): { label: string, color: string }[] {
+interface LegendItem {
+    shortname: string
+    color: string
+    subseriesName: string
+}
+
+function computeColorItems<T extends LegendItem>(items: T[]): { label: string, color: string }[] {
     const colorItems: { label: string, color: string }[] = []
-    for (let i = 0; i < shortnames.length; i++) {
+    for (const item of items) {
         // handles duplicate names by just putting them all in if they're different colors
-        const index = colorItems.findIndex(item => item.label === shortnames[i] && item.color === colors[i])
+        const index = colorItems.findIndex(existing => existing.label === item.shortname && existing.color === item.color)
         if (index === -1) {
             colorItems.push({
-                label: shortnames[i],
-                color: colors[i],
+                label: item.shortname,
+                color: item.color,
             })
         }
     }
@@ -110,30 +114,31 @@ function computeColorItems(shortnames: string[], colors: string[]): { label: str
     return colorItems
 }
 
-function computeDashPatterns(histograms: HistogramProps[]): Map<string, { pattern: string, name: string }> {
+function computeDashPatterns<T extends LegendItem>(items: T[], order?: string[]): Map<string, { pattern: string, name: string }> {
     const dashPatterns = new Map<string, { pattern: string, name: string }>()
     const subseriesNames = new Set<string>()
-    histograms.forEach((histogram) => {
-        subseriesNames.add(histogram.subseriesName)
+    items.forEach((item) => {
+        subseriesNames.add(item.subseriesName)
     })
-    const subseriesNamesOrdered = Array.from(subseriesNames).sort()
+    const subseriesNamesOrdered = order ?? Array.from(subseriesNames).sort()
     assert(subseriesNamesOrdered.length <= strokeDasharrays.length, 'Too many subseries for dash patterns')
-    histograms.forEach((histogram) => {
-        const subId = subseriesNamesOrdered.indexOf(histogram.subseriesName)
-        if (!dashPatterns.has(histogram.subseriesName)) {
-            dashPatterns.set(histogram.subseriesName, {
+    items.forEach((item) => {
+        const subId = subseriesNamesOrdered.indexOf(item.subseriesName)
+        assert(subId !== -1, `subseriesName ${item.subseriesName} missing from dash order`)
+        if (!dashPatterns.has(item.subseriesName)) {
+            dashPatterns.set(item.subseriesName, {
                 pattern: strokeDasharrays[subseriesNamesOrdered.length - 1 - subId],
-                name: histogram.subseriesName,
+                name: item.subseriesName,
             })
         }
     })
     return dashPatterns
 }
 
-function manualLegend(histograms: HistogramProps[], transpose: boolean, colors: string[], shortnames: string[], themeColors: Colors): Plot.Markish[] {
-    const colorItems = computeColorItems(shortnames, colors)
+function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, themeColors: Colors, dashOrder?: string[]): Plot.Markish[] {
+    const colorItems = computeColorItems(items)
 
-    const dashPatterns = computeDashPatterns(histograms)
+    const dashPatterns = computeDashPatterns(items, dashOrder)
 
     const dashPatternItems: { label: string, dashPattern: string }[] = []
     if (dashPatterns.size > 1) {
@@ -580,6 +585,7 @@ function createHistogramMarks(
     renderY: (y: number) => string,
     transpose: boolean,
     colors: Colors,
+    dashOrder?: string[],
 ): [Plot.Markish[], number] {
     const series = mulitipleSeriesConsistentLength(histograms, xidxs, relative, histogramType === 'Line (cumulative)')
     const seriesSingle = dovetailSequences(series)
@@ -607,7 +613,7 @@ function createHistogramMarks(
     )
     const marks: Plot.Markish[] = []
     if (histogramType === 'Line' || histogramType === 'Line (cumulative)') {
-        const dashPatterns = computeDashPatterns(histograms)
+        const dashPatterns = computeDashPatterns(histograms, dashOrder)
         marks.push(
             ...series.map((s) => {
                 const strokeDasharray = dashPatterns.size > 1 ? dashPatterns.get(s.subseriesName)?.pattern : undefined
