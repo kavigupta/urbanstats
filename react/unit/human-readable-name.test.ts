@@ -1,7 +1,7 @@
 import assert from 'assert/strict'
 import { describe, test } from 'node:test'
 
-import { reifyString } from '../src/urban-stats-script/derive-human-readable-name'
+import { reifyString } from '../src/utils/human-readable-name'
 
 void describe('reifyString', () => {
     void test('renders code elements wrapped in backticks', () => {
