@@ -299,8 +299,7 @@ function attrLookupOrSet(
 }
 
 function evaluateUnaryOperator(operand: USSValue, operator: UnaryOperatorSymbol, env: Context, errLoc: LocInfo): USSValue {
-    const operatorObj = expressionOperatorMap.get(operator)
-    assert(operatorObj?.unary !== undefined, `Unknown operator: ${operator}`)
+    const operatorObj = expressionOperatorMap[operator]
     const res = broadcastApply(
         operatorObj.unary(operator, errLoc),
         [operand],
@@ -315,8 +314,7 @@ function evaluateUnaryOperator(operand: USSValue, operator: UnaryOperatorSymbol,
 }
 
 function evaluateBinaryOperator(left: USSValue, right: USSValue, operator: BinaryOperatorSymbol, env: Context, errLoc: LocInfo): USSValue {
-    const operatorObj = expressionOperatorMap.get(operator)
-    assert(operatorObj?.binary !== undefined, `Unknown operator: ${operator}`)
+    const operatorObj = expressionOperatorMap[operator]
     const res = broadcastApply(
         operatorObj.binary(operator, errLoc),
         [left, right],

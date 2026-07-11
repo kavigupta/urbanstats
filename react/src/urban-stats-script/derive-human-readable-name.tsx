@@ -18,7 +18,7 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
         case 'autoUXNode':
             return humanReadableElements(ast.expr, typeEnvironment)
         case 'binaryOperator': {
-            const centerOp = expressionOperatorMap.get(ast.operator.node)!
+            const centerOp = expressionOperatorMap[ast.operator.node]
             /*
              * (A op1 B) op2 C => A op1 B op2 C iff prec(op1) > prec(op2) or op1 = op2
              * A op1 (B op2 C) => A op1 B op2 C iff prec(op2) > prec(op1) or (op1 = op2 and is_assoc(op1))
@@ -26,7 +26,7 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
             let lhs = humanReadableElements(ast.left, typeEnvironment)
             if (lhs === undefined) return
             if (ast.left.type === 'binaryOperator') {
-                const leftOp = expressionOperatorMap.get(ast.left.operator.node)!
+                const leftOp = expressionOperatorMap[ast.left.operator.node]
                 if (!(leftOp.precedence > centerOp.precedence
                     || leftOp === centerOp)) {
                     lhs = [{ type: 'parens', value: lhs }]
@@ -36,8 +36,7 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
             let rhs = humanReadableElements(ast.right, typeEnvironment)
             if (rhs === undefined) return
             if (ast.right.type === 'binaryOperator') {
-                const rightOp = expressionOperatorMap.get(ast.right.operator.node)!
-                assert('binary' in centerOp, 'Unexpected non-binary operation')
+                const rightOp = expressionOperatorMap[ast.right.operator.node]
                 if (!(rightOp.precedence > centerOp.precedence || (centerOp === rightOp && centerOp.isAssociative))) {
                     rhs = [{ type: 'parens', value: rhs }]
                 }

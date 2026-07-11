@@ -2,15 +2,18 @@ import { Context } from './context'
 import { LocInfo } from './location'
 import { getPrimitiveType, USSPrimitiveRawValue, USSRawValue, USSValue } from './types-values'
 
+interface UnaryOperator { type: 'unary', unary: (op: string, locInfo: LocInfo) => USSValue }
+interface BinaryOperator {
+    type: 'binary'
+    binary: (op: string, locInfo: LocInfo) => USSValue
+    isAssociative: boolean
+}
+
 type Operator = {
     precedence: number
     description: string
     examples: string[]
-} & ({ unary: (op: string, locInfo: LocInfo) => USSValue } | {
-    binary: (op: string, locInfo: LocInfo) => USSValue
-    isAssociative: boolean
-    unary?: (op: string, locInfo: LocInfo) => USSValue
-})
+} & (UnaryOperator | BinaryOperator | (Omit<UnaryOperator, 'type'> & Omit<BinaryOperator, 'type'> & { type: 'unary+binary' }))
 
 interface UnaryOperation {
     type: string
@@ -113,43 +116,40 @@ function booleanOperation(fn: (a: boolean, b: boolean) => boolean): BinaryOperat
     }
 }
 
-export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperatorSymbol, Operator>([
+export const expressionOperatorMap = {
     // E
-    [
-        '**',
+    '**':
         {
+            type: 'binary',
             precedence: 1000,
             binary: binaryOperator([numericBinaryOperation((a, b) => Math.pow(a, b))]),
             description: 'Exponentiation (power)',
             examples: ['2 ** 3 → 8', '3 ** 2 → 9'],
             isAssociative: false,
         },
-    ],
     // MD
-    [
-        '*',
+    '*':
         {
+            type: 'binary',
             precedence: 900,
             binary: binaryOperator([numericBinaryOperation((a, b) => a * b)]),
             description: 'Multiplication',
             examples: ['3 * 4 → 12', '5 * 2 → 10'],
             isAssociative: true,
         },
-    ],
-    [
-        '/',
+    '/':
         {
+            type: 'binary',
             precedence: 900,
             binary: binaryOperator([numericBinaryOperation((a, b) => a / b)]),
             description: 'Division',
             examples: ['10 / 2 → 5', '15 / 3 → 5'],
             isAssociative: false,
         },
-    ],
     // AS
-    [
-        '+',
+    '+':
         {
+            type: 'unary+binary',
             precedence: 800,
             unary: unaryOperator([{ type: 'number', fn: x => x }]),
             binary: binaryOperator([
@@ -160,10 +160,9 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             examples: ['+5', '2 + 3 → 5', '"hello" + "world" → "helloworld"'],
             isAssociative: true,
         },
-    ],
-    [
-        '-',
+    '-':
         {
+            type: 'unary+binary',
             precedence: 800,
             unary: unaryOperator([{ type: 'number', fn: x => -(x as number) }]),
             binary: binaryOperator([numericBinaryOperation((a, b) => a - b)]),
@@ -171,11 +170,10 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             examples: ['-5', '7 - 3 → 4'],
             isAssociative: false,
         },
-    ],
     // Comparators
-    [
-        '==',
+    '==':
         {
+            type: 'binary',
             precedence: 700,
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- for consistency
             binary: binaryOperator(comparisonOperation((a, b) => a === b, (a, b) => a === b, (a, b) => a === b, (a, b) => a === b)),
@@ -183,10 +181,9 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             examples: ['5 == 5 → true', '"hello" == "hello" → true', 'true == true → true'],
             isAssociative: false,
         },
-    ],
-    [
-        '!=',
+    '!=':
         {
+            type: 'binary',
             precedence: 700,
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- for consistency
             binary: binaryOperator(comparisonOperation((a, b) => a !== b, (a, b) => a !== b, (a, b) => a !== b, (a, b) => a !== b)),
@@ -194,78 +191,70 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             examples: ['5 != 3 → true', '"hello" != "world" → true'],
             isAssociative: false,
         },
-    ],
-    [
-        '<',
+    '<':
         {
+            type: 'binary',
             precedence: 700,
             binary: binaryOperator(comparisonOperation((a, b) => a < b, (a, b) => a < b)),
             description: 'Less than (numbers and strings)',
             examples: ['3 < 5 → true', '"abc" < "def" → true'],
             isAssociative: false,
         },
-    ],
-    [
-        '>',
+    '>':
         {
+            type: 'binary',
             precedence: 700,
             binary: binaryOperator(comparisonOperation((a, b) => a > b, (a, b) => a > b)),
             description: 'Greater than (numbers and strings)',
             examples: ['7 > 3 → true', '"xyz" > "abc" → true'],
             isAssociative: false,
         },
-    ],
-    [
-        '<=',
+    '<=':
         {
+            type: 'binary',
             precedence: 700,
             binary: binaryOperator(comparisonOperation((a, b) => a <= b, (a, b) => a <= b)),
             description: 'Less than or equal (numbers and strings)',
             examples: ['5 <= 5 → true', '3 <= 5 → true'],
             isAssociative: false,
         },
-    ],
-    [
-        '>=',
+    '>=':
         {
+            type: 'binary',
             precedence: 700,
             binary: binaryOperator(comparisonOperation((a, b) => a >= b, (a, b) => a >= b)),
             description: 'Greater than or equal (numbers and strings)',
             examples: ['5 >= 3 → true', '5 >= 5 → true'],
             isAssociative: false,
         },
-    ],
     // Logic
-    [
-        '!',
+    '!':
         {
+            type: 'unary',
             precedence: 650,
             unary: unaryOperator([{ type: 'boolean', fn: x => !(x as boolean) }]),
             description: 'Logical NOT',
             examples: ['!true → false', '!false → true'],
         },
-    ],
-    [
-        '&',
+    '&':
         {
+            type: 'binary',
             precedence: 600,
             binary: binaryOperator([booleanOperation((a, b) => a && b)]),
             description: 'Logical AND',
             examples: ['true & false → false', 'true & true → true'],
             isAssociative: true,
         },
-    ],
-    [
-        '|',
+    '|':
         {
+            type: 'binary',
             precedence: 500,
             binary: binaryOperator([booleanOperation((a, b) => a || b)]),
             description: 'Logical OR',
             examples: ['true | false → true', 'false | false → false'],
             isAssociative: true,
         },
-    ],
-])
+} satisfies Record<UnaryOperatorSymbol | BinaryOperatorSymbol, Operator>
 
 export const unaryOperators = ['+', '-', '!'] as const
 export type UnaryOperatorSymbol = typeof unaryOperators[number]
