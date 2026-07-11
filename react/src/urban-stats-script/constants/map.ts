@@ -1,5 +1,6 @@
 import { Basemap } from '../../mapper/settings/utils'
 import { assert } from '../../utils/defensive'
+import { reifyString } from '../../utils/human-readable-name'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../location'
@@ -217,7 +218,8 @@ function computeCommonMap(
 
     const scaleInstance = scale(data)
 
-    const label = labelPassedIn ?? originalArgs.namedArgs.data.documentation?.humanReadableName
+    const humanReadableName = originalArgs.namedArgs.data.documentation?.humanReadableName
+    const label = labelPassedIn ?? (humanReadableName === undefined ? undefined : reifyString(humanReadableName))
 
     if (label === undefined) {
         ctx.effect({
