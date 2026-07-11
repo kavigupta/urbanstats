@@ -18,7 +18,6 @@ import { AssignmentsResult } from '../../urban-stats-script/workerManager'
 import { DefaultMap } from '../../utils/DefaultMap'
 import { Property } from '../../utils/Property'
 import { assert } from '../../utils/defensive'
-import { reifyReact } from '../../utils/human-readable-name'
 import { randomBase62ID } from '../../utils/random'
 import { useMobileLayout } from '../../utils/responsive'
 
@@ -89,7 +88,7 @@ function ArgumentEditor(props: {
 
     // Get the function's documentation to find human-readable argument names
     const tdoc = props.typeEnvironment.get(functionUss.fn.name.node)
-    const humanReadableName = reifyReact(tdoc?.documentation?.namedArgs?.[props.name] ?? props.name)
+    const humanReadableName = tdoc?.documentation?.namedArgs?.[props.name] ?? props.name
     assert(tdoc?.type === undefined || tdoc.type.type === 'function', `AutoUX looked up function identifier ${functionUss.fn.name.node}m, but it was not a function`)
     const argDoc = tdoc?.type.namedArgs[props.name]?.documentation
     const collapsable = hasDefault && isEnabled && (argDoc?.collapsable ?? false)

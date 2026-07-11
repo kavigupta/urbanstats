@@ -1,7 +1,7 @@
 import { Basemap } from '../../mapper/settings/utils'
 import { assert } from '../../utils/defensive'
 import { HumanReadableName } from '../../utils/human-readable-name'
-import { hre, parseHumanReadableTemplate } from '../../utils/human-readable-template'
+import { parseHumanReadableTemplate } from '../../utils/human-readable-template'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../location'
@@ -233,12 +233,14 @@ function computeCommonMap(
     return { geo, data, scale: scaleInstance, ramp, opacity, label: label ?? '[Unlabeled Map]', basemap, insets, unit, textBoxes }
 }
 
+const labelSyntaxDescription = 'The label argument supports subscript with _{...} and superscript with ^{...}, e.g. label="log_{10}(Density)^{2}".'
+
 const namedArgDocumentation = {
     data: 'Data',
     scale: 'Scale',
     ramp: 'Ramp',
     opacity: 'Opacity',
-    label: hre`Label (supports subscript with _{...} and superscript with ^{...}, e.g. \`label="log_{10}(Density)^{2}"\`)`,
+    label: 'Label',
     geo: 'Geography',
     basemap: 'Basemap Options',
     insets: 'Insets',
@@ -275,7 +277,7 @@ export const cMap: USSValue = {
             ...namedArgDocumentation,
             outline: 'Outline',
         },
-        longDescription: 'Creates a choropleth map that displays data using color-coded geographic regions. Each region is colored according to its data value using the specified scale and color ramp.',
+        longDescription: `Creates a choropleth map that displays data using color-coded geographic regions. Each region is colored according to its data value using the specified scale and color ramp. ${labelSyntaxDescription}`,
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
@@ -318,7 +320,7 @@ export const pMap: USSValue = {
             maxRadius: 'Max Radius',
             relativeArea: 'Relative Area',
         },
-        longDescription: 'Creates a point map that displays data using circles at geographic locations. This is like a choropleth map, but instead of coloring regions, it colors points centered on the geographic locations. The relativeArea parameter can be used to specify the area of the points, which is used to determine the radius of the points. If not specified, the areas are all equal.',
+        longDescription: `Creates a point map that displays data using circles at geographic locations. This is like a choropleth map, but instead of coloring regions, it colors points centered on the geographic locations. The relativeArea parameter can be used to specify the relative area of the points, which determines their radius; if not specified, all points have equal area. ${labelSyntaxDescription}`,
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
@@ -370,7 +372,7 @@ export const clusterMap: USSValue = {
             relativeArea: 'Relative Area',
             clusterRadiusSpacing: 'Spacing between Cluster circles (%)',
         },
-        longDescription: 'Creates a point map that clusters nearby points at lower zoom levels and expands to individual points when zoomed in. Uses the same data and styling parameters as pMap, with additional clustering controls.',
+        longDescription: `Creates a point map that clusters nearby points at lower zoom levels and expands to individual points when zoomed in. Uses the same data and styling parameters as pMap, with additional clustering controls. ${labelSyntaxDescription}`,
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue
@@ -454,7 +456,7 @@ export const cMapRGB: USSValue = {
             dataB: 'Blue Data (0-1)',
             dataA: 'Alpha Data (0-1)',
             opacity: 'Opacity',
-            label: hre`Label (supports subscript with _{...} and superscript with ^{...}, e.g. \`label="log_{10}(Density)^{2}"\`)`,
+            label: 'Label',
             geo: 'Geography',
             outline: 'Outline',
             basemap: 'Basemap Options',
@@ -462,7 +464,7 @@ export const cMapRGB: USSValue = {
             unit: 'Unit',
             textBoxes: 'Text Boxes',
         },
-        longDescription: 'Creates a choropleth map that displays data using RGB color values. Each region is colored according to its red, green, and blue data values, allowing for more complex color representations than traditional single-value choropleth maps.',
+        longDescription: `Creates a choropleth map that displays data using RGB color values. Each region is colored according to its red, green, and blue data values, allowing for more complex color representations than traditional single-value choropleth maps. ${labelSyntaxDescription}`,
         selectorRendering: { kind: 'subtitleLongDescription' },
     },
 } satisfies USSValue

@@ -357,7 +357,7 @@ interface CheckboxSettingCustomJustInputProps {
 const defaultFontSize = '16px'
 
 type CheckboxSettingCustomProps = CheckboxSettingCustomJustInputProps & {
-    name: ReactNode
+    name: string
     classNameToUse?: string
 }
 
