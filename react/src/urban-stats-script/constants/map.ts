@@ -1,6 +1,7 @@
 import { Basemap } from '../../mapper/settings/utils'
 import { assert } from '../../utils/defensive'
-import { reifyString } from '../../utils/human-readable-name'
+import { HumanReadableName } from '../../utils/human-readable-name'
+import { parseHumanReadableTemplate } from '../../utils/human-readable-template'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../location'
@@ -25,7 +26,7 @@ export interface CommonMap {
     scale: ScaleDescriptor
     ramp: RampT
     opacity: number
-    label: string
+    label: HumanReadableName
     basemap: Basemap
     insets: Inset[]
     unit?: UnitType
@@ -43,7 +44,7 @@ export interface CMapRGB {
     dataB: number[]
     dataA: number[]
     opacity: number
-    label: string
+    label: HumanReadableName
     basemap: Basemap
     insets: Inset[]
     unit?: UnitType
@@ -219,7 +220,7 @@ function computeCommonMap(
     const scaleInstance = scale(data)
 
     const humanReadableName = originalArgs.namedArgs.data.documentation?.humanReadableName
-    const label = labelPassedIn ?? (humanReadableName === undefined ? undefined : reifyString(humanReadableName))
+    const label: HumanReadableName | undefined = labelPassedIn !== null ? parseHumanReadableTemplate(labelPassedIn) : humanReadableName
 
     if (label === undefined) {
         ctx.effect({
@@ -418,7 +419,7 @@ export const cMapRGB: USSValue = {
             assert(geoHandle.opaqueType === 'geoFeatureHandle', 'Expected geoFeatureHandle opaque value')
             return geoHandle.value
         })
-        const label = namedArgs.label as string
+        const label = parseHumanReadableTemplate(namedArgs.label as string)
         const basemap = (namedArgs.basemap as { type: 'opaque', opaqueType: 'basemap', value: Basemap }).value
         const insets = (namedArgs.insets as { type: 'opaque', opaqueType: 'insets', value: Inset[] }).value
         const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'unit', value: { unit: string } } | null

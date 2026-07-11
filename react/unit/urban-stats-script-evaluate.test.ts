@@ -1438,7 +1438,20 @@ void test('test basic map with label passed', () => {
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
     assertScale(resultMapRaw.scale, [1, 1.5, 2, 2.5, 3], [0, 0.25, 0.5, 0.75, 1])
-    assert.deepStrictEqual(resultMapRaw.label, 'Test Map')
+    assert.deepStrictEqual(resultMapRaw.label, [{ type: 'atom', value: 'Test Map' }])
+    assert.deepStrictEqual(effects, [])
+})
+
+void test('test map label with subscript syntax is parsed as hre', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    const resultMap = evaluate(parseExpr('cMap(geo=geo, data=[1, 2, 3], scale=linearScale(), ramp=rampBone, label="log_{10}(x)")'), ctx)
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.label, [
+        { type: 'atom', value: 'log' },
+        { type: 'subscript', value: [{ type: 'atom', value: '10' }] },
+        { type: 'atom', value: '(x)' },
+    ])
     assert.deepStrictEqual(effects, [])
 })
 
@@ -1461,7 +1474,7 @@ void test('test basic RGB map', () => {
     assert.deepStrictEqual(resultMapRaw.dataB, [0.3, 0.7, 0.7])
     assert.deepStrictEqual(resultMapRaw.dataA, [1, 1, 1])
     assert.deepStrictEqual(resultMapRaw.opacity, 1)
-    assert.deepStrictEqual(resultMapRaw.label, 'RGB Test Map')
+    assert.deepStrictEqual(resultMapRaw.label, [{ type: 'atom', value: 'RGB Test Map' }])
 })
 
 void test('test RGB map validation errors', () => {
@@ -2331,7 +2344,7 @@ pMap(data=data, scale=logScale(), ramp=rampUridis, relativeArea=population, maxR
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: PMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C', 'D', 'E'])
     assert.deepStrictEqual(resultMapRaw.data, [0, 1, 0, 0, 1])
-    assert.deepStrictEqual(resultMapRaw.label, 'hi')
+    assert.deepStrictEqual(resultMapRaw.label, [{ type: 'atom', value: 'hi' }])
     assert.deepStrictEqual(effects, [])
 })
 
@@ -2347,7 +2360,7 @@ pMap(data=data, scale=logScale(), ramp=rampUridis, relativeArea=population, maxR
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: PMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['B', 'C', 'E'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 0, 1])
-    assert.deepStrictEqual(resultMapRaw.label, 'hi')
+    assert.deepStrictEqual(resultMapRaw.label, [{ type: 'atom', value: 'hi' }])
     assert.deepStrictEqual(
         effects, [],
     )
