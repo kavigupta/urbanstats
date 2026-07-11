@@ -122,8 +122,9 @@ def create_react_jsons() -> None:
     with open("react/src/data/extra_stats.ts", "w") as f:
         output_typescript(
             [
-                (k, v.extra_stat_spec(list(internal_statistic_names())))
-                for k, v in sorted(extra_stats().items())
+                (k, spec.extra_stat_spec(list(internal_statistic_names())))
+                for k, specs in sorted(extra_stats().items())
+                for spec in specs
             ],
             f,
         )
