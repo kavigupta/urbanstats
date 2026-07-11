@@ -2,13 +2,15 @@ import { Context } from './context'
 import { LocInfo } from './location'
 import { getPrimitiveType, USSPrimitiveRawValue, USSRawValue, USSValue } from './types-values'
 
-interface Operator {
+type Operator = {
     precedence: number
-    unary?: (op: string, locInfo: LocInfo) => USSValue
-    binary?: (op: string, locInfo: LocInfo) => USSValue
     description: string
     examples: string[]
-}
+} & ({ unary: (op: string, locInfo: LocInfo) => USSValue } | {
+    binary: (op: string, locInfo: LocInfo) => USSValue
+    isAssociative: boolean
+    unary?: (op: string, locInfo: LocInfo) => USSValue
+})
 
 interface UnaryOperation {
     type: string
@@ -120,6 +122,7 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             binary: binaryOperator([numericBinaryOperation((a, b) => Math.pow(a, b))]),
             description: 'Exponentiation (power)',
             examples: ['2 ** 3 → 8', '3 ** 2 → 9'],
+            isAssociative: false,
         },
     ],
     // MD
@@ -130,6 +133,7 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             binary: binaryOperator([numericBinaryOperation((a, b) => a * b)]),
             description: 'Multiplication',
             examples: ['3 * 4 → 12', '5 * 2 → 10'],
+            isAssociative: true,
         },
     ],
     [
@@ -139,6 +143,7 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             binary: binaryOperator([numericBinaryOperation((a, b) => a / b)]),
             description: 'Division',
             examples: ['10 / 2 → 5', '15 / 3 → 5'],
+            isAssociative: false,
         },
     ],
     // AS
@@ -153,6 +158,7 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             ]),
             description: 'Unary plus, Addition, String concatenation',
             examples: ['+5', '2 + 3 → 5', '"hello" + "world" → "helloworld"'],
+            isAssociative: true,
         },
     ],
     [
@@ -163,6 +169,7 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             binary: binaryOperator([numericBinaryOperation((a, b) => a - b)]),
             description: 'Unary minus, Subtraction',
             examples: ['-5', '7 - 3 → 4'],
+            isAssociative: false,
         },
     ],
     // Comparators
@@ -174,6 +181,7 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             binary: binaryOperator(comparisonOperation((a, b) => a === b, (a, b) => a === b, (a, b) => a === b, (a, b) => a === b)),
             description: 'Equality (works with numbers, strings, booleans, null)',
             examples: ['5 == 5 → true', '"hello" == "hello" → true', 'true == true → true'],
+            isAssociative: false,
         },
     ],
     [
@@ -184,6 +192,7 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             binary: binaryOperator(comparisonOperation((a, b) => a !== b, (a, b) => a !== b, (a, b) => a !== b, (a, b) => a !== b)),
             description: 'Inequality (works with numbers, strings, booleans, null)',
             examples: ['5 != 3 → true', '"hello" != "world" → true'],
+            isAssociative: false,
         },
     ],
     [
@@ -193,6 +202,7 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             binary: binaryOperator(comparisonOperation((a, b) => a < b, (a, b) => a < b)),
             description: 'Less than (numbers and strings)',
             examples: ['3 < 5 → true', '"abc" < "def" → true'],
+            isAssociative: false,
         },
     ],
     [
@@ -202,6 +212,7 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             binary: binaryOperator(comparisonOperation((a, b) => a > b, (a, b) => a > b)),
             description: 'Greater than (numbers and strings)',
             examples: ['7 > 3 → true', '"xyz" > "abc" → true'],
+            isAssociative: false,
         },
     ],
     [
@@ -211,6 +222,7 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             binary: binaryOperator(comparisonOperation((a, b) => a <= b, (a, b) => a <= b)),
             description: 'Less than or equal (numbers and strings)',
             examples: ['5 <= 5 → true', '3 <= 5 → true'],
+            isAssociative: false,
         },
     ],
     [
@@ -220,6 +232,7 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             binary: binaryOperator(comparisonOperation((a, b) => a >= b, (a, b) => a >= b)),
             description: 'Greater than or equal (numbers and strings)',
             examples: ['5 >= 3 → true', '5 >= 5 → true'],
+            isAssociative: false,
         },
     ],
     // Logic
@@ -239,6 +252,7 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             binary: binaryOperator([booleanOperation((a, b) => a && b)]),
             description: 'Logical AND',
             examples: ['true & false → false', 'true & true → true'],
+            isAssociative: true,
         },
     ],
     [
@@ -248,6 +262,7 @@ export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperato
             binary: binaryOperator([booleanOperation((a, b) => a || b)]),
             description: 'Logical OR',
             examples: ['true | false → true', 'false | false → false'],
+            isAssociative: true,
         },
     ],
 ])

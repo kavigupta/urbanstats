@@ -30,3 +30,9 @@ cMap(
 )`,
     'sin^{-1}((PW Density (r=1km) ÷ Population^{3})^{2}) where Population (2000) > 1000000 and Population > 1000000',
 )
+
+testMapLabel(test,
+    `condition(population > 1m)
+cMap(data=density_pw_1km_2000 / (density_pw_1km * density_pw_2km), scale=linearScale(), ramp=rampUridis)`,
+    'PW Density (r=1km) (2000) ÷ (PW Density (r=1km) × PW Density (r=2km)) where Population > 1000000',
+)
