@@ -154,7 +154,7 @@ export interface Documentation {
     /**
      * Human-readable names for named arguments. Maps argument name to display name.
      */
-    namedArgs?: Record<string, string>
+    namedArgs?: Record<string, HumanReadableName>
     /**
      * Should be included when a constant should be deconstructed into an expression for user editing
      */
