@@ -43,3 +43,8 @@ testMapLabel(test,
 cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)`,
     'PW Density (r=1km) where Pedestrian/Cyclist Fatalities Per Capita Per Year > 1x10^{-5}',
 )
+
+void test('map label cannot be derived for a raw vector literal', () => {
+    const label = deriveMapLabel(mapUSSFromString('cMap(data=[1, 2, 3], scale=linearScale(), ramp=rampUridis)'), getTypeEnvironment())
+    assert.equal(label, undefined)
+})

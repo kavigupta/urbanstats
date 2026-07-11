@@ -385,6 +385,15 @@ mapper(() => test)('deprecation warning for deprecated weather statistic', { cod
     await t.expect(getErrors()).eql([warning])
 })
 
+mapper(() => test)('warning when map label cannot be derived', { code: 'cMap(data=[1], scale=linearScale(), ramp=rampUridis)' }, async (t) => {
+    const warning = 'Label could not be derived for map, please pass label="<your label here>" to cMap(...)'
+    await waitForLoading()
+    await t.expect(getErrors()).eql([warning])
+    await toggleCustomScript(t)
+    await waitForLoading()
+    await t.expect(getErrors()).eql([warning])
+})
+
 mapper(() => test)('preamble checkbox stays checked when preamble is cleared', { code: 'customNode("");\ncondition (true)\ncMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)' }, async (t) => {
     const preamble = checkSelector(/^Preamble/)
     await t.expect(preamble.checked).notOk()
