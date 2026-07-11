@@ -1,6 +1,7 @@
 import type * as ArgEditButtons from '../mapper/settings/ArgEditButtons'
 import { Basemap } from '../mapper/settings/utils'
 import { assert } from '../utils/defensive'
+import { HumanReadableName } from '../utils/human-readable-name'
 import { UnitType } from '../utils/unit'
 
 import { UrbanStatsASTExpression } from './ast'
@@ -142,7 +143,7 @@ export type DocumentationTable = 'mapper-data-variables' | 'predefined-colors' |
 export type SelectorRendering = { kind: 'subtitleLongDescription' } | { kind: 'gradientBackground', ramp: RampT }
 
 export interface Documentation {
-    humanReadableName: string
+    humanReadableName: HumanReadableName
     priority?: number
     /**
      * True if this is the canonical default value for its type (e.g., the default ramp or scale).

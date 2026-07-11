@@ -1,5 +1,7 @@
 import assert from 'assert'
 
+import { HumanReadableElement } from '../utils/human-readable-name'
+
 import { AutoUXNodeMetadata } from './autoux-node-metadata'
 import { LocInfo } from './location'
 import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
@@ -16,7 +18,7 @@ export type UrbanStatsASTLHS = (
 
 export type UrbanStatsASTExpression = (
     UrbanStatsASTLHS |
-    { type: 'constant', value: Decorated<{ type: 'number', value: number } | { type: 'string', value: string }> } |
+    { type: 'constant', value: Decorated<{ type: 'number', value: number } | { type: 'string', value: string } | { type: 'humanReadableElements', value: HumanReadableElement[] }> } |
     { type: 'call', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[], entireLoc: LocInfo } |
     { type: 'binaryOperator', operator: Decorated<BinaryOperatorSymbol>, left: UrbanStatsASTExpression, right: UrbanStatsASTExpression } |
     { type: 'unaryOperator', operator: Decorated<UnaryOperatorSymbol>, expr: UrbanStatsASTExpression } |
