@@ -80,7 +80,7 @@ const identifierLexer: GenericLexer = {
 
 export function allOperators(): string[] {
     const ops = new Set<string>(nonExpressionOperators)
-    for (const op of expressionOperatorMap.keys()) {
+    for (const op of Object.keys(expressionOperatorMap)) {
         ops.add(op)
     }
     // sort operators in descending length order to ensure longest match first
