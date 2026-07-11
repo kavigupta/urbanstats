@@ -41,7 +41,7 @@ function processHistogramType(histogramType: HistogramType, histograms: Histogra
     return histogramType
 }
 
-export function Histogram(props: { histograms: HistogramProps[], statDescription: string, sharedTypeOfAllArticles?: string }): ReactNode {
+export function Histogram(props: { histograms: HistogramProps[], statDescription: string, sharedTypeOfAllArticles?: string, modeSwitcher?: ReactElement }): ReactNode {
     const [histogramTypeRaw] = useSetting('histogram_type')
     const histogramType = processHistogramType(histogramTypeRaw, props.histograms)
     const [useImperial] = useSetting('use_imperial')
@@ -54,7 +54,7 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
         }
     }
     const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
-        <HistogramSettings makePlot={makePlot} shortnames={props.histograms.map(h => h.shortname)} longnames={props.histograms.map(h => h.longname)} sharedTypeOfAllArticles={props.sharedTypeOfAllArticles} />
+        <HistogramSettings makePlot={makePlot} shortnames={props.histograms.map(h => h.shortname)} longnames={props.histograms.map(h => h.longname)} sharedTypeOfAllArticles={props.sharedTypeOfAllArticles} modeSwitcher={props.modeSwitcher} />
     )
 
     const systemColors = useColors()
@@ -273,6 +273,7 @@ function HistogramSettings(props: {
     longnames: string[]
     makePlot: () => HTMLElement
     sharedTypeOfAllArticles?: string
+    modeSwitcher?: ReactElement
 }): ReactNode {
     const universe = useUniverse()
     const [histogramType, setHistogramType] = useSetting('histogram_type')
@@ -372,6 +373,7 @@ function HistogramSettings(props: {
                 <option value="Bar">Bar</option>
             </select>
             <CheckboxSetting name={transpose ? 'Relative' : 'Relative Histograms'} settingKey="histogram_relative" testId="histogram_relative" />
+            {props.modeSwitcher}
         </div>
     )
 }

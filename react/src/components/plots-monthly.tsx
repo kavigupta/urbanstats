@@ -18,14 +18,14 @@ export interface MonthlyPlotProps {
     shortname: string
 }
 
-function convertValue(value: number, unit: MonthlyExtraStat['unit'], temperatureUnit: string): number {
+export function convertValue(value: number, unit: MonthlyExtraStat['unit'], temperatureUnit: string): number {
     if (unit === 'temperature' && temperatureUnit === 'celsius') {
         return (value - 32) * (5 / 9)
     }
     return value
 }
 
-function unitSuffixFor(unit: MonthlyExtraStat['unit'], temperatureUnit: string): string {
+export function unitSuffixFor(unit: MonthlyExtraStat['unit'], temperatureUnit: string): string {
     if (unit !== 'temperature') {
         return ''
     }
@@ -38,7 +38,7 @@ interface TipDatum {
     values: number[]
 }
 
-export function MonthlyPlot(props: { stats: MonthlyPlotProps[] }): ReactNode {
+export function MonthlyPlot(props: { stats: MonthlyPlotProps[], modeSwitcher?: ReactElement }): ReactNode {
     const [temperatureUnit] = useSetting('temperature_unit')
     const colors = useColors()
     const universe = useUniverse()
@@ -80,6 +80,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[] }): ReactNode {
                 height="20"
                 style={{ cursor: 'pointer' }}
             />
+            {props.modeSwitcher}
         </div>
     )
 

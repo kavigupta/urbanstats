@@ -26,7 +26,7 @@ POPULATION_WEIGHTED_EXPLANATION = (
 
 
 class GlobalWeatherStatistics(GeographicStatistics):
-    version = 5
+    version = 7
 
     def name_for_each_statistic(self):
         return {
@@ -228,6 +228,7 @@ class GlobalWeatherStatistics(GeographicStatistics):
                     for i in range(1, 1 + 12)
                 ]
             ),
+            "high_temp_histogram": self.compute_histogram(result, "maxdaily_temp"),
             "low_temp_histogram": self.compute_histogram(result, "mindaily_temp"),
         }
         assert set(self.internal_statistic_names_list()).issubset(set(actual_result))
@@ -250,17 +251,32 @@ class GlobalWeatherStatistics(GeographicStatistics):
 
     def extra_stats(self):
         return {
-            "mean_high_temp_4": MonthlyTimeSeriesSpec(
-                name="Mean high temp by month",
-                key="mean_high_temp_by_month",
-                unit="temperature",
-            ),
-            "mean_low_temp": TemperatureHistogramSpec(
-                min_value=MIN_BIN,
-                max_value=MAX_BIN,
-                bin_size=BIN_SIZE,
-                key="low_temp_histogram",
-            ),
+            "mean_high_temp_4": [
+                MonthlyTimeSeriesSpec(
+                    name="Mean high temp by month",
+                    key="mean_high_temp_by_month",
+                    unit="temperature",
+                ),
+                TemperatureHistogramSpec(
+                    min_value=MIN_BIN,
+                    max_value=MAX_BIN,
+                    bin_size=BIN_SIZE,
+                    key="high_temp_histogram",
+                ),
+            ],
+            "mean_low_temp": [
+                MonthlyTimeSeriesSpec(
+                    name="Mean low temp by month",
+                    key="mean_low_temp_by_month",
+                    unit="temperature",
+                ),
+                TemperatureHistogramSpec(
+                    min_value=MIN_BIN,
+                    max_value=MAX_BIN,
+                    bin_size=BIN_SIZE,
+                    key="low_temp_histogram",
+                ),
+            ],
             "rainfall_4": MonthlyTimeSeriesSpec(
                 name="Rainfall by month", key="rainfall_by_month"
             ),

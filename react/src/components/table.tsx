@@ -1002,7 +1002,7 @@ function StatisticName(props: {
                 )
     const screenshotMode = useScreenshotMode()
     const elements = [link]
-    if (props.row?.extraStat !== undefined && !screenshotMode) {
+    if (props.row !== undefined && props.row.extraStats.length !== 0 && !screenshotMode) {
         elements.push(
             <ExpansionButton key="expansion" row={props.row} />,
         )

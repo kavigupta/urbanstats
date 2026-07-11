@@ -34,7 +34,7 @@ import { PlotProps } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
-import { TableContents, CellSpec } from './supertable'
+import { TableContents, CellSpec, PlotSpec } from './supertable'
 import { ColumnIdentifier } from './table'
 
 export function ComparisonPanel(props: {
@@ -163,7 +163,7 @@ export function ComparisonPanel(props: {
 
     const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
 
-    const expandedSettings = useSettings(dataByStatArticle.filter(statData => statData.some(row => row.extraStat !== undefined)).map(([{ statpath }]) => rowExpandedKey(statpath)))
+    const expandedSettings = useSettings(dataByStatArticle.filter(statData => statData.some(row => row.extraStats.length > 0)).map(([{ statpath }]) => rowExpandedKey(statpath)))
 
     const expandedByStatIndex = dataByStatArticle.map(([{ statpath }]) => expandedSettings[rowExpandedKey(statpath)] ?? false)
     const numExpandedExtras = expandedByStatIndex.filter(v => v).length
@@ -199,7 +199,7 @@ export function ComparisonPanel(props: {
     const sharedTypeOfAllArticles = localArticlesToUse.every(article => article.articleType === localArticlesToUse[0].articleType) ? localArticlesToUse[0].articleType : undefined
 
     const rowToDisplayForStat = (statIndex: number): ArticleRow => {
-        return dataByStatArticle[statIndex].find(row => row.extraStat !== undefined) ?? dataByStatArticle[statIndex][0]
+        return dataByStatArticle[statIndex].find(row => row.extraStats.length > 0) ?? dataByStatArticle[statIndex][0]
     }
 
     const plotProps = (statIndex: number): PlotProps[] => dataByStatArticle[statIndex].flatMap((row, articleIdx) =>
@@ -282,10 +282,11 @@ export function ComparisonPanel(props: {
 
     const rowSpecsByStatTransposed = rowSpecsByStat.length === 0 ? [] : rowSpecsByStat[0].map((_, statIndex) => rowSpecsByStat.map(rowSpecs => rowSpecs[statIndex]))
 
-    const plotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) =>
+    const plotSpecs: (PlotSpec | undefined)[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) =>
         expandedByStatIndex[statIndex]
             ? {
                     statDescription: dataByStatArticle[statIndex][0].renderedStatname,
+                    statpath: dataByStatArticle[statIndex][0].statpath,
                     plotProps: plotProps(statIndex),
                 }
             : undefined,
@@ -418,13 +419,13 @@ export function ComparisonPanel(props: {
 }
 
 export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
-    if (rows[statIndex].kind !== 'statistic' || rows[statIndex].extraStat === undefined) {
+    if (rows[statIndex].kind !== 'statistic' || rows[statIndex].extraStats.length === 0) {
         return []
     }
     const sPs = rows.map(row => statParents.get(row.statpath)!).map((sP, i) => ({ sP, i }))
     const byYear = new Map<Year, number[]>()
     sPs.filter((
-        { sP, i }) => sP.group.id === sPs[statIndex].sP.group.id && rows[i].kind === 'statistic' && rows[i].extraStat !== undefined,
+        { sP, i }) => sP.group.id === sPs[statIndex].sP.group.id && rows[i].kind === 'statistic' && rows[i].extraStats.length > 0,
     ).forEach(({ sP: { year }, i }) => {
         assert(year !== null, 'Year should not be null for plot data')
         byYear.set(year, [...(byYear.get(year) ?? []), i])

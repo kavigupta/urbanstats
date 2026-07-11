@@ -414,6 +414,23 @@ export default [
         }
     ],
     [
+        338,
+        {
+            "type": "temperature_histogram",
+            "min_value": -40,
+            "max_value": 140,
+            "bin_size": 10
+        }
+    ],
+    [
+        347,
+        {
+            "type": "monthly_time_series",
+            "name": "Mean low temp by month",
+            "unit": "temperature"
+        }
+    ],
+    [
         347,
         {
             "type": "temperature_histogram",

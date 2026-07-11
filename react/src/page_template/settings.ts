@@ -13,9 +13,11 @@ import { allGroups, allYears, CategoryIdentifier, DataSource, GroupIdentifier, S
 
 export type RelationshipKey = `related__${string}__${string}`
 
-export const statPathsWithExtra = extra_stats.map(([index]) => stat_path_list[index])
+// a stat can have more than one extra-stat option (e.g. a monthly plot and a distribution), so dedupe stat paths
+export const statPathsWithExtra = Array.from(new Set(extra_stats.map(([index]) => stat_path_list[index])))
 export type StatPathWithExtra = (typeof statPathsWithExtra)[number]
 export type RowExpandedKey<P extends StatPath> = `expanded__${P}`
+export type PlotDisplayModeKey<P extends StatPath> = `plot_mode__${P}`
 
 export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
 
@@ -56,6 +58,8 @@ export type SettingsDictionary = {
 & { [D in DataSource as StatSourceKey<D['category'], D['name']>]: boolean }
 & { [P in StatPathWithExtra as RowExpandedKey<P>]: boolean }
 & { [P in Exclude<StatPath, StatPathWithExtra> as RowExpandedKey<P>]?: undefined }
+& { [P in StatPathWithExtra as PlotDisplayModeKey<P>]: string }
+& { [P in Exclude<StatPath, StatPathWithExtra> as PlotDisplayModeKey<P>]?: undefined }
 
 export function relationshipKey(articleType: string, otherType: string): RelationshipKey {
     return `related__${articleType}__${otherType}`
@@ -63,6 +67,11 @@ export function relationshipKey(articleType: string, otherType: string): Relatio
 
 export function rowExpandedKey<P extends StatPath>(statpath: P): RowExpandedKey<P> {
     return `expanded__${statpath}`
+}
+
+// empty string means "unset" -- RenderedPlot falls back to the first available type for the stat
+export function plotDisplayModeKey<P extends StatPath>(statpath: P): PlotDisplayModeKey<P> {
+    return `plot_mode__${statpath}`
 }
 
 export function sourceEnabledKey<C extends SourceCategoryIdentifier, S extends SourceIdentifier>(d: { category: C, name: S }): StatSourceKey<C, S> {
@@ -100,6 +109,7 @@ export const defaultSettingsList = [
     ['colorblind_mode', false] as const,
     ['clean_background', false] as const,
     ...statPathsWithExtra.map(statPath => [`expanded__${statPath}`, false] as const),
+    ...statPathsWithExtra.map(statPath => [`plot_mode__${statPath}`, ''] as const),
     ['temperature_unit', 'fahrenheit'],
     ['mobile_article_pointers', 'pointer_in_class'],
     ['juxtastatCompactEmoji', false],

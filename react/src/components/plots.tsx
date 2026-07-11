@@ -1,52 +1,76 @@
-import React, { ReactNode } from 'react'
+import React, { ReactElement, ReactNode } from 'react'
+
+import { useColors } from '../page_template/colors'
+import { plotDisplayModeKey, useSetting } from '../page_template/settings'
+import { StatPath } from '../page_template/statistic-tree'
 
 import { ExtraStat } from './load-article'
 import { Histogram, transposeSettingsHeight } from './plots-histogram'
 import { MonthlyPlot } from './plots-monthly'
+import { TemperatureHistogramPlot } from './plots-temperature-histogram'
 import { TimeSeriesPlot } from './plots-timeseries'
 
 export interface PlotProps {
     shortname: string
     longname: string
-    extraStat?: ExtraStat
+    extraStats: ExtraStat[]
     color: string
     sharedTypeOfAllArticles?: string
     subseriesName: string
 }
 
-export function RenderedPlot({ statDescription, plotProps }: { statDescription: string, plotProps: PlotProps[] }): ReactNode {
-    const type = plotProps.reduce<undefined | 'histogram' | 'time_series' | 'monthly_time_series'>((result, plot) => {
-        if (result === undefined) {
-            return plot.extraStat?.type
-        }
-        else if (plot.extraStat?.type !== undefined && plot.extraStat.type !== result) {
-            throw new Error('Rendering plots of differing types')
-        }
-        return result
-    }, undefined)
-    switch (type) {
+const plotModeLabels: Partial<Record<ExtraStat['type'], string>> = {
+    monthly_time_series: 'Monthly',
+    temperature_histogram: 'Distribution',
+    histogram: 'Distribution',
+    time_series: 'Yearly',
+}
+
+export function RenderedPlot({ statDescription, statpath, plotProps }: { statDescription: string, statpath: StatPath, plotProps: PlotProps[] }): ReactNode {
+    const colors = useColors()
+    const availableTypes = Array.from(new Set(plotProps.flatMap(p => p.extraStats.map(es => es.type))))
+    const [mode, setMode] = useSetting(plotDisplayModeKey(statpath))
+    const selectedType: ExtraStat['type'] | undefined = availableTypes.includes(mode as ExtraStat['type']) ? mode as ExtraStat['type'] : availableTypes[0]
+
+    const modeSwitcher: ReactElement | undefined = availableTypes.length > 1
+        ? (
+                <select
+                    value={selectedType}
+                    style={{ backgroundColor: colors.background, color: colors.textMain }}
+                    onChange={(e) => { setMode(e.target.value) }}
+                    className="serif"
+                    data-test-id="plot_mode"
+                >
+                    {availableTypes.map(t => <option key={t} value={t}>{plotModeLabels[t] ?? t}</option>)}
+                </select>
+            )
+        : undefined
+
+    switch (selectedType) {
         case 'histogram':
             return (
                 <Histogram
                     statDescription={statDescription}
                     histograms={plotProps.flatMap(
                         (props) => {
-                            if (props.extraStat?.type !== 'histogram') {
+                            const extraStat = props.extraStats.find(es => es.type === 'histogram')
+                            if (extraStat === undefined) {
                                 return []
                             }
                             return [
                                 {
                                     shortname: props.shortname,
                                     longname: props.longname,
-                                    histogram: props.extraStat,
+                                    histogram: extraStat,
                                     color: props.color,
-                                    universeTotal: props.extraStat.universeTotal,
+                                    universeTotal: extraStat.universeTotal,
                                     subseriesName: props.subseriesName,
                                 },
                             ]
                         },
                     )}
                     sharedTypeOfAllArticles={plotProps[0]?.sharedTypeOfAllArticles}
+                    modeSwitcher={modeSwitcher}
                 />
             )
         case 'time_series':
@@ -54,12 +78,13 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
                 <TimeSeriesPlot
                     stats={plotProps.map(
                         (props) => {
-                            if (props.extraStat?.type !== 'time_series') {
+                            const extraStat = props.extraStats.find(es => es.type === 'time_series')
+                            if (extraStat === undefined) {
                                 throw new Error('expected time_series')
                             }
                             return {
                                 shortname: props.shortname,
-                                stat: props.extraStat,
+                                stat: extraStat,
                                 color: props.color,
                             }
                         },
@@ -71,18 +96,44 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
                 <MonthlyPlot
                     stats={plotProps.flatMap(
                         (props) => {
-                            if (props.extraStat?.type !== 'monthly_time_series') {
+                            const extraStat = props.extraStats.find(es => es.type === 'monthly_time_series')
+                            if (extraStat === undefined) {
                                 return []
                             }
                             return [
                                 {
                                     shortname: props.shortname,
-                                    stat: props.extraStat,
+                                    stat: extraStat,
                                     color: props.color,
                                 },
                             ]
                         },
                     )}
+                    modeSwitcher={modeSwitcher}
+                />
+            )
+        case 'temperature_histogram':
+            return (
+                <TemperatureHistogramPlot
+                    statDescription={statDescription}
+                    histograms={plotProps.flatMap(
+                        (props) => {
+                            const extraStat = props.extraStats.find(es => es.type === 'temperature_histogram')
+                            if (extraStat === undefined) {
+                                return []
+                            }
+                            return [
+                                {
+                                    shortname: props.shortname,
+                                    longname: props.longname,
+                                    histogram: extraStat,
+                                    color: props.color,
+                                    subseriesName: props.subseriesName,
+                                },
+                            ]
+                        },
+                    )}
+                    modeSwitcher={modeSwitcher}
                 />
             )
         case undefined:
@@ -91,14 +142,8 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
 }
 
 export function extraHeaderSpaceForVertical(spec: PlotProps): number {
-    switch (spec.extraStat?.type) {
-        case 'histogram':
-            return transposeSettingsHeight
-        case 'time_series':
-            return 0
-        case 'monthly_time_series':
-            return 0
-        case undefined:
-            return 0
+    if (spec.extraStats.some(es => es.type === 'histogram' || es.type === 'temperature_histogram')) {
+        return transposeSettingsHeight
     }
+    return 0
 }

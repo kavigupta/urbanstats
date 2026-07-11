@@ -36,7 +36,14 @@ export interface MonthlyExtraStat {
     monthlyValues: number[]
 }
 
-export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat | MonthlyExtraStat
+export interface TemperatureHistogramExtraStat {
+    type: 'temperature_histogram'
+    binMin: number
+    binSize: number
+    counts: number[]
+}
+
+export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat | MonthlyExtraStat | TemperatureHistogramExtraStat
 
 export type StatCol = (typeof stats)[number]
 
@@ -71,7 +78,7 @@ export interface ArticleStatisticRow {
     totalCountOverall: number
     index: number
     renderedStatname: string
-    extraStat?: ExtraStat
+    extraStats: ExtraStat[]
     disclaimer?: Disclaimer
     overallFirstLast: FirstLastStatus
 }
@@ -84,7 +91,7 @@ export interface MetadataArticleRow {
     renderedStatname: string
     articleType: string
     statval: MetadataStatValue
-    extraStat: undefined
+    extraStats: []
     disclaimer: undefined
     dataCreditExplanationPage: string
 }
@@ -240,7 +247,7 @@ function metadataRowsForArticle(
             renderedStatname: parent.groupYearName,
             articleType: article.articleType,
             statval,
-            extraStat: undefined,
+            extraStats: [],
             disclaimer: undefined,
             dataCreditExplanationPage,
         }]
@@ -288,36 +295,51 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
 
     return data.rows.map((rowOriginal, rowIndex) => {
         const i = indices[rowIndex]
-        // fresh row object
-        let extraStat: ExtraStat | undefined = undefined
-        if (extraStatIdxToCol.includes(i)) {
-            const extraStatIdx = extraStatIdxToCol.indexOf(i)
+        // a stat may have more than one extra-stat option (e.g. a monthly plot and a distribution)
+        const extraStatIdxs = extraStatIdxToCol.flatMap((colIdx, j) => colIdx === i ? [j] : [])
+        const extraStats: ExtraStat[] = extraStatIdxs.flatMap<ExtraStat>((extraStatIdx) => {
             const [, spec] = extra_stats[extraStatIdx]
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- this is for future proofing
             if (spec.type === 'histogram') {
                 const universeTotalIdx = spec.universe_total_idx
                 const histogram = data.extraStats[extraStatIdx].histogram!
-                extraStat = {
+                return [{
                     type: 'histogram',
                     binMin: histogram.binMin,
                     binSize: histogram.binSize,
                     counts: histogram.counts,
                     universeTotal: data.rows.find((_, universeRowIndex) => indices[universeRowIndex] === universeTotalIdx)!.statval!,
-                } as HistogramExtraStat
+                } as HistogramExtraStat]
             }
             else if (spec.type === 'monthly_time_series') {
                 const timeseries = data.extraStats[extraStatIdx].timeseries
                 // absent when the underlying monthly data was invalid/NaN for this row -- omit the extra stat rather than crash
                 if (timeseries?.values) {
-                    extraStat = {
+                    return [{
                         type: 'monthly_time_series',
                         name: spec.name,
                         unit: spec.unit,
                         monthlyValues: timeseries.values,
-                    } as MonthlyExtraStat
+                    } as MonthlyExtraStat]
                 }
+                return []
             }
-        }
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- this is for future proofing
+            else if (spec.type === 'temperature_histogram') {
+                const temperatureHistogram = data.extraStats[extraStatIdx].temperatureHistogram
+                // absent when the underlying histogram data was invalid/NaN for this row -- omit the extra stat rather than crash
+                if (temperatureHistogram?.counts) {
+                    return [{
+                        type: 'temperature_histogram',
+                        binMin: spec.min_value,
+                        binSize: spec.bin_size,
+                        counts: temperatureHistogram.counts,
+                    } as TemperatureHistogramExtraStat]
+                }
+                return []
+            }
+            return []
+        })
         const overallFirstLastThis = overallFirstOrLast.filter((x: IFirstOrLast) => x.articleRowIdx === rowIndex)
 
         // Determine disclaimer for election statistics
@@ -337,7 +359,7 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
             totalCountOverall: forType(counts, universe, stats[i], 'overall'),
             index: i,
             renderedStatname: names[i],
-            extraStat,
+            extraStats,
             disclaimer,
             overallFirstLast: {
                 isFirst: overallFirstLastThis.some((x: IFirstOrLast) => x.isFirst),
@@ -407,8 +429,8 @@ function insertMissing(rows: ArticleRow[][]): ArticleRow[][] {
                     assert(emptyRowExample.get(idx)!.kind === 'metadata', 'if statval is not a numbre, it\'s metadata')
                     emptyRowExample.get(idx)![key] = ''
                 }
-                else if (key === 'extraStat') {
-                    emptyRowExample.get(idx)![key] = undefined
+                else if (key === 'extraStats') {
+                    emptyRowExample.get(idx)![key] = []
                 }
             }
             emptyRowExample.get(idx)!.articleType = 'none' // doesn't matter since we are using simple mode
