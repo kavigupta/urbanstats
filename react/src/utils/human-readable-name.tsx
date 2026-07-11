@@ -1,14 +1,8 @@
 import React, { ReactNode } from 'react'
 
-export type HumanReadableElement = { type: 'atom', value: string } | { type: 'code', value: string } | { type: 'where' | 'superscript' | 'subscript' | 'parens', value: HumanReadableElement[] }
+import { codeStyle } from './code-style'
 
-const codeStyle: React.CSSProperties = {
-    backgroundColor: 'var(--slightly-different-background)',
-    padding: '2px 4px',
-    borderRadius: '3px',
-    fontFamily: '\'Courier New\', monospace',
-    fontSize: '0.9em',
-}
+export type HumanReadableElement = { type: 'atom', value: string } | { type: 'code', value: string } | { type: 'where' | 'superscript' | 'subscript' | 'parens', value: HumanReadableElement[] }
 
 export type HumanReadableName = string | HumanReadableElement[]
 
