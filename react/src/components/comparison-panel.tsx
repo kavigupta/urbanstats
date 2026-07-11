@@ -418,17 +418,27 @@ export function ComparisonPanel(props: {
     )
 }
 
-// the only cross-stat plot pairing in the app today -- combines the two into one chart
-// (like the multi-year overlay) whenever both are visible, with low temp dashed
-const temperaturePairPartner: Partial<Record<StatPath, StatPath>> = {
+// cross-stat plot pairings -- combine the two into one chart (like the multi-year overlay)
+// whenever both are visible, with the second-listed one dashed
+const plotPairPartner: Partial<Record<StatPath, StatPath>> = {
     mean_high_temp_4: 'mean_low_temp',
     mean_low_temp: 'mean_high_temp_4',
+    rainfall_4: 'snowfall_4',
+    snowfall_4: 'rainfall_4',
 }
-const temperaturePairLabel: Partial<Record<StatPath, string>> = {
+const plotPairLabel: Partial<Record<StatPath, string>> = {
     mean_high_temp_4: 'High',
     mean_low_temp: 'Low',
+    rainfall_4: 'Rain',
+    snowfall_4: 'Snow',
 }
-const temperaturePairDashOrder = ['Low', 'High']
+// dashOrder[0] is dashed, dashOrder[1] is solid -- keyed by either member of the pair
+const plotPairDashOrder: Partial<Record<StatPath, string[]>> = {
+    mean_high_temp_4: ['Low', 'High'],
+    mean_low_temp: ['Low', 'High'],
+    rainfall_4: ['Snow', 'Rain'],
+    snowfall_4: ['Snow', 'Rain'],
+}
 
 export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
     if (rows[statIndex].kind !== 'statistic' || rows[statIndex].extraStats.length === 0) {
@@ -465,11 +475,12 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
         })
         assert(statpaths.length === new Set(statpaths.map(({ sP: { year } }) => year)).size, 'All statpaths for plot data should have unique years')
     }
-    const pairedPath = temperaturePairPartner[rows[statIndex].statpath]
+    const pairedPath = plotPairPartner[rows[statIndex].statpath]
     const pairedIdx = pairedPath !== undefined
         ? rows.findIndex(r => r.statpath === pairedPath && r.kind === 'statistic' && r.extraStats.length > 0)
         : -1
     const hasPair = pairedIdx !== -1
+    const dashOrder = hasPair ? plotPairDashOrder[rows[statIndex].statpath] : undefined
 
     const ownEntries = statpaths.map(({ i: idx, sP: { year } }) => {
         assert(year !== null, 'unreachable, we checked this already')
@@ -479,8 +490,8 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
             shortname,
             longname,
             sharedTypeOfAllArticles,
-            subseriesName: hasPair ? temperaturePairLabel[rows[idx].statpath] ?? year.toString() : year.toString(),
-            dashOrder: hasPair ? temperaturePairDashOrder : undefined,
+            subseriesName: hasPair ? plotPairLabel[rows[idx].statpath] ?? year.toString() : year.toString(),
+            dashOrder,
         } satisfies PlotProps
     })
     if (!hasPair) {
@@ -494,10 +505,10 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
             shortname,
             longname,
             sharedTypeOfAllArticles,
-            subseriesName: temperaturePairLabel[rows[pairedIdx].statpath]!,
-            dashOrder: temperaturePairDashOrder,
-            // the high/low overlay only makes sense for the monthly view -- a combined distribution
-            // chart doesn't read as "two series", so RenderedPlot excludes this entry from that view
+            subseriesName: plotPairLabel[rows[pairedIdx].statpath]!,
+            dashOrder,
+            // the overlay only makes sense for the monthly view -- a combined distribution chart
+            // doesn't read as "two series", so RenderedPlot excludes this entry from that view
             pairedInFor: ['monthly_time_series'],
         } satisfies PlotProps,
     ]
