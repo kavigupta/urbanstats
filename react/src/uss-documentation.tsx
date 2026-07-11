@@ -695,7 +695,7 @@ export function LongFormDocumentation(props: { name: string, value: USSDocumente
                                     </code>
                                     :
                                     {' '}
-                                    {reifyReact(argDesc)}
+                                    {argDesc}
                                 </li>
                             ))}
                         </ul>
