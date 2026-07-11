@@ -15,6 +15,7 @@ import { ConstantCategory } from './urban-stats-script/documentation-category'
 import { expressionOperatorMap } from './urban-stats-script/operators'
 import { DocumentationTable, renderType, USSDocumentedType } from './urban-stats-script/types-values'
 import { constantsDocumentationData } from './uss-documentation-routing'
+import { codeStyle } from './utils/code-style'
 import { assert } from './utils/defensive'
 import { reifyReact } from './utils/human-readable-name'
 import { useHeaderTextClass } from './utils/responsive'
@@ -469,13 +470,6 @@ function createTable(colors: ReturnType<typeof useColors>, headers: string[], ce
             textAlign: 'left' as const,
             verticalAlign: 'top' as const,
         },
-        code: {
-            backgroundColor: colors.slightlyDifferentBackground,
-            padding: '2px 4px',
-            borderRadius: '3px',
-            fontFamily: '\'Courier New\', monospace',
-            fontSize: '13px',
-        },
         rowColors: {
             even: colors.slightlyDifferentBackground,
             odd: colors.background,
@@ -520,7 +514,7 @@ function OperatorTable(): ReactNode {
     const headers = ['Operator', 'Type', 'Precedence', 'Description', 'Example']
     const cells = Object.entries(expressionOperatorMap).map(([operator, info]) => ({
         row: [
-            <code key="operator" style={{ backgroundColor: colors.slightlyDifferentBackground, padding: '2px 4px', borderRadius: '3px', fontFamily: '\'Courier New\', monospace', fontSize: '13px' }}>
+            <code key="operator" style={{ ...codeStyle, fontSize: '13px' }}>
                 {operator}
             </code>,
             info.type === 'unary+binary'
@@ -532,7 +526,7 @@ function OperatorTable(): ReactNode {
             info.description,
             info.examples.map((example, exampleIndex) => (
                 <span key={exampleIndex}>
-                    <code style={{ backgroundColor: colors.slightlyDifferentBackground, padding: '2px 4px', borderRadius: '3px', fontFamily: '\'Courier New\', monospace', fontSize: '13px' }}>
+                    <code style={{ ...codeStyle, fontSize: '13px' }}>
                         {example}
                     </code>
                     {exampleIndex < info.examples.length - 1 && ', '}
@@ -675,15 +669,7 @@ export function LongFormDocumentation(props: { name: string, value: USSDocumente
                 <div style={{ marginBottom: '10px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
                     <div>
                         Type:
-                        <code style={{
-                            backgroundColor: colors.slightlyDifferentBackground,
-                            padding: '4px 8px',
-                            borderRadius: '3px',
-                            fontFamily: '\'Courier New\', monospace',
-                            fontSize: '13px',
-                            marginLeft: '10px',
-                        }}
-                        >
+                        <code style={{ ...codeStyle, padding: '4px 8px', fontSize: '13px', marginLeft: '10px' }}>
                             {renderType(props.value.type)}
                         </code>
                     </div>
@@ -704,14 +690,7 @@ export function LongFormDocumentation(props: { name: string, value: USSDocumente
                         <ul style={{ margin: '5px 0 0 20px' }}>
                             {Object.entries(props.value.documentation.namedArgs).map(([argName, argDesc]) => (
                                 <li key={argName}>
-                                    <code style={{
-                                        backgroundColor: colors.slightlyDifferentBackground,
-                                        padding: '2px 4px',
-                                        borderRadius: '3px',
-                                        fontFamily: '\'Courier New\', monospace',
-                                        fontSize: '12px',
-                                    }}
-                                    >
+                                    <code style={{ ...codeStyle, fontSize: '12px' }}>
                                         {argName}
                                     </code>
                                     :
@@ -745,16 +724,7 @@ function ShortFormTableDocumentation(props: { tableName: DocumentationTable, tab
         id: name,
         row: [
             <span key="name" style={{ fontFamily: '\'Courier New\', monospace' }}>{name}</span>,
-            <code
-                key="type"
-                style={{
-                    backgroundColor: colors.slightlyDifferentBackground,
-                    padding: '2px 4px',
-                    borderRadius: '3px',
-                    fontFamily: '\'Courier New\', monospace',
-                    fontSize: '12px',
-                }}
-            >
+            <code key="type" style={{ ...codeStyle, fontSize: '12px' }}>
                 {renderType(value.type)}
             </code>,
             <span key="description">
