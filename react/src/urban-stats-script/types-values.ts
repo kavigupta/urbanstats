@@ -1,6 +1,7 @@
 import type * as ArgEditButtons from '../mapper/settings/ArgEditButtons'
 import { Basemap } from '../mapper/settings/utils'
 import { assert } from '../utils/defensive'
+import { HumanReadableName } from '../utils/human-readable-name'
 import { UnitType } from '../utils/unit'
 
 import { UrbanStatsASTExpression } from './ast'
