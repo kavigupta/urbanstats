@@ -1,7 +1,8 @@
 import assert from 'assert'
 
+import { HumanReadableElement } from '../utils/human-readable-name'
+
 import { AutoUXNodeMetadata } from './autoux-node-metadata'
-import { HumanReadableElement } from './derive-human-readable-name'
 import { LocInfo } from './location'
 import { BinaryOperatorSymbol, UnaryOperatorSymbol } from './operators'
 import { Decorated, ParseError } from './parser'

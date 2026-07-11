@@ -3,8 +3,9 @@ import test from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapUSSFromString } from '../src/mapper/settings/map-uss'
-import { deriveMapLabel, reifyString } from '../src/urban-stats-script/derive-human-readable-name'
+import { deriveMapLabel } from '../src/urban-stats-script/derive-human-readable-name'
 import { TypeEnvironment } from '../src/urban-stats-script/types-values'
+import { reifyString } from '../src/utils/human-readable-name'
 
 function getTypeEnvironment(): TypeEnvironment {
     return defaultTypeEnvironment('USA')

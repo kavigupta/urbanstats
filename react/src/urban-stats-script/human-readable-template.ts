@@ -1,4 +1,4 @@
-import { HumanReadableElement } from './derive-human-readable-name'
+import { HumanReadableElement } from '../utils/human-readable-name'
 
 function parseElements(input: string, pos: number, terminator: '}' | ')' | null): { elements: HumanReadableElement[], end: number } {
     const result: HumanReadableElement[] = []
