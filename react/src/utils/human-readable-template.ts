@@ -29,6 +29,16 @@ function parseElements(input: string, pos: number, terminator: '}' | null): { el
             continue
         }
 
+        if (input[pos] === '`') {
+            flushAtom(pos)
+            const closeIdx = input.indexOf('`', pos + 1)
+            const end = closeIdx === -1 ? input.length : closeIdx
+            result.push({ type: 'code', value: input.slice(pos + 1, end) })
+            pos = closeIdx === -1 ? input.length : closeIdx + 1
+            atomStart = pos
+            continue
+        }
+
         pos++
     }
 
@@ -43,4 +53,8 @@ export function hre(strings: TemplateStringsArray, ...values: HumanReadableEleme
         if (i < values.length) result.push(...values[i])
     }
     return result
+}
+
+export function parseHumanReadableTemplate(input: string): HumanReadableElement[] {
+    return parseElements(input, 0, null).elements
 }

@@ -266,7 +266,7 @@ function LongDescriptionSubtitle(props: { doc: Documentation, highlighted: boole
         >
             <div>{reifyReact(props.doc.humanReadableName)}</div>
             <div style={{ fontSize: 'smaller', color: colors.ordinalTextColor }}>
-                {props.doc.longDescription}
+                {props.doc.longDescription !== undefined ? reifyReact(props.doc.longDescription) : undefined}
             </div>
         </div>
     )

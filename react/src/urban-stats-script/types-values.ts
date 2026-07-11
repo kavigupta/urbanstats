@@ -169,7 +169,7 @@ export interface Documentation {
     /**
      * Included for all bulit-in constants. Will be displayed in the documentation.
      */
-    longDescription?: string
+    longDescription?: HumanReadableName
     /**
      * Used when displaying this value in a selector
      */
