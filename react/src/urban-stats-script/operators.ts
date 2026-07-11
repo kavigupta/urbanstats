@@ -111,7 +111,7 @@ function booleanOperation(fn: (a: boolean, b: boolean) => boolean): BinaryOperat
     }
 }
 
-export const expressionOperatorMap = new Map<string, Operator>([
+export const expressionOperatorMap = new Map<UnaryOperatorSymbol | BinaryOperatorSymbol, Operator>([
     // E
     [
         '**',
@@ -252,5 +252,8 @@ export const expressionOperatorMap = new Map<string, Operator>([
     ],
 ])
 
-export const unaryOperators = [...expressionOperatorMap.entries()].filter(([, op]) => op.unary !== undefined).map(([op]) => op)
-export const infixOperators = [...expressionOperatorMap.entries()].filter(([, op]) => op.binary !== undefined).map(([op]) => op)
+export const unaryOperators = ['+', '-', '!'] as const
+export type UnaryOperatorSymbol = typeof unaryOperators[number]
+
+export const infixOperators = ['**', '*', '/', '+', '-', '==', '!=', '<', '>', '<=', '>=', '&', '|'] as const
+export type BinaryOperatorSymbol = typeof infixOperators[number]

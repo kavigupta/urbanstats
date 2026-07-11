@@ -9,6 +9,10 @@ interface ObjectConstructor {
     entries<const T extends Record<PropertyKey, unknown>>(o: T): (keyof { [K in keyof T as [K, T[K]]]: never })[]
     keys<const T extends Record<PropertyKey, unknown>>(o: T): (keyof T)[]
 }
+
+interface ReadonlyArray<T> {
+    includes(searchElement: unknown): searchElement is T
+}
 /* eslint-enable @typescript-eslint/method-signature-style */
 
 // Prevent extraneous errors in the ide
