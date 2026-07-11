@@ -444,7 +444,7 @@ export default [
         {
             "type": "monthly_time_series",
             "name": "Rainfall by month",
-            "unit": ""
+            "unit": "precipitation"
         }
     ],
     [
@@ -452,7 +452,7 @@ export default [
         {
             "type": "monthly_time_series",
             "name": "Snowfall by month",
-            "unit": ""
+            "unit": "precipitation"
         }
     ]
 ] as const

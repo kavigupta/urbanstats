@@ -33,7 +33,7 @@ export interface TimeSeriesExtraStat {
 export interface MonthlyExtraStat {
     type: 'monthly_time_series'
     name: string
-    unit: '' | 'temperature'
+    unit: '' | 'temperature' | 'precipitation'
     monthlyValues: number[]
 }
 

@@ -26,7 +26,7 @@ POPULATION_WEIGHTED_EXPLANATION = (
 
 
 class GlobalWeatherStatistics(GeographicStatistics):
-    version = 7
+    version = 8
 
     def name_for_each_statistic(self):
         return {
@@ -278,9 +278,13 @@ class GlobalWeatherStatistics(GeographicStatistics):
                 ),
             ],
             "rainfall_4": MonthlyTimeSeriesSpec(
-                name="Rainfall by month", key="rainfall_by_month"
+                name="Rainfall by month",
+                key="rainfall_by_month",
+                unit="precipitation",
             ),
             "snowfall_4": MonthlyTimeSeriesSpec(
-                name="Snowfall by month", key="snowfall_by_month"
+                name="Snowfall by month",
+                key="snowfall_by_month",
+                unit="precipitation",
             ),
         }
