@@ -4,8 +4,8 @@ import { stringify } from 'csv-stringify/sync'
 import { saveAs } from 'file-saver'
 import React, { ReactNode } from 'react'
 
-import { reifyString } from '../urban-stats-script/derive-human-readable-name'
-import { HumanReadableName, USSOpaqueValue, USSValue } from '../urban-stats-script/types-values'
+import { USSOpaqueValue, USSValue } from '../urban-stats-script/types-values'
+import { HumanReadableName, reifyString } from '../utils/human-readable-name'
 import { Article } from '../utils/protos'
 
 import { ArticleRow } from './load-article'

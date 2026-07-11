@@ -11,12 +11,12 @@ import { urlFromPageDescriptor } from './navigation/PageDescriptor'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
 import { StandaloneEditor } from './urban-stats-script/StandaloneEditor'
-import { reifyReact } from './urban-stats-script/derive-human-readable-name'
 import { ConstantCategory } from './urban-stats-script/documentation-category'
 import { expressionOperatorMap } from './urban-stats-script/operators'
 import { DocumentationTable, renderType, USSDocumentedType } from './urban-stats-script/types-values'
 import { constantsDocumentationData } from './uss-documentation-routing'
 import { assert } from './utils/defensive'
+import { reifyReact } from './utils/human-readable-name'
 import { useHeaderTextClass } from './utils/responsive'
 
 function useScrollToUssDocumentationFragment(hash: string | undefined, contentKey: string | undefined): void {
