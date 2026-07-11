@@ -7,19 +7,15 @@ import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { HistogramType, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
-import { assert } from '../utils/defensive'
 import { IHistogram } from '../utils/protos'
 import { useTranspose } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
-import { PlotComponent } from './plots-general'
-import { createScreenshot } from './screenshot'
+import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, PlotComponent, PlotDownloadButton, transposeAwareTip } from './plots-general'
 import { SearchBox } from './search'
 import { CheckboxSetting } from './sidebar'
 
 const yPad = 0.025
-
-const strokeDasharrays = ['1,0', '10,10', '2,5']
 
 interface HistogramProps {
     shortname: string
@@ -90,187 +86,6 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
     )
 }
 
-interface LegendItem {
-    shortname: string
-    color: string
-    subseriesName: string
-}
-
-function computeColorItems<T extends LegendItem>(items: T[]): { label: string, color: string }[] {
-    const colorItems: { label: string, color: string }[] = []
-    for (const item of items) {
-        // handles duplicate names by just putting them all in if they're different colors
-        const index = colorItems.findIndex(existing => existing.label === item.shortname && existing.color === item.color)
-        if (index === -1) {
-            colorItems.push({
-                label: item.shortname,
-                color: item.color,
-            })
-        }
-    }
-    if (colorItems.length <= 1) {
-        return []
-    }
-    return colorItems
-}
-
-function computeDashPatterns<T extends LegendItem>(items: T[], order?: string[]): Map<string, { pattern: string, name: string }> {
-    const dashPatterns = new Map<string, { pattern: string, name: string }>()
-    const subseriesNames = new Set<string>()
-    items.forEach((item) => {
-        subseriesNames.add(item.subseriesName)
-    })
-    const subseriesNamesOrdered = order ?? Array.from(subseriesNames).sort()
-    assert(subseriesNamesOrdered.length <= strokeDasharrays.length, 'Too many subseries for dash patterns')
-    items.forEach((item) => {
-        const subId = subseriesNamesOrdered.indexOf(item.subseriesName)
-        assert(subId !== -1, `subseriesName ${item.subseriesName} missing from dash order`)
-        if (!dashPatterns.has(item.subseriesName)) {
-            dashPatterns.set(item.subseriesName, {
-                pattern: strokeDasharrays[subseriesNamesOrdered.length - 1 - subId],
-                name: item.subseriesName,
-            })
-        }
-    })
-    return dashPatterns
-}
-
-function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, themeColors: Colors, dashOrder?: string[]): Plot.Markish[] {
-    const colorItems = computeColorItems(items)
-
-    const dashPatterns = computeDashPatterns(items, dashOrder)
-
-    const dashPatternItems: { label: string, dashPattern: string }[] = []
-    if (dashPatterns.size > 1) {
-        const dashPatternsEnumerated = Array.from(dashPatterns.values()).sort((a, b) => a.name.localeCompare(b.name))
-        dashPatternsEnumerated.forEach(({ pattern, name }) => {
-            dashPatternItems.push({
-                label: name,
-                dashPattern: pattern,
-            })
-        })
-    }
-
-    const totalItems = colorItems.length + dashPatternItems.length
-    if (totalItems === 0) {
-        return []
-    }
-
-    const createLegend = (): SVGElement => {
-        const svgNS = 'http://www.w3.org/2000/svg'
-        const group = document.createElementNS(svgNS, 'g')
-        // Position on the left side, but offset enough to avoid the y-axis
-        const translateX = transpose ? 200 : 100
-        const translateY = 70
-        group.setAttribute('transform', `translate(${translateX} ${translateY})`)
-
-        const paddingX = 12
-        const paddingY = 10
-        const rowHeight = 22
-        const squareSize = 14
-        const lineLength = 36
-        const fontSize = 13
-        const textSpacing = 10
-
-        // Calculate width based on longest label
-        const allLabels = [...colorItems.map(item => item.label), ...dashPatternItems.map(item => item.label)]
-        let maxTextWidth = 0
-        if (allLabels.length > 0) {
-            // Use canvas to measure text width accurately
-            const canvas = document.createElement('canvas')
-            const context = canvas.getContext('2d')
-            if (context) {
-                context.font = `${fontSize}px serif`
-                allLabels.forEach((label) => {
-                    const textWidth = context.measureText(label).width
-                    if (textWidth > maxTextWidth) {
-                        maxTextWidth = textWidth
-                    }
-                })
-            }
-        }
-
-        // Width = paddingX (left) + max(squareSize/lineLength) + textSpacing + textWidth + paddingX (right)
-        const maxSymbolWidth = Math.max(squareSize, lineLength)
-        const width = paddingX + maxSymbolWidth + textSpacing + maxTextWidth + paddingX
-        const height = paddingY * 2 + rowHeight * totalItems
-
-        const background = document.createElementNS(svgNS, 'rect')
-        background.setAttribute('width', String(width))
-        background.setAttribute('height', String(height))
-        background.setAttribute('rx', '6')
-        background.setAttribute('fill', themeColors.slightlyDifferentBackground)
-        background.setAttribute('stroke', themeColors.borderNonShadow)
-        group.appendChild(background)
-
-        let rowIndex = 0
-
-        // Render color squares
-        colorItems.forEach((item) => {
-            const row = document.createElementNS(svgNS, 'g')
-            row.setAttribute('transform', `translate(${paddingX} ${paddingY + rowHeight * rowIndex})`)
-
-            const centerY = rowHeight / 2
-            const square = document.createElementNS(svgNS, 'rect')
-            square.setAttribute('x', '0')
-            square.setAttribute('y', String(centerY - squareSize / 2))
-            square.setAttribute('width', String(squareSize))
-            square.setAttribute('height', String(squareSize))
-            square.setAttribute('fill', item.color)
-            row.appendChild(square)
-
-            const text = document.createElementNS(svgNS, 'text')
-            text.setAttribute('x', String(squareSize + 10))
-            text.setAttribute('y', String(centerY))
-            text.setAttribute('font-size', `${fontSize}px`)
-            text.setAttribute('fill', themeColors.textMain)
-            text.setAttribute('dominant-baseline', 'middle')
-            text.setAttribute('text-anchor', 'start')
-            text.textContent = item.label
-            row.appendChild(text)
-
-            group.appendChild(row)
-            rowIndex++
-        })
-
-        // Render dash pattern lines
-        dashPatternItems.forEach((item) => {
-            const row = document.createElementNS(svgNS, 'g')
-            row.setAttribute('transform', `translate(${paddingX} ${paddingY + rowHeight * rowIndex})`)
-
-            const centerY = rowHeight / 2
-            const line = document.createElementNS(svgNS, 'line')
-            line.setAttribute('x1', '0')
-            line.setAttribute('x2', String(lineLength))
-            line.setAttribute('y1', String(centerY))
-            line.setAttribute('y2', String(centerY))
-            line.setAttribute('stroke', themeColors.textMain)
-            line.setAttribute('stroke-width', '3')
-            if (item.dashPattern !== '1,0') {
-                line.setAttribute('stroke-dasharray', item.dashPattern)
-            }
-            row.appendChild(line)
-
-            const text = document.createElementNS(svgNS, 'text')
-            text.setAttribute('x', String(lineLength + 10))
-            text.setAttribute('y', String(centerY))
-            text.setAttribute('font-size', `${fontSize}px`)
-            text.setAttribute('fill', themeColors.textMain)
-            text.setAttribute('dominant-baseline', 'middle')
-            text.setAttribute('text-anchor', 'start')
-            text.textContent = item.label
-            row.appendChild(text)
-
-            group.appendChild(row)
-            rowIndex++
-        })
-
-        return group
-    }
-
-    return [createLegend]
-}
-
 export const transposeSettingsHeight = 30.5
 
 function HistogramSettings(props: {
@@ -302,28 +117,7 @@ function HistogramSettings(props: {
                 position: 'relative',
             }}
         >
-            <img
-                src="/download.png"
-                onClick={async () => {
-                    const plot = props.makePlot()
-                    document.body.appendChild(plot)
-                    const uniqueShortnames = deduplicate(props.shortnames)
-                    await createScreenshot(
-                        {
-                            path: `${uniqueShortnames.join('_')}_histogram`,
-                            overallWidth: plot.offsetWidth * 2,
-                            elementsToRender: [plot],
-                            heightMultiplier: 1.2,
-                        },
-                        universe,
-                        colors,
-                        { render: new Set(), wait: new Set() },
-                    )
-                    plot.remove()
-                }}
-                width="20"
-                height="20"
-            />
+            <PlotDownloadButton makePlot={props.makePlot} shortnames={props.shortnames} filenameSuffix="histogram" />
             <div style={{ position: 'relative' }}>
                 <img
                     src="/add.png"
@@ -492,12 +286,7 @@ function xAxis(xidxs: number[], binSize: number, binMin: number, useImperial: bo
     }
     const adjustment = useImperial ? Math.log10(1.60934) * 2 : 0
 
-    let axis = Plot.axisX
-    let grid = Plot.gridX
-    if (transpose) {
-        axis = Plot.axisY
-        grid = Plot.gridY
-    }
+    const [axis, grid] = axisAndGrid(transpose)
     return [
         [
             axis(xKeypoints, { tickFormat: d => renderPow10(d * binSize + binMin + adjustment) }),
@@ -518,12 +307,8 @@ function yAxis(maxValue: number, transpose: boolean): (Plot.CompoundMark | Plot.
     const yKeypoints = Array.from({ length: Math.floor(maxValueRounded / tickGap) + 1 }, (_, i) => i * tickGap)
         .filter((_, i) => !transpose || i % 2 === 0) // If transpose, remove every other keypoint
 
-    let axis = Plot.axisY
-    let grid = Plot.gridY
-    if (transpose) {
-        axis = Plot.axisX
-        grid = Plot.gridX
-    }
+    // yAxis picks the visual-y-axis constructors, the inverse of xAxis's visual-x-axis pairing
+    const [axis, grid] = axisAndGrid(!transpose)
 
     return [
         axis(yKeypoints, { tickFormat: (d: number) => renderNumberHighlyRounded(d, 1) }),
@@ -591,25 +376,13 @@ function createHistogramMarks(
     const seriesSingle = dovetailSequences(series)
 
     const maxValue = Math.max(...series.map(s => Math.max(...s.values.map(v => v.y))))
-    const tip = Plot.tip(
+    const tip = transposeAwareTip(
         maxSequences(series),
-        (transpose ? Plot.pointerY : Plot.pointerX)({
-            x: transpose ? 'y' : 'xidx',
-            y: transpose ? 'xidx' : 'y',
-            title: (d: { names: string[], xidx: number, ys: number[] }) => {
-                let result = `Density: ${renderX(d.xidx)}\n`
-                if (d.names.length > 1) {
-                    result += d.names.map((name: string, i: number) => `${name}: ${renderY(d.ys[i])}`).join('\n')
-                }
-                else {
-                    result += `Frequency: ${renderY(d.ys[0])}`
-                }
-                return result
-            },
-            fill: colors.slightlyDifferentBackground,
-            stroke: colors.borderNonShadow,
-            textColor: colors.textMain,
-        }),
+        transpose,
+        'xidx',
+        d => d.ys,
+        d => multiSeriesTipTitle(`Density: ${renderX(d.xidx)}`, d.names, d.ys, renderY, 'Frequency'),
+        colors,
     )
     const marks: Plot.Markish[] = []
     if (histogramType === 'Line' || histogramType === 'Line (cumulative)') {
