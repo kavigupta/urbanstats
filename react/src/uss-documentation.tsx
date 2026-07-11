@@ -517,18 +517,16 @@ function OperatorTable(): ReactNode {
     const colors = useColors()
 
     const headers = ['Operator', 'Type', 'Precedence', 'Description', 'Example']
-    const cells = Array.from(expressionOperatorMap.entries()).map(([operator, info]) => ({
+    const cells = Object.entries(expressionOperatorMap).map(([operator, info]) => ({
         row: [
             <code key="operator" style={{ backgroundColor: colors.slightlyDifferentBackground, padding: '2px 4px', borderRadius: '3px', fontFamily: '\'Courier New\', monospace', fontSize: '13px' }}>
                 {operator}
             </code>,
-            info.unary && info.binary
+            info.type === 'unary+binary'
                 ? 'Unary/Binary'
-                : info.unary
+                : info.type === 'unary'
                     ? 'Unary'
-                    : info.binary
-                        ? 'Binary'
-                        : 'Unknown',
+                    : 'Binary',
             info.precedence,
             info.description,
             info.examples.map((example, exampleIndex) => (
