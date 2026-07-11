@@ -4,11 +4,9 @@ import React, { ReactElement, ReactNode, useCallback } from 'react'
 // imort Observable plot
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
-import { useUniverse } from '../universe'
 
 import { MonthlyExtraStat } from './load-article'
-import { computeDashPatterns, manualLegend, PlotComponent } from './plots-general'
-import { createScreenshot } from './screenshot'
+import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, PlotComponent, PlotDownloadButton, transposeAwareTip } from './plots-general'
 
 const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -50,7 +48,6 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], modeSwitcher?: R
     const [temperatureUnit] = useSetting('temperature_unit')
     const [useImperial] = useSetting('use_imperial')
     const colors = useColors()
-    const universe = useUniverse()
 
     const unit = props.stats[0].stat.unit
     const unitSuffix = unitSuffixFor(unit, temperatureUnit, useImperial)
@@ -66,29 +63,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], modeSwitcher?: R
                 gap: '0.5em',
             }}
         >
-            <img
-                src="/download.png"
-                onClick={async () => {
-                    const plot = makePlot()
-                    document.body.appendChild(plot)
-                    const uniqueShortnames = Array.from(new Set(props.stats.map(s => s.shortname)))
-                    await createScreenshot(
-                        {
-                            path: `${uniqueShortnames.join('_')}_monthly`,
-                            overallWidth: plot.offsetWidth * 2,
-                            elementsToRender: [plot],
-                            heightMultiplier: 1.2,
-                        },
-                        universe,
-                        colors,
-                        { render: new Set(), wait: new Set() },
-                    )
-                    plot.remove()
-                }}
-                width="20"
-                height="20"
-                style={{ cursor: 'pointer' }}
-            />
+            <PlotDownloadButton makePlot={makePlot} shortnames={props.stats.map(s => s.shortname)} filenameSuffix="monthly" />
             {props.modeSwitcher}
         </div>
     )
@@ -101,12 +76,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], modeSwitcher?: R
                 values: stat.stat.monthlyValues.map(v => convertValue(v, unit, temperatureUnit, useImperial)),
             }))
 
-            let axis = Plot.axisX
-            let grid = Plot.gridX
-            if (transpose) {
-                axis = Plot.axisY
-                grid = Plot.gridY
-            }
+            const [axis, grid] = axisAndGrid(transpose)
             const marks: Plot.Markish[] = [
                 axis(monthIdxs, { tickFormat: (i: number) => monthLabels[i] }),
                 grid(monthIdxs),
@@ -147,25 +117,13 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], modeSwitcher?: R
                 values: seriesData.map(s => s.values[i]),
             }))
             marks.push(
-                Plot.tip(
+                transposeAwareTip(
                     tipData,
-                    (transpose ? Plot.pointerY : Plot.pointerX)({
-                        x: transpose ? (d: TipDatum) => Math.max(...d.values) : 'monthIdx',
-                        y: transpose ? 'monthIdx' : (d: TipDatum) => Math.max(...d.values),
-                        title: (d: TipDatum) => {
-                            let result = `${monthLabels[d.monthIdx]}\n`
-                            if (d.names.length > 1) {
-                                result += d.names.map((name, i) => `${name}: ${d.values[i].toFixed(1)}${unitSuffix}`).join('\n')
-                            }
-                            else {
-                                result += `${d.values[0].toFixed(1)}${unitSuffix}`
-                            }
-                            return result
-                        },
-                        fill: colors.slightlyDifferentBackground,
-                        stroke: colors.borderNonShadow,
-                        textColor: colors.textMain,
-                    }),
+                    transpose,
+                    'monthIdx',
+                    d => d.values,
+                    d => multiSeriesTipTitle(monthLabels[d.monthIdx], d.names, d.values, v => `${v.toFixed(1)}${unitSuffix}`),
+                    colors,
                 ),
             )
 

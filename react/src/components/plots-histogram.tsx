@@ -11,8 +11,7 @@ import { IHistogram } from '../utils/protos'
 import { useTranspose } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
-import { computeDashPatterns, manualLegend, PlotComponent } from './plots-general'
-import { createScreenshot } from './screenshot'
+import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, PlotComponent, PlotDownloadButton, transposeAwareTip } from './plots-general'
 import { SearchBox } from './search'
 import { CheckboxSetting } from './sidebar'
 
@@ -119,28 +118,7 @@ function HistogramSettings(props: {
                 position: 'relative',
             }}
         >
-            <img
-                src="/download.png"
-                onClick={async () => {
-                    const plot = props.makePlot()
-                    document.body.appendChild(plot)
-                    const uniqueShortnames = deduplicate(props.shortnames)
-                    await createScreenshot(
-                        {
-                            path: `${uniqueShortnames.join('_')}_histogram`,
-                            overallWidth: plot.offsetWidth * 2,
-                            elementsToRender: [plot],
-                            heightMultiplier: 1.2,
-                        },
-                        universe,
-                        colors,
-                        { render: new Set(), wait: new Set() },
-                    )
-                    plot.remove()
-                }}
-                width="20"
-                height="20"
-            />
+            <PlotDownloadButton makePlot={props.makePlot} shortnames={props.shortnames} filenameSuffix="histogram" />
             <div style={{ position: 'relative' }}>
                 <img
                     src="/add.png"
@@ -310,12 +288,7 @@ function xAxis(xidxs: number[], binSize: number, binMin: number, useImperial: bo
     }
     const adjustment = useImperial ? Math.log10(1.60934) * 2 : 0
 
-    let axis = Plot.axisX
-    let grid = Plot.gridX
-    if (transpose) {
-        axis = Plot.axisY
-        grid = Plot.gridY
-    }
+    const [axis, grid] = axisAndGrid(transpose)
     return [
         [
             axis(xKeypoints, { tickFormat: d => renderPow10(d * binSize + binMin + adjustment) }),
@@ -336,12 +309,8 @@ function yAxis(maxValue: number, transpose: boolean): (Plot.CompoundMark | Plot.
     const yKeypoints = Array.from({ length: Math.floor(maxValueRounded / tickGap) + 1 }, (_, i) => i * tickGap)
         .filter((_, i) => !transpose || i % 2 === 0) // If transpose, remove every other keypoint
 
-    let axis = Plot.axisY
-    let grid = Plot.gridY
-    if (transpose) {
-        axis = Plot.axisX
-        grid = Plot.gridX
-    }
+    // yAxis picks the visual-y-axis constructors, the inverse of xAxis's visual-x-axis pairing
+    const [axis, grid] = axisAndGrid(!transpose)
 
     return [
         axis(yKeypoints, { tickFormat: (d: number) => renderNumberHighlyRounded(d, 1) }),
@@ -409,25 +378,13 @@ function createHistogramMarks(
     const seriesSingle = dovetailSequences(series)
 
     const maxValue = Math.max(...series.map(s => Math.max(...s.values.map(v => v.y))))
-    const tip = Plot.tip(
+    const tip = transposeAwareTip(
         maxSequences(series),
-        (transpose ? Plot.pointerY : Plot.pointerX)({
-            x: transpose ? 'y' : 'xidx',
-            y: transpose ? 'xidx' : 'y',
-            title: (d: { names: string[], xidx: number, ys: number[] }) => {
-                let result = `Density: ${renderX(d.xidx)}\n`
-                if (d.names.length > 1) {
-                    result += d.names.map((name: string, i: number) => `${name}: ${renderY(d.ys[i])}`).join('\n')
-                }
-                else {
-                    result += `Frequency: ${renderY(d.ys[0])}`
-                }
-                return result
-            },
-            fill: colors.slightlyDifferentBackground,
-            stroke: colors.borderNonShadow,
-            textColor: colors.textMain,
-        }),
+        transpose,
+        'xidx',
+        d => d.ys,
+        d => multiSeriesTipTitle(`Density: ${renderX(d.xidx)}`, d.names, d.ys, renderY, 'Frequency'),
+        colors,
     )
     const marks: Plot.Markish[] = []
     if (histogramType === 'Line' || histogramType === 'Line (cumulative)') {

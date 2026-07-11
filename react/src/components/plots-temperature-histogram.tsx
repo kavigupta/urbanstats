@@ -3,12 +3,10 @@ import React, { ReactElement, ReactNode, useCallback } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
-import { useUniverse } from '../universe'
 
 import { TemperatureHistogramExtraStat } from './load-article'
-import { computeDashPatterns, manualLegend, PlotComponent } from './plots-general'
+import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, PlotComponent, PlotDownloadButton, transposeAwareTip } from './plots-general'
 import { convertValue, unitSuffixFor } from './plots-monthly'
-import { createScreenshot } from './screenshot'
 
 export interface TemperatureHistogramPlotProps {
     shortname: string
@@ -44,7 +42,6 @@ function bucketRangeLabel(binIdx: number, binMin: number, binSize: number, conve
 export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogramPlotProps[], statDescription: string, modeSwitcher?: ReactElement, dashOrder?: string[] }): ReactNode {
     const [temperatureUnit] = useSetting('temperature_unit')
     const colors = useColors()
-    const universe = useUniverse()
 
     const binMin = props.histograms[0].histogram.binMin
     const binSize = props.histograms[0].histogram.binSize
@@ -67,29 +64,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
                 gap: '0.5em',
             }}
         >
-            <img
-                src="/download.png"
-                onClick={async () => {
-                    const plot = makePlot()
-                    document.body.appendChild(plot)
-                    const uniqueShortnames = Array.from(new Set(props.histograms.map(h => h.shortname)))
-                    await createScreenshot(
-                        {
-                            path: `${uniqueShortnames.join('_')}_temperature_distribution`,
-                            overallWidth: plot.offsetWidth * 2,
-                            elementsToRender: [plot],
-                            heightMultiplier: 1.2,
-                        },
-                        universe,
-                        colors,
-                        { render: new Set(), wait: new Set() },
-                    )
-                    plot.remove()
-                }}
-                width="20"
-                height="20"
-                style={{ cursor: 'pointer' }}
-            />
+            <PlotDownloadButton makePlot={makePlot} shortnames={props.histograms.map(h => h.shortname)} filenameSuffix="temperature_distribution" />
             {props.modeSwitcher}
         </div>
     )
@@ -111,12 +86,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
                 }
             })
 
-            let axis = Plot.axisX
-            let grid = Plot.gridX
-            if (transpose) {
-                axis = Plot.axisY
-                grid = Plot.gridY
-            }
+            const [axis, grid] = axisAndGrid(transpose)
             const marks: Plot.Markish[] = [
                 axis(boundaryIdxs, { tickFormat: (j: number) => boundaryLabels[j] }),
                 grid(boundaryIdxs),
@@ -158,25 +128,13 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
                 values: seriesData.map(s => s.values[i]),
             }))
             marks.push(
-                Plot.tip(
+                transposeAwareTip(
                     tipData,
-                    (transpose ? Plot.pointerY : Plot.pointerX)({
-                        x: transpose ? (d: TipDatum) => Math.max(...d.values) : 'x',
-                        y: transpose ? 'x' : (d: TipDatum) => Math.max(...d.values),
-                        title: (d: TipDatum) => {
-                            let result = `${d.label}\n`
-                            if (d.names.length > 1) {
-                                result += d.names.map((name, i) => `${name}: ${d.values[i].toFixed(1)}%`).join('\n')
-                            }
-                            else {
-                                result += `${d.values[0].toFixed(1)}%`
-                            }
-                            return result
-                        },
-                        fill: colors.slightlyDifferentBackground,
-                        stroke: colors.borderNonShadow,
-                        textColor: colors.textMain,
-                    }),
+                    transpose,
+                    'x',
+                    d => d.values,
+                    d => multiSeriesTipTitle(d.label, d.names, d.values, v => `${v.toFixed(1)}%`),
+                    colors,
                 ),
             )
 

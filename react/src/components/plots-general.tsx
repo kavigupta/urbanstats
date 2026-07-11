@@ -1,16 +1,90 @@
 import * as Plot from '@observablehq/plot'
-import React, { ReactElement, useCallback, useEffect, useRef } from 'react'
+import React, { ReactElement, ReactNode, useCallback, useEffect, useRef } from 'react'
 
 import { Colors } from '../page_template/color-themes'
+import { useColors } from '../page_template/colors'
+import { useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { useTranspose } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
-import { useScreenshotMode } from './screenshot'
+import { createScreenshot, useScreenshotMode } from './screenshot'
 
 import './plots.css'
 
-export const strokeDasharrays = ['1,0', '10,10', '2,5']
+const strokeDasharrays = ['1,0', '10,10', '2,5']
+
+// picks the axis/grid mark constructors for whichever side is currently the visual x-axis
+export function axisAndGrid(transpose: boolean): [typeof Plot.axisX, typeof Plot.gridX] {
+    return transpose ? [Plot.axisY, Plot.gridY] : [Plot.axisX, Plot.gridX]
+}
+
+// "<prefix>\n<name1>: <value1>\n<name2>: <value2>..." when there's more than one series at this
+// point, else just the single value (optionally labeled, e.g. Histogram's "Frequency: X")
+export function multiSeriesTipTitle(prefix: string, names: string[], values: number[], formatValue: (v: number) => string, singleLabel?: string): string {
+    let result = `${prefix}\n`
+    if (names.length > 1) {
+        result += names.map((name, i) => `${name}: ${formatValue(values[i])}`).join('\n')
+    }
+    else {
+        result += singleLabel !== undefined ? `${singleLabel}: ${formatValue(values[0])}` : formatValue(values[0])
+    }
+    return result
+}
+
+// a Plot.tip anchored at the tallest series' value at each point, swapping x/y when transposed,
+// styled with the theme's tooltip colors
+export function transposeAwareTip<T>(
+    data: T[],
+    transpose: boolean,
+    xKey: string,
+    getValues: (d: T) => number[],
+    title: (d: T) => string,
+    colors: Colors,
+): Plot.Markish {
+    return Plot.tip(
+        data,
+        (transpose ? Plot.pointerY : Plot.pointerX)({
+            x: transpose ? (d: T) => Math.max(...getValues(d)) : xKey,
+            y: transpose ? xKey : (d: T) => Math.max(...getValues(d)),
+            title,
+            fill: colors.slightlyDifferentBackground,
+            stroke: colors.borderNonShadow,
+            textColor: colors.textMain,
+        }),
+    )
+}
+
+// the screenshot-download icon shared by every plot type's settings bar
+export function PlotDownloadButton(props: { makePlot: () => HTMLElement, shortnames: string[], filenameSuffix: string }): ReactNode {
+    const universe = useUniverse()
+    const colors = useColors()
+    return (
+        <img
+            src="/download.png"
+            onClick={async () => {
+                const plot = props.makePlot()
+                document.body.appendChild(plot)
+                const uniqueShortnames = Array.from(new Set(props.shortnames))
+                await createScreenshot(
+                    {
+                        path: `${uniqueShortnames.join('_')}_${props.filenameSuffix}`,
+                        overallWidth: plot.offsetWidth * 2,
+                        elementsToRender: [plot],
+                        heightMultiplier: 1.2,
+                    },
+                    universe,
+                    colors,
+                    { render: new Set(), wait: new Set() },
+                )
+                plot.remove()
+            }}
+            width="20"
+            height="20"
+            style={{ cursor: 'pointer' }}
+        />
+    )
+}
 
 interface LegendItem {
     shortname: string
@@ -18,7 +92,7 @@ interface LegendItem {
     subseriesName: string
 }
 
-export function computeColorItems<T extends LegendItem>(items: T[]): { label: string, color: string }[] {
+function computeColorItems<T extends LegendItem>(items: T[]): { label: string, color: string }[] {
     const colorItems: { label: string, color: string }[] = []
     for (const item of items) {
         // handles duplicate names by just putting them all in if they're different colors
