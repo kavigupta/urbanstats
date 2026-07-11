@@ -38,6 +38,7 @@ export function evaluate(expr: UrbanStatsASTExpression, env: Context): USSValue 
             if (value.type === 'number') {
                 return undocValue(value.value, { type: 'number' })
             }
+            assert(value.type !== 'humanReadableElements', 'Cannot evaluate humanReadableElements constants')
             return undocValue(value.value satisfies string, { type: 'string' })
         case 'identifier':
             const varName = expr.name.node

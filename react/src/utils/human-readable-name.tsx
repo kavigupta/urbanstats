@@ -10,6 +10,8 @@ const codeStyle: React.CSSProperties = {
     fontSize: '0.9em',
 }
 
+export type HumanReadableName = string | HumanReadableElement[]
+
 export function reifyReact(elements: HumanReadableElement[] | string): ReactNode {
     if (typeof elements === 'string') return elements
     return elements.map((element, index) => {
