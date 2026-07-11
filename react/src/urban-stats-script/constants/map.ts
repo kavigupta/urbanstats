@@ -1,7 +1,7 @@
 import { Basemap } from '../../mapper/settings/utils'
 import { assert } from '../../utils/defensive'
 import { HumanReadableName } from '../../utils/human-readable-name'
-import { parseHumanReadableTemplate } from '../../utils/human-readable-template'
+import { hre, parseHumanReadableTemplate } from '../../utils/human-readable-template'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../location'
@@ -238,7 +238,7 @@ const namedArgDocumentation = {
     scale: 'Scale',
     ramp: 'Ramp',
     opacity: 'Opacity',
-    label: 'Label (supports subscript with _{...} and superscript with ^{...}, e.g. "log_{10}(Density)^{2}")',
+    label: hre`Label (supports subscript with _{...} and superscript with ^{...}, e.g. \`label="log_{10}(Density)^{2}"\`)`,
     geo: 'Geography',
     basemap: 'Basemap Options',
     insets: 'Insets',
@@ -454,7 +454,7 @@ export const cMapRGB: USSValue = {
             dataB: 'Blue Data (0-1)',
             dataA: 'Alpha Data (0-1)',
             opacity: 'Opacity',
-            label: 'Label (supports subscript with _{...} and superscript with ^{...}, e.g. "log_{10}(Density)^{2}")',
+            label: hre`Label (supports subscript with _{...} and superscript with ^{...}, e.g. \`label="log_{10}(Density)^{2}"\`)`,
             geo: 'Geography',
             outline: 'Outline',
             basemap: 'Basemap Options',

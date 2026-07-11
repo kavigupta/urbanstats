@@ -29,6 +29,16 @@ function parseElements(input: string, pos: number, terminator: '}' | ')' | null)
             continue
         }
 
+        if (input[pos] === '`') {
+            flushAtom(pos)
+            const closeIdx = input.indexOf('`', pos + 1)
+            const end = closeIdx === -1 ? input.length : closeIdx
+            result.push({ type: 'code', value: input.slice(pos + 1, end) })
+            pos = closeIdx === -1 ? input.length : closeIdx + 1
+            atomStart = pos
+            continue
+        }
+
         pos++
     }
 
