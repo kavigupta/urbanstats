@@ -1,6 +1,6 @@
 import { HumanReadableElement } from './human-readable-name'
 
-function parseElements(input: string, pos: number, terminator: '}' | ')' | null): { elements: HumanReadableElement[], end: number } {
+function parseElements(input: string, pos: number, terminator: '}' | null): { elements: HumanReadableElement[], end: number } {
     const result: HumanReadableElement[] = []
     let atomStart = pos
 
@@ -25,6 +25,16 @@ function parseElements(input: string, pos: number, terminator: '}' | ')' | null)
             const inner = parseElements(input, pos + 2, '}')
             result.push({ type: 'superscript', value: inner.elements })
             pos = inner.end + 1
+            atomStart = pos
+            continue
+        }
+
+        if (input[pos] === '`') {
+            flushAtom(pos)
+            const closeIdx = input.indexOf('`', pos + 1)
+            const end = closeIdx === -1 ? input.length : closeIdx
+            result.push({ type: 'code', value: input.slice(pos + 1, end) })
+            pos = closeIdx === -1 ? input.length : closeIdx + 1
             atomStart = pos
             continue
         }
