@@ -16,6 +16,7 @@ import { expressionOperatorMap } from './urban-stats-script/operators'
 import { DocumentationTable, renderType, USSDocumentedType } from './urban-stats-script/types-values'
 import { constantsDocumentationData } from './uss-documentation-routing'
 import { assert } from './utils/defensive'
+import { reifyReact } from './utils/human-readable-name'
 import { useHeaderTextClass } from './utils/responsive'
 
 function useScrollToUssDocumentationFragment(hash: string | undefined, contentKey: string | undefined): void {
@@ -695,7 +696,7 @@ export function LongFormDocumentation(props: { name: string, value: USSDocumente
                     )}
                 </div>
                 <div style={{ marginBottom: '10px' }}>
-                    {props.value.documentation?.longDescription ?? 'No description available.'}
+                    {reifyReact(props.value.documentation?.longDescription ?? 'No description available.')}
                 </div>
                 {props.value.documentation?.namedArgs && Object.keys(props.value.documentation.namedArgs).length > 0 && (
                     <div style={{ marginBottom: '10px' }}>
@@ -757,7 +758,7 @@ function ShortFormTableDocumentation(props: { tableName: DocumentationTable, tab
                 {renderType(value.type)}
             </code>,
             <span key="description">
-                {value.documentation?.longDescription ?? 'No description available.'}
+                {reifyReact(value.documentation?.longDescription ?? 'No description available.')}
                 {value.documentation?.isDefault && (
                     <span key="default-indicator" style={{ fontStyle: 'italic', color: colors.textMain }}>
                         {' '}
