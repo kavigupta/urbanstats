@@ -7,19 +7,16 @@ import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { HistogramType, useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
-import { assert } from '../utils/defensive'
 import { IHistogram } from '../utils/protos'
 import { useTranspose } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
-import { PlotComponent } from './plots-general'
+import { computeDashPatterns, manualLegend, PlotComponent } from './plots-general'
 import { createScreenshot } from './screenshot'
 import { SearchBox } from './search'
 import { CheckboxSetting } from './sidebar'
 
 const yPad = 0.025
-
-const strokeDasharrays = ['1,0', '10,10', '2,5']
 
 interface HistogramProps {
     shortname: string
@@ -41,7 +38,7 @@ function processHistogramType(histogramType: HistogramType, histograms: Histogra
     return histogramType
 }
 
-export function Histogram(props: { histograms: HistogramProps[], statDescription: string, sharedTypeOfAllArticles?: string, modeSwitcher?: ReactElement }): ReactNode {
+export function Histogram(props: { histograms: HistogramProps[], statDescription: string, sharedTypeOfAllArticles?: string, modeSwitcher?: ReactElement, dashOrder?: string[] }): ReactNode {
     const [histogramTypeRaw] = useSetting('histogram_type')
     const histogramType = processHistogramType(histogramTypeRaw, props.histograms)
     const [useImperial] = useSetting('use_imperial')
@@ -62,14 +59,12 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
     const plotSpec = useCallback(
         (transpose: boolean) => {
             const title = new Set(props.histograms.map(h => h.shortname)).size === 1 ? props.histograms[0].shortname : ''
-            const colors = props.histograms.map(h => h.color)
-            const shortnames = props.histograms.map(h => h.shortname)
             const renderY = relative ? (y: number) => `${y.toFixed(2)}%` : (y: number) => renderNumberHighlyRounded(y, 2)
 
             const [xIdxStart, xIdxEnd] = histogramBounds(props.histograms)
             const xidxs = Array.from({ length: xIdxEnd - xIdxStart }, (_, i) => i + xIdxStart)
             const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial, transpose)
-            const [marks, maxValue] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose, systemColors)
+            const [marks, maxValue] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose, systemColors, props.dashOrder)
             marks.push(
                 ...xAxisMarks,
                 ...yAxis(maxValue, transpose),
@@ -78,10 +73,10 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
             const xlabel = `${props.statDescription} (/${useImperial ? 'mi' : 'km'}²)`
             const ylabel = relative ? '% of total' : 'Population'
             const ydomain: [number, number] = [maxValue * (-yPad), maxValue * (1 + yPad)]
-            marks.push(...manualLegend(props.histograms, transpose, colors, shortnames, systemColors))
+            marks.push(...manualLegend(props.histograms, transpose, systemColors, props.dashOrder))
             return { marks, xlabel, ylabel, ydomain }
         },
-        [props.histograms, binMin, binSize, relative, histogramType, useImperial, systemColors, props.statDescription],
+        [props.histograms, binMin, binSize, relative, histogramType, useImperial, systemColors, props.statDescription, props.dashOrder],
     )
 
     return (
@@ -90,180 +85,6 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
             settingsElement={settingsElement}
         />
     )
-}
-
-function computeColorItems(shortnames: string[], colors: string[]): { label: string, color: string }[] {
-    const colorItems: { label: string, color: string }[] = []
-    for (let i = 0; i < shortnames.length; i++) {
-        // handles duplicate names by just putting them all in if they're different colors
-        const index = colorItems.findIndex(item => item.label === shortnames[i] && item.color === colors[i])
-        if (index === -1) {
-            colorItems.push({
-                label: shortnames[i],
-                color: colors[i],
-            })
-        }
-    }
-    if (colorItems.length <= 1) {
-        return []
-    }
-    return colorItems
-}
-
-function computeDashPatterns(histograms: HistogramProps[]): Map<string, { pattern: string, name: string }> {
-    const dashPatterns = new Map<string, { pattern: string, name: string }>()
-    const subseriesNames = new Set<string>()
-    histograms.forEach((histogram) => {
-        subseriesNames.add(histogram.subseriesName)
-    })
-    const subseriesNamesOrdered = Array.from(subseriesNames).sort()
-    assert(subseriesNamesOrdered.length <= strokeDasharrays.length, 'Too many subseries for dash patterns')
-    histograms.forEach((histogram) => {
-        const subId = subseriesNamesOrdered.indexOf(histogram.subseriesName)
-        if (!dashPatterns.has(histogram.subseriesName)) {
-            dashPatterns.set(histogram.subseriesName, {
-                pattern: strokeDasharrays[subseriesNamesOrdered.length - 1 - subId],
-                name: histogram.subseriesName,
-            })
-        }
-    })
-    return dashPatterns
-}
-
-function manualLegend(histograms: HistogramProps[], transpose: boolean, colors: string[], shortnames: string[], themeColors: Colors): Plot.Markish[] {
-    const colorItems = computeColorItems(shortnames, colors)
-
-    const dashPatterns = computeDashPatterns(histograms)
-
-    const dashPatternItems: { label: string, dashPattern: string }[] = []
-    if (dashPatterns.size > 1) {
-        const dashPatternsEnumerated = Array.from(dashPatterns.values()).sort((a, b) => a.name.localeCompare(b.name))
-        dashPatternsEnumerated.forEach(({ pattern, name }) => {
-            dashPatternItems.push({
-                label: name,
-                dashPattern: pattern,
-            })
-        })
-    }
-
-    const totalItems = colorItems.length + dashPatternItems.length
-    if (totalItems === 0) {
-        return []
-    }
-
-    const createLegend = (): SVGElement => {
-        const svgNS = 'http://www.w3.org/2000/svg'
-        const group = document.createElementNS(svgNS, 'g')
-        // Position on the left side, but offset enough to avoid the y-axis
-        const translateX = transpose ? 200 : 100
-        const translateY = 70
-        group.setAttribute('transform', `translate(${translateX} ${translateY})`)
-
-        const paddingX = 12
-        const paddingY = 10
-        const rowHeight = 22
-        const squareSize = 14
-        const lineLength = 36
-        const fontSize = 13
-        const textSpacing = 10
-
-        // Calculate width based on longest label
-        const allLabels = [...colorItems.map(item => item.label), ...dashPatternItems.map(item => item.label)]
-        let maxTextWidth = 0
-        if (allLabels.length > 0) {
-            // Use canvas to measure text width accurately
-            const canvas = document.createElement('canvas')
-            const context = canvas.getContext('2d')
-            if (context) {
-                context.font = `${fontSize}px serif`
-                allLabels.forEach((label) => {
-                    const textWidth = context.measureText(label).width
-                    if (textWidth > maxTextWidth) {
-                        maxTextWidth = textWidth
-                    }
-                })
-            }
-        }
-
-        // Width = paddingX (left) + max(squareSize/lineLength) + textSpacing + textWidth + paddingX (right)
-        const maxSymbolWidth = Math.max(squareSize, lineLength)
-        const width = paddingX + maxSymbolWidth + textSpacing + maxTextWidth + paddingX
-        const height = paddingY * 2 + rowHeight * totalItems
-
-        const background = document.createElementNS(svgNS, 'rect')
-        background.setAttribute('width', String(width))
-        background.setAttribute('height', String(height))
-        background.setAttribute('rx', '6')
-        background.setAttribute('fill', themeColors.slightlyDifferentBackground)
-        background.setAttribute('stroke', themeColors.borderNonShadow)
-        group.appendChild(background)
-
-        let rowIndex = 0
-
-        // Render color squares
-        colorItems.forEach((item) => {
-            const row = document.createElementNS(svgNS, 'g')
-            row.setAttribute('transform', `translate(${paddingX} ${paddingY + rowHeight * rowIndex})`)
-
-            const centerY = rowHeight / 2
-            const square = document.createElementNS(svgNS, 'rect')
-            square.setAttribute('x', '0')
-            square.setAttribute('y', String(centerY - squareSize / 2))
-            square.setAttribute('width', String(squareSize))
-            square.setAttribute('height', String(squareSize))
-            square.setAttribute('fill', item.color)
-            row.appendChild(square)
-
-            const text = document.createElementNS(svgNS, 'text')
-            text.setAttribute('x', String(squareSize + 10))
-            text.setAttribute('y', String(centerY))
-            text.setAttribute('font-size', `${fontSize}px`)
-            text.setAttribute('fill', themeColors.textMain)
-            text.setAttribute('dominant-baseline', 'middle')
-            text.setAttribute('text-anchor', 'start')
-            text.textContent = item.label
-            row.appendChild(text)
-
-            group.appendChild(row)
-            rowIndex++
-        })
-
-        // Render dash pattern lines
-        dashPatternItems.forEach((item) => {
-            const row = document.createElementNS(svgNS, 'g')
-            row.setAttribute('transform', `translate(${paddingX} ${paddingY + rowHeight * rowIndex})`)
-
-            const centerY = rowHeight / 2
-            const line = document.createElementNS(svgNS, 'line')
-            line.setAttribute('x1', '0')
-            line.setAttribute('x2', String(lineLength))
-            line.setAttribute('y1', String(centerY))
-            line.setAttribute('y2', String(centerY))
-            line.setAttribute('stroke', themeColors.textMain)
-            line.setAttribute('stroke-width', '3')
-            if (item.dashPattern !== '1,0') {
-                line.setAttribute('stroke-dasharray', item.dashPattern)
-            }
-            row.appendChild(line)
-
-            const text = document.createElementNS(svgNS, 'text')
-            text.setAttribute('x', String(lineLength + 10))
-            text.setAttribute('y', String(centerY))
-            text.setAttribute('font-size', `${fontSize}px`)
-            text.setAttribute('fill', themeColors.textMain)
-            text.setAttribute('dominant-baseline', 'middle')
-            text.setAttribute('text-anchor', 'start')
-            text.textContent = item.label
-            row.appendChild(text)
-
-            group.appendChild(row)
-            rowIndex++
-        })
-
-        return group
-    }
-
-    return [createLegend]
 }
 
 export const transposeSettingsHeight = 30.5
@@ -582,6 +403,7 @@ function createHistogramMarks(
     renderY: (y: number) => string,
     transpose: boolean,
     colors: Colors,
+    dashOrder?: string[],
 ): [Plot.Markish[], number] {
     const series = mulitipleSeriesConsistentLength(histograms, xidxs, relative, histogramType === 'Line (cumulative)')
     const seriesSingle = dovetailSequences(series)
@@ -609,7 +431,7 @@ function createHistogramMarks(
     )
     const marks: Plot.Markish[] = []
     if (histogramType === 'Line' || histogramType === 'Line (cumulative)') {
-        const dashPatterns = computeDashPatterns(histograms)
+        const dashPatterns = computeDashPatterns(histograms, dashOrder)
         marks.push(
             ...series.map((s) => {
                 const strokeDasharray = dashPatterns.size > 1 ? dashPatterns.get(s.subseriesName)?.pattern : undefined

@@ -17,6 +17,7 @@ export interface PlotProps {
     color: string
     sharedTypeOfAllArticles?: string
     subseriesName: string
+    dashOrder?: string[]
 }
 
 const plotModeLabels: Partial<Record<ExtraStat['type'], string>> = {
@@ -46,6 +47,8 @@ export function RenderedPlot({ statDescription, statpath, plotProps }: { statDes
             )
         : undefined
 
+    const dashOrder = plotProps[0]?.dashOrder
+
     switch (selectedType) {
         case 'histogram':
             return (
@@ -71,6 +74,7 @@ export function RenderedPlot({ statDescription, statpath, plotProps }: { statDes
                     )}
                     sharedTypeOfAllArticles={plotProps[0]?.sharedTypeOfAllArticles}
                     modeSwitcher={modeSwitcher}
+                    dashOrder={dashOrder}
                 />
             )
         case 'time_series':
@@ -105,11 +109,13 @@ export function RenderedPlot({ statDescription, statpath, plotProps }: { statDes
                                     shortname: props.shortname,
                                     stat: extraStat,
                                     color: props.color,
+                                    subseriesName: props.subseriesName,
                                 },
                             ]
                         },
                     )}
                     modeSwitcher={modeSwitcher}
+                    dashOrder={dashOrder}
                 />
             )
         case 'temperature_histogram':
@@ -134,6 +140,7 @@ export function RenderedPlot({ statDescription, statpath, plotProps }: { statDes
                         },
                     )}
                     modeSwitcher={modeSwitcher}
+                    dashOrder={dashOrder}
                 />
             )
         case undefined:

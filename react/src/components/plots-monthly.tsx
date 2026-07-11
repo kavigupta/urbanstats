@@ -7,7 +7,7 @@ import { useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 
 import { MonthlyExtraStat } from './load-article'
-import { PlotComponent } from './plots-general'
+import { computeDashPatterns, manualLegend, PlotComponent } from './plots-general'
 import { createScreenshot } from './screenshot'
 
 const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -16,6 +16,7 @@ export interface MonthlyPlotProps {
     stat: MonthlyExtraStat
     color: string
     shortname: string
+    subseriesName: string
 }
 
 export function convertValue(value: number, unit: MonthlyExtraStat['unit'], temperatureUnit: string): number {
@@ -38,7 +39,7 @@ interface TipDatum {
     values: number[]
 }
 
-export function MonthlyPlot(props: { stats: MonthlyPlotProps[], modeSwitcher?: ReactElement }): ReactNode {
+export function MonthlyPlot(props: { stats: MonthlyPlotProps[], modeSwitcher?: ReactElement, dashOrder?: string[] }): ReactNode {
     const [temperatureUnit] = useSetting('temperature_unit')
     const colors = useColors()
     const universe = useUniverse()
@@ -103,6 +104,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], modeSwitcher?: R
                 grid(monthIdxs),
             ]
 
+            const dashPatterns = computeDashPatterns(props.stats, props.dashOrder)
             marks.push(
                 ...seriesData.map(({ stat, values }) =>
                     Plot.line(
@@ -112,6 +114,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], modeSwitcher?: R
                             y: transpose ? 'monthIdx' : 'value',
                             stroke: stat.color,
                             strokeWidth: 3,
+                            strokeDasharray: dashPatterns.size > 1 ? dashPatterns.get(stat.subseriesName)?.pattern : undefined,
                         },
                     ) as Plot.Markish,
                 ),
@@ -166,13 +169,11 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], modeSwitcher?: R
 
             const xlabel = 'Month'
             const ylabel = `${props.stats[0].stat.name}${unitSuffix ? ` (${unitSuffix})` : ''}`
-            const legend = seriesData.length > 1
-                ? { legend: true, range: seriesData.map(s => s.stat.color), domain: seriesData.map(s => s.stat.shortname) }
-                : undefined
+            marks.push(...manualLegend(props.stats, transpose, colors, props.dashOrder))
 
-            return { marks, xlabel, ylabel, ydomain, legend }
+            return { marks, xlabel, ylabel, ydomain }
         },
-        [props.stats, unit, temperatureUnit, unitSuffix, colors],
+        [props.stats, unit, temperatureUnit, unitSuffix, colors, props.dashOrder],
     )
 
     return (

@@ -6,7 +6,7 @@ import { useSetting } from '../page_template/settings'
 import { useUniverse } from '../universe'
 
 import { TemperatureHistogramExtraStat } from './load-article'
-import { PlotComponent } from './plots-general'
+import { computeDashPatterns, manualLegend, PlotComponent } from './plots-general'
 import { convertValue, unitSuffixFor } from './plots-monthly'
 import { createScreenshot } from './screenshot'
 
@@ -39,7 +39,7 @@ function binLabel(binIdx: number, binMin: number, binSize: number, numBins: numb
     return `${round(lo)}-${round(hi)}${unitSuffix}`
 }
 
-export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogramPlotProps[], statDescription: string, modeSwitcher?: ReactElement }): ReactNode {
+export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogramPlotProps[], statDescription: string, modeSwitcher?: ReactElement, dashOrder?: string[] }): ReactNode {
     const [temperatureUnit] = useSetting('temperature_unit')
     const colors = useColors()
     const universe = useUniverse()
@@ -112,6 +112,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
                 grid(binIdxs),
             ]
 
+            const dashPatterns = computeDashPatterns(props.histograms, props.dashOrder)
             marks.push(
                 ...seriesData.map(({ h, values }) =>
                     Plot.line(
@@ -121,6 +122,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
                             y: transpose ? 'binIdx' : 'value',
                             stroke: h.color,
                             strokeWidth: 3,
+                            strokeDasharray: dashPatterns.size > 1 ? dashPatterns.get(h.subseriesName)?.pattern : undefined,
                         },
                     ) as Plot.Markish,
                 ),
@@ -173,13 +175,11 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
 
             const xlabel = `${props.statDescription} (${unitSuffix})`
             const ylabel = '% of days'
-            const legend = seriesData.length > 1
-                ? { legend: true, range: seriesData.map(s => s.h.color), domain: seriesData.map(s => s.h.shortname) }
-                : undefined
+            marks.push(...manualLegend(props.histograms, transpose, colors, props.dashOrder))
 
-            return { marks, xlabel, ylabel, ydomain, legend }
+            return { marks, xlabel, ylabel, ydomain }
         },
-        [props.histograms, props.statDescription, binMin, binSize, numBins, temperatureUnit, unitSuffix, colors],
+        [props.histograms, props.statDescription, binMin, binSize, numBins, temperatureUnit, unitSuffix, colors, props.dashOrder],
     )
 
     return (

@@ -11,7 +11,7 @@ import { Navigator } from '../navigation/Navigator'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { rowExpandedKey, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
-import { statParents, Year } from '../page_template/statistic-tree'
+import { statParents, StatPath, Year } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
 import { Universe, universeContext } from '../universe'
@@ -418,6 +418,18 @@ export function ComparisonPanel(props: {
     )
 }
 
+// the only cross-stat plot pairing in the app today -- combines the two into one chart
+// (like the multi-year overlay) whenever both are visible, with low temp dashed
+const temperaturePairPartner: Partial<Record<StatPath, StatPath>> = {
+    mean_high_temp_4: 'mean_low_temp',
+    mean_low_temp: 'mean_high_temp_4',
+}
+const temperaturePairLabel: Partial<Record<StatPath, string>> = {
+    mean_high_temp_4: 'High',
+    mean_low_temp: 'Low',
+}
+const temperaturePairDashOrder = ['Low', 'High']
+
 export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
     if (rows[statIndex].kind !== 'statistic' || rows[statIndex].extraStats.length === 0) {
         return []
@@ -453,7 +465,13 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
         })
         assert(statpaths.length === new Set(statpaths.map(({ sP: { year } }) => year)).size, 'All statpaths for plot data should have unique years')
     }
-    return statpaths.map(({ i: idx, sP: { year } }) => {
+    const pairedPath = temperaturePairPartner[rows[statIndex].statpath]
+    const pairedIdx = pairedPath !== undefined
+        ? rows.findIndex(r => r.statpath === pairedPath && r.kind === 'statistic' && r.extraStats.length > 0)
+        : -1
+    const hasPair = pairedIdx !== -1
+
+    const ownEntries = statpaths.map(({ i: idx, sP: { year } }) => {
         assert(year !== null, 'unreachable, we checked this already')
         return {
             ...rows[idx],
@@ -461,9 +479,25 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
             shortname,
             longname,
             sharedTypeOfAllArticles,
-            subseriesName: year.toString(),
+            subseriesName: hasPair ? temperaturePairLabel[rows[idx].statpath] ?? year.toString() : year.toString(),
+            dashOrder: hasPair ? temperaturePairDashOrder : undefined,
         } satisfies PlotProps
     })
+    if (!hasPair) {
+        return ownEntries
+    }
+    return [
+        ...ownEntries,
+        {
+            ...rows[pairedIdx],
+            color,
+            shortname,
+            longname,
+            sharedTypeOfAllArticles,
+            subseriesName: temperaturePairLabel[rows[pairedIdx].statpath]!,
+            dashOrder: temperaturePairDashOrder,
+        } satisfies PlotProps,
+    ]
 }
 
 function getHighlightIndex(rows: readonly ArticleRow[]): number | undefined {
