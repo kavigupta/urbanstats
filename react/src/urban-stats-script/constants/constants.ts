@@ -1,6 +1,6 @@
 import { HumanReadableName } from '../../utils/human-readable-name'
+import { hre } from '../../utils/human-readable-template'
 import { Context } from '../context'
-import { hre } from '../human-readable-template'
 import { renderType, USSRawValue, USSValue, DocumentationTable, createConstantExpression } from '../types-values'
 
 import { osmBasemap, noBasemap } from './basemap'
