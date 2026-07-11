@@ -11,6 +11,7 @@ import { urlFromPageDescriptor } from './navigation/PageDescriptor'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
 import { StandaloneEditor } from './urban-stats-script/StandaloneEditor'
+import { reifyReact } from './urban-stats-script/derive-human-readable-name'
 import { ConstantCategory } from './urban-stats-script/documentation-category'
 import { expressionOperatorMap } from './urban-stats-script/operators'
 import { DocumentationTable, renderType, USSDocumentedType } from './urban-stats-script/types-values'
@@ -715,7 +716,7 @@ export function LongFormDocumentation(props: { name: string, value: USSDocumente
                                     </code>
                                     :
                                     {' '}
-                                    {argDesc}
+                                    {reifyReact(argDesc)}
                                 </li>
                             ))}
                         </ul>

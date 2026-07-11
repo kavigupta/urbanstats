@@ -9,6 +9,7 @@ import { RenderTwiceHidden } from '../../components/RenderTwiceHidden'
 import { CheckboxSettingCustom } from '../../components/sidebar'
 import { UrbanStatsASTExpression, UrbanStatsASTArg, locationOf } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
+import { reifyReact } from '../../urban-stats-script/derive-human-readable-name'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
 import { extendBlockIdKwarg, extendBlockIdObjectProperty, extendBlockIdPositionalArg, extendBlockIdVectorElement, noLocation } from '../../urban-stats-script/location'
@@ -88,7 +89,7 @@ function ArgumentEditor(props: {
 
     // Get the function's documentation to find human-readable argument names
     const tdoc = props.typeEnvironment.get(functionUss.fn.name.node)
-    const humanReadableName = tdoc?.documentation?.namedArgs?.[props.name] ?? props.name
+    const humanReadableName = reifyReact(tdoc?.documentation?.namedArgs?.[props.name] ?? props.name)
     assert(tdoc?.type === undefined || tdoc.type.type === 'function', `AutoUX looked up function identifier ${functionUss.fn.name.node}m, but it was not a function`)
     const argDoc = tdoc?.type.namedArgs[props.name]?.documentation
     const collapsable = hasDefault && isEnabled && (argDoc?.collapsable ?? false)
