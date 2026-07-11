@@ -496,6 +496,9 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
             sharedTypeOfAllArticles,
             subseriesName: temperaturePairLabel[rows[pairedIdx].statpath]!,
             dashOrder: temperaturePairDashOrder,
+            // the high/low overlay only makes sense for the monthly view -- a combined distribution
+            // chart doesn't read as "two series", so RenderedPlot excludes this entry from that view
+            pairedInFor: ['monthly_time_series'],
         } satisfies PlotProps,
     ]
 }

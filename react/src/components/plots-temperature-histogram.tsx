@@ -19,21 +19,23 @@ export interface TemperatureHistogramPlotProps {
 }
 
 interface TipDatum {
-    binIdx: number
+    x: number
+    label: string
     names: string[]
     values: number[]
 }
 
-// counts[0] is "below binMin", counts[n-1] is "at or above binMin + (n-2)*binSize",
-// everything in between is a normal [binMin + (i-1)*binSize, binMin + i*binSize) bucket
-function binLabel(binIdx: number, binMin: number, binSize: number, numBins: number, convert: (v: number) => number, unitSuffix: string): string {
+// boundary j (0 <= j < numBins - 1) sits at temperature binMin + j*binSize. Bucket i's point is
+// plotted at x = i - 0.5, i.e. between boundary (i-1) and boundary i -- so the axis only needs to
+// label each boundary once (a single temperature), instead of repeating it in adjacent bucket-range labels.
+function boundaryLabel(boundaryIdx: number, binMin: number, binSize: number, convert: (v: number) => number, unitSuffix: string): string {
+    return `${Math.round(convert(binMin + boundaryIdx * binSize))}${unitSuffix}`
+}
+
+// descriptive range for a bucket, used only in the hover tooltip (not on the axis, where
+// adjacent buckets' ranges would redundantly repeat the shared boundary value)
+function bucketRangeLabel(binIdx: number, binMin: number, binSize: number, convert: (v: number) => number, unitSuffix: string): string {
     const round = (v: number): string => Math.round(convert(v)).toString()
-    if (binIdx === 0) {
-        return `<${round(binMin)}${unitSuffix}`
-    }
-    if (binIdx === numBins - 1) {
-        return `${round(binMin + (numBins - 2) * binSize)}+${unitSuffix}`
-    }
     const lo = binMin + (binIdx - 1) * binSize
     const hi = lo + binSize
     return `${round(lo)}-${round(hi)}${unitSuffix}`
@@ -94,12 +96,20 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
 
     const plotSpec = useCallback(
         (transpose: boolean) => {
-            const binIdxs = Array.from({ length: numBins }, (_, i) => i)
-            const labels = binIdxs.map(i => binLabel(i, binMin, binSize, numBins, v => convertValue(v, 'temperature', temperatureUnit), unitSuffix))
-            const seriesData = props.histograms.map(h => ({
-                h,
-                values: h.histogram.counts.map(c => c * 100),
-            }))
+            // drop the open-ended "below min"/"above max" catch-all buckets (indices 0 and numBins - 1) --
+            // they don't have a clean two-sided interval like the rest, which is confusing to plot as a point
+            const binIdxs = Array.from({ length: numBins - 2 }, (_, i) => i + 1)
+            const pointX = (binIdx: number): number => binIdx - 0.5
+            const boundaryIdxs = Array.from({ length: numBins - 1 }, (_, i) => i)
+            const boundaryLabels = boundaryIdxs.map(j => boundaryLabel(j, binMin, binSize, v => convertValue(v, 'temperature', temperatureUnit), unitSuffix))
+            const seriesData = props.histograms.map((h) => {
+                // counts are normalize_to_uint16-scaled (sum to ~2^16), not already-percentages
+                const sum = h.histogram.counts.reduce((a, b) => a + b, 0)
+                return {
+                    h,
+                    values: h.histogram.counts.map(c => sum === 0 ? 0 : (c / sum) * 100),
+                }
+            })
 
             let axis = Plot.axisX
             let grid = Plot.gridX
@@ -108,15 +118,15 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
                 grid = Plot.gridY
             }
             const marks: Plot.Markish[] = [
-                axis(binIdxs, { tickFormat: (i: number) => labels[i] }),
-                grid(binIdxs),
+                axis(boundaryIdxs, { tickFormat: (j: number) => boundaryLabels[j] }),
+                grid(boundaryIdxs),
             ]
 
             const dashPatterns = computeDashPatterns(props.histograms, props.dashOrder)
             marks.push(
                 ...seriesData.map(({ h, values }) =>
                     Plot.line(
-                        binIdxs.map(i => ({ binIdx: i, value: values[i] })),
+                        binIdxs.map(i => ({ binIdx: pointX(i), value: values[i] })),
                         {
                             x: transpose ? 'value' : 'binIdx',
                             y: transpose ? 'binIdx' : 'value',
@@ -130,7 +140,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
             marks.push(
                 ...seriesData.map(({ h, values }) =>
                     Plot.dot(
-                        binIdxs.map(i => ({ binIdx: i, value: values[i] })),
+                        binIdxs.map(i => ({ binIdx: pointX(i), value: values[i] })),
                         {
                             x: transpose ? 'value' : 'binIdx',
                             y: transpose ? 'binIdx' : 'value',
@@ -142,7 +152,8 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
             )
 
             const tipData: TipDatum[] = binIdxs.map(i => ({
-                binIdx: i,
+                x: pointX(i),
+                label: bucketRangeLabel(i, binMin, binSize, v => convertValue(v, 'temperature', temperatureUnit), unitSuffix),
                 names: seriesData.map(s => s.h.shortname),
                 values: seriesData.map(s => s.values[i]),
             }))
@@ -150,10 +161,10 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
                 Plot.tip(
                     tipData,
                     (transpose ? Plot.pointerY : Plot.pointerX)({
-                        x: transpose ? (d: TipDatum) => Math.max(...d.values) : 'binIdx',
-                        y: transpose ? 'binIdx' : (d: TipDatum) => Math.max(...d.values),
+                        x: transpose ? (d: TipDatum) => Math.max(...d.values) : 'x',
+                        y: transpose ? 'x' : (d: TipDatum) => Math.max(...d.values),
                         title: (d: TipDatum) => {
-                            let result = `${labels[d.binIdx]}\n`
+                            let result = `${d.label}\n`
                             if (d.names.length > 1) {
                                 result += d.names.map((name, i) => `${name}: ${d.values[i].toFixed(1)}%`).join('\n')
                             }
@@ -169,7 +180,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
                 ),
             )
 
-            const allValues = seriesData.flatMap(s => s.values)
+            const allValues = seriesData.flatMap(s => binIdxs.map(i => s.values[i]))
             const maxValue = Math.max(...allValues)
             const ydomain: [number, number] = [0, maxValue * 1.1]
 

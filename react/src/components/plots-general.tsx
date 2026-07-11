@@ -195,7 +195,7 @@ export function manualLegend<T extends LegendItem>(items: T[], transpose: boolea
 
 interface DetailedPlotSpec {
     marks: Plot.Markish[]
-    xlabel: string
+    xlabel: string | null
     ylabel: string
     ydomain?: [number, number]
     legend?: { legend: boolean, range: string[], domain: string[] }
@@ -230,7 +230,7 @@ export function PlotComponent(props: {
                 fontFamily: 'Jost, Arial, sans-serif',
             },
             marginTop: 80,
-            marginBottom: transposeConfig ? 80 : 40,
+            marginBottom: transposeConfig ? 90 : 55,
             marginLeft: 80,
             color: legend,
         }

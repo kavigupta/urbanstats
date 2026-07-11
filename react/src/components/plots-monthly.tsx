@@ -167,7 +167,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], modeSwitcher?: R
             const pad = (maxValue - minValue) * 0.1 || Math.max(Math.abs(maxValue), 1) * 0.1
             const ydomain: [number, number] = [minValue - pad, maxValue + pad]
 
-            const xlabel = 'Month'
+            const xlabel = null
             const ylabel = `${props.stats[0].stat.name}${unitSuffix ? ` (${unitSuffix})` : ''}`
             marks.push(...manualLegend(props.stats, transpose, colors, props.dashOrder))
 

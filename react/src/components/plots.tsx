@@ -18,6 +18,9 @@ export interface PlotProps {
     sharedTypeOfAllArticles?: string
     subseriesName: string
     dashOrder?: string[]
+    // when set, this entry is only included in the render for the listed extra-stat types
+    // (e.g. a cross-stat overlay like high/low temp that only makes sense on some views)
+    pairedInFor?: ExtraStat['type'][]
 }
 
 const plotModeLabels: Partial<Record<ExtraStat['type'], string>> = {
@@ -47,14 +50,18 @@ export function RenderedPlot({ statDescription, statpath, plotProps }: { statDes
             )
         : undefined
 
-    const dashOrder = plotProps[0]?.dashOrder
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- availableTypes[0] is undefined when empty
+    const relevantPlotProps = selectedType === undefined
+        ? plotProps
+        : plotProps.filter(p => p.pairedInFor === undefined || p.pairedInFor.includes(selectedType))
+    const dashOrder = relevantPlotProps[0]?.dashOrder
 
     switch (selectedType) {
         case 'histogram':
             return (
                 <Histogram
                     statDescription={statDescription}
-                    histograms={plotProps.flatMap(
+                    histograms={relevantPlotProps.flatMap(
                         (props) => {
                             const extraStat = props.extraStats.find(es => es.type === 'histogram')
                             if (extraStat === undefined) {
@@ -72,7 +79,7 @@ export function RenderedPlot({ statDescription, statpath, plotProps }: { statDes
                             ]
                         },
                     )}
-                    sharedTypeOfAllArticles={plotProps[0]?.sharedTypeOfAllArticles}
+                    sharedTypeOfAllArticles={relevantPlotProps[0]?.sharedTypeOfAllArticles}
                     modeSwitcher={modeSwitcher}
                     dashOrder={dashOrder}
                 />
@@ -80,7 +87,7 @@ export function RenderedPlot({ statDescription, statpath, plotProps }: { statDes
         case 'time_series':
             return (
                 <TimeSeriesPlot
-                    stats={plotProps.map(
+                    stats={relevantPlotProps.map(
                         (props) => {
                             const extraStat = props.extraStats.find(es => es.type === 'time_series')
                             if (extraStat === undefined) {
@@ -98,7 +105,7 @@ export function RenderedPlot({ statDescription, statpath, plotProps }: { statDes
         case 'monthly_time_series':
             return (
                 <MonthlyPlot
-                    stats={plotProps.flatMap(
+                    stats={relevantPlotProps.flatMap(
                         (props) => {
                             const extraStat = props.extraStats.find(es => es.type === 'monthly_time_series')
                             if (extraStat === undefined) {
@@ -122,7 +129,7 @@ export function RenderedPlot({ statDescription, statpath, plotProps }: { statDes
             return (
                 <TemperatureHistogramPlot
                     statDescription={statDescription}
-                    histograms={plotProps.flatMap(
+                    histograms={relevantPlotProps.flatMap(
                         (props) => {
                             const extraStat = props.extraStats.find(es => es.type === 'temperature_histogram')
                             if (extraStat === undefined) {
