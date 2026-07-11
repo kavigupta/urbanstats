@@ -7,18 +7,18 @@ import { TimeSeriesPlot } from './plots-timeseries'
 export interface PlotProps {
     shortname: string
     longname: string
-    extraStat?: ExtraStat
+    extraStats: ExtraStat[]
     color: string
     sharedTypeOfAllArticles?: string
     subseriesName: string
 }
 
 export function RenderedPlot({ statDescription, plotProps }: { statDescription: string, plotProps: PlotProps[] }): ReactNode {
-    const type = plotProps.reduce<undefined | 'histogram' | 'time_series'>((result, plot) => {
+    const type = plotProps.flatMap(p => p.extraStats.map(es => es.type)).reduce<undefined | 'histogram' | 'time_series'>((result, t) => {
         if (result === undefined) {
-            return plot.extraStat?.type
+            return t
         }
-        else if (plot.extraStat?.type !== undefined && plot.extraStat.type !== result) {
+        else if (t !== result) {
             throw new Error('Rendering plots of differing types')
         }
         return result
@@ -30,16 +30,17 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
                     statDescription={statDescription}
                     histograms={plotProps.flatMap(
                         (props) => {
-                            if (props.extraStat?.type !== 'histogram') {
+                            const extraStat = props.extraStats.find(es => es.type === 'histogram')
+                            if (extraStat === undefined) {
                                 return []
                             }
                             return [
                                 {
                                     shortname: props.shortname,
                                     longname: props.longname,
-                                    histogram: props.extraStat,
+                                    histogram: extraStat,
                                     color: props.color,
-                                    universeTotal: props.extraStat.universeTotal,
+                                    universeTotal: extraStat.universeTotal,
                                     subseriesName: props.subseriesName,
                                 },
                             ]
@@ -53,12 +54,13 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
                 <TimeSeriesPlot
                     stats={plotProps.map(
                         (props) => {
-                            if (props.extraStat?.type !== 'time_series') {
+                            const extraStat = props.extraStats.find(es => es.type === 'time_series')
+                            if (extraStat === undefined) {
                                 throw new Error('expected time_series')
                             }
                             return {
                                 shortname: props.shortname,
-                                stat: props.extraStat,
+                                stat: extraStat,
                                 color: props.color,
                             }
                         },
@@ -71,12 +73,8 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
 }
 
 export function extraHeaderSpaceForVertical(spec: PlotProps): number {
-    switch (spec.extraStat?.type) {
-        case 'histogram':
-            return transposeSettingsHeight
-        case 'time_series':
-            return 0
-        case undefined:
-            return 0
+    if (spec.extraStats.some(es => es.type === 'histogram')) {
+        return transposeSettingsHeight
     }
+    return 0
 }
