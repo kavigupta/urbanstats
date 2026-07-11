@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react'
 
 import { MapUSS, mapUssParser } from '../mapper/settings/map-uss'
 import { assert } from '../utils/defensive'
+import { separateNumber } from '../utils/text'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import * as l from './literal-parser'
@@ -96,8 +97,9 @@ function humanReadableElements(ast: UrbanStatsASTExpression | UrbanStatsASTState
                 case 'humanReadableElements':
                     return ast.value.node.value
                 case 'number':
+                    return formatNumber(ast.value.node.value)
                 case 'string':
-                    return [{ type: 'atom', value: String(ast.value.node.value) }]
+                    return [{ type: 'atom', value: ast.value.node.value }]
             }
         case 'unaryOperator': {
             const operand = humanReadableElements(ast.expr, typeEnvironment)
@@ -248,5 +250,32 @@ export function deriveMapLabel(uss: MapUSS, typeEnvironment: TypeEnvironment): H
             return undefined
         }
         throw error
+    }
+}
+
+function trimTrailingZeros(value: string): string {
+    if (!value.includes('.')) return value
+    return value.replace(/\.?0+$/g, '')
+}
+
+function formatNumber(number: number): HumanReadableElement[] {
+    if (number >= 1e9) {
+        return [{ type: 'atom', value: `${trimTrailingZeros((number / 1e9).toPrecision(3))}B` }]
+    }
+    else if (number >= 1e6) {
+        return [{ type: 'atom', value: `${trimTrailingZeros((number / 1e6).toPrecision(3))}m` }]
+    }
+    else if (number >= 1e4) {
+        return [{ type: 'atom', value: `${trimTrailingZeros((number / 1e3).toPrecision(3))}k` }]
+    }
+    else if (number !== 0 && Math.abs(number) < 1e-3) {
+        const [mantissa, exponent] = number.toExponential(2).split('e')
+        return [
+            { type: 'atom', value: `${trimTrailingZeros(mantissa)}x10` },
+            { type: 'superscript', value: [{ type: 'atom', value: String(Number(exponent)) }] },
+        ]
+    }
+    else {
+        return [{ type: 'atom', value: separateNumber(number.toFixed(0)) }]
     }
 }

@@ -28,11 +28,17 @@ cMap(
     scale=linearScale(),
     ramp=rampUridis
 )`,
-    'sin^{-1}((PW Density (r=1km) ÷ Population^{3})^{2}) where Population (2000) > 1000000 and Population > 1000000',
+    'sin^{-1}((PW Density (r=1km) ÷ Population^{3})^{2}) where Population (2000) > 1m and Population > 1m',
 )
 
 testMapLabel(test,
     `condition(population > 1m)
 cMap(data=density_pw_1km_2000 / (density_pw_1km * density_pw_2km), scale=linearScale(), ramp=rampUridis)`,
-    'PW Density (r=1km) (2000) ÷ (PW Density (r=1km) × PW Density (r=2km)) where Population > 1000000',
+    'PW Density (r=1km) (2000) ÷ (PW Density (r=1km) × PW Density (r=2km)) where Population > 1m',
+)
+
+testMapLabel(test,
+    `condition(ped_cyclist_fatalities_per_capita > 1e-5)
+cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)`,
+    'PW Density (r=1km) where Pedestrian/Cyclist Fatalities Per Capita Per Year > 1x10^{-5}',
 )
