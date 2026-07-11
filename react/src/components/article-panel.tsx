@@ -11,6 +11,7 @@ import { statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { Universe, universeContext, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
+import { HumanReadableName } from '../utils/human-readable-name'
 import { sanitize } from '../utils/paths'
 import { Article, IRelatedButtons } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
@@ -124,7 +125,7 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
 
 type NameSpec = Extract<CellSpec, { type: 'statistic-name' }>
 
-function getGroupAndDisplayNames(nameSpec: NameSpec, nameSpecs: NameSpec[]): [string | undefined, string] {
+function getGroupAndDisplayNames(nameSpec: NameSpec, nameSpecs: NameSpec[]): [string | undefined, HumanReadableName] {
     if (nameSpec.row === undefined) {
         return [undefined, nameSpec.renderedStatname]
     }

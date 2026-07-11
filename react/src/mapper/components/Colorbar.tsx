@@ -6,6 +6,7 @@ import { Colors } from '../../page_template/color-themes'
 import { useColors } from '../../page_template/colors'
 import { ScaleInstance } from '../../urban-stats-script/constants/scale'
 import { furthestColor, interpolateColor } from '../../utils/color'
+import { HumanReadableName, reifyReact, reifyString } from '../../utils/human-readable-name'
 import { classifyStatistic, UnitType } from '../../utils/unit'
 import { Keypoints } from '../ramps'
 import { Basemap } from '../settings/utils'
@@ -14,13 +15,13 @@ interface EmpiricalRamp {
     ramp: Keypoints
     scale: ScaleInstance
     interpolations: number[]
-    label: string
+    label: HumanReadableName
     unit?: UnitType
     hasValuesClampedToStart: boolean
     hasValuesClampedToEnd: boolean
 }
 
-export type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: string }
+export type RampToDisplay = { type: 'ramp', value: EmpiricalRamp } | { type: 'label', value: HumanReadableName }
 
 export function styleFromBasemap(basemap: Basemap, colors: Colors): { backgroundColor: string, color?: string } {
     return basemap.type === 'none'
@@ -40,7 +41,7 @@ export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Base
         >
             {props.ramp && props.ramp.type === 'label' && (
                 <div className="centered_text user_input">
-                    {props.ramp.value}
+                    {reifyReact(props.ramp.value)}
                 </div>
             )}
             {props.ramp && props.ramp.type === 'ramp' && (
@@ -86,13 +87,13 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
             <div className="centered_text">
                 <MaybeInequality ramp={ramp} index={index} />
                 <Statistic
-                    statname={ramp.label}
+                    statname={reifyString(ramp.label)}
                     value={stat}
                     isUnit={false}
                     unit={ramp.unit}
                 />
                 <Statistic
-                    statname={ramp.label}
+                    statname={reifyString(ramp.label)}
                     value={stat}
                     isUnit={true}
                     unit={ramp.unit}
@@ -152,7 +153,7 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
             <div ref={valuesRef} style={{ position: 'absolute', top: 0, left: 0, display: 'flex', width: '100%', visibility: 'hidden' }}>{valuesDivs(false)}</div>
             <div style={{ display: 'flex', width: '100%' }}>{valuesDivs(shouldRotate)}</div>
             <div className="centered_text user_input">
-                {ramp.label}
+                {reifyReact(ramp.label)}
             </div>
         </div>
     )
@@ -162,7 +163,7 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
 function MaybeInequality({ ramp, index }: { ramp: EmpiricalRamp, index: number }): ReactNode {
     const scaleAscending = ramp.scale.inverse(0) < ramp.scale.inverse(1)
     // Similarly to how we do it with <Statistic/> above
-    const unitDisplay = getUnitDisplay(ramp.unit ?? classifyStatistic(ramp.label))
+    const unitDisplay = getUnitDisplay(ramp.unit ?? classifyStatistic(reifyString(ramp.label)))
     const isFirst = index === 0
     const isLast = index === ramp.interpolations.length - 1
     let prefix: string | undefined

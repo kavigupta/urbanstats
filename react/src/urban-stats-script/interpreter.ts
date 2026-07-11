@@ -4,7 +4,7 @@ import { UrbanStatsASTStatement, UrbanStatsASTExpression, UrbanStatsASTLHS, Urba
 import { Context } from './context'
 import { addAdditionalDims, broadcastApply, broadcastCall } from './forward-broadcasting'
 import { LocInfo } from './location'
-import { expressionOperatorMap } from './operators'
+import { BinaryOperatorSymbol, expressionOperatorMap, UnaryOperatorSymbol } from './operators'
 import { splitMask } from './split-broadcasting'
 import { renderType, unifyType, USSRawValue, USSType, USSValue, USSVectorType, ValueArg, undocValue, canUnifyTo } from './types-values'
 
@@ -297,9 +297,8 @@ function attrLookupOrSet(
     return { type: 'error', message: `Cannot access attribute of type ${renderType(type)}. Only objects and vectors support attributes.` }
 }
 
-function evaluateUnaryOperator(operand: USSValue, operator: string, env: Context, errLoc: LocInfo): USSValue {
-    const operatorObj = expressionOperatorMap.get(operator)
-    assert(operatorObj?.unary !== undefined, `Unknown operator: ${operator}`)
+function evaluateUnaryOperator(operand: USSValue, operator: UnaryOperatorSymbol, env: Context, errLoc: LocInfo): USSValue {
+    const operatorObj = expressionOperatorMap[operator]
     const res = broadcastApply(
         operatorObj.unary(operator, errLoc),
         [operand],
@@ -313,9 +312,8 @@ function evaluateUnaryOperator(operand: USSValue, operator: string, env: Context
     return res.result
 }
 
-function evaluateBinaryOperator(left: USSValue, right: USSValue, operator: string, env: Context, errLoc: LocInfo): USSValue {
-    const operatorObj = expressionOperatorMap.get(operator)
-    assert(operatorObj?.binary !== undefined, `Unknown operator: ${operator}`)
+function evaluateBinaryOperator(left: USSValue, right: USSValue, operator: BinaryOperatorSymbol, env: Context, errLoc: LocInfo): USSValue {
+    const operatorObj = expressionOperatorMap[operator]
     const res = broadcastApply(
         operatorObj.binary(operator, errLoc),
         [left, right],

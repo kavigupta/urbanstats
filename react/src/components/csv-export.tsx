@@ -5,6 +5,7 @@ import { saveAs } from 'file-saver'
 import React, { ReactNode } from 'react'
 
 import { USSOpaqueValue, USSValue } from '../urban-stats-script/types-values'
+import { HumanReadableName, reifyString } from '../utils/human-readable-name'
 import { Article } from '../utils/protos'
 
 import { ArticleRow } from './load-article'
@@ -161,16 +162,16 @@ export function generateMapperCSVData(
 
 export function generateStatisticsPanelCSVData(
     articleNames: string[],
-    data: { name: string, value: number[], ordinal: number[], populationPercentile: number[] }[],
+    data: { name: HumanReadableName, value: number[], ordinal: number[], populationPercentile: number[] }[],
     hideOrdinalsPercentiles: boolean,
 ): string[][] {
     // Build header row: Name, then for each column: column name, optionally "column name Ord", "column name percentile"
     const headerRow: string[] = ['Name']
 
     for (const col of data) {
-        headerRow.push(col.name)
+        headerRow.push(reifyString(col.name))
         if (!hideOrdinalsPercentiles) {
-            headerRow.push(`${col.name} Ord`, `${col.name} percentile`)
+            headerRow.push(`${reifyString(col.name)} Ord`, `${reifyString(col.name)} percentile`)
         }
     }
 

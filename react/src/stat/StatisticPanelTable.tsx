@@ -11,6 +11,7 @@ import { useUniverse } from '../universe'
 import { orderNonNan } from '../urban-stats-script/constants/table'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { assert } from '../utils/defensive'
+import { reifyString } from '../utils/human-readable-name'
 import { sanitize } from '../utils/paths'
 
 import { makeColumnDeleteHandler } from './makeColumnDeleteHandler'
@@ -126,7 +127,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
     const headerSpecs: CellSpec[] = data.table.map((col, colIndex) => ({
         type: 'statistic-name',
         renderedStatname: col.name,
-        longname: col.name,
+        longname: reifyString(col.name),
         currentUniverse,
         sortInfo: {
             onSort: () => {

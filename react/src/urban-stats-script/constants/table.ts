@@ -1,11 +1,12 @@
 import { assert } from '../../utils/defensive'
+import { HumanReadableName } from '../../utils/human-readable-name'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../location'
 import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation, createConstantExpression } from '../types-values'
 
 export interface TableColumn {
-    name: string
+    name: HumanReadableName
     values: number[]
     unit?: UnitType
 }

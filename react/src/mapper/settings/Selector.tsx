@@ -14,6 +14,7 @@ import { emptyLocation } from '../../urban-stats-script/lexer'
 import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 import { Documentation, TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 import { TestUtils } from '../../utils/TestUtils'
+import { HumanReadableName, reifyReact, reifyString } from '../../utils/human-readable-name'
 import { useTextAreaSizeSync } from '../../utils/text-area-size-sync'
 
 import * as l from './../../urban-stats-script/literal-parser'
@@ -200,19 +201,19 @@ function renderSelection(typeEnvironment: TypeEnvironment, selection: Selection)
     const doc = typeEnvironment.get(selection.name)?.documentation
     if (doc?.selectorRendering?.kind === 'subtitleLongDescription') {
         return {
-            text: doc.humanReadableName,
+            text: reifyString(doc.humanReadableName),
             node: highlighted => <LongDescriptionSubtitle doc={doc} highlighted={highlighted} />,
         }
     }
     if (doc?.selectorRendering?.kind === 'gradientBackground') {
         const ramp = doc.selectorRendering.ramp
         return {
-            text: doc.humanReadableName,
+            text: reifyString(doc.humanReadableName),
             node: highlighted => <RampSelectorOption name={doc.humanReadableName} ramp={ramp} highlighted={highlighted} />,
         }
     }
     else {
-        return { text: doc?.humanReadableName ?? selection.name }
+        return { text: reifyString(doc?.humanReadableName ?? selection.name) }
     }
 }
 
@@ -263,7 +264,7 @@ function LongDescriptionSubtitle(props: { doc: Documentation, highlighted: boole
             background: props.highlighted ? colors.slightlyDifferentBackgroundFocused : colors.slightlyDifferentBackground,
         }}
         >
-            <div>{props.doc.humanReadableName}</div>
+            <div>{reifyReact(props.doc.humanReadableName)}</div>
             <div style={{ fontSize: 'smaller', color: colors.ordinalTextColor }}>
                 {props.doc.longDescription}
             </div>
@@ -271,7 +272,7 @@ function LongDescriptionSubtitle(props: { doc: Documentation, highlighted: boole
     )
 }
 
-function RampSelectorOption(props: { name: string, ramp: RampT, highlighted: boolean }): ReactNode {
+function RampSelectorOption(props: { name: HumanReadableName, ramp: RampT, highlighted: boolean }): ReactNode {
     const colors = useColors()
     const firstRampColor = ColorLib(props.ramp[0][1])
     const highlightedColor = `rgb(from ${colors.slightlyDifferentBackgroundFocused} r g b / 1)`
@@ -282,7 +283,7 @@ function RampSelectorOption(props: { name: string, ramp: RampT, highlighted: boo
             background: props.highlighted ? `${selectionGradient(highlightedColor, 'bottom')}, ${selectionGradient(highlightedColor, 'right')}, ${toCssGradient(props.ramp)}` : toCssGradient(props.ramp),
         }}
         >
-            {props.name}
+            {reifyReact(props.name)}
         </div>
     )
 }

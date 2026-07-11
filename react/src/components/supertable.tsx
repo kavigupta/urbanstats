@@ -5,6 +5,7 @@ import { useColors } from '../page_template/colors'
 import { StatPath } from '../page_template/statistic-tree'
 import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
+import { HumanReadableName } from '../utils/human-readable-name'
 import { Article } from '../utils/protos'
 
 import { CongressionalColumnData, CongressionalRepresentativeEntry } from './congressional-table/model'
@@ -306,14 +307,14 @@ export interface StatisticPanelLongnameCellProps {
 
 export interface StatisticNameCellProps {
     row?: ArticleRow
-    renderedStatname: string
+    renderedStatname: HumanReadableName
     longname: string
     currentUniverse: Universe
     center?: boolean
     highlightIndex?: number
     transpose?: boolean
     isIndented?: boolean
-    displayName?: string
+    displayName?: HumanReadableName
     footnoteSymbol?: string
     sortInfo?: {
         sortDirection: 'up' | 'down' | 'both'

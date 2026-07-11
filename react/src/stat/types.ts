@@ -2,6 +2,7 @@ import { StatCol } from '../components/load-article'
 import statnames from '../data/statistic_name_list'
 import { MapUSS } from '../mapper/settings/map-uss'
 import { Universe } from '../universe'
+import { HumanReadableName } from '../utils/human-readable-name'
 import { UnitType } from '../utils/unit'
 
 export type Statistic = {
@@ -28,7 +29,7 @@ export interface StatSettings {
 
 export interface StatData {
     // One entry per column
-    table: { value: number[], populationPercentile: number[], ordinal: number[], name: string, unit?: UnitType }[]
+    table: { value: number[], populationPercentile: number[], ordinal: number[], name: HumanReadableName, unit?: UnitType }[]
     articleNames: string[]
     renderedStatname: string
     statcol?: StatCol

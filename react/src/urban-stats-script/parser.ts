@@ -6,7 +6,7 @@ import { getAutoUXNodeMetadata } from './autoux-node-metadata'
 import { Context } from './context'
 import { AnnotatedToken, AnnotatedTokenWithValue, lex, Keyword, emptyLocation } from './lexer'
 import { noLocation, LocInfo, Block } from './location'
-import { expressionOperatorMap, infixOperators, unaryOperators } from './operators'
+import { BinaryOperatorSymbol, expressionOperatorMap, infixOperators, unaryOperators, UnaryOperatorSymbol } from './operators'
 import type { USSType } from './types-values'
 
 export interface Decorated<T> {
@@ -24,7 +24,7 @@ export interface UnparseOptions {
     wrap?: boolean
 }
 
-type USSInfixSequenceElement = { type: 'operator', operatorType: 'unary' | 'binary', value: Decorated<string> } | UrbanStatsASTExpression
+type USSInfixSequenceElement = { type: 'operator', operatorType: 'unary', value: Decorated<UnaryOperatorSymbol> } | { type: 'operator', operatorType: 'binary', value: Decorated<BinaryOperatorSymbol> } | UrbanStatsASTExpression
 
 export function toSExp(node: UrbanStatsAST): string {
     /**
@@ -330,6 +330,7 @@ class ParseState {
                     if (this.consumeOperator(...unaryOperators)) {
                         const operator = this.tokens[this.index - 1]
                         assert(operator.token.type === 'operator', 'Expected operator token')
+                        assert(unaryOperators.includes(operator.token.value), 'Expected operator token to be a unary operator')
                         operatorExpSequence.push({
                             type: 'operator',
                             operatorType: 'unary',
@@ -351,6 +352,7 @@ class ParseState {
                     if (this.consumeOperator(...infixOperators)) {
                         const operator = this.tokens[this.index - 1]
                         assert(operator.token.type === 'operator', 'Expected operator token')
+                        assert(infixOperators.includes(operator.token.value), 'Expected operator token to be a binary operator')
                         operatorExpSequence.push({
                             type: 'operator',
                             operatorType: 'binary',
@@ -374,7 +376,7 @@ class ParseState {
             return operatorExpSequence[0]
         }
         // Get the highest precedence operator
-        const precedences = operatorExpSequence.map(x => x.type === 'operator' ? expressionOperatorMap.get(x.value.node)?.precedence ?? 0 : 0)
+        const precedences = operatorExpSequence.map(x => x.type === 'operator' ? expressionOperatorMap[x.value.node].precedence : 0)
         const maxPrecedence = Math.max(...precedences)
         assert(maxPrecedence > 0, 'No valid operator found in infix sequence')
         const index = precedences.findIndex(p => p === maxPrecedence)
@@ -911,10 +913,10 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
         case 'binaryOperator':
             const leftStr = unparse(node.left, { ...opts, inline: true, expressionalContext: true })
             const rightStr = unparse(node.right, { ...opts, inline: true, expressionalContext: true })
-            const opPrecedence = expressionOperatorMap.get(node.operator.node)?.precedence ?? 0
+            const opPrecedence = expressionOperatorMap[node.operator.node].precedence
             let leftWithParens = leftStr
             if (node.left.type === 'binaryOperator') {
-                const leftOpPrecedence = expressionOperatorMap.get(node.left.operator.node)?.precedence ?? 0
+                const leftOpPrecedence = expressionOperatorMap[node.left.operator.node].precedence
                 if (leftOpPrecedence < opPrecedence) {
                     leftWithParens = `(${leftStr})`
                 }
@@ -924,7 +926,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
             }
             let rightWithParens = rightStr
             if (node.right.type === 'binaryOperator') {
-                const rightOpPrecedence = expressionOperatorMap.get(node.right.operator.node)?.precedence ?? 0
+                const rightOpPrecedence = expressionOperatorMap[node.right.operator.node].precedence
                 if (rightOpPrecedence <= opPrecedence) {
                     rightWithParens = `(${rightStr})`
                 }
