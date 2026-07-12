@@ -154,8 +154,9 @@ def create_article_gzip(
                 # vulture: ignore -- not actually creating a field. this is from protobuf
                 fol.is_first = ordinal_overall == 1
             statrow.percentile_by_population_by_universe.append(percentile_by_type)
-    for _, extra_stat in sorted(extra_stats().items()):
-        data.extra_stats.append(extra_stat.create(row))
+    for _, specs in sorted(extra_stats().items()):
+        for extra_stat in specs:
+            data.extra_stats.append(extra_stat.create(row))
     for relationship_type in relationships:
         for_this = relationships[relationship_type].get(row.longname, set())
         for_this_list = [x for x in for_this if x in long_to_population]
@@ -241,10 +242,11 @@ def order_key_for_relatioships(longname: str, typ: str) -> Tuple[int, str]:
     return ordering_idx[typ], processed_longname
 
 
-def extra_stats() -> Dict[int, Any]:
-    result = {}
+def extra_stats() -> Dict[int, List[Any]]:
+    result: Dict[str, List[Any]] = {}
     for statistic_collection in statistic_collections:
-        result.update(statistic_collection.extra_stats())
+        for k, v in statistic_collection.extra_stats().items():
+            result[k] = v if isinstance(v, list) else [v]
     name_to_idx = {name: idx for idx, name in enumerate(internal_statistic_names())}
     extra = {name_to_idx[k]: v for k, v in result.items()}
     return extra
