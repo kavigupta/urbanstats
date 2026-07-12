@@ -65,7 +65,7 @@ export interface ArticleStatisticRow {
     totalCountOverall: number
     index: number
     renderedStatname: string
-    extraStat?: ExtraStat
+    extraStats: ExtraStat[]
     disclaimer?: Disclaimer
     overallFirstLast: FirstLastStatus
 }
@@ -78,7 +78,7 @@ export interface MetadataArticleRow {
     renderedStatname: string
     articleType: string
     statval: MetadataStatValue
-    extraStat: undefined
+    extraStats: []
     disclaimer: undefined
     dataCreditExplanationPage: string
 }
@@ -234,7 +234,7 @@ function metadataRowsForArticle(
             renderedStatname: parent.groupYearName,
             articleType: article.articleType,
             statval,
-            extraStat: undefined,
+            extraStats: [],
             disclaimer: undefined,
             dataCreditExplanationPage,
         }]
@@ -282,24 +282,24 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
 
     return data.rows.map((rowOriginal, rowIndex) => {
         const i = indices[rowIndex]
-        // fresh row object
-        let extraStat: ExtraStat | undefined = undefined
-        if (extraStatIdxToCol.includes(i)) {
-            const extraStatIdx = extraStatIdxToCol.indexOf(i)
+        // a stat may eventually have more than one extra-stat option, so collect all matches
+        const extraStatIdxs = extraStatIdxToCol.flatMap((colIdx, j) => colIdx === i ? [j] : [])
+        const extraStats: ExtraStat[] = extraStatIdxs.flatMap<ExtraStat>((extraStatIdx) => {
             const [, spec] = extra_stats[extraStatIdx]
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- this is for future proofing
             if (spec.type === 'histogram') {
                 const universeTotalIdx = spec.universe_total_idx
                 const histogram = data.extraStats[extraStatIdx].histogram!
-                extraStat = {
+                return [{
                     type: 'histogram',
                     binMin: histogram.binMin,
                     binSize: histogram.binSize,
                     counts: histogram.counts,
                     universeTotal: data.rows.find((_, universeRowIndex) => indices[universeRowIndex] === universeTotalIdx)!.statval!,
-                } as HistogramExtraStat
+                } as HistogramExtraStat]
             }
-        }
+            return []
+        })
         const overallFirstLastThis = overallFirstOrLast.filter((x: IFirstOrLast) => x.articleRowIdx === rowIndex)
 
         // Determine disclaimer for election statistics
@@ -319,7 +319,7 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
             totalCountOverall: forType(counts, universe, stats[i], 'overall'),
             index: i,
             renderedStatname: names[i],
-            extraStat,
+            extraStats,
             disclaimer,
             overallFirstLast: {
                 isFirst: overallFirstLastThis.some((x: IFirstOrLast) => x.isFirst),
@@ -389,8 +389,8 @@ function insertMissing(rows: ArticleRow[][]): ArticleRow[][] {
                     assert(emptyRowExample.get(idx)!.kind === 'metadata', 'if statval is not a numbre, it\'s metadata')
                     emptyRowExample.get(idx)![key] = ''
                 }
-                else if (key === 'extraStat') {
-                    emptyRowExample.get(idx)![key] = undefined
+                else if (key === 'extraStats') {
+                    emptyRowExample.get(idx)![key] = []
                 }
             }
             emptyRowExample.get(idx)!.articleType = 'none' // doesn't matter since we are using simple mode
