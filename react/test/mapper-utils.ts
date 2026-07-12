@@ -7,7 +7,7 @@ import { ClientFunction, Selector } from 'testcafe'
 
 import { target, downloadOrCheckString, waitForDownload, grabDownload, waitForLoading, urbanstatsFixture, safeReload, screencap } from './test_utils'
 
-export async function checkGeojson(t: TestController, path: string): Promise<void> {
+async function checkGeojson(t: TestController, path: string): Promise<void> {
     const laterThan = new Date().getTime()
     // download the geojson by clicking the button
     await t.click(Selector('button').withExactText('Export as GeoJSON'))

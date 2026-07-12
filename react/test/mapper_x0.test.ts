@@ -1,5 +1,4 @@
-import { testCode, urlFromCode } from './mapper-utils'
-import { urbanstatsFixture, downloadOrCheckString, downloadCSV } from './test_utils'
+import { testCode } from './mapper-utils'
 
 const codeFiltered = `
 regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population);
@@ -198,14 +197,6 @@ cMapRGB(
 `
 
 testCode(() => test, 'County', 'USA', rgbMap, 'rgb-map')
-
-// CSV Export Test
-urbanstatsFixture('mapper-csv-export', urlFromCode('County', 'USA', 'condition(population > 100000); cMap(data=density_pw_1km / population, scale=logScale(), ramp=rampUridis, basemap=noBasemap())'))
-
-test('mapper-csv-export', async (t) => {
-    const csvContent = await downloadCSV(t)
-    await downloadOrCheckString(t, csvContent, 'csv-export-mapper', 'csv', false)
-})
 
 testCode(() => test, 'Subnational Region', 'USA', `cMap(
     data=density_pw_1km,

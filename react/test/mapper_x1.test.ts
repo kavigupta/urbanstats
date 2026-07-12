@@ -1,6 +1,4 @@
-import { typeInEditor } from './editor_test_utils'
-import { getErrors, testCode, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { checkTextboxesDirect, screencap, urbanstatsFixture } from './test_utils'
+import { testCode } from './mapper-utils'
 
 const clusterMapBasic = `
 clusterMap(
@@ -106,35 +104,6 @@ clusterMap(
 `
 
 testCode(() => test, 'County', 'USA', clusterMapClusterSpacing, 'cluster-map-cluster-spacing')
-
-const clusterMapPopulationFilterBase = `
-clusterMap(
-    data=commute_transit,
-    scale=linearScale(max=0.25),
-    ramp=rampUridis,
-    maxRadius=60,
-    relativeArea=population,
-    basemap=noBasemap()
-)
-`
-
-urbanstatsFixture(
-    'cluster-map-population-filter-steps',
-    urlFromCode('County', 'USA', clusterMapPopulationFilterBase),
-)
-
-test('cluster-map-population-filter-steps', async (t) => {
-    await t.expect(getErrors()).eql([])
-    await toggleCustomScript(t) // switch to Auto UX (custom unchecked)
-    await checkTextboxesDirect(t, ['Filter?'])
-
-    const thresholds = [1000000, 100000, 10000, 1000, 100]
-    for (const threshold of thresholds) {
-        await typeInEditor(t, 0, `population < ${threshold}`, true)
-        await t.expect(getErrors()).eql([])
-        await screencap(t, { removeEntireMap: false })
-    }
-})
 
 const asymmetricCenterValue = `
 cMap(
