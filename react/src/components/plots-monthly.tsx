@@ -4,6 +4,7 @@ import React, { ReactElement, ReactNode, useCallback } from 'react'
 // imort Observable plot
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
+import { convertPrecipitation, convertTemperature } from '../utils/unit'
 
 import { MonthlyExtraStat } from './load-article'
 import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, ordinalSeriesMarks, PlotComponent, PlotDownloadButton, transposeAwareTip } from './plots-general'
@@ -17,25 +18,14 @@ export interface MonthlyPlotProps {
     subseriesName: string
 }
 
-export function convertValue(value: number, unit: MonthlyExtraStat['unit'], temperatureUnit: string, useImperial = false): number {
-    if (unit === 'temperature' && temperatureUnit === 'celsius') {
-        return (value - 32) * (5 / 9)
+// the same value+unit conversion the cell renderer (unit-display.tsx) uses for these stats
+function convertMonthlyValue(value: number, unit: MonthlyExtraStat['unit'], temperatureUnit: string, useImperial = false): { value: number, unit: string } {
+    switch (unit) {
+        case 'temperature':
+            return convertTemperature(value, temperatureUnit)
+        case 'precipitation':
+            return convertPrecipitation(value, useImperial)
     }
-    if (unit === 'precipitation') {
-        // backend value is in meters
-        return useImperial ? value * 39.3701 : value * 100
-    }
-    return value
-}
-
-export function unitSuffixFor(unit: MonthlyExtraStat['unit'], temperatureUnit: string, useImperial = false): string {
-    if (unit === 'temperature') {
-        return temperatureUnit === 'celsius' ? '°C' : '°F'
-    }
-    if (unit === 'precipitation') {
-        return useImperial ? 'in' : 'cm'
-    }
-    return ''
 }
 
 interface TipDatum {
@@ -50,7 +40,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], modeSwitcher?: R
     const colors = useColors()
 
     const unit = props.stats[0].stat.unit
-    const unitSuffix = unitSuffixFor(unit, temperatureUnit, useImperial)
+    const unitSuffix = convertMonthlyValue(props.stats[0].stat.monthlyValues[0], unit, temperatureUnit, useImperial).unit
 
     const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
         <div
@@ -73,7 +63,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], modeSwitcher?: R
             const monthIdxs = Array.from({ length: 12 }, (_, i) => i)
             const seriesData = props.stats.map(stat => ({
                 stat,
-                values: stat.stat.monthlyValues.map(v => convertValue(v, unit, temperatureUnit, useImperial)),
+                values: stat.stat.monthlyValues.map(v => convertMonthlyValue(v, unit, temperatureUnit, useImperial).value),
             }))
 
             const [axis, grid] = axisAndGrid(transpose)

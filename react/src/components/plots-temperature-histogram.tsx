@@ -3,10 +3,10 @@ import React, { ReactElement, ReactNode, useCallback } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
+import { convertTemperature } from '../utils/unit'
 
 import { TemperatureHistogramExtraStat } from './load-article'
 import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, ordinalSeriesMarks, PlotComponent, PlotDownloadButton, transposeAwareTip } from './plots-general'
-import { convertValue, unitSuffixFor } from './plots-monthly'
 
 export interface TemperatureHistogramPlotProps {
     shortname: string
@@ -51,7 +51,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
             throw new Error('temperature histograms have different binning')
         }
     }
-    const unitSuffix = unitSuffixFor('temperature', temperatureUnit)
+    const unitSuffix = convertTemperature(binMin, temperatureUnit).unit
 
     const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
         <div
@@ -76,7 +76,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
             const binIdxs = Array.from({ length: numBins - 2 }, (_, i) => i + 1)
             const pointX = (binIdx: number): number => binIdx - 0.5
             const boundaryIdxs = Array.from({ length: numBins - 1 }, (_, i) => i)
-            const boundaryLabels = boundaryIdxs.map(j => boundaryLabel(j, binMin, binSize, v => convertValue(v, 'temperature', temperatureUnit), unitSuffix))
+            const boundaryLabels = boundaryIdxs.map(j => boundaryLabel(j, binMin, binSize, v => convertTemperature(v, temperatureUnit).value, unitSuffix))
             const seriesData = props.histograms.map((h) => {
                 // counts are normalize_to_uint16-scaled (sum to ~2^16), not already-percentages
                 const sum = h.histogram.counts.reduce((a, b) => a + b, 0)
@@ -106,7 +106,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
 
             const tipData: TipDatum[] = binIdxs.map(i => ({
                 x: pointX(i),
-                label: bucketRangeLabel(i, binMin, binSize, v => convertValue(v, 'temperature', temperatureUnit), unitSuffix),
+                label: bucketRangeLabel(i, binMin, binSize, v => convertTemperature(v, temperatureUnit).value, unitSuffix),
                 names: seriesData.map(s => s.h.shortname),
                 values: seriesData.map(s => s.values[i]),
             }))

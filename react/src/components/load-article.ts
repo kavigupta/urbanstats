@@ -33,7 +33,7 @@ export interface TimeSeriesExtraStat {
 export interface MonthlyExtraStat {
     type: 'monthly_time_series'
     name: string
-    unit: '' | 'temperature' | 'precipitation'
+    unit: 'temperature' | 'precipitation'
     monthlyValues: number[]
 }
 
@@ -300,46 +300,48 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
         const extraStatIdxs = extraStatIdxToCol.flatMap((colIdx, j) => colIdx === i ? [j] : [])
         const extraStats: ExtraStat[] = extraStatIdxs.flatMap<ExtraStat>((extraStatIdx) => {
             const [, spec] = extra_stats[extraStatIdx]
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- this is for future proofing
-            if (spec.type === 'histogram') {
-                const universeTotalIdx = spec.universe_total_idx
-                const histogram = data.extraStats[extraStatIdx].histogram!
-                return [{
-                    type: 'histogram',
-                    binMin: histogram.binMin,
-                    binSize: histogram.binSize,
-                    counts: histogram.counts,
-                    universeTotal: data.rows.find((_, universeRowIndex) => indices[universeRowIndex] === universeTotalIdx)!.statval!,
-                } as HistogramExtraStat]
-            }
-            else if (spec.type === 'monthly_time_series') {
-                const timeseries = data.extraStats[extraStatIdx].timeseries
-                // absent when the underlying monthly data was invalid/NaN for this row -- omit the extra stat rather than crash
-                if (timeseries?.values) {
+            switch (spec.type) {
+                case 'histogram': {
+                    const universeTotalIdx = spec.universe_total_idx
+                    const histogram = data.extraStats[extraStatIdx].histogram!
                     return [{
-                        type: 'monthly_time_series',
-                        name: spec.name,
-                        unit: spec.unit,
-                        monthlyValues: timeseries.values,
-                    } as MonthlyExtraStat]
+                        type: 'histogram',
+                        binMin: histogram.binMin,
+                        binSize: histogram.binSize,
+                        counts: histogram.counts,
+                        universeTotal: data.rows.find((_, universeRowIndex) => indices[universeRowIndex] === universeTotalIdx)!.statval!,
+                    } as HistogramExtraStat]
                 }
-                return []
-            }
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- this is for future proofing
-            else if (spec.type === 'temperature_histogram') {
-                const temperatureHistogram = data.extraStats[extraStatIdx].temperatureHistogram
-                // absent when the underlying histogram data was invalid/NaN for this row -- omit the extra stat rather than crash
-                if (temperatureHistogram?.counts) {
-                    return [{
-                        type: 'temperature_histogram',
-                        binMin: spec.min_value,
-                        binSize: spec.bin_size,
-                        counts: temperatureHistogram.counts,
-                    } as TemperatureHistogramExtraStat]
+                case 'monthly_time_series': {
+                    const timeseries = data.extraStats[extraStatIdx].timeseries
+                    // absent when the underlying monthly data was invalid/NaN for this row -- omit the extra stat rather than crash
+                    if (timeseries?.values) {
+                        return [{
+                            type: 'monthly_time_series',
+                            name: spec.name,
+                            unit: spec.unit,
+                            monthlyValues: timeseries.values,
+                        } as MonthlyExtraStat]
+                    }
+                    return []
                 }
-                return []
+                case 'temperature_histogram': {
+                    const temperatureHistogram = data.extraStats[extraStatIdx].temperatureHistogram
+                    // absent when the underlying histogram data was invalid/NaN for this row -- omit the extra stat rather than crash
+                    if (temperatureHistogram?.counts) {
+                        return [{
+                            type: 'temperature_histogram',
+                            binMin: spec.min_value,
+                            binSize: spec.bin_size,
+                            counts: temperatureHistogram.counts,
+                        } as TemperatureHistogramExtraStat]
+                    }
+                    return []
+                }
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- this is for future proofing against specs the currently-generated data doesn't have yet
+                default:
+                    return []
             }
-            return []
         })
         const overallFirstLastThis = overallFirstOrLast.filter((x: IFirstOrLast) => x.articleRowIdx === rowIndex)
 
