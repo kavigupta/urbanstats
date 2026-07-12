@@ -304,7 +304,7 @@ export function PlotComponent(props: {
                 fontFamily: 'Jost, Arial, sans-serif',
             },
             marginTop: 80,
-            marginBottom: transposeConfig ? 80 : 40,
+            marginBottom: transposeConfig ? 90 : 55,
             marginLeft: 80,
             color: legend,
         }
