@@ -2,9 +2,10 @@ import React, { ReactElement, ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { plotDisplayModeKey, useSetting } from '../page_template/settings'
-import { StatPath } from '../page_template/statistic-tree'
+import { statParents, StatPath, Year } from '../page_template/statistic-tree'
+import { assert } from '../utils/defensive'
 
-import { ExtraStat } from './load-article'
+import { ArticleRow, ExtraStat } from './load-article'
 import { Histogram, transposeSettingsHeight } from './plots-histogram'
 import { MonthlyPlot } from './plots-monthly'
 import { TemperatureHistogramPlot } from './plots-temperature-histogram'
@@ -160,4 +161,100 @@ export function extraHeaderSpaceForVertical(spec: PlotProps): number {
         return transposeSettingsHeight
     }
     return 0
+}
+
+// cross-stat plot pairings -- combine the two into one chart (like the multi-year overlay)
+// whenever both are visible, with the second-listed one dashed
+const plotPairPartner: Partial<Record<StatPath, StatPath>> = {
+    mean_high_temp_4: 'mean_low_temp',
+    mean_low_temp: 'mean_high_temp_4',
+    rainfall_4: 'snowfall_4',
+    snowfall_4: 'rainfall_4',
+}
+const plotPairLabel: Partial<Record<StatPath, string>> = {
+    mean_high_temp_4: 'High',
+    mean_low_temp: 'Low',
+    rainfall_4: 'Rain',
+    snowfall_4: 'Snow',
+}
+// dashOrder[0] is dashed, dashOrder[1] is solid -- keyed by either member of the pair
+const plotPairDashOrder: Partial<Record<StatPath, string[]>> = {
+    mean_high_temp_4: ['Low', 'High'],
+    mean_low_temp: ['Low', 'High'],
+    rainfall_4: ['Snow', 'Rain'],
+    snowfall_4: ['Snow', 'Rain'],
+}
+
+export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
+    if (rows[statIndex].kind !== 'statistic' || rows[statIndex].extraStats.length === 0) {
+        return []
+    }
+    const sPs = rows.map(row => statParents.get(row.statpath)!).map((sP, i) => ({ sP, i }))
+    const byYear = new Map<Year, number[]>()
+    sPs.filter((
+        { sP, i }) => sP.group.id === sPs[statIndex].sP.group.id && rows[i].kind === 'statistic' && rows[i].extraStats.length > 0,
+    ).forEach(({ sP: { year }, i }) => {
+        assert(year !== null, 'Year should not be null for plot data')
+        byYear.set(year, [...(byYear.get(year) ?? []), i])
+    })
+    const bestSourceEach = Array.from(byYear.entries()).map(([, indices]) => {
+        if (indices.length === 1) {
+            return indices[0]
+        }
+        const sources = indices.map(i => sPs[i].sP.source)
+        const exactMatch = sources.findIndex(source => JSON.stringify(source) === JSON.stringify(sPs[statIndex].sP.source))
+        if (exactMatch !== -1) {
+            return indices[exactMatch]
+        }
+        const nullMatch = sources.findIndex(source => source === null)
+        if (nullMatch !== -1) {
+            return indices[nullMatch]
+        }
+        return indices[0]
+    })
+    const statpaths = bestSourceEach.map(i => sPs[i])
+    const overOne = statpaths.length > 1
+    if (overOne) {
+        statpaths.forEach(({ sP: { year } }) => {
+            assert(year !== null, 'Year should not be null for plot data')
+        })
+        assert(statpaths.length === new Set(statpaths.map(({ sP: { year } }) => year)).size, 'All statpaths for plot data should have unique years')
+    }
+    const pairedPath = plotPairPartner[rows[statIndex].statpath]
+    const pairedIdx = pairedPath !== undefined
+        ? rows.findIndex(r => r.statpath === pairedPath && r.kind === 'statistic' && r.extraStats.length > 0)
+        : -1
+    const hasPair = pairedIdx !== -1
+    const dashOrder = hasPair ? plotPairDashOrder[rows[statIndex].statpath] : undefined
+
+    const ownEntries = statpaths.map(({ i: idx, sP: { year } }) => {
+        assert(year !== null, 'unreachable, we checked this already')
+        return {
+            ...rows[idx],
+            color,
+            shortname,
+            longname,
+            sharedTypeOfAllArticles,
+            subseriesName: hasPair ? plotPairLabel[rows[idx].statpath] ?? year.toString() : year.toString(),
+            dashOrder,
+        } satisfies PlotProps
+    })
+    if (!hasPair) {
+        return ownEntries
+    }
+    return [
+        ...ownEntries,
+        {
+            ...rows[pairedIdx],
+            color,
+            shortname,
+            longname,
+            sharedTypeOfAllArticles,
+            subseriesName: plotPairLabel[rows[pairedIdx].statpath]!,
+            dashOrder,
+            // the overlay only makes sense for the monthly view -- a combined distribution chart
+            // doesn't read as "two series", so RenderedPlot excludes this entry from that view
+            pairedInFor: ['monthly_time_series'],
+        } satisfies PlotProps,
+    ]
 }
