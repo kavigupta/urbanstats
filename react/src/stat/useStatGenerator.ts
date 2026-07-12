@@ -14,6 +14,7 @@ import { noLocation } from '../urban-stats-script/location'
 import { renderType } from '../urban-stats-script/types-values'
 import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
+import { HumanReadableElement, HumanReadableName } from '../utils/human-readable-name'
 import { pluralize } from '../utils/text'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
@@ -121,7 +122,7 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
         const statData: StatData = {
             table: dataColumns,
             articleNames: geonames,
-            renderedStatname: table.title ?? table.columns.map(col => col.name).join(', '),
+            renderedStatname: table.title ?? joinHumanReadableNames(table.columns.map(col => col.name)),
             totalCountInClass: firstColumn.values.length,
             totalCountOverall: firstColumn.values.length,
             hideOrdinalsPercentiles: table.hideOrdinalsPercentiles,
@@ -156,6 +157,13 @@ function checkArticleCount(counts: CountsByUT, universe: Universe, articleType: 
         return [{ type: 'error', value: `There are no ${pluralize(articleType)} in ${universe}. Either adjust your universe or geography kind.`, location: noLocation, kind: 'error' }]
     }
     return []
+}
+
+function joinHumanReadableNames(names: HumanReadableName[]): HumanReadableName {
+    return names.flatMap((name, index): HumanReadableElement[] => {
+        const elements = typeof name === 'string' ? [{ type: 'atom', value: name } satisfies HumanReadableElement] : name
+        return index === 0 ? elements : [{ type: 'atom', value: ', ' }, ...elements]
+    })
 }
 
 function computeOrdinals(values: number[]): number[] {
