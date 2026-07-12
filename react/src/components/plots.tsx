@@ -1,6 +1,9 @@
 import React, { ReactNode } from 'react'
 
-import { ExtraStat } from './load-article'
+import { statParents, Year } from '../page_template/statistic-tree'
+import { assert } from '../utils/defensive'
+
+import { ArticleRow, ExtraStat } from './load-article'
 import { Histogram, transposeSettingsHeight } from './plots-histogram'
 import { TimeSeriesPlot } from './plots-timeseries'
 
@@ -77,4 +80,52 @@ export function extraHeaderSpaceForVertical(spec: PlotProps): number {
         return transposeSettingsHeight
     }
     return 0
+}
+
+export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
+    if (rows[statIndex].kind !== 'statistic' || rows[statIndex].extraStats.length === 0) {
+        return []
+    }
+    const sPs = rows.map(row => statParents.get(row.statpath)!).map((sP, i) => ({ sP, i }))
+    const byYear = new Map<Year, number[]>()
+    sPs.filter((
+        { sP, i }) => sP.group.id === sPs[statIndex].sP.group.id && rows[i].kind === 'statistic' && rows[i].extraStats.length > 0,
+    ).forEach(({ sP: { year }, i }) => {
+        assert(year !== null, 'Year should not be null for plot data')
+        byYear.set(year, [...(byYear.get(year) ?? []), i])
+    })
+    const bestSourceEach = Array.from(byYear.entries()).map(([, indices]) => {
+        if (indices.length === 1) {
+            return indices[0]
+        }
+        const sources = indices.map(i => sPs[i].sP.source)
+        const exactMatch = sources.findIndex(source => JSON.stringify(source) === JSON.stringify(sPs[statIndex].sP.source))
+        if (exactMatch !== -1) {
+            return indices[exactMatch]
+        }
+        const nullMatch = sources.findIndex(source => source === null)
+        if (nullMatch !== -1) {
+            return indices[nullMatch]
+        }
+        return indices[0]
+    })
+    const statpaths = bestSourceEach.map(i => sPs[i])
+    const overOne = statpaths.length > 1
+    if (overOne) {
+        statpaths.forEach(({ sP: { year } }) => {
+            assert(year !== null, 'Year should not be null for plot data')
+        })
+        assert(statpaths.length === new Set(statpaths.map(({ sP: { year } }) => year)).size, 'All statpaths for plot data should have unique years')
+    }
+    return statpaths.map(({ i: idx, sP: { year } }) => {
+        assert(year !== null, 'unreachable, we checked this already')
+        return {
+            ...rows[idx],
+            color,
+            shortname,
+            longname,
+            sharedTypeOfAllArticles,
+            subseriesName: year.toString(),
+        } satisfies PlotProps
+    })
 }
