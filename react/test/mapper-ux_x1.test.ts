@@ -2,7 +2,7 @@ import { ClientFunction, Selector } from 'testcafe'
 
 import { nthEditor, typeInEditor } from './editor_test_utils'
 import { checkSelector, getCodeFromMainField, getErrors, getInput, replaceInput, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { checkTextboxesDirect, downloadImage, dragHandle, getLocation, mapper, screencap, target, urbanstatsFixture, waitForLoading, withHamburgerMenu } from './test_utils'
+import { checkTextboxesDirect, downloadCSV, downloadImage, downloadOrCheckString, dragHandle, getLocation, mapper, screencap, target, urbanstatsFixture, waitForLoading, withHamburgerMenu } from './test_utils'
 
 urbanstatsFixture('mapper default', `${target}/mapper.html`)
 
@@ -418,4 +418,41 @@ mapper(() => test)('assignments displayed on error result', { code: 'x=1' }, asy
     await t.hover(Selector('span').withText(/^x/))
     await t.wait(1000)
     await t.expect(Selector('pre').withExactText('1').count).eql(1)
+})
+
+// CSV Export Test
+urbanstatsFixture('mapper-csv-export', urlFromCode('County', 'USA', 'condition(population > 100000); cMap(data=density_pw_1km / population, scale=logScale(), ramp=rampUridis, basemap=noBasemap())'))
+
+test('mapper-csv-export', async (t) => {
+    const csvContent = await downloadCSV(t)
+    await downloadOrCheckString(t, csvContent, 'csv-export-mapper', 'csv', false)
+})
+
+const clusterMapPopulationFilterBase = `
+clusterMap(
+    data=commute_transit,
+    scale=linearScale(max=0.25),
+    ramp=rampUridis,
+    maxRadius=60,
+    relativeArea=population,
+    basemap=noBasemap()
+)
+`
+
+urbanstatsFixture(
+    'cluster-map-population-filter-steps',
+    urlFromCode('County', 'USA', clusterMapPopulationFilterBase),
+)
+
+test('cluster-map-population-filter-steps', async (t) => {
+    await t.expect(getErrors()).eql([])
+    await toggleCustomScript(t) // switch to Auto UX (custom unchecked)
+    await checkTextboxesDirect(t, ['Filter?'])
+
+    const thresholds = [1000000, 100000, 10000, 1000, 100]
+    for (const threshold of thresholds) {
+        await typeInEditor(t, 0, `population < ${threshold}`, true)
+        await t.expect(getErrors()).eql([])
+        await screencap(t, { removeEntireMap: false })
+    }
 })
