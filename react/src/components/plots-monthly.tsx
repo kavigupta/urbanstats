@@ -6,7 +6,7 @@ import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 
 import { MonthlyExtraStat } from './load-article'
-import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, PlotComponent, PlotDownloadButton, transposeAwareTip } from './plots-general'
+import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, ordinalSeriesMarks, PlotComponent, PlotDownloadButton, transposeAwareTip } from './plots-general'
 
 const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -84,30 +84,12 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], modeSwitcher?: R
 
             const dashPatterns = computeDashPatterns(props.stats, props.dashOrder)
             marks.push(
-                ...seriesData.map(({ stat, values }) =>
-                    Plot.line(
-                        monthIdxs.map(i => ({ monthIdx: i, value: values[i] })),
-                        {
-                            x: transpose ? 'value' : 'monthIdx',
-                            y: transpose ? 'monthIdx' : 'value',
-                            stroke: stat.color,
-                            strokeWidth: 3,
-                            strokeDasharray: dashPatterns.size > 1 ? dashPatterns.get(stat.subseriesName)?.pattern : undefined,
-                        },
-                    ) as Plot.Markish,
-                ),
-            )
-            marks.push(
-                ...seriesData.map(({ stat, values }) =>
-                    Plot.dot(
-                        monthIdxs.map(i => ({ monthIdx: i, value: values[i] })),
-                        {
-                            x: transpose ? 'value' : 'monthIdx',
-                            y: transpose ? 'monthIdx' : 'value',
-                            fill: stat.color,
-                            r: 3,
-                        },
-                    ) as Plot.Markish,
+                ...ordinalSeriesMarks(
+                    seriesData.map(({ stat, values }) => ({ series: stat, values })),
+                    monthIdxs,
+                    'monthIdx',
+                    transpose,
+                    dashPatterns,
                 ),
             )
 

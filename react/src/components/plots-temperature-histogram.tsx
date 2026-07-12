@@ -5,7 +5,7 @@ import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 
 import { TemperatureHistogramExtraStat } from './load-article'
-import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, PlotComponent, PlotDownloadButton, transposeAwareTip } from './plots-general'
+import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, ordinalSeriesMarks, PlotComponent, PlotDownloadButton, transposeAwareTip } from './plots-general'
 import { convertValue, unitSuffixFor } from './plots-monthly'
 
 export interface TemperatureHistogramPlotProps {
@@ -94,30 +94,13 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
 
             const dashPatterns = computeDashPatterns(props.histograms, props.dashOrder)
             marks.push(
-                ...seriesData.map(({ h, values }) =>
-                    Plot.line(
-                        binIdxs.map(i => ({ binIdx: pointX(i), value: values[i] })),
-                        {
-                            x: transpose ? 'value' : 'binIdx',
-                            y: transpose ? 'binIdx' : 'value',
-                            stroke: h.color,
-                            strokeWidth: 3,
-                            strokeDasharray: dashPatterns.size > 1 ? dashPatterns.get(h.subseriesName)?.pattern : undefined,
-                        },
-                    ) as Plot.Markish,
-                ),
-            )
-            marks.push(
-                ...seriesData.map(({ h, values }) =>
-                    Plot.dot(
-                        binIdxs.map(i => ({ binIdx: pointX(i), value: values[i] })),
-                        {
-                            x: transpose ? 'value' : 'binIdx',
-                            y: transpose ? 'binIdx' : 'value',
-                            fill: h.color,
-                            r: 3,
-                        },
-                    ) as Plot.Markish,
+                ...ordinalSeriesMarks(
+                    seriesData.map(({ h, values }) => ({ series: h, values })),
+                    binIdxs,
+                    'binIdx',
+                    transpose,
+                    dashPatterns,
+                    pointX,
                 ),
             )
 

@@ -32,6 +32,48 @@ export function multiSeriesTipTitle(prefix: string, names: string[], values: num
     return result
 }
 
+// a line+dot series over an ordinal x-axis (e.g. months, temperature buckets), dash-aware,
+// swapping x/y when transposed -- for the simple case where every series shares the same set
+// of ordinal x positions, unlike Histogram's log-scale/relative/cumulative rendering
+export function ordinalSeriesMarks(
+    seriesData: { series: { color: string, subseriesName: string }, values: number[] }[],
+    idxs: number[],
+    idxKey: string,
+    transpose: boolean,
+    dashPatterns: Map<string, { pattern: string, name: string }>,
+    xFor: (i: number) => number = i => i,
+): Plot.Markish[] {
+    const marks: Plot.Markish[] = []
+    marks.push(
+        ...seriesData.map(({ series, values }) =>
+            Plot.line(
+                idxs.map(i => ({ [idxKey]: xFor(i), value: values[i] })),
+                {
+                    x: transpose ? 'value' : idxKey,
+                    y: transpose ? idxKey : 'value',
+                    stroke: series.color,
+                    strokeWidth: 3,
+                    strokeDasharray: dashPatterns.size > 1 ? dashPatterns.get(series.subseriesName)?.pattern : undefined,
+                },
+            ) as Plot.Markish,
+        ),
+    )
+    marks.push(
+        ...seriesData.map(({ series, values }) =>
+            Plot.dot(
+                idxs.map(i => ({ [idxKey]: xFor(i), value: values[i] })),
+                {
+                    x: transpose ? 'value' : idxKey,
+                    y: transpose ? idxKey : 'value',
+                    fill: series.color,
+                    r: 3,
+                },
+            ) as Plot.Markish,
+        ),
+    )
+    return marks
+}
+
 // a Plot.tip anchored at the tallest series' value at each point, swapping x/y when transposed,
 // styled with the theme's tooltip colors
 export function transposeAwareTip<T>(
