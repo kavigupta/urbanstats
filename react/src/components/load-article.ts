@@ -10,7 +10,7 @@ import { findAmbiguousSourcesAll, statParents, StatName, StatPath, statPathToOrd
 import { assert } from '../utils/defensive'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { Article, CongressionalRepresentativeTable, ICongressionalRepresentative, ICongressionalRepresentativePointer, IFirstOrLast, IMetadata } from '../utils/protos'
-import { UnitType } from '../utils/unit'
+import { classifyStatistic, UnitType } from '../utils/unit'
 
 import { CountsByUT, forType } from './countsByArticleType'
 import { electionDisclaimerForRow, type Disclaimer } from './disclaimer-text'
@@ -68,6 +68,7 @@ export interface ArticleStatisticRow {
     extraStats: ExtraStat[]
     disclaimer?: Disclaimer
     overallFirstLast: FirstLastStatus
+    unit: UnitType
 }
 
 /** Metadata shown as an extra table row (same UI pipeline as statistics). */
@@ -81,6 +82,7 @@ export interface MetadataArticleRow {
     extraStats: []
     disclaimer: undefined
     dataCreditExplanationPage: string
+    unit: 'number'
 }
 
 export type ArticleRow = ArticleStatisticRow | MetadataArticleRow
@@ -97,7 +99,7 @@ const dataCreditExplanationPageByMetadataIndex = new Map<number, string>(
 interface StatisticCellRenderingInfoCommon {
     articleType: string
     statname: HumanReadableName
-    unit?: UnitType
+    unit: UnitType
     statpath?: StatPath
 }
 
@@ -237,6 +239,7 @@ function metadataRowsForArticle(
             extraStats: [],
             disclaimer: undefined,
             dataCreditExplanationPage,
+            unit: 'number',
         }]
     })
 }
@@ -325,6 +328,7 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
                 isFirst: overallFirstLastThis.some((x: IFirstOrLast) => x.isFirst),
                 isLast: overallFirstLastThis.some((x: IFirstOrLast) => !x.isFirst),
             },
+            unit: classifyStatistic(names[i]),
         } satisfies ArticleStatisticRow
     })
 }

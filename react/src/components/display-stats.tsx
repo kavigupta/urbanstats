@@ -2,16 +2,15 @@ import React, { CSSProperties, ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
-import { classifyStatistic, UnitType } from '../utils/unit'
+import { UnitType } from '../utils/unit'
 
 import { getUnitDisplay } from './unit-display'
 
-export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, isUnit: boolean, unit: UnitType | 'auto' }): ReactNode {
+export function Statistic(props: { style?: React.CSSProperties, statname: string, value: number, isUnit: boolean, unit: UnitType }): ReactNode {
     const [useImperial] = useSetting('use_imperial')
     const [temperatureUnit] = useSetting('temperature_unit')
 
-    const statisticType = props.unit === 'auto' ? classifyStatistic(props.statname) : props.unit
-    const unitDisplay = getUnitDisplay(statisticType)
+    const unitDisplay = getUnitDisplay(props.unit)
     const { value, unit } = unitDisplay.renderValue(props.value, useImperial, temperatureUnit)
 
     return (

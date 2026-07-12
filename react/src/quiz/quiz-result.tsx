@@ -13,6 +13,7 @@ import { Settings, useSetting } from '../page_template/settings'
 import { getVector, VectorSettingsDictionary } from '../page_template/settings-vector'
 import { allGroups, allYears, statParents, StatPath, StatName } from '../page_template/statistic-tree'
 import { withButtonRole } from '../utils/a11y'
+import { classifyStatistic } from '../utils/unit'
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { AuthenticationStateMachine } from './AuthenticationStateMachine'
@@ -536,19 +537,20 @@ function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNode {
 
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- legacy stat names can be empty
 function Value({ stat, statColumn }: { stat: number, statColumn: StatName | LegacyStatName | '%' }): ReactNode {
+    const unit = classifyStatistic(statColumn)
     return (
         <span>
             <Statistic
                 statname={statColumn}
                 value={stat}
                 isUnit={false}
-                unit="auto"
+                unit={unit}
             />
             <Statistic
                 statname={statColumn}
                 value={stat}
                 isUnit={true}
-                unit="auto"
+                unit={unit}
             />
         </span>
     )
