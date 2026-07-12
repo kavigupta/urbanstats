@@ -90,13 +90,13 @@ function RampColorbar({ ramp }: { ramp: EmpiricalRamp }): ReactNode {
                     statname={reifyString(ramp.label)}
                     value={stat}
                     isUnit={false}
-                    unit={ramp.unit}
+                    unit={ramp.unit ?? 'number'}
                 />
                 <Statistic
                     statname={reifyString(ramp.label)}
                     value={stat}
                     isUnit={true}
-                    unit={ramp.unit}
+                    unit={ramp.unit ?? 'number'}
                 />
             </div>
         )

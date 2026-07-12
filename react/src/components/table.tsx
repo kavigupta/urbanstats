@@ -542,7 +542,7 @@ export function StatisticRowCells(props: {
                             value={statisticRow.statval}
                             isUnit={false}
                             style={props.statisticStyle ?? {}}
-                            unit={statisticRow.unit}
+                            unit={statisticRow.unit ?? 'number'}
                         />
                     </span>
                 ),
@@ -558,7 +558,7 @@ export function StatisticRowCells(props: {
                                 statname={reifyString(statisticRow.statname)}
                                 value={statisticRow.statval}
                                 isUnit={true}
-                                unit={statisticRow.unit}
+                                unit={statisticRow.unit ?? 'number'}
                             />
                         </span>
                     </div>

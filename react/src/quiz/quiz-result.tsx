@@ -542,11 +542,13 @@ function Value({ stat, statColumn }: { stat: number, statColumn: StatName | Lega
                 statname={statColumn}
                 value={stat}
                 isUnit={false}
+                unit="auto"
             />
             <Statistic
                 statname={statColumn}
                 value={stat}
                 isUnit={true}
+                unit="auto"
             />
         </span>
     )
