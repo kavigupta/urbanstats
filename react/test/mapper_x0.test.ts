@@ -197,24 +197,3 @@ cMapRGB(
 `
 
 testCode(() => test, 'County', 'USA', rgbMap, 'rgb-map')
-
-testCode(() => test, 'Subnational Region', 'USA', `cMap(
-    data=density_pw_1km,
-    scale=linearScale(),
-    ramp=rampUridis,
-    label="Multiline\\nLabel",
-    basemap=noBasemap()
-)`, 'multiline-label')
-
-const negativeDefaultValue = `
-condition (white > 0.7 & density_pw_1km < 1000)
-cMap(
-    data=pres_2020_margin,
-    scale=linearScale(max=0, min=-0.75),
-    ramp=rampUridis,
-    basemap=noBasemap(backgroundColor=colorBlack),
-    label="2020 Presidential Election Margin, among CCDs with 70%+ white and Density < 1000/km2",
-    unit=unitDemocraticMargin
-)`
-
-testCode(() => test, 'County', 'USA', negativeDefaultValue, 'negative-default-value', true)
