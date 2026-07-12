@@ -1,35 +1,6 @@
 import { typeInEditor } from './editor_test_utils'
-import { checkGeojson, downloadPNG, getCodeFromMainField, getErrors, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { checkTextboxesDirect, safeReload, screencap, urbanstatsFixture } from './test_utils'
-
-function testCode(testFn: () => TestFn, geographyKind: string, universe: string, code: string, name: string, includeGeojson: boolean = false): void {
-    const url = urlFromCode(geographyKind, universe, code)
-    urbanstatsFixture(name, url)
-
-    testFn()(name, async (t) => {
-        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
-        await t.expect(getErrors()).eql([])
-        await toggleCustomScript(t)
-        // now in autoux mode
-        await t.expect(getErrors()).eql([])
-        await toggleCustomScript(t)
-        // now in custom mode
-        await t.expect(getErrors()).eql([])
-        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
-        await toggleCustomScript(t)
-        // now in autoux mode
-        await t.expect(getErrors()).eql([])
-        await safeReload(t)
-        await toggleCustomScript(t)
-        // back to custom mode
-        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
-        await screencap(t, { removeEntireMap: false })
-        if (includeGeojson) {
-            await checkGeojson(t, `mapping-geojson-${name}`)
-        }
-        await downloadPNG(t)
-    })
-}
+import { getErrors, testCode, toggleCustomScript, urlFromCode } from './mapper-utils'
+import { checkTextboxesDirect, screencap, urbanstatsFixture } from './test_utils'
 
 const clusterMapBasic = `
 clusterMap(
