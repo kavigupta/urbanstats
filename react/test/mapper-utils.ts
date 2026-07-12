@@ -5,9 +5,9 @@ import chalkTemplate from 'chalk-template'
 import * as diff from 'diff'
 import { ClientFunction, Selector } from 'testcafe'
 
-import { target, downloadOrCheckString, waitForDownload, grabDownload, waitForLoading } from './test_utils'
+import { target, downloadOrCheckString, waitForDownload, grabDownload, waitForLoading, urbanstatsFixture, safeReload, screencap } from './test_utils'
 
-export async function checkGeojson(t: TestController, path: string): Promise<void> {
+async function checkGeojson(t: TestController, path: string): Promise<void> {
     const laterThan = new Date().getTime()
     // download the geojson by clicking the button
     await t.click(Selector('button').withExactText('Export as GeoJSON'))
@@ -105,4 +105,33 @@ export function nastyDiff(actual: string, expected: string): void {
     })
 
     throw new Error(`strings different\n${actual}`)
+}
+
+export function testCode(testFn: () => TestFn, geographyKind: string, universe: string, code: string, name: string, includeGeojson: boolean = false): void {
+    const url = urlFromCode(geographyKind, universe, code)
+    urbanstatsFixture(name, url)
+
+    testFn()(name, async (t) => {
+        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
+        await t.expect(getErrors()).eql([])
+        await toggleCustomScript(t)
+        // now in autoux mode
+        await t.expect(getErrors()).eql([])
+        await toggleCustomScript(t)
+        // now in custom mode
+        await t.expect(getErrors()).eql([])
+        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
+        await toggleCustomScript(t)
+        // now in autoux mode
+        await t.expect(getErrors()).eql([])
+        await safeReload(t)
+        await toggleCustomScript(t)
+        // back to custom mode
+        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
+        await screencap(t, { removeEntireMap: false })
+        if (includeGeojson) {
+            await checkGeojson(t, `mapping-geojson-${name}`)
+        }
+        await downloadPNG(t)
+    })
 }

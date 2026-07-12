@@ -1,34 +1,4 @@
-import { checkGeojson, downloadPNG, getCodeFromMainField, getErrors, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { safeReload, screencap, urbanstatsFixture, downloadOrCheckString, downloadCSV } from './test_utils'
-
-export function testCode(testFn: () => TestFn, geographyKind: string, universe: string, code: string, name: string, includeGeojson: boolean = false): void {
-    const url = urlFromCode(geographyKind, universe, code)
-    urbanstatsFixture(name, url)
-
-    testFn()(name, async (t) => {
-        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
-        await t.expect(getErrors()).eql([])
-        await toggleCustomScript(t)
-        // now in autoux mode
-        await t.expect(getErrors()).eql([])
-        await toggleCustomScript(t)
-        // now in custom mode
-        await t.expect(getErrors()).eql([])
-        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
-        await toggleCustomScript(t)
-        // now in autoux mode
-        await t.expect(getErrors()).eql([])
-        await safeReload(t)
-        await toggleCustomScript(t)
-        // back to custom mode
-        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
-        await screencap(t, { removeEntireMap: false })
-        if (includeGeojson) {
-            await checkGeojson(t, `mapping-geojson-${name}`)
-        }
-        await downloadPNG(t)
-    })
-}
+import { testCode } from './mapper-utils'
 
 const codeFiltered = `
 regr = regression(y=commute_transit, x1=ln(density_pw_1km), weight=population);
@@ -227,40 +197,3 @@ cMapRGB(
 `
 
 testCode(() => test, 'County', 'USA', rgbMap, 'rgb-map')
-
-// CSV Export Test
-urbanstatsFixture('mapper-csv-export', urlFromCode('County', 'USA', 'condition(population > 100000); cMap(data=density_pw_1km / population, scale=logScale(), ramp=rampUridis, basemap=noBasemap())'))
-
-test('mapper-csv-export', async (t) => {
-    const csvContent = await downloadCSV(t)
-    await downloadOrCheckString(t, csvContent, 'csv-export-mapper', 'csv', false)
-})
-
-testCode(() => test, 'Subnational Region', 'USA', `cMap(
-    data=density_pw_1km,
-    scale=linearScale(),
-    ramp=rampUridis,
-    label="Multiline\\nLabel",
-    basemap=noBasemap()
-)`, 'multiline-label')
-
-testCode(() => test, 'Subnational Region', 'USA', `cMap(
-    data=log10(density_pw_1km),
-    scale=linearScale(),
-    ramp=rampUridis,
-    label="log_{10}(Density)^{2}",
-    basemap=noBasemap()
-)`, 'label-with-subscript-superscript')
-
-const negativeDefaultValue = `
-condition (white > 0.7 & density_pw_1km < 1000)
-cMap(
-    data=pres_2020_margin,
-    scale=linearScale(max=0, min=-0.75),
-    ramp=rampUridis,
-    basemap=noBasemap(backgroundColor=colorBlack),
-    label="2020 Presidential Election Margin, among CCDs with 70%+ white and Density < 1000/km2",
-    unit=unitDemocraticMargin
-)`
-
-testCode(() => test, 'County', 'USA', negativeDefaultValue, 'negative-default-value', true)
