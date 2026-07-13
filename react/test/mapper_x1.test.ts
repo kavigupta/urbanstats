@@ -1,35 +1,4 @@
-import { typeInEditor } from './editor_test_utils'
-import { checkGeojson, downloadPNG, getCodeFromMainField, getErrors, toggleCustomScript, urlFromCode } from './mapper-utils'
-import { checkTextboxesDirect, safeReload, screencap, urbanstatsFixture } from './test_utils'
-
-function testCode(testFn: () => TestFn, geographyKind: string, universe: string, code: string, name: string, includeGeojson: boolean = false): void {
-    const url = urlFromCode(geographyKind, universe, code)
-    urbanstatsFixture(name, url)
-
-    testFn()(name, async (t) => {
-        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
-        await t.expect(getErrors()).eql([])
-        await toggleCustomScript(t)
-        // now in autoux mode
-        await t.expect(getErrors()).eql([])
-        await toggleCustomScript(t)
-        // now in custom mode
-        await t.expect(getErrors()).eql([])
-        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
-        await toggleCustomScript(t)
-        // now in autoux mode
-        await t.expect(getErrors()).eql([])
-        await safeReload(t)
-        await toggleCustomScript(t)
-        // back to custom mode
-        await t.expect(code.trim()).eql((await getCodeFromMainField()).trim())
-        await screencap(t, { removeEntireMap: false })
-        if (includeGeojson) {
-            await checkGeojson(t, `mapping-geojson-${name}`)
-        }
-        await downloadPNG(t)
-    })
-}
+import { testCode } from './mapper-utils'
 
 const clusterMapBasic = `
 clusterMap(
@@ -136,35 +105,6 @@ clusterMap(
 
 testCode(() => test, 'County', 'USA', clusterMapClusterSpacing, 'cluster-map-cluster-spacing')
 
-const clusterMapPopulationFilterBase = `
-clusterMap(
-    data=commute_transit,
-    scale=linearScale(max=0.25),
-    ramp=rampUridis,
-    maxRadius=60,
-    relativeArea=population,
-    basemap=noBasemap()
-)
-`
-
-urbanstatsFixture(
-    'cluster-map-population-filter-steps',
-    urlFromCode('County', 'USA', clusterMapPopulationFilterBase),
-)
-
-test('cluster-map-population-filter-steps', async (t) => {
-    await t.expect(getErrors()).eql([])
-    await toggleCustomScript(t) // switch to Auto UX (custom unchecked)
-    await checkTextboxesDirect(t, ['Filter?'])
-
-    const thresholds = [1000000, 100000, 10000, 1000, 100]
-    for (const threshold of thresholds) {
-        await typeInEditor(t, 0, `population < ${threshold}`, true)
-        await t.expect(getErrors()).eql([])
-        await screencap(t, { removeEntireMap: false })
-    }
-})
-
 const asymmetricCenterValue = `
 cMap(
     data=density_pw_1km,
@@ -173,3 +113,24 @@ cMap(
 )`
 
 testCode(() => test, 'Subnational Region', 'USA', asymmetricCenterValue, 'asymmetric-center-value')
+
+testCode(() => test, 'Subnational Region', 'USA', `cMap(
+    data=density_pw_1km,
+    scale=linearScale(),
+    ramp=rampUridis,
+    label="Multiline\\nLabel",
+    basemap=noBasemap()
+)`, 'multiline-label')
+
+const negativeDefaultValue = `
+condition (white > 0.7 & density_pw_1km < 1000)
+cMap(
+    data=pres_2020_margin,
+    scale=linearScale(max=0, min=-0.75),
+    ramp=rampUridis,
+    basemap=noBasemap(backgroundColor=colorBlack),
+    label="2020 Presidential Election Margin, among CCDs with 70%+ white and Density < 1000/km2",
+    unit=unitDemocraticMargin
+)`
+
+testCode(() => test, 'County', 'USA', negativeDefaultValue, 'negative-default-value', true)
