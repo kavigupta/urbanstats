@@ -7,7 +7,7 @@ import { useSetting } from '../page_template/settings'
 import { convertPrecipitation, convertTemperature } from '../utils/unit'
 
 import { MonthlyExtraStat } from './load-article'
-import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, ordinalSeriesMarks, PlotComponent, PlotDownloadButton, transposeAwareTip } from './plots-general'
+import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, ordinalSeriesMarks, PlotComponent, PlotSettingsBar, transposeAwareTip } from './plots-general'
 
 const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -15,6 +15,7 @@ export interface MonthlyPlotProps {
     stat: MonthlyExtraStat
     color: string
     shortname: string
+    longname: string
     subseriesName: string
 }
 
@@ -34,7 +35,7 @@ interface TipDatum {
     values: number[]
 }
 
-export function MonthlyPlot(props: { stats: MonthlyPlotProps[], modeSwitcher?: ReactElement, dashOrder?: string[] }): ReactNode {
+export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllArticles?: string, modeSwitcher?: ReactElement, dashOrder?: string[] }): ReactNode {
     const [temperatureUnit] = useSetting('temperature_unit')
     const [useImperial] = useSetting('use_imperial')
     const colors = useColors()
@@ -43,19 +44,14 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], modeSwitcher?: R
     const unitSuffix = convertMonthlyValue(props.stats[0].stat.monthlyValues[0], unit, temperatureUnit, useImperial).unit
 
     const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
-        <div
-            className="serif"
-            style={{
-                backgroundColor: colors.background,
-                padding: '0.5em',
-                border: `1px solid ${colors.textMain}`,
-                display: 'flex',
-                gap: '0.5em',
-            }}
-        >
-            <PlotDownloadButton makePlot={makePlot} shortnames={props.stats.map(s => s.shortname)} filenameSuffix="monthly" />
-            {props.modeSwitcher}
-        </div>
+        <PlotSettingsBar
+            makePlot={makePlot}
+            shortnames={props.stats.map(s => s.shortname)}
+            longnames={props.stats.map(s => s.longname)}
+            sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
+            filenameSuffix="monthly"
+            modeSwitcher={props.modeSwitcher}
+        />
     )
 
     const plotSpec = useCallback(

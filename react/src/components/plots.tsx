@@ -6,7 +6,8 @@ import { statParents, StatPath, Year } from '../page_template/statistic-tree'
 import { assert } from '../utils/defensive'
 
 import { ArticleRow, ExtraStat } from './load-article'
-import { Histogram, transposeSettingsHeight } from './plots-histogram'
+import { transposeSettingsHeight } from './plots-general'
+import { Histogram } from './plots-histogram'
 import { MonthlyPlot } from './plots-monthly'
 import { TemperatureHistogramPlot } from './plots-temperature-histogram'
 import { TimeSeriesPlot } from './plots-timeseries'
@@ -115,6 +116,7 @@ export function RenderedPlot({ statDescription, statpath, plotProps }: { statDes
                             return [
                                 {
                                     shortname: props.shortname,
+                                    longname: props.longname,
                                     stat: extraStat,
                                     color: props.color,
                                     subseriesName: props.subseriesName,
@@ -122,6 +124,7 @@ export function RenderedPlot({ statDescription, statpath, plotProps }: { statDes
                             ]
                         },
                     )}
+                    sharedTypeOfAllArticles={relevantPlotProps[0]?.sharedTypeOfAllArticles}
                     modeSwitcher={modeSwitcher}
                     dashOrder={dashOrder}
                 />
@@ -147,6 +150,7 @@ export function RenderedPlot({ statDescription, statpath, plotProps }: { statDes
                             ]
                         },
                     )}
+                    sharedTypeOfAllArticles={relevantPlotProps[0]?.sharedTypeOfAllArticles}
                     modeSwitcher={modeSwitcher}
                     dashOrder={dashOrder}
                 />
@@ -157,7 +161,7 @@ export function RenderedPlot({ statDescription, statpath, plotProps }: { statDes
 }
 
 export function extraHeaderSpaceForVertical(spec: PlotProps): number {
-    if (spec.extraStats.some(es => es.type === 'histogram' || es.type === 'temperature_histogram')) {
+    if (spec.extraStats.some(es => es.type === 'histogram' || es.type === 'temperature_histogram' || es.type === 'monthly_time_series')) {
         return transposeSettingsHeight
     }
     return 0

@@ -6,7 +6,7 @@ import { useSetting } from '../page_template/settings'
 import { convertTemperature } from '../utils/unit'
 
 import { TemperatureHistogramExtraStat } from './load-article'
-import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, ordinalSeriesMarks, PlotComponent, PlotDownloadButton, transposeAwareTip } from './plots-general'
+import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, ordinalSeriesMarks, PlotComponent, PlotSettingsBar, transposeAwareTip } from './plots-general'
 
 export interface TemperatureHistogramPlotProps {
     shortname: string
@@ -39,7 +39,7 @@ function bucketRangeLabel(binIdx: number, binMin: number, binSize: number, conve
     return `${round(lo)}-${round(hi)}${unitSuffix}`
 }
 
-export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogramPlotProps[], statDescription: string, modeSwitcher?: ReactElement, dashOrder?: string[] }): ReactNode {
+export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogramPlotProps[], statDescription: string, sharedTypeOfAllArticles?: string, modeSwitcher?: ReactElement, dashOrder?: string[] }): ReactNode {
     const [temperatureUnit] = useSetting('temperature_unit')
     const colors = useColors()
 
@@ -54,19 +54,14 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
     const unitSuffix = convertTemperature(binMin, temperatureUnit).unit
 
     const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
-        <div
-            className="serif"
-            style={{
-                backgroundColor: colors.background,
-                padding: '0.5em',
-                border: `1px solid ${colors.textMain}`,
-                display: 'flex',
-                gap: '0.5em',
-            }}
-        >
-            <PlotDownloadButton makePlot={makePlot} shortnames={props.histograms.map(h => h.shortname)} filenameSuffix="temperature_distribution" />
-            {props.modeSwitcher}
-        </div>
+        <PlotSettingsBar
+            makePlot={makePlot}
+            shortnames={props.histograms.map(h => h.shortname)}
+            longnames={props.histograms.map(h => h.longname)}
+            sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
+            filenameSuffix="temperature_distribution"
+            modeSwitcher={props.modeSwitcher}
+        />
     )
 
     const plotSpec = useCallback(

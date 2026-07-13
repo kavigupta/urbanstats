@@ -321,7 +321,7 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
                             name: spec.name,
                             unit: spec.unit,
                             monthlyValues: timeseries.values,
-                        } as MonthlyExtraStat]
+                        } satisfies MonthlyExtraStat]
                     }
                     return []
                 }
@@ -334,13 +334,10 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
                             binMin: spec.min_value,
                             binSize: spec.bin_size,
                             counts: temperatureHistogram.counts,
-                        } as TemperatureHistogramExtraStat]
+                        } satisfies TemperatureHistogramExtraStat]
                     }
                     return []
                 }
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- this is for future proofing against specs the currently-generated data doesn't have yet
-                default:
-                    return []
             }
         })
         const overallFirstLastThis = overallFirstOrLast.filter((x: IFirstOrLast) => x.articleRowIdx === rowIndex)
