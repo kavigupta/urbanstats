@@ -306,11 +306,11 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
                     const histogram = data.extraStats[extraStatIdx].histogram!
                     return [{
                         type: 'histogram',
-                        binMin: histogram.binMin,
-                        binSize: histogram.binSize,
-                        counts: histogram.counts,
+                        binMin: histogram.binMin!,
+                        binSize: histogram.binSize!,
+                        counts: histogram.counts!,
                         universeTotal: data.rows.find((_, universeRowIndex) => indices[universeRowIndex] === universeTotalIdx)!.statval!,
-                    } as HistogramExtraStat]
+                    } satisfies HistogramExtraStat]
                 }
                 case 'monthly_time_series': {
                     const timeseries = data.extraStats[extraStatIdx].timeseries
