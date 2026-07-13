@@ -1,18 +1,14 @@
 import * as Plot from '@observablehq/plot'
-import React, { ReactElement, ReactNode, useCallback, useContext, useState } from 'react'
+import React, { ReactElement, ReactNode, useCallback } from 'react'
 
 // imort Observable plot
-import { Navigator } from '../navigation/Navigator'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { HistogramType, useSetting } from '../page_template/settings'
-import { useUniverse } from '../universe'
 import { IHistogram } from '../utils/protos'
 import { useTranspose } from '../utils/transpose'
-import { zIndex } from '../utils/zIndex'
 
-import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, PlotComponent, PlotDownloadButton, transposeAwareTip } from './plots-general'
-import { SearchBox } from './search'
+import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, PlotComponent, PlotSettingsBar, transposeAwareTip } from './plots-general'
 import { CheckboxSetting } from './sidebar'
 
 const yPad = 0.025
@@ -38,7 +34,7 @@ function processHistogramType(histogramType: HistogramType, histograms: Histogra
 }
 
 export function Histogram(props: { histograms: HistogramProps[], statDescription: string, sharedTypeOfAllArticles?: string, dashOrder?: string[] }): ReactNode {
-    const [histogramTypeRaw] = useSetting('histogram_type')
+    const [histogramTypeRaw, setHistogramType] = useSetting('histogram_type')
     const histogramType = processHistogramType(histogramTypeRaw, props.histograms)
     const [useImperial] = useSetting('use_imperial')
     const [relative] = useSetting('histogram_relative')
@@ -49,11 +45,30 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
             throw new Error('histograms have different binMin or binSize')
         }
     }
-    const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
-        <HistogramSettings makePlot={makePlot} shortnames={props.histograms.map(h => h.shortname)} longnames={props.histograms.map(h => h.longname)} sharedTypeOfAllArticles={props.sharedTypeOfAllArticles} />
-    )
-
     const systemColors = useColors()
+    const isTransposed = useTranspose()
+    const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
+        <PlotSettingsBar
+            makePlot={makePlot}
+            shortnames={props.histograms.map(h => h.shortname)}
+            longnames={props.histograms.map(h => h.longname)}
+            sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
+            filenameSuffix="histogram"
+        >
+            <select
+                value={histogramTypeRaw}
+                style={{ backgroundColor: systemColors.background, color: systemColors.textMain }}
+                onChange={(e) => { setHistogramType(e.target.value as HistogramType) }}
+                className="serif"
+                data-test-id="histogram_type"
+            >
+                <option value="Line">Line</option>
+                <option value="Line (cumulative)">Line (cumulative)</option>
+                <option value="Bar">Bar</option>
+            </select>
+            <CheckboxSetting name={isTransposed ? 'Relative' : 'Relative Histograms'} settingKey="histogram_relative" testId="histogram_relative" />
+        </PlotSettingsBar>
+    )
 
     const plotSpec = useCallback(
         (transpose: boolean) => {
@@ -84,99 +99,6 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
             settingsElement={settingsElement}
         />
     )
-}
-
-export const transposeSettingsHeight = 30.5
-
-function HistogramSettings(props: {
-    shortnames: string[]
-    longnames: string[]
-    makePlot: () => HTMLElement
-    sharedTypeOfAllArticles?: string
-}): ReactNode {
-    const universe = useUniverse()
-    const [histogramType, setHistogramType] = useSetting('histogram_type')
-    const colors = useColors()
-    const transpose = useTranspose()
-    const navContext = useContext(Navigator.Context)
-    const [showSearchBox, setShowSearchBox] = useState(false)
-
-    // dropdown for histogram type
-    return (
-        <div
-            className="serif"
-            style={{
-                backgroundColor: transpose ? undefined : colors.background,
-                padding: transpose ? undefined : '0.5em',
-                border: transpose ? undefined : `1px solid ${colors.textMain}`,
-                display: 'flex',
-                gap: '0.5em',
-                height: transpose ? `${transposeSettingsHeight}px` : undefined,
-                alignItems: transpose ? 'center' : undefined,
-                justifyContent: transpose ? 'center' : undefined,
-                position: 'relative',
-            }}
-        >
-            <PlotDownloadButton makePlot={props.makePlot} shortnames={props.shortnames} filenameSuffix="histogram" />
-            <div style={{ position: 'relative' }}>
-                <img
-                    src="/add.png"
-                    onClick={() => { setShowSearchBox(!showSearchBox) }}
-                    width="20"
-                    height="20"
-                    style={{ cursor: 'pointer' }}
-                />
-                {showSearchBox && (
-                    <div
-                        style={{
-                            position: 'absolute',
-                            top: '25px',
-                            left: '0px',
-                            backgroundColor: colors.background,
-                            border: `1px solid ${colors.textMain}`,
-                            borderRadius: '4px',
-                            padding: '0.5em',
-                            zIndex: zIndex.plotSettings,
-                            minWidth: '200px',
-                        }}
-                    >
-                        <SearchBox
-                            style={{ width: '100%' }}
-                            placeholder="Add region..."
-                            autoFocus={true}
-                            prioritizeArticleType={props.sharedTypeOfAllArticles}
-                            onChange={() => {
-                                setShowSearchBox(false)
-                            }}
-                            articleLink={(regionName) => {
-                                return navContext.link({
-                                    kind: 'comparison',
-                                    universe,
-                                    longnames: [...deduplicate(props.longnames), regionName],
-                                }, { scroll: { kind: 'none' } })
-                            }}
-                        />
-                    </div>
-                )}
-            </div>
-            <select
-                value={histogramType}
-                style={{ backgroundColor: colors.background, color: colors.textMain }}
-                onChange={(e) => { setHistogramType(e.target.value as HistogramType) }}
-                className="serif"
-                data-test-id="histogram_type"
-            >
-                <option value="Line">Line</option>
-                <option value="Line (cumulative)">Line (cumulative)</option>
-                <option value="Bar">Bar</option>
-            </select>
-            <CheckboxSetting name={transpose ? 'Relative' : 'Relative Histograms'} settingKey="histogram_relative" testId="histogram_relative" />
-        </div>
-    )
-}
-
-function deduplicate(arr: string[]): string[] {
-    return Array.from(new Set(arr))
 }
 
 function histogramBounds(histograms: HistogramProps[]): [number, number] {
