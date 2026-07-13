@@ -1,6 +1,7 @@
 import * as Plot from '@observablehq/plot'
-import React, { ReactElement, ReactNode, useCallback, useEffect, useRef } from 'react'
+import React, { ReactElement, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
+import { Navigator } from '../navigation/Navigator'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { useUniverse } from '../universe'
@@ -9,6 +10,7 @@ import { useTranspose } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
 import { createScreenshot, useScreenshotMode } from './screenshot'
+import { SearchBox } from './search'
 
 import './plots.css'
 
@@ -56,7 +58,7 @@ export function transposeAwareTip<T>(
 }
 
 // the screenshot-download icon shared by every plot type's settings bar
-export function PlotDownloadButton(props: { makePlot: () => HTMLElement, shortnames: string[], filenameSuffix: string }): ReactNode {
+function PlotDownloadButton(props: { makePlot: () => HTMLElement, shortnames: string[], filenameSuffix: string }): ReactNode {
     const universe = useUniverse()
     const colors = useColors()
     return (
@@ -83,6 +85,90 @@ export function PlotDownloadButton(props: { makePlot: () => HTMLElement, shortna
             height="20"
             style={{ cursor: 'pointer' }}
         />
+    )
+}
+
+function deduplicate(arr: string[]): string[] {
+    return Array.from(new Set(arr))
+}
+
+export const transposeSettingsHeight = 30.5
+
+// the settings bar shared by every plot type: download button, "add region" search popup, and
+// (when relevant) plot-type-specific controls (e.g. histogram's line/bar select)
+export function PlotSettingsBar(props: {
+    makePlot: () => HTMLElement
+    shortnames: string[]
+    longnames: string[]
+    sharedTypeOfAllArticles?: string
+    filenameSuffix: string
+    children?: ReactNode
+}): ReactNode {
+    const colors = useColors()
+    const universe = useUniverse()
+    const transpose = useTranspose()
+    const navContext = useContext(Navigator.Context)
+    const [showSearchBox, setShowSearchBox] = useState(false)
+
+    return (
+        <div
+            className="serif"
+            style={{
+                backgroundColor: transpose ? undefined : colors.background,
+                padding: transpose ? undefined : '0.5em',
+                border: transpose ? undefined : `1px solid ${colors.textMain}`,
+                display: 'flex',
+                gap: '0.5em',
+                height: transpose ? `${transposeSettingsHeight}px` : undefined,
+                alignItems: transpose ? 'center' : undefined,
+                justifyContent: transpose ? 'center' : undefined,
+                position: 'relative',
+            }}
+        >
+            <PlotDownloadButton makePlot={props.makePlot} shortnames={props.shortnames} filenameSuffix={props.filenameSuffix} />
+            <div style={{ position: 'relative' }}>
+                <img
+                    src="/add.png"
+                    onClick={() => { setShowSearchBox(!showSearchBox) }}
+                    width="20"
+                    height="20"
+                    style={{ cursor: 'pointer' }}
+                />
+                {showSearchBox && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: '25px',
+                            left: '0px',
+                            backgroundColor: colors.background,
+                            border: `1px solid ${colors.textMain}`,
+                            borderRadius: '4px',
+                            padding: '0.5em',
+                            zIndex: zIndex.plotSettings,
+                            minWidth: '200px',
+                        }}
+                    >
+                        <SearchBox
+                            style={{ width: '100%' }}
+                            placeholder="Add region..."
+                            autoFocus={true}
+                            prioritizeArticleType={props.sharedTypeOfAllArticles}
+                            onChange={() => {
+                                setShowSearchBox(false)
+                            }}
+                            articleLink={(regionName) => {
+                                return navContext.link({
+                                    kind: 'comparison',
+                                    universe,
+                                    longnames: [...deduplicate(props.longnames), regionName],
+                                }, { scroll: { kind: 'none' } })
+                            }}
+                        />
+                    </div>
+                )}
+            </div>
+            {props.children}
+        </div>
     )
 }
 
