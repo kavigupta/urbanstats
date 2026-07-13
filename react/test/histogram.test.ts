@@ -82,6 +82,121 @@ test('histogram-basic-comparison-nan-middle', async (t) => {
     await downloadOrCheckHistogram(t, 'histogram-basic-comparison-nan-middle')
 })
 
+// Regression tests for a bug where comparing a region with valid partner-stat data
+// (e.g. Canada, which has both rainfall and snowfall) against a region where the
+// partner stat is invalid/all-zero (e.g. Singapore, which has no snowfall) caused
+// the region without valid partner data to mislabel its series with a bare year
+// (e.g. "2020") instead of "Rain", producing a bogus extra entry in the shared legend.
+
+urbanstatsFixture('comparison test monthly plot with mismatched pair validity', comparisonPage(['Singapore', 'Canada']))
+
+test('histogram-monthly-comparison-mismatched-pair-validity', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Rainfall"]'))
+    await downloadHistogram(t, 0)
+})
+
+// Same mismatched validity, but with a third (also-valid) region in the mix.
+urbanstatsFixture('comparison test monthly plot with mismatched pair validity, three regions', comparisonPage(['Singapore', 'Canada', 'Russia']))
+
+test('histogram-monthly-comparison-mismatched-pair-validity-triple', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Rainfall"]'))
+    await downloadHistogram(t, 0)
+})
+
+// Both regions lack the partner stat (neither has valid snowfall) -- the dashed
+// overlay line should simply not appear, rather than crashing or mislabeling.
+urbanstatsFixture('comparison test monthly plot with symmetric invalid pair', comparisonPage(['Singapore', 'Malaysia']))
+
+test('histogram-monthly-comparison-symmetric-invalid-pair', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Rainfall"]'))
+    await downloadHistogram(t, 0)
+})
+
+// Expanding from the invalid side of the pair (Singapore's own snowfall data is
+// invalid) should just omit that region from the chart rather than erroring.
+urbanstatsFixture('comparison test monthly plot expanding the invalid side of the pair', comparisonPage(['Singapore', 'Canada']))
+
+test('histogram-monthly-comparison-expand-invalid-own-stat', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Snowfall [rain-equivalent]"]'))
+    await downloadHistogram(t, 0)
+})
+
+// A different pair (high/low temperature, both valid) for general coverage of the
+// cross-stat pairing mechanism beyond rain/snow.
+urbanstatsFixture('comparison test monthly plot with high/low temperature pair', comparisonPage(['USA', 'Canada']))
+
+test('histogram-monthly-comparison-temperature-pair', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Mean high temp"]'))
+    await downloadHistogram(t, 0)
+})
+
+// Temperature stats have a second plot mode -- a distribution ("Distribution") in addition
+// to the monthly overlay ("Monthly") -- which is otherwise untested. The high/low overlay is
+// deliberately excluded from Distribution mode (pairedInFor: ['monthly_time_series']), so
+// switching modes and back should toggle the "Low" series on and off without losing state.
+urbanstatsFixture('comparison test temperature distribution mode switch', comparisonPage(['USA', 'Canada']))
+
+test('histogram-temperature-distribution-mode-switch', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Mean high temp"]'))
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Low$/).exists).ok('Low overlay should be visible in Monthly mode')
+
+    const modeSelect = Selector('[data-test-id=plot_mode]')
+    await t.click(modeSelect).click(modeSelect.find('option').withExactText('Distribution'))
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Low$/).exists).notOk('Low overlay should be excluded from Distribution mode')
+    await downloadHistogram(t, 0)
+
+    await t.click(modeSelect).click(modeSelect.find('option').withExactText('Monthly'))
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Low$/).exists).ok('Low overlay should reappear after switching back to Monthly')
+})
+
+// Distribution mode for a single article (no cross-region legend, no pairing) --
+// exercises TemperatureHistogramPlot outside of a comparison.
+urbanstatsFixture('article test temperature distribution mode', `${target}/article.html?longname=Germany&universe=world`)
+
+test('histogram-temperature-distribution-article', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Mean high temp"]'))
+    const modeSelect = Selector('[data-test-id=plot_mode]')
+    await t.click(modeSelect).click(modeSelect.find('option').withExactText('Distribution'))
+    await downloadHistogram(t, 0)
+})
+
+// Regression coverage for converting monthly precipitation values to imperial units
+// (rainfall/snowfall are stored in metric and converted for display) -- combined with
+// the mismatched-pair-validity regions to make sure the two don't interact badly.
+urbanstatsFixture('comparison test monthly plot with imperial units, precipitation', comparisonPage(['Singapore', 'Canada']))
+
+test('histogram-monthly-comparison-imperial-units-precipitation', async (t) => {
+    await checkTextboxes(t, ['Use Imperial Units'])
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Rainfall"]'))
+    await downloadHistogram(t, 0)
+})
+
+// Same idea, but for the other weather-plot unit kind: temperature (°F/°C via the
+// separate "Temperatures" dropdown, not the "Use Imperial Units" checkbox). Exercises
+// both the metric (Celsius) and imperial (Fahrenheit) conversion branches for the
+// monthly high/low temperature overlay.
+urbanstatsFixture('comparison test monthly plot with imperial units, temperature', comparisonPage(['USA', 'Canada']))
+
+test('histogram-monthly-comparison-imperial-units-temperature', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Mean high temp"]'))
+    const temperatureSelect = Selector('[data-test-id=temperature_select]')
+
+    await t.click(temperatureSelect).click(temperatureSelect.find('option').withExactText('°C'))
+    await downloadHistogram(t, 0)
+
+    await t.click(temperatureSelect).click(temperatureSelect.find('option').withExactText('°F'))
+    await downloadHistogram(t, 0)
+})
+
 urbanstatsFixture('comparison ordering test', `${target}/comparison.html?longnames=%5B%22USA%22%2C%22United+Kingdom%22%5D`)
 
 test('histogram-ordering', async (t) => {
