@@ -44,6 +44,28 @@ function checkAllIncluded(unitType: UnitType): (typeof allUnitTypes)[number] {
     return unitType
 }
 
+function fahrenheitToCelsius(value: number): number {
+    return (value - 32) * (5 / 9)
+}
+
+function metersToCentimetersOrInches(value: number, useImperial: boolean): number {
+    const centimeters = value * 100
+    return useImperial ? centimeters / 2.54 : centimeters
+}
+
+export function convertTemperature(value: number, temperatureUnit: string): { value: number, unit: string } {
+    return temperatureUnit === 'celsius'
+        ? { value: fahrenheitToCelsius(value), unit: '°C' }
+        : { value, unit: '°F' }
+}
+
+export function convertPrecipitation(value: number, useImperial: boolean): { value: number, unit: string } {
+    return {
+        value: metersToCentimetersOrInches(value, useImperial),
+        unit: useImperial ? 'in' : 'cm',
+    }
+}
+
 export function getUnitName(unitType: UnitType): string {
     switch (unitType) {
         case 'percentage':
