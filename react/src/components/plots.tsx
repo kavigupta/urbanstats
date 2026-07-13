@@ -225,11 +225,14 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
         assert(statpaths.length === new Set(statpaths.map(({ sP: { year } }) => year)).size, 'All statpaths for plot data should have unique years')
     }
     const pairedPath = plotPairPartner[rows[statIndex].statpath]
+    // whether the partner stat is checked/visible at all
     const pairedIdx = pairedPath !== undefined
-        ? rows.findIndex(r => r.statpath === pairedPath && r.kind === 'statistic' && r.extraStats.length > 0)
+        ? rows.findIndex(r => r.statpath === pairedPath && r.kind === 'statistic')
         : -1
-    const hasPair = pairedIdx !== -1
-    const dashOrder = hasPair ? plotPairDashOrder[rows[statIndex].statpath] : undefined
+    const pairActive = pairedIdx !== -1
+    // whether *this region's* partner data is actually renderable
+    const pairedHasData = pairActive && rows[pairedIdx].extraStats.length > 0
+    const dashOrder = pairActive ? plotPairDashOrder[rows[statIndex].statpath] : undefined
 
     const ownEntries = statpaths.map(({ i: idx, sP: { year } }) => {
         assert(year !== null, 'unreachable, we checked this already')
@@ -239,11 +242,11 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
             shortname,
             longname,
             sharedTypeOfAllArticles,
-            subseriesName: hasPair ? plotPairLabel[rows[idx].statpath] ?? year.toString() : year.toString(),
+            subseriesName: pairActive ? plotPairLabel[rows[idx].statpath] ?? year.toString() : year.toString(),
             dashOrder,
         } satisfies PlotProps
     })
-    if (!hasPair) {
+    if (!pairedHasData) {
         return ownEntries
     }
     return [
