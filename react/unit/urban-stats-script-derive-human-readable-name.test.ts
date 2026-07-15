@@ -44,6 +44,29 @@ cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)`,
     'PW Density (r=1km) where Pedestrian/Cyclist Fatalities Per Capita Per Year > 1x10^{-5}',
 )
 
+// Number formatting, in particular the boundaries where rounding to 3 significant
+// digits would otherwise push toPrecision into scientific notation (e.g. 999999 → "1.00e+3k").
+testMapLabel(test,
+    'cMap(data=population * 12345, scale=linearScale(), ramp=rampUridis)',
+    'Population × 12.3k',
+)
+testMapLabel(test,
+    'cMap(data=population * 999499, scale=linearScale(), ramp=rampUridis)',
+    'Population × 999k',
+)
+testMapLabel(test,
+    'cMap(data=population * 999999, scale=linearScale(), ramp=rampUridis)',
+    'Population × 1m',
+)
+testMapLabel(test,
+    'cMap(data=population * 999499999, scale=linearScale(), ramp=rampUridis)',
+    'Population × 999m',
+)
+testMapLabel(test,
+    'cMap(data=population * 999999999, scale=linearScale(), ramp=rampUridis)',
+    'Population × 1B',
+)
+
 void test('map label cannot be derived for a raw vector literal', () => {
     const label = deriveMapLabel(mapUSSFromString('cMap(data=[1, 2, 3], scale=linearScale(), ramp=rampUridis)'), getTypeEnvironment())
     assert.equal(label, undefined)
