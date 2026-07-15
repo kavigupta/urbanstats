@@ -1,6 +1,6 @@
 import { assert } from '../../utils/defensive'
-import { HumanReadableName } from '../../utils/human-readable-name'
-import { UnitType } from '../../utils/unit'
+import { HumanReadableName, reifyString } from '../../utils/human-readable-name'
+import { classifyStatistic, UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../location'
 import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation, createConstantExpression } from '../types-values'
@@ -8,7 +8,7 @@ import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgu
 export interface TableColumn {
     name: HumanReadableName
     values: number[]
-    unit?: UnitType
+    unit: UnitType
 }
 
 export type TableColumnWithPopulationPercentiles = TableColumn & {
@@ -57,10 +57,13 @@ export const column: USSValue = {
         const namePassedIn = namedArgs.name as string | null
         const values = namedArgs.values as number[]
         const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'Unit', value: { unit: string } } | null
-        const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
+
+        const valuesName = originalArgs.namedArgs.values.documentation?.humanReadableName
+        const autoClassifiedUnit = valuesName !== undefined ? classifyStatistic(reifyString(valuesName)) : undefined
+        const unit = unitArg ? (unitArg.value.unit as UnitType) : (autoClassifiedUnit ?? 'number')
 
         // Derive name from values argument's documentation if not provided
-        const name = namePassedIn ?? originalArgs.namedArgs.values.documentation?.humanReadableName
+        const name = namePassedIn ?? valuesName
 
         if (name === undefined) {
             ctx.effect({

@@ -29,7 +29,7 @@ export interface StatSettings {
 
 export interface StatData {
     // One entry per column
-    table: { value: number[], populationPercentile: number[], ordinal: number[], name: HumanReadableName, unit?: UnitType }[]
+    table: { value: number[], populationPercentile: number[], ordinal: number[], name: HumanReadableName, unit: UnitType }[]
     articleNames: string[]
     renderedStatname: string
     statcol?: StatCol
