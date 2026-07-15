@@ -1,7 +1,7 @@
 import { MapUSS, mapUssParser } from '../mapper/settings/map-uss'
 import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName } from '../utils/human-readable-name'
-import { separateNumber } from '../utils/text'
+import { formatToSignificantFigures, separateNumber } from '../utils/text'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import * as l from './literal-parser'
@@ -209,10 +209,16 @@ function trimTrailingZeros(value: string): string {
 }
 
 function formatNumber(number: number): HumanReadableElement[] {
-    if (number >= 1e9) {
+    /*
+     * Boundaries are at 999.5 * scale rather than 1000 * scale so that a value that
+     * rounds up to 4 significant digits (e.g. 999999 → 1000k) is promoted to the next
+     * tier instead. This keeps (number / divisor).toPrecision(3) below 1000, which
+     * avoids toPrecision returning scientific notation (e.g. "1.00e+3").
+     */
+    if (number >= 999.5e6) {
         return [{ type: 'atom', value: `${trimTrailingZeros((number / 1e9).toPrecision(3))}B` }]
     }
-    else if (number >= 1e6) {
+    else if (number >= 999.5e3) {
         return [{ type: 'atom', value: `${trimTrailingZeros((number / 1e6).toPrecision(3))}m` }]
     }
     else if (number >= 1e4) {
@@ -225,7 +231,10 @@ function formatNumber(number: number): HumanReadableElement[] {
             { type: 'superscript', value: [{ type: 'atom', value: String(Number(exponent)) }] },
         ]
     }
-    else {
+    else if (Number.isInteger(number)) {
         return [{ type: 'atom', value: separateNumber(number.toFixed(0)) }]
+    }
+    else {
+        return [{ type: 'atom', value: trimTrailingZeros(formatToSignificantFigures(number)) }]
     }
 }
