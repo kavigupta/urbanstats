@@ -4,7 +4,8 @@ import { statParents, Year } from '../page_template/statistic-tree'
 import { assert } from '../utils/defensive'
 
 import { ArticleRow, ExtraStat } from './load-article'
-import { Histogram, transposeSettingsHeight } from './plots-histogram'
+import { transposeSettingsHeight } from './plots-general'
+import { Histogram } from './plots-histogram'
 import { TimeSeriesPlot } from './plots-timeseries'
 
 export interface PlotProps {
