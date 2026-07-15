@@ -1400,14 +1400,7 @@ void test('test basic map', () => {
     assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
     assert.deepStrictEqual(resultMapRaw.opacity, 1)
     assertScale(resultMapRaw.scale, [1, 1.5, 2, 2.5, 3], [0, 0.25, 0.5, 0.75, 1])
-    assert.deepStrictEqual(effects, [{
-        type: 'warning',
-        message: 'Label could not be derived for map, please pass label="<your label here>" to cMap(...)',
-        location: {
-            start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-            end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-        },
-    }])
+    assert.deepStrictEqual(effects, [])
 })
 
 void test('test basic map, default geo', () => {
@@ -1419,14 +1412,7 @@ void test('test basic map, default geo', () => {
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
     assertScale(resultMapRaw.scale, [1, 1.5, 2, 2.5, 3], [0, 0.25, 0.5, 0.75, 1])
-    assert.deepStrictEqual(effects, [{
-        type: 'warning',
-        message: 'Label could not be derived for map, please pass label="<your label here>" to cMap(...)',
-        location: {
-            start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-            end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-        },
-    }])
+    assert.deepStrictEqual(effects, [])
 })
 
 void test('test basic map with label passed', () => {
@@ -1582,7 +1568,8 @@ void test('map with documentation', () => {
     const resultMap = evaluate(parseExpr('cMap(geo=geo, data=x, scale=linearScale(), ramp=rampBone)'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
-    assert.deepStrictEqual(resultMapRaw.label, 'X value!')
+    // Label is no longer auto-derived by cMap itself; deriveMapLabel (used by map-generator.tsx) handles that.
+    assert.deepStrictEqual(resultMapRaw.label, undefined)
 })
 
 void test('conditioned map with documentation', () => {
@@ -1597,7 +1584,8 @@ void test('conditioned map with documentation', () => {
     const resultMap = evaluate(parseExpr('if ([true, true, false]) { cMap(geo=geo, data=x, scale=linearScale(), ramp=rampBone) }'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
-    assert.deepStrictEqual(resultMapRaw.label, 'X value!')
+    // Label is no longer auto-derived by cMap itself; deriveMapLabel (used by map-generator.tsx) handles that.
+    assert.deepStrictEqual(resultMapRaw.label, undefined)
 })
 
 void test('test scale functions with parameters', () => {
@@ -2145,14 +2133,7 @@ void test('test basic map with custom insets', () => {
     // Verify it's the world insets (should have main map)
     const hasMainMap = resultMapRaw.insets.some(inset => inset.mainMap)
     assert.strictEqual(hasMainMap, true)
-    assert.deepStrictEqual(effects, [{
-        type: 'warning',
-        message: 'Label could not be derived for map, please pass label="<your label here>" to cMap(...)',
-        location: {
-            start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-            end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-        },
-    }])
+    assert.deepStrictEqual(effects, [])
 })
 
 void test('test basic map with constructed insets', () => {
@@ -2213,14 +2194,7 @@ void test('test basic map with constructed insets', () => {
     assert.ok(Array.isArray(alaskaInset!.coordBox))
     assert.deepStrictEqual(alaskaInset!.coordBox, [-170, 50, -130, 70])
 
-    assert.deepStrictEqual(effects, [{
-        type: 'warning',
-        message: 'Label could not be derived for map, please pass label="<your label here>" to cMap(...)',
-        location: {
-            start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-            end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-        },
-    }])
+    assert.deepStrictEqual(effects, [])
 })
 
 void test('test basic map with constructed text boxes', () => {
