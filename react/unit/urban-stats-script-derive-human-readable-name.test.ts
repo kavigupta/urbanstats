@@ -67,6 +67,20 @@ testMapLabel(test,
     'Population × 1B',
 )
 
+testMapLabel(test,
+    'cMap(data=population ** 0.5, scale=linearScale(), ramp=rampUridis)',
+    'Population^{0.5}',
+)
+testMapLabel(test,
+    'cMap(data=population * 3.14, scale=linearScale(), ramp=rampUridis)',
+    'Population × 3.14',
+)
+
+testMapLabel(test,
+    'cMap(data=population + 1234, scale=linearScale(), ramp=rampUridis)',
+    'Population + 1 234',
+)
+
 void test('map label cannot be derived for a raw vector literal', () => {
     const label = deriveMapLabel(mapUSSFromString('cMap(data=[1, 2, 3], scale=linearScale(), ramp=rampUridis)'), getTypeEnvironment())
     assert.equal(label, undefined)

@@ -1,7 +1,7 @@
 import { MapUSS, mapUssParser } from '../mapper/settings/map-uss'
 import { assert } from '../utils/defensive'
 import { HumanReadableElement, HumanReadableName } from '../utils/human-readable-name'
-import { separateNumber } from '../utils/text'
+import { formatToSignificantFigures, separateNumber } from '../utils/text'
 
 import { UrbanStatsASTExpression, UrbanStatsASTStatement } from './ast'
 import * as l from './literal-parser'
@@ -231,7 +231,10 @@ function formatNumber(number: number): HumanReadableElement[] {
             { type: 'superscript', value: [{ type: 'atom', value: String(Number(exponent)) }] },
         ]
     }
-    else {
+    else if (Number.isInteger(number)) {
         return [{ type: 'atom', value: separateNumber(number.toFixed(0)) }]
+    }
+    else {
+        return [{ type: 'atom', value: trimTrailingZeros(formatToSignificantFigures(number)) }]
     }
 }
