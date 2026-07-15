@@ -26,8 +26,10 @@ function renderValue(unitType: UnitType, value: number): string {
 for (const [value, expected] of [
     [12345, '12.3k'],
     [999499, '999k'],
+    [999500, '1.00m'],
     [999999, '1.00m'],
     [999499999, '999m'],
+    [999500000, '1.00B'],
     [999999999, '1.00B'],
 ] as const) {
     void test(`population renders ${value} as ${expected}`, () => {
@@ -38,8 +40,10 @@ for (const [value, expected] of [
 for (const [value, expected] of [
     [12345, '$12.3k'],
     [999499, '$999k'],
+    [999500, '$1.00m'],
     [999999, '$1.00m'],
     [999499999, '$999m'],
+    [999500000, '$1.00B'],
     [999999999, '$1.00B'],
 ] as const) {
     void test(`usd renders ${value} as ${expected}`, () => {
