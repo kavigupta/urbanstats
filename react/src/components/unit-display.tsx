@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react'
 
 import { formatToSignificantFigures, separateNumber } from '../utils/text'
-import { UnitType } from '../utils/unit'
+import { convertPrecipitation, convertTemperature, UnitType } from '../utils/unit'
 
 import { ElectionResult, GenericPartyChange, GenericPartyPercentage, LeftMargin } from './display-stats'
 
@@ -295,15 +295,10 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'temperature':
             return {
                 renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
-                    let unit = <span>&deg;F</span>
-                    let adjustedValue = value
-                    if (temperatureUnit === 'celsius') {
-                        unit = <span>&deg;C</span>
-                        adjustedValue = (value - 32) * (5 / 9)
-                    }
+                    const { value: adjustedValue, unit } = convertTemperature(value, temperatureUnit ?? 'fahrenheit')
                     return {
                         value: <span>{adjustedValue.toFixed(1)}</span>,
-                        unit,
+                        unit: <span>{unit}</span>,
                     }
                 },
                 renderInequality,
@@ -329,12 +324,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'distancePerYear':
             return {
                 renderValue: (value: number, useImperial?: boolean) => {
-                    let adjustedValue = value * 100
-                    let unit = 'cm'
-                    if (useImperial) {
-                        unit = 'in'
-                        adjustedValue /= 2.54
-                    }
+                    const { value: adjustedValue, unit } = convertPrecipitation(value, useImperial ?? false)
                     return {
                         value: <span>{adjustedValue.toFixed(1)}</span>,
                         unit: (
