@@ -32,7 +32,7 @@ import { PlotProps, pullRelevantPlotProps } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
-import { TableContents, CellSpec } from './supertable'
+import { TableContents, CellSpec, PlotSpec } from './supertable'
 import { ColumnIdentifier } from './table'
 
 export function ComparisonPanel(props: {
@@ -280,7 +280,7 @@ export function ComparisonPanel(props: {
 
     const rowSpecsByStatTransposed = rowSpecsByStat.length === 0 ? [] : rowSpecsByStat[0].map((_, statIndex) => rowSpecsByStat.map(rowSpecs => rowSpecs[statIndex]))
 
-    const plotSpecs: ({ statDescription: string, plotProps: PlotProps[] } | undefined)[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) =>
+    const plotSpecs: (PlotSpec | undefined)[] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) =>
         expandedByStatIndex[statIndex]
             ? {
                     statDescription: dataByStatArticle[statIndex][0].renderedStatname,
