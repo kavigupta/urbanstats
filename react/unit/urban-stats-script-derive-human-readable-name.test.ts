@@ -54,6 +54,12 @@ testMapLabel(test,
     'cMap(data=population * 999499, scale=linearScale(), ramp=rampUridis)',
     'Population × 999k',
 )
+// Exact boundary (999.5e3): must be promoted to the m tier via >=, not >, or
+// (999500 / 1e6).toPrecision(3) === "1.00e+3" leaks through as "1.00e+3k".
+testMapLabel(test,
+    'cMap(data=population * 999500, scale=linearScale(), ramp=rampUridis)',
+    'Population × 1m',
+)
 testMapLabel(test,
     'cMap(data=population * 999999, scale=linearScale(), ramp=rampUridis)',
     'Population × 1m',
@@ -61,6 +67,11 @@ testMapLabel(test,
 testMapLabel(test,
     'cMap(data=population * 999499999, scale=linearScale(), ramp=rampUridis)',
     'Population × 999m',
+)
+// Exact boundary (999.5e6): same off-by-one risk, promoted to the B tier.
+testMapLabel(test,
+    'cMap(data=population * 999500000, scale=linearScale(), ramp=rampUridis)',
+    'Population × 1B',
 )
 testMapLabel(test,
     'cMap(data=population * 999999999, scale=linearScale(), ramp=rampUridis)',
