@@ -2379,7 +2379,7 @@ void test('test basic column with name', () => {
     const resultColumn = evaluate(parseExpr('column(values=[1, 2, 3], name="Test Column")'), ctx)
     assert.deepStrictEqual(resultColumn.type, { type: 'opaque', name: 'column' })
     const resultColumnRaw = (resultColumn.value as { type: 'opaque', value: TableColumn }).value
-    assert.deepStrictEqual(resultColumnRaw.name, 'Test Column')
+    assert.deepStrictEqual(resultColumnRaw.name, [{ type: 'atom', value: 'Test Column' }])
     assert.deepStrictEqual(resultColumnRaw.values, [1, 2, 3])
     assert.deepStrictEqual(resultColumnRaw.unit, undefined)
     assert.deepStrictEqual(effects, [])
@@ -2409,7 +2409,7 @@ void test('test column with unit', () => {
     const resultColumn = evaluate(parseExpr('column(values=[1, 2, 3], name="Population", unit=unitPopulation)'), ctx)
     assert.deepStrictEqual(resultColumn.type, { type: 'opaque', name: 'column' })
     const resultColumnRaw = (resultColumn.value as { type: 'opaque', value: TableColumn }).value
-    assert.deepStrictEqual(resultColumnRaw.name, 'Population')
+    assert.deepStrictEqual(resultColumnRaw.name, [{ type: 'atom', value: 'Population' }])
     assert.deepStrictEqual(resultColumnRaw.values, [1, 2, 3])
     assert.deepStrictEqual(resultColumnRaw.unit, 'population')
     assert.deepStrictEqual(effects, [])
@@ -2430,9 +2430,31 @@ void test('test basic table', () => {
     assert.deepStrictEqual(resultTableRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultTableRaw.population, [100, 200, 300])
     assert.deepStrictEqual(resultTableRaw.columns.length, 1)
-    assert.deepStrictEqual(resultTableRaw.columns[0].name, 'Col1')
+    assert.deepStrictEqual(resultTableRaw.columns[0].name, [{ type: 'atom', value: 'Col1' }])
     assert.deepStrictEqual(resultTableRaw.columns[0].values, [1, 2, 3])
     assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 16, 50])
+    assert.deepStrictEqual(effects, [])
+})
+
+void test('test column name and table title with subscript syntax are parsed as hre', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    ctx.assignVariable('population', {
+        type: { type: 'vector', elementType: numType },
+        value: [100, 200, 300],
+        documentation: { humanReadableName: 'Population' },
+    })
+    const resultTable = evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="log_{10}(x)")], title="Table^{2}")'), ctx)
+    const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
+    assert.deepStrictEqual(resultTableRaw.columns[0].name, [
+        { type: 'atom', value: 'log' },
+        { type: 'subscript', value: [{ type: 'atom', value: '10' }] },
+        { type: 'atom', value: '(x)' },
+    ])
+    assert.deepStrictEqual(resultTableRaw.title, [
+        { type: 'atom', value: 'Table' },
+        { type: 'superscript', value: [{ type: 'atom', value: '2' }] },
+    ])
     assert.deepStrictEqual(effects, [])
 })
 
@@ -2450,10 +2472,10 @@ void test('test table with multiple columns', () => {
     assert.deepStrictEqual(resultTableRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultTableRaw.population, [100, 200, 300])
     assert.deepStrictEqual(resultTableRaw.columns.length, 2)
-    assert.deepStrictEqual(resultTableRaw.columns[0].name, 'Col1')
+    assert.deepStrictEqual(resultTableRaw.columns[0].name, [{ type: 'atom', value: 'Col1' }])
     assert.deepStrictEqual(resultTableRaw.columns[0].values, [1, 2, 3])
     assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 16, 50])
-    assert.deepStrictEqual(resultTableRaw.columns[1].name, 'Col2')
+    assert.deepStrictEqual(resultTableRaw.columns[1].name, [{ type: 'atom', value: 'Col2' }])
     assert.deepStrictEqual(resultTableRaw.columns[1].values, [5, 6, 4])
     assert.deepStrictEqual(resultTableRaw.columns[1].populationPercentiles, [50, 66, 0])
     assert.deepStrictEqual(effects, [])
@@ -2468,7 +2490,7 @@ void test('test table with non-default population', () => {
     assert.deepStrictEqual(resultTableRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultTableRaw.population, [100, 200, 300])
     assert.deepStrictEqual(resultTableRaw.columns.length, 1)
-    assert.deepStrictEqual(resultTableRaw.columns[0].name, 'Col1')
+    assert.deepStrictEqual(resultTableRaw.columns[0].name, [{ type: 'atom', value: 'Col1' }])
     assert.deepStrictEqual(resultTableRaw.columns[0].values, [1, 2, 3])
     assert.deepStrictEqual(effects, [])
 })
@@ -2569,7 +2591,7 @@ void test('test conditional table', () => {
     const resultTable = execute(parseProgram('condition (population > 100); table(columns=[column(values=[1, 2], name="Col1")])'), ctx)
     assert.deepStrictEqual(resultTable.type, { type: 'opaque', name: 'table' })
     const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
-    assert.deepStrictEqual(resultTableRaw.columns[0].name, 'Col1')
+    assert.deepStrictEqual(resultTableRaw.columns[0].name, [{ type: 'atom', value: 'Col1' }])
     assert.deepStrictEqual(resultTableRaw.geo, ['B', 'C'])
     assert.deepStrictEqual(resultTableRaw.columns[0].values, [1, 2])
     assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 40])
