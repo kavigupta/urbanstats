@@ -1,5 +1,5 @@
 import { assert } from '../../utils/defensive'
-import { HumanReadableName, reifyString } from '../../utils/human-readable-name'
+import { HumanReadableName } from '../../utils/human-readable-name'
 import { hre, parseHumanReadableTemplate } from '../../utils/human-readable-template'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
@@ -7,7 +7,7 @@ import { noLocation } from '../location'
 import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation, createConstantExpression } from '../types-values'
 
 export interface TableColumn {
-    name: HumanReadableName
+    name?: HumanReadableName
     values: number[]
     unit?: UnitType
 }
@@ -62,22 +62,12 @@ export const column: USSValue = {
         const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'Unit', value: { unit: string } } | null
         const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
 
-        // Derive name from values argument's documentation if not provided
-        const humanReadableName = originalArgs.namedArgs.values.documentation?.humanReadableName
-        const name: HumanReadableName | undefined = namePassedIn !== null ? parseHumanReadableTemplate(namePassedIn) : humanReadableName
-
-        if (name === undefined) {
-            ctx.effect({
-                type: 'warning',
-                message: 'Name could not be derived for column, please pass name="<your name here>" to column(...)',
-                location: noLocation,
-            })
-        }
+        const name: HumanReadableName | undefined = namePassedIn !== null ? parseHumanReadableTemplate(namePassedIn) : undefined
 
         return {
             type: 'opaque',
             opaqueType: 'column',
-            value: { name: name ?? '[Unnamed Column]', values, unit } satisfies TableColumn,
+            value: { name, values, unit } satisfies TableColumn,
         }
     },
     documentation: {
@@ -154,7 +144,7 @@ export const table: USSValue = {
             const firstLength = columns[0].values.length
             for (let i = 1; i < columns.length; i++) {
                 if (columns[i].values.length !== firstLength) {
-                    throw new Error(`All columns must have the same length. Column "${reifyString(columns[0].name)}" has length ${firstLength}, but column "${reifyString(columns[i].name)}" has length ${columns[i].values.length}`)
+                    throw new Error(`All columns must have the same length. Column 1 has length ${firstLength}, but column ${i + 1} has length ${columns[i].values.length}`)
                 }
             }
         }

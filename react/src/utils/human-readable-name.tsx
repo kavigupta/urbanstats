@@ -56,3 +56,10 @@ export function reifyString(elements: HumanReadableElement[] | string): string {
         }
     }).join('')
 }
+
+export function joinHumanReadableNames(names: HumanReadableName[]): HumanReadableElement[] {
+    return names.flatMap((name, index): HumanReadableElement[] => {
+        const elements = typeof name === 'string' ? [{ type: 'atom', value: name } satisfies HumanReadableElement] : name
+        return index === 0 ? elements : [{ type: 'atom', value: ', ' }, ...elements]
+    })
+}

@@ -3,7 +3,6 @@ import React, { ReactNode, useCallback, useContext, useMemo, useRef } from 'reac
 import { CountsByUT } from '../components/countsByArticleType'
 import { generateStatisticsPanelCSVData } from '../components/csv-export'
 import { createScreenshot } from '../components/screenshot'
-import { defaultTypeEnvironment } from '../mapper/context'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { MapSettings } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
@@ -27,7 +26,7 @@ import { StatisticPanelTable } from './StatisticPanelTable'
 import { StatData, Statistic, StatSetter, View } from './types'
 import { mapUSSFromStat, variable } from './utils'
 
-export function StatisticPanelPage({ view, stat, data, set, loading, counts, errors, assignments }: {
+export function StatisticPanelPage({ view, stat, data, set, loading, counts, errors, assignments, typeEnvironment }: {
     view: View
     stat: Statistic
     data: StatData | undefined
@@ -36,13 +35,12 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
     counts: CountsByUT
     errors: EditorError[]
     assignments: AssignmentsResult
+    typeEnvironment: TypeEnvironment
 }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
 
     const subHeaderTextClass = useSubHeaderTextClass()
-
-    const typeEnvironment = useMemo(() => defaultTypeEnvironment(stat.universe), [stat.universe])
 
     const subHeaderText = useMemo(() => data?.renderedStatname ?? (stat.type === 'simple' ? variable(stat.statName).humanReadableName : '\u00A0'), [data, stat])
 
