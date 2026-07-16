@@ -23,6 +23,8 @@ export interface PlotProps {
     // when set, this entry is only included in the render for the listed extra-stat types
     // (e.g. a cross-stat overlay like high/low temp that only makes sense on some views)
     pairedInFor?: ExtraStat['type'][]
+    // axis/title label (given the unit suffix, e.g. "°F") for this stat's monthly plot
+    combinedLabel: (unitSuffix: string) => string
 }
 
 const plotModeLabels: Partial<Record<ExtraStat['type'], string>> = {
@@ -57,6 +59,7 @@ export function RenderedPlot({ statDescription, statpath, plotProps }: { statDes
         ? plotProps
         : plotProps.filter(p => p.pairedInFor === undefined || p.pairedInFor.includes(selectedType))
     const dashOrder = relevantPlotProps[0]?.dashOrder
+    const combinedLabel = relevantPlotProps[0]?.combinedLabel
 
     switch (selectedType) {
         case 'histogram':
@@ -127,6 +130,7 @@ export function RenderedPlot({ statDescription, statpath, plotProps }: { statDes
                     sharedTypeOfAllArticles={relevantPlotProps[0]?.sharedTypeOfAllArticles}
                     modeSwitcher={modeSwitcher}
                     dashOrder={dashOrder}
+                    combinedLabel={combinedLabel}
                 />
             )
         case 'temperature_histogram':
@@ -188,6 +192,28 @@ const plotPairDashOrder: Partial<Record<StatPath, string[]>> = {
     rainfall_4: ['Snow', 'Rain'],
     snowfall_4: ['Snow', 'Rain'],
 }
+// axis/title label for the monthly plot -- keyed by either member of the pair. Both the solo
+// wording (only this stat rendered) and paired wording (both members rendered together) are
+// required together so neither case can be left implicit/forgotten when adding a new pair.
+const plotPairAxisLabel: Partial<Record<StatPath, { solo: (unitSuffix: string) => string, paired: (unitSuffix: string) => string }>> = {
+    mean_high_temp_4: {
+        solo: unitSuffix => `Mean high temp by month (${unitSuffix})`,
+        paired: unitSuffix => `Mean Temp by Month (${unitSuffix})`,
+    },
+    mean_low_temp: {
+        solo: unitSuffix => `Mean low temp by month (${unitSuffix})`,
+        paired: unitSuffix => `Mean Temp by Month (${unitSuffix})`,
+    },
+    rainfall_4: {
+        solo: unitSuffix => `Rain (${unitSuffix})`,
+        paired: unitSuffix => `Precipitation (rain equivalent ${unitSuffix})`,
+    },
+    snowfall_4: {
+        solo: unitSuffix => `Snow (rain equivalent ${unitSuffix})`,
+        paired: unitSuffix => `Precipitation (rain equivalent ${unitSuffix})`,
+    },
+}
+const noAxisLabel = (): string => ''
 
 export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
     if (rows[statIndex].kind !== 'statistic' || rows[statIndex].extraStats.length === 0) {
@@ -233,6 +259,8 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
     // whether *this region's* partner data is actually renderable
     const pairedHasData = pairActive && rows[pairedIdx].extraStats.length > 0
     const dashOrder = pairActive ? plotPairDashOrder[rows[statIndex].statpath] : undefined
+    const axisLabel = plotPairAxisLabel[rows[statIndex].statpath]
+    const combinedLabel = axisLabel !== undefined ? (pairedHasData ? axisLabel.paired : axisLabel.solo) : noAxisLabel
 
     const ownEntries = statpaths.map(({ i: idx, sP: { year } }) => {
         assert(year !== null, 'unreachable, we checked this already')
@@ -244,6 +272,7 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
             sharedTypeOfAllArticles,
             subseriesName: pairActive ? plotPairLabel[rows[idx].statpath] ?? year.toString() : year.toString(),
             dashOrder,
+            combinedLabel,
         } satisfies PlotProps
     })
     if (!pairedHasData) {
@@ -259,6 +288,7 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
             sharedTypeOfAllArticles,
             subseriesName: plotPairLabel[rows[pairedIdx].statpath]!,
             dashOrder,
+            combinedLabel,
             // the overlay only makes sense for the monthly view -- a combined distribution chart
             // doesn't read as "two series", so RenderedPlot excludes this entry from that view
             pairedInFor: ['monthly_time_series'],

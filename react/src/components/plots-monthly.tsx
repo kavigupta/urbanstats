@@ -34,13 +34,14 @@ interface TipDatum {
     entries: { name: string, subseriesName: string, value: number }[]
 }
 
-export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllArticles?: string, modeSwitcher?: ReactElement, dashOrder?: string[] }): ReactNode {
+export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllArticles?: string, modeSwitcher?: ReactElement, dashOrder?: string[], combinedLabel?: (unitSuffix: string) => string }): ReactNode {
     const [temperatureUnit] = useSetting('temperature_unit')
     const [useImperial] = useSetting('use_imperial')
     const colors = useColors()
 
     const unit = props.stats[0].stat.unit
     const unitSuffix = convertMonthlyValue(props.stats[0].stat.monthlyValues[0], unit, temperatureUnit, useImperial).unit
+    const { combinedLabel } = props
 
     const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
         <PlotSettingsBar
@@ -104,14 +105,14 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
             const ydomain: [number, number] = [minValue - pad, maxValue + pad]
 
             const xlabel = null
-            const ylabel = unit === 'precipitation'
-                ? `Precipitation (rain equivalent ${unitSuffix})`
-                : `${props.stats[0].stat.name}${unitSuffix ? ` (${unitSuffix})` : ''}`
+            const ylabel = combinedLabel !== undefined
+                ? combinedLabel(unitSuffix)
+                : `${props.stats[0].stat.name} (${unitSuffix})`
             marks.push(...manualLegend(props.stats, transpose, colors, props.dashOrder))
 
             return { marks, xlabel, ylabel, ydomain }
         },
-        [props.stats, unit, temperatureUnit, useImperial, unitSuffix, colors, props.dashOrder],
+        [props.stats, unit, temperatureUnit, useImperial, unitSuffix, colors, props.dashOrder, combinedLabel],
     )
 
     return (
