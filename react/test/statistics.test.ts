@@ -800,29 +800,6 @@ test('change title', async (t) => {
     await screencap(t)
 })
 
-const humanReadableTable = `table(
-    columns=[
-        column(
-            values=(density_pw_1km / density_pw_2km),
-            name="Density_{ratio}",
-            unit=unitNumber
-        )
-    ],
-    title="Density^{2}_{Test}"
-)`
-
-urbanstatsFixture('table with subscript/superscript syntax', createUSSStatisticsPage(humanReadableTable))
-
-test('table title and column name render subscript and superscript', async (t) => {
-    await waitForLoading()
-    const title = Selector('.subheadertext')
-    await t.expect(title.child('sup').withExactText('2').exists).ok()
-    await t.expect(title.child('sub').withExactText('Test').exists).ok()
-    const columnHeader = Selector('[data-test-id="statistic-link"]').withText(/Density/)
-    await t.expect(columnHeader.find('sub').withExactText('ratio').exists).ok()
-    await screencap(t)
-})
-
 async function addColumn(t: TestController, string: string): Promise<void> {
     await t.click(Selector('input').withAttribute('placeholder', 'Add column...'))
     await t.typeText(Selector('input').withAttribute('placeholder', 'Add column...'), string)
@@ -1238,4 +1215,27 @@ test('assignments displayed on error result', async (t) => {
     await t.hover(Selector('span').withText(/^x/))
     await t.wait(1000)
     await t.expect(Selector('pre').withExactText('1').count).eql(1)
+})
+
+const humanReadableTable = `table(
+    columns=[
+        column(
+            values=(density_pw_1km / density_pw_2km),
+            name="Density_{ratio}",
+            unit=unitNumber
+        )
+    ],
+    title="Density^{2}_{Test}"
+)`
+
+urbanstatsFixture('table with subscript/superscript syntax', createUSSStatisticsPage(humanReadableTable))
+
+test('table title and column name render subscript and superscript', async (t) => {
+    await waitForLoading()
+    const title = Selector('.subheadertext')
+    await t.expect(title.child('sup').withExactText('2').exists).ok()
+    await t.expect(title.child('sub').withExactText('Test').exists).ok()
+    const columnHeader = Selector('[data-test-id="statistic-link"]').withText(/Density/)
+    await t.expect(columnHeader.find('sub').withExactText('ratio').exists).ok()
+    await screencap(t)
 })
