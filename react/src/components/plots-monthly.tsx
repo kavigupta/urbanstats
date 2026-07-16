@@ -7,7 +7,7 @@ import { useSetting } from '../page_template/settings'
 import { convertPrecipitation, convertTemperature } from '../utils/unit'
 
 import { MonthlyExtraStat } from './load-article'
-import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, ordinalSeriesMarks, PlotComponent, PlotSettingsBar, transposeAwareTip } from './plots-general'
+import { axisAndGrid, computeDashPatterns, groupedTipTitle, manualLegend, ordinalSeriesMarks, PlotComponent, PlotSettingsBar, transposeAwareTip } from './plots-general'
 
 const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -31,8 +31,7 @@ function convertMonthlyValue(value: number, unit: MonthlyExtraStat['unit'], temp
 
 interface TipDatum {
     monthIdx: number
-    names: string[]
-    values: number[]
+    entries: { name: string, subseriesName: string, value: number }[]
 }
 
 export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllArticles?: string, modeSwitcher?: ReactElement, dashOrder?: string[] }): ReactNode {
@@ -79,18 +78,21 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
                 ),
             )
 
+            // dashOrder is [dashed, solid] (e.g. ['Low', 'High']) -- reversed gives the
+            // solid-first display order for the stacked tooltip line ("High / Low")
+            const tipDisplayOrder = props.dashOrder !== undefined ? [...props.dashOrder].reverse() : undefined
+
             const tipData: TipDatum[] = monthIdxs.map(i => ({
                 monthIdx: i,
-                names: seriesData.map(s => s.stat.shortname),
-                values: seriesData.map(s => s.values[i]),
+                entries: seriesData.map(s => ({ name: s.stat.shortname, subseriesName: s.stat.subseriesName, value: s.values[i] })),
             }))
             marks.push(
                 transposeAwareTip(
                     tipData,
                     transpose,
                     'monthIdx',
-                    d => d.values,
-                    d => multiSeriesTipTitle(monthLabels[d.monthIdx], d.names, d.values, v => `${v.toFixed(1)}${unitSuffix}`),
+                    d => d.entries.map(e => e.value),
+                    d => groupedTipTitle(monthLabels[d.monthIdx], d.entries, v => `${v.toFixed(1)}${unitSuffix}`, tipDisplayOrder),
                     colors,
                 ),
             )

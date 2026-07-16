@@ -34,6 +34,35 @@ export function multiSeriesTipTitle(prefix: string, names: string[], values: num
     return result
 }
 
+// like multiSeriesTipTitle, but for callers where the same name can appear more than once at a
+// given point (e.g. a region's paired High/Low temp or Rain/Snow entries) -- entries sharing a
+// name are stacked onto one line ("<name>: <v1> / <v2>") instead of one line each. displayOrder,
+// if given, controls the order values are joined in (matching the paired stat's dash order);
+// otherwise entries are joined in the order they appear.
+export function groupedTipTitle(prefix: string, entries: { name: string, subseriesName: string, value: number }[], formatValue: (v: number) => string, displayOrder?: string[]): string {
+    const groups = new Map<string, { subseriesName: string, value: number }[]>()
+    const nameOrder: string[] = []
+    for (const entry of entries) {
+        if (!groups.has(entry.name)) {
+            groups.set(entry.name, [])
+            nameOrder.push(entry.name)
+        }
+        groups.get(entry.name)!.push(entry)
+    }
+    if (nameOrder.length === 1 && groups.get(nameOrder[0])!.length === 1) {
+        // a single series overall -- no name needed to disambiguate, matches multiSeriesTipTitle
+        return `${prefix}\n${formatValue(groups.get(nameOrder[0])![0].value)}`
+    }
+    const lines = nameOrder.map((name) => {
+        const members = groups.get(name)!
+        const ordered = displayOrder !== undefined
+            ? [...members].sort((a, b) => displayOrder.indexOf(a.subseriesName) - displayOrder.indexOf(b.subseriesName))
+            : members
+        return `${name}: ${ordered.map(m => formatValue(m.value)).join(' / ')}`
+    })
+    return `${prefix}\n${lines.join('\n')}`
+}
+
 // a line+dot series over an ordinal x-axis (e.g. months, temperature buckets), dash-aware,
 // swapping x/y when transposed -- for the simple case where every series shares the same set
 // of ordinal x positions, unlike Histogram's log-scale/relative/cumulative rendering

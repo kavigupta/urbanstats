@@ -96,6 +96,19 @@ test('histogram-monthly-comparison-mismatched-pair-validity', async (t) => {
     await downloadHistogram(t, 0)
 })
 
+// Tooltip regression coverage: paired series (Rain/Snow, High/Low) for the same region
+// should be stacked onto one tooltip line ("Canada: 4.8cm / 4.2cm") rather than two
+// separate lines that both just say "Canada: <value>". A region with no valid partner
+// data (Singapore has no snowfall) should keep its single unstacked value.
+test('histogram-monthly-tooltip-stacks-rain-snow', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Rainfall"]'))
+    await t.hover(Selector('g[aria-label="dot"] circle').nth(0))
+    const tip = Selector('g[aria-label="tip"] tspan')
+    await t.expect(tip.withText(/^.?Canada: [-\d.]+cm \/ [-\d.]+cm$/).exists).ok('Canada should stack Rain / Snow onto one line')
+    await t.expect(tip.withText(/^.?Singapore: [-\d.]+cm$/).exists).ok('Singapore should show a single unstacked value')
+})
+
 // Same mismatched validity, but with a third (also-valid) region in the mix.
 urbanstatsFixture('comparison test monthly plot with mismatched pair validity, three regions', comparisonPage(['Singapore', 'Canada', 'Russia']))
 
@@ -133,6 +146,16 @@ test('histogram-monthly-comparison-temperature-pair', async (t) => {
     await checkTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Mean high temp"]'))
     await downloadHistogram(t, 0)
+})
+
+// Same tooltip-stacking check as the rain/snow case, but for the High/Low temperature pair.
+test('histogram-monthly-tooltip-stacks-high-low', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Mean high temp"]'))
+    await t.hover(Selector('g[aria-label="dot"] circle').nth(0))
+    const tip = Selector('g[aria-label="tip"] tspan')
+    await t.expect(tip.withText(/^.?USA: [-\d.]+°F \/ [-\d.]+°F$/).exists).ok('USA should stack High / Low onto one line')
+    await t.expect(tip.withText(/^.?Canada: [-\d.]+°F \/ [-\d.]+°F$/).exists).ok('Canada should stack High / Low onto one line')
 })
 
 // Temperature stats have a second plot mode -- a distribution ("Distribution") in addition
