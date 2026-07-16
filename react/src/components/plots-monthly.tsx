@@ -7,7 +7,7 @@ import { useSetting } from '../page_template/settings'
 import { convertPrecipitation, convertTemperature } from '../utils/unit'
 
 import { MonthlyExtraStat } from './load-article'
-import { axisAndGrid, computeDashPatterns, groupedTipTitle, manualLegend, ordinalSeriesMarks, PlotComponent, PlotSettingsBar, transposeAwareTip } from './plots-general'
+import { axisAndGrid, computeDashPatterns, groupedTipTitle, manualLegend, ordinalSeriesMarks, PlotComponent, PlotSettingsBar, transposeAwareTip, valueGrid } from './plots-general'
 
 const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -68,6 +68,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
             const marks: Plot.Markish[] = [
                 axis(monthIdxs, { tickFormat: (i: number) => monthLabels[i] }),
                 grid(monthIdxs),
+                valueGrid(transpose)(),
             ]
 
             const dashPatterns = computeDashPatterns(props.stats, props.dashOrder)

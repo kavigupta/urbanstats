@@ -21,6 +21,11 @@ export function axisAndGrid(transpose: boolean): [typeof Plot.axisX, typeof Plot
     return transpose ? [Plot.axisY, Plot.gridY] : [Plot.axisX, Plot.gridX]
 }
 
+// grid mark constructor for the value axis -- the opposite side from axisAndGrid's categorical axis
+export function valueGrid(transpose: boolean): typeof Plot.gridY {
+    return transpose ? Plot.gridX : Plot.gridY
+}
+
 // "<prefix>\n<name1>: <value1>\n<name2>: <value2>..." when there's more than one series at this
 // point, else just the single value (optionally labeled, e.g. Histogram's "Frequency: X")
 export function multiSeriesTipTitle(prefix: string, names: string[], values: number[], formatValue: (v: number) => string, singleLabel?: string): string {

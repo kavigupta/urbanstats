@@ -6,7 +6,7 @@ import { useSetting } from '../page_template/settings'
 import { convertTemperature } from '../utils/unit'
 
 import { TemperatureHistogramExtraStat } from './load-article'
-import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, ordinalSeriesMarks, PlotComponent, PlotSettingsBar, transposeAwareTip } from './plots-general'
+import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, ordinalSeriesMarks, PlotComponent, PlotSettingsBar, transposeAwareTip, valueGrid } from './plots-general'
 
 export interface TemperatureHistogramPlotProps {
     shortname: string
@@ -86,6 +86,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
             const marks: Plot.Markish[] = [
                 axis(boundaryIdxs, { tickFormat: (j: number) => boundaryLabels[j] }),
                 grid(boundaryIdxs),
+                valueGrid(transpose)(),
             ]
 
             const dashPatterns = computeDashPatterns(props.histograms, props.dashOrder)
