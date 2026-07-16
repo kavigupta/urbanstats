@@ -72,6 +72,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
             const pointX = (binIdx: number): number => binIdx - 0.5
             const boundaryIdxs = Array.from({ length: numBins - 1 }, (_, i) => i)
             const boundaryLabels = boundaryIdxs.map(j => boundaryLabel(j, binMin, binSize, v => convertTemperature(v, temperatureUnit).value, unitSuffix))
+            const title = new Set(props.histograms.map(h => h.shortname)).size === 1 ? props.histograms[0].shortname : ''
             const seriesData = props.histograms.map((h) => {
                 // counts are normalize_to_uint16-scaled (sum to ~2^16), not already-percentages
                 const sum = h.histogram.counts.reduce((a, b) => a + b, 0)
@@ -120,6 +121,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
             const maxValue = Math.max(...allValues)
             const ydomain: [number, number] = [0, maxValue * 1.1]
 
+            marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
             const xlabel = `${props.statDescription} (${unitSuffix})`
             const ylabel = '% of days'
             marks.push(...manualLegend(props.histograms, transpose, colors, props.dashOrder))

@@ -62,6 +62,8 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
                 values: stat.stat.monthlyValues.map(v => convertMonthlyValue(v, unit, temperatureUnit, useImperial).value),
             }))
 
+            const title = new Set(props.stats.map(s => s.shortname)).size === 1 ? props.stats[0].shortname : ''
+
             const [axis, grid] = axisAndGrid(transpose)
             const marks: Plot.Markish[] = [
                 axis(monthIdxs, { tickFormat: (i: number) => monthLabels[i] }),
@@ -104,6 +106,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
             const pad = (maxValue - minValue) * 0.1 || Math.max(Math.abs(maxValue), 1) * 0.1
             const ydomain: [number, number] = [minValue - pad, maxValue + pad]
 
+            marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
             const xlabel = null
             const ylabel = combinedLabel !== undefined
                 ? combinedLabel(unitSuffix)
