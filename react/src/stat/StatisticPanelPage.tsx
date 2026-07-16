@@ -15,6 +15,7 @@ import { tableType } from '../urban-stats-script/constants/table'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { AssignmentsResult } from '../urban-stats-script/workerManager'
+import { reifyReact, reifyString } from '../utils/human-readable-name'
 import { tableToMapper } from '../utils/page-conversion'
 import { sanitize } from '../utils/paths'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
@@ -48,18 +49,18 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
     return (
         <PageTemplate
             screencap={data && ((...args) => createScreenshot({
-                path: `${sanitize(data.renderedStatname)}.png`,
+                path: `${sanitize(reifyString(data.renderedStatname))}.png`,
                 overallWidth: tableRef.current!.offsetWidth * 2,
                 elementsToRender: [headersRef.current!, tableRef.current!],
             }, ...args))}
             csvExportCallback={data && (() => ({
                 csvData: generateStatisticsPanelCSVData(data.articleNames, data.table, data.hideOrdinalsPercentiles),
-                csvFilename: `${sanitize(data.renderedStatname)}.csv`,
+                csvFilename: `${sanitize(reifyString(data.renderedStatname))}.csv`,
             }))}
         >
             <div ref={headersRef} style={{ position: 'relative' }}>
                 <StatisticPanelHead articleType={stat.articleType} universe={stat.universe} />
-                <div className={subHeaderTextClass}>{subHeaderText}</div>
+                <div className={subHeaderTextClass}>{reifyReact(subHeaderText)}</div>
                 {!view.edit && <ViewHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} />}
             </div>
             <div style={{ marginBlockEnd: '16px' }}></div>
