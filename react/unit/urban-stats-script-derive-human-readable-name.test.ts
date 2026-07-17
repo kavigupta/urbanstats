@@ -3,9 +3,9 @@ import test from 'node:test'
 
 import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapUSSFromString } from '../src/mapper/settings/map-uss'
-import { deriveMapLabel } from '../src/urban-stats-script/derive-human-readable-name'
+import { deriveMapLabel, deriveTableColumnLabel, deriveTableLabel } from '../src/urban-stats-script/derive-human-readable-name'
 import { TypeEnvironment } from '../src/urban-stats-script/types-values'
-import { reifyString } from '../src/utils/human-readable-name'
+import { HumanReadableName, reifyString } from '../src/utils/human-readable-name'
 
 function getTypeEnvironment(): TypeEnvironment {
     return defaultTypeEnvironment('USA')
@@ -96,3 +96,76 @@ void test('map label cannot be derived for a raw vector literal', () => {
     const label = deriveMapLabel(mapUSSFromString('cMap(data=[1, 2, 3], scale=linearScale(), ramp=rampUridis)'), getTypeEnvironment())
     assert.equal(label, undefined)
 })
+
+let tableColumnLabelIdx = 0
+
+function testTableColumnLabel(testFn: typeof test, code: string, columnIndex: number, expectedLabel: string | undefined): void {
+    void testFn(`table column label ${++tableColumnLabelIdx}`, () => {
+        const label = deriveTableColumnLabel(mapUSSFromString(code), getTypeEnvironment(), columnIndex)
+        if (expectedLabel === undefined) {
+            assert.equal(label, undefined)
+        }
+        else {
+            assert.ok(label)
+            assert.equal(reifyString(label), expectedLabel)
+        }
+    })
+}
+
+testTableColumnLabel(test,
+    'table(columns=[column(values=population), column(values=density_pw_1km / density_pw_2km)])',
+    0,
+    'Population',
+)
+testTableColumnLabel(test,
+    'table(columns=[column(values=population), column(values=density_pw_1km / density_pw_2km)])',
+    1,
+    'PW Density (r=1km) ÷ PW Density (r=2km)',
+)
+testTableColumnLabel(test,
+    'table(columns=[column(values=population)])',
+    1,
+    undefined,
+)
+testTableColumnLabel(test,
+    'table(columns=[column(values=[1, 2, 3])])',
+    0,
+    undefined,
+)
+testTableColumnLabel(test,
+    'customNode("x = 1")',
+    0,
+    undefined,
+)
+
+let tableLabelIdx = 0
+
+function testTableLabel(testFn: typeof test, code: string, columnNames: HumanReadableName[], expectedLabel: string | undefined): void {
+    void testFn(`table label ${++tableLabelIdx}`, () => {
+        const label = deriveTableLabel(mapUSSFromString(code), getTypeEnvironment(), columnNames)
+        if (expectedLabel === undefined) {
+            assert.equal(label, undefined)
+        }
+        else {
+            assert.ok(label)
+            assert.equal(reifyString(label), expectedLabel)
+        }
+    })
+}
+
+testTableLabel(test,
+    'table(columns=[column(values=population)])',
+    ['Population'],
+    'Population',
+)
+testTableLabel(test,
+    'table(columns=[column(values=population), column(values=density_pw_1km / density_pw_2km)])',
+    ['Population', 'PW Density (r=1km) ÷ PW Density (r=2km)'],
+    'Population, PW Density (r=1km) ÷ PW Density (r=2km)',
+)
+testTableLabel(test,
+    `condition(population > 1m)
+table(columns=[column(values=population)])`,
+    ['Population'],
+    'Population where Population > 1m',
+)

@@ -1,6 +1,7 @@
 import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { CountsByUT } from '../components/countsByArticleType'
+import { defaultTypeEnvironment } from '../mapper/context'
 import { Selection, SelectionContext } from '../mapper/settings/SelectionContext'
 import { Navigator } from '../navigation/Navigator'
 import { universeContext } from '../universe'
@@ -100,7 +101,9 @@ export function StatisticPanel({ settings, counts }: { settings: StatSettings, c
 
     const { stat, view } = settingsState
 
-    const generator = useStatGenerator({ stat: generatorSettings.stat })
+    const typeEnvironment = useMemo(() => defaultTypeEnvironment(stat.universe), [stat.universe])
+
+    const generator = useStatGenerator({ stat: generatorSettings.stat, typeEnvironment })
 
     return (
         <SelectionContext.Provider value={selectionContext}>
@@ -121,6 +124,7 @@ export function StatisticPanel({ settings, counts }: { settings: StatSettings, c
                     counts={counts}
                     data={generator.data}
                     assignments={generator.assignments}
+                    typeEnvironment={typeEnvironment}
                 />
             </universeContext.Provider>
             {settingsState.view.edit && undoRedo.ui}
