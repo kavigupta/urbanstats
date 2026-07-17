@@ -219,8 +219,33 @@ const plotPairAxisLabel: Partial<Record<StatPath, { solo: (unitSuffix: string) =
 const noAxisLabel = (): string => ''
 
 export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
-    if (rows[statIndex].kind !== 'statistic' || rows[statIndex].extraStats.length === 0) {
+    if (rows[statIndex].kind !== 'statistic') {
         return []
+    }
+    if (rows[statIndex].extraStats.length === 0) {
+        // this stat's own data is invalid for this region (e.g. Singapore's snowfall) -- if its
+        // pair partner has valid data (Singapore's rainfall), still show that, styled exactly as
+        // if the partner had been requested directly (matching expanding the partner's own row),
+        // rather than dropping this region from the chart entirely
+        const pairedPath = plotPairPartner[rows[statIndex].statpath]
+        const pairedIdx = pairedPath !== undefined
+            ? rows.findIndex(r => r.statpath === pairedPath && r.kind === 'statistic')
+            : -1
+        if (pairedIdx === -1 || rows[pairedIdx].extraStats.length === 0) {
+            return []
+        }
+        const axisLabel = plotPairAxisLabel[rows[pairedIdx].statpath]
+        return [{
+            ...rows[pairedIdx],
+            color,
+            shortname,
+            longname,
+            sharedTypeOfAllArticles,
+            subseriesName: plotPairLabel[rows[pairedIdx].statpath]!,
+            dashOrder: plotPairDashOrder[rows[pairedIdx].statpath],
+            combinedLabel: axisLabel !== undefined ? axisLabel.solo : noAxisLabel,
+            pairedInFor: ['monthly_time_series'],
+        } satisfies PlotProps]
     }
     const sPs = rows.map(row => statParents.get(row.statpath)!).map((sP, i) => ({ sP, i }))
     const byYear = new Map<Year, number[]>()

@@ -128,13 +128,19 @@ test('histogram-monthly-comparison-symmetric-invalid-pair', async (t) => {
     await downloadHistogram(t, 0)
 })
 
-// Expanding from the invalid side of the pair (Singapore's own snowfall data is
-// invalid) should just omit that region from the chart rather than erroring.
+// Expanding from the invalid side of the pair (Singapore's own snowfall data is invalid) should
+// still show Singapore's valid Rain data -- not drop the region from the chart entirely, which
+// was a real bug: pullRelevantPlotProps used to bail out as soon as the *own* stat (Snowfall) had
+// no data, without ever checking whether the pair partner (Rainfall) did.
 urbanstatsFixture('comparison test monthly plot expanding the invalid side of the pair', comparisonPage(['Singapore', 'Canada']))
 
 test('histogram-monthly-comparison-expand-invalid-own-stat', async (t) => {
     await checkTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Snowfall [rain-equivalent]"]'))
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Singapore$/).exists).ok('Singapore should still appear, via its valid Rain data')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Canada$/).exists).ok('Canada should still appear, with both Rain and Snow')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Rain$/).exists).ok('Rain legend entry')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Snow$/).exists).ok('Snow legend entry')
     await downloadHistogram(t, 0)
 })
 
