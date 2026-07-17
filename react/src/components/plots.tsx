@@ -25,6 +25,8 @@ export interface PlotProps {
     pairedInFor?: ExtraStat['type'][]
     // axis/title label (given the unit suffix, e.g. "°F") for this stat's monthly plot
     combinedLabel: (unitSuffix: string) => string
+    // true only when the paired statistic is actually present.
+    pairingActive: boolean
 }
 
 const plotModeLabels: Partial<Record<ExtraStat['type'], string>> = {
@@ -62,7 +64,8 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
         ? plotProps
         : plotProps.filter(p => p.pairedInFor === undefined || p.pairedInFor.includes(selectedType))
     const dashOrder = relevantPlotProps[0]?.dashOrder
-    const combinedLabel = relevantPlotProps[0]?.combinedLabel
+    // Get che combined label if any of the relevant plot props has pairing active.
+    const combinedLabel = relevantPlotProps.find(p => p.pairingActive)?.combinedLabel ?? relevantPlotProps[0]?.combinedLabel
 
     switch (selectedType) {
         case 'histogram':
@@ -244,6 +247,7 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
             subseriesName: plotPairLabel[rows[pairedIdx].statpath]!,
             dashOrder: plotPairDashOrder[rows[pairedIdx].statpath],
             combinedLabel: axisLabel !== undefined ? axisLabel.solo : noAxisLabel,
+            pairingActive: false,
             pairedInFor: ['monthly_time_series'],
         } satisfies PlotProps]
     }
@@ -301,6 +305,7 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
             subseriesName: pairActive ? plotPairLabel[rows[idx].statpath] ?? year.toString() : year.toString(),
             dashOrder,
             combinedLabel,
+            pairingActive: pairedHasData,
         } satisfies PlotProps
     })
     if (!pairedHasData) {
@@ -317,6 +322,7 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
             subseriesName: plotPairLabel[rows[pairedIdx].statpath]!,
             dashOrder,
             combinedLabel,
+            pairingActive: true,
             // the overlay only makes sense for the monthly view -- a combined distribution chart
             // doesn't read as "two series", so RenderedPlot excludes this entry from that view
             pairedInFor: ['monthly_time_series'],

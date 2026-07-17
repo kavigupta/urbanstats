@@ -141,6 +141,10 @@ test('histogram-monthly-comparison-expand-invalid-own-stat', async (t) => {
     await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Canada$/).exists).ok('Canada should still appear, with both Rain and Snow')
     await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Rain$/).exists).ok('Rain legend entry')
     await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Snow$/).exists).ok('Snow legend entry')
+    // the axis label is picked per-region (Singapore is solo Rain, Canada is paired), so this
+    // regression-tests always preferring a region where the pair is genuinely shown -- the axis
+    // should read "Precipitation", not "Rain", since Canada's Snow line is on this chart too
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/Precipitation \(rain equivalent/).exists).ok('axis label should reflect the pair, not just Singapore\'s solo Rain')
     await downloadHistogram(t, 0)
 })
 
