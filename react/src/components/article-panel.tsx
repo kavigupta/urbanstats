@@ -212,7 +212,6 @@ function ArticleTable(props: {
     const plotSpecs: (PlotSpec | undefined)[] = expandedEach.map((expanded, index) => expanded
         ? {
                 statDescription: props.filteredRows[index].renderedStatname,
-                statpath: props.filteredRows[index].statpath,
                 plotProps: pullRelevantPlotProps(
                     props.filteredRows,
                     index,

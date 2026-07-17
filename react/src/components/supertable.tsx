@@ -2,7 +2,6 @@ import React, { CSSProperties, Fragment, ReactNode, useMemo } from 'react'
 
 import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
-import { StatPath } from '../page_template/statistic-tree'
 import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { HumanReadableName } from '../utils/human-readable-name'
@@ -17,7 +16,6 @@ import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopL
 
 export interface PlotSpec {
     statDescription: string
-    statpath: StatPath
     plotProps: PlotProps[]
 }
 
@@ -165,7 +163,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
                 {props.verticalPlotSpecs.map((plotSpec, statIndex) => plotSpec
                     ? (
                             <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${props.widthLeftHeader + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + columnFullWidths[i], props.columnWidth)}%`, bottom: 0, width: `${props.columnWidth}%` }}>
-                                <RenderedPlot statDescription={plotSpec.statDescription} statpath={plotSpec.statpath} plotProps={plotSpec.plotProps} />
+                                <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
                             </div>
                         )
                     : null,
@@ -250,7 +248,7 @@ function SuperTableRow(props: {
             </TableRowContainer>
             {props.plotSpec && (
                 <div style={{ width: '100%', position: 'relative' }}>
-                    <RenderedPlot statDescription={props.plotSpec.statDescription} statpath={props.plotSpec.statpath} plotProps={props.plotSpec.plotProps} />
+                    <RenderedPlot statDescription={props.plotSpec.statDescription} plotProps={props.plotSpec.plotProps} />
                 </div>
             )}
             {congressionalRegions.length > 0 && (

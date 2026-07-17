@@ -1,7 +1,7 @@
 import React, { ReactElement, ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { plotDisplayModeKey, useSetting } from '../page_template/settings'
+import { useSetting } from '../page_template/settings'
 import { statParents, StatPath, Year } from '../page_template/statistic-tree'
 import { assert } from '../utils/defensive'
 
@@ -34,18 +34,21 @@ const plotModeLabels: Partial<Record<ExtraStat['type'], string>> = {
     time_series: 'Yearly',
 }
 
-export function RenderedPlot({ statDescription, statpath, plotProps }: { statDescription: string, statpath: StatPath, plotProps: PlotProps[] }): ReactNode {
+export function RenderedPlot({ statDescription, plotProps }: { statDescription: string, plotProps: PlotProps[] }): ReactNode {
     const colors = useColors()
     const availableTypes = Array.from(new Set(plotProps.flatMap(p => p.extraStats.map(es => es.type))))
-    const [mode, setMode] = useSetting(plotDisplayModeKey(statpath))
-    const selectedType: ExtraStat['type'] | undefined = availableTypes.includes(mode as ExtraStat['type']) ? mode as ExtraStat['type'] : availableTypes[0]
+    // shared by every multi-mode plot rather than keyed per-stat (see 'plot_mode' in settings.ts) --
+    // this also means paired stats (High/Low temp, Rain/Snow) naturally stay in sync, since Monthly
+    // mode always renders them as a single combined chart regardless of which row you're looking at
+    const [mode, setMode] = useSetting('plot_mode')
+    const selectedType: ExtraStat['type'] | undefined = availableTypes.includes(mode) ? mode : availableTypes[0]
 
     const modeSwitcher: ReactElement | undefined = availableTypes.length > 1
         ? (
                 <select
                     value={selectedType}
                     style={{ backgroundColor: colors.background, color: colors.textMain }}
-                    onChange={(e) => { setMode(e.target.value) }}
+                    onChange={(e) => { setMode(e.target.value as ExtraStat['type']) }}
                     className="serif"
                     data-test-id="plot_mode"
                 >

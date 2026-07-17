@@ -284,7 +284,6 @@ export function ComparisonPanel(props: {
         expandedByStatIndex[statIndex]
             ? {
                     statDescription: dataByStatArticle[statIndex][0].renderedStatname,
-                    statpath: dataByStatArticle[statIndex][0].statpath,
                     plotProps: plotProps(statIndex),
                 }
             : undefined,
