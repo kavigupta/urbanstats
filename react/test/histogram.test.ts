@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, checkTextboxes, comparisonPage, downloadHistogram, downloadImage, downloadOrCheckString, screencap, urbanstatsFixture, waitForSelectedSearchResult, getLocationWithoutSettings } from './test_utils'
+import { target, checkIndividualStat, checkTextboxes, comparisonPage, downloadHistogram, downloadImage, downloadOrCheckString, screencap, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult, getLocationWithoutSettings } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -237,6 +237,120 @@ test('histogram-monthly-comparison-imperial-units-temperature', async (t) => {
     await downloadHistogram(t, 0)
 
     await t.click(temperatureSelect).click(temperatureSelect.find('option').withExactText('°F'))
+    await downloadHistogram(t, 0)
+})
+
+urbanstatsFixture('germany default', `${target}/article.html?longname=Germany&universe=world`)
+
+// just one temperature checked
+test('histogram-monthly-article-just-high-temp', async (t) => {
+    await checkIndividualStat(t, 'Weather', 'Mean high temp')
+    await t.expect(Selector('[aria-label="Expand Mean low temp"]').exists).notOk('Low should not have a row at all when unchecked')
+    await t.click(Selector('[aria-label="Expand Mean high temp"]'))
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/Mean high temp by month/).exists).ok('solo axis label should name the stat, not "Mean Temp by Month"')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Low$/).exists).notOk('no Low legend entry when Low is unchecked')
+    await downloadHistogram(t, 0)
+})
+
+test('histogram-monthly-article-just-low-temp', async (t) => {
+    await checkIndividualStat(t, 'Weather', 'Mean low temp')
+    await t.expect(Selector('[aria-label="Expand Mean high temp"]').exists).notOk('High should not have a row at all when unchecked')
+    await t.click(Selector('[aria-label="Expand Mean low temp"]'))
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/Mean low temp by month/).exists).ok('solo axis label should name the stat, not "Mean Temp by Month"')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^High$/).exists).notOk('no High legend entry when High is unchecked')
+    await downloadHistogram(t, 0)
+})
+
+// Both temperatures present
+test('histogram-monthly-article-both-temps', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Mean high temp"]'))
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/Mean Temp by Month/).exists).ok('paired axis label when both are present')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^High$/).exists).ok('High legend entry')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Low$/).exists).ok('Low legend entry')
+    await downloadHistogram(t, 0)
+})
+
+test('histogram-temperature-distribution-article-low-temp', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Mean low temp"]'))
+    const modeSelect = Selector('[data-test-id=plot_mode]')
+    await t.click(modeSelect).click(modeSelect.find('option').withExactText('Distribution'))
+    await downloadHistogram(t, 0)
+})
+
+// Snow and rain one at a time
+test('histogram-monthly-article-just-rain', async (t) => {
+    await checkIndividualStat(t, 'Weather', 'Rainfall')
+    await t.expect(Selector('[aria-label="Expand Snowfall [rain-equivalent]"]').exists).notOk('Snow should not have a row at all when unchecked')
+    await t.click(Selector('[aria-label="Expand Rainfall"]'))
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/Rain \(/).exists).ok('solo Rain axis label')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Snow$/).exists).notOk('no Snow legend entry when Snow is unchecked')
+    await downloadHistogram(t, 0)
+})
+
+test('histogram-monthly-article-just-snow', async (t) => {
+    await checkIndividualStat(t, 'Weather', 'Snowfall [rain-equivalent]')
+    await t.expect(Selector('[aria-label="Expand Rainfall"]').exists).notOk('Rain should not have a row at all when unchecked')
+    await t.click(Selector('[aria-label="Expand Snowfall [rain-equivalent]"]'))
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/Snow \(rain equivalent/).exists).ok('solo Snow axis label')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Rain$/).exists).notOk('no Rain legend entry when Rain is unchecked')
+    await downloadHistogram(t, 0)
+})
+
+urbanstatsFixture(
+    'comparison test temperature distribution, extreme climates',
+    `${target}/comparison.html?${new URLSearchParams({ longnames: JSON.stringify(['San Luis city, Arizona, USA', 'Utqiaġvik city, Alaska, USA']) }).toString()}`,
+)
+
+test('histogram-temperature-distribution-comparison-extreme-climates', async (t) => {
+    // the combining-diacritic longname (Utqiaġvik) takes a little longer to resolve than a plain-ASCII one
+    await waitForLoading()
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Mean high temp"]'))
+    const modeSelect = Selector('[data-test-id=plot_mode]')
+    await t.click(modeSelect).click(modeSelect.find('option').withExactText('Distribution'))
+
+    const axisTicks = Selector('.histogram-svg-panel').find('text').withText(/^-?\d+°F$/)
+    await t.expect(axisTicks.count).gt(0, 'expected at least one temperature axis tick')
+    // even the union of a desert and an Arctic town's real data should never need ticks
+    // outside the true global bin range
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^-50°F$/).exists).notOk('axis should never go below the global minimum bin (-40F)')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^150°F$/).exists).notOk('axis should never go above the global maximum bin (140F)')
+    await downloadHistogram(t, 0)
+})
+
+urbanstatsFixture('article test with no snow at all', `${target}/article.html?longname=Singapore&universe=world`)
+
+test('histogram-monthly-article-snow-when-none', async (t) => {
+    await checkIndividualStat(t, 'Weather', 'Snowfall [rain-equivalent]')
+    await t.expect(Selector('[aria-label="Expand Snowfall [rain-equivalent]"]').exists).notOk('no chart to expand -- Singapore has no valid snowfall data')
+    await t.expect(Selector('div').withText(/^Singapore$/).exists).ok('rest of the page should still work fine')
+})
+
+// Both Rain and Snow checked (via "Weather") on a single, non-comparison article with valid
+// data for both -- the paired overlay mechanism doesn't require a comparison.
+urbanstatsFixture('article test with both rain and snow', `${target}/article.html?longname=Canada&universe=world`)
+
+test('histogram-monthly-article-both-rain-snow', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Rainfall"]'))
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/Precipitation \(rain equivalent/).exists).ok('paired axis label when both are present')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Rain$/).exists).ok('Rain legend entry')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Snow$/).exists).ok('Snow legend entry')
+    await downloadHistogram(t, 0)
+})
+
+// A comparison where BOTH regions have fully valid rain and snow data (unlike the
+// mismatched/symmetric-invalid tests above, which are specifically about invalid data) --
+// general coverage of the clean, common case for a rain/snow comparison.
+urbanstatsFixture('comparison test with both rain and snow, both valid', comparisonPage(['Canada', 'Russia']))
+
+test('histogram-monthly-comparison-both-rain-snow-valid', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Rainfall"]'))
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Rain$/).exists).ok('Rain legend entry')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Snow$/).exists).ok('Snow legend entry')
     await downloadHistogram(t, 0)
 })
 

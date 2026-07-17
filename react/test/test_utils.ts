@@ -58,6 +58,21 @@ export async function withHamburgerMenu(t: TestController, block: () => Promise<
     }
 }
 
+// individual (non-category) stat checkboxes -- e.g. "Mean high temp" within the "Weather"
+// category -- are nested inside their category's collapsible tree and only become interactable
+// once the category itself is expanded (see CategoryContents/RenderTwiceHidden in
+// StatsTree.tsx). checkTextboxes alone only reaches top-level category checkboxes, which are
+// interactable regardless of expand state.
+export async function checkIndividualStat(t: TestController, category: string, stat: string): Promise<void> {
+    await withHamburgerMenu(t, async () => {
+        await t.click(Selector(`[aria-label="Expand ${category} category"]`))
+        // the category's contents animate open (max-height transition) -- give it a moment
+        // before interacting with the now-revealed checkboxes
+        await t.wait(500)
+        await checkTextboxesDirect(t, [stat])
+    })
+}
+
 export async function checkAllCategoryBoxes(t: TestController): Promise<void> {
     await withHamburgerMenu(t, async () => {
         const checkboxes = Selector('div.checkbox-setting:not([inert] *)')
