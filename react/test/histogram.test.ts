@@ -338,6 +338,23 @@ test('histogram-monthly-article-snow-when-none', async (t) => {
     await t.expect(Selector('div').withText(/^Singapore$/).exists).ok('rest of the page should still work fine')
 })
 
+// Regression test: the "expanded" flag for a row is a global per-statpath setting (it
+// persists across navigation, not scoped to the currently-viewed region). Previously,
+// expanding Snowfall on Canada (which has valid snow) and then navigating to Singapore
+// (which has none) would leave the Snowfall plot visibly expanded on Singapore's page
+urbanstatsFixture('expand snow on a valid region, then navigate to one with none', `${target}/article.html?longname=Canada&universe=world`)
+
+test('histogram-monthly-expanded-state-does-not-leak-to-invalid-region', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Snowfall [rain-equivalent]"]'))
+    await t.expect(Selector('.histogram-svg-panel').count).eql(1)
+
+    await t.navigateTo(`${target}/article.html?longname=Singapore&universe=world`)
+    await waitForLoading()
+    await t.expect(Selector('[aria-label="Expand Snowfall [rain-equivalent]"]').exists).notOk('no toggle for a region with no valid snowfall data, even with a leftover "expanded" setting')
+    await t.expect(Selector('.histogram-svg-panel').count).eql(0)
+})
+
 // Both Rain and Snow checked (via "Weather") on a single, non-comparison article with valid
 // data for both -- the paired overlay mechanism doesn't require a comparison.
 urbanstatsFixture('article test with both rain and snow', `${target}/article.html?longname=Canada&universe=world`)
