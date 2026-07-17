@@ -110,6 +110,32 @@ export function ordinalSeriesMarks(
     return marks
 }
 
+// like ordinalSeriesMarks, but draws a bar per series/position instead of a line+dot series --
+// each position's slot is split evenly across the compared series (dovetailed) so multiple
+// series are visually comparable at a glance, matching the density histogram's bar mode.
+// xFor(i) is treated as the center of position i's slot (e.g. the midpoint between two bin
+// boundaries) -- the combined block of per-series bars is centered on it, not left-aligned to it.
+export function ordinalSeriesBarMarks(
+    seriesData: { series: { color: string }, values: number[] }[],
+    idxs: number[],
+    transpose: boolean,
+    xFor: (i: number) => number = i => i,
+): Plot.Markish {
+    const width = 1 / seriesData.length * 0.8
+    const bars = seriesData.flatMap(({ series, values }, seriesIdx) => {
+        const centerOffset = (seriesIdx - (seriesData.length - 1) / 2) * width
+        return idxs.map(i => ({
+            left: xFor(i) + centerOffset - width / 2,
+            right: xFor(i) + centerOffset + width / 2,
+            value: values[i],
+            color: series.color,
+        }))
+    })
+    return transpose
+        ? Plot.rectX(bars, { y1: 'left', y2: 'right', x: 'value', fill: 'color' })
+        : Plot.rectY(bars, { x1: 'left', x2: 'right', y: 'value', fill: 'color' })
+}
+
 // a Plot.tip anchored at the tallest series' value at each point, swapping x/y when transposed,
 // styled with the theme's tooltip colors
 export function transposeAwareTip<T>(

@@ -6,7 +6,7 @@ import { useSetting } from '../page_template/settings'
 import { convertTemperature } from '../utils/unit'
 
 import { TemperatureHistogramExtraStat } from './load-article'
-import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, ordinalSeriesMarks, PlotComponent, PlotSettingsBar, transposeAwareTip, valueGrid } from './plots-general'
+import { axisAndGrid, manualLegend, multiSeriesTipTitle, ordinalSeriesBarMarks, PlotComponent, PlotSettingsBar, transposeAwareTip, valueGrid } from './plots-general'
 import { boundaryLabel, bucketRangeLabel, temperatureHistogramBounds } from './plots-temperature-histogram-bins'
 
 export interface TemperatureHistogramPlotProps {
@@ -75,14 +75,11 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
                 valueGrid(transpose)(),
             ]
 
-            const dashPatterns = computeDashPatterns(props.histograms, props.dashOrder)
             marks.push(
-                ...ordinalSeriesMarks(
+                ordinalSeriesBarMarks(
                     seriesData.map(({ h, values }) => ({ series: h, values })),
                     binIdxs,
-                    'binIdx',
                     transpose,
-                    dashPatterns,
                     pointX,
                 ),
             )
