@@ -24,28 +24,9 @@ jobs:
     steps:
       - &checkout
         name: Checkout repository
-        uses: nick-fields/retry@v3
+        uses: actions/checkout@v4
         with:
-          max_attempts: 5
-          timeout_seconds: 30
-          shell: bash
-          command: |
-            rm -rf $GITHUB_WORKSPACE/*
-
-            git config --global --add safe.directory $GITHUB_WORKSPACE
-            git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $(echo -n x-access-token:$GITHUB_TOKEN | base64 -w0)"
-
-            # Clone the repo
-            git clone --no-checkout --filter=blob:none ${{ github.server_url }}/${{ github.repository }}.git $GITHUB_WORKSPACE
-
-            # Enable sparse checkout
-            git config core.sparseCheckout true
-
-            # Configure sparse checkout
-            echo "$SPARSE_CHECKOUT" > .git/info/sparse-checkout
-
-            # Check out the ref
-            git checkout --progress --force ${{ github.sha }}
+          fetch-depth: 1
 
       - uses: ./.github/actions/docker_image
         with:
@@ -79,7 +60,6 @@ jobs:
         /*
     steps:
       - *checkout
-      - uses: lukebrody/nothing-action@master # Without this, the below actions don't work. This is a bug in Github
       - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
       - name: Lint with pylint
@@ -259,7 +239,6 @@ jobs:
         /*
     steps:
       - *checkout
-      - uses: lukebrody/nothing-action@master # Without this, the below actions don't work. This is a bug in Github
       - uses: ./.github/actions/python_environment
       - uses: ./.github/actions/node_modules
       - name: Run js tests

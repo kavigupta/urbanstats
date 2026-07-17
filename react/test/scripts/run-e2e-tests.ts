@@ -60,7 +60,7 @@ const testcafe = await createTestCafe('localhost', ...testCafePorts())
 
 const testHistory: TestHistory = []
 
-const gh = process.env.GITHUB_ACTIONS ? await github() : undefined
+const gh = process.env.GITHUB_ACTIONS && !process.env.ACT ? await github() : undefined
 
 for (const test of tests) {
     const numTries = options.tries * (await testFileDidChange(test) ? 1 : 2)
