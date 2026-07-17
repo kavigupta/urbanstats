@@ -7,6 +7,7 @@ import { convertTemperature } from '../utils/unit'
 
 import { TemperatureHistogramExtraStat } from './load-article'
 import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, ordinalSeriesMarks, PlotComponent, PlotSettingsBar, transposeAwareTip, valueGrid } from './plots-general'
+import { boundaryLabel, bucketRangeLabel, temperatureHistogramBounds } from './plots-temperature-histogram-bins'
 
 export interface TemperatureHistogramPlotProps {
     shortname: string
@@ -21,22 +22,6 @@ interface TipDatum {
     label: string
     names: string[]
     values: number[]
-}
-
-// boundary j (0 <= j < numBins - 1) sits at temperature binMin + j*binSize. Bucket i's point is
-// plotted at x = i - 0.5, i.e. between boundary (i-1) and boundary i -- so the axis only needs to
-// label each boundary once (a single temperature), instead of repeating it in adjacent bucket-range labels.
-function boundaryLabel(boundaryIdx: number, binMin: number, binSize: number, convert: (v: number) => number, unitSuffix: string): string {
-    return `${Math.round(convert(binMin + boundaryIdx * binSize))}${unitSuffix}`
-}
-
-// descriptive range for a bucket, used only in the hover tooltip (not on the axis, where
-// adjacent buckets' ranges would redundantly repeat the shared boundary value)
-function bucketRangeLabel(binIdx: number, binMin: number, binSize: number, convert: (v: number) => number, unitSuffix: string): string {
-    const round = (v: number): string => Math.round(convert(v)).toString()
-    const lo = binMin + (binIdx - 1) * binSize
-    const hi = lo + binSize
-    return `${round(lo)}-${round(hi)}${unitSuffix}`
 }
 
 export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogramPlotProps[], statDescription: string, sharedTypeOfAllArticles?: string, modeSwitcher?: ReactElement, dashOrder?: string[] }): ReactNode {
@@ -67,11 +52,12 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
     const plotSpec = useCallback(
         (transpose: boolean) => {
             // drop the open-ended "below min"/"above max" catch-all buckets (indices 0 and numBins - 1) --
-            // they don't have a clean two-sided interval like the rest, which is confusing to plot as a point
-            const binIdxs = Array.from({ length: numBins - 2 }, (_, i) => i + 1)
+            // they don't have a clean two-sided interval like the rest, which is confusing to plot as a point --
+            // and clip further to the bins that actually have data (plus one bin of padding)
+            const [binIdxStart, binIdxEnd] = temperatureHistogramBounds(props.histograms.map(h => h.histogram.counts), numBins)
+            const binIdxs = Array.from({ length: binIdxEnd - binIdxStart + 1 }, (_, i) => i + binIdxStart)
             const pointX = (binIdx: number): number => binIdx - 0.5
-            const boundaryIdxs = Array.from({ length: numBins - 1 }, (_, i) => i)
-            const boundaryLabels = boundaryIdxs.map(j => boundaryLabel(j, binMin, binSize, v => convertTemperature(v, temperatureUnit).value, unitSuffix))
+            const boundaryIdxs = Array.from({ length: binIdxEnd - binIdxStart + 2 }, (_, i) => i + binIdxStart - 1)
             const title = new Set(props.histograms.map(h => h.shortname)).size === 1 ? props.histograms[0].shortname : ''
             const seriesData = props.histograms.map((h) => {
                 // counts are normalize_to_uint16-scaled (sum to ~2^16), not already-percentages
@@ -84,7 +70,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
 
             const [axis, grid] = axisAndGrid(transpose)
             const marks: Plot.Markish[] = [
-                axis(boundaryIdxs, { tickFormat: (j: number) => boundaryLabels[j] }),
+                axis(boundaryIdxs, { tickFormat: (j: number) => boundaryLabel(j, binMin, binSize, v => convertTemperature(v, temperatureUnit).value, unitSuffix) }),
                 grid(boundaryIdxs),
                 valueGrid(transpose)(),
             ]

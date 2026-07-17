@@ -190,6 +190,26 @@ test('histogram-temperature-distribution-article', async (t) => {
     await downloadHistogram(t, 0)
 })
 
+// Regression test for TemperatureHistogramPlot clipping the x-axis to the region's actual
+// temperature range (temperatureHistogramBounds in plots-temperature-histogram-bins.ts), instead
+// of always spanning the fixed global bin range (-40F to 140F, 19 boundary ticks). Pasadena's
+// real climate never approaches either extreme, so if clipping regresses, the axis would widen
+// back out to the full range and the -40F/140F boundary ticks would reappear.
+urbanstatsFixture('article test temperature distribution axis clipping', `${target}/article.html?${new URLSearchParams({ longname: pasadena }).toString()}`)
+
+test('histogram-temperature-distribution-clips-axis', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Mean high temp"]'))
+    const modeSelect = Selector('[data-test-id=plot_mode]')
+    await t.click(modeSelect).click(modeSelect.find('option').withExactText('Distribution'))
+
+    const axisTicks = Selector('.histogram-svg-panel').find('text').withText(/^-?\d+°F$/)
+    await t.expect(axisTicks.count).gt(0, 'expected at least one temperature axis tick')
+    await t.expect(axisTicks.count).lt(19, 'axis should show fewer ticks than the full -40F..140F range')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^-40°F$/).exists).notOk('axis should not reach the global minimum bin (-40F) for this region')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^140°F$/).exists).notOk('axis should not reach the global maximum bin (140F) for this region')
+})
+
 // Regression coverage for converting monthly precipitation values to imperial units
 // (rainfall/snowfall are stored in metric and converted for display) -- combined with
 // the mismatched-pair-validity regions to make sure the two don't interact badly.
