@@ -112,6 +112,8 @@ const histogramTypeSettingCoder = new BitmapCoder(2, [
 
 const temperatureUnitCoder = new BitmapCoder(1, ['fahrenheit', 'celsius'])
 
+const plotModeSettingCoder = new BitmapCoder(1, ['monthly_time_series', 'temperature_histogram'])
+
 // Too many bits for expansion
 const mobileArticlePointersCoder = new BitmapCoder(2, ['pointer_in_class', 'pointer_overall'])
 
@@ -483,6 +485,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_statcan_geocode', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_iso_code', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_congressional_representatives', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'plot_mode', coder: plotModeSettingCoder }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 
@@ -490,7 +493,6 @@ type NotIncludedInSettingsVector = (
     RelationshipKey
     | StatCategorySavedIndeterminateKey
     | StatCategoryExpandedKey
-    | 'plot_mode'
     | 'theme' | 'colorblind_mode' | 'clean_background'
     | 'juxtastatCompactEmoji' | 'syauRequireEnter' | 'mapperSettingsColumnProp'
     | 'randomFilterByCurrentUniverse'

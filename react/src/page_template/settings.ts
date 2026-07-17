@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
-import { ExtraStat } from '../components/load-article'
 import extra_stats from '../data/extra_stats'
 import map_relationship from '../data/map_relationship'
 import stat_path_list from '../data/statistic_path_list'
@@ -21,6 +20,8 @@ export type RowExpandedKey<P extends StatPath> = `expanded__${P}`
 
 export type HistogramType = 'Bar' | 'Line' | 'Line (cumulative)'
 
+export type PlotMode = 'monthly_time_series' | 'temperature_histogram'
+
 export type StatGroupKey<G extends GroupIdentifier = GroupIdentifier> = `show_stat_group_${G}`
 export type StatCategorySavedIndeterminateKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_saved_indeterminate_${C}`
 export type StatCategoryExpandedKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_expanded_${C}`
@@ -40,7 +41,7 @@ export type SettingsDictionary = {
     use_imperial: boolean
     histogram_type: HistogramType
     histogram_relative: boolean
-    plot_mode: ExtraStat['type']
+    plot_mode: PlotMode
     theme: Theme | 'System Theme'
     colorblind_mode: boolean
     clean_background: boolean
@@ -99,7 +100,7 @@ export const defaultSettingsList = [
     ['use_imperial', false] as const,
     ['histogram_type', 'Line'] as const,
     ['histogram_relative', true] as const,
-    ['plot_mode', 'histogram'] as const,
+    ['plot_mode', 'monthly_time_series'] as const,
     ['theme', 'System Theme'] as const,
     ['colorblind_mode', false] as const,
     ['clean_background', false] as const,

@@ -1,7 +1,7 @@
 import React, { ReactElement, ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { useSetting } from '../page_template/settings'
+import { PlotMode, useSetting } from '../page_template/settings'
 import { statParents, StatPath, Year } from '../page_template/statistic-tree'
 import { assert } from '../utils/defensive'
 
@@ -50,7 +50,7 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
                 <select
                     value={selectedType}
                     style={{ backgroundColor: colors.background, color: colors.textMain }}
-                    onChange={(e) => { setMode(e.target.value as ExtraStat['type']) }}
+                    onChange={(e) => { setMode(e.target.value as PlotMode) }}
                     className="serif"
                     data-test-id="plot_mode"
                 >
