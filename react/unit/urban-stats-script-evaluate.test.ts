@@ -2391,16 +2391,9 @@ void test('test column without name', () => {
     const resultColumn = evaluate(parseExpr('column(values=[1, 2, 3])'), ctx)
     assert.deepStrictEqual(resultColumn.type, { type: 'opaque', name: 'column' })
     const resultColumnRaw = (resultColumn.value as { type: 'opaque', value: TableColumn }).value
-    assert.deepStrictEqual(resultColumnRaw.name, '[Unnamed Column]')
+    assert.deepStrictEqual(resultColumnRaw.name, undefined)
     assert.deepStrictEqual(resultColumnRaw.values, [1, 2, 3])
-    assert.deepStrictEqual(effects, [{
-        type: 'warning',
-        message: 'Name could not be derived for column, please pass name="<your name here>" to column(...)',
-        location: {
-            start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-            end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-        },
-    }])
+    assert.deepStrictEqual(effects, [])
 })
 
 void test('test column with unit', () => {
@@ -2506,7 +2499,7 @@ void test('test table column length mismatch error', () => {
     assert.throws(
         () => evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="Col1"), column(values=[4, 5], name="Col2")])'), ctx),
         (err: Error): boolean => {
-            return err instanceof InterpretationError && err.message.includes('All columns must have the same length. Column "Col1" has length 3, but column "Col2" has length 2')
+            return err instanceof InterpretationError && err.message.includes('All columns must have the same length. Column 1 has length 3, but column 2 has length 2')
         },
     )
 })
