@@ -25,7 +25,7 @@ export type StatCategoryExpandedKey<C extends CategoryIdentifier = CategoryIdent
 export type StatYearKey<Y extends Year = Year> = `show_stat_year_${Y}`
 export type StatSourceKey<C extends SourceCategoryIdentifier = SourceCategoryIdentifier, S extends SourceIdentifier = SourceIdentifier> = `show_stat_source_${C}_${S}`
 
-export type TemperatureUnit = 'fahrenheit' | 'celsius'
+export type TemperatureUnit = 'fahrenheit' | 'celsius' | 'kelvin'
 
 export type MobileArticlePointers = 'pointer_in_class' | 'pointer_overall'
 

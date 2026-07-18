@@ -110,7 +110,7 @@ const histogramTypeSettingCoder = new BitmapCoder(2, [
     'Bar',
 ])
 
-const temperatureUnitCoder = new BitmapCoder(1, ['fahrenheit', 'celsius'])
+const temperatureUnitCoder = new BitmapCoder(2, ['fahrenheit', 'celsius', 'kelvin'])
 
 // Too many bits for expansion
 const mobileArticlePointersCoder = new BitmapCoder(2, ['pointer_in_class', 'pointer_overall'])
@@ -360,7 +360,6 @@ const settingsVector = [
     new ActiveSetting({ key: 'expanded__gpw_pw_density_4', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'histogram_relative', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'histogram_type', coder: histogramTypeSettingCoder }),
-    new ActiveSetting({ key: 'temperature_unit', coder: temperatureUnitCoder }),
     new ActiveSetting({ key: 'show_stat_group_gridded_elevation', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_gridded_hilliness', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'mobile_article_pointers', coder: mobileArticlePointersCoder }),
@@ -483,6 +482,7 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_statcan_geocode', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_iso_code', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_congressional_representatives', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'temperature_unit', coder: temperatureUnitCoder }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 
