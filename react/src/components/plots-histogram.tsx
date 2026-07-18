@@ -1,5 +1,5 @@
 import * as Plot from '@observablehq/plot'
-import React, { ReactElement, ReactNode, useCallback } from 'react'
+import React, { ReactNode, useCallback } from 'react'
 
 // imort Observable plot
 import { Colors } from '../page_template/color-themes'
@@ -8,7 +8,7 @@ import { HistogramType, useSetting } from '../page_template/settings'
 import { IHistogram } from '../utils/protos'
 import { useTranspose } from '../utils/transpose'
 
-import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, PlotComponent, PlotSettingsBar, transposeAwareTip } from './plots-general'
+import { axisAndGrid, computeDashPatterns, DetailedPlotSpec, multiSeriesTipTitle, SeriesPlot, transposeAwareTip } from './plots-general'
 import { CheckboxSetting } from './sidebar'
 
 const yPad = 0.025
@@ -47,14 +47,29 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
     }
     const systemColors = useColors()
     const isTransposed = useTranspose()
-    const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
-        <PlotSettingsBar
-            makePlot={makePlot}
-            shortnames={props.histograms.map(h => h.shortname)}
-            longnames={props.histograms.map(h => h.longname)}
-            sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
-            filenameSuffix="histogram"
-        >
+
+    const buildPlot = useCallback(
+        (transpose: boolean): DetailedPlotSpec => {
+            const renderY = relative ? (y: number) => `${y.toFixed(2)}%` : (y: number) => renderNumberHighlyRounded(y, 2)
+
+            const [xIdxStart, xIdxEnd] = histogramBounds(props.histograms)
+            const xidxs = Array.from({ length: xIdxEnd - xIdxStart }, (_, i) => i + xIdxStart)
+            const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial, transpose)
+            const [marks, maxValue] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose, systemColors, props.dashOrder)
+            marks.push(
+                ...xAxisMarks,
+                ...yAxis(maxValue, transpose),
+            )
+            const xlabel = `${props.statDescription} (/${useImperial ? 'mi' : 'km'}²)`
+            const ylabel = relative ? '% of total' : 'Population'
+            const ydomain: [number, number] = [maxValue * (-yPad), maxValue * (1 + yPad)]
+            return { marks, xlabel, ylabel, ydomain }
+        },
+        [props.histograms, binMin, binSize, relative, histogramType, useImperial, systemColors, props.statDescription, props.dashOrder],
+    )
+
+    const extraSettingsControls = (
+        <>
             <select
                 value={histogramTypeRaw}
                 style={{ backgroundColor: systemColors.background, color: systemColors.textMain }}
@@ -67,36 +82,17 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
                 <option value="Bar">Bar</option>
             </select>
             <CheckboxSetting name={isTransposed ? 'Relative' : 'Relative Histograms'} settingKey="histogram_relative" testId="histogram_relative" />
-        </PlotSettingsBar>
-    )
-
-    const plotSpec = useCallback(
-        (transpose: boolean) => {
-            const title = new Set(props.histograms.map(h => h.shortname)).size === 1 ? props.histograms[0].shortname : ''
-            const renderY = relative ? (y: number) => `${y.toFixed(2)}%` : (y: number) => renderNumberHighlyRounded(y, 2)
-
-            const [xIdxStart, xIdxEnd] = histogramBounds(props.histograms)
-            const xidxs = Array.from({ length: xIdxEnd - xIdxStart }, (_, i) => i + xIdxStart)
-            const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial, transpose)
-            const [marks, maxValue] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose, systemColors, props.dashOrder)
-            marks.push(
-                ...xAxisMarks,
-                ...yAxis(maxValue, transpose),
-            )
-            marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
-            const xlabel = `${props.statDescription} (/${useImperial ? 'mi' : 'km'}²)`
-            const ylabel = relative ? '% of total' : 'Population'
-            const ydomain: [number, number] = [maxValue * (-yPad), maxValue * (1 + yPad)]
-            marks.push(...manualLegend(props.histograms, transpose, systemColors, props.dashOrder))
-            return { marks, xlabel, ylabel, ydomain }
-        },
-        [props.histograms, binMin, binSize, relative, histogramType, useImperial, systemColors, props.statDescription, props.dashOrder],
+        </>
     )
 
     return (
-        <PlotComponent
-            plotSpec={plotSpec}
-            settingsElement={settingsElement}
+        <SeriesPlot
+            items={props.histograms}
+            filenameSuffix="histogram"
+            sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
+            dashOrder={props.dashOrder}
+            extraSettingsControls={extraSettingsControls}
+            buildPlot={buildPlot}
         />
     )
 }
