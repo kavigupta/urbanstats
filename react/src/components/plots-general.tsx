@@ -96,7 +96,7 @@ export const transposeSettingsHeight = 30.5
 
 // the settings bar shared by every plot type: download button, "add region" search popup, and
 // (when relevant) plot-type-specific controls (e.g. histogram's line/bar select)
-export function PlotSettingsBar(props: {
+function PlotSettingsBar(props: {
     makePlot: () => HTMLElement
     shortnames: string[]
     longnames: string[]
@@ -217,7 +217,7 @@ export function computeDashPatterns<T extends LegendItem>(items: T[], order?: st
     return dashPatterns
 }
 
-export function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, themeColors: Colors, dashOrder?: string[]): Plot.Markish[] {
+function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, themeColors: Colors, dashOrder?: string[]): Plot.Markish[] {
     const colorItems = computeColorItems(items)
 
     const dashPatterns = computeDashPatterns(items, dashOrder)
@@ -353,7 +353,7 @@ export function manualLegend<T extends LegendItem>(items: T[], transpose: boolea
     return [createLegend]
 }
 
-interface DetailedPlotSpec {
+export interface DetailedPlotSpec {
     marks: Plot.Markish[]
     xlabel: string
     ylabel: string
@@ -450,5 +450,57 @@ export function PlotComponent(props: {
                         </div>
                     )}
         </>
+    )
+}
+
+export interface PlotSeriesItem {
+    shortname: string
+    longname: string
+    color: string
+    subseriesName: string
+}
+
+// the shell shared by every series-based plot type (today: density histograms): builds the title
+// mark and legend generically from `items`, and wraps the download/add-region settings bar,
+// deferring only the type-specific axis/series/tooltip construction to buildPlot
+export function SeriesPlot<T extends PlotSeriesItem>(props: {
+    items: T[]
+    filenameSuffix: string
+    sharedTypeOfAllArticles?: string
+    dashOrder?: string[]
+    extraSettingsControls?: ReactNode
+    buildPlot: (transpose: boolean) => DetailedPlotSpec
+}): ReactElement {
+    const colors = useColors()
+    const { items, dashOrder, buildPlot } = props
+
+    const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
+        <PlotSettingsBar
+            makePlot={makePlot}
+            shortnames={props.items.map(i => i.shortname)}
+            longnames={props.items.map(i => i.longname)}
+            sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
+            filenameSuffix={props.filenameSuffix}
+        >
+            {props.extraSettingsControls}
+        </PlotSettingsBar>
+    )
+
+    const plotSpec = useCallback(
+        (transpose: boolean): DetailedPlotSpec => {
+            const title = new Set(items.map(i => i.shortname)).size === 1 ? items[0].shortname : ''
+            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose)
+            marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
+            marks.push(...manualLegend(items, transpose, colors, dashOrder))
+            return { marks, xlabel, ylabel, ydomain, legend }
+        },
+        [items, buildPlot, colors, dashOrder],
+    )
+
+    return (
+        <PlotComponent
+            plotSpec={plotSpec}
+            settingsElement={settingsElement}
+        />
     )
 }
