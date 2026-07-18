@@ -54,3 +54,7 @@ export function hre(strings: TemplateStringsArray, ...values: HumanReadableEleme
     }
     return result
 }
+
+export function parseHumanReadableTemplate(input: string): HumanReadableElement[] {
+    return parseElements(input, 0, null).elements
+}

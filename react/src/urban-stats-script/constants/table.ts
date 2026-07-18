@@ -1,12 +1,13 @@
 import { assert } from '../../utils/defensive'
 import { HumanReadableName } from '../../utils/human-readable-name'
+import { hre, parseHumanReadableTemplate } from '../../utils/human-readable-template'
 import { UnitType } from '../../utils/unit'
 import { Context } from '../context'
 import { noLocation } from '../location'
 import { USSType, USSValue, USSRawValue, OriginalFunctionArgs, NamedFunctionArgumentWithDocumentation, createConstantExpression } from '../types-values'
 
 export interface TableColumn {
-    name: HumanReadableName
+    name?: HumanReadableName
     values: number[]
     unit?: UnitType
 }
@@ -20,7 +21,7 @@ export interface Table {
     geo: string[]
     population: number[]
     hideOrdinalsPercentiles: boolean
-    title?: string
+    title?: HumanReadableName
 }
 
 const columnType = {
@@ -32,6 +33,8 @@ export const tableType = {
     type: 'opaque',
     name: 'table',
 } satisfies USSType
+
+const nameSyntaxDescription = hre`Supports subscript with \`_{...}\` and superscript with \`^{...}\`, e.g. \`"log_{10}(Density)^{2}"\`.`
 
 export const column: USSValue = {
     type: {
@@ -59,21 +62,12 @@ export const column: USSValue = {
         const unitArg = namedArgs.unit as { type: 'opaque', opaqueType: 'Unit', value: { unit: string } } | null
         const unit = unitArg ? (unitArg.value.unit as UnitType) : undefined
 
-        // Derive name from values argument's documentation if not provided
-        const name = namePassedIn ?? originalArgs.namedArgs.values.documentation?.humanReadableName
-
-        if (name === undefined) {
-            ctx.effect({
-                type: 'warning',
-                message: 'Name could not be derived for column, please pass name="<your name here>" to column(...)',
-                location: noLocation,
-            })
-        }
+        const name: HumanReadableName | undefined = namePassedIn !== null ? parseHumanReadableTemplate(namePassedIn) : undefined
 
         return {
             type: 'opaque',
             opaqueType: 'column',
-            value: { name: name ?? '[Unnamed Column]', values, unit } satisfies TableColumn,
+            value: { name, values, unit } satisfies TableColumn,
         }
     },
     documentation: {
@@ -85,9 +79,11 @@ export const column: USSValue = {
             values: 'Values',
             unit: 'Unit',
         },
-        longDescription: 'Creates a column with a name and a list of cell values. The name can be automatically derived from the values argument if not provided. Optionally specify a unit type.',
+        longDescription: hre`Creates a column with a name and a list of cell values. The name can be automatically derived from the values argument if not provided. Optionally specify a unit type. ${nameSyntaxDescription}`,
     },
 } satisfies USSValue
+
+const titleSyntaxDescription = hre`The title argument supports subscript with \`_{...}\` and superscript with \`^{...}\`, e.g. \`title="log_{10}(Density)^{2}"\`.`
 
 export const table: USSValue = {
     type: {
@@ -148,7 +144,7 @@ export const table: USSValue = {
             const firstLength = columns[0].values.length
             for (let i = 1; i < columns.length; i++) {
                 if (columns[i].values.length !== firstLength) {
-                    throw new Error(`All columns must have the same length. Column "${columns[0].name}" has length ${firstLength}, but column "${columns[i].name}" has length ${columns[i].values.length}`)
+                    throw new Error(`All columns must have the same length. Column 1 has length ${firstLength}, but column ${i + 1} has length ${columns[i].values.length}`)
                 }
             }
         }
@@ -158,13 +154,14 @@ export const table: USSValue = {
         }
 
         const hideOrdinalsPercentiles = namedArgs.hideOrdinalsPercentiles as boolean
-        const title = namedArgs.title as string | null
+        const titlePassedIn = namedArgs.title as string | null
+        const title = titlePassedIn !== null ? parseHumanReadableTemplate(titlePassedIn) : undefined
         const annotatedColumns = columns.map(col => attachPopulationPercentilesToColumn(col, population))
 
         return {
             type: 'opaque',
             opaqueType: 'table',
-            value: { columns: annotatedColumns, geo, population, hideOrdinalsPercentiles, title: title ?? undefined } satisfies Table,
+            value: { columns: annotatedColumns, geo, population, hideOrdinalsPercentiles, title } satisfies Table,
         }
     },
     documentation: {
@@ -176,7 +173,7 @@ export const table: USSValue = {
             hideOrdinalsPercentiles: 'Hide Ordinals/Percentiles',
             title: 'Title',
         },
-        longDescription: 'Creates a table with named columns, where each column contains a list of numbers. All columns must have the same length. Optionally hide ordinals and percentiles (default: false, i.e., show them). Optionally specify a title for the table.',
+        longDescription: hre`Creates a table with named columns, where each column contains a list of numbers. All columns must have the same length. Optionally hide ordinals and percentiles (default: false, i.e., show them). Optionally specify a title for the table. ${titleSyntaxDescription}`,
     },
 } satisfies USSValue
 

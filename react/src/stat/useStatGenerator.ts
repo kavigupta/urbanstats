@@ -9,27 +9,23 @@ import universes_ordered from '../data/universes_ordered'
 import { Universe } from '../universe'
 import { toStatement } from '../urban-stats-script/ast'
 import { orderNonNan, TableColumnWithPopulationPercentiles } from '../urban-stats-script/constants/table'
+import { deriveTableColumnLabel, deriveTableLabel } from '../urban-stats-script/derive-human-readable-name'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { noLocation } from '../urban-stats-script/location'
-import { renderType } from '../urban-stats-script/types-values'
+import { renderType, TypeEnvironment } from '../urban-stats-script/types-values'
 import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerManager'
 import { assert } from '../utils/defensive'
+import { HumanReadableName } from '../utils/human-readable-name'
 import { pluralize } from '../utils/text'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
 import { StatData, Statistic } from './types'
 import { mapUSSFromStat } from './utils'
 
-/**
- * For next time:
- * - Bring in the stats panel UI
- * - UI props for editing
- */
-
 const statUpdateInterval = 500
 
-export function useStatGenerator({ stat }: { stat: Statistic }): StatGenerator & { loading: boolean } {
-    const compute = useCallback((previousGenerator: () => Promise<StatGenerator>) => makeStatGenerator({ stat, previousGenerator }), [stat])
+export function useStatGenerator({ stat, typeEnvironment }: { stat: Statistic, typeEnvironment: TypeEnvironment }): StatGenerator & { loading: boolean } {
+    const compute = useCallback((previousGenerator: () => Promise<StatGenerator>) => makeStatGenerator({ stat, typeEnvironment, previousGenerator }), [stat, typeEnvironment])
 
     return useDebouncedResolve(
         compute,
@@ -56,7 +52,7 @@ export interface StatGenerator {
     assignments: AssignmentsResult
 }
 
-async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic, previousGenerator: () => Promise<StatGenerator> }): Promise<StatGenerator> {
+async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: { stat: Statistic, typeEnvironment: TypeEnvironment, previousGenerator: () => Promise<StatGenerator> }): Promise<StatGenerator> {
     const errorResult = async (errors: EditorError[], assignments: AssignmentsResult): Promise<StatGenerator> => {
         const prev = await previousGenerator()
         return {
@@ -79,11 +75,12 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
     }
 
     try {
+        const mapUSS = mapUSSFromStat(stat)
         const exec = await executeAsync({ descriptor: {
             kind: 'statistics',
             geographyKind: stat.articleType as (typeof validGeographies)[number], // Verified above in `checkArticleCount`
             universe: stat.universe,
-        }, stmts: toStatement(mapUSSFromStat(stat)) })
+        }, stmts: toStatement(mapUSS) })
 
         const execErrors = exec.error
 
@@ -108,20 +105,56 @@ async function makeStatGenerator({ stat, previousGenerator }: { stat: Statistic,
         const firstColumn = table.columns[0]
         const geonames = table.geo
 
-        const dataColumns = table.columns.map((col: TableColumnWithPopulationPercentiles) => ({
-            value: col.values,
-            populationPercentile: col.populationPercentiles,
-            ordinal: computeOrdinals(col.values),
-            name: col.name,
-            unit: col.unit,
-        }))
+        const dataColumns = table.columns.map((col: TableColumnWithPopulationPercentiles, index) => {
+            let name: HumanReadableName | undefined = col.name
+
+            if (name === undefined) {
+                name = deriveTableColumnLabel(mapUSS, typeEnvironment, index)
+
+                if (name === undefined) {
+                    execErrors.push({
+                        type: 'error',
+                        kind: 'warning',
+                        value: `Name could not be derived for column ${index}, please pass name="<your name here>" to column(...)`,
+                        location: noLocation,
+                    })
+
+                    name = '[Unnamed Column]'
+                }
+            }
+
+            return {
+                value: col.values,
+                populationPercentile: col.populationPercentiles,
+                ordinal: computeOrdinals(col.values),
+                name,
+                unit: col.unit,
+            }
+        })
 
         const statIndex = stat.type === 'simple' ? statistic_name_list.indexOf(stat.statName) : undefined
+
+        let tableTitle: HumanReadableName | undefined = table.title
+
+        if (tableTitle === undefined) {
+            tableTitle = deriveTableLabel(mapUSS, typeEnvironment, dataColumns.map(col => col.name))
+
+            if (tableTitle === undefined) {
+                execErrors.push({
+                    type: 'error',
+                    kind: 'warning',
+                    value: `Name could not be derived for table, please pass title="<your name here>" to table(...)`,
+                    location: noLocation,
+                })
+
+                tableTitle = '[Unnamed Table]'
+            }
+        }
 
         const statData: StatData = {
             table: dataColumns,
             articleNames: geonames,
-            renderedStatname: table.title ?? table.columns.map(col => col.name).join(', '),
+            renderedStatname: tableTitle,
             totalCountInClass: firstColumn.values.length,
             totalCountOverall: firstColumn.values.length,
             hideOrdinalsPercentiles: table.hideOrdinalsPercentiles,

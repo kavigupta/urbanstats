@@ -119,13 +119,19 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'population':
             return {
                 renderValue: (value: number) => {
-                    if (value > 1e9) {
+                    /*
+                     * Boundaries are at 999.5 * scale rather than 1000 * scale so that a value that
+                     * rounds up to 4 significant digits (e.g. 999999 → 1000k) is promoted to the next
+                     * tier instead. This keeps (value / divisor).toPrecision(3) below 1000, which
+                     * avoids toPrecision returning scientific notation (e.g. "1.00e+3").
+                     */
+                    if (value >= 999.5e6) {
                         return {
                             value: <span>{(value / 1e9).toPrecision(3)}</span>,
                             unit: <span>B</span>,
                         }
                     }
-                    if (value > 1e6) {
+                    if (value >= 999.5e3) {
                         return {
                             value: <span>{(value / 1e6).toPrecision(3)}</span>,
                             unit: <span>m</span>,
@@ -365,7 +371,13 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'usd':
             return {
                 renderValue: (value: number) => {
-                    if (value > 1e9) {
+                    /*
+                     * Boundaries are at 999.5 * scale rather than 1000 * scale so that a value that
+                     * rounds up to 4 significant digits (e.g. 999999 → 1000k) is promoted to the next
+                     * tier instead. This keeps (value / divisor).toPrecision(3) below 1000, which
+                     * avoids toPrecision returning scientific notation (e.g. "1.00e+3").
+                     */
+                    if (value >= 999.5e6) {
                         return {
                             value: (
                                 <span>
@@ -376,7 +388,7 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
                             unit: <span>B</span>,
                         }
                     }
-                    if (value > 1e6) {
+                    if (value >= 999.5e3) {
                         return {
                             value: (
                                 <span>

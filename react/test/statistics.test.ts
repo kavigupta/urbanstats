@@ -332,7 +332,7 @@ test('universe/geography have no overlap', async (t) => {
 
 urbanstatsFixture('edit starting from a statname page', `${target}/statistic.html?statname=Population&article_type=County&start=1&amount=5&universe=California%2C+USA`)
 
-const densityRatio = ['3.03', '2.49', '2.28', '2.28', '2.10']
+const densityRatio = ['3.0', '2.5', '2.3', '2.3', '2.1']
 const densityRatioPage2 = ['1.97', '1.96', '1.90', '1.89', '1.81']
 
 test('edit starting from a statname page works', async (t) => {
@@ -364,13 +364,13 @@ test('edit starting from a statname page works', async (t) => {
     await waitForLoading()
     await t.expect(await dataValues()).eql(densityRatio)
     const text = Selector('div').withAttribute('id', 'test-editor-result')
-    await t.expect(text.textContent).eql('Name could not be derived for column, please pass name="<your name here>" to column(...)')
+    await t.expect(text.exists).notOk() // no error box
     await screencap(t)
     // set the name
     await checkTextboxes(t, ['Name', 'Unit'])
     await t.click(Selector('textarea:not([inert] *)'))
     await typeTextWithKeys(t, 'Density Ratio')
-    await t.expect(text.exists).notOk() // error box should be gone
+    await t.expect(text.exists).notOk() // still no error box
     await screencap(t)
     // next page
     await t.click(Selector('button[data-test-id="1"]'))
@@ -598,18 +598,6 @@ test('error display on correct field -- second', async (t) => {
     await typeInEditor(t, 1, '+')
     await waitForLoading()
     await t.expect(await getErrors()).eql(['Parse error: Unexpected end of input at 1:16'])
-    await screencap(t)
-})
-
-test('warning', async (t) => {
-    await checkTextboxesDirect(t, ['Name', 'Unit'])
-    await waitForLoading()
-    await t.expect(await getErrors()).eql(['Name could not be derived for column, please pass name="<your name here>" to column(...)'])
-    await screencap(t)
-    // switch to view mode
-    await t.click(Selector('button[data-test-id="view"]'))
-    await waitForLoading()
-    await t.expect(await getErrors()).eql([])
     await screencap(t)
 })
 
@@ -1215,4 +1203,40 @@ test('assignments displayed on error result', async (t) => {
     await t.hover(Selector('span').withText(/^x/))
     await t.wait(1000)
     await t.expect(Selector('pre').withExactText('1').count).eql(1)
+})
+
+const humanReadableTable = `table(
+    columns=[
+        column(
+            values=(density_pw_1km / density_pw_2km),
+            name="Density_{ratio}",
+            unit=unitNumber
+        )
+    ],
+    title="Density^{2}_{Test}"
+)`
+
+urbanstatsFixture('table with subscript/superscript syntax', createUSSStatisticsPage(humanReadableTable))
+
+test('table title and column name render subscript and superscript', async (t) => {
+    await waitForLoading()
+    const title = Selector('.subheadertext')
+    await t.expect(title.child('sup').withExactText('2').exists).ok()
+    await t.expect(title.child('sub').withExactText('Test').exists).ok()
+    const columnHeader = Selector('[data-test-id="statistic-link"]').withText(/Density/)
+    await t.expect(columnHeader.find('sub').withExactText('ratio').exists).ok()
+    await screencap(t)
+})
+
+urbanstatsFixture('table with warning', `${target}/statistic.html?uss=customNode%28""%29%3B%0Acondition+%28true%29%0Atable%28%0A++++columns%3D%5Bcolumn%28values%3DcustomNode%28"x+%3D+density_pw_1km+%2F+density_pw_2km%5Cnx%5Cn"%29%29%5D%0A%29&article_type=County&start=6&amount=5&universe=California%2C+USA&edit=true`)
+
+test('warning', async (t) => {
+    await waitForLoading()
+    await t.expect(await getErrors()).eql(['Name could not be derived for column 0, please pass name="<your name here>" to column(...)'])
+    await screencap(t)
+    // switch to view mode
+    await t.click(Selector('button[data-test-id="view"]'))
+    await waitForLoading()
+    await t.expect(await getErrors()).eql([])
+    await screencap(t)
 })

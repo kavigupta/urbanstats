@@ -3,7 +3,6 @@ import React, { ReactNode, useCallback, useContext, useMemo, useRef } from 'reac
 import { CountsByUT } from '../components/countsByArticleType'
 import { generateStatisticsPanelCSVData } from '../components/csv-export'
 import { createScreenshot } from '../components/screenshot'
-import { defaultTypeEnvironment } from '../mapper/context'
 import { MapperSettings } from '../mapper/settings/MapperSettings'
 import { MapSettings } from '../mapper/settings/utils'
 import { Navigator } from '../navigation/Navigator'
@@ -15,6 +14,7 @@ import { tableType } from '../urban-stats-script/constants/table'
 import { EditorError } from '../urban-stats-script/editor-utils'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
 import { AssignmentsResult } from '../urban-stats-script/workerManager'
+import { reifyReact, reifyString } from '../utils/human-readable-name'
 import { tableToMapper } from '../utils/page-conversion'
 import { sanitize } from '../utils/paths'
 import { useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
@@ -26,7 +26,7 @@ import { StatisticPanelTable } from './StatisticPanelTable'
 import { StatData, Statistic, StatSetter, View } from './types'
 import { mapUSSFromStat, variable } from './utils'
 
-export function StatisticPanelPage({ view, stat, data, set, loading, counts, errors, assignments }: {
+export function StatisticPanelPage({ view, stat, data, set, loading, counts, errors, assignments, typeEnvironment }: {
     view: View
     stat: Statistic
     data: StatData | undefined
@@ -35,31 +35,30 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
     counts: CountsByUT
     errors: EditorError[]
     assignments: AssignmentsResult
+    typeEnvironment: TypeEnvironment
 }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
 
     const subHeaderTextClass = useSubHeaderTextClass()
 
-    const typeEnvironment = useMemo(() => defaultTypeEnvironment(stat.universe), [stat.universe])
-
     const subHeaderText = useMemo(() => data?.renderedStatname ?? (stat.type === 'simple' ? variable(stat.statName).humanReadableName : '\u00A0'), [data, stat])
 
     return (
         <PageTemplate
             screencap={data && ((...args) => createScreenshot({
-                path: `${sanitize(data.renderedStatname)}.png`,
+                path: `${sanitize(reifyString(data.renderedStatname))}.png`,
                 overallWidth: tableRef.current!.offsetWidth * 2,
                 elementsToRender: [headersRef.current!, tableRef.current!],
             }, ...args))}
             csvExportCallback={data && (() => ({
                 csvData: generateStatisticsPanelCSVData(data.articleNames, data.table, data.hideOrdinalsPercentiles),
-                csvFilename: `${sanitize(data.renderedStatname)}.csv`,
+                csvFilename: `${sanitize(reifyString(data.renderedStatname))}.csv`,
             }))}
         >
             <div ref={headersRef} style={{ position: 'relative' }}>
                 <StatisticPanelHead articleType={stat.articleType} universe={stat.universe} />
-                <div className={subHeaderTextClass}>{subHeaderText}</div>
+                <div className={subHeaderTextClass}>{reifyReact(subHeaderText)}</div>
                 {!view.edit && <ViewHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} />}
             </div>
             <div style={{ marginBlockEnd: '16px' }}></div>

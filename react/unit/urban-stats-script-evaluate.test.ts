@@ -1400,14 +1400,7 @@ void test('test basic map', () => {
     assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
     assert.deepStrictEqual(resultMapRaw.opacity, 1)
     assertScale(resultMapRaw.scale, [1, 1.5, 2, 2.5, 3], [0, 0.25, 0.5, 0.75, 1])
-    assert.deepStrictEqual(effects, [{
-        type: 'warning',
-        message: 'Label could not be derived for map, please pass label="<your label here>" to cMap(...)',
-        location: {
-            start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-            end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-        },
-    }])
+    assert.deepStrictEqual(effects, [])
 })
 
 void test('test basic map, default geo', () => {
@@ -1419,14 +1412,7 @@ void test('test basic map, default geo', () => {
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
     assertScale(resultMapRaw.scale, [1, 1.5, 2, 2.5, 3], [0, 0.25, 0.5, 0.75, 1])
-    assert.deepStrictEqual(effects, [{
-        type: 'warning',
-        message: 'Label could not be derived for map, please pass label="<your label here>" to cMap(...)',
-        location: {
-            start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-            end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-        },
-    }])
+    assert.deepStrictEqual(effects, [])
 })
 
 void test('test basic map with label passed', () => {
@@ -1438,7 +1424,20 @@ void test('test basic map with label passed', () => {
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 2, 3])
     assertScale(resultMapRaw.scale, [1, 1.5, 2, 2.5, 3], [0, 0.25, 0.5, 0.75, 1])
-    assert.deepStrictEqual(resultMapRaw.label, 'Test Map')
+    assert.deepStrictEqual(resultMapRaw.label, [{ type: 'atom', value: 'Test Map' }])
+    assert.deepStrictEqual(effects, [])
+})
+
+void test('test map label with subscript syntax is parsed as hre', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    const resultMap = evaluate(parseExpr('cMap(geo=geo, data=[1, 2, 3], scale=linearScale(), ramp=rampBone, label="log_{10}(x)")'), ctx)
+    const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
+    assert.deepStrictEqual(resultMapRaw.label, [
+        { type: 'atom', value: 'log' },
+        { type: 'subscript', value: [{ type: 'atom', value: '10' }] },
+        { type: 'atom', value: '(x)' },
+    ])
     assert.deepStrictEqual(effects, [])
 })
 
@@ -1461,7 +1460,7 @@ void test('test basic RGB map', () => {
     assert.deepStrictEqual(resultMapRaw.dataB, [0.3, 0.7, 0.7])
     assert.deepStrictEqual(resultMapRaw.dataA, [1, 1, 1])
     assert.deepStrictEqual(resultMapRaw.opacity, 1)
-    assert.deepStrictEqual(resultMapRaw.label, 'RGB Test Map')
+    assert.deepStrictEqual(resultMapRaw.label, [{ type: 'atom', value: 'RGB Test Map' }])
 })
 
 void test('test RGB map validation errors', () => {
@@ -1569,7 +1568,8 @@ void test('map with documentation', () => {
     const resultMap = evaluate(parseExpr('cMap(geo=geo, data=x, scale=linearScale(), ramp=rampBone)'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
-    assert.deepStrictEqual(resultMapRaw.label, 'X value!')
+    // Label is no longer auto-derived by cMap itself; deriveMapLabel (used by map-generator.tsx) handles that.
+    assert.deepStrictEqual(resultMapRaw.label, undefined)
 })
 
 void test('conditioned map with documentation', () => {
@@ -1584,7 +1584,8 @@ void test('conditioned map with documentation', () => {
     const resultMap = evaluate(parseExpr('if ([true, true, false]) { cMap(geo=geo, data=x, scale=linearScale(), ramp=rampBone) }'), ctx)
     assert.deepStrictEqual(resultMap.type, { type: 'opaque', name: 'cMap' })
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: CMap }).value
-    assert.deepStrictEqual(resultMapRaw.label, 'X value!')
+    // Label is no longer auto-derived by cMap itself; deriveMapLabel (used by map-generator.tsx) handles that.
+    assert.deepStrictEqual(resultMapRaw.label, undefined)
 })
 
 void test('test scale functions with parameters', () => {
@@ -2132,14 +2133,7 @@ void test('test basic map with custom insets', () => {
     // Verify it's the world insets (should have main map)
     const hasMainMap = resultMapRaw.insets.some(inset => inset.mainMap)
     assert.strictEqual(hasMainMap, true)
-    assert.deepStrictEqual(effects, [{
-        type: 'warning',
-        message: 'Label could not be derived for map, please pass label="<your label here>" to cMap(...)',
-        location: {
-            start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-            end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-        },
-    }])
+    assert.deepStrictEqual(effects, [])
 })
 
 void test('test basic map with constructed insets', () => {
@@ -2200,14 +2194,7 @@ void test('test basic map with constructed insets', () => {
     assert.ok(Array.isArray(alaskaInset!.coordBox))
     assert.deepStrictEqual(alaskaInset!.coordBox, [-170, 50, -130, 70])
 
-    assert.deepStrictEqual(effects, [{
-        type: 'warning',
-        message: 'Label could not be derived for map, please pass label="<your label here>" to cMap(...)',
-        location: {
-            start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-            end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-        },
-    }])
+    assert.deepStrictEqual(effects, [])
 })
 
 void test('test basic map with constructed text boxes', () => {
@@ -2331,7 +2318,7 @@ pMap(data=data, scale=logScale(), ramp=rampUridis, relativeArea=population, maxR
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: PMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['A', 'B', 'C', 'D', 'E'])
     assert.deepStrictEqual(resultMapRaw.data, [0, 1, 0, 0, 1])
-    assert.deepStrictEqual(resultMapRaw.label, 'hi')
+    assert.deepStrictEqual(resultMapRaw.label, [{ type: 'atom', value: 'hi' }])
     assert.deepStrictEqual(effects, [])
 })
 
@@ -2347,7 +2334,7 @@ pMap(data=data, scale=logScale(), ramp=rampUridis, relativeArea=population, maxR
     const resultMapRaw = (resultMap.value as { type: 'opaque', value: PMap }).value
     assert.deepStrictEqual(resultMapRaw.geo, ['B', 'C', 'E'])
     assert.deepStrictEqual(resultMapRaw.data, [1, 0, 1])
-    assert.deepStrictEqual(resultMapRaw.label, 'hi')
+    assert.deepStrictEqual(resultMapRaw.label, [{ type: 'atom', value: 'hi' }])
     assert.deepStrictEqual(
         effects, [],
     )
@@ -2392,7 +2379,7 @@ void test('test basic column with name', () => {
     const resultColumn = evaluate(parseExpr('column(values=[1, 2, 3], name="Test Column")'), ctx)
     assert.deepStrictEqual(resultColumn.type, { type: 'opaque', name: 'column' })
     const resultColumnRaw = (resultColumn.value as { type: 'opaque', value: TableColumn }).value
-    assert.deepStrictEqual(resultColumnRaw.name, 'Test Column')
+    assert.deepStrictEqual(resultColumnRaw.name, [{ type: 'atom', value: 'Test Column' }])
     assert.deepStrictEqual(resultColumnRaw.values, [1, 2, 3])
     assert.deepStrictEqual(resultColumnRaw.unit, undefined)
     assert.deepStrictEqual(effects, [])
@@ -2404,16 +2391,9 @@ void test('test column without name', () => {
     const resultColumn = evaluate(parseExpr('column(values=[1, 2, 3])'), ctx)
     assert.deepStrictEqual(resultColumn.type, { type: 'opaque', name: 'column' })
     const resultColumnRaw = (resultColumn.value as { type: 'opaque', value: TableColumn }).value
-    assert.deepStrictEqual(resultColumnRaw.name, '[Unnamed Column]')
+    assert.deepStrictEqual(resultColumnRaw.name, undefined)
     assert.deepStrictEqual(resultColumnRaw.values, [1, 2, 3])
-    assert.deepStrictEqual(effects, [{
-        type: 'warning',
-        message: 'Name could not be derived for column, please pass name="<your name here>" to column(...)',
-        location: {
-            start: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-            end: { charIdx: 0, lineIdx: 0, colIdx: 0, block: { type: 'multi' } },
-        },
-    }])
+    assert.deepStrictEqual(effects, [])
 })
 
 void test('test column with unit', () => {
@@ -2422,7 +2402,7 @@ void test('test column with unit', () => {
     const resultColumn = evaluate(parseExpr('column(values=[1, 2, 3], name="Population", unit=unitPopulation)'), ctx)
     assert.deepStrictEqual(resultColumn.type, { type: 'opaque', name: 'column' })
     const resultColumnRaw = (resultColumn.value as { type: 'opaque', value: TableColumn }).value
-    assert.deepStrictEqual(resultColumnRaw.name, 'Population')
+    assert.deepStrictEqual(resultColumnRaw.name, [{ type: 'atom', value: 'Population' }])
     assert.deepStrictEqual(resultColumnRaw.values, [1, 2, 3])
     assert.deepStrictEqual(resultColumnRaw.unit, 'population')
     assert.deepStrictEqual(effects, [])
@@ -2443,9 +2423,31 @@ void test('test basic table', () => {
     assert.deepStrictEqual(resultTableRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultTableRaw.population, [100, 200, 300])
     assert.deepStrictEqual(resultTableRaw.columns.length, 1)
-    assert.deepStrictEqual(resultTableRaw.columns[0].name, 'Col1')
+    assert.deepStrictEqual(resultTableRaw.columns[0].name, [{ type: 'atom', value: 'Col1' }])
     assert.deepStrictEqual(resultTableRaw.columns[0].values, [1, 2, 3])
     assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 16, 50])
+    assert.deepStrictEqual(effects, [])
+})
+
+void test('test column name and table title with subscript syntax are parsed as hre', () => {
+    const effects: Effect[] = []
+    const ctx = emptyContextWithInsets(effects)
+    ctx.assignVariable('population', {
+        type: { type: 'vector', elementType: numType },
+        value: [100, 200, 300],
+        documentation: { humanReadableName: 'Population' },
+    })
+    const resultTable = evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="log_{10}(x)")], title="Table^{2}")'), ctx)
+    const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
+    assert.deepStrictEqual(resultTableRaw.columns[0].name, [
+        { type: 'atom', value: 'log' },
+        { type: 'subscript', value: [{ type: 'atom', value: '10' }] },
+        { type: 'atom', value: '(x)' },
+    ])
+    assert.deepStrictEqual(resultTableRaw.title, [
+        { type: 'atom', value: 'Table' },
+        { type: 'superscript', value: [{ type: 'atom', value: '2' }] },
+    ])
     assert.deepStrictEqual(effects, [])
 })
 
@@ -2463,10 +2465,10 @@ void test('test table with multiple columns', () => {
     assert.deepStrictEqual(resultTableRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultTableRaw.population, [100, 200, 300])
     assert.deepStrictEqual(resultTableRaw.columns.length, 2)
-    assert.deepStrictEqual(resultTableRaw.columns[0].name, 'Col1')
+    assert.deepStrictEqual(resultTableRaw.columns[0].name, [{ type: 'atom', value: 'Col1' }])
     assert.deepStrictEqual(resultTableRaw.columns[0].values, [1, 2, 3])
     assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 16, 50])
-    assert.deepStrictEqual(resultTableRaw.columns[1].name, 'Col2')
+    assert.deepStrictEqual(resultTableRaw.columns[1].name, [{ type: 'atom', value: 'Col2' }])
     assert.deepStrictEqual(resultTableRaw.columns[1].values, [5, 6, 4])
     assert.deepStrictEqual(resultTableRaw.columns[1].populationPercentiles, [50, 66, 0])
     assert.deepStrictEqual(effects, [])
@@ -2481,7 +2483,7 @@ void test('test table with non-default population', () => {
     assert.deepStrictEqual(resultTableRaw.geo, ['A', 'B', 'C'])
     assert.deepStrictEqual(resultTableRaw.population, [100, 200, 300])
     assert.deepStrictEqual(resultTableRaw.columns.length, 1)
-    assert.deepStrictEqual(resultTableRaw.columns[0].name, 'Col1')
+    assert.deepStrictEqual(resultTableRaw.columns[0].name, [{ type: 'atom', value: 'Col1' }])
     assert.deepStrictEqual(resultTableRaw.columns[0].values, [1, 2, 3])
     assert.deepStrictEqual(effects, [])
 })
@@ -2497,7 +2499,7 @@ void test('test table column length mismatch error', () => {
     assert.throws(
         () => evaluate(parseExpr('table(columns=[column(values=[1, 2, 3], name="Col1"), column(values=[4, 5], name="Col2")])'), ctx),
         (err: Error): boolean => {
-            return err instanceof InterpretationError && err.message.includes('All columns must have the same length. Column "Col1" has length 3, but column "Col2" has length 2')
+            return err instanceof InterpretationError && err.message.includes('All columns must have the same length. Column 1 has length 3, but column 2 has length 2')
         },
     )
 })
@@ -2582,7 +2584,7 @@ void test('test conditional table', () => {
     const resultTable = execute(parseProgram('condition (population > 100); table(columns=[column(values=[1, 2], name="Col1")])'), ctx)
     assert.deepStrictEqual(resultTable.type, { type: 'opaque', name: 'table' })
     const resultTableRaw = (resultTable.value as { type: 'opaque', value: Table }).value
-    assert.deepStrictEqual(resultTableRaw.columns[0].name, 'Col1')
+    assert.deepStrictEqual(resultTableRaw.columns[0].name, [{ type: 'atom', value: 'Col1' }])
     assert.deepStrictEqual(resultTableRaw.geo, ['B', 'C'])
     assert.deepStrictEqual(resultTableRaw.columns[0].values, [1, 2])
     assert.deepStrictEqual(resultTableRaw.columns[0].populationPercentiles, [0, 40])

@@ -134,3 +134,11 @@ cMap(
 )`
 
 testCode(() => test, 'County', 'USA', negativeDefaultValue, 'negative-default-value', true)
+
+testCode(() => test, 'Subnational Region', 'USA', `cMap(
+    data=log10(density_pw_1km),
+    scale=linearScale(),
+    ramp=rampUridis,
+    label="log_{10}(Density)^{2}",
+    basemap=noBasemap()
+)`, 'label-with-subscript-superscript')

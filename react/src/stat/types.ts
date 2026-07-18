@@ -31,7 +31,7 @@ export interface StatData {
     // One entry per column
     table: { value: number[], populationPercentile: number[], ordinal: number[], name: HumanReadableName, unit?: UnitType }[]
     articleNames: string[]
-    renderedStatname: string
+    renderedStatname: HumanReadableName
     statcol?: StatCol
     explanationPage?: string
     totalCountInClass: number
