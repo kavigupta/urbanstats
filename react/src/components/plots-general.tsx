@@ -26,25 +26,39 @@ export function valueGrid(transpose: boolean): typeof Plot.gridY {
     return transpose ? Plot.gridX : Plot.gridY
 }
 
-// "<prefix>\n<name1>: <value1>\n<name2>: <value2>..." when there's more than one series at this
-// point, else just the single value (optionally labeled, e.g. Histogram's "Frequency: X")
-export function multiSeriesTipTitle(prefix: string, names: string[], values: number[], formatValue: (v: number) => string, singleLabel?: string): string {
-    let result = `${prefix}\n`
-    if (names.length > 1) {
-        result += names.map((name, i) => `${name}: ${formatValue(values[i])}`).join('\n')
-    }
-    else {
-        result += singleLabel !== undefined ? `${singleLabel}: ${formatValue(values[0])}` : formatValue(values[0])
-    }
-    return result
+// pads a value domain with headroom, as a fraction of its own spread (falling back to a fraction
+// of the value itself when every value is identical, so a flat line/bar doesn't render as a
+// zero-height domain). The lower bound normally floats with the data's own minimum (e.g.
+// temperature, which can go negative); when anchoredBottom is given (e.g. 0, since
+// percentages/counts can't go negative) it's pinned there exactly instead, and only the top gets
+// padded.
+export function paddedYDomain(values: number[], pad: number, anchoredBottom?: number): [number, number] {
+    const maxValue = Math.max(...values)
+    const minValue = anchoredBottom ?? Math.min(...values)
+    const p = (maxValue - minValue) * pad || Math.max(Math.abs(maxValue), 1) * pad
+    return [anchoredBottom ?? minValue - p, maxValue + p]
 }
 
-// like multiSeriesTipTitle, but for callers where the same name can appear more than once at a
-// given point (e.g. a region's paired High/Low temp or Rain/Snow entries) -- entries sharing a
-// name are stacked onto one line ("<name>: <v1> / <v2>") instead of one line each. displayOrder,
-// if given, controls the order values are joined in (matching the paired stat's dash order);
-// otherwise entries are joined in the order they appear.
-export function groupedTipTitle(prefix: string, entries: { name: string, subseriesName: string, value: number }[], formatValue: (v: number) => string, displayOrder?: string[]): string {
+// the categorical-axis-ticks + categorical-grid + value-axis-grid boilerplate shared by every
+// ordinal series plot (monthly overlay, temperature distribution) -- tickIdxs is the set of
+// positions ticks/gridlines are drawn at, which can differ from the series' own data positions
+// (e.g. temperature histogram bars sit at bin centers but ticks sit at bin boundaries)
+export function categoricalAxisMarks(tickIdxs: number[], transpose: boolean, tickFormat: (idx: number) => string): Plot.Markish[] {
+    const [axis, grid] = axisAndGrid(transpose)
+    return [
+        axis(tickIdxs, { tickFormat }),
+        grid(tickIdxs),
+        valueGrid(transpose)(),
+    ]
+}
+
+// "<prefix>\n<name1>: <value1>\n<name2>: <value2>..." for each point's entries -- entries sharing
+// a name (e.g. a region's paired High/Low temp or Rain/Snow series) are stacked onto one line
+// ("<name>: <v1> / <v2>") instead of one line each. displayOrder, if given, controls the order
+// values are joined in within a stacked line (matching the paired stat's dash order); otherwise
+// entries are joined in the order they appear. When there's only a single entry overall, the name
+// is dropped (optionally replaced with singleLabel, e.g. Histogram's "Frequency: X").
+export function groupedTipTitle(prefix: string, entries: { name: string, subseriesName: string, value: number }[], formatValue: (v: number) => string, displayOrder?: string[], singleLabel?: string): string {
     const groups = new Map<string, { subseriesName: string, value: number }[]>()
     const nameOrder: string[] = []
     for (const entry of entries) {
@@ -55,8 +69,8 @@ export function groupedTipTitle(prefix: string, entries: { name: string, subseri
         groups.get(entry.name)!.push(entry)
     }
     if (nameOrder.length === 1 && groups.get(nameOrder[0])!.length === 1) {
-        // a single series overall -- no name needed to disambiguate, matches multiSeriesTipTitle
-        return `${prefix}\n${formatValue(groups.get(nameOrder[0])![0].value)}`
+        const value = groups.get(nameOrder[0])![0].value
+        return singleLabel !== undefined ? `${prefix}\n${singleLabel}: ${formatValue(value)}` : `${prefix}\n${formatValue(value)}`
     }
     const lines = nameOrder.map((name) => {
         const members = groups.get(name)!
@@ -134,6 +148,37 @@ export function ordinalSeriesBarMarks(
     return transpose
         ? Plot.rectX(bars, { y1: 'left', y2: 'right', x: 'value', fill: 'color' })
         : Plot.rectY(bars, { x1: 'left', x2: 'right', y: 'value', fill: 'color' })
+}
+
+// the tooltip shared by every ordinal series plot (monthly overlay, temperature distribution):
+// one point per idx, listing every series' value there, stacked onto one line per name when
+// series share a name (e.g. a region's paired High/Low temp series) -- dashOrder is [dashed,
+// solid] (e.g. ['Low', 'High']); reversed here so the solid series comes first in the stacked
+// line ("High / Low"), matching the dash pattern's own display convention
+export function seriesTip(
+    seriesData: { series: PlotSeriesItem, values: number[] }[],
+    idxs: number[],
+    transpose: boolean,
+    xFor: (i: number) => number,
+    prefixFor: (idx: number) => string,
+    formatValue: (v: number) => string,
+    colors: Colors,
+    dashOrder?: string[],
+): Plot.Markish {
+    const displayOrder = dashOrder !== undefined ? [...dashOrder].reverse() : undefined
+    const tipData = idxs.map(i => ({
+        x: xFor(i),
+        prefix: prefixFor(i),
+        entries: seriesData.map(s => ({ name: s.series.shortname, subseriesName: s.series.subseriesName, value: s.values[i] })),
+    }))
+    return transposeAwareTip(
+        tipData,
+        transpose,
+        'x',
+        d => d.entries.map(e => e.value),
+        d => groupedTipTitle(d.prefix, d.entries, formatValue, displayOrder),
+        colors,
+    )
 }
 
 // a Plot.tip anchored at the tallest series' value at each point, swapping x/y when transposed,
@@ -457,7 +502,7 @@ export function manualLegend<T extends LegendItem>(items: T[], transpose: boolea
     return [createLegend]
 }
 
-interface DetailedPlotSpec {
+export interface DetailedPlotSpec {
     marks: Plot.Markish[]
     xlabel: string | null
     ylabel: string
@@ -554,5 +599,60 @@ export function PlotComponent(props: {
                         </div>
                     )}
         </>
+    )
+}
+
+export interface PlotSeriesItem {
+    shortname: string
+    longname: string
+    color: string
+    subseriesName: string
+}
+
+// the shell shared by every plot type (density histogram, monthly overlay, temperature
+// distribution): builds the title mark and legend generically from `items`, and wraps the
+// download/add-region/mode-switcher settings bar, deferring only the type-specific axis/series/
+// tooltip construction to buildPlot
+export function SeriesPlot<T extends PlotSeriesItem>(props: {
+    items: T[]
+    filenameSuffix: string
+    sharedTypeOfAllArticles?: string
+    modeSwitcher?: ReactElement
+    dashOrder?: string[]
+    extraSettingsControls?: ReactNode
+    buildPlot: (transpose: boolean) => DetailedPlotSpec
+}): ReactElement {
+    const colors = useColors()
+    const { items, dashOrder, buildPlot } = props
+
+    const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
+        <PlotSettingsBar
+            makePlot={makePlot}
+            shortnames={props.items.map(i => i.shortname)}
+            longnames={props.items.map(i => i.longname)}
+            sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
+            filenameSuffix={props.filenameSuffix}
+            modeSwitcher={props.modeSwitcher}
+        >
+            {props.extraSettingsControls}
+        </PlotSettingsBar>
+    )
+
+    const plotSpec = useCallback(
+        (transpose: boolean): DetailedPlotSpec => {
+            const title = new Set(items.map(i => i.shortname)).size === 1 ? items[0].shortname : ''
+            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose)
+            marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
+            marks.push(...manualLegend(items, transpose, colors, dashOrder))
+            return { marks, xlabel, ylabel, ydomain, legend }
+        },
+        [items, buildPlot, colors, dashOrder],
+    )
+
+    return (
+        <PlotComponent
+            plotSpec={plotSpec}
+            settingsElement={settingsElement}
+        />
     )
 }

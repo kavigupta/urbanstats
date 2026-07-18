@@ -7,7 +7,7 @@ import { useSetting } from '../page_template/settings'
 import { convertPrecipitation, convertTemperature } from '../utils/unit'
 
 import { MonthlyExtraStat } from './load-article'
-import { axisAndGrid, computeDashPatterns, groupedTipTitle, manualLegend, ordinalSeriesMarks, PlotComponent, PlotSettingsBar, transposeAwareTip, valueGrid } from './plots-general'
+import { categoricalAxisMarks, computeDashPatterns, DetailedPlotSpec, ordinalSeriesMarks, paddedYDomain, SeriesPlot, seriesTip } from './plots-general'
 
 const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -29,11 +29,6 @@ function convertMonthlyValue(value: number, unit: MonthlyExtraStat['unit'], temp
     }
 }
 
-interface TipDatum {
-    monthIdx: number
-    entries: { name: string, subseriesName: string, value: number }[]
-}
-
 export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllArticles?: string, modeSwitcher?: ReactElement, dashOrder?: string[], combinedLabel?: (unitSuffix: string) => string }): ReactNode {
     const [temperatureUnit] = useSetting('temperature_unit')
     const [useImperial] = useSetting('use_imperial')
@@ -43,38 +38,20 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
     const unitSuffix = convertMonthlyValue(props.stats[0].stat.monthlyValues[0], unit, temperatureUnit, useImperial).unit
     const { combinedLabel } = props
 
-    const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
-        <PlotSettingsBar
-            makePlot={makePlot}
-            shortnames={props.stats.map(s => s.shortname)}
-            longnames={props.stats.map(s => s.longname)}
-            sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
-            filenameSuffix="monthly"
-            modeSwitcher={props.modeSwitcher}
-        />
-    )
-
-    const plotSpec = useCallback(
-        (transpose: boolean) => {
+    const buildPlot = useCallback(
+        (transpose: boolean): DetailedPlotSpec => {
             const monthIdxs = Array.from({ length: 12 }, (_, i) => i)
-            const seriesData = props.stats.map(stat => ({
-                stat,
-                values: stat.stat.monthlyValues.map(v => convertMonthlyValue(v, unit, temperatureUnit, useImperial).value),
+            const seriesData = props.stats.map(series => ({
+                series,
+                values: series.stat.monthlyValues.map(v => convertMonthlyValue(v, unit, temperatureUnit, useImperial).value),
             }))
 
-            const title = new Set(props.stats.map(s => s.shortname)).size === 1 ? props.stats[0].shortname : ''
-
-            const [axis, grid] = axisAndGrid(transpose)
-            const marks: Plot.Markish[] = [
-                axis(monthIdxs, { tickFormat: (i: number) => monthLabels[i] }),
-                grid(monthIdxs),
-                valueGrid(transpose)(),
-            ]
+            const marks: Plot.Markish[] = categoricalAxisMarks(monthIdxs, transpose, i => monthLabels[i])
 
             const dashPatterns = computeDashPatterns(props.stats, props.dashOrder)
             marks.push(
                 ...ordinalSeriesMarks(
-                    seriesData.map(({ stat, values }) => ({ series: stat, values })),
+                    seriesData,
                     monthIdxs,
                     'monthIdx',
                     transpose,
@@ -82,37 +59,25 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
                 ),
             )
 
-            // dashOrder is [dashed, solid] (e.g. ['Low', 'High']) -- reversed gives the
-            // solid-first display order for the stacked tooltip line ("High / Low")
-            const tipDisplayOrder = props.dashOrder !== undefined ? [...props.dashOrder].reverse() : undefined
-
-            const tipData: TipDatum[] = monthIdxs.map(i => ({
-                monthIdx: i,
-                entries: seriesData.map(s => ({ name: s.stat.shortname, subseriesName: s.stat.subseriesName, value: s.values[i] })),
-            }))
             marks.push(
-                transposeAwareTip(
-                    tipData,
+                seriesTip(
+                    seriesData,
+                    monthIdxs,
                     transpose,
-                    'monthIdx',
-                    d => d.entries.map(e => e.value),
-                    d => groupedTipTitle(monthLabels[d.monthIdx], d.entries, v => `${v.toFixed(1)}${unitSuffix}`, tipDisplayOrder),
+                    i => i,
+                    i => monthLabels[i],
+                    v => `${v.toFixed(1)}${unitSuffix}`,
                     colors,
+                    props.dashOrder,
                 ),
             )
 
-            const allValues = seriesData.flatMap(s => s.values)
-            const maxValue = Math.max(...allValues)
-            const minValue = Math.min(...allValues)
-            const pad = (maxValue - minValue) * 0.1 || Math.max(Math.abs(maxValue), 1) * 0.1
-            const ydomain: [number, number] = [minValue - pad, maxValue + pad]
+            const ydomain = paddedYDomain(seriesData.flatMap(s => s.values), 0.1)
 
-            marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
             const xlabel = null
             const ylabel = combinedLabel !== undefined
                 ? combinedLabel(unitSuffix)
                 : `${props.stats[0].stat.name} (${unitSuffix})`
-            marks.push(...manualLegend(props.stats, transpose, colors, props.dashOrder))
 
             return { marks, xlabel, ylabel, ydomain }
         },
@@ -120,9 +85,13 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
     )
 
     return (
-        <PlotComponent
-            plotSpec={plotSpec}
-            settingsElement={settingsElement}
+        <SeriesPlot
+            items={props.stats}
+            filenameSuffix="monthly"
+            sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
+            modeSwitcher={props.modeSwitcher}
+            dashOrder={props.dashOrder}
+            buildPlot={buildPlot}
         />
     )
 }

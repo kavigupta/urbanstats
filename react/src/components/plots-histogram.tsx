@@ -8,7 +8,7 @@ import { HistogramType, useSetting } from '../page_template/settings'
 import { IHistogram } from '../utils/protos'
 import { useTranspose } from '../utils/transpose'
 
-import { axisAndGrid, computeDashPatterns, manualLegend, multiSeriesTipTitle, PlotComponent, PlotSettingsBar, transposeAwareTip } from './plots-general'
+import { axisAndGrid, computeDashPatterns, DetailedPlotSpec, groupedTipTitle, paddedYDomain, SeriesPlot, transposeAwareTip } from './plots-general'
 import { CheckboxSetting } from './sidebar'
 
 const yPad = 0.025
@@ -47,15 +47,30 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
     }
     const systemColors = useColors()
     const isTransposed = useTranspose()
-    const settingsElement = (makePlot: () => HTMLElement): ReactElement => (
-        <PlotSettingsBar
-            makePlot={makePlot}
-            shortnames={props.histograms.map(h => h.shortname)}
-            longnames={props.histograms.map(h => h.longname)}
-            sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
-            filenameSuffix="histogram"
-            modeSwitcher={props.modeSwitcher}
-        >
+
+    const buildPlot = useCallback(
+        (transpose: boolean): DetailedPlotSpec => {
+            const renderY = relative ? (y: number) => `${y.toFixed(2)}%` : (y: number) => renderNumberHighlyRounded(y, 2)
+
+            const [xIdxStart, xIdxEnd] = histogramBounds(props.histograms)
+            const xidxs = Array.from({ length: xIdxEnd - xIdxStart }, (_, i) => i + xIdxStart)
+            const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial, transpose)
+            const [marks, values] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose, systemColors, props.dashOrder)
+            const maxValue = Math.max(...values)
+            marks.push(
+                ...xAxisMarks,
+                ...yAxis(maxValue, transpose),
+            )
+            const xlabel = `${props.statDescription} (/${useImperial ? 'mi' : 'km'}²)`
+            const ylabel = relative ? '% of total' : 'Population'
+            const ydomain = paddedYDomain(values, yPad)
+            return { marks, xlabel, ylabel, ydomain }
+        },
+        [props.histograms, binMin, binSize, relative, histogramType, useImperial, systemColors, props.statDescription, props.dashOrder],
+    )
+
+    const extraSettingsControls = (
+        <>
             <select
                 value={histogramTypeRaw}
                 style={{ backgroundColor: systemColors.background, color: systemColors.textMain }}
@@ -68,36 +83,18 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
                 <option value="Bar">Bar</option>
             </select>
             <CheckboxSetting name={isTransposed ? 'Relative' : 'Relative Histograms'} settingKey="histogram_relative" testId="histogram_relative" />
-        </PlotSettingsBar>
-    )
-
-    const plotSpec = useCallback(
-        (transpose: boolean) => {
-            const title = new Set(props.histograms.map(h => h.shortname)).size === 1 ? props.histograms[0].shortname : ''
-            const renderY = relative ? (y: number) => `${y.toFixed(2)}%` : (y: number) => renderNumberHighlyRounded(y, 2)
-
-            const [xIdxStart, xIdxEnd] = histogramBounds(props.histograms)
-            const xidxs = Array.from({ length: xIdxEnd - xIdxStart }, (_, i) => i + xIdxStart)
-            const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial, transpose)
-            const [marks, maxValue] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose, systemColors, props.dashOrder)
-            marks.push(
-                ...xAxisMarks,
-                ...yAxis(maxValue, transpose),
-            )
-            marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
-            const xlabel = `${props.statDescription} (/${useImperial ? 'mi' : 'km'}²)`
-            const ylabel = relative ? '% of total' : 'Population'
-            const ydomain: [number, number] = [maxValue * (-yPad), maxValue * (1 + yPad)]
-            marks.push(...manualLegend(props.histograms, transpose, systemColors, props.dashOrder))
-            return { marks, xlabel, ylabel, ydomain }
-        },
-        [props.histograms, binMin, binSize, relative, histogramType, useImperial, systemColors, props.statDescription, props.dashOrder],
+        </>
     )
 
     return (
-        <PlotComponent
-            plotSpec={plotSpec}
-            settingsElement={settingsElement}
+        <SeriesPlot
+            items={props.histograms}
+            filenameSuffix="histogram"
+            sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
+            modeSwitcher={props.modeSwitcher}
+            dashOrder={props.dashOrder}
+            extraSettingsControls={extraSettingsControls}
+            buildPlot={buildPlot}
         />
     )
 }
@@ -183,14 +180,12 @@ function dovetailSequences(series: { values: { xidx: number, y: number, name: st
     return seriesSingle
 }
 
-function maxSequences(series: { values: { xidx: number, y: number, name: string }[] }[]): { xidx: number, y: number, names: string[], ys: number[] }[] {
-    const seriesMax: { xidx: number, y: number, names: string[], ys: number[] }[] = []
+function maxSequences(series: { values: { xidx: number, y: number, name: string }[], subseriesName: string }[]): { xidx: number, entries: { name: string, subseriesName: string, value: number }[] }[] {
+    const seriesMax: { xidx: number, entries: { name: string, subseriesName: string, value: number }[] }[] = []
     for (let i = 0; i < series[0].values.length; i++) {
         seriesMax.push({
             xidx: series[0].values[i].xidx,
-            y: Math.max(...series.map(s => s.values[i].y)),
-            names: series.map(s => s.values[i].name),
-            ys: series.map(s => s.values[i].y),
+            entries: series.map(s => ({ name: s.values[i].name, subseriesName: s.subseriesName, value: s.values[i].y })),
         })
     }
     return seriesMax
@@ -294,17 +289,17 @@ function createHistogramMarks(
     transpose: boolean,
     colors: Colors,
     dashOrder?: string[],
-): [Plot.Markish[], number] {
+): [Plot.Markish[], number[]] {
     const series = mulitipleSeriesConsistentLength(histograms, xidxs, relative, histogramType === 'Line (cumulative)')
     const seriesSingle = dovetailSequences(series)
 
-    const maxValue = Math.max(...series.map(s => Math.max(...s.values.map(v => v.y))))
+    const values = series.flatMap(s => s.values.map(v => v.y))
     const tip = transposeAwareTip(
         maxSequences(series),
         transpose,
         'xidx',
-        d => d.ys,
-        d => multiSeriesTipTitle(`Density: ${renderX(d.xidx)}`, d.names, d.ys, renderY, 'Frequency'),
+        d => d.entries.map(e => e.value),
+        d => groupedTipTitle(`Density: ${renderX(d.xidx)}`, d.entries, renderY, dashOrder, 'Frequency'),
         colors,
     )
     const marks: Plot.Markish[] = []
@@ -339,5 +334,5 @@ function createHistogramMarks(
         )
     }
     marks.push(tip)
-    return [marks, maxValue]
+    return [marks, values]
 }
