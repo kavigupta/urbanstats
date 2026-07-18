@@ -8,7 +8,7 @@ import { HistogramType, useSetting } from '../page_template/settings'
 import { IHistogram } from '../utils/protos'
 import { useTranspose } from '../utils/transpose'
 
-import { axisAndGrid, computeDashPatterns, DetailedPlotSpec, groupedTipTitle, paddedYDomain, SeriesPlot, transposeAwareTip } from './plots-general'
+import { axisAndGrid, computeDashPatterns, DetailedPlotSpec, multiSeriesTipTitle, paddedYDomain, SeriesPlot, transposeAwareTip } from './plots-general'
 import { CheckboxSetting } from './sidebar'
 
 const yPad = 0.025
@@ -179,12 +179,14 @@ function dovetailSequences(series: { values: { xidx: number, y: number, name: st
     return seriesSingle
 }
 
-function maxSequences(series: { values: { xidx: number, y: number, name: string }[], subseriesName: string }[]): { xidx: number, entries: { name: string, subseriesName: string, value: number }[] }[] {
-    const seriesMax: { xidx: number, entries: { name: string, subseriesName: string, value: number }[] }[] = []
+function maxSequences(series: { values: { xidx: number, y: number, name: string }[] }[]): { xidx: number, y: number, names: string[], ys: number[] }[] {
+    const seriesMax: { xidx: number, y: number, names: string[], ys: number[] }[] = []
     for (let i = 0; i < series[0].values.length; i++) {
         seriesMax.push({
             xidx: series[0].values[i].xidx,
-            entries: series.map(s => ({ name: s.values[i].name, subseriesName: s.subseriesName, value: s.values[i].y })),
+            y: Math.max(...series.map(s => s.values[i].y)),
+            names: series.map(s => s.values[i].name),
+            ys: series.map(s => s.values[i].y),
         })
     }
     return seriesMax
@@ -297,8 +299,8 @@ function createHistogramMarks(
         maxSequences(series),
         transpose,
         'xidx',
-        d => d.entries.map(e => e.value),
-        d => groupedTipTitle(`Density: ${renderX(d.xidx)}`, d.entries, renderY, dashOrder, 'Frequency'),
+        d => d.ys,
+        d => multiSeriesTipTitle(`Density: ${renderX(d.xidx)}`, d.names, d.ys, renderY, 'Frequency'),
         colors,
     )
     const marks: Plot.Markish[] = []
