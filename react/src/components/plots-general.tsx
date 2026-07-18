@@ -96,7 +96,7 @@ export const transposeSettingsHeight = 30.5
 
 // the settings bar shared by every plot type: download button, "add region" search popup, and
 // (when relevant) plot-type-specific controls (e.g. histogram's line/bar select)
-export function PlotSettingsBar(props: {
+function PlotSettingsBar(props: {
     makePlot: () => HTMLElement
     shortnames: string[]
     longnames: string[]
@@ -217,7 +217,7 @@ export function computeDashPatterns<T extends LegendItem>(items: T[], order?: st
     return dashPatterns
 }
 
-export function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, themeColors: Colors, dashOrder?: string[]): Plot.Markish[] {
+function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, themeColors: Colors, dashOrder?: string[]): Plot.Markish[] {
     const colorItems = computeColorItems(items)
 
     const dashPatterns = computeDashPatterns(items, dashOrder)
