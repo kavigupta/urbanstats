@@ -21,17 +21,44 @@ export function axisAndGrid(transpose: boolean): [typeof Plot.axisX, typeof Plot
     return transpose ? [Plot.axisY, Plot.gridY] : [Plot.axisX, Plot.gridX]
 }
 
-// "<prefix>\n<name1>: <value1>\n<name2>: <value2>..." when there's more than one series at this
-// point, else just the single value (optionally labeled, e.g. Histogram's "Frequency: X")
-export function multiSeriesTipTitle(prefix: string, names: string[], values: number[], formatValue: (v: number) => string, singleLabel?: string): string {
-    let result = `${prefix}\n`
-    if (names.length > 1) {
-        result += names.map((name, i) => `${name}: ${formatValue(values[i])}`).join('\n')
+// "<prefix>\n<name1>: <value1>\n<name2>: <value2>..." for each point's entries -- entries sharing
+// a name (e.g. a region's paired High/Low temp or Rain/Snow series) are stacked onto one line
+// ("<name>: <v1> / <v2>") instead of one line each. displayOrder, if given, controls the order
+// values are joined in within a stacked line (matching the paired stat's dash order); otherwise
+// entries are joined in the order they appear. When there's only a single entry overall, the name
+// is dropped (optionally replaced with singleLabel, e.g. Histogram's "Frequency: X").
+export function groupedTipTitle(prefix: string, entries: { name: string, subseriesName: string, value: number }[], formatValue: (v: number) => string, displayOrder?: string[], singleLabel?: string): string {
+    const groups = new Map<string, { subseriesName: string, value: number }[]>()
+    const nameOrder: string[] = []
+    for (const entry of entries) {
+        if (!groups.has(entry.name)) {
+            groups.set(entry.name, [])
+            nameOrder.push(entry.name)
+        }
+        groups.get(entry.name)!.push(entry)
     }
-    else {
-        result += singleLabel !== undefined ? `${singleLabel}: ${formatValue(values[0])}` : formatValue(values[0])
+    if (nameOrder.length === 1 && groups.get(nameOrder[0])!.length === 1) {
+        const value = groups.get(nameOrder[0])![0].value
+        return singleLabel !== undefined ? `${prefix}\n${singleLabel}: ${formatValue(value)}` : `${prefix}\n${formatValue(value)}`
     }
-    return result
+    const lines = nameOrder.map((name) => {
+        const members = groups.get(name)!
+        const ordered = displayOrder !== undefined
+            ? [...members].sort((a, b) => displayOrder.indexOf(a.subseriesName) - displayOrder.indexOf(b.subseriesName))
+            : members
+        return `${name}: ${ordered.map(m => formatValue(m.value)).join(' / ')}`
+    })
+    return `${prefix}\n${lines.join('\n')}`
+}
+
+// pads a value domain with headroom, as a fraction of its own spread (falling back to a fraction
+// of the value itself when every value is identical, so a flat line/bar doesn't render as a
+// zero-height domain)
+export function paddedYDomain(values: number[], pad: number): [number, number] {
+    const maxValue = Math.max(...values)
+    const minValue = Math.min(...values)
+    const p = (maxValue - minValue) * pad || Math.max(Math.abs(maxValue), 1) * pad
+    return [minValue - p, maxValue + p]
 }
 
 // a Plot.tip anchored at the tallest series' value at each point, swapping x/y when transposed,
