@@ -162,7 +162,6 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
                     )}
                     sharedTypeOfAllArticles={relevantPlotProps[0]?.sharedTypeOfAllArticles}
                     modeSwitcher={modeSwitcher}
-                    dashOrder={dashOrder}
                 />
             )
         case undefined:

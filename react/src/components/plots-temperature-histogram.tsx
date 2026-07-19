@@ -17,7 +17,7 @@ export interface TemperatureHistogramPlotProps {
     subseriesName: string
 }
 
-export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogramPlotProps[], statDescription: string, sharedTypeOfAllArticles?: string, modeSwitcher?: ReactElement, dashOrder?: string[] }): ReactNode {
+export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogramPlotProps[], statDescription: string, sharedTypeOfAllArticles?: string, modeSwitcher?: ReactElement }): ReactNode {
     const [temperatureUnit] = useSetting('temperature_unit')
     const colors = useColors()
 
@@ -92,7 +92,6 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
             filenameSuffix="temperature_distribution"
             sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
             modeSwitcher={props.modeSwitcher}
-            dashOrder={props.dashOrder}
             buildPlot={buildPlot}
         />
     )
