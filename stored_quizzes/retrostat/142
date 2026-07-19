@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Median Commute Time (min)",
+      "stat_path": "transportation_commute_time_median",
+      "question": "higher median commute time",
+      "longname_a": "Montgomery County, Maryland, USA",
+      "longname_b": "St. Lucie County, Florida, USA",
+      "stat_a": 32.16711739780568,
+      "stat_b": 24.50344088166361
+    },
+    "b": {
+      "stat_column": "Renter %",
+      "stat_path": "rent_or_own_rent",
+      "question": "higher % of people who are renters",
+      "longname_a": "McLennan County, Texas, USA",
+      "longname_b": "Harford County, Maryland, USA",
+      "stat_a": 0.4079134552094611,
+      "stat_b": 0.20490827758854194
+    },
+    "a_ease": 0.6912621359223301,
+    "b_ease": 0.2909728308501315
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Vacancy %",
+      "stat_path": "vacancy",
+      "question": "higher % of units that are vacant!TOOLTIP Vacancy is the % of housing units that were not occupied on April 1, 2020 (census night). This includes vacation homes but does *not* include units that were not occupied due to the pandemic, the census attempted to account for this.",
+      "longname_a": "North Las Vegas city, Nevada, USA",
+      "longname_b": "Phoenix city, Arizona, USA",
+      "stat_a": 0.043226030569708196,
+      "stat_b": 0.07562641502254523
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km) Change (2000-2020)",
+      "stat_path": "ad_1_change_2000",
+      "question": "higher % increase in population-weighted density (r=1km) from 2000 to 2020!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Toledo OH Media Market, USA",
+      "longname_b": "Albuquerque-Santa Fe NM Media Market, USA",
+      "stat_a": -0.15748509138805292,
+      "stat_b": 0.1269019342859089
+    },
+    "a_ease": 0.32091346153846156,
+    "b_ease": 0.7281553398058253
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Smoking %",
+      "stat_path": "CSMOKING_cdc_2",
+      "question": "higher % of adults who smoke",
+      "longname_a": "Modesto MSA, CA, USA",
+      "longname_b": "Provo-Orem MSA, UT, USA",
+      "stat_a": 0.1531338597040531,
+      "stat_b": 0.07181522806914649
+    },
+    "b": {
+      "stat_column": "Within 1mi of a grocery store %",
+      "stat_path": "lapop1share_usda_fra_1",
+      "question": "!FULL Which has more access to grocery stores (higher % of people within 1mi of a grocery store)?!TOOLTIP The USDA defines a grocery store as a 'supermarket, supercenter, or large grocery store.'",
+      "longname_a": "New Hampshire, USA",
+      "longname_b": "Oregon, USA",
+      "stat_a": 0.34782466388811895,
+      "stat_b": 0.6627883015133273
+    },
+    "a_ease": 0.7649122807017544,
+    "b_ease": 0.36213592233009706
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Asian %",
+      "stat_path": "asian",
+      "question": "higher % of people who are Asian",
+      "longname_a": "Victorville-Hesperia-Apple Valley [Urban Area], CA, USA",
+      "longname_b": "Reno [Urban Area], NV-CA, USA",
+      "stat_a": 0.03083897295231243,
+      "stat_b": 0.06104194800337716
+    },
+    "b": {
+      "stat_column": "Mean high temperature in Jun/Jul/Aug",
+      "stat_path": "mean_high_temp_jja",
+      "question": "higher mean daily high temperature in Jun/Jul/Aug (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Turkey",
+      "longname_b": "Chile",
+      "stat_a": 83.91425440038365,
+      "stat_b": 57.01209068602124
+    },
+    "a_ease": 0.3163841807909605,
+    "b_ease": 0.7543859649122807
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2012-2016 Swing",
+      "stat_path": "2012-2016 Swing-margin",
+      "question": "!FULL Which swung less towards Republicans from 2012 to 2016?",
+      "longname_a": "Amarillo MSA, TX, USA",
+      "longname_b": "Cincinnati MSA, OH-KY-IN, USA",
+      "stat_a": 0.02968855319150676,
+      "stat_b": -0.009223585620324104
+    },
+    "b": {
+      "stat_column": "2008 Presidential Election",
+      "stat_path": "2008 Presidential Election-margin",
+      "question": "!FULL Which voted more for Obama in the 2008 presidential election?",
+      "longname_a": "Hamilton County, Tennessee, USA",
+      "longname_b": "Berks County, Pennsylvania, USA",
+      "stat_a": -0.1183297180043376,
+      "stat_b": 0.09185555555555505
+    },
+    "a_ease": 0.3964028776978417,
+    "b_ease": 0.8029126213592233
+  }
+]
