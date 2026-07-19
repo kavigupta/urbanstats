@@ -17,6 +17,14 @@ export interface PlotProps {
     subseriesName: string
 }
 
+// for each plot prop carrying an extra stat of `type`, the series' shared fields plus that stat
+function seriesOfType<T extends ExtraStat['type']>(props: PlotProps[], type: T): { shortname: string, longname: string, color: string, subseriesName: string, stat: Extract<ExtraStat, { type: T }> }[] {
+    return props.flatMap((p) => {
+        const stat = p.extraStats.find(es => es.type === type)
+        return stat === undefined ? [] : [{ shortname: p.shortname, longname: p.longname, color: p.color, subseriesName: p.subseriesName, stat: stat as Extract<ExtraStat, { type: T }> }]
+    })
+}
+
 export function RenderedPlot({ statDescription, plotProps }: { statDescription: string, plotProps: PlotProps[] }): ReactNode {
     const type = plotProps.flatMap(p => p.extraStats.map(es => es.type)).reduce<undefined | 'histogram' | 'time_series'>((result, t) => {
         if (result === undefined) {
@@ -32,43 +40,14 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
             return (
                 <Histogram
                     statDescription={statDescription}
-                    histograms={plotProps.flatMap(
-                        (props) => {
-                            const extraStat = props.extraStats.find(es => es.type === 'histogram')
-                            if (extraStat === undefined) {
-                                return []
-                            }
-                            return [
-                                {
-                                    shortname: props.shortname,
-                                    longname: props.longname,
-                                    histogram: extraStat,
-                                    color: props.color,
-                                    universeTotal: extraStat.universeTotal,
-                                    subseriesName: props.subseriesName,
-                                },
-                            ]
-                        },
-                    )}
+                    histograms={seriesOfType(plotProps, 'histogram').map(({ stat, ...series }) => ({ ...series, histogram: stat, universeTotal: stat.universeTotal }))}
                     sharedTypeOfAllArticles={plotProps[0]?.sharedTypeOfAllArticles}
                 />
             )
         case 'time_series':
             return (
                 <TimeSeriesPlot
-                    stats={plotProps.map(
-                        (props) => {
-                            const extraStat = props.extraStats.find(es => es.type === 'time_series')
-                            if (extraStat === undefined) {
-                                throw new Error('expected time_series')
-                            }
-                            return {
-                                shortname: props.shortname,
-                                stat: extraStat,
-                                color: props.color,
-                            }
-                        },
-                    )}
+                    stats={seriesOfType(plotProps, 'time_series').map(({ shortname, color, stat }) => ({ shortname, color, stat }))}
                 />
             )
         case undefined:
