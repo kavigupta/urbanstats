@@ -30,7 +30,21 @@ export interface TimeSeriesExtraStat {
     timeSeries: number[]
 }
 
-export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat
+export interface MonthlyExtraStat {
+    type: 'monthly_time_series'
+    name: string
+    unit: 'temperature' | 'precipitation'
+    monthlyValues: number[]
+}
+
+export interface TemperatureHistogramExtraStat {
+    type: 'temperature_histogram'
+    binMin: number
+    binSize: number
+    counts: number[]
+}
+
+export type ExtraStat = HistogramExtraStat | TimeSeriesExtraStat | MonthlyExtraStat | TemperatureHistogramExtraStat
 
 export type StatCol = (typeof stats)[number]
 
@@ -282,23 +296,49 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
 
     return data.rows.map((rowOriginal, rowIndex) => {
         const i = indices[rowIndex]
-        // a stat may eventually have more than one extra-stat option, so collect all matches
+        // a stat may have more than one extra-stat option (e.g. a monthly plot and a distribution)
         const extraStatIdxs = extraStatIdxToCol.flatMap((colIdx, j) => colIdx === i ? [j] : [])
         const extraStats: ExtraStat[] = extraStatIdxs.flatMap<ExtraStat>((extraStatIdx) => {
             const [, spec] = extra_stats[extraStatIdx]
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- this is for future proofing
-            if (spec.type === 'histogram') {
-                const universeTotalIdx = spec.universe_total_idx
-                const histogram = data.extraStats[extraStatIdx].histogram!
-                return [{
-                    type: 'histogram',
-                    binMin: histogram.binMin,
-                    binSize: histogram.binSize,
-                    counts: histogram.counts,
-                    universeTotal: data.rows.find((_, universeRowIndex) => indices[universeRowIndex] === universeTotalIdx)!.statval!,
-                } as HistogramExtraStat]
+            switch (spec.type) {
+                case 'histogram': {
+                    const universeTotalIdx = spec.universe_total_idx
+                    const histogram = data.extraStats[extraStatIdx].histogram!
+                    return [{
+                        type: 'histogram',
+                        binMin: histogram.binMin!,
+                        binSize: histogram.binSize!,
+                        counts: histogram.counts!,
+                        universeTotal: data.rows.find((_, universeRowIndex) => indices[universeRowIndex] === universeTotalIdx)!.statval!,
+                    } satisfies HistogramExtraStat]
+                }
+                case 'monthly_time_series': {
+                    const timeseries = data.extraStats[extraStatIdx].timeseries
+                    // absent when the underlying monthly data was invalid/NaN for this row -- omit the extra stat rather than crash
+                    if (timeseries?.values) {
+                        return [{
+                            type: 'monthly_time_series',
+                            name: spec.name,
+                            unit: spec.unit,
+                            monthlyValues: timeseries.values,
+                        } satisfies MonthlyExtraStat]
+                    }
+                    return []
+                }
+                case 'temperature_histogram': {
+                    const temperatureHistogram = data.extraStats[extraStatIdx].temperatureHistogram
+                    // absent when the underlying histogram data was invalid/NaN for this row -- omit the extra stat rather than crash
+                    if (temperatureHistogram?.counts) {
+                        return [{
+                            type: 'temperature_histogram',
+                            binMin: spec.min_value,
+                            binSize: spec.bin_size,
+                            counts: temperatureHistogram.counts,
+                        } satisfies TemperatureHistogramExtraStat]
+                    }
+                    return []
+                }
             }
-            return []
         })
         const overallFirstLastThis = overallFirstOrLast.filter((x: IFirstOrLast) => x.articleRowIdx === rowIndex)
 

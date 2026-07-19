@@ -408,10 +408,26 @@ export default [
     [
         338,
         {
+            "type": "monthly_time_series",
+            "name": "Mean high temp by month",
+            "unit": "temperature"
+        }
+    ],
+    [
+        338,
+        {
             "type": "temperature_histogram",
             "min_value": -40,
             "max_value": 140,
             "bin_size": 10
+        }
+    ],
+    [
+        347,
+        {
+            "type": "monthly_time_series",
+            "name": "Mean low temp by month",
+            "unit": "temperature"
         }
     ],
     [
@@ -427,14 +443,16 @@ export default [
         408,
         {
             "type": "monthly_time_series",
-            "name": "Rainfall by month"
+            "name": "Rainfall by month",
+            "unit": "precipitation"
         }
     ],
     [
         445,
         {
             "type": "monthly_time_series",
-            "name": "Snowfall by month"
+            "name": "Snowfall by month",
+            "unit": "precipitation"
         }
     ]
 ] as const

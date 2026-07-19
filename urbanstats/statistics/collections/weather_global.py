@@ -26,7 +26,7 @@ POPULATION_WEIGHTED_EXPLANATION = (
 
 
 class GlobalWeatherStatistics(GeographicStatistics):
-    version = 5
+    version = 8
 
     def name_for_each_statistic(self):
         return {
@@ -251,22 +251,40 @@ class GlobalWeatherStatistics(GeographicStatistics):
 
     def extra_stats(self):
         return {
-            "mean_high_temp_4": TemperatureHistogramSpec(
-                min_value=MIN_BIN,
-                max_value=MAX_BIN,
-                bin_size=BIN_SIZE,
-                key="high_temp_histogram",
-            ),
-            "mean_low_temp": TemperatureHistogramSpec(
-                min_value=MIN_BIN,
-                max_value=MAX_BIN,
-                bin_size=BIN_SIZE,
-                key="low_temp_histogram",
-            ),
+            "mean_high_temp_4": [
+                MonthlyTimeSeriesSpec(
+                    name="Mean high temp by month",
+                    key="mean_high_temp_by_month",
+                    unit="temperature",
+                ),
+                TemperatureHistogramSpec(
+                    min_value=MIN_BIN,
+                    max_value=MAX_BIN,
+                    bin_size=BIN_SIZE,
+                    key="high_temp_histogram",
+                ),
+            ],
+            "mean_low_temp": [
+                MonthlyTimeSeriesSpec(
+                    name="Mean low temp by month",
+                    key="mean_low_temp_by_month",
+                    unit="temperature",
+                ),
+                TemperatureHistogramSpec(
+                    min_value=MIN_BIN,
+                    max_value=MAX_BIN,
+                    bin_size=BIN_SIZE,
+                    key="low_temp_histogram",
+                ),
+            ],
             "rainfall_4": MonthlyTimeSeriesSpec(
-                name="Rainfall by month", key="rainfall_by_month"
+                name="Rainfall by month",
+                key="rainfall_by_month",
+                unit="precipitation",
             ),
             "snowfall_4": MonthlyTimeSeriesSpec(
-                name="Snowfall by month", key="snowfall_by_month"
+                name="Snowfall by month",
+                key="snowfall_by_month",
+                unit="precipitation",
             ),
         }

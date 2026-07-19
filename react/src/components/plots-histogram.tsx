@@ -1,5 +1,5 @@
 import * as Plot from '@observablehq/plot'
-import React, { ReactNode, useCallback } from 'react'
+import React, { ReactElement, ReactNode, useCallback } from 'react'
 
 // imort Observable plot
 import { Colors } from '../page_template/color-themes'
@@ -33,7 +33,7 @@ function processHistogramType(histogramType: HistogramType, histograms: Histogra
     return histogramType
 }
 
-export function Histogram(props: { histograms: HistogramProps[], statDescription: string, sharedTypeOfAllArticles?: string, dashOrder?: string[] }): ReactNode {
+export function Histogram(props: { histograms: HistogramProps[], statDescription: string, sharedTypeOfAllArticles?: string, modeSwitcher?: ReactElement, dashOrder?: string[] }): ReactNode {
     const [histogramTypeRaw, setHistogramType] = useSetting('histogram_type')
     const histogramType = processHistogramType(histogramTypeRaw, props.histograms)
     const [useImperial] = useSetting('use_imperial')
@@ -91,6 +91,7 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
             items={props.histograms}
             filenameSuffix="histogram"
             sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
+            modeSwitcher={props.modeSwitcher}
             dashOrder={props.dashOrder}
             extraSettingsControls={extraSettingsControls}
             buildPlot={buildPlot}

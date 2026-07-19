@@ -21,10 +21,28 @@ export function axisAndGrid(transpose: boolean): [typeof Plot.axisX, typeof Plot
     return transpose ? [Plot.axisY, Plot.gridY] : [Plot.axisX, Plot.gridX]
 }
 
-// "<prefix>\n<name1>: <value1>\n<name2>: <value2>..." for each point's entries -- entries sharing
-// a name (e.g. one region's multiple years, or a paired High/Low temp series) are stacked onto one
-// line ("<name>: <v1> / <v2>") instead of one line each. When there's only a single entry overall,
-// the name is dropped (optionally replaced with singleLabel, e.g. Histogram's "Frequency: X").
+function valueGrid(transpose: boolean): typeof Plot.gridY {
+    return transpose ? Plot.gridX : Plot.gridY
+}
+
+export function paddedYDomain(values: number[], pad: number, anchoredBottom?: number): [number, number] {
+    const maxValue = Math.max(...values)
+    const minValue = anchoredBottom ?? Math.min(...values)
+    const p = (maxValue - minValue) * pad || Math.max(Math.abs(maxValue), 1) * pad
+    return [anchoredBottom ?? minValue - p, maxValue + p]
+}
+
+export function categoricalAxisMarks(tickIdxs: number[], transpose: boolean, tickFormat: (idx: number) => string): Plot.Markish[] {
+    const [axis, grid] = axisAndGrid(transpose)
+    return [
+        axis(tickIdxs, { tickFormat }),
+        grid(tickIdxs),
+        valueGrid(transpose)(),
+    ]
+}
+
+// entries sharing a name (a region's multiple years, or its High/Low pair) stack onto one line in
+// the order given; a lone entry drops the name (or uses singleLabel, e.g. Histogram's "Frequency")
 export function groupedTipTitle(prefix: string, entries: { name: string, value: number }[], formatValue: (v: number) => string, singleLabel?: string): string {
     const groups = new Map<string, number[]>()
     const nameOrder: string[] = []
@@ -43,14 +61,89 @@ export function groupedTipTitle(prefix: string, entries: { name: string, value: 
     return `${prefix}\n${lines.join('\n')}`
 }
 
-// pads a value domain with headroom, as a fraction of its own spread (falling back to a fraction
-// of the value itself when every value is identical, so a flat line/bar doesn't render as a
-// zero-height domain)
-export function paddedYDomain(values: number[], pad: number): [number, number] {
-    const maxValue = Math.max(...values)
-    const minValue = Math.min(...values)
-    const p = (maxValue - minValue) * pad || Math.max(Math.abs(maxValue), 1) * pad
-    return [minValue - p, maxValue + p]
+export function ordinalSeriesMarks(
+    seriesData: { series: { color: string, subseriesName: string }, values: number[] }[],
+    idxs: number[],
+    idxKey: string,
+    transpose: boolean,
+    dashPatterns: Map<string, { pattern: string, name: string }>,
+    xFor: (i: number) => number = i => i,
+): Plot.Markish[] {
+    const marks: Plot.Markish[] = []
+    marks.push(
+        ...seriesData.map(({ series, values }) =>
+            Plot.line(
+                idxs.map(i => ({ [idxKey]: xFor(i), value: values[i] })),
+                {
+                    x: transpose ? 'value' : idxKey,
+                    y: transpose ? idxKey : 'value',
+                    stroke: series.color,
+                    strokeWidth: 3,
+                    strokeDasharray: dashPatterns.size > 1 ? dashPatterns.get(series.subseriesName)?.pattern : undefined,
+                },
+            ),
+        ),
+    )
+    marks.push(
+        ...seriesData.map(({ series, values }) =>
+            Plot.dot(
+                idxs.map(i => ({ [idxKey]: xFor(i), value: values[i] })),
+                {
+                    x: transpose ? 'value' : idxKey,
+                    y: transpose ? idxKey : 'value',
+                    fill: series.color,
+                    r: 3,
+                },
+            ),
+        ),
+    )
+    return marks
+}
+
+// unlike the density histogram, these are centered between bins
+export function ordinalSeriesBarMarks(
+    seriesData: { series: { color: string }, values: number[] }[],
+    idxs: number[],
+    transpose: boolean,
+    xFor: (i: number) => number = i => i,
+): Plot.Markish {
+    const width = 1 / seriesData.length * 0.8
+    const bars = seriesData.flatMap(({ series, values }, seriesIdx) => {
+        const centerOffset = (seriesIdx - (seriesData.length - 1) / 2) * width
+        return idxs.map(i => ({
+            left: xFor(i) + centerOffset - width / 2,
+            right: xFor(i) + centerOffset + width / 2,
+            value: values[i],
+            color: series.color,
+        }))
+    })
+    return transpose
+        ? Plot.rectX(bars, { y1: 'left', y2: 'right', x: 'value', fill: 'color' })
+        : Plot.rectY(bars, { x1: 'left', x2: 'right', y: 'value', fill: 'color' })
+}
+
+export function seriesTip(
+    seriesData: { series: PlotSeriesItem, values: number[] }[],
+    idxs: number[],
+    transpose: boolean,
+    xFor: (i: number) => number,
+    prefixFor: (idx: number) => string,
+    formatValue: (v: number) => string,
+    colors: Colors,
+): Plot.Markish {
+    const tipData = idxs.map(i => ({
+        x: xFor(i),
+        prefix: prefixFor(i),
+        entries: seriesData.map(s => ({ name: s.series.shortname, value: s.values[i] })),
+    }))
+    return transposeAwareTip(
+        tipData,
+        transpose,
+        'x',
+        d => d.entries.map(e => e.value),
+        d => groupedTipTitle(d.prefix, d.entries, formatValue),
+        colors,
+    )
 }
 
 // a Plot.tip anchored at the tallest series' value at each point, swapping x/y when transposed,
@@ -113,14 +206,14 @@ function deduplicate(arr: string[]): string[] {
 
 export const transposeSettingsHeight = 30.5
 
-// the settings bar shared by every plot type: download button, "add region" search popup, and
-// (when relevant) plot-type-specific controls (e.g. histogram's line/bar select)
+// shared settings bar: download, "add region" search, and optional mode switcher / extra controls
 function PlotSettingsBar(props: {
     makePlot: () => HTMLElement
     shortnames: string[]
     longnames: string[]
     sharedTypeOfAllArticles?: string
     filenameSuffix: string
+    modeSwitcher?: ReactElement
     children?: ReactNode
 }): ReactNode {
     const colors = useColors()
@@ -187,6 +280,7 @@ function PlotSettingsBar(props: {
                 )}
             </div>
             {props.children}
+            {props.modeSwitcher}
         </div>
     )
 }
@@ -374,7 +468,7 @@ function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, them
 
 export interface DetailedPlotSpec {
     marks: Plot.Markish[]
-    xlabel: string
+    xlabel: string | null
     ylabel: string
     ydomain?: [number, number]
     legend?: { legend: boolean, range: string[], domain: string[] }
@@ -479,13 +573,12 @@ export interface PlotSeriesItem {
     subseriesName: string
 }
 
-// the shell shared by every series-based plot type (today: density histograms): builds the title
-// mark and legend generically from `items`, and wraps the download/add-region settings bar,
-// deferring only the type-specific axis/series/tooltip construction to buildPlot
+// shared plot shell: title, legend and settings bar from `items`; buildPlot supplies the rest
 export function SeriesPlot<T extends PlotSeriesItem>(props: {
     items: T[]
     filenameSuffix: string
     sharedTypeOfAllArticles?: string
+    modeSwitcher?: ReactElement
     dashOrder?: string[]
     extraSettingsControls?: ReactNode
     buildPlot: (transpose: boolean) => DetailedPlotSpec
@@ -500,6 +593,7 @@ export function SeriesPlot<T extends PlotSeriesItem>(props: {
             longnames={props.items.map(i => i.longname)}
             sharedTypeOfAllArticles={props.sharedTypeOfAllArticles}
             filenameSuffix={props.filenameSuffix}
+            modeSwitcher={props.modeSwitcher}
         >
             {props.extraSettingsControls}
         </PlotSettingsBar>

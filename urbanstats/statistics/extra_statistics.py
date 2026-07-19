@@ -78,6 +78,7 @@ class TimeSeriesSpec(ExtraStatistic):
 class MonthlyTimeSeriesSpec(ExtraStatistic):
     name: str
     key: str
+    unit: str
 
     def create(self, data_row):
         result = data_files_pb2.ExtraStatistic()
@@ -87,7 +88,7 @@ class MonthlyTimeSeriesSpec(ExtraStatistic):
         return result
 
     def extra_stat_spec(self, stat_names):
-        return dict(type="monthly_time_series", name=self.name)
+        return dict(type="monthly_time_series", name=self.name, unit=self.unit)
 
 
 @dataclass
