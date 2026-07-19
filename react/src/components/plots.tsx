@@ -33,6 +33,14 @@ const plotModeLabels: Partial<Record<ExtraStat['type'], string>> = {
     time_series: 'Yearly',
 }
 
+// for each plot prop carrying an extra stat of `type`, the series' shared fields plus that stat
+function seriesOfType<T extends ExtraStat['type']>(props: PlotProps[], type: T): { shortname: string, longname: string, color: string, subseriesName: string, stat: Extract<ExtraStat, { type: T }> }[] {
+    return props.flatMap((p) => {
+        const stat = p.extraStats.find(es => es.type === type)
+        return stat === undefined ? [] : [{ shortname: p.shortname, longname: p.longname, color: p.color, subseriesName: p.subseriesName, stat: stat as Extract<ExtraStat, { type: T }> }]
+    })
+}
+
 export function RenderedPlot({ statDescription, plotProps }: { statDescription: string, plotProps: PlotProps[] }): ReactNode {
     const colors = useColors()
     const availableTypes = Array.from(new Set(plotProps.flatMap(p => p.extraStats.map(es => es.type))))
@@ -62,30 +70,14 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
     // prefer a genuinely-paired region's label ("Precipitation") over a solo one ("Rain")
     const combinedLabel = relevantPlotProps.find(p => p.pairingActive)?.combinedLabel ?? relevantPlotProps[0]?.combinedLabel
 
+    const sharedTypeOfAllArticles = relevantPlotProps[0]?.sharedTypeOfAllArticles
     switch (selectedType) {
         case 'histogram':
             return (
                 <Histogram
                     statDescription={statDescription}
-                    histograms={relevantPlotProps.flatMap(
-                        (props) => {
-                            const extraStat = props.extraStats.find(es => es.type === 'histogram')
-                            if (extraStat === undefined) {
-                                return []
-                            }
-                            return [
-                                {
-                                    shortname: props.shortname,
-                                    longname: props.longname,
-                                    histogram: extraStat,
-                                    color: props.color,
-                                    universeTotal: extraStat.universeTotal,
-                                    subseriesName: props.subseriesName,
-                                },
-                            ]
-                        },
-                    )}
-                    sharedTypeOfAllArticles={relevantPlotProps[0]?.sharedTypeOfAllArticles}
+                    histograms={seriesOfType(relevantPlotProps, 'histogram').map(({ stat, ...series }) => ({ ...series, histogram: stat, universeTotal: stat.universeTotal }))}
+                    sharedTypeOfAllArticles={sharedTypeOfAllArticles}
                     modeSwitcher={modeSwitcher}
                     dashOrder={dashOrder}
                 />
@@ -93,42 +85,14 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
         case 'time_series':
             return (
                 <TimeSeriesPlot
-                    stats={relevantPlotProps.map(
-                        (props) => {
-                            const extraStat = props.extraStats.find(es => es.type === 'time_series')
-                            if (extraStat === undefined) {
-                                throw new Error('expected time_series')
-                            }
-                            return {
-                                shortname: props.shortname,
-                                stat: extraStat,
-                                color: props.color,
-                            }
-                        },
-                    )}
+                    stats={seriesOfType(relevantPlotProps, 'time_series').map(({ shortname, color, stat }) => ({ shortname, color, stat }))}
                 />
             )
         case 'monthly_time_series':
             return (
                 <MonthlyPlot
-                    stats={relevantPlotProps.flatMap(
-                        (props) => {
-                            const extraStat = props.extraStats.find(es => es.type === 'monthly_time_series')
-                            if (extraStat === undefined) {
-                                return []
-                            }
-                            return [
-                                {
-                                    shortname: props.shortname,
-                                    longname: props.longname,
-                                    stat: extraStat,
-                                    color: props.color,
-                                    subseriesName: props.subseriesName,
-                                },
-                            ]
-                        },
-                    )}
-                    sharedTypeOfAllArticles={relevantPlotProps[0]?.sharedTypeOfAllArticles}
+                    stats={seriesOfType(relevantPlotProps, 'monthly_time_series')}
+                    sharedTypeOfAllArticles={sharedTypeOfAllArticles}
                     modeSwitcher={modeSwitcher}
                     dashOrder={dashOrder}
                     combinedLabel={combinedLabel}
@@ -138,24 +102,8 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
             return (
                 <TemperatureHistogramPlot
                     statDescription={statDescription}
-                    histograms={relevantPlotProps.flatMap(
-                        (props) => {
-                            const extraStat = props.extraStats.find(es => es.type === 'temperature_histogram')
-                            if (extraStat === undefined) {
-                                return []
-                            }
-                            return [
-                                {
-                                    shortname: props.shortname,
-                                    longname: props.longname,
-                                    histogram: extraStat,
-                                    color: props.color,
-                                    subseriesName: props.subseriesName,
-                                },
-                            ]
-                        },
-                    )}
-                    sharedTypeOfAllArticles={relevantPlotProps[0]?.sharedTypeOfAllArticles}
+                    histograms={seriesOfType(relevantPlotProps, 'temperature_histogram').map(({ stat, ...series }) => ({ ...series, histogram: stat }))}
+                    sharedTypeOfAllArticles={sharedTypeOfAllArticles}
                     modeSwitcher={modeSwitcher}
                 />
             )
@@ -171,154 +119,146 @@ export function extraHeaderSpaceForVertical(spec: PlotProps): number {
     return 0
 }
 
-// cross-stat pairings: combine the two into one chart whenever both are visible
-const plotPairPartner: Partial<Record<StatPath, StatPath>> = {
-    mean_high_temp_4: 'mean_low_temp',
-    mean_low_temp: 'mean_high_temp_4',
-    rainfall_4: 'snowfall_4',
-    snowfall_4: 'rainfall_4',
+// cross-stat pairings: two stats drawn as one chart when both are visible (High/Low, Rain/Snow).
+// each pair is declared once; members are ordered dashed-first, matching the stroke-dash assignment.
+interface PairMember {
+    statpath: StatPath
+    label: string
+    soloAxisLabel: (unitSuffix: string) => string
 }
-const plotPairLabel: Partial<Record<StatPath, string>> = {
-    mean_high_temp_4: 'High',
-    mean_low_temp: 'Low',
-    rainfall_4: 'Rain',
-    snowfall_4: 'Snow',
+interface Pairing {
+    members: readonly [PairMember, PairMember]
+    pairedAxisLabel: (unitSuffix: string) => string
 }
-// dashOrder[0] is dashed, dashOrder[1] is solid -- keyed by either member of the pair
-const plotPairDashOrder: Partial<Record<StatPath, string[]>> = {
-    mean_high_temp_4: ['Low', 'High'],
-    mean_low_temp: ['Low', 'High'],
-    rainfall_4: ['Snow', 'Rain'],
-    snowfall_4: ['Snow', 'Rain'],
-}
-// monthly axis label, keyed by either member -- solo when only this stat renders, paired when both do
-const plotPairAxisLabel: Partial<Record<StatPath, { solo: (unitSuffix: string) => string, paired: (unitSuffix: string) => string }>> = {
-    mean_high_temp_4: {
-        solo: unitSuffix => `Mean high temp by month (${unitSuffix})`,
-        paired: unitSuffix => `Mean Temp by Month (${unitSuffix})`,
+const pairings: readonly Pairing[] = [
+    {
+        members: [
+            { statpath: 'mean_low_temp', label: 'Low', soloAxisLabel: u => `Mean low temp by month (${u})` },
+            { statpath: 'mean_high_temp_4', label: 'High', soloAxisLabel: u => `Mean high temp by month (${u})` },
+        ],
+        pairedAxisLabel: u => `Mean Temp by Month (${u})`,
     },
-    mean_low_temp: {
-        solo: unitSuffix => `Mean low temp by month (${unitSuffix})`,
-        paired: unitSuffix => `Mean Temp by Month (${unitSuffix})`,
+    {
+        members: [
+            { statpath: 'snowfall_4', label: 'Snow', soloAxisLabel: u => `Snow (rain equivalent ${u})` },
+            { statpath: 'rainfall_4', label: 'Rain', soloAxisLabel: u => `Rain (${u})` },
+        ],
+        pairedAxisLabel: u => `Precipitation (rain equivalent ${u})`,
     },
-    rainfall_4: {
-        solo: unitSuffix => `Rain (${unitSuffix})`,
-        paired: unitSuffix => `Precipitation (rain equivalent ${unitSuffix})`,
-    },
-    snowfall_4: {
-        solo: unitSuffix => `Snow (rain equivalent ${unitSuffix})`,
-        paired: unitSuffix => `Precipitation (rain equivalent ${unitSuffix})`,
-    },
-}
-const noAxisLabel = (): string => ''
+]
 
-export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
-    if (rows[statIndex].kind !== 'statistic') {
-        return []
-    }
-    if (rows[statIndex].extraStats.length === 0) {
-        // own data invalid here (e.g. Singapore's snowfall): fall back to the partner's data styled
-        // as if the partner were requested directly, rather than dropping the region entirely
-        const pairedPath = plotPairPartner[rows[statIndex].statpath]
-        const pairedIdx = pairedPath !== undefined
-            ? rows.findIndex(r => r.statpath === pairedPath && r.kind === 'statistic')
-            : -1
-        if (pairedIdx === -1 || rows[pairedIdx].extraStats.length === 0) {
-            return []
+function pairMemberOf(statpath: StatPath): { pairing: Pairing, self: PairMember, partner: PairMember } | undefined {
+    for (const pairing of pairings) {
+        const self = pairing.members.find(m => m.statpath === statpath)
+        if (self !== undefined) {
+            return { pairing, self, partner: pairing.members.find(m => m !== self)! }
         }
-        const axisLabel = plotPairAxisLabel[rows[pairedIdx].statpath]
-        return [{
-            ...rows[pairedIdx],
-            color,
-            shortname,
-            longname,
-            sharedTypeOfAllArticles,
-            subseriesName: plotPairLabel[rows[pairedIdx].statpath]!,
-            dashOrder: plotPairDashOrder[rows[pairedIdx].statpath],
-            combinedLabel: axisLabel !== undefined ? axisLabel.solo : noAxisLabel,
-            pairingActive: false,
-            pairedInFor: ['monthly_time_series'],
-        } satisfies PlotProps]
     }
+    return undefined
+}
+
+// the requested stat's pairing resolved against the rows actually on the page
+interface ResolvedPairing {
+    self: PairMember
+    partner: PairMember
+    partnerIdx: number // -1 if the partner stat isn't present in rows
+    partnerHasData: boolean
+    dashOrder: string[] // members' labels, dashed-first
+    combinedLabel: (unitSuffix: string) => string // paired wording if the partner has data, else self's solo
+}
+function resolvePairing(rows: ArticleRow[], statpath: StatPath): ResolvedPairing | undefined {
+    const m = pairMemberOf(statpath)
+    if (m === undefined) {
+        return undefined
+    }
+    const partnerIdx = rows.findIndex(r => r.statpath === m.partner.statpath && r.kind === 'statistic')
+    const partnerHasData = partnerIdx !== -1 && rows[partnerIdx].extraStats.length > 0
+    return {
+        self: m.self,
+        partner: m.partner,
+        partnerIdx,
+        partnerHasData,
+        dashOrder: m.pairing.members.map(member => member.label),
+        combinedLabel: partnerHasData ? m.pairing.pairedAxisLabel : m.self.soloAxisLabel,
+    }
+}
+
+// which rows to plot for the stat at statIndex: one per year, choosing the best source per year
+function resolveStatYears(rows: ArticleRow[], statIndex: number): { idx: number, year: Year }[] {
     const sPs = rows.map(row => statParents.get(row.statpath)!).map((sP, i) => ({ sP, i }))
     const byYear = new Map<Year, number[]>()
-    sPs.filter((
-        { sP, i }) => sP.group.id === sPs[statIndex].sP.group.id && rows[i].kind === 'statistic' && rows[i].extraStats.length > 0,
-    ).forEach(({ sP: { year }, i }) => {
-        assert(year !== null, 'Year should not be null for plot data')
-        byYear.set(year, [...(byYear.get(year) ?? []), i])
-    })
-    const bestSourceEach = Array.from(byYear.entries()).map(([, indices]) => {
+    sPs.filter(({ sP, i }) => sP.group.id === sPs[statIndex].sP.group.id && rows[i].kind === 'statistic' && rows[i].extraStats.length > 0)
+        .forEach(({ sP: { year }, i }) => {
+            assert(year !== null, 'Year should not be null for plot data')
+            byYear.set(year, [...(byYear.get(year) ?? []), i])
+        })
+    const chosen = Array.from(byYear.entries()).map(([year, indices]) => {
         if (indices.length === 1) {
-            return indices[0]
+            return { idx: indices[0], year }
         }
         const sources = indices.map(i => sPs[i].sP.source)
         const exactMatch = sources.findIndex(source => JSON.stringify(source) === JSON.stringify(sPs[statIndex].sP.source))
-        if (exactMatch !== -1) {
-            return indices[exactMatch]
-        }
         const nullMatch = sources.findIndex(source => source === null)
-        if (nullMatch !== -1) {
-            return indices[nullMatch]
-        }
-        return indices[0]
+        return { idx: indices[exactMatch !== -1 ? exactMatch : nullMatch !== -1 ? nullMatch : 0], year }
     })
-    const statpaths = bestSourceEach.map(i => sPs[i])
-    const overOne = statpaths.length > 1
-    if (overOne) {
-        statpaths.forEach(({ sP: { year } }) => {
-            assert(year !== null, 'Year should not be null for plot data')
-        })
-        assert(statpaths.length === new Set(statpaths.map(({ sP: { year } }) => year)).size, 'All statpaths for plot data should have unique years')
+    if (chosen.length > 1) {
+        assert(chosen.length === new Set(chosen.map(c => c.year)).size, 'All statpaths for plot data should have unique years')
     }
-    const pairedPath = plotPairPartner[rows[statIndex].statpath]
-    const pairedIdx = pairedPath !== undefined
-        ? rows.findIndex(r => r.statpath === pairedPath && r.kind === 'statistic')
-        : -1
-    const pairActive = pairedIdx !== -1 // partner stat checked/visible
-    const pairedHasData = pairActive && rows[pairedIdx].extraStats.length > 0 // and has data for this region
-    const dashOrder = pairActive ? plotPairDashOrder[rows[statIndex].statpath] : undefined
-    const axisLabel = plotPairAxisLabel[rows[statIndex].statpath]
-    const combinedLabel = axisLabel !== undefined ? (pairedHasData ? axisLabel.paired : axisLabel.solo) : noAxisLabel
+    return chosen
+}
 
-    const ownEntries = statpaths.map(({ i: idx, sP: { year } }) => {
-        assert(year !== null, 'unreachable, we checked this already')
-        return {
-            ...rows[idx],
-            color,
-            shortname,
-            longname,
-            sharedTypeOfAllArticles,
-            subseriesName: pairActive ? plotPairLabel[rows[idx].statpath] ?? year.toString() : year.toString(),
-            dashOrder,
-            combinedLabel,
-            pairingActive: pairedHasData,
-        } satisfies PlotProps
-    })
-    if (!pairedHasData) {
+export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {
+    const requested = rows[statIndex]
+    if (requested.kind !== 'statistic') {
+        return []
+    }
+    const pairing = resolvePairing(rows, requested.statpath)
+    const entry = (row: ArticleRow, fields: Omit<PlotProps, keyof ArticleRow | 'color' | 'shortname' | 'longname' | 'sharedTypeOfAllArticles'>): PlotProps =>
+        ({ ...row, color, shortname, longname, sharedTypeOfAllArticles, ...fields })
+
+    if (requested.extraStats.length === 0) {
+        // own data invalid here (e.g. Singapore's snowfall): fall back to the partner's data styled
+        // as if the partner were requested directly, rather than dropping the region entirely
+        if (!pairing?.partnerHasData) {
+            return []
+        }
+        return [entry(rows[pairing.partnerIdx], {
+            subseriesName: pairing.partner.label,
+            dashOrder: pairing.dashOrder,
+            combinedLabel: pairing.partner.soloAxisLabel,
+            pairingActive: false,
+            pairedInFor: ['monthly_time_series'],
+        })]
+    }
+
+    const paired = pairing !== undefined && pairing.partnerIdx !== -1 // partner stat checked/visible
+    const dashOrder = paired ? pairing.dashOrder : undefined
+    const combinedLabel = pairing?.combinedLabel ?? (() => '')
+
+    const ownEntries = resolveStatYears(rows, statIndex).map(({ idx, year }) => entry(rows[idx], {
+        subseriesName: paired ? pairMemberOf(rows[idx].statpath)?.self.label ?? year.toString() : year.toString(),
+        dashOrder,
+        combinedLabel,
+        pairingActive: pairing?.partnerHasData ?? false,
+    }))
+    if (!pairing?.partnerHasData) {
         return ownEntries
     }
+
     const entries = [
         ...ownEntries,
-        {
-            ...rows[pairedIdx],
-            color,
-            shortname,
-            longname,
-            sharedTypeOfAllArticles,
-            subseriesName: plotPairLabel[rows[pairedIdx].statpath]!,
+        entry(rows[pairing.partnerIdx], {
+            subseriesName: pairing.partner.label,
             dashOrder,
             combinedLabel,
             pairingActive: true,
             // the overlay only reads as "two series" in the monthly view, not the distribution one
             pairedInFor: ['monthly_time_series'],
-        } satisfies PlotProps,
+        }),
     ]
     // order the pair solid-first (reversed dashOrder), not expanded-stat-first, so dashes/legend/
     // tooltip read the same regardless of which member was expanded and consumers need no re-sort
-    if (dashOrder !== undefined) {
-        const displayOrder = [...dashOrder].reverse()
-        entries.sort((a, b) => displayOrder.indexOf(a.subseriesName) - displayOrder.indexOf(b.subseriesName))
-    }
+    const displayOrder = [...pairing.dashOrder].reverse()
+    entries.sort((a, b) => displayOrder.indexOf(a.subseriesName) - displayOrder.indexOf(b.subseriesName))
     return entries
 }
