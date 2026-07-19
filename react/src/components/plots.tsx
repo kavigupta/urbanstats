@@ -46,7 +46,9 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
     const availableTypes = Array.from(new Set(plotProps.flatMap(p => p.extraStats.map(es => es.type))))
     // one setting across all plots, not keyed per-stat, so a stat's paired partner stays in sync
     const [mode, setMode] = useSetting('plot_mode')
-    const selectedType: ExtraStat['type'] | undefined = availableTypes.includes(mode) ? mode : availableTypes[0]
+    const selectedType: ExtraStat['type'] | undefined = availableTypes.includes(mode)
+        ? mode
+        : availableTypes.length > 0 ? availableTypes[0] : undefined
 
     const modeSwitcher: ReactElement | undefined = availableTypes.length > 1
         ? (
@@ -62,7 +64,6 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
             )
         : undefined
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- availableTypes[0] is undefined when empty
     const relevantPlotProps = selectedType === undefined
         ? plotProps
         : plotProps.filter(p => p.pairedInFor === undefined || p.pairedInFor.includes(selectedType))
