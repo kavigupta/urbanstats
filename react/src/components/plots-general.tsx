@@ -21,13 +21,10 @@ export function axisAndGrid(transpose: boolean): [typeof Plot.axisX, typeof Plot
     return transpose ? [Plot.axisY, Plot.gridY] : [Plot.axisX, Plot.gridX]
 }
 
-// the value axis -- opposite side from axisAndGrid's categorical axis
 function valueGrid(transpose: boolean): typeof Plot.gridY {
     return transpose ? Plot.gridX : Plot.gridY
 }
 
-// pads a value domain by `pad` of its spread, falling back to `pad` of the value when the spread is
-// zero (so a flat series isn't zero-height). anchoredBottom, if given, pins the lower bound there.
 export function paddedYDomain(values: number[], pad: number, anchoredBottom?: number): [number, number] {
     const maxValue = Math.max(...values)
     const minValue = anchoredBottom ?? Math.min(...values)
@@ -35,8 +32,6 @@ export function paddedYDomain(values: number[], pad: number, anchoredBottom?: nu
     return [anchoredBottom ?? minValue - p, maxValue + p]
 }
 
-// tickIdxs are where ticks/gridlines go, which need not be the series' own positions (temperature
-// bars sit at bin centers, ticks at bin boundaries)
 export function categoricalAxisMarks(tickIdxs: number[], transpose: boolean, tickFormat: (idx: number) => string): Plot.Markish[] {
     const [axis, grid] = axisAndGrid(transpose)
     return [
@@ -66,7 +61,6 @@ export function groupedTipTitle(prefix: string, entries: { name: string, value: 
     return `${prefix}\n${lines.join('\n')}`
 }
 
-// line+dot per series over a shared ordinal x-axis, dash-aware, x/y swapped when transposed
 export function ordinalSeriesMarks(
     seriesData: { series: { color: string, subseriesName: string }, values: number[] }[],
     idxs: number[],
@@ -106,8 +100,7 @@ export function ordinalSeriesMarks(
     return marks
 }
 
-// bars instead of lines: each position's slot is split evenly across the series (dovetailed).
-// xFor(i) is the slot center -- the block of bars is centered on it, not left-aligned
+// unlike the density histogram, these are centered between bins
 export function ordinalSeriesBarMarks(
     seriesData: { series: { color: string }, values: number[] }[],
     idxs: number[],
@@ -129,7 +122,6 @@ export function ordinalSeriesBarMarks(
         : Plot.rectY(bars, { x1: 'left', x2: 'right', y: 'value', fill: 'color' })
 }
 
-// tooltip listing every series' value at each idx, grouped by name (see groupedTipTitle)
 export function seriesTip(
     seriesData: { series: PlotSeriesItem, values: number[] }[],
     idxs: number[],
