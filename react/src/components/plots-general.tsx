@@ -21,17 +21,13 @@ export function axisAndGrid(transpose: boolean): [typeof Plot.axisX, typeof Plot
     return transpose ? [Plot.axisY, Plot.gridY] : [Plot.axisX, Plot.gridX]
 }
 
-// grid mark constructor for the value axis -- the opposite side from axisAndGrid's categorical axis
+// the value axis -- opposite side from axisAndGrid's categorical axis
 function valueGrid(transpose: boolean): typeof Plot.gridY {
     return transpose ? Plot.gridX : Plot.gridY
 }
 
-// pads a value domain with headroom, as a fraction of its own spread (falling back to a fraction
-// of the value itself when every value is identical, so a flat line/bar doesn't render as a
-// zero-height domain). The lower bound normally floats with the data's own minimum (e.g.
-// temperature, which can go negative); when anchoredBottom is given (e.g. 0, since
-// percentages/counts can't go negative) it's pinned there exactly instead, and only the top gets
-// padded.
+// pads a value domain by `pad` of its spread, falling back to `pad` of the value when the spread is
+// zero (so a flat series isn't zero-height). anchoredBottom, if given, pins the lower bound there.
 export function paddedYDomain(values: number[], pad: number, anchoredBottom?: number): [number, number] {
     const maxValue = Math.max(...values)
     const minValue = anchoredBottom ?? Math.min(...values)
@@ -39,10 +35,8 @@ export function paddedYDomain(values: number[], pad: number, anchoredBottom?: nu
     return [anchoredBottom ?? minValue - p, maxValue + p]
 }
 
-// the categorical-axis-ticks + categorical-grid + value-axis-grid boilerplate shared by every
-// ordinal series plot (monthly overlay, temperature distribution) -- tickIdxs is the set of
-// positions ticks/gridlines are drawn at, which can differ from the series' own data positions
-// (e.g. temperature histogram bars sit at bin centers but ticks sit at bin boundaries)
+// tickIdxs are where ticks/gridlines go, which need not be the series' own positions (temperature
+// bars sit at bin centers, ticks at bin boundaries)
 export function categoricalAxisMarks(tickIdxs: number[], transpose: boolean, tickFormat: (idx: number) => string): Plot.Markish[] {
     const [axis, grid] = axisAndGrid(transpose)
     return [
@@ -52,11 +46,8 @@ export function categoricalAxisMarks(tickIdxs: number[], transpose: boolean, tic
     ]
 }
 
-// "<prefix>\n<name1>: <value1>\n<name2>: <value2>..." for each point's entries -- entries sharing
-// a name (e.g. one region's multiple years, or a region's paired High/Low temp series) are stacked
-// onto one line ("<name>: <v1> / <v2>") instead of one line each, in the order they appear (callers
-// hand the series over already in their canonical order). When there's only a single entry overall
-// the name is dropped (optionally replaced with singleLabel, e.g. Histogram's "Frequency: X").
+// entries sharing a name (a region's multiple years, or its High/Low pair) stack onto one line in
+// the order given; a lone entry drops the name (or uses singleLabel, e.g. Histogram's "Frequency")
 export function groupedTipTitle(prefix: string, entries: { name: string, value: number }[], formatValue: (v: number) => string, singleLabel?: string): string {
     const groups = new Map<string, number[]>()
     const nameOrder: string[] = []
@@ -75,9 +66,7 @@ export function groupedTipTitle(prefix: string, entries: { name: string, value: 
     return `${prefix}\n${lines.join('\n')}`
 }
 
-// a line+dot series over an ordinal x-axis (e.g. months, temperature buckets), dash-aware,
-// swapping x/y when transposed -- for the simple case where every series shares the same set
-// of ordinal x positions, unlike Histogram's log-scale/relative/cumulative rendering
+// line+dot per series over a shared ordinal x-axis, dash-aware, x/y swapped when transposed
 export function ordinalSeriesMarks(
     seriesData: { series: { color: string, subseriesName: string }, values: number[] }[],
     idxs: number[],
@@ -117,11 +106,8 @@ export function ordinalSeriesMarks(
     return marks
 }
 
-// like ordinalSeriesMarks, but draws a bar per series/position instead of a line+dot series --
-// each position's slot is split evenly across the compared series (dovetailed) so multiple
-// series are visually comparable at a glance, matching the density histogram's bar mode.
-// xFor(i) is treated as the center of position i's slot (e.g. the midpoint between two bin
-// boundaries) -- the combined block of per-series bars is centered on it, not left-aligned to it.
+// bars instead of lines: each position's slot is split evenly across the series (dovetailed).
+// xFor(i) is the slot center -- the block of bars is centered on it, not left-aligned
 export function ordinalSeriesBarMarks(
     seriesData: { series: { color: string }, values: number[] }[],
     idxs: number[],
@@ -143,10 +129,7 @@ export function ordinalSeriesBarMarks(
         : Plot.rectY(bars, { x1: 'left', x2: 'right', y: 'value', fill: 'color' })
 }
 
-// the tooltip shared by every ordinal series plot (monthly overlay, temperature distribution):
-// one point per idx, listing every series' value there, stacked onto one line per name when
-// series share a name (e.g. a region's paired High/Low temp series). seriesData is taken in its
-// canonical order, which is also the order the values stack in.
+// tooltip listing every series' value at each idx, grouped by name (see groupedTipTitle)
 export function seriesTip(
     seriesData: { series: PlotSeriesItem, values: number[] }[],
     idxs: number[],
@@ -231,8 +214,7 @@ function deduplicate(arr: string[]): string[] {
 
 export const transposeSettingsHeight = 30.5
 
-// the settings bar shared by every plot type: download button, "add region" search popup, and
-// (when relevant) a mode switcher and/or plot-type-specific controls (e.g. histogram's line/bar select)
+// shared settings bar: download, "add region" search, and optional mode switcher / extra controls
 function PlotSettingsBar(props: {
     makePlot: () => HTMLElement
     shortnames: string[]
@@ -599,10 +581,7 @@ export interface PlotSeriesItem {
     subseriesName: string
 }
 
-// the shell shared by every plot type (density histogram, monthly overlay, temperature
-// distribution): builds the title mark and legend generically from `items`, and wraps the
-// download/add-region/mode-switcher settings bar, deferring only the type-specific axis/series/
-// tooltip construction to buildPlot
+// shared plot shell: title, legend and settings bar from `items`; buildPlot supplies the rest
 export function SeriesPlot<T extends PlotSeriesItem>(props: {
     items: T[]
     filenameSuffix: string

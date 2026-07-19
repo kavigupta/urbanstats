@@ -20,13 +20,10 @@ export interface PlotProps {
     sharedTypeOfAllArticles?: string
     subseriesName: string
     dashOrder?: string[]
-    // when set, this entry is only included in the render for the listed extra-stat types
-    // (e.g. a cross-stat overlay like high/low temp that only makes sense on some views)
+    // if set, this entry is only rendered in these modes (a cross-stat overlay valid on some views)
     pairedInFor?: ExtraStat['type'][]
-    // axis/title label (given the unit suffix, e.g. "°F") for this stat's monthly plot
     combinedLabel: (unitSuffix: string) => string
-    // true only when the paired statistic is actually present.
-    pairingActive: boolean
+    pairingActive: boolean // the paired partner is actually present
 }
 
 const plotModeLabels: Partial<Record<ExtraStat['type'], string>> = {
@@ -39,9 +36,7 @@ const plotModeLabels: Partial<Record<ExtraStat['type'], string>> = {
 export function RenderedPlot({ statDescription, plotProps }: { statDescription: string, plotProps: PlotProps[] }): ReactNode {
     const colors = useColors()
     const availableTypes = Array.from(new Set(plotProps.flatMap(p => p.extraStats.map(es => es.type))))
-    // shared by every multi-mode plot rather than keyed per-stat (see 'plot_mode' in settings.ts) --
-    // this also means paired stats (High/Low temp, Rain/Snow) naturally stay in sync, since Monthly
-    // mode always renders them as a single combined chart regardless of which row you're looking at
+    // one setting across all plots, not keyed per-stat, so a stat's paired partner stays in sync
     const [mode, setMode] = useSetting('plot_mode')
     const selectedType: ExtraStat['type'] | undefined = availableTypes.includes(mode) ? mode : availableTypes[0]
 
@@ -64,7 +59,7 @@ export function RenderedPlot({ statDescription, plotProps }: { statDescription: 
         ? plotProps
         : plotProps.filter(p => p.pairedInFor === undefined || p.pairedInFor.includes(selectedType))
     const dashOrder = relevantPlotProps[0]?.dashOrder
-    // Get che combined label if any of the relevant plot props has pairing active.
+    // prefer a genuinely-paired region's label ("Precipitation") over a solo one ("Rain")
     const combinedLabel = relevantPlotProps.find(p => p.pairingActive)?.combinedLabel ?? relevantPlotProps[0]?.combinedLabel
 
     switch (selectedType) {
@@ -176,8 +171,7 @@ export function extraHeaderSpaceForVertical(spec: PlotProps): number {
     return 0
 }
 
-// cross-stat plot pairings -- combine the two into one chart (like the multi-year overlay)
-// whenever both are visible, with the second-listed one dashed
+// cross-stat pairings: combine the two into one chart whenever both are visible
 const plotPairPartner: Partial<Record<StatPath, StatPath>> = {
     mean_high_temp_4: 'mean_low_temp',
     mean_low_temp: 'mean_high_temp_4',
@@ -197,9 +191,7 @@ const plotPairDashOrder: Partial<Record<StatPath, string[]>> = {
     rainfall_4: ['Snow', 'Rain'],
     snowfall_4: ['Snow', 'Rain'],
 }
-// axis/title label for the monthly plot -- keyed by either member of the pair. Both the solo
-// wording (only this stat rendered) and paired wording (both members rendered together) are
-// required together so neither case can be left implicit/forgotten when adding a new pair.
+// monthly axis label, keyed by either member -- solo when only this stat renders, paired when both do
 const plotPairAxisLabel: Partial<Record<StatPath, { solo: (unitSuffix: string) => string, paired: (unitSuffix: string) => string }>> = {
     mean_high_temp_4: {
         solo: unitSuffix => `Mean high temp by month (${unitSuffix})`,
@@ -225,10 +217,8 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
         return []
     }
     if (rows[statIndex].extraStats.length === 0) {
-        // this stat's own data is invalid for this region (e.g. Singapore's snowfall) -- if its
-        // pair partner has valid data (Singapore's rainfall), still show that, styled exactly as
-        // if the partner had been requested directly (matching expanding the partner's own row),
-        // rather than dropping this region from the chart entirely
+        // own data invalid here (e.g. Singapore's snowfall): fall back to the partner's data styled
+        // as if the partner were requested directly, rather than dropping the region entirely
         const pairedPath = plotPairPartner[rows[statIndex].statpath]
         const pairedIdx = pairedPath !== undefined
             ? rows.findIndex(r => r.statpath === pairedPath && r.kind === 'statistic')
@@ -282,13 +272,11 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
         assert(statpaths.length === new Set(statpaths.map(({ sP: { year } }) => year)).size, 'All statpaths for plot data should have unique years')
     }
     const pairedPath = plotPairPartner[rows[statIndex].statpath]
-    // whether the partner stat is checked/visible at all
     const pairedIdx = pairedPath !== undefined
         ? rows.findIndex(r => r.statpath === pairedPath && r.kind === 'statistic')
         : -1
-    const pairActive = pairedIdx !== -1
-    // whether *this region's* partner data is actually renderable
-    const pairedHasData = pairActive && rows[pairedIdx].extraStats.length > 0
+    const pairActive = pairedIdx !== -1 // partner stat checked/visible
+    const pairedHasData = pairActive && rows[pairedIdx].extraStats.length > 0 // and has data for this region
     const dashOrder = pairActive ? plotPairDashOrder[rows[statIndex].statpath] : undefined
     const axisLabel = plotPairAxisLabel[rows[statIndex].statpath]
     const combinedLabel = axisLabel !== undefined ? (pairedHasData ? axisLabel.paired : axisLabel.solo) : noAxisLabel
@@ -322,15 +310,12 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
             dashOrder,
             combinedLabel,
             pairingActive: true,
-            // the overlay only makes sense for the monthly view -- a combined distribution chart
-            // doesn't read as "two series", so RenderedPlot excludes this entry from that view
+            // the overlay only reads as "two series" in the monthly view, not the distribution one
             pairedInFor: ['monthly_time_series'],
         } satisfies PlotProps,
     ]
-    // Order the pair canonically (solid series first) rather than expanded-stat-first, so the
-    // dashes, legend and stacked tooltip all read the same way regardless of which stat of the
-    // pair the user expanded. dashOrder is [dashed, solid] (e.g. ['Low', 'High']); reversed gives
-    // solid-first. Doing it here means the plot components can just take series order as-is.
+    // order the pair solid-first (reversed dashOrder), not expanded-stat-first, so dashes/legend/
+    // tooltip read the same regardless of which member was expanded and consumers need no re-sort
     if (dashOrder !== undefined) {
         const displayOrder = [...dashOrder].reverse()
         entries.sort((a, b) => displayOrder.indexOf(a.subseriesName) - displayOrder.indexOf(b.subseriesName))

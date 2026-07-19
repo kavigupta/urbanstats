@@ -1,7 +1,6 @@
 import * as Plot from '@observablehq/plot'
 import React, { ReactElement, ReactNode, useCallback } from 'react'
 
-// imort Observable plot
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
 import { convertPrecipitation, convertTemperature } from '../utils/unit'

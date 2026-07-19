@@ -33,9 +33,8 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
 
     const buildPlot = useCallback(
         (transpose: boolean): DetailedPlotSpec => {
-            // drop the open-ended "below min"/"above max" catch-all buckets (indices 0 and numBins - 1) --
-            // they don't have a clean two-sided interval like the rest, which is confusing to plot as a point --
-            // and clip further to the bins that actually have data (plus one bin of padding)
+            // excludes the open-ended below-min/above-max buckets (0 and numBins-1, no two-sided
+            // interval) and clips to the bins with data, plus one bin of padding
             const [binIdxStart, binIdxEnd] = temperatureHistogramBounds(props.histograms.map(h => h.histogram.counts), numBins)
             const binIdxs = Array.from({ length: binIdxEnd - binIdxStart + 1 }, (_, i) => i + binIdxStart)
             const pointX = (binIdx: number): number => binIdx - 0.5
