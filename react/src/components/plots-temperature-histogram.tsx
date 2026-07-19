@@ -73,7 +73,6 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
                     i => bucketRangeLabel(i, binMin, binSize, v => convertTemperature(v, temperatureUnit).value, unitSuffix),
                     v => `${v.toFixed(1)}%`,
                     colors,
-                    props.dashOrder,
                 ),
             )
 
@@ -84,7 +83,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
 
             return { marks, xlabel, ylabel, ydomain }
         },
-        [props.histograms, props.statDescription, binMin, binSize, numBins, temperatureUnit, unitSuffix, colors, props.dashOrder],
+        [props.histograms, props.statDescription, binMin, binSize, numBins, temperatureUnit, unitSuffix, colors],
     )
 
     return (

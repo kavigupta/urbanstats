@@ -68,7 +68,6 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
                     i => monthLabels[i],
                     v => `${v.toFixed(1)}${unitSuffix}`,
                     colors,
-                    props.dashOrder,
                 ),
             )
 

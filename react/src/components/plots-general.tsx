@@ -53,32 +53,25 @@ export function categoricalAxisMarks(tickIdxs: number[], transpose: boolean, tic
 }
 
 // "<prefix>\n<name1>: <value1>\n<name2>: <value2>..." for each point's entries -- entries sharing
-// a name (e.g. a region's paired High/Low temp or Rain/Snow series) are stacked onto one line
-// ("<name>: <v1> / <v2>") instead of one line each. displayOrder, if given, controls the order
-// values are joined in within a stacked line (matching the paired stat's dash order); otherwise
-// entries are joined in the order they appear. When there's only a single entry overall, the name
-// is dropped (optionally replaced with singleLabel, e.g. Histogram's "Frequency: X").
-export function groupedTipTitle(prefix: string, entries: { name: string, subseriesName: string, value: number }[], formatValue: (v: number) => string, displayOrder?: string[], singleLabel?: string): string {
-    const groups = new Map<string, { subseriesName: string, value: number }[]>()
+// a name (e.g. one region's multiple years, or a region's paired High/Low temp series) are stacked
+// onto one line ("<name>: <v1> / <v2>") instead of one line each, in the order they appear (callers
+// hand the series over already in their canonical order). When there's only a single entry overall
+// the name is dropped (optionally replaced with singleLabel, e.g. Histogram's "Frequency: X").
+export function groupedTipTitle(prefix: string, entries: { name: string, value: number }[], formatValue: (v: number) => string, singleLabel?: string): string {
+    const groups = new Map<string, number[]>()
     const nameOrder: string[] = []
     for (const entry of entries) {
         if (!groups.has(entry.name)) {
             groups.set(entry.name, [])
             nameOrder.push(entry.name)
         }
-        groups.get(entry.name)!.push(entry)
+        groups.get(entry.name)!.push(entry.value)
     }
     if (nameOrder.length === 1 && groups.get(nameOrder[0])!.length === 1) {
-        const value = groups.get(nameOrder[0])![0].value
+        const value = groups.get(nameOrder[0])![0]
         return singleLabel !== undefined ? `${prefix}\n${singleLabel}: ${formatValue(value)}` : `${prefix}\n${formatValue(value)}`
     }
-    const lines = nameOrder.map((name) => {
-        const members = groups.get(name)!
-        const ordered = displayOrder !== undefined
-            ? [...members].sort((a, b) => displayOrder.indexOf(a.subseriesName) - displayOrder.indexOf(b.subseriesName))
-            : members
-        return `${name}: ${ordered.map(m => formatValue(m.value)).join(' / ')}`
-    })
+    const lines = nameOrder.map(name => `${name}: ${groups.get(name)!.map(formatValue).join(' / ')}`)
     return `${prefix}\n${lines.join('\n')}`
 }
 
@@ -152,9 +145,8 @@ export function ordinalSeriesBarMarks(
 
 // the tooltip shared by every ordinal series plot (monthly overlay, temperature distribution):
 // one point per idx, listing every series' value there, stacked onto one line per name when
-// series share a name (e.g. a region's paired High/Low temp series) -- dashOrder is [dashed,
-// solid] (e.g. ['Low', 'High']); reversed here so the solid series comes first in the stacked
-// line ("High / Low"), matching the dash pattern's own display convention
+// series share a name (e.g. a region's paired High/Low temp series). seriesData is taken in its
+// canonical order, which is also the order the values stack in.
 export function seriesTip(
     seriesData: { series: PlotSeriesItem, values: number[] }[],
     idxs: number[],
@@ -163,20 +155,18 @@ export function seriesTip(
     prefixFor: (idx: number) => string,
     formatValue: (v: number) => string,
     colors: Colors,
-    dashOrder?: string[],
 ): Plot.Markish {
-    const displayOrder = dashOrder !== undefined ? [...dashOrder].reverse() : undefined
     const tipData = idxs.map(i => ({
         x: xFor(i),
         prefix: prefixFor(i),
-        entries: seriesData.map(s => ({ name: s.series.shortname, subseriesName: s.series.subseriesName, value: s.values[i] })),
+        entries: seriesData.map(s => ({ name: s.series.shortname, value: s.values[i] })),
     }))
     return transposeAwareTip(
         tipData,
         transpose,
         'x',
         d => d.entries.map(e => e.value),
-        d => groupedTipTitle(d.prefix, d.entries, formatValue, displayOrder),
+        d => groupedTipTitle(d.prefix, d.entries, formatValue),
         colors,
     )
 }

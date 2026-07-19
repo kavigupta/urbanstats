@@ -180,12 +180,12 @@ function dovetailSequences(series: { values: { xidx: number, y: number, name: st
     return seriesSingle
 }
 
-function maxSequences(series: { values: { xidx: number, y: number, name: string }[], subseriesName: string }[]): { xidx: number, entries: { name: string, subseriesName: string, value: number }[] }[] {
-    const seriesMax: { xidx: number, entries: { name: string, subseriesName: string, value: number }[] }[] = []
+function maxSequences(series: { values: { xidx: number, y: number, name: string }[] }[]): { xidx: number, entries: { name: string, value: number }[] }[] {
+    const seriesMax: { xidx: number, entries: { name: string, value: number }[] }[] = []
     for (let i = 0; i < series[0].values.length; i++) {
         seriesMax.push({
             xidx: series[0].values[i].xidx,
-            entries: series.map(s => ({ name: s.values[i].name, subseriesName: s.subseriesName, value: s.values[i].y })),
+            entries: series.map(s => ({ name: s.values[i].name, value: s.values[i].y })),
         })
     }
     return seriesMax
@@ -299,7 +299,7 @@ function createHistogramMarks(
         transpose,
         'xidx',
         d => d.entries.map(e => e.value),
-        d => groupedTipTitle(`Density: ${renderX(d.xidx)}`, d.entries, renderY, dashOrder, 'Frequency'),
+        d => groupedTipTitle(`Density: ${renderX(d.xidx)}`, d.entries, renderY, 'Frequency'),
         colors,
     )
     const marks: Plot.Markish[] = []

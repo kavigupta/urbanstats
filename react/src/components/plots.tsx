@@ -311,7 +311,7 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
     if (!pairedHasData) {
         return ownEntries
     }
-    return [
+    const entries = [
         ...ownEntries,
         {
             ...rows[pairedIdx],
@@ -328,4 +328,13 @@ export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, col
             pairedInFor: ['monthly_time_series'],
         } satisfies PlotProps,
     ]
+    // Order the pair canonically (solid series first) rather than expanded-stat-first, so the
+    // dashes, legend and stacked tooltip all read the same way regardless of which stat of the
+    // pair the user expanded. dashOrder is [dashed, solid] (e.g. ['Low', 'High']); reversed gives
+    // solid-first. Doing it here means the plot components can just take series order as-is.
+    if (dashOrder !== undefined) {
+        const displayOrder = [...dashOrder].reverse()
+        entries.sort((a, b) => displayOrder.indexOf(a.subseriesName) - displayOrder.indexOf(b.subseriesName))
+    }
+    return entries
 }
