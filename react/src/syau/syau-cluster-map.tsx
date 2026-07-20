@@ -1,8 +1,9 @@
 import maplibregl from 'maplibre-gl'
 import React, { ReactNode, memo, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { FullscreenControl, Layer, MapProps, MapRef, Source, useMap } from 'react-map-gl/maplibre'
+import { FullscreenControl, MapProps, MapRef, Source, useMap } from 'react-map-gl/maplibre'
 
+import { ScreenshotAwareLayer } from '../components/ScreenshotAwareLayer'
 import { Basemap, CommonMaplibreMap, urbanStatsLayerPrefix } from '../components/map-common'
 import { Basemap as BasemapSpec } from '../mapper/settings/utils'
 import { TestUtils } from '../utils/TestUtils'
@@ -229,7 +230,7 @@ export function ClusterMap(props: ClusterMapProps): ReactNode {
               * for querySourceFeatures to return features; this circle layer is invisible
               * (radius 0) but keeps that pipeline active
               */}
-            <Layer
+            <ScreenshotAwareLayer
                 id={`${urbanStatsLayerPrefix}-centroid-placeholders`}
                 type="circle"
                 source="centroids"

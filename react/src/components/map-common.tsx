@@ -1,7 +1,7 @@
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import React, { ReactNode, useContext, useEffect, useId, useMemo } from 'react'
-import { Layer, Map, MapProps, MapRef, Source, useControl, useMap } from 'react-map-gl/maplibre'
+import { Map, MapProps, MapRef, Source, useControl, useMap } from 'react-map-gl/maplibre'
 
 import { boundingBox, extendBoxes, geometry } from '../map-partition'
 import { Basemap } from '../mapper/settings/utils'
@@ -17,6 +17,7 @@ import { loadFeatureFromPossibleSymlink } from '../utils/symlinks'
 import { NormalizeProto } from '../utils/types'
 import { useOrderedResolve } from '../utils/useOrderedResolve'
 
+import { ScreenshotAwareLayer } from './ScreenshotAwareLayer'
 import { keptByNoBasemap } from './map-common-utils'
 import { defaultMapBorderRadius, mapBorderWidth, useScreenshotCallback, useScreenshotMode } from './screenshot'
 
@@ -78,30 +79,26 @@ function ExposeMapForTesting({ id }: { id: string }): ReactNode {
 function SynchronizeMapWithScreenshots(): ReactNode {
     const { current: map } = useMap()
 
+    assert(map !== undefined, 'Map context is required')
+
     const screenshotCallback = useScreenshotCallback('wait')
 
     useEffect(() => {
-        if (screenshotCallback !== undefined && map) {
+        if (screenshotCallback !== undefined) {
             debugLog('SynchronizeMapWithScreenshots: screenshot mode entered, map.loaded()=', map.loaded())
             void (async () => {
-                await new Promise(resolve => requestAnimationFrame(resolve))
-                let idleCount = 0
-                while (!map.loaded()) {
-                    idleCount++
-                    debugLog('SynchronizeMapWithScreenshots: map not loaded, waiting for idle (attempt', idleCount, ')')
-                    await Promise.any([
-                        map.once('idle'),
-                        map.once('remove'),
-                    ])
+                // Give the map a frame first: right after a commit,
+                // `loaded()` can still be true from before the map noticed the new work.
+                let frames = 0
+                do {
+                    await new Promise(resolve => requestAnimationFrame(resolve))
+                    frames++
                     if (map._removed) {
                         debugLog('SynchronizeMapWithScreenshots: map was removed, aborting')
                         return
                     }
-                    debugLog('SynchronizeMapWithScreenshots: idle event received, map.loaded()=', map.loaded())
-                    // Map will sometimes return to idle but needs to load more
-                    await new Promise(resolve => requestAnimationFrame(resolve))
-                }
-                debugLog('SynchronizeMapWithScreenshots: map is loaded after', idleCount, 'idle wait(s), signaling ready')
+                } while (!map.loaded())
+                debugLog('SynchronizeMapWithScreenshots: map is loaded after', frames, 'frame(s), signaling ready')
                 const layersOrder = map.getLayersOrder()
                 debugLog('SynchronizeMapWithScreenshots: layers count=', layersOrder.length)
                 for (const layerId of layersOrder) {
@@ -179,35 +176,45 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
 
     const id = useId()
 
-    useClickable({ id: polygonsId(id, 'fill'), features, clickable })
-
     const isScreenshotMode = useScreenshotMode()
+
+    /*
+     * A geojson source's `tolerance` is fixed at creation, so toggling screenshot mode rebuilds the
+     * source under a new id.
+     *
+     * As layers are strictly dependent on a source (they are only added to the map when their source is present),
+     * expected layers should be tied to a specific source to minimize complexity in the React <-> Maplibre binding.
+     * (e.g. the case where a layer is temporarily removed from the map because its source has changed.)
+     */
+    const instanceId = `${id}-${isScreenshotMode ? 'screenshot' : 'interactive'}`
+
+    useClickable({ id: polygonsId(instanceId, 'fill'), features, clickable })
 
     return (
         <>
             <Source
                 // Must remount to apply tolerance changes
-                key={`source-${String(isScreenshotMode)}`}
-                id={polygonsId(id, 'source')}
+                key={polygonsId(instanceId, 'source')}
+                id={polygonsId(instanceId, 'source')}
                 type="geojson"
                 data={collection}
                 // Only use tolerance=0 in screenshot mode, as it takes a lot of memory
                 {...(isScreenshotMode ? { tolerance: 0 } : { })}
             />
-            <Layer
-                id={polygonsId(id, 'fill')}
+            <ScreenshotAwareLayer
+                id={polygonsId(instanceId, 'fill')}
                 type="fill"
-                source={polygonsId(id, 'source')}
+                source={polygonsId(instanceId, 'source')}
                 paint={{
                     'fill-color': ['get', 'fillColor'],
                     'fill-opacity': ['get', 'fillOpacity'],
                 }}
                 beforeId={beforeId}
             />
-            <Layer
-                id={polygonsId(id, 'outline')}
+            <ScreenshotAwareLayer
+                id={polygonsId(instanceId, 'outline')}
                 type="line"
-                source={polygonsId(id, 'source')}
+                source={polygonsId(instanceId, 'source')}
                 paint={{
                     'line-color': ['get', 'color'],
                     'line-width': ['get', 'weight'],
@@ -307,7 +314,7 @@ export function PointFeatureCollection({ features, clickable }: { features: GeoJ
     return (
         <>
             <Source id={pointsId(id, 'source')} type="geojson" data={collection} />
-            <Layer
+            <ScreenshotAwareLayer
                 id={pointsId(id, 'fill')}
                 type="circle"
                 source={pointsId(id, 'source')}
@@ -401,7 +408,7 @@ export function Basemap({ basemap }: { basemap: Basemap }): ReactNode {
 
     if (basemap.type === 'osm' && basemap.subnationalOutlines !== undefined) {
         return (
-            <Layer
+            <ScreenshotAwareLayer
                 id={basemapSubnationalsId}
                 type="line"
                 source="openmaptiles"
