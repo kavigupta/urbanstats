@@ -4,7 +4,7 @@ import React, { ReactElement, ReactNode, useMemo } from 'react'
 // imort Observable plot
 
 import { TimeSeriesExtraStat } from './load-article'
-import { PlotComponent } from './plots-general'
+import { bottomLabelOffset, PlotComponent } from './plots-general'
 
 export interface TimeSeriesPlotProps {
     stat: TimeSeriesExtraStat
@@ -32,6 +32,9 @@ export function TimeSeriesPlot(props: { stats: TimeSeriesPlotProps[] }): ReactNo
                 Plot.axisX({
                     label: 'Year',
                     tickFormat: (d: number) => d.toString(),
+                    labelAnchor: 'center',
+                    labelArrow: 'none',
+                    labelOffset: bottomLabelOffset,
                 }),
             )
             const xlabel = 'Year'

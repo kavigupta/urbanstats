@@ -16,6 +16,12 @@ import './plots.css'
 
 const strokeDasharrays = ['1,0', '10,10', '2,5']
 
+// The bottom-axis label sits `labelOffset` below the frame. Plot's default is `marginBottom - 3`,
+// which pins it to the very bottom edge and clips e.g., "g" keeping the offset smaller than the
+// bottom margin leaves headroom below the text.
+export const bottomLabelOffset = 50
+export const bottomLabelOffsetTranspose = 70
+
 // picks the axis/grid mark constructors for whichever side is currently the visual x-axis
 export function axisAndGrid(transpose: boolean): [typeof Plot.axisX, typeof Plot.gridX] {
     return transpose ? [Plot.axisY, Plot.gridY] : [Plot.axisX, Plot.gridX]
@@ -490,10 +496,15 @@ export function PlotComponent(props: {
             marks,
             x: {
                 label: xlabel,
+                labelAnchor: 'center',
+                labelArrow: 'none',
+                labelOffset: transposeConfig ? bottomLabelOffsetTranspose : bottomLabelOffset,
             },
             y: {
                 label: ylabel,
                 domain: ydomain,
+                labelAnchor: 'center',
+                labelArrow: 'none',
             },
             grid: false,
             width: transposeConfig ? undefined : 1000,
@@ -503,7 +514,7 @@ export function PlotComponent(props: {
                 fontFamily: 'Jost, Arial, sans-serif',
             },
             marginTop: 80,
-            marginBottom: transposeConfig ? 90 : 55,
+            marginBottom: transposeConfig ? 90 : 62,
             marginLeft: 80,
             color: legend,
         }
@@ -511,10 +522,15 @@ export function PlotComponent(props: {
             result.x = {
                 label: ylabel,
                 domain: ydomain,
+                labelAnchor: 'center',
+                labelArrow: 'none',
+                labelOffset: bottomLabelOffsetTranspose,
             }
             result.y = {
                 label: xlabel,
                 reverse: true,
+                labelAnchor: 'center',
+                labelArrow: 'none',
             }
         }
         return result

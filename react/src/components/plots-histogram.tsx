@@ -8,7 +8,7 @@ import { HistogramType, useSetting } from '../page_template/settings'
 import { IHistogram } from '../utils/protos'
 import { useTranspose } from '../utils/transpose'
 
-import { axisAndGrid, computeDashPatterns, DetailedPlotSpec, groupedTipTitle, paddedYDomain, SeriesPlot, transposeAwareTip } from './plots-general'
+import { axisAndGrid, bottomLabelOffset, bottomLabelOffsetTranspose, computeDashPatterns, DetailedPlotSpec, groupedTipTitle, paddedYDomain, SeriesPlot, transposeAwareTip } from './plots-general'
 import { CheckboxSetting } from './sidebar'
 
 const yPad = 0.025
@@ -205,9 +205,11 @@ function xAxis(xidxs: number[], binSize: number, binMin: number, useImperial: bo
     const adjustment = useImperial ? Math.log10(1.60934) * 2 : 0
 
     const [axis, grid] = axisAndGrid(transpose)
+    // when not transposed, this density axis is the horizontal (bottom) one, so pull its label up
+    const labelOffset = transpose ? undefined : bottomLabelOffset
     return [
         [
-            axis(xKeypoints, { tickFormat: d => renderPow10(d * binSize + binMin + adjustment) }),
+            axis(xKeypoints, { tickFormat: d => renderPow10(d * binSize + binMin + adjustment), labelAnchor: 'center', labelArrow: 'none', labelOffset }),
             grid(xKeypoints),
         ],
         x => `${renderNumberHighlyRounded(Math.pow(10, x * binSize + binMin + adjustment), 2)}/${useImperial ? 'mi' : 'km'}²`,
@@ -227,9 +229,11 @@ function yAxis(maxValue: number, transpose: boolean): (Plot.CompoundMark | Plot.
 
     // yAxis picks the visual-y-axis constructors, the inverse of xAxis's visual-x-axis pairing
     const [axis, grid] = axisAndGrid(!transpose)
+    // when transposed, this value axis is the horizontal (bottom) one, so pull its label up
+    const labelOffset = transpose ? bottomLabelOffsetTranspose : undefined
 
     return [
-        axis(yKeypoints, { tickFormat: (d: number) => renderNumberHighlyRounded(d, 1) }),
+        axis(yKeypoints, { tickFormat: (d: number) => renderNumberHighlyRounded(d, 1), labelAnchor: 'center', labelArrow: 'none', labelOffset }),
         grid(yKeypoints),
     ]
 }
