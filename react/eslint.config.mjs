@@ -95,6 +95,13 @@ export default tseslint.config(
             'eqeqeq': 'error',
             'guard-for-in': 'error',
             'object-shorthand': 'error',
+            'no-restricted-imports': ['error', {
+                paths: [{
+                    name: 'react-map-gl/maplibre',
+                    importNames: ['Layer'],
+                    message: 'Use ScreenshotAwareLayer from components/ScreenshotAwareLayer instead, so screenshots wait for the layer to actually be installed.',
+                }],
+            }],
             'no-restricted-syntax': [
                 'error',
                 // Good tool for writing these https://typescript-eslint.io/play/
@@ -139,6 +146,13 @@ export default tseslint.config(
                 'CallExpression[callee.name=useRef][typeArguments.params.0.typeName.name=MapRef]', // Use state instead to avoid races
                 // Should use the zIndex manifest for zIndexes
                 'Property[key.name=zIndex]:not([value.object.name=zIndex])',
+                {
+                    // Remounting the wrapper loses its screenshot subscription: the render phase snapshots
+                    // subscribers up front, so a remounted one stalls it or is never waited on. Change the
+                    // `id` instead -- the <Layer> underneath is already keyed on it.
+                    selector: 'JSXOpeningElement[name.name=ScreenshotAwareLayer] > JSXAttribute[name.name=key]',
+                    message: 'Do not pass `key` to ScreenshotAwareLayer, it must not remount. Change its `id` instead.',
+                },
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',
