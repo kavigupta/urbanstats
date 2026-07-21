@@ -54,8 +54,15 @@ export function QuerySettingsConnection(): null {
     return null
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No non-histogram extras yet
-const statPathsWithHistogram = extra_stats.filter(([,{ type }]) => type === 'histogram').map(([index]) => stat_path_list[index])
+function statPathsWithExtraOfType(extraType: (typeof extra_stats)[number][1]['type']): StatPath[] {
+    return extra_stats.filter(([,{ type }]) => type === extraType).map(([index]) => stat_path_list[index])
+}
+
+const statPathsWithHistogram = statPathsWithExtraOfType('histogram')
+
+// plot_mode picks between a stat's monthly series and its temperature histogram
+const statPathsWithMonthlySeries = new Set(statPathsWithExtraOfType('monthly_time_series'))
+const statPathsWithPlotModes = statPathsWithExtraOfType('temperature_histogram').filter(statPath => statPathsWithMonthlySeries.has(statPath))
 
 interface SettingsConnectionConfig { stagedSettingsKeys: readonly VectorSettingKey[], applySettingsKeys: (visibleStatPaths: StatPath[]) => readonly VectorSettingKey[] }
 
@@ -85,6 +92,7 @@ export function settingsConnectionConfig({ pageKind, statPaths, settings }: { pa
         const result = [
             ...statPathsWithExtra.filter(path => visibleStatPaths.includes(path)).map(path => `expanded__${path}` as const),
             ...(statPathsWithHistogram.some(path => visibleStatPaths.includes(path)) ? ['histogram_relative', 'histogram_type'] as const : []),
+            ...(statPathsWithPlotModes.some(path => visibleStatPaths.includes(path)) ? ['plot_mode'] as const : []),
             ...(pageKind === 'article' && singlePointerCell ? ['mobile_article_pointers'] as const : []),
         ] as const
         return result

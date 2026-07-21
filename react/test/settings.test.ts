@@ -4,6 +4,7 @@ import { Selector } from 'testcafe'
 
 import {
     target, checkTextboxes, getLocation,
+    safeClearLocalStorage,
     safeReload,
     screencap,
     urbanstatsFixture,
@@ -81,4 +82,22 @@ test('checkboxes-can-be-checked', async (t) => {
     await doSearch(t, 'Berkeley, CA, USA')
     await t.expect(getLocation()).match(/\/article\.html\?longname=Berkeley\+city%2C\+California%2C\+USA/)
     await t.expect(mapFeatureName(/Briones CCD/)).ok()
+})
+
+urbanstatsFixture('plot mode settings link', `${target}/article.html?longname=Germany&universe=world`)
+
+test('plot-mode-carries-over-settings-link', async (t) => {
+    await checkTextboxes(t, ['Weather'])
+    await t.click(Selector('[aria-label="Expand Mean high temp"]'))
+    const modeSelect = Selector('[data-test-id=plot_mode]')
+    await t.click(modeSelect).click(modeSelect.find('option').withExactText('Distribution'))
+    // the distribution plot is per-day, the monthly one is a series over months
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/% of days/).exists).ok()
+
+    const link = await getLocation()
+    await safeClearLocalStorage(t)
+    await t.navigateTo(link)
+
+    await t.expect(modeSelect.value).eql('temperature_histogram', 'link should reopen in the distribution view')
+    await t.expect(Selector('.histogram-svg-panel').find('text').withText(/% of days/).exists).ok('link should restore the distribution plot, not the monthly one')
 })

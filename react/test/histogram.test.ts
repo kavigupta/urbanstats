@@ -402,6 +402,13 @@ test('histogram-bar-comparison', async (t) => {
     await screencap(t)
 })
 
+urbanstatsFixture('histogram axis labels not clipped', `${target}/comparison.html?longnames=%5B%22Canada%22%2C%22USA%22%2C%22Mexico%22%2C%22Germany%22%5D&s=879GMNZfJ19PW2KpGDBZj`)
+
+test('histogram-axis-labels-not-clipped', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await screencap(t)
+})
+
 urbanstatsFixture('scrolling transpose comparison', `${target}/comparison.html?longnames=%5B%22Santa+Clarita+city%2C+California%2C+USA%22%2C%22Santa+Clara+city%2C+California%2C+USA%22%2C%22Boston+city%2C+Massachusetts%2C+USA%22%2C%22San+Francisco+city%2C+California%2C+USA%22%2C%22Denver+city%2C+Colorado%2C+USA%22%5D&s=SAaYfgWFPJQ2WHM3`)
 
 test('histogram-transpose-download', async (t) => {
