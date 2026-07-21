@@ -79,28 +79,33 @@ function saveIndeterminateState(settings: Settings, category: Category): void {
 
 export function useChangeCategorySetting(category: Category): () => void {
     const categoryStatus = useCategoryStatus(category)
+    const availableGroups = useAvailableGroups(category)
     const settings = useContext(Settings.Context)
     return () => {
+        const setAllGroups = (value: (group: Group) => boolean): void => {
+            category.contents.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, value(group)) })
+        }
         /**
-     * State machine:
-     *
-     * indeterminate -> checked -> unchecked -(if nonempty saved indeterminate)-> indeterminate
-     *                                       -(if empty saved indeterminate)-> checked
-     */
+         * State machine:
+         *
+         * indeterminate -> checked -> unchecked -(if nonempty saved indeterminate)-> indeterminate
+         *                                       -(if empty saved indeterminate)-> checked
+         */
         switch (categoryStatus) {
             case 'indeterminate':
-                category.contents.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, true) })
+                setAllGroups(() => true)
                 break
             case true:
-                category.contents.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, false) })
+                setAllGroups(() => false)
                 break
             case false:
                 const savedDeterminate = new Set(settings.get(`stat_category_saved_indeterminate_${category.id}`))
-                if (savedDeterminate.size === 0) {
-                    category.contents.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, true) })
+                // The saved state can refer to groups that don't exist on this page, which would restore nothing
+                if (availableGroups.every(group => !savedDeterminate.has(group.id))) {
+                    setAllGroups(() => true)
                 }
                 else {
-                    category.contents.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, savedDeterminate.has(group.id)) })
+                    setAllGroups(group => savedDeterminate.has(group.id))
                 }
                 break
         }
