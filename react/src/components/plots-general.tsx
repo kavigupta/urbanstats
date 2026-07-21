@@ -65,11 +65,13 @@ function measureLeftAxisLayout(plot: SVGSVGElement | HTMLElement): LeftAxisLayou
     }
 }
 
-function renderMeasuredPlot(container: HTMLElement, config: (leftAxis: LeftAxisLayout) => Plot.PlotOptions, transpose: boolean): void {
+function renderMeasuredPlot(container: HTMLElement, config: (leftAxis: LeftAxisLayout) => Plot.PlotOptions, transpose: boolean): SVGSVGElement | HTMLElement {
     const probe = Plot.plot(config(provisionalLeftAxisLayout(transpose)))
     container.replaceChildren(probe)
     const layout = measureLeftAxisLayout(probe)
-    container.replaceChildren(Plot.plot(config(layout)))
+    const plot = Plot.plot(config(layout))
+    container.replaceChildren(plot)
+    return plot
 }
 
 // picks the axis/grid mark constructors for whichever side is currently the visual x-axis
@@ -243,7 +245,6 @@ function PlotDownloadButton(props: { makePlot: () => HTMLElement, shortnames: st
                         path: `${uniqueShortnames.join('_')}_${props.filenameSuffix}`,
                         overallWidth: plot.offsetWidth * 2,
                         elementsToRender: [plot],
-                        heightMultiplier: 1.2,
                     },
                     universe,
                     colors,
@@ -622,13 +623,15 @@ export function PlotComponent(props: {
                         <div style={{ zIndex: zIndex.plotSettings, position: 'absolute', top: 0, right: 0, left: transpose ? 0 : undefined }}>
                             {props.settingsElement(() => {
                                 const div = document.createElement('div')
-                                div.style.width = '1000px'
-                                div.style.height = '500px'
+                                // the exported image is sized from this div, so it has to hug the plot exactly
+                                div.style.width = 'fit-content'
                                 // measuring needs layout, so render while attached, then hand the
                                 // finished element back for the caller to place
                                 document.body.appendChild(div)
-                                renderMeasuredPlot(div, leftAxis => plotConfig(false, leftAxis), false)
+                                const plot = renderMeasuredPlot(div, leftAxis => plotConfig(false, leftAxis), false)
                                 div.remove()
+                                // `display: block` drops the descender gap an inline <svg> would leave underneath
+                                plot.style.display = 'block'
                                 return div
                             })}
                         </div>
