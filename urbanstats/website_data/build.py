@@ -278,6 +278,7 @@ def build_urbanstats(
         "editor",
         "oauth-callback",
         "screenshot-diff-viewer",
+        "juxtaroute",
     ]:
         with open(f"{site_folder}/{entrypoint}.html", "w") as f_entry:
             f_entry.write(html_index())

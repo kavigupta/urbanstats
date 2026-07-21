@@ -137,7 +137,7 @@ export function useZoomFirstFeature(mapRef: MapRef | null, features: (GeoJSON.Fe
 
 export function useZoomAllFeatures(mapRef: MapRef | null, features: (GeoJSON.Feature | typeof waiting)[], readyFeatures: GeoJSON.Feature[]): void {
     useEffect(() => {
-        if (readyFeatures.length < features.length) {
+        if (readyFeatures.length < features.length || readyFeatures.length === 0) {
             return
         }
         // Only zoom once all features are ready
@@ -226,6 +226,7 @@ export function PolygonFeatureCollection({ features, clickable }: { features: Ge
 }
 
 async function polygonGeojson(polygon: Polygon): Promise<GeoJSON.Feature> {
+    assert(polygon.name !== '', 'Polygon name cannot be empty')
     const feature = await loadFeatureFromPossibleSymlink(polygon.name) as NormalizeProto<Feature>
     return {
         type: 'Feature' as const,
