@@ -32,7 +32,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
     const unitSuffix = convertTemperature(binMin, temperatureUnit).unit
 
     const buildPlot = useCallback(
-        (transpose: boolean): DetailedPlotSpec => {
+        (transpose: boolean, leftLabelOffset: number): DetailedPlotSpec => {
             // excludes the open-ended below-min/above-max buckets (0 and numBins-1, no two-sided
             // interval) and clips to the bins with data, plus one bin of padding
             const [binIdxStart, binIdxEnd] = temperatureHistogramBounds(props.histograms.map(h => h.histogram.counts), numBins)
@@ -52,6 +52,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
                 boundaryIdxs,
                 transpose,
                 j => boundaryLabel(j, binMin, binSize, v => convertTemperature(v, temperatureUnit).value, unitSuffix),
+                leftLabelOffset,
             )
 
             marks.push(

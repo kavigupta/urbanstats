@@ -88,10 +88,12 @@ export function paddedYDomain(values: number[], pad: number, anchoredBottom?: nu
     return [anchoredBottom ?? minValue - p, maxValue + p]
 }
 
-export function categoricalAxisMarks(tickIdxs: number[], transpose: boolean, tickFormat: (idx: number) => string): Plot.Markish[] {
+export function categoricalAxisMarks(tickIdxs: number[], transpose: boolean, tickFormat: (idx: number) => string, leftLabelOffset: number): Plot.Markish[] {
     const [axis, grid] = axisAndGrid(transpose)
+    // this axis is the horizontal (bottom) one unless transposed, in which case it is the left one
+    const labelOffset = transpose ? leftLabelOffset : bottomLabelOffset
     return [
-        axis(tickIdxs, { tickFormat }),
+        axis(tickIdxs, { tickFormat, labelAnchor: 'center', labelArrow: 'none', labelOffset }),
         grid(tickIdxs),
         valueGrid(transpose)(),
     ]
