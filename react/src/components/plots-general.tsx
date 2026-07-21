@@ -23,13 +23,54 @@ const strokeDasharrays = ['1,0', '10,10', '2,5']
 export const bottomLabelOffset = 50
 export const bottomLabelOffsetTranspose = 70
 
-// Same concept for the left-axis label.
-// Transposed plots render at 2em, so their tick labels are roughly twice as wide and need a wider
-// margin.
-const marginLeft = 80
-const marginLeftTranspose = 140
-export const leftLabelOffset = 58
-export const leftLabelOffsetTranspose = 112
+// The left-axis label needs a strip of the left margin to itself, next to
+// however much room the tick labels happen to take.
+// To estimate this, we render the plot once, measure the left axis, and rerender
+// These are the provisional values for the first pass.
+const provisionalMarginLeft = 80
+const provisionalMarginLeftTranspose = 140
+
+// gap between the frame's left edge and the rotated label
+const labelEdgePad = 8
+// gap between the rotated label and the tick labels
+const labelTickGap = 10
+// Plot insets left tick labels from the frame by tickSize + tickPadding
+const tickLabelInset = 9
+
+interface LeftAxisLayout {
+    marginLeft: number
+    labelOffset: number
+}
+
+function provisionalLeftAxisLayout(transpose: boolean): LeftAxisLayout {
+    const margin = transpose ? provisionalMarginLeftTranspose : provisionalMarginLeft
+    return { marginLeft: margin, labelOffset: margin - labelEdgePad }
+}
+
+// measures a rendered plot's left axis and works out the margin that fits its tick labels and its
+// rotated label side by side. The label is rotated, so it is its bbox *height* that eats into the
+// margin; the ticks are horizontal, so it is their width.
+function measureLeftAxisLayout(plot: SVGSVGElement | HTMLElement): LeftAxisLayout {
+    const widthOf = (selector: string, dimension: 'width' | 'height'): number => {
+        const elements = Array.from(plot.querySelectorAll<SVGGraphicsElement>(`g[aria-label="${selector}"] text`))
+        return Math.max(0, ...elements.map(element => element.getBBox()[dimension]))
+    }
+    const tickWidth = widthOf('y-axis tick label', 'width')
+    const labelThickness = widthOf('y-axis label', 'height')
+    // no label means no strip to reserve for it, and hence no gap either
+    const labelStrip = labelThickness === 0 ? 0 : labelEdgePad + labelThickness + labelTickGap
+    return {
+        marginLeft: labelStrip + tickWidth + tickLabelInset,
+        labelOffset: labelStrip + tickWidth + tickLabelInset - labelEdgePad,
+    }
+}
+
+function renderMeasuredPlot(container: HTMLElement, config: (leftAxis: LeftAxisLayout) => Plot.PlotOptions, transpose: boolean): void {
+    const probe = Plot.plot(config(provisionalLeftAxisLayout(transpose)))
+    container.replaceChildren(probe)
+    const layout = measureLeftAxisLayout(probe)
+    container.replaceChildren(Plot.plot(config(layout)))
+}
 
 // picks the axis/grid mark constructors for whichever side is currently the visual x-axis
 export function axisAndGrid(transpose: boolean): [typeof Plot.axisX, typeof Plot.gridX] {
@@ -490,7 +531,7 @@ export interface DetailedPlotSpec {
 }
 
 export function PlotComponent(props: {
-    plotSpec: (transpose: boolean) => DetailedPlotSpec
+    plotSpec: (transpose: boolean, leftLabelOffset: number) => DetailedPlotSpec
     settingsElement: (makePlot: () => HTMLElement) => ReactElement
 }): ReactElement {
     const transpose = useTranspose()
@@ -499,8 +540,8 @@ export function PlotComponent(props: {
 
     const plotSpec = props.plotSpec
 
-    const plotConfig = useCallback((transposeConfig: boolean): Plot.PlotOptions => {
-        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec(transposeConfig)
+    const plotConfig = useCallback((transposeConfig: boolean, leftAxis: LeftAxisLayout): Plot.PlotOptions => {
+        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec(transposeConfig, leftAxis.labelOffset)
         const result: Plot.PlotOptions = {
             marks,
             x: {
@@ -514,7 +555,7 @@ export function PlotComponent(props: {
                 domain: ydomain,
                 labelAnchor: 'center',
                 labelArrow: 'none',
-                labelOffset: transposeConfig ? leftLabelOffsetTranspose : leftLabelOffset,
+                labelOffset: leftAxis.labelOffset,
             },
             grid: false,
             width: transposeConfig ? undefined : 1000,
@@ -525,7 +566,7 @@ export function PlotComponent(props: {
             },
             marginTop: 80,
             marginBottom: transposeConfig ? 90 : 62,
-            marginLeft: transposeConfig ? marginLeftTranspose : marginLeft,
+            marginLeft: leftAxis.marginLeft,
             color: legend,
         }
         if (transposeConfig) {
@@ -541,7 +582,7 @@ export function PlotComponent(props: {
                 reverse: true,
                 labelAnchor: 'center',
                 labelArrow: 'none',
-                labelOffset: leftLabelOffsetTranspose,
+                labelOffset: leftAxis.labelOffset,
             }
         }
         return result
@@ -549,9 +590,7 @@ export function PlotComponent(props: {
 
     useEffect(() => {
         if (plotRef.current) {
-            const plot = Plot.plot(plotConfig(transpose))
-            plotRef.current.innerHTML = ''
-            plotRef.current.appendChild(plot)
+            renderMeasuredPlot(plotRef.current, leftAxis => plotConfig(transpose, leftAxis), transpose)
         }
     }, [props.plotSpec, transpose, plotConfig])
 
@@ -580,11 +619,14 @@ export function PlotComponent(props: {
                 : (
                         <div style={{ zIndex: zIndex.plotSettings, position: 'absolute', top: 0, right: 0, left: transpose ? 0 : undefined }}>
                             {props.settingsElement(() => {
-                                const plot = Plot.plot(plotConfig(false))
                                 const div = document.createElement('div')
                                 div.style.width = '1000px'
                                 div.style.height = '500px'
-                                div.appendChild(plot)
+                                // measuring needs layout, so render while attached, then hand the
+                                // finished element back for the caller to place
+                                document.body.appendChild(div)
+                                renderMeasuredPlot(div, leftAxis => plotConfig(false, leftAxis), false)
+                                div.remove()
                                 return div
                             })}
                         </div>
@@ -608,7 +650,7 @@ export function SeriesPlot<T extends PlotSeriesItem>(props: {
     modeSwitcher?: ReactElement
     dashOrder?: string[]
     extraSettingsControls?: ReactNode
-    buildPlot: (transpose: boolean) => DetailedPlotSpec
+    buildPlot: (transpose: boolean, leftLabelOffset: number) => DetailedPlotSpec
 }): ReactElement {
     const colors = useColors()
     const { items, dashOrder, buildPlot } = props
@@ -627,9 +669,9 @@ export function SeriesPlot<T extends PlotSeriesItem>(props: {
     )
 
     const plotSpec = useCallback(
-        (transpose: boolean): DetailedPlotSpec => {
+        (transpose: boolean, leftLabelOffset: number): DetailedPlotSpec => {
             const title = new Set(items.map(i => i.shortname)).size === 1 ? items[0].shortname : ''
-            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose)
+            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose, leftLabelOffset)
             marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
             marks.push(...manualLegend(items, transpose, colors, dashOrder))
             return { marks, xlabel, ylabel, ydomain, legend }
