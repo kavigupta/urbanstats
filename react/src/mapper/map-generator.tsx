@@ -215,7 +215,7 @@ async function makeMapGenerator({ mapSettings, cache, previousGenerator, typeEnv
 
             const image = await withScreenshotMode(screenshotContext.current, async () => {
                 debugLog('exportImage: screenshot mode active, capturing element canvas at', canonicalWidth * exportPixelRatio, 'px wide')
-                const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, 1, { mapBorderRadius: 0, testing: false })
+                const elementCanvas = await screencapElement(wholeRenderRef.current!, canonicalWidth * exportPixelRatio, { mapBorderRadius: 0, testing: false })
                 debugLog('exportImage: screencapElement returned', elementCanvas.width, 'x', elementCanvas.height, 'canvas, compositing banner')
                 return mapImageExport(elementCanvas, mapResultMain.value.basemap, colors)
             })

@@ -79,7 +79,6 @@ export interface ScreencapElements {
     path: string
     overallWidth: number
     elementsToRender: HTMLElement[]
-    heightMultiplier?: number
 }
 
 function drawImageIfNotTesting(context: CanvasRenderingContext2D, index: number, image: CanvasImageSource, x: number, y: number, w: number, h: number, testing: boolean): void {
@@ -113,7 +112,7 @@ function fixElementForScreenshot(element: HTMLElement): () => void {
 export const mapBorderWidth = 1
 export const defaultMapBorderRadius = 5
 
-export async function screencapElement(ref: HTMLElement, overallWidth: number, heightMultiplier: number, {
+export async function screencapElement(ref: HTMLElement, overallWidth: number, {
     mapBorderRadius = defaultMapBorderRadius,
     // eslint-disable-next-line no-restricted-syntax -- Default value
     testing = TestUtils.shared.isTesting,
@@ -129,7 +128,7 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, h
     const resultCanvas = document.createElement('canvas')
 
     resultCanvas.width = ref.offsetWidth * scaleFactor
-    resultCanvas.height = ref.offsetHeight * scaleFactor * heightMultiplier
+    resultCanvas.height = ref.offsetHeight * scaleFactor
 
     const resultContext = resultCanvas.getContext('2d')!
 
@@ -222,12 +221,11 @@ export async function withScreenshotMode<T>(context: ScreenshotContextType, fn: 
 export async function createScreenshot(config: ScreencapElements, universe: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType, forceNonTesting: boolean = false): Promise<void> {
     await withScreenshotMode(screenshotContext, async () => {
         const overallWidth = config.overallWidth
-        const heightMultiplier = config.heightMultiplier ?? 1
 
         const canvases = []
         for (const ref of config.elementsToRender) {
             try {
-                canvases.push(await screencapElement(ref, overallWidth, heightMultiplier, { testing: !forceNonTesting && TestUtils.shared.isTesting }))
+                canvases.push(await screencapElement(ref, overallWidth, { testing: !forceNonTesting && TestUtils.shared.isTesting }))
             }
             catch (e) {
                 console.error(e)

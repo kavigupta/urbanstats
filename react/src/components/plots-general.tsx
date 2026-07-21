@@ -185,7 +185,6 @@ function PlotDownloadButton(props: { makePlot: () => HTMLElement, shortnames: st
                         path: `${uniqueShortnames.join('_')}_${props.filenameSuffix}`,
                         overallWidth: plot.offsetWidth * 2,
                         elementsToRender: [plot],
-                        heightMultiplier: 1.2,
                     },
                     universe,
                     colors,
@@ -555,8 +554,8 @@ export function PlotComponent(props: {
                             {props.settingsElement(() => {
                                 const plot = Plot.plot(plotConfig(false))
                                 const div = document.createElement('div')
-                                div.style.width = '1000px'
-                                div.style.height = '500px'
+                                plot.style.display = 'block'
+                                div.style.width = 'fit-content'
                                 div.appendChild(plot)
                                 return div
                             })}
