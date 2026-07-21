@@ -16,11 +16,20 @@ import './plots.css'
 
 const strokeDasharrays = ['1,0', '10,10', '2,5']
 
-// The bottom-axis label sits `labelOffset` below the frame. Plot's default is `marginBottom - 3`,
-// which pins it to the very bottom edge and clips e.g., "g" keeping the offset smaller than the
+// Plot's default placement for the bottom-axis label
+// is `marginBottom - 3` which pins it to the very bottom
+// edge and clips e.g., "g" keeping the offset smaller than the
 // bottom margin leaves headroom below the text.
 export const bottomLabelOffset = 50
 export const bottomLabelOffsetTranspose = 70
+
+// Same concept for the left-axis label.
+// Transposed plots render at 2em, so their tick labels are roughly twice as wide and need a wider
+// margin.
+const marginLeft = 80
+const marginLeftTranspose = 140
+export const leftLabelOffset = 58
+export const leftLabelOffsetTranspose = 112
 
 // picks the axis/grid mark constructors for whichever side is currently the visual x-axis
 export function axisAndGrid(transpose: boolean): [typeof Plot.axisX, typeof Plot.gridX] {
@@ -505,6 +514,7 @@ export function PlotComponent(props: {
                 domain: ydomain,
                 labelAnchor: 'center',
                 labelArrow: 'none',
+                labelOffset: transposeConfig ? leftLabelOffsetTranspose : leftLabelOffset,
             },
             grid: false,
             width: transposeConfig ? undefined : 1000,
@@ -515,7 +525,7 @@ export function PlotComponent(props: {
             },
             marginTop: 80,
             marginBottom: transposeConfig ? 90 : 62,
-            marginLeft: 80,
+            marginLeft: transposeConfig ? marginLeftTranspose : marginLeft,
             color: legend,
         }
         if (transposeConfig) {
@@ -531,6 +541,7 @@ export function PlotComponent(props: {
                 reverse: true,
                 labelAnchor: 'center',
                 labelArrow: 'none',
+                labelOffset: leftLabelOffsetTranspose,
             }
         }
         return result
