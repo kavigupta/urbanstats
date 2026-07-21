@@ -38,14 +38,14 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
     const { combinedLabel } = props
 
     const buildPlot = useCallback(
-        (transpose: boolean): DetailedPlotSpec => {
+        (transpose: boolean, leftLabelOffset: number): DetailedPlotSpec => {
             const monthIdxs = Array.from({ length: 12 }, (_, i) => i)
             const seriesData = props.stats.map(series => ({
                 series,
                 values: series.stat.monthlyValues.map(v => convertMonthlyValue(v, unit, temperatureUnit, useImperial).value),
             }))
 
-            const marks: Plot.Markish[] = categoricalAxisMarks(monthIdxs, transpose, i => monthLabels[i])
+            const marks: Plot.Markish[] = categoricalAxisMarks(monthIdxs, transpose, i => monthLabels[i], leftLabelOffset)
 
             const dashPatterns = computeDashPatterns(props.stats, props.dashOrder)
             marks.push(

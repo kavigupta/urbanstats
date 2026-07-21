@@ -8,7 +8,7 @@ import { HistogramType, useSetting } from '../page_template/settings'
 import { IHistogram } from '../utils/protos'
 import { useTranspose } from '../utils/transpose'
 
-import { axisAndGrid, computeDashPatterns, DetailedPlotSpec, groupedTipTitle, paddedYDomain, SeriesPlot, transposeAwareTip } from './plots-general'
+import { axisAndGrid, bottomLabelOffset, bottomLabelOffsetTranspose, computeDashPatterns, DetailedPlotSpec, groupedTipTitle, paddedYDomain, SeriesPlot, transposeAwareTip } from './plots-general'
 import { CheckboxSetting } from './sidebar'
 
 const yPad = 0.025
@@ -49,17 +49,17 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
     const isTransposed = useTranspose()
 
     const buildPlot = useCallback(
-        (transpose: boolean): DetailedPlotSpec => {
+        (transpose: boolean, leftLabelOffset: number): DetailedPlotSpec => {
             const renderY = relative ? (y: number) => `${y.toFixed(2)}%` : (y: number) => renderNumberHighlyRounded(y, 2)
 
             const [xIdxStart, xIdxEnd] = histogramBounds(props.histograms)
             const xidxs = Array.from({ length: xIdxEnd - xIdxStart }, (_, i) => i + xIdxStart)
-            const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial, transpose)
+            const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial, transpose, leftLabelOffset)
             const [marks, values] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose, systemColors, props.dashOrder)
             const maxValue = Math.max(...values)
             marks.push(
                 ...xAxisMarks,
-                ...yAxis(maxValue, transpose),
+                ...yAxis(maxValue, transpose, leftLabelOffset),
             )
             const xlabel = `${props.statDescription} (/${useImperial ? 'mi' : 'km'}²)`
             const ylabel = relative ? '% of total' : 'Population'
@@ -191,7 +191,7 @@ function maxSequences(series: { values: { xidx: number, y: number, name: string 
     return seriesMax
 }
 
-function xAxis(xidxs: number[], binSize: number, binMin: number, useImperial: boolean, transpose: boolean): [Plot.Markish[], (x: number) => string] {
+function xAxis(xidxs: number[], binSize: number, binMin: number, useImperial: boolean, transpose: boolean, leftLabelOffset: number): [Plot.Markish[], (x: number) => string] {
     const xKeypoints: number[] = []
     for (const xidx of xidxs) {
         let lastDigit = xidx % 10
@@ -205,16 +205,19 @@ function xAxis(xidxs: number[], binSize: number, binMin: number, useImperial: bo
     const adjustment = useImperial ? Math.log10(1.60934) * 2 : 0
 
     const [axis, grid] = axisAndGrid(transpose)
+    // this density axis is horizontal (bottom) when not transposed and vertical (left) when it is;
+    // pick the offset for whichever side it lands on
+    const labelOffset = transpose ? leftLabelOffset : bottomLabelOffset
     return [
         [
-            axis(xKeypoints, { tickFormat: d => renderPow10(d * binSize + binMin + adjustment) }),
+            axis(xKeypoints, { tickFormat: d => renderPow10(d * binSize + binMin + adjustment), labelAnchor: 'center', labelArrow: 'none', labelOffset }),
             grid(xKeypoints),
         ],
         x => `${renderNumberHighlyRounded(Math.pow(10, x * binSize + binMin + adjustment), 2)}/${useImperial ? 'mi' : 'km'}²`,
     ]
 }
 
-function yAxis(maxValue: number, transpose: boolean): (Plot.CompoundMark | Plot.RuleY)[] {
+function yAxis(maxValue: number, transpose: boolean, leftLabelOffset: number): (Plot.CompoundMark | Plot.RuleY)[] {
     const minNYTicks = 5
     const idealTickGap = maxValue / minNYTicks
     const log10TickGapTimes3 = Math.floor(Math.log10(idealTickGap) * 3)
@@ -227,9 +230,12 @@ function yAxis(maxValue: number, transpose: boolean): (Plot.CompoundMark | Plot.
 
     // yAxis picks the visual-y-axis constructors, the inverse of xAxis's visual-x-axis pairing
     const [axis, grid] = axisAndGrid(!transpose)
+    // this value axis is vertical (left) when not transposed and horizontal (bottom) when it is;
+    // pick the offset for whichever side it lands on
+    const labelOffset = transpose ? bottomLabelOffsetTranspose : leftLabelOffset
 
     return [
-        axis(yKeypoints, { tickFormat: (d: number) => renderNumberHighlyRounded(d, 1) }),
+        axis(yKeypoints, { tickFormat: (d: number) => renderNumberHighlyRounded(d, 1), labelAnchor: 'center', labelArrow: 'none', labelOffset }),
         grid(yKeypoints),
     ]
 }
