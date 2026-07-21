@@ -1102,7 +1102,7 @@ function StatisticNameDisclaimer(props: { disclaimer: Disclaimer, footnoteSymbol
         display: show ? 'block' : 'none',
     }
     return (
-        <span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', position: 'relative' }}>
             <span
                 className="disclaimer-toggle"
                 style={{ ...articleStatnameButtonStyle(colors), display: 'inline-block' }}

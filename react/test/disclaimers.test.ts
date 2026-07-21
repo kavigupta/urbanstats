@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { downloadImage, safeReload, screencap, target, urbanstatsFixture } from './test_utils'
+import { downloadImage, safeReload, screencap, target, urbanstatsFixture, waitForLoading } from './test_utils'
 
 const onlyUSAndCanadaCensus = 'AkWGLJMDBPzz5'
 
@@ -87,4 +87,42 @@ test('comparison all three disclaimers screenshot', async (t) => {
     await t.resizeWindow(1400, 800)
     await t.expect(Selector('.disclaimer-toggle').count).gte(3, 'comparison should have at least 3 disclaimer toggles (heterogenous + election margin + swing)')
     await downloadImage(t)
+})
+
+// Regression test for the disclaimer "!" button being vertically misaligned with the adjacent
+// expand "+" button on a stat row that has both. They share a box style and sit in one flex row,
+// so their vertical centers should line up. This exercises the interactive (non-screenshot)
+// rendering of the disclaimer -- the screenshot path renders a "*"/"†" superscript instead, so it
+// would not catch this. Guards the inline-flex fix in StatisticNameDisclaimer.
+const canadaUsaBothButtons = '96qLRQxnPRs6JqVoMgss'
+urbanstatsFixture(
+    'disclaimer and expand buttons on one row',
+    `${target}/comparison.html?longnames=%5B"Canada"%2C"USA"%5D&universe=world&s=${canadaUsaBothButtons}`,
+)
+
+test('disclaimer-and-expand-buttons-vertically-aligned', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await waitForLoading()
+    const centers = await t.eval(() => {
+        for (const disclaimer of Array.from(document.getElementsByClassName('disclaimer-toggle'))) {
+            // climb to the stat-name row that also holds the expand "+" button
+            let container = disclaimer.parentElement
+            while (container !== null && container.getElementsByClassName('expand-toggle').length === 0) {
+                container = container.parentElement
+            }
+            // only trust a container that is the single stat-name row (exactly one "+"), not a
+            // larger container that would sweep in other rows' expand buttons
+            if (container === null || container.getElementsByClassName('expand-toggle').length !== 1) {
+                continue
+            }
+            const d = disclaimer.getBoundingClientRect()
+            const e = container.getElementsByClassName('expand-toggle')[0].getBoundingClientRect()
+            return { expandCenter: e.top + e.height / 2, disclaimerCenter: d.top + d.height / 2 }
+        }
+        return null
+    }) as { expandCenter: number, disclaimerCenter: number } | null
+
+    await t.expect(centers).notEql(null, 'expected a stat row with both an expand "+" and a disclaimer "!" button')
+    await t.expect(Math.abs(centers!.expandCenter - centers!.disclaimerCenter)).lte(1.5,
+        `the "+" and "!" buttons should be vertically centered on the same line (+ center ${centers!.expandCenter}, ! center ${centers!.disclaimerCenter})`)
 })
