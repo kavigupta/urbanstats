@@ -16,6 +16,64 @@ import './plots.css'
 
 const strokeDasharrays = ['1,0', '10,10', '2,5']
 
+// Plot's default placement for the bottom-axis label
+// is `marginBottom - 3` which pins it to the very bottom
+// edge and clips e.g., "g" keeping the offset smaller than the
+// bottom margin leaves headroom below the text.
+export const bottomLabelOffset = 50
+export const bottomLabelOffsetTranspose = 70
+
+// The left-axis label needs a strip of the left margin to itself, next to
+// however much room the tick labels happen to take.
+// To estimate this, we render the plot once, measure the left axis, and rerender
+// These are the provisional values for the first pass.
+const provisionalMarginLeft = 80
+const provisionalMarginLeftTranspose = 140
+
+// gap between the frame's left edge and the rotated label
+const labelEdgePad = 8
+// gap between the rotated label and the tick labels
+const labelTickGap = 10
+// Plot insets left tick labels from the frame by tickSize + tickPadding
+const tickLabelInset = 9
+
+interface LeftAxisLayout {
+    marginLeft: number
+    labelOffset: number
+}
+
+function provisionalLeftAxisLayout(transpose: boolean): LeftAxisLayout {
+    const margin = transpose ? provisionalMarginLeftTranspose : provisionalMarginLeft
+    return { marginLeft: margin, labelOffset: margin - labelEdgePad }
+}
+
+// measures a rendered plot's left axis and works out the margin that fits its tick labels and its
+// rotated label side by side. The label is rotated, so it is its bbox *height* that eats into the
+// margin; the ticks are horizontal, so it is their width.
+function measureLeftAxisLayout(plot: SVGSVGElement | HTMLElement): LeftAxisLayout {
+    const widthOf = (selector: string, dimension: 'width' | 'height'): number => {
+        const elements = Array.from(plot.querySelectorAll<SVGGraphicsElement>(`g[aria-label="${selector}"] text`))
+        return Math.max(0, ...elements.map(element => element.getBBox()[dimension]))
+    }
+    const tickWidth = widthOf('y-axis tick label', 'width')
+    const labelThickness = widthOf('y-axis label', 'height')
+    // no label means no strip to reserve for it, and hence no gap either
+    const labelStrip = labelThickness === 0 ? 0 : labelEdgePad + labelThickness + labelTickGap
+    return {
+        marginLeft: labelStrip + tickWidth + tickLabelInset,
+        labelOffset: labelStrip + tickWidth + tickLabelInset - labelEdgePad,
+    }
+}
+
+function renderMeasuredPlot(container: HTMLElement, config: (leftAxis: LeftAxisLayout) => Plot.PlotOptions, transpose: boolean): SVGSVGElement | HTMLElement {
+    const probe = Plot.plot(config(provisionalLeftAxisLayout(transpose)))
+    container.replaceChildren(probe)
+    const layout = measureLeftAxisLayout(probe)
+    const plot = Plot.plot(config(layout))
+    container.replaceChildren(plot)
+    return plot
+}
+
 // picks the axis/grid mark constructors for whichever side is currently the visual x-axis
 export function axisAndGrid(transpose: boolean): [typeof Plot.axisX, typeof Plot.gridX] {
     return transpose ? [Plot.axisY, Plot.gridY] : [Plot.axisX, Plot.gridX]
@@ -32,10 +90,12 @@ export function paddedYDomain(values: number[], pad: number, anchoredBottom?: nu
     return [anchoredBottom ?? minValue - p, maxValue + p]
 }
 
-export function categoricalAxisMarks(tickIdxs: number[], transpose: boolean, tickFormat: (idx: number) => string): Plot.Markish[] {
+export function categoricalAxisMarks(tickIdxs: number[], transpose: boolean, tickFormat: (idx: number) => string, leftLabelOffset: number): Plot.Markish[] {
     const [axis, grid] = axisAndGrid(transpose)
+    // this axis is the horizontal (bottom) one unless transposed, in which case it is the left one
+    const labelOffset = transpose ? leftLabelOffset : bottomLabelOffset
     return [
-        axis(tickIdxs, { tickFormat }),
+        axis(tickIdxs, { tickFormat, labelAnchor: 'center', labelArrow: 'none', labelOffset }),
         grid(tickIdxs),
         valueGrid(transpose)(),
     ]
@@ -474,7 +534,7 @@ export interface DetailedPlotSpec {
 }
 
 export function PlotComponent(props: {
-    plotSpec: (transpose: boolean) => DetailedPlotSpec
+    plotSpec: (transpose: boolean, leftLabelOffset: number) => DetailedPlotSpec
     settingsElement: (makePlot: () => HTMLElement) => ReactElement
 }): ReactElement {
     const transpose = useTranspose()
@@ -483,16 +543,22 @@ export function PlotComponent(props: {
 
     const plotSpec = props.plotSpec
 
-    const plotConfig = useCallback((transposeConfig: boolean): Plot.PlotOptions => {
-        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec(transposeConfig)
+    const plotConfig = useCallback((transposeConfig: boolean, leftAxis: LeftAxisLayout): Plot.PlotOptions => {
+        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec(transposeConfig, leftAxis.labelOffset)
         const result: Plot.PlotOptions = {
             marks,
             x: {
                 label: xlabel,
+                labelAnchor: 'center',
+                labelArrow: 'none',
+                labelOffset: transposeConfig ? bottomLabelOffsetTranspose : bottomLabelOffset,
             },
             y: {
                 label: ylabel,
                 domain: ydomain,
+                labelAnchor: 'center',
+                labelArrow: 'none',
+                labelOffset: leftAxis.labelOffset,
             },
             grid: false,
             width: transposeConfig ? undefined : 1000,
@@ -502,18 +568,24 @@ export function PlotComponent(props: {
                 fontFamily: 'Jost, Arial, sans-serif',
             },
             marginTop: 80,
-            marginBottom: transposeConfig ? 90 : 55,
-            marginLeft: 80,
+            marginBottom: transposeConfig ? 90 : 62,
+            marginLeft: leftAxis.marginLeft,
             color: legend,
         }
         if (transposeConfig) {
             result.x = {
                 label: ylabel,
                 domain: ydomain,
+                labelAnchor: 'center',
+                labelArrow: 'none',
+                labelOffset: bottomLabelOffsetTranspose,
             }
             result.y = {
                 label: xlabel,
                 reverse: true,
+                labelAnchor: 'center',
+                labelArrow: 'none',
+                labelOffset: leftAxis.labelOffset,
             }
         }
         return result
@@ -521,9 +593,7 @@ export function PlotComponent(props: {
 
     useEffect(() => {
         if (plotRef.current) {
-            const plot = Plot.plot(plotConfig(transpose))
-            plotRef.current.innerHTML = ''
-            plotRef.current.appendChild(plot)
+            renderMeasuredPlot(plotRef.current, leftAxis => plotConfig(transpose, leftAxis), transpose)
         }
     }, [props.plotSpec, transpose, plotConfig])
 
@@ -552,11 +622,16 @@ export function PlotComponent(props: {
                 : (
                         <div style={{ zIndex: zIndex.plotSettings, position: 'absolute', top: 0, right: 0, left: transpose ? 0 : undefined }}>
                             {props.settingsElement(() => {
-                                const plot = Plot.plot(plotConfig(false))
                                 const div = document.createElement('div')
-                                plot.style.display = 'block'
+                                // the exported image is sized from this div, so it has to hug the plot exactly
                                 div.style.width = 'fit-content'
-                                div.appendChild(plot)
+                                // measuring needs layout, so render while attached, then hand the
+                                // finished element back for the caller to place
+                                document.body.appendChild(div)
+                                const plot = renderMeasuredPlot(div, leftAxis => plotConfig(false, leftAxis), false)
+                                div.remove()
+                                // `display: block` drops the descender gap an inline <svg> would leave underneath
+                                plot.style.display = 'block'
                                 return div
                             })}
                         </div>
@@ -580,7 +655,7 @@ export function SeriesPlot<T extends PlotSeriesItem>(props: {
     modeSwitcher?: ReactElement
     dashOrder?: string[]
     extraSettingsControls?: ReactNode
-    buildPlot: (transpose: boolean) => DetailedPlotSpec
+    buildPlot: (transpose: boolean, leftLabelOffset: number) => DetailedPlotSpec
 }): ReactElement {
     const colors = useColors()
     const { items, dashOrder, buildPlot } = props
@@ -599,9 +674,9 @@ export function SeriesPlot<T extends PlotSeriesItem>(props: {
     )
 
     const plotSpec = useCallback(
-        (transpose: boolean): DetailedPlotSpec => {
+        (transpose: boolean, leftLabelOffset: number): DetailedPlotSpec => {
             const title = new Set(items.map(i => i.shortname)).size === 1 ? items[0].shortname : ''
-            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose)
+            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose, leftLabelOffset)
             marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
             marks.push(...manualLegend(items, transpose, colors, dashOrder))
             return { marks, xlabel, ylabel, ydomain, legend }
