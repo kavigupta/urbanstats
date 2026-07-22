@@ -155,6 +155,13 @@ export const allYears = Array.from(
         .filter(year => year !== null)),
 ).sort(sortYears)
 
+export const multiSourceStatisticByPath = new Map<StatPath, MultiSourceStatistic>(
+    allGroups.flatMap(group => group.contents
+        .flatMap(({ stats: s }) => s
+            .flatMap(stat => stat.bySource
+                .map(statBySource => [statBySource.path, stat] as const)))),
+)
+
 interface StatParent {
     group: Group
     year: Year | null

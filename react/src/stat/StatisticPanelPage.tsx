@@ -22,6 +22,7 @@ import { displayType } from '../utils/text'
 import { base64Gzip } from '../utils/urlParamShort'
 
 import { AddColumnSearchBox } from './AddColumnSearchBox'
+import { CrossSourceBorderDisclaimer } from './CrossSourceBorderDisclaimer'
 import { StatisticPanelTable } from './StatisticPanelTable'
 import { StatData, Statistic, StatSetter, View } from './types'
 import { mapUSSFromStat, variable } from './utils'
@@ -60,6 +61,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
                 <StatisticPanelHead articleType={stat.articleType} universe={stat.universe} />
                 <div className={subHeaderTextClass}>{reifyReact(subHeaderText)}</div>
                 {!view.edit && <ViewHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} />}
+                <CrossSourceBorderDisclaimer stat={stat} view={view} counts={counts} />
             </div>
             <div style={{ marginBlockEnd: '16px' }}></div>
             {view.edit && <EditPreamble stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} counts={counts} errors={errors} assignments={assignments} />}
