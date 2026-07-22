@@ -333,6 +333,11 @@ def build_urbanstats(
     shutil.copy("icons/main/duplicate.png", f"{site_folder}/")
     shutil.copy("icons/main/arrow-right.png", f"{site_folder}/")
 
+    os.makedirs(f"{site_folder}/.github/workflows", exist_ok=True)
+    shutil.copy(
+        "site_workflows/update-retrostat.yml", f"{site_folder}/.github/workflows/"
+    )
+
     with open(f"{site_folder}/CNAME", "w") as f_cname:
         f_cname.write("urbanstats.org")
 
