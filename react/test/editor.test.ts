@@ -254,7 +254,7 @@ test('show documentation popover', async (t) => {
     await t.expect(Selector('div').withExactText('colorPink').exists).ok() // Autocomplete menu
 })
 
-test.only('documentation popover link is clickable', async (t) => {
+test('documentation popover link is clickable', async (t) => {
     // The editor needs a selection, since that's what used to blur the editor and dismiss the popover on mousedown
     await t.click(nthEditor(0))
     await typeTextWithKeys(t, 'pi')
