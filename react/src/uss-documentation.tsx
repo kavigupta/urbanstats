@@ -768,6 +768,8 @@ function getCategoryTitle(category: ConstantCategory): string {
             return 'Map Insets'
         case 'regression':
             return 'Statistical Analysis'
+        case 'set':
+            return 'Set Operations'
         case 'basic':
             return 'Basic Functions'
         case 'mapper':
@@ -797,6 +799,8 @@ function getCategoryDescription(category: ConstantCategory): string {
             return 'Functions for creating map insets and managing multiple map views.'
         case 'regression':
             return 'Statistical analysis functions for linear regression.'
+        case 'set':
+            return 'Functions that treat vectors as sets, ignoring order and duplicates. Both arguments of a two-vector operation must have the same element type.'
         case 'basic':
             return 'Basic utility functions for type conversion and common operations.'
         case 'mapper':

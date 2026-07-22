@@ -1,0 +1,149 @@
+import assert from 'assert/strict'
+import { test } from 'node:test'
+
+import { evaluate, InterpretationError } from '../src/urban-stats-script/interpreter'
+import { USSType, undocValue } from '../src/urban-stats-script/types-values'
+
+import { boolType, emptyContext, numType, parseExpr, stringType } from './urban-stats-script-utils'
+
+const numVectorType = { type: 'vector', elementType: numType } satisfies USSType
+const stringVectorType = { type: 'vector', elementType: stringType } satisfies USSType
+const boolVectorType = { type: 'vector', elementType: boolType } satisfies USSType
+const emptyVectorType = { type: 'vector', elementType: { type: 'elementOfEmptyVector' } } satisfies USSType
+
+function evaluateExpr(input: string): ReturnType<typeof evaluate> {
+    return evaluate(parseExpr(input), emptyContext())
+}
+
+function expectError(input: string, message: string): void {
+    assert.throws(
+        () => evaluateExpr(input),
+        (e: unknown) => e instanceof InterpretationError && e.message.includes(message),
+        `Expected ${input} to fail with a message containing ${message}`,
+    )
+}
+
+void test('contains', (): void => {
+    assert.deepStrictEqual(evaluateExpr('contains([1, 2, 3], 2)'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('contains([1, 2, 3], 5)'), undocValue(false, boolType))
+    assert.deepStrictEqual(evaluateExpr('contains([], 1)'), undocValue(false, boolType))
+    assert.deepStrictEqual(evaluateExpr('contains(["a", "b"], "b")'), undocValue(true, boolType))
+    // NaN is found, matching JS Set's SameValueZero semantics
+    assert.deepStrictEqual(evaluateExpr('contains([NaN], NaN)'), undocValue(true, boolType))
+})
+
+void test('contains broadcasts over the element argument', (): void => {
+    assert.deepStrictEqual(
+        evaluateExpr('contains([1, 2, 3], [1, 5, 3])'),
+        undocValue([true, false, true], boolVectorType),
+    )
+    // a vector of vectors broadcasts over the set argument instead
+    assert.deepStrictEqual(
+        evaluateExpr('contains([[1, 2], [3, 4]], 1)'),
+        undocValue([true, false], boolVectorType),
+    )
+})
+
+void test('contains with a mismatched element type is false, not an error', (): void => {
+    assert.deepStrictEqual(evaluateExpr('contains([1, 2], "1")'), undocValue(false, boolType))
+    assert.deepStrictEqual(evaluateExpr('contains([1, 2], null)'), undocValue(false, boolType))
+})
+
+void test('unique and countUnique', (): void => {
+    assert.deepStrictEqual(evaluateExpr('unique([1, 1, 2, 3, 2])'), undocValue([1, 2, 3], numVectorType))
+    assert.deepStrictEqual(evaluateExpr('unique([])'), undocValue([], emptyVectorType))
+    assert.deepStrictEqual(evaluateExpr('unique(["b", "a", "b"])'), undocValue(['b', 'a'], stringVectorType))
+    assert.deepStrictEqual(evaluateExpr('countUnique([1, 1, 2, 3, 2])'), undocValue(3, numType))
+    assert.deepStrictEqual(evaluateExpr('countUnique([])'), undocValue(0, numType))
+})
+
+void test('union, intersection, difference, symmetricDifference', (): void => {
+    assert.deepStrictEqual(evaluateExpr('union([1, 2], [2, 3])'), undocValue([1, 2, 3], numVectorType))
+    assert.deepStrictEqual(evaluateExpr('intersection([1, 2], [2, 3])'), undocValue([2], numVectorType))
+    assert.deepStrictEqual(evaluateExpr('difference([1, 2], [2, 3])'), undocValue([1], numVectorType))
+    assert.deepStrictEqual(evaluateExpr('symmetricDifference([1, 2], [2, 3])'), undocValue([1, 3], numVectorType))
+})
+
+void test('set operations deduplicate their results', (): void => {
+    assert.deepStrictEqual(evaluateExpr('union([1, 1], [1, 2, 2])'), undocValue([1, 2], numVectorType))
+    assert.deepStrictEqual(evaluateExpr('intersection([1, 1, 2], [1, 1])'), undocValue([1], numVectorType))
+    assert.deepStrictEqual(evaluateExpr('difference([1, 1, 3], [2])'), undocValue([1, 3], numVectorType))
+    assert.deepStrictEqual(evaluateExpr('symmetricDifference([1, 1], [2, 2])'), undocValue([1, 2], numVectorType))
+})
+
+void test('set operations preserve first-appearance order', (): void => {
+    assert.deepStrictEqual(evaluateExpr('union([3, 1], [2, 1])'), undocValue([3, 1, 2], numVectorType))
+    assert.deepStrictEqual(evaluateExpr('intersection([3, 1, 2], [2, 3])'), undocValue([3, 2], numVectorType))
+    // symmetric difference lists the first vector's exclusives before the second's
+    assert.deepStrictEqual(evaluateExpr('symmetricDifference([3, 1], [4, 1])'), undocValue([3, 4], numVectorType))
+})
+
+void test('set operations on empty vectors', (): void => {
+    assert.deepStrictEqual(evaluateExpr('union([], [])'), undocValue([], emptyVectorType))
+    assert.deepStrictEqual(evaluateExpr('union([], [1, 2])'), undocValue([1, 2], numVectorType))
+    assert.deepStrictEqual(evaluateExpr('union([1, 2], [])'), undocValue([1, 2], numVectorType))
+    assert.deepStrictEqual(evaluateExpr('intersection([1, 2], [])'), undocValue([], emptyVectorType))
+    assert.deepStrictEqual(evaluateExpr('difference([], [1])'), undocValue([], emptyVectorType))
+})
+
+void test('predicates', (): void => {
+    assert.deepStrictEqual(evaluateExpr('isSubset([1, 2], [1, 2, 3])'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('isSubset([1, 4], [1, 2, 3])'), undocValue(false, boolType))
+    assert.deepStrictEqual(evaluateExpr('isSuperset([1, 2, 3], [1, 2])'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('isSuperset([1, 2], [1, 2, 3])'), undocValue(false, boolType))
+    assert.deepStrictEqual(evaluateExpr('isDisjoint([1, 2], [3, 4])'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('isDisjoint([1, 2], [2, 3])'), undocValue(false, boolType))
+    assert.deepStrictEqual(evaluateExpr('setEquals([1, 2, 2], [2, 1])'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('setEquals([1, 2], [1, 2, 3])'), undocValue(false, boolType))
+    assert.deepStrictEqual(evaluateExpr('setEquals([1, 2], [1, 3])'), undocValue(false, boolType))
+})
+
+void test('predicates on empty vectors', (): void => {
+    assert.deepStrictEqual(evaluateExpr('isSubset([], [1])'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('isSuperset([], [1])'), undocValue(false, boolType))
+    assert.deepStrictEqual(evaluateExpr('isDisjoint([], [1])'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('setEquals([], [])'), undocValue(true, boolType))
+    assert.deepStrictEqual(evaluateExpr('setEquals([], [1])'), undocValue(false, boolType))
+})
+
+void test('set operations work on strings and booleans', (): void => {
+    assert.deepStrictEqual(
+        evaluateExpr('union(["a", "b"], ["b", "c"])'),
+        undocValue(['a', 'b', 'c'], stringVectorType),
+    )
+    assert.deepStrictEqual(
+        evaluateExpr('unique([true, false, true])'),
+        undocValue([true, false], boolVectorType),
+    )
+})
+
+void test('mismatched element types are rejected', (): void => {
+    expectError('union([1, 2], ["a"])', 'union requires both vectors to have the same element type, but got number and string')
+    expectError('isSubset([1], [true])', 'isSubset requires both vectors to have the same element type, but got number and boolean')
+})
+
+void test('non-primitive vectors are rejected', (): void => {
+    expectError('union([{a: 1}], [{a: 2}])', 'Expected positional argument 1 to be a [any]')
+})
+
+void test('set operations broadcast over nested vectors', (): void => {
+    assert.deepStrictEqual(
+        evaluateExpr('union([[1, 2], [3, 4]], [[2, 5], [4, 6]])'),
+        undocValue([[1, 2, 5], [3, 4, 6]], { type: 'vector', elementType: numVectorType }),
+    )
+    assert.deepStrictEqual(
+        evaluateExpr('countUnique([[1, 1, 2], [3, 3, 3]])'),
+        undocValue([2, 1], numVectorType),
+    )
+})
+
+void test('broadcast result type is inferred from the first non-empty leaf', (): void => {
+    assert.deepStrictEqual(
+        evaluateExpr('intersection([[1, 2], [3, 4]], [[5], [4]])'),
+        undocValue([[], [4]], { type: 'vector', elementType: numVectorType }),
+    )
+    assert.deepStrictEqual(
+        evaluateExpr('intersection([[1], [3]], [[5], [4]])'),
+        undocValue([[], []], { type: 'vector', elementType: emptyVectorType }),
+    )
+})
