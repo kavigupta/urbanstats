@@ -61,7 +61,7 @@ jobs:
             echo "No urbanstats changes to commit"
             exit 0
           fi
-          BRANCH="auto-retrostat-$(date +%Y%m%d)"
+          BRANCH="auto-retrostat-$(date +%Y%m%d)-${GITHUB_RUN_ID}"
           git checkout -b "$BRANCH"
           git commit -m "Update retrostat cached data"
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/kavigupta/urbanstats.git"
@@ -71,6 +71,7 @@ jobs:
             --title "Update retrostat cached data" \
             --body "Automated retrostat update from densitydb CI." \
             --base main)
-          gh pr merge "$PR_URL" --auto --squash
+          gh pr merge "$PR_URL" --auto --squash --delete-branch \
+            || echo "Could not enable auto-merge on $PR_URL; merge it manually"
         env:
           GH_TOKEN: ${{ secrets.URBANSTATS_TOKEN }}
