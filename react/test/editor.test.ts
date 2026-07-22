@@ -1,7 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 
 import { checkCode, getSelectionAnchor, getSelectionFocus, nthEditor, result, selectionIsNthEditor, typeTextWithKeys } from './editor_test_utils'
-import { safeReload, screencap, target, urbanstatsFixture } from './test_utils'
+import { getLocation, safeReload, screencap, target, urbanstatsFixture } from './test_utils'
 
 urbanstatsFixture('editor test', `${target}/editor.html`)
 
@@ -252,6 +252,19 @@ test('show documentation popover', async (t) => {
     // Continuing to type should reopen autocomplete
     await typeTextWithKeys(t, 'n')
     await t.expect(Selector('div').withExactText('colorPink').exists).ok() // Autocomplete menu
+})
+
+test.only('documentation popover link is clickable', async (t) => {
+    // The editor needs a selection, since that's what used to blur the editor and dismiss the popover on mousedown
+    await t.click(nthEditor(0))
+    await typeTextWithKeys(t, 'pi')
+    await t.hover(Selector('span').withText(/^pi/))
+    await t.wait(1000)
+
+    const docLink = Selector('h4').find('a').withExactText('pi')
+    await t.expect(docLink.exists).ok()
+    await t.click(docLink)
+    await t.expect(getLocation()).contains('/uss-documentation.html')
 })
 
 test('show values of constants and variables in popovers', async (t) => {
