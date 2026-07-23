@@ -2,9 +2,9 @@ import assert from 'assert/strict'
 import { test } from 'node:test'
 
 import { evaluate, InterpretationError } from '../src/urban-stats-script/interpreter'
-import { USSType, undocValue } from '../src/urban-stats-script/types-values'
+import { USSRawValue, USSType, USSValue, undocValue } from '../src/urban-stats-script/types-values'
 
-import { boolType, emptyContext, numType, parseExpr, stringType } from './urban-stats-script-utils'
+import { boolType, emptyContext, numType, parseExpr, stringType, testingContext } from './urban-stats-script-utils'
 
 const numVectorType = { type: 'vector', elementType: numType } satisfies USSType
 const stringVectorType = { type: 'vector', elementType: stringType } satisfies USSType
@@ -146,4 +146,30 @@ void test('broadcast result type is inferred from the first non-empty leaf', ():
         evaluateExpr('intersection([[1], [3]], [[5], [4]])'),
         undocValue([[], []], { type: 'vector', elementType: emptyVectorType }),
     )
+})
+
+// A vector bound to a USS variable keeps one array reference, so it flows unchanged into every
+// evaluation. This lets us observe the caches through the interpreter, without exporting internals.
+function contextWithVector(name: string, values: USSRawValue): ReturnType<typeof testingContext> {
+    const value: USSValue = undocValue(values, numVectorType)
+    return testingContext([], [], new Map<string, USSValue>([[name, value]]))
+}
+
+void test('both caches: repeated use of one vector reference reuses the result array', (): void => {
+    const ctx = contextWithVector('v', [3, 1, 2, 1])
+    const first = evaluate(parseExpr('unique(v)'), ctx)
+    const second = evaluate(parseExpr('unique(v)'), ctx)
+    // The array cache can only hit if the set cache also hit (it is keyed on the set instance),
+    // so a shared result reference exercises both caches at once.
+    assert.strictEqual(first.value, second.value)
+    // The preallocated buffer has no trailing holes (deepStrictEqual checks length exactly).
+    assert.deepStrictEqual(first.value, [3, 1, 2])
+})
+
+void test('caches are keyed on vector reference, not on contents', (): void => {
+    // Two separate literals are distinct arrays, so each unique() rebuilds from scratch.
+    const first = evaluateExpr('unique([3, 1, 2, 1])')
+    const second = evaluateExpr('unique([3, 1, 2, 1])')
+    assert.notStrictEqual(first.value, second.value)
+    assert.deepStrictEqual(first.value, second.value)
 })
