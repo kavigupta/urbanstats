@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .utils import HTTPExceptionModel
+from .utils import HTTPExceptionModel, port
 
 app = FastAPI(responses={500: {"model": HTTPExceptionModel}})
 
-origins = ["http://localhost:8000", "https://urbanstats.org"]
+origins = [f"http://localhost:{port()}", "https://urbanstats.org"]
 
 app.add_middleware(
     CORSMiddleware,
