@@ -16,7 +16,7 @@ async function registerUser(): Promise<void> {
     })
 }
 
-async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: '/juxtastat/latest_day' | '/retrostat/latest_week', endpointStore: '/juxtastat/store_user_stats' | '/retrostat/store_user_stats', parseDay: (day: string) => number): Promise<void> {
+async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: '/juxtastat/latest_day' | '/retrostat/latest_week', endpointStore: '/juxtastat/store_user_stats' | '/retrostat/store_user_stats', parseDay: (day: string) => number, isDone: (correctPattern: boolean[]) => boolean): Promise<void> {
     await registerUser()
 
     // fetch from latest_day endpoint
@@ -30,13 +30,15 @@ async function reportToServerGeneric(wholeHistory: QuizHistory, endpointLatest: 
         return
     }
     const latestDay = data.latest_day
-    const filteredDays = Object.keys(wholeHistory).filter(day => parseDay(day) > latestDay)
-    const update = filteredDays.map<[number, boolean[]]>((day) => {
-        return [
+    const update = Object.keys(wholeHistory)
+        .filter(day => parseDay(day) > latestDay)
+        .map<[number, boolean[]]>(day => [
             parseDay(day),
             wholeHistory[day].correct_pattern.map(b => b === 1 || b === true),
-        ]
-    })
+        ])
+        // Don't report in-progress quizzes; an incomplete pattern would be stored
+        // as a truncated final score (see issue #1900).
+        .filter(([, correctPattern]) => isDone(correctPattern))
 
     await persistentClient.POST(endpointStore, {
         params: {
@@ -145,12 +147,12 @@ function parseInfiniteSeedVersion(day: string): [string, number] | undefined {
     return [match[1], parseInt(match[2])]
 }
 
-export async function reportToServer(wholeHistory: QuizHistory, kind: QuizKindWithStats): Promise<void> {
+export async function reportToServer(wholeHistory: QuizHistory, kind: QuizKindWithStats, isDone: (correctPattern: boolean[]) => boolean): Promise<void> {
     switch (kind) {
         case 'juxtastat':
-        { await reportToServerGeneric(wholeHistory, '/juxtastat/latest_day', '/juxtastat/store_user_stats', parseJuxtastatDay); return }
+        { await reportToServerGeneric(wholeHistory, '/juxtastat/latest_day', '/juxtastat/store_user_stats', parseJuxtastatDay, isDone); return }
         case 'retrostat':
-        { await reportToServerGeneric(wholeHistory, '/retrostat/latest_week', '/retrostat/store_user_stats', parseRetrostatWeek); return }
+        { await reportToServerGeneric(wholeHistory, '/retrostat/latest_week', '/retrostat/store_user_stats', parseRetrostatWeek, isDone); return }
         case 'infinite':
         { await reportToServerInfinite(wholeHistory); return }
     }

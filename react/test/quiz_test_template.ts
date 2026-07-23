@@ -205,6 +205,31 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     })
 
     quizFixture(
+        'do not report incomplete quiz results',
+        `${target}/quiz.html#date=99`,
+        {
+            persistent_id: '000000000000007',
+            // Day 95 was only partially answered (1 of 5 questions), e.g. the user
+            // answered the first question correctly then closed the tab.
+            quiz_history: JSON.stringify({ 95: { choices: ['A'], correct_pattern: [true] } }),
+        },
+        `
+    CREATE TABLE IF NOT EXISTS JuxtaStatIndividualStats
+        (user integer, day integer, corrects integer, time integer, PRIMARY KEY (user, day));
+    `,
+        platform,
+    )
+
+    test('quiz-do-not-report-incomplete-results', async (t) => {
+        await safeReload(t)
+        await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
+        // Completing day 99 must not sweep the in-progress day 95 to the server.
+        // Reporting it persists [true], which the server pads to 5 bits and decodes
+        // to green/red/red/red/red even though the user never finished day 95 (#1900).
+        await t.expect(await juxtastatTable(t)).eql('7|99|15\n')
+    })
+
+    quizFixture(
         'percentage correct test',
         `${target}/quiz.html#date=99`,
         { persistent_id: '000000000000007' },
