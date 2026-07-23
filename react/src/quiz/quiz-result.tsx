@@ -40,6 +40,7 @@ interface QuizResultProps {
     }
     wholeHistory: QuizHistory
     quiz: QuizQuestion[]
+    isDone: (correctPattern: boolean[]) => boolean
 }
 
 export function QuizResult(props: QuizResultProps): ReactNode {
@@ -60,12 +61,12 @@ export function QuizResult(props: QuizResultProps): ReactNode {
         if (props.quizDescriptor.kind === 'custom') {
             return
         }
-        void reportToServer(props.wholeHistory, props.quizDescriptor.kind)
+        void reportToServer(props.wholeHistory, props.quizDescriptor.kind, props.isDone)
         if (props.quizDescriptor.kind === 'infinite') {
             return
         }
         void getPerQuestionStats(props.quizDescriptor).then(setStats)
-    }, [props.wholeHistory, props.quizDescriptor])
+    }, [props.wholeHistory, props.quizDescriptor, props.isDone])
 
     const correctPattern = props.history.correct_pattern
 
