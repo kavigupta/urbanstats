@@ -50,6 +50,32 @@ function asSet(values: Primitive[]): Set<Primitive> {
     return set
 }
 
+/**
+ * Caches the distinct-elements array for a set so repeated conversions (e.g. the same argument
+ * reused across a broadcast) don't rebuild it. The array is filled by index into a preallocated
+ * buffer rather than grown element by element. Result vectors are treated immutably by the
+ * interpreter, so returning the shared array is safe.
+ */
+const arrayCache = new WeakMap<Set<Primitive>, Primitive[]>()
+
+function asArray(set: Set<Primitive>): Primitive[] {
+    let array = arrayCache.get(set)
+    if (array === undefined) {
+        array = new Array<Primitive>(set.size)
+        let i = 0
+        for (const value of set) {
+            array[i] = value
+            i++
+        }
+        arrayCache.set(set, array)
+    }
+    return array
+}
+
+function uniqueArray(values: Primitive[]): Primitive[] {
+    return asArray(asSet(values))
+}
+
 function documented(
     name: string,
     posArgs: USSFunctionArgType[],
@@ -87,7 +113,7 @@ function binarySetFunction(
 
 function differenceOf(a: Primitive[], b: Primitive[]): Primitive[] {
     const bSet = asSet(b)
-    return [...new Set(a)].filter(x => !bSet.has(x))
+    return uniqueArray(a).filter(x => !bSet.has(x))
 }
 
 function isSubsetOf(a: Primitive[], b: Primitive[]): boolean {
@@ -105,23 +131,23 @@ export const setConstants: [string, USSValue][] = [
         return asSet(values).has(element)
     }, 'contains', 'Returns true if the element is present in the vector. Broadcasts over the element, so passing a vector as the second argument tests each of its elements in turn.'),
     documented('unique', [primitiveVector], vectorReturn, (posArgs) => {
-        return [...new Set(posArgs[0] as Primitive[])]
+        return uniqueArray(posArgs[0] as Primitive[])
     }, 'unique', 'Returns the distinct elements of a vector, in the order of their first appearance.'),
     documented('countUnique', [primitiveVector], numberReturn, (posArgs) => {
-        return new Set(posArgs[0] as Primitive[]).size
+        return asSet(posArgs[0] as Primitive[]).size
     }, 'count unique', 'Returns the number of distinct elements in a vector.'),
     binarySetFunction('union', vectorReturn, (a, b) => {
-        return [...new Set([...a, ...b])]
+        return uniqueArray(a).concat(differenceOf(b, a))
     }, 'union', 'Returns the distinct elements present in either vector.'),
     binarySetFunction('intersection', vectorReturn, (a, b) => {
         const bSet = asSet(b)
-        return [...new Set(a)].filter(x => bSet.has(x))
+        return uniqueArray(a).filter(x => bSet.has(x))
     }, 'intersection', 'Returns the distinct elements present in both vectors.'),
     binarySetFunction('difference', vectorReturn, (a, b) => {
         return differenceOf(a, b)
     }, 'difference', 'Returns the distinct elements present in the first vector but not the second.'),
     binarySetFunction('symmetricDifference', vectorReturn, (a, b) => {
-        return [...differenceOf(a, b), ...differenceOf(b, a)]
+        return differenceOf(a, b).concat(differenceOf(b, a))
     }, 'symmetric difference', 'Returns the distinct elements present in exactly one of the two vectors.'),
     binarySetFunction('isSubset', booleanReturn, (a, b) => {
         return isSubsetOf(a, b)
@@ -134,6 +160,6 @@ export const setConstants: [string, USSValue][] = [
         return !a.some(x => bSet.has(x))
     }, 'is disjoint', 'Returns true if the two vectors share no elements.'),
     binarySetFunction('setEquals', booleanReturn, (a, b) => {
-        return new Set(a).size === new Set(b).size && isSubsetOf(a, b)
+        return asSet(a).size === asSet(b).size && isSubsetOf(a, b)
     }, 'set equals', 'Returns true if the two vectors contain the same distinct elements, ignoring order and duplicates.'),
 ]
