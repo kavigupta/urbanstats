@@ -1,6 +1,18 @@
+import os
 import typing as t
 
 from pydantic import BaseModel, BeforeValidator
+
+
+# Kept in sync with port() in react/port.js
+def port() -> int:
+    value = os.environ.get("PORT")
+    if not value:
+        return 8000
+    try:
+        return int(value)
+    except ValueError as e:
+        raise ValueError(f"Invalid Port Number {value}") from e
 
 
 def corrects_to_bytes(corrects: t.List[bool]) -> bytes:
