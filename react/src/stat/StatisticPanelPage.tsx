@@ -46,11 +46,11 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
 
     return (
         <PageTemplate
-            screencap={data && ((...args) => createScreenshot({
+            screencap={data && ((...args) => createScreenshot(() => ({
                 path: `${sanitize(reifyString(data.renderedStatname))}.png`,
                 overallWidth: tableRef.current!.offsetWidth * 2,
                 elementsToRender: [headersRef.current!, tableRef.current!],
-            }, ...args))}
+            }), ...args))}
             csvExportCallback={data && (() => ({
                 csvData: generateStatisticsPanelCSVData(data.articleNames, data.table, data.hideOrdinalsPercentiles),
                 csvFilename: `${sanitize(reifyString(data.renderedStatname))}.csv`,
