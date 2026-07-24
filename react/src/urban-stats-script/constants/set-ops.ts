@@ -150,39 +150,39 @@ export const setConstants: [string, USSValue][] = [
             return false
         }
         return asSet(values).has(element)
-    }, 'contains', 'Returns true if the element is present in the vector. Broadcasts over the element, so passing a vector as the second argument tests each of its elements in turn.'),
+    }, 'contains', 'Returns true if the element is present in the vector. Broadcasts over the element, so passing a vector as the second argument tests each of its elements in turn; passing a vector of vectors as the first argument tests membership within each inner vector.'),
     documented('unique', [primitiveVector], vectorReturn, (posArgs) => {
         return uniqueArray(posArgs[0] as Primitive[])
-    }, 'unique', 'Returns the distinct elements of a vector, sorted in ascending order.'),
+    }, 'unique', 'Returns the distinct elements of a vector, sorted in ascending order. Given a vector of vectors, it operates on each inner vector.'),
     documented('countUnique', [primitiveVector], numberReturn, (posArgs) => {
         return asSet(posArgs[0] as Primitive[]).size
-    }, 'count unique', 'Returns the number of distinct elements in a vector.'),
+    }, 'count unique', 'Returns the number of distinct elements in a vector. Given a vector of vectors, it operates on each inner vector.'),
     binarySetFunction('union', vectorReturn, (a, b) => {
         // The two pieces are each sorted but disjoint, so the concatenation needs a final sort.
         return uniqueArray(a).concat(differenceOf(b, a)).sort(comparePrimitives)
-    }, 'union', 'Returns the distinct elements present in either vector.'),
+    }, 'union', 'Returns the distinct elements present in either vector, sorted in ascending order. Given vectors of vectors, it operates on each corresponding pair of inner vectors.'),
     binarySetFunction('intersection', vectorReturn, (a, b) => {
         const bSet = asSet(b)
         return uniqueArray(a).filter(x => bSet.has(x))
-    }, 'intersection', 'Returns the distinct elements present in both vectors.'),
+    }, 'intersection', 'Returns the distinct elements present in both vectors, sorted in ascending order. Given vectors of vectors, it operates on each corresponding pair of inner vectors.'),
     binarySetFunction('difference', vectorReturn, (a, b) => {
         return differenceOf(a, b)
-    }, 'difference', 'Returns the distinct elements present in the first vector but not the second.'),
+    }, 'difference', 'Returns the distinct elements present in the first vector but not the second, sorted in ascending order. Given vectors of vectors, it operates on each corresponding pair of inner vectors.'),
     binarySetFunction('symmetricDifference', vectorReturn, (a, b) => {
         // The two pieces are each sorted but disjoint, so the concatenation needs a final sort.
         return differenceOf(a, b).concat(differenceOf(b, a)).sort(comparePrimitives)
-    }, 'symmetric difference', 'Returns the distinct elements present in exactly one of the two vectors.'),
+    }, 'symmetric difference', 'Returns the distinct elements present in exactly one of the two vectors, sorted in ascending order. Given vectors of vectors, it operates on each corresponding pair of inner vectors.'),
     binarySetFunction('isSubset', booleanReturn, (a, b) => {
         return isSubsetOf(a, b)
-    }, 'is subset', 'Returns true if every element of the first vector is present in the second.'),
+    }, 'is subset', 'Returns true if every element of the first vector is present in the second. Given vectors of vectors, it operates on each corresponding pair of inner vectors.'),
     binarySetFunction('isSuperset', booleanReturn, (a, b) => {
         return isSubsetOf(b, a)
-    }, 'is superset', 'Returns true if every element of the second vector is present in the first.'),
+    }, 'is superset', 'Returns true if every element of the second vector is present in the first. Given vectors of vectors, it operates on each corresponding pair of inner vectors.'),
     binarySetFunction('isDisjoint', booleanReturn, (a, b) => {
         const bSet = asSet(b)
         return !a.some(x => bSet.has(x))
-    }, 'is disjoint', 'Returns true if the two vectors share no elements.'),
+    }, 'is disjoint', 'Returns true if the two vectors share no elements. Given vectors of vectors, it operates on each corresponding pair of inner vectors.'),
     binarySetFunction('setEquals', booleanReturn, (a, b) => {
         return asSet(a).size === asSet(b).size && isSubsetOf(a, b)
-    }, 'set equals', 'Returns true if the two vectors contain the same distinct elements, ignoring order and duplicates.'),
+    }, 'set equals', 'Returns true if the two vectors contain the same distinct elements, ignoring order and duplicates. Given vectors of vectors, it operates on each corresponding pair of inner vectors.'),
 ]
