@@ -48,10 +48,8 @@ def statistic_data_source_country() -> List[Optional[str]]:
 
 def geography_data_source_country() -> Dict[str, str]:
     """
-    For each region type defined within a single country -- a US city, a Canadian riding --
-    that country. These types only ever contain regions of one country, so viewing them in a
-    broader universe silently shows just that country's regions. International types (Country,
-    Urban Center) and types with no country subset (Continent) are absent.
+    Region type to the country that contains it, if any. Region types
+    that are cross-national like Urban Centers are not included.
     """
     countries = set(data_source_countries())
     result = {}
