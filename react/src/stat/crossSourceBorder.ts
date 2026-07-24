@@ -1,5 +1,6 @@
 import { CountsByUT, forTypeByIndex, totalForType } from '../components/countsByArticleType'
 import crossSourceBorderTypes from '../data/cross_source_border_types'
+import geographyDataSourceCountry from '../data/geography_data_source_country'
 import statisticDataSourceCountry from '../data/statistic_data_source_country'
 import statNames from '../data/statistic_name_list'
 import statPaths from '../data/statistic_path_list'
@@ -7,19 +8,40 @@ import universeDataSourceCountry from '../data/universe_data_source_country'
 import { multiSourceStatisticByPath, StatName } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 
-export interface CrossSourceBorderExclusion {
-    excludedCount: number
-    totalCount: number
-    /** Same statistic from a source that covers more of the region set, if there is one. */
-    broaderVariant: StatName | undefined
-    /** Closest region type that never crosses a data source border, if there is one. */
-    domesticArticleType: string | undefined
-}
+/**
+ * A version of the same page that includes the missing regions, to offer as a link.
+ */
+export type CrossSourceBorderAlternative =
+    /** The same statistic from a source that covers every region, e.g. Population [GHS-POP]. */
+    | { kind: 'broader-source', statName: StatName }
+    /** The closest region type that never crosses a data source border, e.g. Urban Area. */
+    | { kind: 'domestic-type', articleType: string }
 
 /**
- * Statistics that come from a single country's statistics agency have no value for regions
- * that span multiple countries, so those regions vanish from the statistic panel entirely.
- * Returns what's needed to disclaim that, or undefined if this page isn't affected.
+ * Why some regions of the current type are missing from the ranking, tagged so the
+ * component can render each case and unit tests can assert the reason directly. Ordered by
+ * priority: the first matching case wins.
+ */
+export type CrossSourceBorderExclusion =
+    /**
+     * The region type itself is defined within a single country (e.g. a US city), and this
+     * universe is broader, so the ranking silently shows only that country's regions.
+     */
+    | { kind: 'geography-limited-to-country', geographyCountry: string }
+    /**
+     * The statistic comes from a single country's statistics agency, this universe sits
+     * inside that country, and the missing regions are the ones straddling its border.
+     */
+    | { kind: 'straddles-border', excludedCount: number, totalCount: number, statisticCountry: string, alternative: CrossSourceBorderAlternative | undefined }
+    /**
+     * The statistic comes from a single country's statistics agency and this universe is
+     * broader, so the missing regions are the ones lying outside that country entirely.
+     */
+    | { kind: 'outside-jurisdiction', excludedCount: number, totalCount: number, statisticCountry: string, alternative: CrossSourceBorderAlternative | undefined }
+
+/**
+ * Determines whether the current statistic page is missing regions in a way worth
+ * disclaiming, and if so why. Returns undefined when there is nothing to disclaim.
  */
 export function crossSourceBorderExclusion({ statName, articleType, universe, counts }: {
     statName: StatName
@@ -27,18 +49,22 @@ export function crossSourceBorderExclusion({ statName, articleType, universe, co
     universe: Universe
     counts: CountsByUT
 }): CrossSourceBorderExclusion | undefined {
-    const alternativeTypes = crossSourceBorderTypes[articleType] as string[] | undefined
-    if (alternativeTypes === undefined) {
-        return undefined
+    const universeCountry = universeDataSourceCountry[universe] as string | undefined
+
+    // Most superseding: the geography itself only exists in one country. If this universe is
+    // outside that country, every region shown belongs to the country regardless of the
+    // statistic, which is the more fundamental thing to point out.
+    const geographyCountry = geographyDataSourceCountry[articleType] as string | undefined
+    if (geographyCountry !== undefined && universeCountry !== geographyCountry) {
+        return { kind: 'geography-limited-to-country', geographyCountry }
     }
 
     const statIndex = statNames.indexOf(statName)
 
-    // Regions can only be missing because they straddle a border if the statistic's
-    // jurisdiction is the one this universe sits in. Where the two differ, the regions
-    // without a value are the ones outside the statistic's country altogether.
-    // TODO TODO TODO we should handle this separately.
-    if (statisticDataSourceCountry[statIndex] !== (universeDataSourceCountry[universe] as string | undefined)) {
+    // A statistic computed the same way everywhere (no single-country source) can't be
+    // missing regions because of a data source border.
+    const statisticCountry = statisticDataSourceCountry[statIndex] as string | null
+    if (statisticCountry === null) {
         return undefined
     }
 
@@ -46,18 +72,52 @@ export function crossSourceBorderExclusion({ statName, articleType, universe, co
     const shownCount = forTypeByIndex(counts, universe, statIndex, articleType)
     const excludedCount = totalCount - shownCount
 
-    // A statistic with no value anywhere in the region set isn't missing the regions that
-    // straddle a border, it just isn't computed for this region type at all.
+    // A statistic with no value anywhere in the region set isn't missing regions to a
+    // border, it just isn't computed for this region type at all.
     if (shownCount === 0 || excludedCount <= 0) {
         return undefined
     }
 
-    return {
+    // Defined iff the region type's regions can straddle a data source border.
+    const alternativeTypes = crossSourceBorderTypes[articleType] as string[] | undefined
+    const payload = {
         excludedCount,
         totalCount,
-        broaderVariant: findBroaderVariant({ statIndex, shownCount, articleType, universe, counts }),
-        domesticArticleType: alternativeTypes.find(typ => forTypeByIndex(counts, universe, statIndex, typ) > 0),
+        statisticCountry,
+        alternative: computeAlternative({ statIndex, shownCount, articleType, universe, counts, alternativeTypes }),
+    } as const
+
+    if (universeCountry === statisticCountry) {
+        // The universe sits inside the statistic's country, so a missing region is one
+        // straddling its border -- which only happens for border-crossing types. For a type
+        // whose regions each lie in a single country, the missing ones are just data gaps
+        // (e.g. US territories with no value), which isn't a data source border issue.
+        return alternativeTypes === undefined ? undefined : { kind: 'straddles-border', ...payload }
     }
+
+    // The universe is broader than the statistic's country, so the missing regions lie
+    // outside it entirely. This applies to any multi-country region type; single-country
+    // geographies were already handled above by the geography-limited case.
+    return { kind: 'outside-jurisdiction', ...payload }
+}
+
+function computeAlternative({ statIndex, shownCount, articleType, universe, counts, alternativeTypes }: {
+    statIndex: number
+    shownCount: number
+    articleType: string
+    universe: Universe
+    counts: CountsByUT
+    alternativeTypes: string[] | undefined
+}): CrossSourceBorderAlternative | undefined {
+    const broaderVariant = findBroaderVariant({ statIndex, shownCount, articleType, universe, counts })
+    if (broaderVariant !== undefined) {
+        return { kind: 'broader-source', statName: broaderVariant }
+    }
+    const domesticArticleType = alternativeTypes?.find(typ => forTypeByIndex(counts, universe, statIndex, typ) > 0)
+    if (domesticArticleType !== undefined) {
+        return { kind: 'domestic-type', articleType: domesticArticleType }
+    }
+    return undefined
 }
 
 /**

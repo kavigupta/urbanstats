@@ -45,6 +45,7 @@ from urbanstats.website_data.create_article_gzips import (
 )
 from urbanstats.website_data.cross_source_border_types import (
     cross_source_border_types,
+    geography_data_source_country,
     statistic_data_source_country,
     universe_data_source_country,
 )
@@ -155,6 +156,11 @@ def create_react_jsons() -> None:
 
     with open("react/src/data/statistic_data_source_country.ts", "w") as f:
         output_typescript(statistic_data_source_country(), f)
+
+    with open("react/src/data/geography_data_source_country.ts", "w") as f:
+        output_typescript(
+            geography_data_source_country(), f, data_type="Record<string, string>"
+        )
 
     mapper_folder = "react/src/data/mapper"
     try:

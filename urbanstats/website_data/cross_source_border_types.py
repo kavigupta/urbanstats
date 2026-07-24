@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
+from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset, SelfSubset
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
 from urbanstats.statistics.collections_list import statistic_collections
 from urbanstats.statistics.output_statistics_metadata import internal_statistic_names
@@ -44,6 +44,26 @@ def statistic_data_source_country() -> List[Optional[str]]:
         collection_by_statistic[statistic].data_source_country
         for statistic in internal_statistic_names()
     ]
+
+
+def geography_data_source_country() -> Dict[str, str]:
+    """
+    For each region type defined within a single country -- a US city, a Canadian riding --
+    that country. These types only ever contain regions of one country, so viewing them in a
+    broader universe silently shows just that country's regions. International types (Country,
+    Urban Center) and types with no country subset (Continent) are absent.
+    """
+    countries = set(data_source_countries())
+    result = {}
+    for shapefile in shapefiles.values():
+        masks = shapefile.subset_masks
+        if len(masks) == 1 and all(
+            isinstance(subset, SelfSubset) for subset in masks.values()
+        ):
+            [country] = masks
+            assert country in countries, country
+            result[shapefile.meta["type"]] = country
+    return result
 
 
 def cross_source_border_types() -> Dict[str, List[str]]:
