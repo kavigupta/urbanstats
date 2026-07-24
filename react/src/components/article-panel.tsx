@@ -6,9 +6,9 @@ import React, { CSSProperties, ReactNode, useCallback, useContext, useMemo, useR
 import { Navigator } from '../navigation/Navigator'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
-import { rowExpandedKey, Settings, useSetting, useSettings } from '../page_template/settings'
+import { rowExpandedKey, Settings, useSetting, useSettings, useSettingsInfo, useStagedSettingKeys } from '../page_template/settings'
 import { changeStatGroupSetting, groupKeys, groupYearKeys, StatGroupSettings, useAvailableCategories, useAvailableGroups, useCategoryStatus, useChangeCategorySetting } from '../page_template/statistic-settings'
-import { allGroups, Category, statParents } from '../page_template/statistic-tree'
+import { allGroups, Category, Group, statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { Universe, universeContext, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
@@ -23,6 +23,7 @@ import { ArticleWarnings } from './ArticleWarnings'
 import { ExpandButton } from './ExpandButton'
 import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
+import { StagingControls } from './StagingControls'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
 import { pullRelevantPlotProps } from './plots'
@@ -61,11 +62,8 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
         return rows(allGroupsEnabled)[0]
     }, [rows, settings])
 
-    const settingsContext = useContext(Settings.Context)
-    const [editMode] = useSetting('edit_mode')
-    const setEditMode = useCallback((value: boolean) => { settingsContext.setSetting('edit_mode', value) }, [settingsContext])
     const [filter, setFilter] = useState('')
-    const editModeState = useMemo(() => ({ editMode, setEditMode, filter, setFilter }), [editMode, setEditMode, filter])
+    const editModeState = useMemo(() => ({ filter, setFilter }), [filter])
 
     const csvExportCallback = useCallback<CSVExportData>(() => {
         const data = generateCSVDataForArticles([article], [filteredRows], true)
@@ -196,7 +194,8 @@ function ArticleTable(props: {
     allRows: ArticleRow[]
     article: Article
 }): ReactNode {
-    const editMode = useEditMode()
+    const editModeContext = useEditMode()
+    const [editMode] = useSetting('edit_mode')
     const colors = useColors()
     const expandedSettings = useSettings(props.filteredRows.map(row => rowExpandedKey(row.statpath)))
     const expandedEach = props.filteredRows.map(row => row.extraStats.length > 0 && (expandedSettings[rowExpandedKey(row.statpath)] ?? false))
@@ -250,7 +249,7 @@ function ArticleTable(props: {
 
     const topLeftSpec = { type: 'top-left-header' } satisfies CellSpec
 
-    if (editMode?.editMode) {
+    if (editModeContext !== undefined && editMode) {
         return (
             <ArticleEditTable
                 allRows={props.allRows}
@@ -259,7 +258,7 @@ function ArticleTable(props: {
                 columnWidth={columnWidth}
                 onlyColumns={onlyColumns}
                 simpleOrdinals={simpleOrdinals}
-                filter={editMode.filter}
+                filter={editModeContext.filter}
             />
         )
     }
@@ -329,9 +328,14 @@ interface SharedEditRowProps {
     columnWidthsInfo: CommonLayoutInformation
 }
 
+function highlightStyle(colors: Colors, highlight: boolean): CSSProperties {
+    return highlight ? { backgroundColor: colors.slightlyDifferentBackgroundFocused, borderRadius: '5px' } : {}
+}
+
 function EditStatRow(props: SharedEditRowProps & {
     index: number
     greyed: boolean
+    highlight: boolean
     checkbox?: ReactNode
     checkboxId: string
     displayName: HumanReadableName
@@ -343,7 +347,7 @@ function EditStatRow(props: SharedEditRowProps & {
         <div className="for-testing-table-row" style={editRowStyle(colors, props.index, props.greyed)}>
             <label
                 htmlFor={props.checkbox === undefined ? props.checkboxId : undefined}
-                style={{ ...editLabelStyle, width: `${props.widthLeftHeader}%`, paddingLeft: `${props.indent * 0.75}em` }}
+                style={{ ...editLabelStyle, ...highlightStyle(colors, props.highlight), width: `${props.widthLeftHeader}%`, paddingLeft: `${props.indent * 0.75}em` }}
             >
                 {props.checkbox}
                 <span className="serif value">{reifyReact(props.displayName)}</span>
@@ -361,11 +365,11 @@ function EditStatRow(props: SharedEditRowProps & {
     )
 }
 
-function EditGroupHeaderRow(props: { index: number, greyed: boolean, checkbox: ReactNode, name: string }): ReactNode {
+function EditGroupHeaderRow(props: { index: number, greyed: boolean, highlight: boolean, checkbox: ReactNode, name: string }): ReactNode {
     const colors = useColors()
     return (
         <div className="for-testing-table-row" style={editRowStyle(colors, props.index, props.greyed)}>
-            <label style={{ ...editLabelStyle, width: '100%', paddingLeft: '0.75em' }}>
+            <label style={{ ...editLabelStyle, ...highlightStyle(colors, props.highlight), width: '100%', paddingLeft: '0.75em' }}>
                 {props.checkbox}
                 <span className="serif value">{props.name}</span>
             </label>
@@ -397,6 +401,12 @@ function EditCategory(props: SharedEditRowProps & {
     const changeCategory = useChangeCategorySetting(props.category)
     const settings = useContext(Settings.Context)
     const groupEnabled = useSettings(groupKeys(availableGroups))
+    const groupInfo = useSettingsInfo(groupKeys(availableGroups))
+    const isStaged = (group: Group): boolean => {
+        const info = groupInfo[`show_stat_group_${group.id}`]
+        return 'stagedValue' in info && info.stagedValue !== info.persistedValue
+    }
+    const categoryHighlight = availableGroups.some(isStaged)
 
     // Undefined means "follow the checkbox": expanded when anything is checked.
     // A manual toggle overrides that, so a fully-checked category can still be collapsed.
@@ -422,6 +432,7 @@ function EditCategory(props: SharedEditRowProps & {
             continue
         }
         const enabled = groupEnabled[`show_stat_group_${group.id}`]
+        const highlight = isStaged(group)
         const shared: SharedEditRowProps = props
         const checkboxId = `edit-checkbox-${group.id}`
         const checkbox = (
@@ -439,6 +450,7 @@ function EditCategory(props: SharedEditRowProps & {
                     {...shared}
                     index={index++}
                     greyed={!enabled}
+                    highlight={highlight}
                     checkbox={checkbox}
                     checkboxId={checkboxId}
                     displayName={props.displayNames.get(groupRows[0])!}
@@ -449,7 +461,7 @@ function EditCategory(props: SharedEditRowProps & {
         }
         else {
             bodyRows.push(
-                <EditGroupHeaderRow key={group.id} index={index++} greyed={!enabled} checkbox={checkbox} name={group.name} />,
+                <EditGroupHeaderRow key={group.id} index={index++} greyed={!enabled} highlight={highlight} checkbox={checkbox} name={group.name} />,
             )
             for (const row of groupRows) {
                 bodyRows.push(
@@ -458,6 +470,7 @@ function EditCategory(props: SharedEditRowProps & {
                         {...shared}
                         index={index++}
                         greyed={!enabled}
+                        highlight={highlight}
                         checkboxId={checkboxId}
                         displayName={props.displayNames.get(row)!}
                         indent={2}
@@ -481,7 +494,7 @@ function EditCategory(props: SharedEditRowProps & {
                             aria-label={expanded ? `Collapse ${props.category.name} category` : `Expand ${props.category.name} category`}
                         />
                     )}
-                    <label style={{ ...editLabelStyle, gap: '0.25em' }}>
+                    <label style={{ ...editLabelStyle, ...highlightStyle(colors, categoryHighlight), gap: '0.25em' }}>
                         <EditCheckbox
                             checked={status === true}
                             indeterminate={status === 'indeterminate'}
@@ -513,11 +526,16 @@ function ArticleEditTable(props: {
     const categories = useAvailableCategories()
     const isMobile = useMobileLayout()
 
+    const staged = useStagedSettingKeys() !== undefined
+
     // On mobile, edit mode drops the percentile/ordinal/pointer columns so the
-    // checkboxes and names have room; only the value stays.
+    // checkboxes and names have room; only the value stays. The name column also
+    // gets a wider share since it no longer competes with those columns.
     const onlyColumns: ColumnIdentifier[] = isMobile
         ? props.onlyColumns.filter(column => column === 'statval' || column === 'statval_unit')
         : props.onlyColumns
+    const widthLeftHeader = isMobile ? 58 : props.widthLeftHeader
+    const columnWidth = isMobile ? 100 - widthLeftHeader : props.columnWidth
 
     const rowsByGroup = new Map<string, ArticleRow[]>()
     for (const row of props.allRows) {
@@ -559,12 +577,13 @@ function ArticleEditTable(props: {
 
     return (
         <div className="stats_table">
+            {staged && <StagingControls />}
             <div style={{ position: 'relative' }}>
                 <TableHeaderContainer>
                     <MainHeaderRow
-                        columnWidth={props.columnWidth}
+                        columnWidth={columnWidth}
                         topLeftSpec={topLeftSpec}
-                        topLeftWidth={props.widthLeftHeader}
+                        topLeftWidth={widthLeftHeader}
                         onlyColumns={onlyColumns}
                         extraSpaceRight={[0]}
                         simpleOrdinals={props.simpleOrdinals}
@@ -578,8 +597,8 @@ function ArticleEditTable(props: {
                         rowsByGroup={rowsByGroup}
                         displayNames={displayNames}
                         article={props.article}
-                        widthLeftHeader={props.widthLeftHeader}
-                        columnWidth={props.columnWidth}
+                        widthLeftHeader={widthLeftHeader}
+                        columnWidth={columnWidth}
                         onlyColumns={onlyColumns}
                         simpleOrdinals={props.simpleOrdinals}
                         columnWidthsInfo={columnWidthsInfo}

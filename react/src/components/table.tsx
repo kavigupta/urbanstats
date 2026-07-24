@@ -263,7 +263,9 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     const isMobileLayout = useMobileLayout()
     const isScreenshot = useScreenshotMode()
     const isTranspose = useTranspose()
-    const editMode = useEditMode()
+    const editModeContext = useEditMode()
+    const [editMode, setEditMode] = useSetting('edit_mode')
+    const editingAvailable = editModeContext !== undefined
 
     const [statsModalOpen, setStatsModalOpen] = useState(false)
 
@@ -278,17 +280,17 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     const sidebarSectionContent = useSidebarSectionContentClassName()
     const sidebarFontSize = useSidebarFontSize()
 
-    if (editMode?.editMode) {
+    if (editModeContext !== undefined && editMode) {
         return (
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '1px', width: `${props.width}%` }}>
-                <EditModeButton onClick={() => { editMode.setEditMode(false) }} text="Done" />
+                <EditModeButton onClick={() => { setEditMode(false) }} text="Done" />
                 <input
                     type="text"
                     className="serif"
-                    placeholder="Filter"
+                    placeholder="Search Statistics"
                     style={{ flex: '1 1 auto', minWidth: 0, fontSize: '16px' }}
-                    value={editMode.filter}
-                    onChange={(e) => { editMode.setFilter(e.target.value) }}
+                    value={editModeContext.filter}
+                    onChange={(e) => { editModeContext.setFilter(e.target.value) }}
                     data-test-id="edit-mode-filter"
                 />
             </div>
@@ -298,9 +300,9 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     return (
         <>
             <div style={{ position: 'relative', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1px', width: `${props.width}%` }}>
-                {editMode !== undefined && !isScreenshot && (
+                {editingAvailable && !isScreenshot && (
                     <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}>
-                        <EditModeButton onClick={() => { editMode.setEditMode(true) }} text="Edit" />
+                        <EditModeButton onClick={() => { setEditMode(true) }} text="Edit" />
                     </div>
                 )}
                 {canHaveStatsModal
