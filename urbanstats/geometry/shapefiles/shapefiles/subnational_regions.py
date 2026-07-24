@@ -1,6 +1,7 @@
 import us
 
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
+from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
 from urbanstats.special_cases.country import subnational_regions
@@ -73,6 +74,7 @@ SUBNATIONAL_REGIONS = Shapefile(
             "Province", lambda x: extract_country_longname(x) == "Canada"
         ),
     },
+    cross_source_borders=CrossSourceBorders(can_straddle=False),
     abbreviation="SUBN",
     data_credit=[
         dict(

@@ -43,6 +43,12 @@ from urbanstats.website_data.create_article_gzips import (
     create_article_gzips,
     extra_stats,
 )
+from urbanstats.website_data.cross_source_border_types import (
+    cross_source_border_types,
+    geography_data_source_country,
+    statistic_data_source_country,
+    universe_data_source_country,
+)
 from urbanstats.website_data.default_universe_by_stat_geo import (
     output_default_universe_by_stat_geo,
 )
@@ -137,6 +143,29 @@ def create_react_jsons() -> None:
 
     with open("react/src/data/syau_region_types.ts", "w") as f:
         output_typescript(syau_regions(), f)
+
+    with open("react/src/data/cross_source_border_types.ts", "w") as f:
+        output_typescript(
+            cross_source_border_types(),
+            f,
+            data_type=(
+                "Record<string, { alternativeGeographyTypes: string[],"
+                " reasonForNoAlternatives: string | null }>"
+            ),
+        )
+
+    with open("react/src/data/universe_data_source_country.ts", "w") as f:
+        output_typescript(
+            universe_data_source_country(), f, data_type="Record<string, string>"
+        )
+
+    with open("react/src/data/statistic_data_source_country.ts", "w") as f:
+        output_typescript(statistic_data_source_country(), f)
+
+    with open("react/src/data/geography_data_source_country.ts", "w") as f:
+        output_typescript(
+            geography_data_source_country(), f, data_type="Record<string, string>"
+        )
 
     mapper_folder = "react/src/data/mapper"
     try:

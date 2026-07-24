@@ -17,6 +17,7 @@ from urbanstats.data.population_overlays import (
     direct_population_overlay,
     relevant_regions,
 )
+from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
 from urbanstats.geometry.shapefiles.shapefiles.urban_centers import URBAN_CENTERS
@@ -630,6 +631,12 @@ def circle_shapefile_object(country_shapefile, population):
                 "CA " + name, lambda x: x.longname.endswith(", Canada")
             ),
         },
+        cross_source_borders=CrossSourceBorders(
+            can_straddle=True,
+            reason_for_no_alternatives="Circles are drawn around a point without regard"
+            " to national borders, and no region type defined by a statistics agency"
+            " resembles them.",
+        ),
         abbreviation=named_populations[population],
         data_credit=dict(
             text="The population circles were defined using the GHS-POP dataset,"

@@ -15,6 +15,8 @@ from urbanstats.geometry.shapefiles.shapefile import (
 
 
 class StatisticCollection(ABC):
+    data_source_country = None
+
     def __init__(self):
         quiz_questions = set(self.quiz_question_descriptors())
         all_columns = set(self.internal_statistic_names_list())
@@ -102,6 +104,8 @@ class InternationalStatistics(StatisticCollection):
 
 
 class USAStatistics(StatisticCollection):
+    data_source_country = "USA"
+
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
@@ -109,7 +113,7 @@ class USAStatistics(StatisticCollection):
             shapefile,
             existing_statistics,
             shapefile_table,
-            subset="USA",
+            subset=self.data_source_country,
             compute_function=self.compute_statistics_dictionary_usa,
         )
         return result
@@ -135,6 +139,8 @@ class USAStatisticsCounties(USAStatistics):
 
 
 class CanadaStatistics(StatisticCollection):
+    data_source_country = "Canada"
+
     def compute_statistics_dictionary(
         self, *, shapefile, existing_statistics, shapefile_table
     ):
@@ -142,7 +148,7 @@ class CanadaStatistics(StatisticCollection):
             shapefile,
             existing_statistics,
             shapefile_table,
-            subset="Canada",
+            subset=self.data_source_country,
             compute_function=self.compute_statistics_dictionary_canada,
         )
         return result
