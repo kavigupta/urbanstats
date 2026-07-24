@@ -13,12 +13,6 @@ function withArticle(country: string): string {
     return country === 'USA' ? 'the USA' : country
 }
 
-/**
- * Warns that some regions are missing from this ranking -- because the geography is
- * country-specific, or because a single-country statistic drops the regions outside its
- * country -- and where a version that includes them exists, links to it. Rendered alongside
- * the page headers so that it's part of the screenshot.
- */
 export function CrossSourceBorderDisclaimer({ stat, view, counts }: {
     stat: Statistic
     view: View
