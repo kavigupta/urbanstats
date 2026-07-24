@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { getLocation, screencap, target, urbanstatsFixture, waitForLoading } from './test_utils'
+import { downloadImage, getLocation, screencap, target, urbanstatsFixture, waitForLoading } from './test_utils'
 
 const disclaimer = Selector('[data-test-id="cross-source-border-disclaimer"]')
 const disclaimerLink = Selector('[data-test-id="cross-source-border-link"]')
@@ -24,6 +24,7 @@ test('links to the broader source that covers every region', async (t) => {
     )
     await t.expect(disclaimerLink.innerText).eql('Population [GHS-POP]')
     await screencap(t)
+    await downloadImage(t)
     await t.click(disclaimerLink)
     await t.expect(getLocation()).contains('statname=Population+%5BGHS-POP%5D')
     await t.expect(getLocation()).contains('article_type=Urban+Center')
@@ -45,6 +46,7 @@ test('links to a domestic region type when the statistic has one source', async 
     )
     await t.expect(disclaimerLink.innerText).eql('Urban Areas')
     await screencap(t)
+    await downloadImage(t)
     await t.click(disclaimerLink)
     await t.expect(getLocation()).contains('article_type=Urban+Area')
     await t.expect(getLocation()).contains('statname=Arthritis+__PCT__')
@@ -66,6 +68,7 @@ test('explains why there is no alternative for a type with no equivalent', async
     )
     await t.expect(disclaimerLink.count).eql(0, 'no equivalent type to link to')
     await screencap(t)
+    await downloadImage(t)
 })
 
 // A region type whose regions cannot cross a data source border (County) shows nothing.
@@ -106,10 +109,11 @@ test('explains limited coverage for a non-crossing type in a broad universe', as
     await waitForLoading()
     await t.expect(disclaimer.count).eql(1, 'expected the cross-source-border disclaimer')
     await t.expect(disclaimer.innerText).match(
-        /^[\d\u202f]+ of the [\d\u202f]+ Subnational Regions are missing from this ranking\. White % is only available in the USA\.$/,
+        /^[\d\u202f]+ of the [\d\u202f]+ Subnational Regions are missing from this ranking\. White % is only available in the USA \(and we only compute it for regions contained entirely within the USA\)\.$/,
     )
     await t.expect(disclaimerLink.count).eql(0, 'no broader source or domestic equivalent to link to')
     await screencap(t)
+    await downloadImage(t)
 })
 
 // The same statistic and type over a universe spanning multiple jurisdictions (world) still
@@ -125,10 +129,11 @@ test('explains limited coverage in a universe spanning more than one jurisdictio
     await waitForLoading()
     await t.expect(disclaimer.count).eql(1, 'expected the cross-source-border disclaimer')
     await t.expect(disclaimer.innerText).match(
-        /^[\d\u202f]+ of the [\d\u202f]+ Urban Centers are missing from this ranking\. Population is only available in the USA\. See Population \[GHS-POP\] instead, which covers all of them\.$/,
+        /^[\d\u202f]+ of the [\d\u202f]+ Urban Centers are missing from this ranking\. Population is only available in the USA \(and we only compute it for regions contained entirely within the USA\)\. See Population \[GHS-POP\] instead, which covers all of them\.$/,
     )
     await t.expect(disclaimerLink.innerText).eql('Population [GHS-POP]')
     await screencap(t)
+    await downloadImage(t)
     await t.click(disclaimerLink)
     await t.expect(getLocation()).contains('statname=Population+%5BGHS-POP%5D')
     await t.expect(getLocation()).contains('article_type=Urban+Center')
@@ -175,4 +180,5 @@ test('explains that a single-country geography only exists in one country', asyn
     )
     await t.expect(disclaimerLink.count).eql(0, 'the geography disclaimer offers no link')
     await screencap(t)
+    await downloadImage(t)
 })

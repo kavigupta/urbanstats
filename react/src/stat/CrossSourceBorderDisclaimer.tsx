@@ -1,6 +1,7 @@
 import React, { ReactNode, useContext, useMemo } from 'react'
 
 import { CountsByUT } from '../components/countsByArticleType'
+import { useScreenshotMode } from '../components/screenshot'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { displayType, separateNumber } from '../utils/text'
@@ -13,12 +14,19 @@ function withArticle(country: string): string {
     return country === 'USA' ? 'the USA' : country
 }
 
-export function CrossSourceBorderDisclaimer({ stat, view, counts }: {
+export function CrossSourceBorderDisclaimer({ stat, view, counts, placement }: {
     stat: Statistic
     view: View
     counts: CountsByUT
+    // 'header' shows it at the top when viewing the page normally; 'footnote' shows it as a
+    // de-emphasized footnote in the screenshot. Each is hidden in the other's context. Note
+    // this hook only flips because this component renders inside PageTemplate's
+    // ScreenshotContext.Provider -- calling it in a parent of PageTemplate reads the default
+    // context and never updates.
+    placement: 'header' | 'footnote'
 }): ReactNode {
     const colors = useColors()
+    const screenshotMode = useScreenshotMode()
 
     const exclusion = useMemo(
         () => stat.type === 'simple'
@@ -32,21 +40,25 @@ export function CrossSourceBorderDisclaimer({ stat, view, counts }: {
         [stat, counts],
     )
 
-    if (exclusion === undefined || stat.type !== 'simple') {
+    const footnote = placement === 'footnote'
+
+    // The footnote is for the screenshot; the header is for normal viewing.
+    if (exclusion === undefined || stat.type !== 'simple' || screenshotMode !== footnote) {
         return null
     }
 
-    return (
-        <div
-            style={{
+    const style: React.CSSProperties = footnote
+        ? { marginTop: '8px', fontSize: '12px', color: colors.ordinalTextColor }
+        : {
                 backgroundColor: colors.slightlyDifferentBackgroundFocused,
                 borderRadius: '5px',
                 padding: '0.5em 1em',
                 marginTop: '8px',
                 fontSize: '14px',
-            }}
-            data-test-id="cross-source-border-disclaimer"
-        >
+            }
+
+    return (
+        <div style={style} data-test-id="cross-source-border-disclaimer">
             <DisclaimerContents stat={stat} view={view} exclusion={exclusion} />
         </div>
     )
@@ -75,7 +87,8 @@ function DisclaimerContents({ stat, view, exclusion }: {
                     <AlternativeLink stat={stat} view={view} alternative={exclusion.alternative} />
                 </>
             )
-        case 'outside-jurisdiction':
+        case 'outside-jurisdiction': {
+            const country = withArticle(exclusion.statisticCountry)
             return (
                 <>
                     <b>
@@ -84,10 +97,11 @@ function DisclaimerContents({ stat, view, exclusion }: {
                         {separateNumber(exclusion.totalCount.toString())}
                         {` ${typ} are missing from this ranking.`}
                     </b>
-                    {` ${stat.statName} is only available in ${withArticle(exclusion.statisticCountry)}.`}
+                    {` ${stat.statName} is only available in ${country} (and we only compute it for regions contained entirely within ${country}).`}
                     <AlternativeLink stat={stat} view={view} alternative={exclusion.alternative} />
                 </>
             )
+        }
     }
 }
 

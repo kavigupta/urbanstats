@@ -40,6 +40,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
 }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
     const tableRef = useRef<HTMLDivElement>(null)
+    const footerRef = useRef<HTMLDivElement>(null)
 
     const subHeaderTextClass = useSubHeaderTextClass()
 
@@ -47,11 +48,17 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
 
     return (
         <PageTemplate
-            screencap={data && ((...args) => createScreenshot({
+            screencap={data && ((...args) => createScreenshot(() => ({
                 path: `${sanitize(reifyString(data.renderedStatname))}.png`,
                 overallWidth: tableRef.current!.offsetWidth * 2,
-                elementsToRender: [headersRef.current!, tableRef.current!],
-            }, ...args))}
+                // Resolved inside screenshot mode: the disclaimer has moved into the footer by
+                // now, so include the footer as a footnote below the table when it has content.
+                elementsToRender: [
+                    headersRef.current!,
+                    tableRef.current!,
+                    ...(footerRef.current && footerRef.current.childElementCount > 0 ? [footerRef.current] : []),
+                ],
+            }), ...args))}
             csvExportCallback={data && (() => ({
                 csvData: generateStatisticsPanelCSVData(data.articleNames, data.table, data.hideOrdinalsPercentiles),
                 csvFilename: `${sanitize(reifyString(data.renderedStatname))}.csv`,
@@ -61,7 +68,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
                 <StatisticPanelHead articleType={stat.articleType} universe={stat.universe} />
                 <div className={subHeaderTextClass}>{reifyReact(subHeaderText)}</div>
                 {!view.edit && <ViewHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} />}
-                <CrossSourceBorderDisclaimer stat={stat} view={view} counts={counts} />
+                <CrossSourceBorderDisclaimer stat={stat} view={view} counts={counts} placement="header" />
             </div>
             <div style={{ marginBlockEnd: '16px' }}></div>
             {view.edit && <EditPreamble stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} counts={counts} errors={errors} assignments={assignments} />}
@@ -73,6 +80,9 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
                             <RelativeLoader loading={loading} />
                         </div>
                     )}
+            <div ref={footerRef}>
+                <CrossSourceBorderDisclaimer stat={stat} view={view} counts={counts} placement="footnote" />
+            </div>
         </PageTemplate>
     )
 }
