@@ -59,15 +59,16 @@ export function CrossSourceBorderDisclaimer({ stat, view, counts, placement }: {
 
     return (
         <div style={style} data-test-id="cross-source-border-disclaimer">
-            <DisclaimerContents stat={stat} view={view} exclusion={exclusion} />
+            <DisclaimerContents stat={stat} view={view} exclusion={exclusion} footnote={footnote} />
         </div>
     )
 }
 
-function DisclaimerContents({ stat, view, exclusion }: {
+function DisclaimerContents({ stat, view, exclusion, footnote }: {
     stat: Statistic & { type: 'simple' }
     view: View
     exclusion: CrossSourceBorderExclusion
+    footnote: boolean
 }): ReactNode {
     const typ = displayType(stat.universe, stat.articleType)
 
@@ -84,7 +85,7 @@ function DisclaimerContents({ stat, view, exclusion }: {
                         {` ${typ} in ${stat.universe} are missing from this ranking.`}
                     </b>
                     {` ${typ} can span more than one country, and ${stat.statName} is not available for the ones that do.`}
-                    <AlternativeLink stat={stat} view={view} alternative={exclusion.alternative} />
+                    <AlternativeLink stat={stat} view={view} alternative={exclusion.alternative} footnote={footnote} />
                 </>
             )
         case 'outside-jurisdiction': {
@@ -98,17 +99,18 @@ function DisclaimerContents({ stat, view, exclusion }: {
                         {` ${typ} are missing from this ranking.`}
                     </b>
                     {` ${stat.statName} is only available in ${country} (and we only compute it for regions contained entirely within ${country}).`}
-                    <AlternativeLink stat={stat} view={view} alternative={exclusion.alternative} />
+                    <AlternativeLink stat={stat} view={view} alternative={exclusion.alternative} footnote={footnote} />
                 </>
             )
         }
     }
 }
 
-function AlternativeLink({ stat, view, alternative }: {
+function AlternativeLink({ stat, view, alternative, footnote }: {
     stat: Statistic & { type: 'simple' }
     view: View
     alternative: CrossSourceBorderAlternative | undefined
+    footnote: boolean
 }): ReactNode {
     const colors = useColors()
     const navContext = useContext(Navigator.Context)
@@ -120,6 +122,12 @@ function AlternativeLink({ stat, view, alternative }: {
     // No version of the page includes the missing regions; just explain why.
     if (alternative.kind === 'no-equivalent') {
         return ` ${alternative.reason}`
+    }
+
+    // The remaining alternatives are links to another version of the page, which are useless
+    // in a static screenshot.
+    if (footnote) {
+        return null
     }
 
     // Same page, but for the statistic or region type that covers the missing regions
