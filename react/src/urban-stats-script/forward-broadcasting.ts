@@ -4,7 +4,7 @@ import { UrbanStatsASTExpression } from './ast'
 import { Context } from './context'
 import { InterpretationError, evaluate } from './interpreter'
 import { LocInfo } from './location'
-import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType, undocValue, OriginalFunctionArgs, USSFunctionArgType } from './types-values'
+import { USSValue, USSType, USSVectorType, USSObjectType, renderType, USSRawValue, USSFunctionType, ValueArg, unifyFunctionType as unifyFunctionArgType, renderArgumentType, getPrimitiveType, getPrimitiveVectorType, undocValue, OriginalFunctionArgs, USSFunctionArgType, USSFunctionReturnType } from './types-values'
 
 interface PredicateDescriptor {
     role: string
@@ -325,6 +325,17 @@ function mapSeveral(
     })
 }
 
+function inferReturnType(returnType: USSFunctionReturnType, resulting: USSRawValue, depth: number): USSType {
+    switch (returnType.type) {
+        case 'concrete':
+            return returnType.value
+        case 'inferFromPrimitive':
+            return getPrimitiveType(resulting, depth)
+        case 'inferFromPrimitiveVector':
+            return getPrimitiveVectorType(resulting, depth)
+    }
+}
+
 function nestedVectorType(type: USSType, depth: number): USSType {
     if (depth === 0) {
         return type
@@ -384,7 +395,7 @@ export function broadcastApply(
 
     // console.log('resulting', resulting, 'fnLocated', fnLocated, 'posArgsLocated', posArgsLocated, 'kwArgsLocated', kwArgsLocated)
     const returnTypeOrInfer = (fnLocated[1] as USSFunctionType).returnType
-    const returnType = returnTypeOrInfer.type === 'inferFromPrimitive' ? getPrimitiveType(resulting, depth) : returnTypeOrInfer.value
+    const returnType = inferReturnType(returnTypeOrInfer, resulting, depth)
     return {
         type: 'success',
         result: undocValue(resulting, nestedVectorType(returnType, depth)),

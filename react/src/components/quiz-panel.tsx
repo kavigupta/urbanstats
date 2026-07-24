@@ -146,6 +146,7 @@ function QuizPanelNoResets(props: { quizDescriptor: QuizDescriptor, todayName?: 
                             history={history}
                             todayName={props.todayName}
                             quizDescriptor={props.quizDescriptor}
+                            isDone={props.todaysQuiz.isDone}
                         />
                     )
                 }

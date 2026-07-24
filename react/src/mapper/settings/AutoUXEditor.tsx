@@ -43,7 +43,7 @@ function createDefaultExpression(type: USSType, blockIdent: string, typeEnvironm
         if (renderType(tdoc.type) === renderType(type)) {
             return getDefaultVariable({ type: 'variable', name }, typeEnvironment, blockIdent)
         }
-        if (tdoc.type.type === 'function' && tdoc.type.returnType.type !== 'inferFromPrimitive' && renderType(tdoc.type.returnType.value) === renderType(type)) {
+        if (tdoc.type.type === 'function' && tdoc.type.returnType.type === 'concrete' && renderType(tdoc.type.returnType.value) === renderType(type)) {
             return getDefaultFunction({ type: 'function', name }, typeEnvironment, blockIdent)
         }
     }

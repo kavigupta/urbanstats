@@ -63,6 +63,9 @@ export function Editor(
 
     const spanTokenMapRef = useRef<Map<Element, AnnotatedToken>>(new Map())
 
+    const popoverElementRef = useRef<HTMLElement | undefined>(undefined)
+    popoverElementRef.current = popoverState?.element
+
     const renderScript = useCallback((newScript: Script) => {
         spanTokenMapRef.current.clear()
 
@@ -123,6 +126,13 @@ export function Editor(
     useEffect(() => {
         const listener = (): void => {
             // These events are often spurious
+
+            // Clicking inside the popover moves the selection into it. Reacting to that would blur the editor,
+            // which tears the popover down before the click lands.
+            const anchorNode = window.getSelection()?.anchorNode
+            if (anchorNode !== undefined && anchorNode !== null && popoverElementRef.current?.contains(anchorNode) === true) {
+                return
+            }
 
             const range = getRange(editorRef.current!)
             setSelectionRef.current(range)
@@ -288,7 +298,11 @@ export function Editor(
 
     useEffect(() => {
         const editor = editorRef.current!
-        const listener = (): void => {
+        const listener = (e: FocusEvent): void => {
+            // Some browsers focus links on mousedown; tearing down here would lose the click
+            if (e.relatedTarget instanceof Node && popoverElementRef.current?.contains(e.relatedTarget) === true) {
+                return
+            }
             setPopoverState(undefined)
         }
         editor.addEventListener('blur', listener)
