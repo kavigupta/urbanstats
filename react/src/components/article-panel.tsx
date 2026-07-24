@@ -61,10 +61,11 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
         return rows(allGroupsEnabled)[0]
     }, [rows, settings])
 
-    // TODO(#1692): persist edit mode in the settings vector rather than local state.
-    const [editMode, setEditMode] = useState(false)
+    const settingsContext = useContext(Settings.Context)
+    const [editMode] = useSetting('edit_mode')
+    const setEditMode = useCallback((value: boolean) => { settingsContext.setSetting('edit_mode', value) }, [settingsContext])
     const [filter, setFilter] = useState('')
-    const editModeState = useMemo(() => ({ editMode, setEditMode, filter, setFilter }), [editMode, filter])
+    const editModeState = useMemo(() => ({ editMode, setEditMode, filter, setFilter }), [editMode, setEditMode, filter])
 
     const csvExportCallback = useCallback<CSVExportData>(() => {
         const data = generateCSVDataForArticles([article], [filteredRows], true)
@@ -293,7 +294,7 @@ function searchMatch(searchTerm: string, target: string): boolean {
     return target.toLowerCase().includes(searchTerm.toLowerCase())
 }
 
-function EditCheckbox(props: { checked: boolean, indeterminate?: boolean, onChange: (checked: boolean) => void, testId: string }): ReactNode {
+function EditCheckbox(props: { id?: string, checked: boolean, indeterminate?: boolean, onChange: (checked: boolean) => void, testId: string }): ReactNode {
     const colors = useColors()
     const ref = useRef<HTMLInputElement>(null)
     React.useEffect(() => {
@@ -304,6 +305,7 @@ function EditCheckbox(props: { checked: boolean, indeterminate?: boolean, onChan
     return (
         <input
             ref={ref}
+            id={props.id}
             type="checkbox"
             checked={props.checked}
             onChange={(e) => { props.onChange(e.target.checked) }}
@@ -312,6 +314,11 @@ function EditCheckbox(props: { checked: boolean, indeterminate?: boolean, onChan
         />
     )
 }
+
+// Wrapping the name in a label lets a click anywhere on it toggle the associated
+// checkbox. Child rows of a multi-stat group have no checkbox of their own, so
+// they point at the group's checkbox by id.
+const editLabelStyle: CSSProperties = { padding: '1px', display: 'flex', alignItems: 'center', gap: '0.4em', cursor: 'pointer' }
 
 interface SharedEditRowProps {
     article: Article
@@ -326,6 +333,7 @@ function EditStatRow(props: SharedEditRowProps & {
     index: number
     greyed: boolean
     checkbox?: ReactNode
+    checkboxId: string
     displayName: HumanReadableName
     indent: number
     row: ArticleRow
@@ -333,10 +341,13 @@ function EditStatRow(props: SharedEditRowProps & {
     const colors = useColors()
     return (
         <div className="for-testing-table-row" style={editRowStyle(colors, props.index, props.greyed)}>
-            <div style={{ width: `${props.widthLeftHeader}%`, padding: '1px', paddingLeft: `${props.indent * 0.75}em`, display: 'flex', alignItems: 'center', gap: '0.4em' }}>
+            <label
+                htmlFor={props.checkbox === undefined ? props.checkboxId : undefined}
+                style={{ ...editLabelStyle, width: `${props.widthLeftHeader}%`, paddingLeft: `${props.indent * 0.75}em` }}
+            >
                 {props.checkbox}
                 <span className="serif value">{reifyReact(props.displayName)}</span>
-            </div>
+            </label>
             <StatisticRowCells
                 width={props.columnWidth}
                 longname={props.article.longname}
@@ -354,9 +365,21 @@ function EditGroupHeaderRow(props: { index: number, greyed: boolean, checkbox: R
     const colors = useColors()
     return (
         <div className="for-testing-table-row" style={editRowStyle(colors, props.index, props.greyed)}>
-            <div style={{ width: '100%', padding: '1px', paddingLeft: '0.75em', display: 'flex', alignItems: 'center', gap: '0.4em' }}>
+            <label style={{ ...editLabelStyle, width: '100%', paddingLeft: '0.75em' }}>
                 {props.checkbox}
                 <span className="serif value">{props.name}</span>
+            </label>
+        </div>
+    )
+}
+
+// Animates open/closed like the sidebar's category sections. The body is always
+// mounted so the height transition has content to reveal.
+function AnimatedCollapse({ expanded, children }: { expanded: boolean, children: ReactNode }): ReactNode {
+    return (
+        <div style={{ display: 'grid', gridTemplateRows: expanded ? '1fr' : '0fr', transition: 'grid-template-rows 0.25s ease' }}>
+            <div style={{ overflow: 'hidden', minHeight: 0 }}>
+                {children}
             </div>
         </div>
     )
@@ -372,9 +395,12 @@ function EditCategory(props: SharedEditRowProps & {
     const availableGroups = useAvailableGroups(props.category)
     const status = useCategoryStatus(props.category)
     const changeCategory = useChangeCategorySetting(props.category)
-    const [manualExpanded, setManualExpanded] = useSetting(`stat_category_expanded_${props.category.id}`)
     const settings = useContext(Settings.Context)
     const groupEnabled = useSettings(groupKeys(availableGroups))
+
+    // Undefined means "follow the checkbox": expanded when anything is checked.
+    // A manual toggle overrides that, so a fully-checked category can still be collapsed.
+    const [userExpanded, setUserExpanded] = useState<boolean | undefined>(undefined)
 
     const filterActive = props.filter !== ''
     const categoryMatches = searchMatch(props.filter, props.category.name)
@@ -386,83 +412,91 @@ function EditCategory(props: SharedEditRowProps & {
         return null
     }
 
-    const expanded = filterActive || manualExpanded || status !== false
+    const expanded = filterActive || (userExpanded ?? status !== false)
 
     let index = 0
-    const rows: ReactNode[] = [
-        <div key="header" className="for-testing-table-row" style={editRowStyle(colors, index++, false)}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25em', padding: '1px', width: '100%' }}>
-                {!filterActive && (
-                    <ExpandButton
-                        pointing="right"
-                        isExpanded={expanded}
-                        onClick={() => { setManualExpanded(!manualExpanded) }}
-                        style={{ backgroundSize: '16px', width: '20px', height: '20px', flex: '0 0 auto' }}
-                        aria-label={expanded ? `Collapse ${props.category.name} category` : `Expand ${props.category.name} category`}
-                    />
-                )}
-                <EditCheckbox
-                    checked={status === true}
-                    indeterminate={status === 'indeterminate'}
-                    onChange={changeCategory}
-                    testId={`edit_category_${props.category.id}`}
-                />
-                <span className="serif value" style={{ fontWeight: 500 }}>{props.category.name}</span>
-            </div>
-        </div>,
-    ]
-
-    if (expanded) {
-        for (const group of visibleGroups) {
-            const groupRows = props.rowsByGroup.get(group.id) ?? []
-            if (groupRows.length === 0) {
-                continue
-            }
-            const enabled = groupEnabled[`show_stat_group_${group.id}`]
-            const shared: SharedEditRowProps = props
-            const checkbox = (
-                <EditCheckbox
-                    checked={enabled}
-                    onChange={(newValue) => { changeStatGroupSetting(settings, group, newValue) }}
-                    testId={`edit_group_${group.id}`}
-                />
+    const bodyRows: ReactNode[] = []
+    for (const group of visibleGroups) {
+        const groupRows = props.rowsByGroup.get(group.id) ?? []
+        if (groupRows.length === 0) {
+            continue
+        }
+        const enabled = groupEnabled[`show_stat_group_${group.id}`]
+        const shared: SharedEditRowProps = props
+        const checkboxId = `edit-checkbox-${group.id}`
+        const checkbox = (
+            <EditCheckbox
+                id={checkboxId}
+                checked={enabled}
+                onChange={(newValue) => { changeStatGroupSetting(settings, group, newValue) }}
+                testId={`edit_group_${group.id}`}
+            />
+        )
+        if (groupRows.length === 1) {
+            bodyRows.push(
+                <EditStatRow
+                    key={group.id}
+                    {...shared}
+                    index={index++}
+                    greyed={!enabled}
+                    checkbox={checkbox}
+                    checkboxId={checkboxId}
+                    displayName={props.displayNames.get(groupRows[0])!}
+                    indent={1}
+                    row={groupRows[0]}
+                />,
             )
-            if (groupRows.length === 1) {
-                rows.push(
+        }
+        else {
+            bodyRows.push(
+                <EditGroupHeaderRow key={group.id} index={index++} greyed={!enabled} checkbox={checkbox} name={group.name} />,
+            )
+            for (const row of groupRows) {
+                bodyRows.push(
                     <EditStatRow
-                        key={group.id}
+                        key={row.statpath}
                         {...shared}
                         index={index++}
                         greyed={!enabled}
-                        checkbox={checkbox}
-                        displayName={props.displayNames.get(groupRows[0])!}
-                        indent={1}
-                        row={groupRows[0]}
+                        checkboxId={checkboxId}
+                        displayName={props.displayNames.get(row)!}
+                        indent={2}
+                        row={row}
                     />,
                 )
-            }
-            else {
-                rows.push(
-                    <EditGroupHeaderRow key={group.id} index={index++} greyed={!enabled} checkbox={checkbox} name={group.name} />,
-                )
-                for (const row of groupRows) {
-                    rows.push(
-                        <EditStatRow
-                            key={row.statpath}
-                            {...shared}
-                            index={index++}
-                            greyed={!enabled}
-                            displayName={props.displayNames.get(row)!}
-                            indent={2}
-                            row={row}
-                        />,
-                    )
-                }
             }
         }
     }
 
-    return <>{rows}</>
+    return (
+        <>
+            <div className="for-testing-table-row" style={editRowStyle(colors, 0, false)}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25em', padding: '1px', width: '100%' }}>
+                    {!filterActive && (
+                        <ExpandButton
+                            pointing="right"
+                            isExpanded={expanded}
+                            onClick={() => { setUserExpanded(!expanded) }}
+                            style={{ backgroundSize: '16px', width: '20px', height: '20px', flex: '0 0 auto' }}
+                            aria-label={expanded ? `Collapse ${props.category.name} category` : `Expand ${props.category.name} category`}
+                        />
+                    )}
+                    <label style={{ ...editLabelStyle, gap: '0.25em' }}>
+                        <EditCheckbox
+                            checked={status === true}
+                            indeterminate={status === 'indeterminate'}
+                            onChange={changeCategory}
+                            testId={`edit_category_${props.category.id}`}
+                        />
+                        <span className="serif value" style={{ fontWeight: 500 }}>{props.category.name}</span>
+                    </label>
+                </div>
+            </div>
+            <AnimatedCollapse expanded={expanded}>
+                {bodyRows}
+            </AnimatedCollapse>
+        </>
+    )
 }
 
 function ArticleEditTable(props: {
@@ -477,6 +511,13 @@ function ArticleEditTable(props: {
     const currentUniverse = useUniverse()
     assert(currentUniverse !== undefined, 'no universe')
     const categories = useAvailableCategories()
+    const isMobile = useMobileLayout()
+
+    // On mobile, edit mode drops the percentile/ordinal/pointer columns so the
+    // checkboxes and names have room; only the value stays.
+    const onlyColumns: ColumnIdentifier[] = isMobile
+        ? props.onlyColumns.filter(column => column === 'statval' || column === 'statval_unit')
+        : props.onlyColumns
 
     const rowsByGroup = new Map<string, ArticleRow[]>()
     for (const row of props.allRows) {
@@ -524,7 +565,7 @@ function ArticleEditTable(props: {
                         columnWidth={props.columnWidth}
                         topLeftSpec={topLeftSpec}
                         topLeftWidth={props.widthLeftHeader}
-                        onlyColumns={props.onlyColumns}
+                        onlyColumns={onlyColumns}
                         extraSpaceRight={[0]}
                         simpleOrdinals={props.simpleOrdinals}
                         columnWidthsInfo={[columnWidthsInfo]}
@@ -539,7 +580,7 @@ function ArticleEditTable(props: {
                         article={props.article}
                         widthLeftHeader={props.widthLeftHeader}
                         columnWidth={props.columnWidth}
-                        onlyColumns={props.onlyColumns}
+                        onlyColumns={onlyColumns}
                         simpleOrdinals={props.simpleOrdinals}
                         columnWidthsInfo={columnWidthsInfo}
                         filter={props.filter}

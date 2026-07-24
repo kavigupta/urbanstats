@@ -51,6 +51,7 @@ export type SettingsDictionary = {
     syauRequireEnter: boolean
     mapperSettingsColumnProp: number
     randomFilterByCurrentUniverse: boolean
+    edit_mode: boolean
 }
 /* eslint-enable no-restricted-syntax */
 & { [G in GroupIdentifier as StatGroupKey<G>]: boolean }
@@ -111,6 +112,7 @@ export const defaultSettingsList = [
     ['syauRequireEnter', false],
     ['mapperSettingsColumnProp', 0.3],
     ['randomFilterByCurrentUniverse', false],
+    ['edit_mode', false],
 ] as const
 
 // Having a default settings object allows us to statically check that we have default values for all settings

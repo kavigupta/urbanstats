@@ -297,9 +297,11 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
 
     return (
         <>
-            <div style={{ textAlign: 'center', display: 'flex', justifyContent: editMode !== undefined ? 'flex-start' : 'center', alignItems: 'center', gap: '5px', padding: '1px', width: `${props.width}%` }}>
+            <div style={{ position: 'relative', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1px', width: `${props.width}%` }}>
                 {editMode !== undefined && !isScreenshot && (
-                    <EditModeButton onClick={() => { editMode.setEditMode(true) }} text="Edit" />
+                    <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}>
+                        <EditModeButton onClick={() => { editMode.setEditMode(true) }} text="Edit" />
+                    </div>
                 )}
                 {canHaveStatsModal
                     ? (
