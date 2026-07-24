@@ -62,13 +62,11 @@ export function crossSourceBorderExclusion({ statName, articleType, universe, co
     const shownCount = forTypeByIndex(counts, universe, statIndex, articleType)
     const excludedCount = totalCount - shownCount
 
-    // A statistic with no value anywhere in the region set isn't missing regions to a
-    // border, it just isn't computed for this region type at all.
+    // No regions, or no missing regions
     if (shownCount === 0 || excludedCount <= 0) {
         return undefined
     }
 
-    // Defined iff the region type's regions can straddle a data source border.
     const alternativeTypes = crossSourceBorderTypes[articleType] as string[] | undefined
     const payload = {
         excludedCount,
@@ -78,16 +76,11 @@ export function crossSourceBorderExclusion({ statName, articleType, universe, co
     } as const
 
     if (universeCountry === statisticCountry) {
-        // The universe sits inside the statistic's country, so a missing region is one
-        // straddling its border -- which only happens for border-crossing types. For a type
-        // whose regions each lie in a single country, the missing ones are just data gaps
-        // (e.g. US territories with no value), which isn't a data source border issue.
+        // Some regions must straddle the border
         return alternativeTypes === undefined ? undefined : { kind: 'straddles-border', ...payload }
     }
 
-    // The universe is broader than the statistic's country, so the missing regions lie
-    // outside it entirely. This applies to any multi-country region type; single-country
-    // geographies were already handled above by the geography-limited case.
+    // Some regions must lie outside the statistic's jurisdiction
     return { kind: 'outside-jurisdiction', ...payload }
 }
 
