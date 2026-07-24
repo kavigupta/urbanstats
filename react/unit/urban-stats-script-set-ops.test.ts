@@ -52,7 +52,8 @@ void test('contains with a mismatched element type is false, not an error', (): 
 void test('unique and countUnique', (): void => {
     assert.deepStrictEqual(evaluateExpr('unique([1, 1, 2, 3, 2])'), undocValue([1, 2, 3], numVectorType))
     assert.deepStrictEqual(evaluateExpr('unique([])'), undocValue([], emptyVectorType))
-    assert.deepStrictEqual(evaluateExpr('unique(["b", "a", "b"])'), undocValue(['b', 'a'], stringVectorType))
+    // results are sorted, not in first-appearance order
+    assert.deepStrictEqual(evaluateExpr('unique(["b", "a", "b"])'), undocValue(['a', 'b'], stringVectorType))
     assert.deepStrictEqual(evaluateExpr('countUnique([1, 1, 2, 3, 2])'), undocValue(3, numType))
     assert.deepStrictEqual(evaluateExpr('countUnique([])'), undocValue(0, numType))
 })
@@ -71,11 +72,25 @@ void test('set operations deduplicate their results', (): void => {
     assert.deepStrictEqual(evaluateExpr('symmetricDifference([1, 1], [2, 2])'), undocValue([1, 2], numVectorType))
 })
 
-void test('set operations preserve first-appearance order', (): void => {
-    assert.deepStrictEqual(evaluateExpr('union([3, 1], [2, 1])'), undocValue([3, 1, 2], numVectorType))
-    assert.deepStrictEqual(evaluateExpr('intersection([3, 1, 2], [2, 3])'), undocValue([3, 2], numVectorType))
-    // symmetric difference lists the first vector's exclusives before the second's
+void test('set operations return sorted results regardless of input order', (): void => {
+    assert.deepStrictEqual(evaluateExpr('union([3, 1], [2, 1])'), undocValue([1, 2, 3], numVectorType))
+    assert.deepStrictEqual(evaluateExpr('intersection([3, 1, 2], [2, 3])'), undocValue([2, 3], numVectorType))
     assert.deepStrictEqual(evaluateExpr('symmetricDifference([3, 1], [4, 1])'), undocValue([3, 4], numVectorType))
+    // union is sorted across both pieces, not just concatenated sorted runs
+    assert.deepStrictEqual(evaluateExpr('union([5, 1], [3])'), undocValue([1, 3, 5], numVectorType))
+    assert.deepStrictEqual(evaluateExpr('symmetricDifference([5, 1], [3, 1])'), undocValue([3, 5], numVectorType))
+})
+
+void test('numbers sort numerically, not lexicographically', (): void => {
+    assert.deepStrictEqual(evaluateExpr('unique([10, 2, 1, 20])'), undocValue([1, 2, 10, 20], numVectorType))
+    assert.deepStrictEqual(evaluateExpr('unique([-3, 5, -10, 0])'), undocValue([-10, -3, 0, 5], numVectorType))
+})
+
+void test('a vector of nulls collapses to a single null', (): void => {
+    assert.deepStrictEqual(
+        evaluateExpr('unique([null, null])'),
+        undocValue([null], { type: 'vector', elementType: { type: 'null' } }),
+    )
 })
 
 void test('set operations on empty vectors', (): void => {
@@ -111,9 +126,10 @@ void test('set operations work on strings and booleans', (): void => {
         evaluateExpr('union(["a", "b"], ["b", "c"])'),
         undocValue(['a', 'b', 'c'], stringVectorType),
     )
+    // booleans sort false before true
     assert.deepStrictEqual(
         evaluateExpr('unique([true, false, true])'),
-        undocValue([true, false], boolVectorType),
+        undocValue([false, true], boolVectorType),
     )
 })
 
@@ -163,7 +179,7 @@ void test('both caches: repeated use of one vector reference reuses the result a
     // so a shared result reference exercises both caches at once.
     assert.strictEqual(first.value, second.value)
     // The preallocated buffer has no trailing holes (deepStrictEqual checks length exactly).
-    assert.deepStrictEqual(first.value, [3, 1, 2])
+    assert.deepStrictEqual(first.value, [1, 2, 3])
 })
 
 void test('caches are keyed on vector reference, not on contents', (): void => {

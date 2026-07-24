@@ -800,7 +800,7 @@ function getCategoryDescription(category: ConstantCategory): string {
         case 'regression':
             return 'Statistical analysis functions for linear regression.'
         case 'set':
-            return 'Functions that treat vectors as sets, ignoring order and duplicates. Both arguments of a two-vector operation must have the same element type.'
+            return 'Functions that treat vectors as sets, ignoring order and duplicates. Results are deduplicated and sorted in ascending order. Both arguments of a two-vector operation must have the same element type.'
         case 'basic':
             return 'Basic utility functions for type conversion and common operations.'
         case 'mapper':

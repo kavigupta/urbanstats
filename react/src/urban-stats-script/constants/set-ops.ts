@@ -2,13 +2,32 @@ import { HumanReadableName } from '../../utils/human-readable-name'
 import { Context } from '../context'
 import { USSFunctionArgType, USSFunctionReturnType, USSPrimitiveRawValue, USSRawValue, USSValue } from '../types-values'
 
+import { orderNonNan } from './table'
+
 /**
  * Set operations treat a vector of primitives as a set: order and duplicates are ignored on
- * input, and results are deduplicated. Membership uses SameValueZero (as JS Set does), so NaN
- * matches NaN.
+ * input, and results are returned deduplicated and sorted in ascending order. Membership uses
+ * SameValueZero (as JS Set does), so NaN matches NaN.
  */
 
 type Primitive = USSPrimitiveRawValue
+
+/**
+ * Orders the primitives within a single (homogeneous) vector. Numbers use NaN-safe ordering,
+ * booleans order false before true, strings compare lexicographically, and nulls are all equal.
+ */
+function comparePrimitives(a: Primitive, b: Primitive): number {
+    if (typeof a === 'number' && typeof b === 'number') {
+        return orderNonNan(a, b)
+    }
+    if (typeof a === 'boolean' && typeof b === 'boolean') {
+        return (a ? 1 : 0) - (b ? 1 : 0)
+    }
+    if (a === null || b === null) {
+        return 0
+    }
+    return (a as string) < (b as string) ? -1 : (a as string) > (b as string) ? 1 : 0
+}
 
 const primitiveVector = { type: 'anyPrimitiveVector' } satisfies USSFunctionArgType
 const anyPrimitive = { type: 'anyPrimitive' } satisfies USSFunctionArgType
@@ -51,10 +70,11 @@ function asSet(values: Primitive[]): Set<Primitive> {
 }
 
 /**
- * Caches the distinct-elements array for a set so repeated conversions (e.g. the same argument
- * reused across a broadcast) don't rebuild it. The array is filled by index into a preallocated
- * buffer rather than grown element by element. Result vectors are treated immutably by the
- * interpreter, so returning the shared array is safe.
+ * Caches the sorted distinct-elements array for a set so repeated conversions (e.g. the same
+ * argument reused across a broadcast) don't rebuild it. The array is filled by index into a
+ * preallocated buffer rather than grown element by element, then sorted so a given set always
+ * yields the same order. Result vectors are treated immutably by the interpreter, so returning
+ * the shared array is safe.
  */
 const arrayCache = new WeakMap<Set<Primitive>, Primitive[]>()
 
@@ -67,6 +87,7 @@ function asArray(set: Set<Primitive>): Primitive[] {
             array[i] = value
             i++
         }
+        array.sort(comparePrimitives)
         arrayCache.set(set, array)
     }
     return array
@@ -132,12 +153,13 @@ export const setConstants: [string, USSValue][] = [
     }, 'contains', 'Returns true if the element is present in the vector. Broadcasts over the element, so passing a vector as the second argument tests each of its elements in turn.'),
     documented('unique', [primitiveVector], vectorReturn, (posArgs) => {
         return uniqueArray(posArgs[0] as Primitive[])
-    }, 'unique', 'Returns the distinct elements of a vector, in the order of their first appearance.'),
+    }, 'unique', 'Returns the distinct elements of a vector, sorted in ascending order.'),
     documented('countUnique', [primitiveVector], numberReturn, (posArgs) => {
         return asSet(posArgs[0] as Primitive[]).size
     }, 'count unique', 'Returns the number of distinct elements in a vector.'),
     binarySetFunction('union', vectorReturn, (a, b) => {
-        return uniqueArray(a).concat(differenceOf(b, a))
+        // The two pieces are each sorted but disjoint, so the concatenation needs a final sort.
+        return uniqueArray(a).concat(differenceOf(b, a)).sort(comparePrimitives)
     }, 'union', 'Returns the distinct elements present in either vector.'),
     binarySetFunction('intersection', vectorReturn, (a, b) => {
         const bSet = asSet(b)
@@ -147,7 +169,8 @@ export const setConstants: [string, USSValue][] = [
         return differenceOf(a, b)
     }, 'difference', 'Returns the distinct elements present in the first vector but not the second.'),
     binarySetFunction('symmetricDifference', vectorReturn, (a, b) => {
-        return differenceOf(a, b).concat(differenceOf(b, a))
+        // The two pieces are each sorted but disjoint, so the concatenation needs a final sort.
+        return differenceOf(a, b).concat(differenceOf(b, a)).sort(comparePrimitives)
     }, 'symmetric difference', 'Returns the distinct elements present in exactly one of the two vectors.'),
     binarySetFunction('isSubset', booleanReturn, (a, b) => {
         return isSubsetOf(a, b)
