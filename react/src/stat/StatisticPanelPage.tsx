@@ -68,7 +68,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
                 <StatisticPanelHead articleType={stat.articleType} universe={stat.universe} />
                 <div className={subHeaderTextClass}>{reifyReact(subHeaderText)}</div>
                 {!view.edit && <ViewHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} />}
-                <CrossSourceBorderDisclaimer stat={stat} view={view} counts={counts} placement="header" />
+                <CrossSourceBorderDisclaimer stat={stat} view={view} counts={counts} isFootnote={false} />
             </div>
             <div style={{ marginBlockEnd: '16px' }}></div>
             {view.edit && <EditPreamble stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} counts={counts} errors={errors} assignments={assignments} />}
@@ -81,7 +81,7 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
                         </div>
                     )}
             <div ref={footerRef}>
-                <CrossSourceBorderDisclaimer stat={stat} view={view} counts={counts} placement="footnote" />
+                <CrossSourceBorderDisclaimer stat={stat} view={view} counts={counts} isFootnote={true} />
             </div>
         </PageTemplate>
     )

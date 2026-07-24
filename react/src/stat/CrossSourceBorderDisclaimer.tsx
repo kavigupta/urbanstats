@@ -14,16 +14,12 @@ function withArticle(country: string): string {
     return country === 'USA' ? 'the USA' : country
 }
 
-export function CrossSourceBorderDisclaimer({ stat, view, counts, placement }: {
+export function CrossSourceBorderDisclaimer({ stat, view, counts, isFootnote }: {
     stat: Statistic
     view: View
     counts: CountsByUT
-    // 'header' shows it at the top when viewing the page normally; 'footnote' shows it as a
-    // de-emphasized footnote in the screenshot. Each is hidden in the other's context. Note
-    // this hook only flips because this component renders inside PageTemplate's
-    // ScreenshotContext.Provider -- calling it in a parent of PageTemplate reads the default
-    // context and never updates.
-    placement: 'header' | 'footnote'
+    // if true, shows it as a de-emphasized footnote in the screenshot.
+    isFootnote: boolean
 }): ReactNode {
     const colors = useColors()
     const screenshotMode = useScreenshotMode()
@@ -40,14 +36,12 @@ export function CrossSourceBorderDisclaimer({ stat, view, counts, placement }: {
         [stat, counts],
     )
 
-    const footnote = placement === 'footnote'
-
     // The footnote is for the screenshot; the header is for normal viewing.
-    if (exclusion === undefined || stat.type !== 'simple' || screenshotMode !== footnote) {
+    if (exclusion === undefined || stat.type !== 'simple' || screenshotMode !== isFootnote) {
         return null
     }
 
-    const style: React.CSSProperties = footnote
+    const style: React.CSSProperties = isFootnote
         // paddingBottom keeps the last line's descenders from being clipped at the edge of
         // the screenshot capture, which crops to the element's height.
         ? { marginTop: '8px', paddingBottom: '4px', fontSize: '12px', lineHeight: 1.4, color: colors.ordinalTextColor }
@@ -61,16 +55,16 @@ export function CrossSourceBorderDisclaimer({ stat, view, counts, placement }: {
 
     return (
         <div style={style} data-test-id="cross-source-border-disclaimer">
-            <DisclaimerContents stat={stat} view={view} exclusion={exclusion} footnote={footnote} />
+            <DisclaimerContents stat={stat} view={view} exclusion={exclusion} isFootnote={isFootnote} />
         </div>
     )
 }
 
-function DisclaimerContents({ stat, view, exclusion, footnote }: {
+function DisclaimerContents({ stat, view, exclusion, isFootnote: footnote }: {
     stat: Statistic & { type: 'simple' }
     view: View
     exclusion: CrossSourceBorderExclusion
-    footnote: boolean
+    isFootnote: boolean
 }): ReactNode {
     const typ = displayType(stat.universe, stat.articleType)
 
