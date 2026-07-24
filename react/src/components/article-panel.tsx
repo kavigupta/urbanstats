@@ -391,11 +391,16 @@ function EditGroupHeaderRow(props: { index: number, greyed: boolean, highlight: 
 }
 
 // Animates open/closed like the sidebar's category sections. The body is always
-// mounted so the height transition has content to reveal.
+// mounted so the height transition has content to reveal; `inert` keeps the
+// collapsed (clipped) content out of the tab order and off screen readers.
 function AnimatedCollapse({ expanded, children }: { expanded: boolean, children: ReactNode }): ReactNode {
     return (
         <div style={{ display: 'grid', gridTemplateRows: expanded ? '1fr' : '0fr', transition: 'grid-template-rows 0.25s ease' }}>
-            <div style={{ overflow: 'hidden', minHeight: 0 }}>
+            <div
+                // @ts-expect-error -- inert is not in the type definitions yet
+                inert={expanded ? undefined : ''}
+                style={{ overflow: 'hidden', minHeight: 0 }}
+            >
                 {children}
             </div>
         </div>
