@@ -32,6 +32,7 @@ import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
 import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
+import { useEditMode } from './table-edit-context'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -262,6 +263,7 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     const isMobileLayout = useMobileLayout()
     const isScreenshot = useScreenshotMode()
     const isTranspose = useTranspose()
+    const editMode = useEditMode()
 
     const [statsModalOpen, setStatsModalOpen] = useState(false)
 
@@ -274,10 +276,31 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     }, [canHaveStatsModal, statsModalOpen])
 
     const sidebarSectionContent = useSidebarSectionContentClassName()
+    const sidebarFontSize = useSidebarFontSize()
+
+    if (editMode?.editMode) {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '1px', width: `${props.width}%` }}>
+                <EditModeButton onClick={() => { editMode.setEditMode(false) }} text="Done" />
+                <input
+                    type="text"
+                    className="serif"
+                    placeholder="Filter"
+                    style={{ flex: '1 1 auto', minWidth: 0, fontSize: '16px' }}
+                    value={editMode.filter}
+                    onChange={(e) => { editMode.setFilter(e.target.value) }}
+                    data-test-id="edit-mode-filter"
+                />
+            </div>
+        )
+    }
 
     return (
         <>
-            <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', padding: '1px', width: `${props.width}%` }}>
+            <div style={{ textAlign: 'center', display: 'flex', justifyContent: editMode !== undefined ? 'flex-start' : 'center', alignItems: 'center', gap: '5px', padding: '1px', width: `${props.width}%` }}>
+                {editMode !== undefined && !isScreenshot && (
+                    <EditModeButton onClick={() => { editMode.setEditMode(true) }} text="Edit" />
+                )}
                 {canHaveStatsModal
                     ? (
                             <button className="serif value" style={{ padding: '2px 10px' }} onClick={() => { setStatsModalOpen(true) }}>
@@ -291,13 +314,26 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
                         )}
             </div>
             <Modal isOpen={statsModalOpen} onClose={() => { setStatsModalOpen(false) }}>
-                <ul className={sidebarSectionContent} style={{ fontSize: useSidebarFontSize() }}>
+                <ul className={sidebarSectionContent} style={{ fontSize: sidebarFontSize }}>
                     <MaybeStagingControlsSidebarSection />
                     <SidebarForStatisticChoice />
                     <SettingsSidebarSection />
                 </ul>
             </Modal>
         </>
+    )
+}
+
+function EditModeButton({ onClick, text }: { onClick: () => void, text: string }): ReactNode {
+    return (
+        <button
+            className="serif"
+            style={{ padding: '2px 10px', cursor: 'pointer' }}
+            onClick={onClick}
+            data-test-id={`edit-mode-${text.toLowerCase()}`}
+        >
+            {text}
+        </button>
     )
 }
 
