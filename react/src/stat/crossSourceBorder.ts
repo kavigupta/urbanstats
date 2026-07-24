@@ -8,9 +8,6 @@ import universeDataSourceCountry from '../data/universe_data_source_country'
 import { multiSourceStatisticByPath, StatName } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 
-/**
- * A version of the same page that includes the missing regions, to offer as a link.
- */
 export type CrossSourceBorderAlternative =
     /** The same statistic from a source that covers every region, e.g. Population [GHS-POP]. */
     | { kind: 'broader-source', statName: StatName }
@@ -39,10 +36,6 @@ export type CrossSourceBorderExclusion =
      */
     | { kind: 'outside-jurisdiction', excludedCount: number, totalCount: number, statisticCountry: string, alternative: CrossSourceBorderAlternative | undefined }
 
-/**
- * Determines whether the current statistic page is missing regions in a way worth
- * disclaiming, and if so why. Returns undefined when there is nothing to disclaim.
- */
 export function crossSourceBorderExclusion({ statName, articleType, universe, counts }: {
     statName: StatName
     articleType: string
@@ -51,9 +44,6 @@ export function crossSourceBorderExclusion({ statName, articleType, universe, co
 }): CrossSourceBorderExclusion | undefined {
     const universeCountry = universeDataSourceCountry[universe] as string | undefined
 
-    // Most superseding: the geography itself only exists in one country. If this universe is
-    // outside that country, every region shown belongs to the country regardless of the
-    // statistic, which is the more fundamental thing to point out.
     const geographyCountry = geographyDataSourceCountry[articleType] as string | undefined
     if (geographyCountry !== undefined && universeCountry !== geographyCountry) {
         return { kind: 'geography-limited-to-country', geographyCountry }
@@ -63,7 +53,7 @@ export function crossSourceBorderExclusion({ statName, articleType, universe, co
 
     // A statistic computed the same way everywhere (no single-country source) can't be
     // missing regions because of a data source border.
-    const statisticCountry = statisticDataSourceCountry[statIndex] as string | null
+    const statisticCountry = statisticDataSourceCountry[statIndex]
     if (statisticCountry === null) {
         return undefined
     }
