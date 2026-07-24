@@ -50,6 +50,24 @@ test('links to a domestic region type when the statistic has one source', async 
     await t.expect(getLocation()).contains('statname=Arthritis+__PCT__')
 })
 
+// Person circles are border-crossing but have no domestic equivalent, so instead of a link
+// the disclaimer explains why none is offered.
+urbanstatsFixture(
+    'cross-source-border disclaimer: no equivalent, with reason',
+    `${target}/statistic.html?statname=Arthritis+__PCT__&article_type=5M+Person+Circle&start=1&amount=20&universe=USA`,
+)
+
+test('explains why there is no alternative for a type with no equivalent', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await waitForLoading()
+    await t.expect(disclaimer.count).eql(1, 'expected the cross-source-border disclaimer')
+    await t.expect(disclaimer.innerText).match(
+        /^[\d\u202f]+ of the [\d\u202f]+ US 5M Person Circles in USA are missing from this ranking\. US 5M Person Circles can span more than one country, and Arthritis % is not available for the ones that do\. Circles are drawn around a point without regard to national borders, and no region type defined by a statistics agency resembles them\.$/,
+    )
+    await t.expect(disclaimerLink.count).eql(0, 'no equivalent type to link to')
+    await screencap(t)
+})
+
 // A region type whose regions cannot cross a data source border (County) shows nothing.
 urbanstatsFixture(
     'cross-source-border disclaimer: absent for domestic-only type',
@@ -62,8 +80,8 @@ test('is absent for a region type that never crosses a border', async (t) => {
     await t.expect(disclaimer.count).eql(0, 'no disclaimer for counties')
 })
 
-// even when the statistic is missing for some of the regions (territories have no
-// presidential election data), a non-crossing type (Subnational Region) shows nothing.
+// Even when the statistic is missing for some of the regions (territories have no
+// presidential election data), a non-crossing type (Subnational Region) shows nothing here.
 urbanstatsFixture(
     'cross-source-border disclaimer: absent for non-crossing type with gaps',
     `${target}/statistic.html?statname=2008+Presidential+Election&article_type=Subnational+Region&start=1&amount=20&universe=USA`,

@@ -13,6 +13,8 @@ export type CrossSourceBorderAlternative =
     | { kind: 'broader-source', statName: StatName }
     /** The closest region type that never crosses a data source border, e.g. Urban Area. */
     | { kind: 'domestic-type', articleType: string }
+    /** No alternative exists, with an explanation of why (e.g. for person circles). */
+    | { kind: 'no-equivalent', reason: string }
 
 /**
  * Why some regions of the current type are missing from the ranking, tagged so the
@@ -67,38 +69,44 @@ export function crossSourceBorderExclusion({ statName, articleType, universe, co
         return undefined
     }
 
-    const alternativeTypes = crossSourceBorderTypes[articleType] as string[] | undefined
+    // Defined iff the region type's regions can straddle a data source border.
+    const borderInfo = crossSourceBorderTypes[articleType] as BorderInfo | undefined
     const payload = {
         excludedCount,
         totalCount,
         statisticCountry,
-        alternative: computeAlternative({ statIndex, shownCount, articleType, universe, counts, alternativeTypes }),
+        alternative: computeAlternative({ statIndex, shownCount, articleType, universe, counts, borderInfo }),
     } as const
 
     if (universeCountry === statisticCountry) {
         // Some regions must straddle the border
-        return alternativeTypes === undefined ? undefined : { kind: 'straddles-border', ...payload }
+        return borderInfo === undefined ? undefined : { kind: 'straddles-border', ...payload }
     }
 
     // Some regions must lie outside the statistic's jurisdiction
     return { kind: 'outside-jurisdiction', ...payload }
 }
 
-function computeAlternative({ statIndex, shownCount, articleType, universe, counts, alternativeTypes }: {
+interface BorderInfo { alternativeGeographyTypes: string[], reasonForNoAlternatives: string | null }
+
+function computeAlternative({ statIndex, shownCount, articleType, universe, counts, borderInfo }: {
     statIndex: number
     shownCount: number
     articleType: string
     universe: Universe
     counts: CountsByUT
-    alternativeTypes: string[] | undefined
+    borderInfo: BorderInfo | undefined
 }): CrossSourceBorderAlternative | undefined {
     const broaderVariant = findBroaderVariant({ statIndex, shownCount, articleType, universe, counts })
     if (broaderVariant !== undefined) {
         return { kind: 'broader-source', statName: broaderVariant }
     }
-    const domesticArticleType = alternativeTypes?.find(typ => forTypeByIndex(counts, universe, statIndex, typ) > 0)
+    const domesticArticleType = borderInfo?.alternativeGeographyTypes.find(typ => forTypeByIndex(counts, universe, statIndex, typ) > 0)
     if (domesticArticleType !== undefined) {
         return { kind: 'domestic-type', articleType: domesticArticleType }
+    }
+    if (borderInfo?.reasonForNoAlternatives) {
+        return { kind: 'no-equivalent', reason: borderInfo.reasonForNoAlternatives }
     }
     return undefined
 }

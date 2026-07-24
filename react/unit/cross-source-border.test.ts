@@ -66,14 +66,18 @@ void describe('crossSourceBorderExclusion', () => {
             })
         })
 
-        void test('offers no alternative when neither exists', async () => {
-            // Person circles are border-crossing but have no domestic equivalent type
+        void test('explains why there is no alternative when the type has none', async () => {
+            // Person circles are border-crossing but have no domestic equivalent type, so
+            // they carry a reason instead of an alternative to link to
             assert.deepEqual(await exclusion(usCensusOnly, '5M Person Circle', 'USA'), {
                 kind: 'straddles-border',
                 excludedCount: 16,
                 totalCount: 77,
                 statisticCountry: 'USA',
-                alternative: undefined,
+                alternative: {
+                    kind: 'no-equivalent',
+                    reason: 'Circles are drawn around a point without regard to national borders, and no region type defined by a statistics agency resembles them.',
+                },
             })
         })
     })

@@ -109,6 +109,11 @@ function AlternativeLink({ stat, view, alternative }: {
         return null
     }
 
+    // No version of the page includes the missing regions; just explain why.
+    if (alternative.kind === 'no-equivalent') {
+        return ` ${alternative.reason}`
+    }
+
     // Same page, but for the statistic or region type that covers the missing regions
     const statname = alternative.kind === 'broader-source' ? alternative.statName : stat.statName
     const articleType = alternative.kind === 'domestic-type' ? alternative.articleType : stat.articleType

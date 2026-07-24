@@ -146,7 +146,12 @@ def create_react_jsons() -> None:
 
     with open("react/src/data/cross_source_border_types.ts", "w") as f:
         output_typescript(
-            cross_source_border_types(), f, data_type="Record<string, string[]>"
+            cross_source_border_types(),
+            f,
+            data_type=(
+                "Record<string, { alternativeGeographyTypes: string[],"
+                " reasonForNoAlternatives: string | null }>"
+            ),
         )
 
     with open("react/src/data/universe_data_source_country.ts", "w") as f:

@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset, SelfSubset
 from urbanstats.geometry.shapefiles.shapefiles_list import shapefiles
@@ -66,12 +66,17 @@ def geography_data_source_country() -> Dict[str, str]:
     return result
 
 
-def cross_source_border_types() -> Dict[str, List[str]]:
+def cross_source_border_types() -> Dict[str, Dict[str, Any]]:
     _check_declarations_match_subset_masks()
     result = {
-        shapefile.meta["type"]: list(
-            shapefile.cross_source_borders.alternative_geography_types
-        )
+        shapefile.meta["type"]: {
+            "alternativeGeographyTypes": list(
+                shapefile.cross_source_borders.alternative_geography_types
+            ),
+            "reasonForNoAlternatives": (
+                shapefile.cross_source_borders.reason_for_no_alternatives
+            ),
+        }
         for shapefile in shapefiles.values()
         if _can_straddle(shapefile)
     }
@@ -115,7 +120,9 @@ def _check_declarations_match_subset_masks() -> None:
             )
 
 
-def _check_alternatives_never_straddle_a_border(result: Dict[str, List[str]]) -> None:
+def _check_alternatives_never_straddle_a_border(
+    result: Dict[str, Dict[str, Any]]
+) -> None:
     """
     Offering a region type with the same problem would be pointless, and offering one that
     doesn't exist would produce a dead link.
@@ -123,8 +130,8 @@ def _check_alternatives_never_straddle_a_border(result: Dict[str, List[str]]) ->
     shapefile_by_type = {
         shapefile.meta["type"]: shapefile for shapefile in shapefiles.values()
     }
-    for typ, alternatives in result.items():
-        for alternative in alternatives:
+    for typ, info in result.items():
+        for alternative in info["alternativeGeographyTypes"]:
             assert (
                 alternative in shapefile_by_type
             ), f"{typ}'s alternative {alternative!r} is not a region type"
