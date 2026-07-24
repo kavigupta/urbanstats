@@ -218,11 +218,11 @@ export async function withScreenshotMode<T>(context: ScreenshotContextType, fn: 
     }
 }
 
-export async function createScreenshot(config: ScreencapElements | (() => ScreencapElements), universe: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType, forceNonTesting: boolean = false): Promise<void> {
+export async function createScreenshot(config: () => ScreencapElements, universe: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType, forceNonTesting: boolean = false): Promise<void> {
     await withScreenshotMode(screenshotContext, async () => {
         // Resolved inside screenshot mode, so callers can lay out elements differently for
         // the screenshot (e.g. move a header into a footnote) and have that reflected here.
-        const resolved = typeof config === 'function' ? config() : config
+        const resolved = config()
         const overallWidth = resolved.overallWidth
 
         const canvases = []
