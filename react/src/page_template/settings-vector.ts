@@ -486,7 +486,6 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_iso_code', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_congressional_representatives', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'plot_mode', coder: plotModeSettingCoder }),
-    new ActiveSetting({ key: 'edit_mode', coder: booleanSettingCoder }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 

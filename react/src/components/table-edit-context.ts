@@ -1,16 +1,17 @@
 import { createContext, useContext } from 'react'
 
 /**
- * Shared state for the article table's "edit mode", in which the statistic
- * category/group checkbox tree is replicated directly on the table.
+ * Shared, ephemeral state for the article table's "edit mode", in which the
+ * statistic category/group checkbox tree is replicated directly on the table.
  *
- * Whether edit mode is on is the `edit_mode` setting — read it with
- * `useSetting('edit_mode')`. This context only carries the transient filter text
- * and, by its presence, signals that the current page supports editing (only the
- * single-article page provides it). Where it is absent, the table renders
+ * Edit mode is deliberately not persisted (not a setting) — it resets on
+ * navigation/reload. The context is only provided on pages that support editing
+ * (currently the single-article page). Where it is absent, the table renders
  * normally and the top-left header shows no Edit button.
  */
 export interface EditModeState {
+    editMode: boolean
+    setEditMode: (editMode: boolean) => void
     filter: string
     setFilter: (filter: string) => void
 }

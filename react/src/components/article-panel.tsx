@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import React, { CSSProperties, ReactNode, useCallback, useContext, useMemo, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { Colors } from '../page_template/color-themes'
@@ -62,8 +62,22 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
         return rows(allGroupsEnabled)[0]
     }, [rows, settings])
 
+    // Edit mode is ephemeral (not a setting), but it opens automatically when the
+    // page enters staging mode (e.g. from a settings link) so the pending changes
+    // are visible and reviewable on the table. The initial state covers a fresh
+    // load into staging; the effect covers navigating into staging on an already
+    // mounted panel. Neither forces edit mode closed when staging ends.
+    const staged = useStagedSettingKeys() !== undefined
+    const [editMode, setEditMode] = useState(staged)
+    const wasStaged = useRef(staged)
+    useEffect(() => {
+        if (staged && !wasStaged.current) {
+            setEditMode(true)
+        }
+        wasStaged.current = staged
+    }, [staged])
     const [filter, setFilter] = useState('')
-    const editModeState = useMemo(() => ({ filter, setFilter }), [filter])
+    const editModeState = useMemo(() => ({ editMode, setEditMode, filter, setFilter }), [editMode, filter])
 
     const csvExportCallback = useCallback<CSVExportData>(() => {
         const data = generateCSVDataForArticles([article], [filteredRows], true)
@@ -195,7 +209,6 @@ function ArticleTable(props: {
     article: Article
 }): ReactNode {
     const editModeContext = useEditMode()
-    const [editMode] = useSetting('edit_mode')
     const colors = useColors()
     const expandedSettings = useSettings(props.filteredRows.map(row => rowExpandedKey(row.statpath)))
     const expandedEach = props.filteredRows.map(row => row.extraStats.length > 0 && (expandedSettings[rowExpandedKey(row.statpath)] ?? false))
@@ -249,7 +262,7 @@ function ArticleTable(props: {
 
     const topLeftSpec = { type: 'top-left-header' } satisfies CellSpec
 
-    if (editModeContext !== undefined && editMode) {
+    if (editModeContext?.editMode) {
         return (
             <ArticleEditTable
                 allRows={props.allRows}

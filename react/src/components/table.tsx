@@ -264,8 +264,6 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     const isScreenshot = useScreenshotMode()
     const isTranspose = useTranspose()
     const editModeContext = useEditMode()
-    const [editMode, setEditMode] = useSetting('edit_mode')
-    const editingAvailable = editModeContext !== undefined
 
     const [statsModalOpen, setStatsModalOpen] = useState(false)
 
@@ -280,10 +278,10 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     const sidebarSectionContent = useSidebarSectionContentClassName()
     const sidebarFontSize = useSidebarFontSize()
 
-    if (editModeContext !== undefined && editMode) {
+    if (editModeContext?.editMode) {
         return (
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '1px', width: `${props.width}%` }}>
-                <EditModeButton onClick={() => { setEditMode(false) }} text="Done" />
+                <EditModeButton onClick={() => { editModeContext.setEditMode(false) }} text="Done" />
                 <input
                     type="text"
                     className="serif"
@@ -300,9 +298,9 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     return (
         <>
             <div style={{ position: 'relative', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1px', width: `${props.width}%` }}>
-                {editingAvailable && !isScreenshot && (
+                {editModeContext !== undefined && !isScreenshot && (
                     <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}>
-                        <EditModeButton onClick={() => { setEditMode(true) }} text="Edit" />
+                        <EditModeButton onClick={() => { editModeContext.setEditMode(true) }} text="Edit" />
                     </div>
                 )}
                 {canHaveStatsModal
