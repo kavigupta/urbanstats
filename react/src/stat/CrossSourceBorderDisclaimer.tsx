@@ -48,7 +48,9 @@ export function CrossSourceBorderDisclaimer({ stat, view, counts, placement }: {
     }
 
     const style: React.CSSProperties = footnote
-        ? { marginTop: '8px', fontSize: '12px', color: colors.ordinalTextColor }
+        // paddingBottom keeps the last line's descenders from being clipped at the edge of
+        // the screenshot capture, which crops to the element's height.
+        ? { marginTop: '8px', paddingBottom: '4px', fontSize: '12px', lineHeight: 1.4, color: colors.ordinalTextColor }
         : {
                 backgroundColor: colors.slightlyDifferentBackgroundFocused,
                 borderRadius: '5px',
