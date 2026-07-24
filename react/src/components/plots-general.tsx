@@ -241,11 +241,11 @@ function PlotDownloadButton(props: { makePlot: () => HTMLElement, shortnames: st
                 document.body.appendChild(plot)
                 const uniqueShortnames = Array.from(new Set(props.shortnames))
                 await createScreenshot(
-                    {
+                    () => ({
                         path: `${uniqueShortnames.join('_')}_${props.filenameSuffix}`,
                         overallWidth: plot.offsetWidth * 2,
                         elementsToRender: [plot],
-                    },
+                    }),
                     universe,
                     colors,
                     { render: new Set(), wait: new Set() },
