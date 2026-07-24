@@ -12,6 +12,7 @@ import { constructRampValue, reverseRampValue, rampConsts, divergingRampValue } 
 import { regression } from './regr'
 import { richTextConstants } from './rich-text'
 import { linearScaleValue, logScaleValue } from './scale'
+import { setConstants } from './set-ops'
 import { column, table } from './table'
 import { constructTextBoxValue } from './text-box'
 import { unitConstants } from './units'
@@ -259,6 +260,7 @@ export const defaultConstants: Constants = new Map<string, USSValue>([
     createQuantileFunction('inversePercentile', (values, x, weights) => {
         return weightedInverseQuantile(values, weights, x) * 100
     }, hre`percentile^{-1}`, 'Returns the percentile (between 0 and 100) of a given value within a vector. Takes the value as the second argument and optional weights as a named argument. Pass the same vector as both arguments to broadcast over it, ranking each element as a percentile within the vector.'),
+    ...setConstants,
     ['toNumber', toNumber],
     ['toString', toString],
     ['regression', regression(10)],

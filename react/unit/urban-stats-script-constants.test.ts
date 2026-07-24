@@ -117,6 +117,27 @@ void test('constant listing', (): void => {
                 'inverseQuantile',
                 'inversePercentile',
             ],
+            '([any], any; ) -> boolean': [
+                'contains',
+            ],
+            '([any]; ) -> [any]': [
+                'unique',
+            ],
+            '([any]; ) -> number': [
+                'countUnique',
+            ],
+            '([any], [any]; ) -> [any]': [
+                'union',
+                'intersection',
+                'difference',
+                'symmetricDifference',
+            ],
+            '([any], [any]; ) -> boolean': [
+                'isSubset',
+                'isSuperset',
+                'isDisjoint',
+                'setEquals',
+            ],
 
             '(any; ) -> number': [
                 'toNumber',

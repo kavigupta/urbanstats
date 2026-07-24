@@ -76,8 +76,8 @@ export interface USSObjectType {
     properties: Map<string, USSType>
 }
 
-export type USSFunctionArgType = { type: 'concrete', value: USSType } | { type: 'anyPrimitive' }
-export type USSFunctionReturnType = { type: 'concrete', value: USSType } | { type: 'inferFromPrimitive' }
+export type USSFunctionArgType = { type: 'concrete', value: USSType } | { type: 'anyPrimitive' } | { type: 'anyPrimitiveVector' }
+export type USSFunctionReturnType = { type: 'concrete', value: USSType } | { type: 'inferFromPrimitive' } | { type: 'inferFromPrimitiveVector' }
 
 export interface NamedFunctionArgumentWithDocumentation {
     type: USSFunctionArgType
@@ -243,15 +243,23 @@ export function createConstantExpression(value: number | string | boolean | null
     }
 }
 
+function isPrimitiveType(type: USSType): boolean {
+    return type.type === 'number' || type.type === 'string' || type.type === 'boolean' || type.type === 'null'
+}
+
 export function unifyFunctionType(param: USSFunctionArgType, arg: USSType): boolean {
-    if (param.type === 'concrete') {
-        if (param.value.type === 'vector' && arg.type === 'vector' && arg.elementType.type === 'elementOfEmptyVector') {
-            // Empty vector is valid for any vector params
-            return true
-        }
-        return renderType(param.value) === renderType(arg)
+    switch (param.type) {
+        case 'concrete':
+            if (param.value.type === 'vector' && arg.type === 'vector' && arg.elementType.type === 'elementOfEmptyVector') {
+                // Empty vector is valid for any vector params
+                return true
+            }
+            return renderType(param.value) === renderType(arg)
+        case 'anyPrimitive':
+            return isPrimitiveType(arg)
+        case 'anyPrimitiveVector':
+            return arg.type === 'vector' && (arg.elementType.type === 'elementOfEmptyVector' || isPrimitiveType(arg.elementType))
     }
-    return arg.type === 'number' || arg.type === 'string' || arg.type === 'boolean' || arg.type === 'null'
 }
 
 export function renderType(type: USSType): string {
@@ -281,10 +289,14 @@ export function renderType(type: USSType): string {
 }
 
 export function renderArgumentType(arg: USSFunctionArgType): string {
-    if (arg.type === 'concrete') {
-        return renderType(arg.value)
+    switch (arg.type) {
+        case 'concrete':
+            return renderType(arg.value)
+        case 'anyPrimitive':
+            return 'any'
+        case 'anyPrimitiveVector':
+            return '[any]'
     }
-    return 'any'
 }
 
 function renderKwargType(arg: { type: USSFunctionArgType, defaultValue?: UrbanStatsASTExpression }): string {
@@ -296,10 +308,14 @@ function renderKwargType(arg: { type: USSFunctionArgType, defaultValue?: UrbanSt
 }
 
 function renderReturnType(ret: USSFunctionReturnType): string {
-    if (ret.type === 'concrete') {
-        return renderType(ret.value)
+    switch (ret.type) {
+        case 'concrete':
+            return renderType(ret.value)
+        case 'inferFromPrimitive':
+            return 'any'
+        case 'inferFromPrimitiveVector':
+            return '[any]'
     }
-    return 'any'
 }
 
 export type ValueArg = (
@@ -324,6 +340,28 @@ export function getPrimitiveType(value: USSRawValue, depth: number = 0): USSType
     }
     assert(Array.isArray(value), `Expected a primitive value, but got ${typeof value}`)
     return getPrimitiveType(value[0], depth - 1)
+}
+
+/**
+ * Like getPrimitiveType, but for results that are themselves vectors of primitives.
+ * Descends `depth` levels of broadcasting, then reads the element type off the leaf vector.
+ * Leaves that are empty carry no type information, so we look for the first non-empty one.
+ */
+export function getPrimitiveVectorType(value: USSRawValue, depth: number): USSVectorType {
+    assert(Array.isArray(value), `Expected a vector, but got ${typeof value}`)
+    if (depth === 0) {
+        if (value.length === 0) {
+            return { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }
+        }
+        return { type: 'vector', elementType: getPrimitiveType(value[0]) }
+    }
+    for (const element of value) {
+        const elementType = getPrimitiveVectorType(element, depth - 1)
+        if (elementType.elementType.type !== 'elementOfEmptyVector') {
+            return elementType
+        }
+    }
+    return { type: 'vector', elementType: { type: 'elementOfEmptyVector' } }
 }
 
 export function unifyType(
