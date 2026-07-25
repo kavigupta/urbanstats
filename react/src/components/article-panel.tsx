@@ -24,6 +24,8 @@ import { ExpandButton } from './ExpandButton'
 import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { StagingControls } from './StagingControls'
+import { CongressionalColumnData, CongressionalRepresentativeEntry } from './congressional-table/model'
+import { CongressionalRepresentativesWidget } from './congressional-table/render'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
 import { pullRelevantPlotProps, RenderedPlot } from './plots'
@@ -345,9 +347,34 @@ function highlightStyle(colors: Colors, highlight: boolean): CSSProperties {
     return highlight ? { backgroundColor: colors.slightlyDifferentBackgroundFocused, borderRadius: '5px' } : {}
 }
 
+// Mirrors SuperTableRow's congressional-region construction so the representatives
+// table (a metadata "extra") can render below its row in edit mode too.
+function congressionalRegionData(row: ArticleRow, longname: string): CongressionalColumnData | undefined {
+    if (row.kind !== 'metadata' || typeof row.statval === 'string') {
+        return undefined
+    }
+    return {
+        longname,
+        representatives: row.statval.representatives.map((r): CongressionalRepresentativeEntry => {
+            assert(r.representative.name !== undefined && r.representative.name !== null, 'representative name missing')
+            return {
+                representative: {
+                    name: r.representative.name,
+                    wikipediaPage: r.representative.wikipediaPage ?? undefined,
+                    party: r.representative.party ?? undefined,
+                },
+                districtLongname: r.districtLongname,
+                startTerm: r.startTerm,
+                endTerm: r.endTerm,
+            }
+        }),
+    }
+}
+
 function EditStatRow(props: SharedEditRowProps & {
     index: number
     highlight: boolean
+    enabled: boolean
     checkbox?: ReactNode
     checkboxId: string
     displayName: HumanReadableName
@@ -357,6 +384,8 @@ function EditStatRow(props: SharedEditRowProps & {
 }): ReactNode {
     const colors = useColors()
     const hasExtras = props.row.extraStats.length > 0 && !props.screenshotMode
+    // Only render the (large) representatives table for enabled stats, matching the normal table.
+    const congressionalRegion = props.enabled ? congressionalRegionData(props.row, props.article.longname) : undefined
     return (
         <>
             <div className="for-testing-table-row" style={editRowStyle(colors, props.index)}>
@@ -384,6 +413,14 @@ function EditStatRow(props: SharedEditRowProps & {
                 <div style={{ width: '100%', position: 'relative' }}>
                     <RenderedPlot statDescription={props.plotSpec.statDescription} plotProps={props.plotSpec.plotProps} />
                 </div>
+            )}
+            {congressionalRegion && (
+                <CongressionalRepresentativesWidget
+                    regions={[congressionalRegion]}
+                    widthLeftHeader={props.widthLeftHeader}
+                    columnWidth={props.columnWidth}
+                    extraSpaceRight={[0]}
+                />
             )}
         </>
     )
@@ -480,6 +517,7 @@ function EditCategory(props: SharedEditRowProps & {
                     {...shared}
                     index={index++}
                     highlight={highlight}
+                    enabled={enabled}
                     checkbox={checkbox}
                     checkboxId={checkboxId}
                     displayName={props.displayNames.get(groupRows[0])!}
@@ -500,6 +538,7 @@ function EditCategory(props: SharedEditRowProps & {
                         {...shared}
                         index={index++}
                         highlight={highlight}
+                        enabled={enabled}
                         checkboxId={checkboxId}
                         displayName={props.displayNames.get(row)!}
                         indent={2}
