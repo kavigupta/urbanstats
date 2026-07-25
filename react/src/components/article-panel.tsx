@@ -294,12 +294,11 @@ function ArticleTable(props: {
     )
 }
 
-const editRowStyle = (colors: Colors, index: number, greyed: boolean): CSSProperties => ({
+const editRowStyle = (colors: Colors, index: number): CSSProperties => ({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'last baseline',
     backgroundColor: index % 2 === 1 ? colors.slightlyDifferentBackground : undefined,
-    opacity: greyed ? 0.45 : 1,
 })
 
 function searchMatch(searchTerm: string, target: string): boolean {
@@ -347,7 +346,6 @@ function highlightStyle(colors: Colors, highlight: boolean): CSSProperties {
 
 function EditStatRow(props: SharedEditRowProps & {
     index: number
-    greyed: boolean
     highlight: boolean
     checkbox?: ReactNode
     checkboxId: string
@@ -357,7 +355,7 @@ function EditStatRow(props: SharedEditRowProps & {
 }): ReactNode {
     const colors = useColors()
     return (
-        <div className="for-testing-table-row" style={editRowStyle(colors, props.index, props.greyed)}>
+        <div className="for-testing-table-row" style={editRowStyle(colors, props.index)}>
             <label
                 htmlFor={props.checkbox === undefined ? props.checkboxId : undefined}
                 style={{ ...editLabelStyle, ...highlightStyle(colors, props.highlight), width: `${props.widthLeftHeader}%`, paddingLeft: `${props.indent * 0.75}em` }}
@@ -378,10 +376,10 @@ function EditStatRow(props: SharedEditRowProps & {
     )
 }
 
-function EditGroupHeaderRow(props: { index: number, greyed: boolean, highlight: boolean, checkbox: ReactNode, name: string }): ReactNode {
+function EditGroupHeaderRow(props: { index: number, highlight: boolean, checkbox: ReactNode, name: string }): ReactNode {
     const colors = useColors()
     return (
-        <div className="for-testing-table-row" style={editRowStyle(colors, props.index, props.greyed)}>
+        <div className="for-testing-table-row" style={editRowStyle(colors, props.index)}>
             <label style={{ ...editLabelStyle, ...highlightStyle(colors, props.highlight), width: '100%', paddingLeft: '0.75em' }}>
                 {props.checkbox}
                 <span className="serif value">{props.name}</span>
@@ -467,7 +465,6 @@ function EditCategory(props: SharedEditRowProps & {
                     key={group.id}
                     {...shared}
                     index={index++}
-                    greyed={!enabled}
                     highlight={highlight}
                     checkbox={checkbox}
                     checkboxId={checkboxId}
@@ -479,7 +476,7 @@ function EditCategory(props: SharedEditRowProps & {
         }
         else {
             bodyRows.push(
-                <EditGroupHeaderRow key={group.id} index={index++} greyed={!enabled} highlight={highlight} checkbox={checkbox} name={group.name} />,
+                <EditGroupHeaderRow key={group.id} index={index++} highlight={highlight} checkbox={checkbox} name={group.name} />,
             )
             for (const row of groupRows) {
                 bodyRows.push(
@@ -487,7 +484,6 @@ function EditCategory(props: SharedEditRowProps & {
                         key={row.statpath}
                         {...shared}
                         index={index++}
-                        greyed={!enabled}
                         highlight={highlight}
                         checkboxId={checkboxId}
                         displayName={props.displayNames.get(row)!}
@@ -501,7 +497,7 @@ function EditCategory(props: SharedEditRowProps & {
 
     return (
         <>
-            <div className="for-testing-table-row" style={editRowStyle(colors, 0, false)}>
+            <div className="for-testing-table-row" style={editRowStyle(colors, 0)}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25em', padding: '1px', width: '100%' }}>
                     {!filterActive && (
                         <ExpandButton
