@@ -4,7 +4,7 @@ import { useColors } from '../page_template/colors'
 import { Settings } from '../page_template/settings'
 import { useMobileLayout } from '../utils/responsive'
 
-export function StagingControls(): ReactNode {
+export function StagingControls({ horizontal = false }: { horizontal?: boolean } = {}): ReactNode {
     const settings = useContext(Settings.Context)
     const colors = useColors()
     const isMobile = useMobileLayout()
@@ -20,9 +20,12 @@ export function StagingControls(): ReactNode {
                 backgroundColor: colors.slightlyDifferentBackgroundFocused,
                 borderRadius: '5px',
                 padding: '10px',
-                textAlign: 'center',
+                textAlign: horizontal ? 'left' : 'center',
                 marginBottom: '10px',
                 paddingBottom: '5px',
+                ...(horizontal
+                    ? { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }
+                    : {}),
             }}
             data-test-id="staging_controls"
         >
@@ -32,6 +35,7 @@ export function StagingControls(): ReactNode {
             <div style={{
                 display: 'flex',
                 justifyContent: 'space-evenly',
+                flex: horizontal ? '0 0 auto' : undefined,
             }}
             >
                 <button data-test-id="discard" style={buttonStyle} onClick={() => { settings.exitStagedMode('discard') }}>Discard</button>

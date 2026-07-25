@@ -595,7 +595,7 @@ function ArticleEditTable(props: {
 
     return (
         <div className="stats_table">
-            {staged && <StagingControls />}
+            {staged && <StagingControls horizontal />}
             <div style={{ position: 'relative' }}>
                 <TableHeaderContainer>
                     <MainHeaderRow
