@@ -329,9 +329,10 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
 }
 
 function EditModeButton({ onClick, text }: { onClick: () => void, text: string }): ReactNode {
+    // Matches the mobile "Statistic" header button (serif value, taller, larger text).
     return (
         <button
-            className="serif"
+            className="serif value"
             style={{ padding: '2px 10px', cursor: 'pointer' }}
             onClick={onClick}
             data-test-id={`edit-mode-${text.toLowerCase()}`}
