@@ -307,7 +307,7 @@ function searchMatch(searchTerm: string, target: string): boolean {
     return target.toLowerCase().includes(searchTerm.toLowerCase())
 }
 
-function EditCheckbox(props: { id?: string, checked: boolean, indeterminate?: boolean, onChange: (checked: boolean) => void, testId: string }): ReactNode {
+function EditCheckbox(props: { id?: string, checked: boolean, indeterminate?: boolean, onChange: (checked: boolean) => void, testId: string, highlight?: boolean }): ReactNode {
     const colors = useColors()
     const ref = useRef<HTMLInputElement>(null)
     React.useEffect(() => {
@@ -323,6 +323,7 @@ function EditCheckbox(props: { id?: string, checked: boolean, indeterminate?: bo
             checked={props.checked}
             onChange={(e) => { props.onChange(e.target.checked) }}
             data-test-id={props.testId}
+            data-test-highlight={props.highlight}
             style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background, cursor: 'pointer', flex: '0 0 auto' }}
         />
     )
@@ -416,12 +417,14 @@ function EditStatRow(props: SharedEditRowProps & {
                 </div>
             )}
             {congressionalRegion && (
-                <CongressionalRepresentativesWidget
-                    regions={[congressionalRegion]}
-                    widthLeftHeader={props.widthLeftHeader}
-                    columnWidth={props.columnWidth}
-                    extraSpaceRight={[0]}
-                />
+                <div data-test-id="edit-congressional-representatives">
+                    <CongressionalRepresentativesWidget
+                        regions={[congressionalRegion]}
+                        widthLeftHeader={props.widthLeftHeader}
+                        columnWidth={props.columnWidth}
+                        extraSpaceRight={[0]}
+                    />
+                </div>
             )}
         </>
     )
@@ -509,6 +512,7 @@ function EditCategory(props: SharedEditRowProps & {
                 checked={enabled}
                 onChange={(newValue) => { changeStatGroupSetting(settings, group, newValue) }}
                 testId={`edit_group_${group.id}`}
+                highlight={highlight}
             />
         )
         if (groupRows.length === 1) {
@@ -570,6 +574,7 @@ function EditCategory(props: SharedEditRowProps & {
                             indeterminate={status === 'indeterminate'}
                             onChange={changeCategory}
                             testId={`edit_category_${props.category.id}`}
+                            highlight={categoryHighlight}
                         />
                         <span className="serif value" style={{ fontWeight: 500 }}>{props.category.name}</span>
                     </label>
