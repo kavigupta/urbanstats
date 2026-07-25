@@ -1,3 +1,4 @@
+from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 from urbanstats.geometry.shapefiles.shapefiles.urban_centers import (
     create_urban_center_like_shapefile,
 )
@@ -10,6 +11,10 @@ METROPOLITAN_CLUSTERS = create_urban_center_like_shapefile(
     path=load_taylor_metropolitan_clusters_post_pruning,
     meta=dict(
         type="Metropolitan Cluster", source="Taylor", type_category="International City"
+    ),
+    cross_source_borders=CrossSourceBorders(
+        can_straddle=True,
+        alternative_geography_types=["Urban Area", "CA Population Center"],
     ),
     abbreviation="METC",
     data_credit=dict(

@@ -55,6 +55,17 @@ export function forTypeByIndex(counts: CountsByUT, universe: string, statIdx: nu
     return lookupInCompressedSequence(countsByType, statIdx)
 }
 
+/**
+ * The number of articles of this type in this universe, i.e. the count for whichever
+ * statistic covers the most of them.
+ */
+export function totalForType(counts: CountsByUT, universe: string, typ: string): number {
+    if (!(universe in counts) || !(typ in counts[universe])) {
+        return 0
+    }
+    return Math.max(0, ...counts[universe][typ].map(([count]) => count /** Ignore the run lengths */))
+}
+
 export function forType(counts: CountsByUT, universe: string, statcol: StatCol, typ: string): number {
     const idx = stats.indexOf(statcol) // Works because `require` is global
     return forTypeByIndex(counts, universe, idx, typ)
