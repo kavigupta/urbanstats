@@ -518,7 +518,7 @@ function EditCategory(props: SharedEditRowProps & {
         if (groupRows.length === 1) {
             bodyRows.push(
                 <EditStatRow
-                    key={group.id}
+                    key={`group-${group.id}`}
                     {...shared}
                     index={index++}
                     highlight={highlight}
@@ -534,12 +534,12 @@ function EditCategory(props: SharedEditRowProps & {
         }
         else {
             bodyRows.push(
-                <EditGroupHeaderRow key={group.id} index={index++} highlight={highlight} checkbox={checkbox} name={group.name} />,
+                <EditGroupHeaderRow key={`group-${group.id}`} index={index++} highlight={highlight} checkbox={checkbox} name={group.name} />,
             )
             for (const row of groupRows) {
                 bodyRows.push(
                     <EditStatRow
-                        key={row.statpath}
+                        key={`stat-${row.statpath}`}
                         {...shared}
                         index={index++}
                         highlight={highlight}
