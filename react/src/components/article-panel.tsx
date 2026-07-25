@@ -33,7 +33,7 @@ import { Related } from './related-button'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { CellSpec, PlotSpec, TableContents } from './supertable'
-import { ColumnIdentifier, CommonLayoutInformation, computeSizesForRow, ExpansionButton, MainHeaderRow, StatisticRowCells, TableHeaderContainer } from './table'
+import { ColumnIdentifier, CommonLayoutInformation, computeSizesForRow, ExpansionButton, MainHeaderRow, StatisticNameDisclaimer, StatisticRowCells, TableHeaderContainer } from './table'
 import { EditModeContext, useEditMode } from './table-edit-context'
 
 export function ArticlePanel({ article, rows, universe }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][], universe: Universe }): ReactNode {
@@ -398,6 +398,7 @@ function EditStatRow(props: SharedEditRowProps & {
                         <span className="serif value">{reifyReact(props.displayName)}</span>
                     </label>
                     {hasExtras && <ExpansionButton row={props.row} />}
+                    {props.row.disclaimer !== undefined && <StatisticNameDisclaimer disclaimer={props.row.disclaimer} />}
                 </div>
                 <StatisticRowCells
                     width={props.columnWidth}

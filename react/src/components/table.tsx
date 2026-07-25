@@ -1121,7 +1121,7 @@ export function computeDisclaimerFootnotes(rows: { disclaimer?: Disclaimer }[]):
     return { getSymbol, footnotes }
 }
 
-function StatisticNameDisclaimer(props: { disclaimer: Disclaimer, footnoteSymbol?: string }): ReactNode {
+export function StatisticNameDisclaimer(props: { disclaimer: Disclaimer, footnoteSymbol?: string }): ReactNode {
     const colors = useColors()
     const [show, setShow] = useState(false)
     if (props.footnoteSymbol !== undefined) {
