@@ -24,6 +24,8 @@ const populationCheck = 'input[data-test-id=edit_group_population]'
 const populationCheckInteractable = `${populationCheck}:not([inert] *)`
 const mainCollapse = '.stats_table [aria-label="Collapse Main category"]'
 const mainExpand = '.stats_table [aria-label="Expand Main category"]'
+// The sidebar's copy of the same group, for cross-tree checks.
+const sidebarPopulationCheck = 'input[data-test-id=group_population]:not([inert] *)'
 
 // The category collapse/expand is a grid-template-rows transition.
 const collapseAnimationMs = 400
@@ -42,7 +44,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('category-check', async (t) => {
         /**
-         * Check that the category checks and unchecks correctly.
+         * Check that the category checks and unchecks correctly without being expanded.
          */
         await enterEditMode(t)
         await t.expect(Selector(mainCheck).checked).eql(true)
@@ -57,6 +59,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          * Check that the category, when expanded, cycles between indeterminate -> true -> false -> indeterminate states
          */
         await enterEditMode(t)
+        await setMainExpanded(t, true)
         await t.click(populationCheckInteractable)
         await t.expect(Selector(populationCheck).checked).eql(false)
         await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
@@ -79,18 +82,16 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('indeterminate-cycle-collapsed', async (t) => {
         /**
-         * Same cycle, but with the category manually collapsed. Unlike the sidebar, an
-         * edit-mode category is expanded whenever anything in it is checked unless the
-         * user overrides that, so this also checks the override survives the cycle.
-         * The effect on the article is observed by leaving edit mode, since the edit
-         * tree itself shows every row regardless of whether its group is enabled.
+         * Check that the category, when collapsed, cycles between indeterminate -> true -> false -> indeterminate states.
+         * The effect on the article is observed by leaving edit mode, since the edit tree
+         * itself shows every row regardless of whether its group is enabled.
          */
         const populationStat = Selector('a').withExactText('Population')
 
         await enterEditMode(t)
+        await setMainExpanded(t, true)
         await t.click(populationCheckInteractable)
-        await t.click(mainCollapse)
-        await t.wait(collapseAnimationMs)
+        await setMainExpanded(t, false)
         await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
         await t.expect(Selector(populationCheckInteractable).exists).notOk()
         if (platform === 'mobile') {
@@ -126,6 +127,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          * Check than when a category enters an indeterminate state, it can come out of that state when its groups become uniformly checked.
          */
         await enterEditMode(t)
+        await setMainExpanded(t, true)
         await t.click(populationCheckInteractable)
         await t.expect(Selector(populationCheck).checked).eql(false)
         await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
@@ -146,11 +148,9 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          * Check than when a category enters an indeterminate state, it can come out of that state when its groups become uniformly unchecked.
          */
         await enterEditMode(t)
+        await setMainExpanded(t, true)
         await t.click(mainCheck)
         await t.expect(Selector(mainCheck).checked).eql(false)
-        // An unchecked category collapses, so reopen it to reach its groups.
-        await t.click(mainExpand)
-        await t.wait(collapseAnimationMs)
         await t.click(populationCheckInteractable)
         await t.expect(Selector(populationCheck).checked).eql(true)
         await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
@@ -195,6 +195,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          * Edit mode itself is ephemeral, but the selections made in it are settings and must persist.
          */
         await enterEditMode(t)
+        await setMainExpanded(t, true)
         await t.click(populationCheckInteractable)
         await safeReload(t)
         await enterEditMode(t)
@@ -208,6 +209,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          * Then checks that the hidden selection persists through page reload
          */
         await enterEditMode(t)
+        await setMainExpanded(t, true)
         await t.click(populationCheckInteractable)
         await t.click(mainCheck)
         await safeReload(t)
@@ -220,18 +222,34 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
     })
 
-    test('collapse-state-is-not-persisted', async (t) => {
+    test('expand-persistence', async (t) => {
         /**
-         * The sidebar tree persists its expand state as a setting; the edit tree's is
-         * local, so leaving edit mode returns it to following the checkbox.
+         * Expansion is a setting, so it outlives edit mode (which is ephemeral) and the page.
          */
         await enterEditMode(t)
-        await t.click(mainCollapse)
-        await t.wait(collapseAnimationMs)
+        await setMainExpanded(t, true)
         await exitEditMode(t)
         await enterEditMode(t)
-        await t.expect(Selector(mainCollapse).exists).ok()
-        await t.expect(Selector(populationCheckInteractable).exists).ok()
+        await t.expect(Selector(populationCheckInteractable).visible).eql(true)
+        await safeReload(t)
+        await enterEditMode(t)
+        await t.expect(Selector(populationCheckInteractable).visible).eql(true)
+    })
+
+    test('expand-state-shared-with-sidebar', async (t) => {
+        /**
+         * Both trees expand under the same setting key, so expanding in one expands the other.
+         */
+        await enterEditMode(t)
+        await setMainExpanded(t, true)
+        await withHamburgerMenu(t, async () => {
+            await t.expect(Selector(sidebarPopulationCheck).exists).ok()
+            await t.click('.expandButton[data-category-id=main]')
+            await t.wait(collapseAnimationMs)
+            await t.expect(Selector(sidebarPopulationCheck).exists).notOk()
+        })
+        await t.expect(Selector(mainExpand).exists).ok()
+        await t.expect(Selector(populationCheckInteractable).exists).notOk()
     })
 
     test('search-smoke', async (t) => {
@@ -248,7 +266,8 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
         await t.selectText(filterBox).pressKey('delete')
         await t.expect(Selector(mainCheck).exists).ok()
-        await t.expect(Selector(mainCollapse).exists).ok()
+        // Filtering doesn't leave the categories it expanded expanded.
+        await t.expect(Selector(mainExpand).exists).ok()
     })
 
     test('trees-stay-in-sync', async (t) => {
@@ -257,14 +276,13 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          * settings, so a change in either must show up in the other.
          */
         await enterEditMode(t)
+        await setMainExpanded(t, true)
         await t.click(populationCheckInteractable)
 
-        const sidebarPopulation = 'input[data-test-id=group_population]:not([inert] *)'
         await withHamburgerMenu(t, async () => {
-            await t.click('.expandButton[data-category-id=main]')
-            await t.expect(Selector(sidebarPopulation).checked).eql(false)
+            await t.expect(Selector(sidebarPopulationCheck).checked).eql(false)
             await t.expect(await checkIsIndeterminate(t, 'input[data-test-id=category_main]')).eql(true)
-            await t.click(sidebarPopulation)
+            await t.click(sidebarPopulationCheck)
         })
 
         await t.expect(Selector(populationCheck).checked).eql(true)
@@ -309,6 +327,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          * statistics is the same regardless of universe, so the indeterminate selection should persist.
          */
         await enterEditMode(t)
+        await setMainExpanded(t, true)
         await t.click(populationCheckInteractable)
         await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
 
@@ -342,6 +361,12 @@ async function enterEditMode(t: TestController): Promise<void> {
 async function exitEditMode(t: TestController): Promise<void> {
     await t.click(doneButton)
     await t.expect(editButton.exists).ok()
+}
+
+// Categories are collapsed by default, and the toggle animates.
+async function setMainExpanded(t: TestController, expanded: boolean): Promise<void> {
+    await t.click(expanded ? mainExpand : mainCollapse)
+    await t.wait(collapseAnimationMs)
 }
 
 async function uncheckAll(t: TestController): Promise<void> {

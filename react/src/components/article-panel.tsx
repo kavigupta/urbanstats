@@ -479,9 +479,8 @@ function EditCategory(props: SharedEditRowProps & {
     }
     const categoryHighlight = availableGroups.some(isStaged)
 
-    // Undefined means "follow the checkbox": expanded when anything is checked.
-    // A manual toggle overrides that, so a fully-checked category can still be collapsed.
-    const [userExpanded, setUserExpanded] = useState<boolean | undefined>(undefined)
+    // Shared with the sidebar tree, so a category expanded in one is expanded in the other.
+    const [isExpanded, setIsExpanded] = useSetting(`stat_category_expanded_${props.category.id}`)
 
     const filterActive = props.filter !== ''
     const categoryMatches = searchMatch(props.filter, props.category.name)
@@ -493,7 +492,7 @@ function EditCategory(props: SharedEditRowProps & {
         return null
     }
 
-    const expanded = filterActive || (userExpanded ?? status !== false)
+    const expanded = filterActive || isExpanded
 
     let index = 0
     const bodyRows: ReactNode[] = []
@@ -563,7 +562,7 @@ function EditCategory(props: SharedEditRowProps & {
                         <ExpandButton
                             pointing="right"
                             isExpanded={expanded}
-                            onClick={() => { setUserExpanded(!expanded) }}
+                            onClick={() => { setIsExpanded(!isExpanded) }}
                             style={{ backgroundSize: '16px', width: '20px', height: '20px', flex: '0 0 auto' }}
                             aria-label={expanded ? `Collapse ${props.category.name} category` : `Expand ${props.category.name} category`}
                         />

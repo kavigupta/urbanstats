@@ -17,6 +17,12 @@ const populationGroup = Selector('input[data-test-id=edit_group_population]')
 // Scoped to the table so it doesn't match the identical sidebar controls.
 const tableStagingControls = Selector('.stats_table [data-test-id=staging_controls]')
 
+// Categories are collapsed by default (the expand state is shared with the sidebar tree).
+async function expandMain(t: TestController): Promise<void> {
+    await t.click(Selector('.stats_table [aria-label="Expand Main category"]'))
+    await t.wait(400)
+}
+
 urbanstatsFixture('article edit mode', `${target}/article.html?longname=California%2C+USA`)
 
 test('edit mode toggles the checkbox tree on the table', async (t) => {
@@ -50,6 +56,7 @@ test('edit mode is ephemeral across reloads', async (t) => {
 
 test('clicking a stat name toggles its checkbox', async (t) => {
     await t.click(editButton)
+    await expandMain(t)
     await t.expect(populationGroup.checked).ok()
 
     // Click the name label (not the checkbox itself).
@@ -60,7 +67,7 @@ test('clicking a stat name toggles its checkbox', async (t) => {
 test('a checked category can still be collapsed and expanded', async (t) => {
     await t.click(editButton)
     await t.expect(mainCategory.checked).ok()
-    // Interactable because Main is expanded by default.
+    await expandMain(t)
     await t.expect(Selector('input[data-test-id=edit_group_population]:not([inert] *)').exists).ok()
 
     await t.click(Selector('.stats_table [aria-label="Collapse Main category"]'))
@@ -83,6 +90,7 @@ test('the filter narrows to matching categories', async (t) => {
 
 test('stat extras (plots) can be expanded in edit mode', async (t) => {
     await t.click(editButton)
+    await expandMain(t)
     const expandToggle = Selector('.stats_table .expand-toggle:not([inert] *)')
     await t.expect(expandToggle.exists).ok()
 
