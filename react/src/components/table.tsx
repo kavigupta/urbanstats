@@ -977,7 +977,7 @@ function SortButton(props: StatisticNameCellProps & { sortInfo: NonNullable<Stat
     )
 }
 
-function ExpansionButton(props: { row: ArticleRow }): ReactNode {
+export function ExpansionButton(props: { row: ArticleRow }): ReactNode {
     const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
     return (

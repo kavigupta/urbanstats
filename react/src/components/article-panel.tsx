@@ -26,12 +26,12 @@ import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { StagingControls } from './StagingControls'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
-import { pullRelevantPlotProps } from './plots'
+import { pullRelevantPlotProps, RenderedPlot } from './plots'
 import { Related } from './related-button'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { CellSpec, PlotSpec, TableContents } from './supertable'
-import { ColumnIdentifier, CommonLayoutInformation, computeSizesForRow, MainHeaderRow, StatisticRowCells, TableHeaderContainer } from './table'
+import { ColumnIdentifier, CommonLayoutInformation, computeSizesForRow, ExpansionButton, MainHeaderRow, StatisticRowCells, TableHeaderContainer } from './table'
 import { EditModeContext, useEditMode } from './table-edit-context'
 
 export function ArticlePanel({ article, rows, universe }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][], universe: Universe }): ReactNode {
@@ -338,6 +338,7 @@ interface SharedEditRowProps {
     onlyColumns: ColumnIdentifier[]
     simpleOrdinals: boolean
     columnWidthsInfo: CommonLayoutInformation
+    screenshotMode: boolean
 }
 
 function highlightStyle(colors: Colors, highlight: boolean): CSSProperties {
@@ -352,27 +353,39 @@ function EditStatRow(props: SharedEditRowProps & {
     displayName: HumanReadableName
     indent: number
     row: ArticleRow
+    plotSpec?: PlotSpec
 }): ReactNode {
     const colors = useColors()
+    const hasExtras = props.row.extraStats.length > 0 && !props.screenshotMode
     return (
-        <div className="for-testing-table-row" style={editRowStyle(colors, props.index)}>
-            <label
-                htmlFor={props.checkbox === undefined ? props.checkboxId : undefined}
-                style={{ ...editLabelStyle, ...highlightStyle(colors, props.highlight), width: `${props.widthLeftHeader}%`, paddingLeft: `${props.indent * 0.75}em` }}
-            >
-                {props.checkbox}
-                <span className="serif value">{reifyReact(props.displayName)}</span>
-            </label>
-            <StatisticRowCells
-                width={props.columnWidth}
-                longname={props.article.longname}
-                row={props.row}
-                onlyColumns={props.onlyColumns}
-                simpleOrdinals={props.simpleOrdinals}
-                columnWidthsInfo={props.columnWidthsInfo}
-                extraSpaceRight={0}
-            />
-        </div>
+        <>
+            <div className="for-testing-table-row" style={editRowStyle(colors, props.index)}>
+                <div style={{ width: `${props.widthLeftHeader}%`, display: 'flex', alignItems: 'center', gap: '0.3em', paddingLeft: `${props.indent * 0.75}em` }}>
+                    <label
+                        htmlFor={props.checkbox === undefined ? props.checkboxId : undefined}
+                        style={{ ...editLabelStyle, ...highlightStyle(colors, props.highlight) }}
+                    >
+                        {props.checkbox}
+                        <span className="serif value">{reifyReact(props.displayName)}</span>
+                    </label>
+                    {hasExtras && <ExpansionButton row={props.row} />}
+                </div>
+                <StatisticRowCells
+                    width={props.columnWidth}
+                    longname={props.article.longname}
+                    row={props.row}
+                    onlyColumns={props.onlyColumns}
+                    simpleOrdinals={props.simpleOrdinals}
+                    columnWidthsInfo={props.columnWidthsInfo}
+                    extraSpaceRight={0}
+                />
+            </div>
+            {props.plotSpec && (
+                <div style={{ width: '100%', position: 'relative' }}>
+                    <RenderedPlot statDescription={props.plotSpec.statDescription} plotProps={props.plotSpec.plotProps} />
+                </div>
+            )}
+        </>
     )
 }
 
@@ -409,6 +422,7 @@ function EditCategory(props: SharedEditRowProps & {
     category: Category
     rowsByGroup: Map<string, ArticleRow[]>
     displayNames: Map<ArticleRow, HumanReadableName>
+    plotSpecByStatpath: Map<string, PlotSpec>
     filter: string
 }): ReactNode {
     const colors = useColors()
@@ -471,6 +485,7 @@ function EditCategory(props: SharedEditRowProps & {
                     displayName={props.displayNames.get(groupRows[0])!}
                     indent={1}
                     row={groupRows[0]}
+                    plotSpec={props.plotSpecByStatpath.get(groupRows[0].statpath)}
                 />,
             )
         }
@@ -489,6 +504,7 @@ function EditCategory(props: SharedEditRowProps & {
                         displayName={props.displayNames.get(row)!}
                         indent={2}
                         row={row}
+                        plotSpec={props.plotSpecByStatpath.get(row.statpath)}
                     />,
                 )
             }
@@ -540,8 +556,23 @@ function ArticleEditTable(props: {
     const categories = useAvailableCategories()
     const isMobile = useMobileLayout()
     const editModeContext = useEditMode()
+    const colors = useColors()
+    const screenshotMode = useScreenshotMode()
 
     const staged = useStagedSettingKeys() !== undefined
+
+    // Keep the expandable per-stat plots ("extras") available in edit mode, driven
+    // by the same rowExpandedKey setting the normal table uses.
+    const expandedSettings = useSettings(props.allRows.map(row => rowExpandedKey(row.statpath)))
+    const plotSpecByStatpath = new Map<string, PlotSpec>()
+    props.allRows.forEach((row, index) => {
+        if (row.extraStats.length > 0 && (expandedSettings[rowExpandedKey(row.statpath)] ?? false)) {
+            plotSpecByStatpath.set(row.statpath, {
+                statDescription: row.renderedStatname,
+                plotProps: pullRelevantPlotProps(props.allRows, index, colors.hueColors.blue, props.article.shortname, props.article.longname, props.article.articleType),
+            })
+        }
+    })
 
     // On mobile, edit mode drops the percentile/ordinal/pointer columns so the
     // checkboxes and names have room; only the value stays. The name column also
@@ -611,12 +642,14 @@ function ArticleEditTable(props: {
                         category={category}
                         rowsByGroup={rowsByGroup}
                         displayNames={displayNames}
+                        plotSpecByStatpath={plotSpecByStatpath}
                         article={props.article}
                         widthLeftHeader={widthLeftHeader}
                         columnWidth={columnWidth}
                         onlyColumns={onlyColumns}
                         simpleOrdinals={props.simpleOrdinals}
                         columnWidthsInfo={columnWidthsInfo}
+                        screenshotMode={screenshotMode}
                         filter={props.filter}
                     />
                 ))}
