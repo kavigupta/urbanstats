@@ -539,6 +539,7 @@ function ArticleEditTable(props: {
     assert(currentUniverse !== undefined, 'no universe')
     const categories = useAvailableCategories()
     const isMobile = useMobileLayout()
+    const editModeContext = useEditMode()
 
     const staged = useStagedSettingKeys() !== undefined
 
@@ -591,7 +592,7 @@ function ArticleEditTable(props: {
 
     return (
         <div className="stats_table">
-            {staged && <StagingControls horizontal />}
+            {staged && <StagingControls horizontal onAction={() => { editModeContext?.setEditMode(false) }} />}
             <div style={{ position: 'relative' }}>
                 <TableHeaderContainer>
                     <MainHeaderRow

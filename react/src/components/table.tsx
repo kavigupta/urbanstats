@@ -8,7 +8,7 @@ import './table.css'
 import { Navigator } from '../navigation/Navigator'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
-import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
+import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings, useStagedSettingKeys } from '../page_template/settings'
 import { Universe, useUniverse } from '../universe'
 import { withButtonRole } from '../utils/a11y'
 import { assert } from '../utils/defensive'
@@ -264,6 +264,7 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     const isScreenshot = useScreenshotMode()
     const isTranspose = useTranspose()
     const editModeContext = useEditMode()
+    const staged = useStagedSettingKeys() !== undefined
 
     const [statsModalOpen, setStatsModalOpen] = useState(false)
 
@@ -279,9 +280,10 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     const sidebarFontSize = useSidebarFontSize()
 
     if (editModeContext?.editMode) {
+        // In staging mode the Discard/Apply buttons double as Done, so hide the Done button.
         return (
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '1px', width: `${props.width}%` }}>
-                <EditModeButton onClick={() => { editModeContext.setEditMode(false) }} text="Done" />
+                {!staged && <EditModeButton onClick={() => { editModeContext.setEditMode(false) }} text="Done" />}
                 <input
                     type="text"
                     className="serif"

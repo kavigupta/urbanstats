@@ -4,7 +4,7 @@ import { useColors } from '../page_template/colors'
 import { Settings } from '../page_template/settings'
 import { useMobileLayout } from '../utils/responsive'
 
-export function StagingControls({ horizontal = false }: { horizontal?: boolean } = {}): ReactNode {
+export function StagingControls({ horizontal = false, onAction }: { horizontal?: boolean, onAction?: () => void } = {}): ReactNode {
     const settings = useContext(Settings.Context)
     const colors = useColors()
     const isMobile = useMobileLayout()
@@ -38,8 +38,8 @@ export function StagingControls({ horizontal = false }: { horizontal?: boolean }
                 flex: horizontal ? '0 0 auto' : undefined,
             }}
             >
-                <button data-test-id="discard" style={buttonStyle} onClick={() => { settings.exitStagedMode('discard') }}>Discard</button>
-                <button data-test-id="apply" style={buttonStyle} onClick={() => { settings.exitStagedMode('apply') }}>Apply</button>
+                <button data-test-id="discard" style={buttonStyle} onClick={() => { settings.exitStagedMode('discard'); onAction?.() }}>Discard</button>
+                <button data-test-id="apply" style={buttonStyle} onClick={() => { settings.exitStagedMode('apply'); onAction?.() }}>Apply</button>
             </div>
         </div>
     )
