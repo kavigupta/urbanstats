@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { editModeSharedTests } from './edit_mode_test_template'
-import { articleTableScope, categoryCheckbox, doneButton, editButton, filterBox, groupCheckbox, setCategoryExpanded } from './edit_mode_test_utils'
+import { articleTableScope, editButton, filterBox, groupCheckbox, setCategoryExpanded } from './edit_mode_test_utils'
 import { resizeForPlatform, screencap, target, urbanstatsFixture } from './test_utils'
 
 /**
@@ -13,29 +13,10 @@ import { resizeForPlatform, screencap, target, urbanstatsFixture } from './test_
 
 const californiaPage = `${target}/article.html?longname=California%2C+USA`
 
-const mainCategory = categoryCheckbox('main')
 // Population is a single-stat group in the (default-on) Main category.
 const populationGroup = groupCheckbox('population')
 
 urbanstatsFixture('article edit mode', californiaPage)
-
-test('edit mode toggles the checkbox tree on the table', async (t) => {
-    // Normal view: an Edit button, and no tree.
-    await t.expect(editButton.exists).ok()
-    await t.expect(mainCategory.exists).notOk()
-
-    await t.click(editButton)
-
-    // Edit view: Done + filter, and the tree with Main checked by default.
-    await t.expect(doneButton.exists).ok()
-    await t.expect(filterBox.exists).ok()
-    await t.expect(mainCategory.checked).ok()
-    await screencap(t)
-
-    await t.click(doneButton)
-    await t.expect(editButton.exists).ok()
-    await t.expect(mainCategory.exists).notOk()
-})
 
 test('clicking a stat name toggles its checkbox', async (t) => {
     await t.click(editButton)
@@ -82,5 +63,6 @@ editModeSharedTests({
     name: 'article',
     page: californiaPage,
     scope: articleTableScope,
+    editButtonLabel: 'Edit',
     congressional: { page: `${target}/article.html?longname=02139%2C+USA`, expectedRegions: [] },
 })

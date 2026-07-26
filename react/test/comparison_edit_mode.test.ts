@@ -23,24 +23,6 @@ const comparisonTable = Selector(comparisonTableScope)
 
 urbanstatsFixture('comparison edit mode', twoRegions)
 
-test('edit statistics toggles the checkbox tree on the comparison table', async (t) => {
-    // Named to distinguish it from the per-region replace/delete controls.
-    await t.expect(editButton.innerText).eql('Edit Statistics')
-    await t.expect(mainCategory.exists).notOk()
-    await screencap(t)
-
-    await t.click(editButton)
-
-    await t.expect(doneButton.exists).ok()
-    await t.expect(filterBox.exists).ok()
-    await t.expect(mainCategory.checked).ok()
-    await screencap(t)
-
-    await t.click(doneButton)
-    await t.expect(editButton.exists).ok()
-    await t.expect(mainCategory.exists).notOk()
-})
-
 test('each region keeps a column of values in edit mode', async (t) => {
     await t.click(editButton)
     await setCategoryExpanded(t, 'main', true, comparisonTableScope)
@@ -147,6 +129,8 @@ editModeSharedTests({
     name: 'comparison',
     page: twoRegions,
     scope: comparisonTableScope,
+    // Named to distinguish it from the per-region replace/delete controls.
+    editButtonLabel: 'Edit Statistics',
     congressional: {
         page: comparisonPage(['02139, USA', '10001, USA']),
         // The widget has to cover every region, not just the first.

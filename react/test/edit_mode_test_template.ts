@@ -1,12 +1,13 @@
 import { Selector } from 'testcafe'
 
-import { doneButton, editButton, filterBox, groupCheckbox } from './edit_mode_test_utils'
+import { categoryCheckbox, doneButton, editButton, filterBox, groupCheckbox } from './edit_mode_test_utils'
 import { safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 /**
  * The parts of edit mode that behave the same on the article table and the comparison
- * table: that it doesn't survive a reload, that arriving via a settings link opens it with
- * the staging controls on the table, and that a metadata extra renders below its row.
+ * table: that the Edit button opens and closes the tree, that it doesn't survive a reload,
+ * that arriving via a settings link opens it with the staging controls on the table, and
+ * that a metadata extra renders below its row.
  *
  * The table-specific behavior (layout, columns, transposition) lives in each caller's file.
  */
@@ -16,13 +17,35 @@ export function editModeSharedTests(spec: {
     page: string
     /** The table the edit tree lives on, which the staging controls are looked up inside. */
     scope: string
+    /** The Edit button's text, which names what that table is editing. */
+    editButtonLabel: string
     /** A page whose regions have congressional representatives, and the ones to expect. */
     congressional: { page: string, expectedRegions: string[] }
 }): void {
     const table = Selector(spec.scope)
     const stagingControls = table.find('[data-test-id=staging_controls]')
+    const mainCategory = categoryCheckbox('main')
 
     urbanstatsFixture(`${spec.name} edit mode shared`, spec.page)
+
+    test('edit mode toggles the checkbox tree on the table', async (t) => {
+        // Normal view: the Edit button, and no tree.
+        await t.expect(editButton.innerText).eql(spec.editButtonLabel)
+        await t.expect(mainCategory.exists).notOk()
+        await screencap(t)
+
+        await t.click(editButton)
+
+        // Edit view: Done + filter, and the tree with Main checked by default.
+        await t.expect(doneButton.exists).ok()
+        await t.expect(filterBox.exists).ok()
+        await t.expect(mainCategory.checked).ok()
+        await screencap(t)
+
+        await t.click(doneButton)
+        await t.expect(editButton.exists).ok()
+        await t.expect(mainCategory.exists).notOk()
+    })
 
     test('edit mode is ephemeral across reloads', async (t) => {
         await t.click(editButton)
