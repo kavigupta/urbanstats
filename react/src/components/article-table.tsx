@@ -8,14 +8,12 @@ import { assert } from '../utils/defensive'
 import { Article } from '../utils/protos'
 import { useMobileLayout } from '../utils/responsive'
 
-import { ArticleWarnings } from './ArticleWarnings'
 import { ArticleRow } from './load-article'
 import { pullRelevantPlotProps } from './plots'
 import { useScreenshotMode } from './screenshot'
 import { computeNameSpecsWithGroups, nameSpecsForRows } from './statistic-name-specs'
 import { CellSpec, PlotSpec, TableContents } from './supertable'
 import { ColumnIdentifier } from './table'
-import { useEditMode } from './table-edit-context'
 
 const allColumns: ColumnIdentifier[] = ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
 
@@ -87,10 +85,10 @@ export function useArticleTableLayout(editMode: boolean): ArticleTableLayout {
 export function ArticleTable(props: {
     filteredRows: ArticleRow[]
     article: Article
+    onEdit: () => void
 }): ReactNode {
     const { currentUniverse, simpleOrdinals, widthLeftHeader, columnWidth, onlyColumns } = useArticleTableLayout(false)
     const navContext = useContext(Navigator.Context)
-    const editModeContext = useEditMode()
 
     const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(
         nameSpecsForRows(props.filteredRows, props.article.longname, currentUniverse),
@@ -115,25 +113,20 @@ export function ArticleTable(props: {
 
     const topLeftSpec = {
         type: 'top-left-header',
-        editMode: editModeContext === undefined
-            ? undefined
-            : { open: false, onEdit: () => { editModeContext.setEditMode(true) } },
+        editMode: { open: false, onEdit: props.onEdit },
     } satisfies CellSpec
 
     return (
-        <div className="stats_table">
-            <TableContents
-                leftHeaderSpec={{ leftHeaderSpecs, groupNames }}
-                rowSpecs={cellSpecs}
-                horizontalPlotSpecs={plotSpecs}
-                verticalPlotSpecs={[]}
-                topLeftSpec={topLeftSpec}
-                widthLeftHeader={widthLeftHeader}
-                columnWidth={columnWidth}
-                onlyColumns={onlyColumns}
-                simpleOrdinals={simpleOrdinals}
-            />
-            <ArticleWarnings />
-        </div>
+        <TableContents
+            leftHeaderSpec={{ leftHeaderSpecs, groupNames }}
+            rowSpecs={cellSpecs}
+            horizontalPlotSpecs={plotSpecs}
+            verticalPlotSpecs={[]}
+            topLeftSpec={topLeftSpec}
+            widthLeftHeader={widthLeftHeader}
+            columnWidth={columnWidth}
+            onlyColumns={onlyColumns}
+            simpleOrdinals={simpleOrdinals}
+        />
     )
 }

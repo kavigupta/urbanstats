@@ -13,7 +13,6 @@ import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
 import { useScreenshotMode } from './screenshot'
 import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeDisclaimerFootnotes, maxLayoutInformation, CommonLayoutInformation } from './table'
-import { EditModeHeader } from './table-edit-context'
 
 export interface PlotSpec {
     statDescription: string
@@ -327,6 +326,22 @@ export interface StatisticRowCellProps {
     extraSpaceRight?: number
     columnWidthsInfo?: CommonLayoutInformation
 }
+
+/**
+ * What the table's top-left cell offers for the article table's "edit mode", in which the
+ * statistic category/group checkbox tree is replicated directly on the table. Passed down
+ * as part of the cell's spec, so the generic table components stay unaware of edit mode;
+ * a cell given no `EditModeHeader` renders the plain header.
+ */
+export type EditModeHeader =
+    | { open: false, onEdit: () => void }
+    | {
+        open: true
+        filter: string
+        setFilter: (filter: string) => void
+        /** Unset when something else on the page already offers a way out of edit mode. */
+        onDone?: () => void
+    }
 
 export interface TopLeftHeaderProps {
     statNameOverride?: string

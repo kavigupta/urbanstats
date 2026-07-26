@@ -310,6 +310,11 @@ export function isStagedChange<K extends keyof SettingsDictionary>(info: Setting
     return 'stagedValue' in info && info.stagedValue !== info.persistedValue
 }
 
+/** The value the setting has right now, which is the staged one while staging. */
+export function settingValue<K extends keyof SettingsDictionary>(info: SettingInfo<K>): SettingsDictionary[K] {
+    return info.stagedValue ?? info.persistedValue
+}
+
 export function useIsStaged(): boolean {
     return useStagedSettingKeys() !== undefined
 }

@@ -3,7 +3,7 @@ import { useContext } from 'react'
 import { dataSources } from '../data/statistics_tree'
 import { Navigator } from '../navigation/Navigator'
 
-import { isStagedChange, Settings, sourceEnabledKey, StatGroupKey, StatYearKey, StatSourceKey, useSetting, useSettings, useSettingsInfo } from './settings'
+import { isStagedChange, Settings, settingValue, sourceEnabledKey, StatGroupKey, StatYearKey, StatSourceKey, useSetting, useSettings, useSettingsInfo } from './settings'
 import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, Group, sourceDisambiguation, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
 
 export type StatGroupSettings = Record<StatGroupKey | StatYearKey | StatSourceKey, boolean>
@@ -129,18 +129,17 @@ export interface CategoryTreeState {
 export function useCategoryTreeState(category: Category): CategoryTreeState {
     const settings = useContext(Settings.Context)
     const availableGroups = useAvailableGroups(category)
-    const enabled = useSettings(groupKeys(availableGroups))
     const info = useSettingsInfo(groupKeys(availableGroups))
     const [expanded, setExpanded] = useSetting(`stat_category_expanded_${category.id}`)
 
     const groups = availableGroups.map(group => ({
         group,
-        enabled: enabled[`show_stat_group_${group.id}`],
+        enabled: settingValue(info[`show_stat_group_${group.id}`]),
         setEnabled: (newValue: boolean) => { changeStatGroupSetting(settings, group, newValue) },
         highlight: isStagedChange(info[`show_stat_group_${group.id}`]),
     }))
 
-    const status = categoryStatus(availableGroups, group => enabled[`show_stat_group_${group.id}`])
+    const status = categoryStatus(availableGroups, group => settingValue(info[`show_stat_group_${group.id}`]))
 
     return {
         status,

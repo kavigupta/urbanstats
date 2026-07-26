@@ -31,7 +31,7 @@ import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
-import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
+import { Cell, CellSpec, ComparisonLongnameCellProps, EditModeHeader, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -278,21 +278,7 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     const sidebarFontSize = useSidebarFontSize()
 
     if (editMode?.open) {
-        const onDone = editMode.onDone
-        return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '1px', width: `${props.width}%` }}>
-                {onDone !== undefined && <EditModeButton onClick={onDone} text="Done" testId="edit-mode-done" />}
-                <input
-                    type="text"
-                    className="serif"
-                    placeholder="Search Statistics"
-                    style={{ flex: '1 1 auto', minWidth: 0, fontSize: '16px' }}
-                    value={editMode.filter}
-                    onChange={(e) => { editMode.setFilter(e.target.value) }}
-                    data-test-id="edit-mode-filter"
-                />
-            </div>
-        )
+        return <EditModeTopLeftHeader header={editMode} width={props.width} />
     }
 
     return (
@@ -323,6 +309,24 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
                 </ul>
             </Modal>
         </>
+    )
+}
+
+/** The top-left cell while the edit tree is open: the way out of it, and the tree's search box. */
+function EditModeTopLeftHeader({ header, width }: { header: Extract<EditModeHeader, { open: true }>, width: number }): ReactNode {
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '1px', width: `${width}%` }}>
+            {header.onDone !== undefined && <EditModeButton onClick={header.onDone} text="Done" testId="edit-mode-done" />}
+            <input
+                type="text"
+                className="serif"
+                placeholder="Search Statistics"
+                style={{ flex: '1 1 auto', minWidth: 0, fontSize: '16px' }}
+                value={header.filter}
+                onChange={(e) => { header.setFilter(e.target.value) }}
+                data-test-id="edit-mode-filter"
+            />
+        </div>
     )
 }
 

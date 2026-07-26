@@ -3,21 +3,18 @@ import React, { CSSProperties, ReactNode, useMemo } from 'react'
 import { useIsStaged, useSettings } from '../page_template/settings'
 import { filterCategoriesBySearch, StatGroupSettings, useAvailableCategories, useAvailableGroups, useCategoryTreeState, yearSourceKeys } from '../page_template/statistic-settings'
 import { allGroups, Category, statParents } from '../page_template/statistic-tree'
-import { assert } from '../utils/defensive'
 import { HumanReadableName, reifyReact } from '../utils/human-readable-name'
 import { Article } from '../utils/protos'
 
-import { ArticleWarnings } from './ArticleWarnings'
 import { ExpandButton } from './ExpandButton'
 import { StagingControls } from './StagingControls'
-import { useArticleTableLayout, useExpandedPlotSpecs } from './article-table'
+import { ArticleTableLayout, useArticleTableLayout, useExpandedPlotSpecs } from './article-table'
 import { congressionalDataForRow } from './congressional-table/model'
 import { ArticleRow } from './load-article'
 import { CheckboxSettingJustBox, useHighlightStyle } from './sidebar'
 import { displayNamesForRows } from './statistic-name-specs'
 import { CellSpec, PlotSpec, RowExtras } from './supertable'
-import { ColumnIdentifier, CommonLayoutInformation, MainHeaderRow, maxLayoutInformation, StatisticRowCells, TableHeaderContainer, TableRowContainer, useStatisticNameAdornments } from './table'
-import { useEditMode } from './table-edit-context'
+import { CommonLayoutInformation, MainHeaderRow, maxLayoutInformation, StatisticRowCells, TableHeaderContainer, TableRowContainer, useStatisticNameAdornments } from './table'
 
 // Wrapping the name in a label lets a click anywhere on it toggle the associated
 // checkbox. Child rows of a multi-stat group have no checkbox of their own, so
@@ -29,12 +26,8 @@ const editLabelStyle: CSSProperties = { padding: '1px', display: 'flex', alignIt
 const editCheckboxStyle: CSSProperties = { cursor: 'pointer', flex: '0 0 auto', height: 'auto' }
 
 /** Layout shared by every row of the edit table. */
-interface EditTableLayout {
+type EditTableLayout = ArticleTableLayout & {
     longname: string
-    widthLeftHeader: number
-    columnWidth: number
-    onlyColumns: ColumnIdentifier[]
-    simpleOrdinals: boolean
     columnWidthsInfo: CommonLayoutInformation
 }
 
@@ -270,11 +263,13 @@ function useAllRows(rows: (settings: StatGroupSettings) => ArticleRow[][]): Arti
 export function ArticleEditTable(props: {
     rows: (settings: StatGroupSettings) => ArticleRow[][]
     article: Article
+    filter: string
+    setFilter: (filter: string) => void
+    onExit: () => void
 }): ReactNode {
-    const editModeContext = useEditMode()
-    assert(editModeContext !== undefined, 'edit table rendered outside an edit mode context')
-    const { filter } = editModeContext
-    const { currentUniverse, simpleOrdinals, widthLeftHeader, columnWidth, onlyColumns } = useArticleTableLayout(true)
+    const { filter } = props
+    const tableLayout = useArticleTableLayout(true)
+    const { currentUniverse, simpleOrdinals, widthLeftHeader, columnWidth, onlyColumns } = tableLayout
     const allRows = useAllRows(props.rows)
     const categories = filterCategoriesBySearch(filter, useAvailableCategories(), useAvailableGroups())
     const staged = useIsStaged()
@@ -305,21 +300,21 @@ export function ArticleEditTable(props: {
         [allRows, currentUniverse, simpleOrdinals],
     )
 
-    const layout: EditTableLayout = { longname: props.article.longname, widthLeftHeader, columnWidth, onlyColumns, simpleOrdinals, columnWidthsInfo }
+    const layout: EditTableLayout = { ...tableLayout, longname: props.article.longname, columnWidthsInfo }
     const topLeftSpec = {
         type: 'top-left-header',
         editMode: {
             open: true,
             filter,
-            setFilter: editModeContext.setFilter,
+            setFilter: props.setFilter,
             // In staging mode the Discard/Apply buttons below double as Done.
-            onDone: staged ? undefined : () => { editModeContext.setEditMode(false) },
+            onDone: staged ? undefined : props.onExit,
         },
     } satisfies CellSpec
 
     return (
-        <div className="stats_table">
-            {staged && <StagingControls horizontal onAction={() => { editModeContext.setEditMode(false) }} />}
+        <>
+            {staged && <StagingControls horizontal onExitStaging={props.onExit} />}
             <div style={{ position: 'relative' }}>
                 <TableHeaderContainer>
                     <MainHeaderRow
@@ -343,7 +338,6 @@ export function ArticleEditTable(props: {
                     />
                 ))}
             </div>
-            <ArticleWarnings />
-        </div>
+        </>
     )
 }
