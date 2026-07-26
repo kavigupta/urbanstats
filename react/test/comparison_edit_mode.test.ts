@@ -49,6 +49,62 @@ test('each region keeps a column of values in edit mode', async (t) => {
     await t.expect(populationRow.find('.testing-statistic-value').count).eql(2)
 })
 
+test('toggling a group in edit mode changes what the comparison shows', async (t) => {
+    const populationName = comparisonTable.find('[data-test-id=statistic-link]').withExactText('Population')
+    await t.expect(populationName.exists).ok()
+
+    await t.click(editButton)
+    await setCategoryExpanded(t, 'main', true, comparisonTableScope)
+    await t.click(populationGroup)
+    await t.click(doneButton)
+    await t.expect(populationName.exists).notOk()
+
+    // Main stays expanded, so re-entering goes straight back to the same checkbox.
+    await t.click(editButton)
+    await t.click(populationGroup)
+    await t.click(doneButton)
+    await t.expect(populationName.exists).ok()
+})
+
+test('the filter narrows the comparison tree', async (t) => {
+    await t.click(editButton)
+    await t.typeText(filterBox, 'gene')
+
+    // Filtering expands the matching categories and drops the rest.
+    await t.expect(Selector('input[data-test-id=edit_group_generation_genx]:not([inert] *)').exists).ok()
+    await t.expect(mainCategory.exists).notOk()
+
+    await t.selectText(filterBox).pressKey('delete')
+    await t.expect(mainCategory.exists).ok()
+})
+
+test('a multi-row group keeps a column of values per region on every row', async (t) => {
+    await t.click(editButton)
+    // A second year makes Population a two-row group: a header row carrying the checkbox,
+    // and a row per year pointing at it.
+    await t.click(Selector('input[data-test-id=edit_year_2010]'))
+    await setCategoryExpanded(t, 'main', true, comparisonTableScope)
+
+    const row2010 = Selector(`${comparisonTableScope} label[for=edit-checkbox-population]`).withExactText('2010')
+    await t.expect(row2010.exists).ok()
+    await t.expect(row2010.parent('.for-testing-table-row').find('.testing-statistic-value').count).eql(2)
+})
+
+test('expanding a stat in edit mode plots every region', async (t) => {
+    await t.click(editButton)
+    await setCategoryExpanded(t, 'main', true, comparisonTableScope)
+
+    const expandToggle = comparisonTable.find('.expand-toggle:not([inert] *)')
+    await t.expect(expandToggle.exists).ok()
+    await t.click(expandToggle.nth(0))
+
+    const histogram = comparisonTable.find('.histogram-svg-panel')
+    await t.expect(histogram.exists).ok()
+    // One series per region, rather than only the first one's.
+    await t.expect(histogram.textContent).contains('Upper San Gabriel Valley CCD')
+    await t.expect(histogram.textContent).contains('Southwest San Gabriel Valley CCD')
+})
+
 test('csv export in edit mode covers the selected statistics, not the whole tree', async (t) => {
     await t.click(editButton)
     await t.expect(filterBox.exists).ok()
@@ -111,8 +167,38 @@ test('comparison edit mode auto-opens in staging', async (t) => {
     // Discard/Apply replace the Done button.
     await t.expect(doneButton.exists).notOk()
     await screencap(t)
+})
 
+test('applying staged changes also exits comparison edit mode', async (t) => {
     await t.click(comparisonTable.find('button[data-test-id=apply]'))
     await t.expect(tableStagingControls.exists).notOk()
     await t.expect(editButton.exists).ok()
+})
+
+test('discarding staged changes also exits comparison edit mode', async (t) => {
+    await t.click(comparisonTable.find('button[data-test-id=discard]'))
+    await t.expect(tableStagingControls.exists).notOk()
+    await t.expect(editButton.exists).ok()
+})
+
+// The congressional representatives table is a metadata "extra" that hangs below its row;
+// on a comparison it has to cover every region, not just the first.
+urbanstatsFixture('comparison edit mode congressional', comparisonPage(['02139, USA', '10001, USA']))
+
+const congressionalGroup = Selector('input[data-test-id=edit_group_metadata_show_metadata_congressional_representatives]')
+const congressionalWidget = comparisonTable.find('[data-test-id=congressional-representatives]')
+
+test('congressional representatives table covers every region in edit mode', async (t) => {
+    await t.click(editButton)
+    await t.typeText(filterBox, 'Congressional')
+    await t.expect(congressionalGroup.exists).ok()
+
+    // Unchecked: just the row, no table.
+    await t.expect(congressionalWidget.exists).notOk()
+
+    await t.click(congressionalGroup)
+    await t.expect(congressionalWidget.exists).ok()
+    await t.expect(congressionalWidget.textContent).contains('02139')
+    await t.expect(congressionalWidget.textContent).contains('10001')
+    await screencap(t)
 })
