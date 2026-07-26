@@ -7,6 +7,9 @@ import { arrayFromSelector, getLocation, safeReload, screencap, target, urbansta
  * The statistic tree is on the table's edit mode, and Main has to be expanded to reach the
  * Population group inside it. Staging opens edit mode on its own, and the expanded state is
  * itself a setting, so both steps are conditional.
+ *
+ * Also needed after leaving staging, since the Discard/Apply buttons double as Done and
+ * close edit mode with them.
  */
 async function openTree(t: TestController): Promise<void> {
     await enterEditMode(t)
@@ -122,6 +125,7 @@ export function linkSettingsTests(baseLink: string): void {
     test('discard staged settings', async (t) => {
         await t.click('button[data-test-id=discard]')
         await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
+        await openTree(t)
         await expectHighlightedInputTestIds(t, [])
         await expectInputTestIdValues(t, {
             use_imperial: false,
@@ -135,6 +139,7 @@ export function linkSettingsTests(baseLink: string): void {
     test('apply staged settings', async (t) => {
         await t.click('button[data-test-id=apply]')
         await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
+        await openTree(t)
         await expectHighlightedInputTestIds(t, [])
         await expectInputTestIdValues(t, {
             use_imperial: true,
@@ -184,6 +189,8 @@ export function linkSettingsTests(baseLink: string): void {
         await t.click('button[data-test-id=apply]')
 
         await t.expect(Selector('[data-test-id=staging_controls]').exists).notOk()
+
+        await openTree(t)
 
         await expectInputTestIdValues(t, {
             use_imperial: false,
