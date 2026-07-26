@@ -3,6 +3,7 @@ import React, { ReactNode, useContext } from 'react'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
+import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { Article } from '../utils/protos'
@@ -83,20 +84,25 @@ export function useArticleTableLayout(editMode: boolean): ArticleTableLayout {
 }
 
 export function ArticleTable(props: {
-    filteredRows: ArticleRow[]
+    rows: (settings: StatGroupSettings) => ArticleRow[][]
     article: Article
     onEdit: () => void
 }): ReactNode {
     const { currentUniverse, simpleOrdinals, widthLeftHeader, columnWidth, onlyColumns } = useArticleTableLayout(false)
     const navContext = useContext(Navigator.Context)
 
+    // Subscribed to here rather than higher up so that edit mode, which shows every row
+    // regardless of the group settings, doesn't redo this filter on every checkbox click.
+    const groupSettings = useSettings(groupYearKeys())
+    const filteredRows = props.rows(groupSettings)[0]
+
     const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(
-        nameSpecsForRows(props.filteredRows, props.article.longname, currentUniverse),
+        nameSpecsForRows(filteredRows, props.article.longname, currentUniverse),
     )
 
-    const plotSpecs = useExpandedPlotSpecs(props.filteredRows, props.article)
+    const plotSpecs = useExpandedPlotSpecs(filteredRows, props.article)
 
-    const cellSpecs: CellSpec[][] = props.filteredRows.map(row => [({
+    const cellSpecs: CellSpec[][] = filteredRows.map(row => [({
         type: 'statistic-row',
         longname: props.article.longname,
         row,

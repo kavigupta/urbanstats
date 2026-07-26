@@ -4,7 +4,7 @@ import './article.css'
 import React, { ReactNode, useCallback, useContext, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
-import { useSettings } from '../page_template/settings'
+import { Settings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { Universe, universeContext, useUniverse } from '../universe'
@@ -38,14 +38,16 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     const subHeaderTextClass = useSubHeaderTextClass()
     const comparisonHeadStyle = useComparisonHeadStyle('right')
 
-    const settings = useSettings(groupYearKeys())
-    const filteredRows = rows(settings)[0]
+    const settings = useContext(Settings.Context)
 
+    // Reads the settings when the export is actually requested, so the panel doesn't have
+    // to subscribe to (and re-filter every row on) every statistic checkbox.
     const csvExportCallback = useCallback<CSVExportData>(() => {
+        const filteredRows = rows(settings.getMultiple(groupYearKeys()))[0]
         const data = generateCSVDataForArticles([article], [filteredRows], true)
         const filename = `${sanitize(article.longname)}.csv`
         return { csvData: data, csvFilename: filename }
-    }, [article, filteredRows])
+    }, [article, rows, settings])
 
     const navigator = useContext(Navigator.Context)
 
@@ -76,7 +78,7 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
                     <div style={{ marginBlockEnd: '16px' }}></div>
 
                     <div ref={tableRef}>
-                        <ArticleTableSection rows={rows} filteredRows={filteredRows} article={article} />
+                        <ArticleTableSection rows={rows} article={article} />
                     </div>
 
                     <p></p>

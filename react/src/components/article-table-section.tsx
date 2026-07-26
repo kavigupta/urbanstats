@@ -20,7 +20,6 @@ import { ArticleRow } from './load-article'
  */
 export function ArticleTableSection(props: {
     rows: (settings: StatGroupSettings) => ArticleRow[][]
-    filteredRows: ArticleRow[]
     article: Article
 }): ReactNode {
     const staged = useIsStaged()
@@ -55,7 +54,7 @@ export function ArticleTableSection(props: {
                     )
                 : (
                         <ArticleTable
-                            filteredRows={props.filteredRows}
+                            rows={props.rows}
                             article={props.article}
                             onEdit={() => { setEditMode(true) }}
                         />
