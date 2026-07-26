@@ -13,7 +13,7 @@ import { ArticleRow } from './load-article'
 import { pullRelevantPlotProps } from './plots'
 import { useScreenshotMode } from './screenshot'
 import { computeNameSpecsWithGroups, nameSpecsForRows } from './statistic-name-specs'
-import { CellSpec, PlotSpec, TableContents } from './supertable'
+import { CellSpec, PlotSpec, TableContents, TableLayout } from './supertable'
 import { ColumnIdentifier } from './table'
 
 const allColumns: ColumnIdentifier[] = ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
@@ -47,12 +47,8 @@ function computeWidths(simpleOrdinals: boolean, isMobile: boolean, screenshotMod
     return { widthLeftHeader, columnWidth }
 }
 
-interface ArticleTableLayout {
+interface ArticleTableLayout extends TableLayout {
     currentUniverse: Universe
-    simpleOrdinals: boolean
-    widthLeftHeader: number
-    columnWidth: number
-    onlyColumns: ColumnIdentifier[]
 }
 
 /** The column shape both the normal article table and its edit mode are laid out against. */
@@ -62,7 +58,6 @@ export function useArticleTableLayout(mode: 'normal' | 'edit'): ArticleTableLayo
     const [simpleOrdinals] = useSetting('simple_ordinals')
     const isMobile = useMobileLayout()
     const screenshotMode = useScreenshotMode()
-    const { widthLeftHeader, columnWidth } = computeWidths(simpleOrdinals, isMobile, screenshotMode)
 
     // On mobile, edit mode drops the percentile/ordinal/pointer columns so the
     // checkboxes and names have room; only the value stays. The name column also
@@ -77,7 +72,12 @@ export function useArticleTableLayout(mode: 'normal' | 'edit'): ArticleTableLayo
         }
     }
 
-    return { currentUniverse, simpleOrdinals, widthLeftHeader, columnWidth, onlyColumns: allColumns }
+    return {
+        currentUniverse,
+        simpleOrdinals,
+        ...computeWidths(simpleOrdinals, isMobile, screenshotMode),
+        onlyColumns: allColumns,
+    }
 }
 
 export function ArticleTable(props: {

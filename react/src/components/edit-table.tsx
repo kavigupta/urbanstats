@@ -1,18 +1,19 @@
-import React, { CSSProperties, Fragment, ReactNode, useMemo, useState } from 'react'
+import React, { CSSProperties, ReactNode, useMemo, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { checkboxCategoryName, isStagedChange, sourceEnabledKey, useIsStaged, useSetting, useSettingInfo, useSettings } from '../page_template/settings'
-import { GroupTreeState, StatGroupSettings, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, yearSourceKeys } from '../page_template/statistic-settings'
-import { allGroups, Category, StatPath, statParents } from '../page_template/statistic-tree'
+import { allStatGroupsEnabled, GroupTreeState, statGroupKeys, StatGroupSettings, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, yearSourceKeys } from '../page_template/statistic-settings'
+import { Category, statParents } from '../page_template/statistic-tree'
+import { Universe } from '../universe'
 import { HumanReadableName, reifyReact } from '../utils/human-readable-name'
 
 import { ExpandButton } from './ExpandButton'
 import { StagingControls } from './StagingControls'
-import { CongressionalColumnData, congressionalDataForRow } from './congressional-table/model'
 import { ArticleRow } from './load-article'
 import { BooleanSettingKey, CheckboxSettingJustBox, useHighlightStyle } from './sidebar'
-import { Cell, CellSpec, EditModeHeader, PlotSpec, RowExtras, SuperHeaderSpec } from './supertable'
-import { ColumnIdentifier, CommonLayoutInformation, MainHeaderRow, SuperHeaderHorizontal, TableHeaderContainer, TableRowContainer, useStatisticNameAdornments } from './table'
+import { displayNamesForRows } from './statistic-name-specs'
+import { CellSpec, congressionalRegionsForCells, EditModeHeader, PlotSpec, RowCells, RowExtras, SuperHeaderSpec, TableLayout } from './supertable'
+import { CommonLayoutInformation, MainHeaderRow, SuperHeaderHorizontal, TableHeaderContainer, TableRowContainer, useStatisticNameAdornments } from './table'
 
 // Wrapping the name in a label lets a click anywhere on it toggle the associated
 // checkbox. Child rows of a multi-stat group have no checkbox of their own, so
@@ -24,11 +25,7 @@ const editLabelStyle: CSSProperties = { padding: '1px', display: 'flex', alignIt
 const editCheckboxStyle: CSSProperties = { cursor: 'pointer', flex: '0 0 auto', height: 'auto' }
 
 /** The column shape every row of an edit table is laid out against. */
-export interface EditTableLayout {
-    widthLeftHeader: number
-    columnWidth: number
-    onlyColumns: ColumnIdentifier[]
-    simpleOrdinals: boolean
+export interface EditTableLayout extends TableLayout {
     /** Per column, the space reserved to its right, matching what `TableContents` computes. */
     extraSpaceRight: number[]
     columnWidthsInfo: (CommonLayoutInformation | undefined)[]
@@ -39,26 +36,35 @@ const indentEm = 0.75
 
 /** A statistic as the edit tree renders it: the name it appears under, and the cells that follow. */
 export interface EditRow {
-    statpath: StatPath
     displayName: HumanReadableName
-    /** Supplies the name's adornments (the plot expander and the disclaimer marker). */
-    adornmentRow: ArticleRow
+    /** Identifies the statistic, and supplies the name's adornments (plot expander, disclaimer marker). */
+    row: ArticleRow
     cellSpecs: CellSpec[]
     plotSpec?: PlotSpec
 }
 
-/** Buckets rows by the statistic tree group they belong to, dropping any that aren't in the tree. */
-export function editRowsByGroup(rows: EditRow[]): Map<string, EditRow[]> {
+/**
+ * The rows of an edit tree, bucketed by the statistic tree group they belong to, dropping
+ * any that aren't in the tree. Both callers supply one cell spec per column and, where the
+ * statistic's extras are expanded, a plot.
+ */
+export function editRowsByGroup(
+    rows: ArticleRow[],
+    longname: string,
+    currentUniverse: Universe,
+    cells: (row: ArticleRow, index: number) => { cellSpecs: CellSpec[], plotSpec?: PlotSpec },
+): Map<string, EditRow[]> {
+    const displayNames = displayNamesForRows(rows, longname, currentUniverse)
     const result = new Map<string, EditRow[]>()
-    for (const row of rows) {
+    rows.forEach((row, index) => {
         const parent = statParents.get(row.statpath)
         if (parent === undefined) {
-            continue
+            return
         }
         const existing = result.get(parent.group.id) ?? []
-        existing.push(row)
+        existing.push({ displayName: displayNames[index], row, ...cells(row, index) })
         result.set(parent.group.id, existing)
-    }
+    })
     return result
 }
 
@@ -80,7 +86,7 @@ interface EditGroupHeaderSpec extends EditBodyRowBase {
 interface EditStatSpec extends EditBodyRowBase {
     kind: 'stat'
     enabled: boolean
-    row: EditRow
+    editRow: EditRow
 }
 
 /** The rows under a category header, in the order they're displayed. */
@@ -103,21 +109,11 @@ function EditCheckboxLabel(props: {
     )
 }
 
-function congressionalRegionsFor(cellSpecs: CellSpec[]): CongressionalColumnData[] {
-    return cellSpecs.flatMap((cell) => {
-        if (cell.type !== 'statistic-row') {
-            return []
-        }
-        const data = congressionalDataForRow(cell.row, cell.longname)
-        return data === undefined ? [] : [data]
-    })
-}
-
 function EditStatRow({ layout, index, spec }: { layout: EditTableLayout, index: number, spec: EditStatSpec }): ReactNode {
     const { widthLeftHeader, columnWidth, extraSpaceRight, columnWidthsInfo } = layout
-    const adornments = useStatisticNameAdornments(spec.row.adornmentRow)
+    const adornments = useStatisticNameAdornments(spec.editRow.row)
     // Only render the (large) representatives table for enabled stats, matching the normal table.
-    const congressionalRegions = spec.enabled ? congressionalRegionsFor(spec.row.cellSpecs) : []
+    const congressionalRegions = spec.enabled ? congressionalRegionsForCells(spec.editRow.cellSpecs) : []
     return (
         <>
             <TableRowContainer index={index}>
@@ -127,22 +123,19 @@ function EditStatRow({ layout, index, spec }: { layout: EditTableLayout, index: 
                         htmlFor={spec.checkboxId}
                         checkbox={spec.checkbox}
                     >
-                        {reifyReact(spec.row.displayName)}
+                        {reifyReact(spec.editRow.displayName)}
                     </EditCheckboxLabel>
                     {adornments}
                 </div>
-                {spec.row.cellSpecs.map((cellSpec, colIndex) => (
-                    <Fragment key={colIndex}>
-                        <Cell
-                            {...(cellSpec.type === 'statistic-row' ? { ...cellSpec, columnWidthsInfo: columnWidthsInfo[colIndex] } : cellSpec)}
-                            width={columnWidth}
-                        />
-                        <div style={{ width: `${extraSpaceRight[colIndex]}%` }}></div>
-                    </Fragment>
-                ))}
+                <RowCells
+                    cellSpecs={spec.editRow.cellSpecs}
+                    columnWidth={columnWidth}
+                    extraSpaceRight={extraSpaceRight}
+                    columnWidthsInfo={columnWidthsInfo}
+                />
             </TableRowContainer>
             <RowExtras
-                plotSpec={spec.row.plotSpec}
+                plotSpec={spec.editRow.plotSpec}
                 congressionalRegions={congressionalRegions}
                 widthLeftHeader={widthLeftHeader}
                 columnWidth={columnWidth}
@@ -201,20 +194,20 @@ function categoryBodyRows(groups: GroupTreeState[], rowsByGroup: Map<string, Edi
                 style={editCheckboxStyle}
             />
         )
-        const statSpec = (row: EditRow, indent: number): EditStatSpec => ({
+        const statSpec = (editRow: EditRow, indent: number): EditStatSpec => ({
             kind: 'stat',
-            key: `stat-${row.statpath}`,
+            key: `stat-${editRow.row.statpath}`,
             highlight,
             indent,
             enabled,
-            row,
+            editRow,
         })
         if (groupRows.length === 1) {
             return [{ ...statSpec(groupRows[0], 1), checkbox }]
         }
         return [
             { kind: 'group-header', key: `group-${group.id}`, highlight, indent: 1, checkbox, name: group.name },
-            ...groupRows.map(row => ({ ...statSpec(row, 2), checkboxId })),
+            ...groupRows.map(editRow => ({ ...statSpec(editRow, 2), checkboxId })),
         ]
     })
 }
@@ -370,23 +363,20 @@ function EditSourceAndYearSections(): ReactNode {
 }
 
 /**
- * Every available row, regardless of which stat groups are currently enabled, so the
- * edit tree can show the whole category/group tree. Only computed while edit mode is
- * open, since building it means re-running the filter and sort over every statistic.
+ * The rows to display. While editing, every group is forced on, since the edit tree shows
+ * the whole category/group tree rather than the current selection.
  *
- * Deliberately not subscribed to the group settings: they're all forced on here, so a
- * checkbox toggle can't change the result, and subscribing would redo that work on
- * every click.
+ * While editing, the group checkboxes are also deliberately not subscribed to: they're all
+ * forced on, so a click can't change this result, and re-running the filter and sort over
+ * every statistic on each click would be wasted work.
  */
-export function useAllRows(rows: (settings: StatGroupSettings) => ArticleRow[][]): ArticleRow[][] {
+export function useRowsForEditMode(rows: (settings: StatGroupSettings) => ArticleRow[][], editMode: boolean): ArticleRow[][] {
     const yearSourceSettings = useSettings(yearSourceKeys())
-    return useMemo(() => {
-        const allGroupsEnabled = { ...yearSourceSettings } as StatGroupSettings
-        for (const group of allGroups) {
-            allGroupsEnabled[`show_stat_group_${group.id}`] = true
-        }
-        return rows(allGroupsEnabled)
-    }, [rows, yearSourceSettings])
+    const groupSettings = useSettings(editMode ? [] : statGroupKeys())
+    return useMemo(
+        () => rows({ ...yearSourceSettings, ...allStatGroupsEnabled, ...groupSettings }),
+        [rows, yearSourceSettings, groupSettings],
+    )
 }
 
 export interface EditModeState {
@@ -455,9 +445,7 @@ export function EditTable(props: {
         // In staging mode the Discard/Apply buttons below double as Done.
         onDone: staged ? undefined : props.onExit,
     }
-    const topLeftSpec: CellSpec = props.topLeftType === 'comparison-top-left-header'
-        ? { type: 'comparison-top-left-header', editMode: editModeHeader }
-        : { type: 'top-left-header', editMode: editModeHeader }
+    const topLeftSpec: CellSpec = { type: props.topLeftType, editMode: editModeHeader }
 
     return (
         <>

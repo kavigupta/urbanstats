@@ -41,12 +41,25 @@ export function yearSourceKeys(): (StatYearKey | StatSourceKey)[] {
     ]
 }
 
+export function statGroupKeys(): StatGroupKey[] {
+    return groupKeys(allGroups)
+}
+
 export function groupYearKeys(): (keyof StatGroupSettings)[] {
     return [
-        ...groupKeys(allGroups),
+        ...statGroupKeys(),
         ...yearSourceKeys(),
     ]
 }
+
+/**
+ * Every group checkbox forced on, for the views that show the whole statistic tree rather
+ * than the current selection. Spread over the year and source settings to complete a
+ * `StatGroupSettings`.
+ */
+export const allStatGroupsEnabled = Object.fromEntries(
+    groupKeys(allGroups).map(key => [key, true]),
+) as Record<StatGroupKey, boolean>
 
 function categoryStatus(enabled: boolean[]): boolean | 'indeterminate' {
     const checkedGroups = enabled.filter(value => value).length

@@ -38,17 +38,21 @@ export interface DisclaimerFootnote {
     text: string
 }
 
-export interface TableContentsProps {
+/** The column shape a table's rows are laid out against. */
+export interface TableLayout {
+    widthLeftHeader: number
+    columnWidth: number
+    onlyColumns: ColumnIdentifier[]
+    simpleOrdinals: boolean
+}
+
+export interface TableContentsProps extends TableLayout {
     superHeaderSpec?: SuperHeaderSpec
     leftHeaderSpec: LeftHeaderSpec
     rowSpecs: CellSpec[][]
     horizontalPlotSpecs: (PlotSpec | undefined)[]
     verticalPlotSpecs: (PlotSpec | undefined)[]
     topLeftSpec: CellSpec
-    widthLeftHeader: number
-    columnWidth: number
-    onlyColumns: ColumnIdentifier[]
-    simpleOrdinals: boolean
     highlightRowIndex?: number
     loading?: boolean
 }
@@ -127,15 +131,8 @@ export function TableContents(props: TableContentsProps): ReactNode {
                             key={`TableRowContainer_${rowIndex}`}
                             rowIndex={rowIndex}
                             rowMinHeight={rowMinHeight}
-                            cellSpecs={rowSpecsForItem.map((cellSpec, colIndex) => {
-                                if (cellSpec.type === 'statistic-row') {
-                                    return {
-                                        ...cellSpec,
-                                        columnWidthsInfo: columnWidthsInfo[colIndex],
-                                    }
-                                }
-                                return cellSpec
-                            })}
+                            cellSpecs={rowSpecsForItem}
+                            columnWidthsInfo={columnWidthsInfo}
                             extraSpaceRight={extraSpaceRight}
                             plotSpec={plotSpec}
                             leftHeaderSpec={(() => {
@@ -182,6 +179,7 @@ function SuperTableRow(props: {
     rowIndex: number
     leftHeaderSpec: CellSpec
     cellSpecs: CellSpec[]
+    columnWidthsInfo: (CommonLayoutInformation | undefined)[]
     plotSpec?: PlotSpec
     widthLeftHeader: number
     columnWidth: number
@@ -191,13 +189,7 @@ function SuperTableRow(props: {
     extraSpaceRight: number[]
     isHighlighted: boolean
 }): ReactNode {
-    const congressionalRegions = useMemo(() => props.cellSpecs.flatMap((cell) => {
-        if (cell.type !== 'statistic-row') {
-            return []
-        }
-        const data = congressionalDataForRow(cell.row, cell.longname)
-        return data === undefined ? [] : [data]
-    }), [props.cellSpecs])
+    const congressionalRegions = useMemo(() => congressionalRegionsForCells(props.cellSpecs), [props.cellSpecs])
 
     return (
         <div>
@@ -212,12 +204,12 @@ function SuperTableRow(props: {
             )}
             <TableRowContainer index={props.rowIndex} minHeight={props.rowMinHeight} isHighlighted={props.isHighlighted}>
                 <Cell {...props.leftHeaderSpec} width={props.widthLeftHeader} />
-                {props.cellSpecs.map((spec, colIndex) => (
-                    <Fragment key={`cells_${colIndex}_${props.rowIndex}`}>
-                        <Cell {...spec} width={props.columnWidth} />
-                        <div style={{ width: `${props.extraSpaceRight[colIndex]}%` }}></div>
-                    </Fragment>
-                ))}
+                <RowCells
+                    cellSpecs={props.cellSpecs}
+                    columnWidth={props.columnWidth}
+                    extraSpaceRight={props.extraSpaceRight}
+                    columnWidthsInfo={props.columnWidthsInfo}
+                />
             </TableRowContainer>
             <RowExtras
                 plotSpec={props.plotSpec}
@@ -228,6 +220,39 @@ function SuperTableRow(props: {
             />
         </div>
     )
+}
+
+/**
+ * A row's cells, each followed by the space its column reserves to the right. Statistic
+ * cells are given their column's measured widths here, so every table that renders a row
+ * of cells lines its columns up the same way.
+ */
+export function RowCells(props: {
+    cellSpecs: CellSpec[]
+    columnWidth: number
+    extraSpaceRight: number[]
+    columnWidthsInfo: (CommonLayoutInformation | undefined)[]
+}): ReactNode {
+    return props.cellSpecs.map((spec, colIndex) => (
+        <Fragment key={colIndex}>
+            <Cell
+                {...(spec.type === 'statistic-row' ? { ...spec, columnWidthsInfo: props.columnWidthsInfo[colIndex] } : spec)}
+                width={props.columnWidth}
+            />
+            <div style={{ width: `${props.extraSpaceRight[colIndex]}%` }}></div>
+        </Fragment>
+    ))
+}
+
+/** The representatives tables a row's cells call for, in column order. */
+export function congressionalRegionsForCells(cellSpecs: CellSpec[]): CongressionalColumnData[] {
+    return cellSpecs.flatMap((cell) => {
+        if (cell.type !== 'statistic-row') {
+            return []
+        }
+        const data = congressionalDataForRow(cell.row, cell.longname)
+        return data === undefined ? [] : [data]
+    })
 }
 
 /** The blocks that hang below a statistic row: its expanded plot and its representatives table. */

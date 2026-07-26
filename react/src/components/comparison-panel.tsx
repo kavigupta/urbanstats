@@ -3,15 +3,14 @@ import './article.css'
 
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, TouchSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import { SortableContext, arrayMove, horizontalListSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import React, { ReactNode, useCallback, useContext, useId, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useId, useMemo, useRef, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import { boundingBox, extendBoxes } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
 import { colorFromCycle, useColors } from '../page_template/colors'
-import { rowExpandedKey, Settings, useSettings } from '../page_template/settings'
-import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
-import { allGroups } from '../page_template/statistic-tree'
+import { rowExpandedKey, useSettings } from '../page_template/settings'
+import { StatGroupSettings } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
 import { Universe, universeContext } from '../universe'
@@ -25,19 +24,17 @@ import { zIndex } from '../utils/zIndex'
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
-import { generateCSVDataForArticles, CSVExportData } from './csv-export'
-import { EditRow, EditTable, EditTableLayout, editRowsByGroup, useEditModeState } from './edit-table'
+import { useCSVExport } from './csv-export'
+import { EditTable, EditTableLayout, editRowsByGroup, useEditModeState, useRowsForEditMode } from './edit-table'
 import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps, pullRelevantPlotProps } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
-import { computeNameSpecsWithGroups, displayNamesForRows } from './statistic-name-specs'
+import { computeNameSpecsWithGroups } from './statistic-name-specs'
 import { TableContents, CellSpec, PlotSpec, SuperHeaderSpec } from './supertable'
 import { ColumnIdentifier, maxLayoutInformation } from './table'
-
-const allStatGroupsEnabled = Object.fromEntries(allGroups.map(group => [`show_stat_group_${group.id}`, true])) as StatGroupSettings
 
 export function ComparisonPanel(props: {
     universe: Universe
@@ -122,11 +119,7 @@ export function ComparisonPanel(props: {
         setActiveId(null)
     }
 
-    const settings = useSettings(groupYearKeys())
-
-    // Edit mode replicates the whole statistic tree on the table, so every group is shown
-    // there regardless of whether its checkbox is currently on.
-    const dataByArticleStat = props.rows(editMode ? { ...settings, ...allStatGroupsEnabled } : settings)
+    const dataByArticleStat = useRowsForEditMode(props.rows, editMode)
     const dataByStatArticle = dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
 
     const handleSort = (statIndex: number): void => {
@@ -326,14 +319,10 @@ export function ComparisonPanel(props: {
             columnWidthsInfo: dataByArticleStat.map(articleData => maxLayoutInformation(articleData, props.universe, true)),
         }
         const rowsToDisplay = dataByStatArticle.map((_, statIndex) => rowToDisplayForStat(statIndex))
-        const displayNames = displayNamesForRows(rowsToDisplay, names[0], props.universe)
-        const rowsByGroup = editRowsByGroup(rowsToDisplay.map((row, statIndex): EditRow => ({
-            statpath: row.statpath,
-            displayName: displayNames[statIndex],
-            adornmentRow: row,
+        const rowsByGroup = editRowsByGroup(rowsToDisplay, names[0], props.universe, (_, statIndex) => ({
             cellSpecs: rowSpecsByStat[statIndex],
             plotSpec: plotSpecs[statIndex],
-        })))
+        }))
         return (
             <EditTable
                 rowsByGroup={rowsByGroup}
@@ -347,16 +336,7 @@ export function ComparisonPanel(props: {
         )
     }
 
-    const settingsContext = useContext(Settings.Context)
-    const rowsForSettings = props.rows
-
-    // Reads the settings when the export is actually requested, so edit mode — which shows
-    // every statistic — still exports only the ones that are selected.
-    const csvExportCallback = useCallback<CSVExportData>(() => {
-        const data = generateCSVDataForArticles(localArticlesToUse, rowsForSettings(settingsContext.getMultiple(groupYearKeys())), includeOrdinals)
-        const filename = `${sanitize(joinedString)}.csv`
-        return { csvData: data, csvFilename: filename }
-    }, [joinedString, localArticlesToUse, rowsForSettings, settingsContext, includeOrdinals])
+    const csvExportCallback = useCSVExport(localArticlesToUse, props.rows, includeOrdinals, joinedString)
 
     return (
         <universeContext.Provider value={{

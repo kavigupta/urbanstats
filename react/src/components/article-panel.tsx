@@ -1,11 +1,10 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useCallback, useContext, useRef } from 'react'
+import React, { ReactNode, useContext, useMemo, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
-import { Settings } from '../page_template/settings'
-import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
+import { StatGroupSettings } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { Universe, universeContext, useUniverse } from '../universe'
 import { sanitize } from '../utils/paths'
@@ -17,7 +16,7 @@ import { ArticleMap } from './ArticleMap'
 import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { ArticleTableSection } from './article-table-section'
-import { generateCSVDataForArticles, CSVExportData } from './csv-export'
+import { useCSVExport } from './csv-export'
 import { ArticleRow } from './load-article'
 import { Related } from './related-button'
 import { createScreenshot, ScreencapElements } from './screenshot'
@@ -38,16 +37,8 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     const subHeaderTextClass = useSubHeaderTextClass()
     const comparisonHeadStyle = useComparisonHeadStyle('right')
 
-    const settings = useContext(Settings.Context)
-
-    // Reads the settings when the export is actually requested, so the panel doesn't have
-    // to subscribe to (and re-filter every row on) every statistic checkbox.
-    const csvExportCallback = useCallback<CSVExportData>(() => {
-        const filteredRows = rows(settings.getMultiple(groupYearKeys()))[0]
-        const data = generateCSVDataForArticles([article], [filteredRows], true)
-        const filename = `${sanitize(article.longname)}.csv`
-        return { csvData: data, csvFilename: filename }
-    }, [article, rows, settings])
+    const articles = useMemo(() => [article], [article])
+    const csvExportCallback = useCSVExport(articles, rows, true, article.longname)
 
     const navigator = useContext(Navigator.Context)
 
