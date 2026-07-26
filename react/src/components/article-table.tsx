@@ -56,7 +56,7 @@ export interface ArticleTableLayout {
 }
 
 /** The column shape both the normal article table and its edit mode are laid out against. */
-export function useArticleTableLayout(editMode: boolean): ArticleTableLayout {
+export function useArticleTableLayout(mode: 'normal' | 'edit'): ArticleTableLayout {
     const currentUniverse = useUniverse()
     assert(currentUniverse !== undefined, 'no universe')
     const [simpleOrdinals] = useSetting('simple_ordinals')
@@ -67,7 +67,7 @@ export function useArticleTableLayout(editMode: boolean): ArticleTableLayout {
     // On mobile, edit mode drops the percentile/ordinal/pointer columns so the
     // checkboxes and names have room; only the value stays. The name column also
     // gets a wider share since it no longer competes with those columns.
-    if (editMode && isMobile) {
+    if (mode === 'edit' && isMobile) {
         return {
             currentUniverse,
             simpleOrdinals,
@@ -85,7 +85,7 @@ export function ArticleTable(props: {
     article: Article
     onEdit: () => void
 }): ReactNode {
-    const { currentUniverse, simpleOrdinals, widthLeftHeader, columnWidth, onlyColumns } = useArticleTableLayout(false)
+    const { currentUniverse, simpleOrdinals, widthLeftHeader, columnWidth, onlyColumns } = useArticleTableLayout('normal')
     const navContext = useContext(Navigator.Context)
 
     // Subscribed to here rather than higher up so that edit mode, which shows every row

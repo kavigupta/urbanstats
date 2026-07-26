@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode, useMemo } from 'react'
 
 import { useIsStaged, useSettings } from '../page_template/settings'
-import { StatGroupSettings, useCategoriesMatchingSearch, useCategoryTreeState, yearSourceKeys } from '../page_template/statistic-settings'
+import { GroupTreeState, StatGroupSettings, useCategoriesMatchingSearch, useCategoryTreeState, yearSourceKeys } from '../page_template/statistic-settings'
 import { allGroups, Category, statParents } from '../page_template/statistic-tree'
 import { HumanReadableName, reifyReact } from '../utils/human-readable-name'
 import { Article } from '../utils/protos'
@@ -31,6 +31,9 @@ type EditTableLayout = ArticleTableLayout & {
     columnWidthsInfo: CommonLayoutInformation
 }
 
+/** Each level of the tree is indented by this much relative to the one above it. */
+const indentEm = 0.75
+
 /** A row of the edit tree, paired with the name it renders under. */
 interface EditRow {
     row: ArticleRow
@@ -38,6 +41,32 @@ interface EditRow {
     /** Position in the full row list, which is what the plot specs are indexed by. */
     index: number
 }
+
+interface EditBodyRowBase {
+    key: string
+    highlight: boolean
+    indent: number
+    /** The group's checkbox, on the row that carries it. */
+    checkbox?: ReactNode
+    /** The id of the group's checkbox, on the rows that only point at it. */
+    checkboxId?: string
+}
+
+interface EditGroupHeaderSpec extends EditBodyRowBase {
+    kind: 'group-header'
+    name: string
+}
+
+interface EditStatSpec extends EditBodyRowBase {
+    kind: 'stat'
+    enabled: boolean
+    displayName: HumanReadableName
+    row: ArticleRow
+    plotSpec?: PlotSpec
+}
+
+/** The rows under a category header, in the order they're displayed. */
+type EditBodyRow = EditGroupHeaderSpec | EditStatSpec
 
 function EditCheckboxLabel(props: {
     highlight: boolean
@@ -56,49 +85,36 @@ function EditCheckboxLabel(props: {
     )
 }
 
-function EditStatRow(props: {
-    layout: EditTableLayout
-    index: number
-    highlight: boolean
-    enabled: boolean
-    /** The group's checkbox, on the row that carries it. */
-    checkbox?: ReactNode
-    /** The id of the group's checkbox, on the rows that only point at it. */
-    htmlFor?: string
-    displayName: HumanReadableName
-    indent: number
-    row: ArticleRow
-    plotSpec?: PlotSpec
-}): ReactNode {
-    const { longname, widthLeftHeader, columnWidth } = props.layout
-    const adornments = useStatisticNameAdornments(props.row)
+function EditStatRow({ layout, index, spec }: { layout: EditTableLayout, index: number, spec: EditStatSpec }): ReactNode {
+    const { longname, widthLeftHeader, columnWidth, onlyColumns, simpleOrdinals, columnWidthsInfo } = layout
+    const adornments = useStatisticNameAdornments(spec.row)
     // Only render the (large) representatives table for enabled stats, matching the normal table.
-    const congressionalRegion = props.enabled ? congressionalDataForRow(props.row, longname) : undefined
+    const congressionalRegion = spec.enabled ? congressionalDataForRow(spec.row, longname) : undefined
     return (
         <>
-            <TableRowContainer index={props.index}>
-                <div style={{ width: `${widthLeftHeader}%`, display: 'flex', alignItems: 'center', gap: '0.3em', paddingLeft: `${props.indent * 0.75}em` }}>
+            <TableRowContainer index={index}>
+                <div style={{ width: `${widthLeftHeader}%`, display: 'flex', alignItems: 'center', gap: '0.3em', paddingLeft: `${spec.indent * indentEm}em` }}>
                     <EditCheckboxLabel
-                        highlight={props.highlight}
-                        htmlFor={props.htmlFor}
-                        checkbox={props.checkbox}
+                        highlight={spec.highlight}
+                        htmlFor={spec.checkboxId}
+                        checkbox={spec.checkbox}
                     >
-                        {reifyReact(props.displayName)}
+                        {reifyReact(spec.displayName)}
                     </EditCheckboxLabel>
                     {adornments}
                 </div>
                 <StatisticRowCells
                     width={columnWidth}
                     longname={longname}
-                    row={props.row}
-                    onlyColumns={props.layout.onlyColumns}
-                    simpleOrdinals={props.layout.simpleOrdinals}
-                    columnWidthsInfo={props.layout.columnWidthsInfo}
+                    row={spec.row}
+                    onlyColumns={onlyColumns}
+                    simpleOrdinals={simpleOrdinals}
+                    columnWidthsInfo={columnWidthsInfo}
                     extraSpaceRight={0}
                 />
             </TableRowContainer>
             <RowExtras
-                plotSpec={props.plotSpec}
+                plotSpec={spec.plotSpec}
                 congressionalRegions={congressionalRegion === undefined ? [] : [congressionalRegion]}
                 widthLeftHeader={widthLeftHeader}
                 columnWidth={columnWidth}
@@ -108,11 +124,11 @@ function EditStatRow(props: {
     )
 }
 
-function EditGroupHeaderRow(props: { index: number, highlight: boolean, checkbox: ReactNode, name: string }): ReactNode {
+function EditGroupHeaderRow({ index, spec }: { index: number, spec: EditGroupHeaderSpec }): ReactNode {
     return (
-        <TableRowContainer index={props.index}>
-            <EditCheckboxLabel highlight={props.highlight} checkbox={props.checkbox} style={{ width: '100%', paddingLeft: '0.75em' }}>
-                {props.name}
+        <TableRowContainer index={index}>
+            <EditCheckboxLabel highlight={spec.highlight} checkbox={spec.checkbox} style={{ width: '100%', paddingLeft: `${spec.indent * indentEm}em` }}>
+                {spec.name}
             </EditCheckboxLabel>
         </TableRowContainer>
     )
@@ -135,23 +151,20 @@ function AnimatedCollapse({ expanded, children }: { expanded: boolean, children:
     )
 }
 
-function EditCategory(props: {
-    layout: EditTableLayout
-    category: Category
-    rowsByGroup: Map<string, EditRow[]>
-    plotSpecs: (PlotSpec | undefined)[]
-    searching: boolean
-}): ReactNode {
-    const tree = useCategoryTreeState(props.category)
-    const expanded = props.searching || tree.expanded
-
-    // Each row is rendered against the position it ends up at, so the striping stays
-    // alternating no matter which groups contributed rows.
-    const bodyRows: ((index: number) => ReactNode)[] = []
-    for (const { group, enabled, setEnabled, highlight } of tree.groups) {
-        const groupRows = props.rowsByGroup.get(group.id) ?? []
+/**
+ * A group with a single statistic collapses into that statistic's row, which then carries
+ * the group's checkbox. Otherwise the group gets a header row with the checkbox, and its
+ * statistics point at that checkbox rather than having one each.
+ */
+function categoryBodyRows(
+    groups: GroupTreeState[],
+    rowsByGroup: Map<string, EditRow[]>,
+    plotSpecs: (PlotSpec | undefined)[],
+): EditBodyRow[] {
+    return groups.flatMap(({ group, enabled, setEnabled, highlight }): EditBodyRow[] => {
+        const groupRows = rowsByGroup.get(group.id) ?? []
         if (groupRows.length === 0) {
-            continue
+            return []
         }
         const checkboxId = `edit-checkbox-${group.id}`
         const checkbox = (
@@ -164,44 +177,36 @@ function EditCategory(props: {
                 style={editCheckboxStyle}
             />
         )
+        const statSpec = (editRow: EditRow, indent: number): EditStatSpec => ({
+            kind: 'stat',
+            key: `stat-${editRow.row.statpath}`,
+            highlight,
+            indent,
+            enabled,
+            displayName: editRow.displayName,
+            row: editRow.row,
+            plotSpec: plotSpecs[editRow.index],
+        })
         if (groupRows.length === 1) {
-            bodyRows.push(index => (
-                <EditStatRow
-                    key={`group-${group.id}`}
-                    layout={props.layout}
-                    index={index}
-                    highlight={highlight}
-                    enabled={enabled}
-                    checkbox={checkbox}
-                    displayName={groupRows[0].displayName}
-                    indent={1}
-                    row={groupRows[0].row}
-                    plotSpec={props.plotSpecs[groupRows[0].index]}
-                />
-            ))
+            return [{ ...statSpec(groupRows[0], 1), checkbox }]
         }
-        else {
-            bodyRows.push(index => (
-                <EditGroupHeaderRow key={`group-${group.id}`} index={index} highlight={highlight} checkbox={checkbox} name={group.name} />
-            ))
-            for (const editRow of groupRows) {
-                bodyRows.push(index => (
-                    <EditStatRow
-                        key={`stat-${editRow.row.statpath}`}
-                        layout={props.layout}
-                        index={index}
-                        highlight={highlight}
-                        enabled={enabled}
-                        htmlFor={checkboxId}
-                        displayName={editRow.displayName}
-                        indent={2}
-                        row={editRow.row}
-                        plotSpec={props.plotSpecs[editRow.index]}
-                    />
-                ))
-            }
-        }
-    }
+        return [
+            { kind: 'group-header', key: `group-${group.id}`, highlight, indent: 1, checkbox, name: group.name },
+            ...groupRows.map(editRow => ({ ...statSpec(editRow, 2), checkboxId })),
+        ]
+    })
+}
+
+function EditCategory(props: {
+    layout: EditTableLayout
+    category: Category
+    rowsByGroup: Map<string, EditRow[]>
+    plotSpecs: (PlotSpec | undefined)[]
+    searching: boolean
+}): ReactNode {
+    const tree = useCategoryTreeState(props.category)
+    const expanded = props.searching || tree.expanded
+    const bodyRows = categoryBodyRows(tree.groups, props.rowsByGroup, props.plotSpecs)
 
     return (
         <>
@@ -237,8 +242,14 @@ function EditCategory(props: {
                 </div>
             </TableRowContainer>
             <AnimatedCollapse expanded={expanded}>
-                {/* The category header is row 0, so the body starts at 1. */}
-                {bodyRows.map((renderRow, position) => renderRow(position + 1))}
+                {/*
+                  * Rows are striped by the position they end up at, not by which group they came
+                  * from, so the alternation is unbroken. The category header is row 0.
+                  */}
+                {bodyRows.map((spec, position) => spec.kind === 'group-header'
+                    ? <EditGroupHeaderRow key={spec.key} index={position + 1} spec={spec} />
+                    : <EditStatRow key={spec.key} layout={props.layout} index={position + 1} spec={spec} />,
+                )}
             </AnimatedCollapse>
         </>
     )
@@ -272,7 +283,7 @@ export function ArticleEditTable(props: {
     onExit: () => void
 }): ReactNode {
     const { filter } = props
-    const tableLayout = useArticleTableLayout(true)
+    const tableLayout = useArticleTableLayout('edit')
     const { currentUniverse, simpleOrdinals, widthLeftHeader, columnWidth, onlyColumns } = tableLayout
     const allRows = useAllRows(props.rows)
     const categories = useCategoriesMatchingSearch(filter)
