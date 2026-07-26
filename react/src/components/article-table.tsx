@@ -47,7 +47,7 @@ function computeWidths(simpleOrdinals: boolean, isMobile: boolean, screenshotMod
     return { widthLeftHeader, columnWidth }
 }
 
-export interface ArticleTableLayout {
+interface ArticleTableLayout {
     currentUniverse: Universe
     simpleOrdinals: boolean
     widthLeftHeader: number
@@ -116,7 +116,7 @@ export function ArticleTable(props: {
 
     const topLeftSpec = {
         type: 'top-left-header',
-        editMode: { open: false, onEdit: props.onEdit },
+        editMode: { open: false, onEdit: props.onEdit, label: 'Edit' },
     } satisfies CellSpec
 
     return (

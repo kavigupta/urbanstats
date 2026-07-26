@@ -9,8 +9,9 @@ import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 import { boundingBox, extendBoxes } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
 import { colorFromCycle, useColors } from '../page_template/colors'
-import { rowExpandedKey, useSettings } from '../page_template/settings'
+import { rowExpandedKey, Settings, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
+import { allGroups } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
 import { Universe, universeContext } from '../universe'
@@ -25,15 +26,18 @@ import { zIndex } from '../utils/zIndex'
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
+import { EditRow, EditTable, EditTableLayout, editRowsByGroup, useEditModeState } from './edit-table'
 import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps, pullRelevantPlotProps } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
-import { computeNameSpecsWithGroups } from './statistic-name-specs'
-import { TableContents, CellSpec, PlotSpec } from './supertable'
-import { ColumnIdentifier } from './table'
+import { computeNameSpecsWithGroups, displayNamesForRows } from './statistic-name-specs'
+import { TableContents, CellSpec, PlotSpec, SuperHeaderSpec } from './supertable'
+import { ColumnIdentifier, maxLayoutInformation } from './table'
+
+const allStatGroupsEnabled = Object.fromEntries(allGroups.map(group => [`show_stat_group_${group.id}`, true])) as StatGroupSettings
 
 export function ComparisonPanel(props: {
     universe: Universe
@@ -52,6 +56,8 @@ export function ComparisonPanel(props: {
 
     const [sortByStatIndex, setSortByStatIndex] = useState<number | null>(null)
     const [sortDirection, setSortDirection] = useState<'up' | 'down'>('down')
+
+    const { editMode, setEditMode, filter, setFilter, exitEditMode } = useEditModeState()
 
     // Sensors for drag and drop - more sensitive for vertical dragging
     const sensors = useSensors(
@@ -118,7 +124,9 @@ export function ComparisonPanel(props: {
 
     const settings = useSettings(groupYearKeys())
 
-    const dataByArticleStat = props.rows(settings)
+    // Edit mode replicates the whole statistic tree on the table, so every group is shown
+    // there regardless of whether its checkbox is currently on.
+    const dataByArticleStat = props.rows(editMode ? { ...settings, ...allStatGroupsEnabled } : settings)
     const dataByStatArticle = dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
 
     const handleSort = (statIndex: number): void => {
@@ -159,21 +167,28 @@ export function ComparisonPanel(props: {
         && (validOrdinalsByStat.length === 0 || validOrdinalsByStat.some(x => x))
     )
 
-    const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
+    // On mobile, edit mode drops the ordinal columns so the checkboxes and names have room.
+    const showOrdinalColumns = includeOrdinals && !(editMode && mobileLayout)
+    const onlyColumns: ColumnIdentifier[] = showOrdinalColumns
+        ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
+        : ['statval', 'statval_unit']
 
     const expandedSettings = useSettings(dataByStatArticle.filter(statData => statData.some(row => row.extraStats.length > 0)).map(([{ statpath }]) => rowExpandedKey(statpath)))
 
     const expandedByStatIndex = dataByStatArticle.map(([{ statpath }]) => expandedSettings[rowExpandedKey(statpath)] ?? false)
     const numExpandedExtras = expandedByStatIndex.filter(v => v).length
 
-    let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, includeOrdinals)
-    let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (dataByArticleStat[0].length + numExpandedExtras) + 1.5
+    let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, showOrdinalColumns)
+    let widthTransposeColumns = (showOrdinalColumns ? 1.5 : 1) * (dataByArticleStat[0].length + numExpandedExtras) + 1.5
 
     const hasCongressionalRepresentativeTable = dataByStatArticle.some(statData =>
         statData.some(row => isCongressionalRepresentativesMetadataRow(row)),
     )
 
-    const transpose = !hasCongressionalRepresentativeTable
+    // The edit tree runs down the left column, and there are almost always more statistics
+    // than regions, so editing always uses the untransposed orientation.
+    const transpose = !editMode
+        && !hasCongressionalRepresentativeTable
         && widthColumns > computeMaxColumns(mobileLayout)
         && widthColumns > widthTransposeColumns
 
@@ -181,7 +196,8 @@ export function ComparisonPanel(props: {
         ([widthColumns, widthTransposeColumns] = [widthTransposeColumns, widthColumns])
     }
 
-    const leftMarginPercent = transpose ? 0.24 : 0.18
+    // The tree needs considerably more room than a column of statistic names does.
+    const leftMarginPercent = editMode ? (mobileLayout ? 0.55 : 0.32) : (transpose ? 0.24 : 0.18)
     const numColumns = transpose ? dataByArticleStat[0].length : localArticlesToUse.length
     const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
 
@@ -291,11 +307,56 @@ export function ComparisonPanel(props: {
 
     const topLeftSpec: CellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
 
+    // "Edit Statistics" rather than "Edit", to distinguish it from editing the regions being
+    // compared, which the column headers do.
+    const editStatisticsButton = { open: false as const, onEdit: () => { setEditMode(true) }, label: 'Edit Statistics' }
+
+    const longnameSuperHeaderSpec: SuperHeaderSpec = { headerSpecs: longnameHeaderSpecs, showBottomBar: true }
+
+    // Only called in edit mode, so the normal table doesn't pay for laying out every
+    // statistic's name and column widths.
+    const renderEditTable = (): ReactNode => {
+        const layout: EditTableLayout = {
+            widthLeftHeader: leftMarginPercent * 100,
+            columnWidth,
+            onlyColumns,
+            simpleOrdinals: true,
+            // The vertical plots that reserve this space only appear when transposed.
+            extraSpaceRight: localArticlesToUse.map(() => 0),
+            columnWidthsInfo: dataByArticleStat.map(articleData => maxLayoutInformation(articleData, props.universe, true)),
+        }
+        const rowsToDisplay = dataByStatArticle.map((_, statIndex) => rowToDisplayForStat(statIndex))
+        const displayNames = displayNamesForRows(rowsToDisplay, names[0], props.universe)
+        const rowsByGroup = editRowsByGroup(rowsToDisplay.map((row, statIndex): EditRow => ({
+            statpath: row.statpath,
+            displayName: displayNames[statIndex],
+            adornmentRow: row,
+            cellSpecs: rowSpecsByStat[statIndex],
+            plotSpec: plotSpecs[statIndex],
+        })))
+        return (
+            <EditTable
+                rowsByGroup={rowsByGroup}
+                layout={layout}
+                filter={filter}
+                setFilter={setFilter}
+                onExit={exitEditMode}
+                superHeaderSpec={longnameSuperHeaderSpec}
+                topLeftType="comparison-top-left-header"
+            />
+        )
+    }
+
+    const settingsContext = useContext(Settings.Context)
+    const rowsForSettings = props.rows
+
+    // Reads the settings when the export is actually requested, so edit mode — which shows
+    // every statistic — still exports only the ones that are selected.
     const csvExportCallback = useCallback<CSVExportData>(() => {
-        const data = generateCSVDataForArticles(localArticlesToUse, dataByArticleStat, includeOrdinals)
+        const data = generateCSVDataForArticles(localArticlesToUse, rowsForSettings(settingsContext.getMultiple(groupYearKeys())), includeOrdinals)
         const filename = `${sanitize(joinedString)}.csv`
         return { csvData: data, csvFilename: filename }
-    }, [joinedString, localArticlesToUse, dataByArticleStat, includeOrdinals])
+    }, [joinedString, localArticlesToUse, rowsForSettings, settingsContext, includeOrdinals])
 
     return (
         <universeContext.Provider value={{
@@ -355,36 +416,38 @@ export function ComparisonPanel(props: {
                                 <div style={{ marginBlockEnd: '1em' }}></div>
 
                                 <MaybeScroll widthColumns={widthColumns}>
-                                    <div ref={tableRef}>
-                                        {transpose
-                                            ? (
-                                                    <TableContents
-                                                        superHeaderSpec={{ headerSpecs: statisticNameHeaderSpecs, showBottomBar: false, groupNames: statisticNameGroupNames }}
-                                                        leftHeaderSpec={{ leftHeaderSpecs: longnameHeaderSpecs }}
-                                                        rowSpecs={rowSpecsByStatTransposed}
-                                                        horizontalPlotSpecs={plotSpecs.map(() => undefined)}
-                                                        verticalPlotSpecs={plotSpecs}
-                                                        topLeftSpec={topLeftSpec}
-                                                        widthLeftHeader={leftMarginPercent * 100}
-                                                        columnWidth={columnWidth}
-                                                        onlyColumns={onlyColumns}
-                                                        simpleOrdinals={true}
-                                                    />
-                                                )
-                                            : (
-                                                    <TableContents
-                                                        superHeaderSpec={{ headerSpecs: longnameHeaderSpecs, showBottomBar: true }}
-                                                        leftHeaderSpec={{ leftHeaderSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames }}
-                                                        rowSpecs={rowSpecsByStat}
-                                                        horizontalPlotSpecs={plotSpecs}
-                                                        verticalPlotSpecs={[]}
-                                                        topLeftSpec={topLeftSpec}
-                                                        widthLeftHeader={leftMarginPercent * 100}
-                                                        columnWidth={columnWidth}
-                                                        onlyColumns={onlyColumns}
-                                                        simpleOrdinals={true}
-                                                    />
-                                                )}
+                                    <div ref={tableRef} data-test-id="comparison-table">
+                                        {editMode
+                                            ? renderEditTable()
+                                            : transpose
+                                                ? (
+                                                        <TableContents
+                                                            superHeaderSpec={{ headerSpecs: statisticNameHeaderSpecs, showBottomBar: false, groupNames: statisticNameGroupNames, editMode: editStatisticsButton }}
+                                                            leftHeaderSpec={{ leftHeaderSpecs: longnameHeaderSpecs }}
+                                                            rowSpecs={rowSpecsByStatTransposed}
+                                                            horizontalPlotSpecs={plotSpecs.map(() => undefined)}
+                                                            verticalPlotSpecs={plotSpecs}
+                                                            topLeftSpec={topLeftSpec}
+                                                            widthLeftHeader={leftMarginPercent * 100}
+                                                            columnWidth={columnWidth}
+                                                            onlyColumns={onlyColumns}
+                                                            simpleOrdinals={true}
+                                                        />
+                                                    )
+                                                : (
+                                                        <TableContents
+                                                            superHeaderSpec={{ ...longnameSuperHeaderSpec, editMode: editStatisticsButton }}
+                                                            leftHeaderSpec={{ leftHeaderSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames }}
+                                                            rowSpecs={rowSpecsByStat}
+                                                            horizontalPlotSpecs={plotSpecs}
+                                                            verticalPlotSpecs={[]}
+                                                            topLeftSpec={topLeftSpec}
+                                                            widthLeftHeader={leftMarginPercent * 100}
+                                                            columnWidth={columnWidth}
+                                                            onlyColumns={onlyColumns}
+                                                            simpleOrdinals={true}
+                                                        />
+                                                    )}
                                         <ArticleWarnings />
                                     </div>
                                 </MaybeScroll>

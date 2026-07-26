@@ -31,7 +31,7 @@ import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
-import { ArticleTopLeftHeaderProps, Cell, CellSpec, ComparisonLongnameCellProps, EditModeHeader, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
+import { Cell, CellSpec, ComparisonLongnameCellProps, EditModeHeader, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -124,10 +124,12 @@ export interface SuperHeaderHorizontalProps {
     leftSpacerWidth: number
     groupNames?: (string | undefined)[]
     handleReorder?: (from: number, to: number) => void
+    editMode?: Extract<EditModeHeader, { open: false }>
 }
 
 export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactNode {
     const colors = useColors()
+    const isScreenshot = useScreenshotMode()
     const barHeight = '5px'
     const bars = (backgroundColor: (i: number) => string | undefined): ReactNode => {
         return (
@@ -168,7 +170,15 @@ export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactN
 
     const cellsRow = (
         <div style={{ display: 'flex' }}>
-            <div style={{ width: `${props.leftSpacerWidth}%` }} />
+            {/*
+              * The edit button lives here rather than in the top-left cell below, which on a
+              * comparison is too narrow to hold both a button and the column's name.
+              */}
+            <div style={{ width: `${props.leftSpacerWidth}%`, display: 'flex', alignItems: 'flex-end', padding: '1px' }}>
+                {props.editMode !== undefined && !isScreenshot && (
+                    <HeaderButton onClick={props.editMode.onEdit} testId="edit-mode-edit">{props.editMode.label}</HeaderButton>
+                )}
+            </div>
             {props.handleReorder
                 ? (
                         <SortableContext items={props.headerSpecs.map((_, idx) => idx.toString())} strategy={horizontalListSortingStrategy}>
@@ -258,7 +268,7 @@ export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: num
     )
 }
 
-export function TopLeftHeader(props: ArticleTopLeftHeaderProps & { width: number }): ReactNode {
+export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
     const isMobileLayout = useMobileLayout()
     const isScreenshot = useScreenshotMode()
     const isTranspose = useTranspose()
@@ -286,7 +296,7 @@ export function TopLeftHeader(props: ArticleTopLeftHeaderProps & { width: number
             <div style={{ position: 'relative', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1px', width: `${props.width}%` }}>
                 {editMode !== undefined && !isScreenshot && (
                     <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}>
-                        <HeaderButton onClick={editMode.onEdit} testId="edit-mode-edit">Edit</HeaderButton>
+                        <HeaderButton onClick={editMode.onEdit} testId="edit-mode-edit">{editMode.label}</HeaderButton>
                     </div>
                 )}
                 {canHaveStatsModal
@@ -317,11 +327,15 @@ function EditModeTopLeftHeader({ header, width }: { header: Extract<EditModeHead
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '1px', width: `${width}%` }}>
             {header.onDone !== undefined && <HeaderButton onClick={header.onDone} testId="edit-mode-done">Done</HeaderButton>}
+            {/*
+              * `stretch` and the button's own font size line the box up with the Done button,
+              * which its padding otherwise makes the taller of the two.
+              */}
             <input
                 type="text"
                 className="serif"
                 placeholder="Search Statistics"
-                style={{ flex: '1 1 auto', minWidth: 0, fontSize: '16px' }}
+                style={{ flex: '1 1 auto', minWidth: 0, alignSelf: 'stretch', fontSize: '18px', padding: '0 6px' }}
                 value={header.filter}
                 onChange={(e) => { header.setFilter(e.target.value) }}
                 data-test-id="edit-mode-filter"

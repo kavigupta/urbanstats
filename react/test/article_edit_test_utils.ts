@@ -22,16 +22,20 @@ export async function exitEditMode(t: TestController): Promise<void> {
     await t.expect(editButton.exists).ok()
 }
 
+/** Scopes the edit tree's selectors to a table, so they don't also match the sidebar's tree. */
+const articleTableScope = '.stats_table'
+export const comparisonTableScope = '[data-test-id=comparison-table]'
+
 /**
  * A category's toggle in the edit tree, matched by the direction it currently offers, so
  * its presence also tells you which state the category is in.
  */
-export function categoryToggleButton(categoryId: string, direction: 'Expand' | 'Collapse'): Selector {
-    return Selector(`.stats_table [data-category-id=${categoryId}]`).withAttribute('aria-label', new RegExp(`^${direction} `))
+export function categoryToggleButton(categoryId: string, direction: 'Expand' | 'Collapse', scope = articleTableScope): Selector {
+    return Selector(`${scope} [data-category-id=${categoryId}]`).withAttribute('aria-label', new RegExp(`^${direction} `))
 }
 
 /** Categories are collapsed by default, and the toggle animates. */
-export async function setCategoryExpanded(t: TestController, categoryId: string, expanded: boolean): Promise<void> {
-    await t.click(categoryToggleButton(categoryId, expanded ? 'Expand' : 'Collapse'))
+export async function setCategoryExpanded(t: TestController, categoryId: string, expanded: boolean, scope = articleTableScope): Promise<void> {
+    await t.click(categoryToggleButton(categoryId, expanded ? 'Expand' : 'Collapse', scope))
     await t.wait(collapseAnimationMs)
 }

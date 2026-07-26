@@ -24,6 +24,8 @@ export interface SuperHeaderSpec {
     showBottomBar: boolean
     groupNames?: (string | undefined)[]
     handleReorder?: (from: number, to: number) => void
+    /** Puts the way into edit mode above the table, for layouts whose top-left cell has no room for it. */
+    editMode?: Extract<EditModeHeader, { open: false }>
 }
 
 export interface LeftHeaderSpec {
@@ -262,7 +264,7 @@ export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCell
     ({ type: 'statistic-row' } & StatisticRowCellProps) |
     ({ type: 'statistic-panel-longname' } & StatisticPanelLongnameCellProps) |
     ({ type: 'comparison-top-left-header' } & TopLeftHeaderProps) |
-    ({ type: 'top-left-header' } & ArticleTopLeftHeaderProps)
+    ({ type: 'top-left-header' } & TopLeftHeaderProps)
 
 export function Cell(props: CellSpec & { width: number }): ReactNode {
     switch (props.type) {
@@ -328,13 +330,13 @@ export interface StatisticRowCellProps {
 }
 
 /**
- * What the table's top-left cell offers for the article table's "edit mode", in which the
- * statistic category/group checkbox tree is replicated directly on the table. Passed down
- * as part of the cell's spec, so the generic table components stay unaware of edit mode;
- * a cell given no `EditModeHeader` renders the plain header.
+ * What the table's top-left cell offers for "edit mode", in which the statistic
+ * category/group checkbox tree is replicated directly on the table. Passed down as part of
+ * the cell's spec, so the generic table components stay unaware of edit mode; a cell given
+ * no `EditModeHeader` renders the plain header.
  */
 export type EditModeHeader =
-    | { open: false, onEdit: () => void }
+    | { open: false, onEdit: () => void, label: string }
     | {
         open: true
         filter: string
@@ -345,9 +347,5 @@ export type EditModeHeader =
 
 export interface TopLeftHeaderProps {
     statNameOverride?: string
-}
-
-/** The top-left header of the article table, which is the only one that has an edit mode. */
-export interface ArticleTopLeftHeaderProps extends TopLeftHeaderProps {
     editMode?: EditModeHeader
 }
