@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { checkIsIndeterminate, clickUniverseFlag, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, withHamburgerMenu } from './test_utils'
+import { checkIsIndeterminate, clickUniverseFlag, resizeForPlatform, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, withHamburgerMenu } from './test_utils'
 
 const mainCheck = 'input[data-test-id=category_main]'
 const mainExpand = '.expandButton[data-category-id=main]'
@@ -8,14 +8,7 @@ const populationCheck = 'input[data-test-id=group_population]:not([inert] *)' //
 
 export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
     urbanstatsFixture('stats tree test', `${target}/article.html?longname=San+Francisco+city%2C+California%2C+USA`, async (t) => {
-        switch (platform) {
-            case 'mobile':
-                await t.resizeWindow(400, 800)
-                break
-            case 'desktop':
-                await t.resizeWindow(1400, 800)
-                break
-        }
+        await resizeForPlatform(t, platform)
     })
 
     test('main-expand-appearance', async (t) => {

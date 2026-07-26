@@ -1,6 +1,7 @@
 import { Selector } from 'testcafe'
 
-import { checkIsIndeterminate, clickUniverseFlag, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, withHamburgerMenu } from './test_utils'
+import { categoryExpandButton, collapseAnimationMs, enterEditMode, exitEditMode, filterBox, setCategoryExpanded } from './article_edit_test_utils'
+import { checkIsIndeterminate, clickUniverseFlag, resizeForPlatform, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, withHamburgerMenu } from './test_utils'
 
 /**
  * The article table's edit mode replicates the statistic category/group tree that
@@ -11,10 +12,6 @@ import { checkIsIndeterminate, clickUniverseFlag, safeReload, screencap, target,
  * becomes testable now that both exist.
  */
 
-const editButton = Selector('[data-test-id=edit-mode-edit]')
-const doneButton = Selector('[data-test-id=edit-mode-done]')
-const filterBox = Selector('[data-test-id=edit-mode-filter]')
-
 const mainCheck = 'input[data-test-id=edit_category_main]'
 // Population is a single-stat group in the (default-on) Main category, so its
 // checkbox sits directly on the Population row.
@@ -22,24 +19,13 @@ const populationCheck = 'input[data-test-id=edit_group_population]'
 // Collapsed categories stay mounted (so the height transition has content) but are
 // marked inert, so clicking requires the interactable variant.
 const populationCheckInteractable = `${populationCheck}:not([inert] *)`
-const mainCollapse = '.stats_table [aria-label="Collapse Main category"]'
-const mainExpand = '.stats_table [aria-label="Expand Main category"]'
+const mainExpand = categoryExpandButton('Main', true)
 // The sidebar's copy of the same group, for cross-tree checks.
 const sidebarPopulationCheck = 'input[data-test-id=group_population]:not([inert] *)'
 
-// The category collapse/expand is a grid-template-rows transition.
-const collapseAnimationMs = 400
-
 export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     urbanstatsFixture('article edit tree', `${target}/article.html?longname=San+Francisco+city%2C+California%2C+USA`, async (t) => {
-        switch (platform) {
-            case 'mobile':
-                await t.resizeWindow(400, 800)
-                break
-            case 'desktop':
-                await t.resizeWindow(1400, 800)
-                break
-        }
+        await resizeForPlatform(t, platform)
     })
 
     test('category-check', async (t) => {
@@ -248,7 +234,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
             await t.wait(collapseAnimationMs)
             await t.expect(Selector(sidebarPopulationCheck).exists).notOk()
         })
-        await t.expect(Selector(mainExpand).exists).ok()
+        await t.expect(mainExpand.exists).ok()
         await t.expect(Selector(populationCheckInteractable).exists).notOk()
     })
 
@@ -267,7 +253,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.selectText(filterBox).pressKey('delete')
         await t.expect(Selector(mainCheck).exists).ok()
         // Filtering doesn't leave the categories it expanded expanded.
-        await t.expect(Selector(mainExpand).exists).ok()
+        await t.expect(mainExpand.exists).ok()
     })
 
     test('trees-stay-in-sync', async (t) => {
@@ -291,14 +277,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     urbanstatsFixture('article edit tree filtering', `${target}/article.html?longname=Venice+Neighborhood%2C+Los+Angeles+City%2C+California%2C+USA`, async (t) => {
-        switch (platform) {
-            case 'mobile':
-                await t.resizeWindow(400, 800)
-                break
-            case 'desktop':
-                await t.resizeWindow(1400, 800)
-                break
-        }
+        await resizeForPlatform(t, platform)
     })
 
     test('search-filter', async (t) => {
@@ -311,14 +290,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     /** Universe Tests */
 
     urbanstatsFixture('article edit tree universe test', `${target}/article.html?longname=USA`, async (t) => {
-        switch (platform) {
-            case 'mobile':
-                await t.resizeWindow(400, 800)
-                break
-            case 'desktop':
-                await t.resizeWindow(1400, 800)
-                break
-        }
+        await resizeForPlatform(t, platform)
     })
 
     test('switch-universe-indeterminate', async (t) => {
@@ -347,23 +319,8 @@ async function selectUniverse(t: TestController, alt: string): Promise<void> {
     await clickUniverseFlag(t, alt)
 }
 
-// Edit mode is ephemeral, so it has to be reopened after any reload or navigation.
-async function enterEditMode(t: TestController): Promise<void> {
-    if (await editButton.exists) {
-        await t.click(editButton)
-    }
-    await t.expect(filterBox.exists).ok()
-}
-
-async function exitEditMode(t: TestController): Promise<void> {
-    await t.click(doneButton)
-    await t.expect(editButton.exists).ok()
-}
-
-// Categories are collapsed by default, and the toggle animates.
 async function setMainExpanded(t: TestController, expanded: boolean): Promise<void> {
-    await t.click(expanded ? mainExpand : mainCollapse)
-    await t.wait(collapseAnimationMs)
+    await setCategoryExpanded(t, 'Main', expanded)
 }
 
 async function uncheckAll(t: TestController): Promise<void> {

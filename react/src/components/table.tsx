@@ -8,7 +8,7 @@ import './table.css'
 import { Navigator } from '../navigation/Navigator'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
-import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings, useStagedSettingKeys } from '../page_template/settings'
+import { MobileArticlePointers, rowExpandedKey, useIsStaged, useSetting, useSettings } from '../page_template/settings'
 import { Universe, useUniverse } from '../universe'
 import { withButtonRole } from '../utils/a11y'
 import { assert } from '../utils/defensive'
@@ -264,7 +264,7 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     const isScreenshot = useScreenshotMode()
     const isTranspose = useTranspose()
     const editModeContext = useEditMode()
-    const staged = useStagedSettingKeys() !== undefined
+    const staged = useIsStaged()
 
     const [statsModalOpen, setStatsModalOpen] = useState(false)
 

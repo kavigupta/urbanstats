@@ -317,11 +317,8 @@ function TemperatureSetting(): ReactNode {
     const info = useSettingInfo('temperature_unit')
     const colors = useColors()
 
-    const highlight = isStagedChange(info)
-
     const divStyle: CSSProperties = {
-        backgroundColor: highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
-        borderRadius: '5px',
+        ...useHighlightStyle(isStagedChange(info)),
         padding: '0px 5px',
     }
 
@@ -361,12 +358,18 @@ type CheckboxSettingCustomProps = CheckboxSettingCustomJustInputProps & {
     classNameToUse?: string
 }
 
-export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactNode {
+/** Marks a control whose value staging is currently changing. */
+export function useHighlightStyle(highlight: boolean | undefined): CSSProperties {
     const colors = useColors()
-
-    const divStyle: CSSProperties = {
-        backgroundColor: props.highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
+    return {
+        backgroundColor: highlight === true ? colors.slightlyDifferentBackgroundFocused : undefined,
         borderRadius: '5px',
+    }
+}
+
+export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactNode {
+    const divStyle: CSSProperties = {
+        ...useHighlightStyle(props.highlight),
         display: 'flex',
         alignItems: 'top',
         ...props.style,

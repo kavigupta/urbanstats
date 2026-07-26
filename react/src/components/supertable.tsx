@@ -7,7 +7,7 @@ import { assert } from '../utils/defensive'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { Article } from '../utils/protos'
 
-import { congressionalDataForRow } from './congressional-table/model'
+import { CongressionalColumnData, congressionalDataForRow } from './congressional-table/model'
 import { CongressionalRepresentativesWidget } from './congressional-table/render'
 import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
@@ -217,20 +217,43 @@ function SuperTableRow(props: {
                     </Fragment>
                 ))}
             </TableRowContainer>
+            <RowExtras
+                plotSpec={props.plotSpec}
+                congressionalRegions={congressionalRegions}
+                widthLeftHeader={props.widthLeftHeader}
+                columnWidth={props.columnWidth}
+                extraSpaceRight={props.extraSpaceRight}
+            />
+        </div>
+    )
+}
+
+/** The blocks that hang below a statistic row: its expanded plot and its representatives table. */
+export function RowExtras(props: {
+    plotSpec?: PlotSpec
+    congressionalRegions: CongressionalColumnData[]
+    widthLeftHeader: number
+    columnWidth: number
+    extraSpaceRight: number[]
+}): ReactNode {
+    return (
+        <>
             {props.plotSpec && (
                 <div style={{ width: '100%', position: 'relative' }}>
                     <RenderedPlot statDescription={props.plotSpec.statDescription} plotProps={props.plotSpec.plotProps} />
                 </div>
             )}
-            {congressionalRegions.length > 0 && (
-                <CongressionalRepresentativesWidget
-                    regions={congressionalRegions}
-                    widthLeftHeader={props.widthLeftHeader}
-                    columnWidth={props.columnWidth}
-                    extraSpaceRight={props.extraSpaceRight}
-                />
+            {props.congressionalRegions.length > 0 && (
+                <div data-test-id="congressional-representatives">
+                    <CongressionalRepresentativesWidget
+                        regions={props.congressionalRegions}
+                        widthLeftHeader={props.widthLeftHeader}
+                        columnWidth={props.columnWidth}
+                        extraSpaceRight={props.extraSpaceRight}
+                    />
+                </div>
             )}
-        </div>
+        </>
     )
 }
 

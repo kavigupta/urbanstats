@@ -4,7 +4,6 @@ import './article.css'
 import React, { CSSProperties, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
-import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { rowExpandedKey, useIsStaged, useSetting, useSettings } from '../page_template/settings'
 import { filterCategoriesBySearch, groupYearKeys, StatGroupSettings, useAvailableCategories, useAvailableGroups, useCategoryTreeState } from '../page_template/statistic-settings'
@@ -25,15 +24,14 @@ import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { StagingControls } from './StagingControls'
 import { congressionalDataForRow } from './congressional-table/model'
-import { CongressionalRepresentativesWidget } from './congressional-table/render'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
-import { pullRelevantPlotProps, RenderedPlot } from './plots'
+import { pullRelevantPlotProps } from './plots'
 import { Related } from './related-button'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { CheckboxSettingJustBox } from './sidebar'
-import { CellSpec, PlotSpec, TableContents } from './supertable'
+import { CheckboxSettingJustBox, useHighlightStyle } from './sidebar'
+import { CellSpec, PlotSpec, RowExtras, TableContents } from './supertable'
 import { ColumnIdentifier, CommonLayoutInformation, ExpansionButton, MainHeaderRow, maxLayoutInformation, StatisticNameDisclaimer, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
 import { EditModeContext, useEditMode } from './table-edit-context'
 
@@ -215,13 +213,36 @@ export function computeNameSpecsWithGroups(nameSpecs: NameSpec[]): { updatedName
     return { updatedNameSpecs, groupNames }
 }
 
+/** The name cell spec for each row, before `computeNameSpecsWithGroups` fills in display names. */
+function nameSpecsForRows(rows: ArticleRow[], longname: string, currentUniverse: Universe): NameSpec[] {
+    return rows.map(row => ({
+        type: 'statistic-name',
+        longname,
+        row,
+        renderedStatname: row.renderedStatname,
+        currentUniverse,
+    }))
+}
+
+/** A plot for each row whose extras are currently expanded, and undefined for the rest. */
+function useExpandedPlotSpecs(rows: ArticleRow[], article: Article): (PlotSpec | undefined)[] {
+    const colors = useColors()
+    const expandedSettings = useSettings(rows.map(row => rowExpandedKey(row.statpath)))
+    return rows.map((row, index) => {
+        if (row.extraStats.length === 0 || !(expandedSettings[rowExpandedKey(row.statpath)] ?? false)) {
+            return undefined
+        }
+        return {
+            statDescription: row.renderedStatname,
+            plotProps: pullRelevantPlotProps(rows, index, colors.hueColors.blue, article.shortname, article.longname, article.articleType),
+        }
+    })
+}
+
 function ArticleTable(props: {
     filteredRows: ArticleRow[]
     article: Article
 }): ReactNode {
-    const colors = useColors()
-    const expandedSettings = useSettings(props.filteredRows.map(row => rowExpandedKey(row.statpath)))
-    const expandedEach = props.filteredRows.map(row => row.extraStats.length > 0 && (expandedSettings[rowExpandedKey(row.statpath)] ?? false))
     const currentUniverse = useUniverse()
     assert(currentUniverse !== undefined, 'no universe')
     const [simpleOrdinals] = useSetting('simple_ordinals')
@@ -229,15 +250,11 @@ function ArticleTable(props: {
 
     const { widthLeftHeader, columnWidth } = useWidths()
 
-    const statNameSpecs: Extract<CellSpec, { type: 'statistic-name' }>[] = props.filteredRows.map(row => ({
-        type: 'statistic-name',
-        longname: props.article.longname,
-        row,
-        renderedStatname: row.renderedStatname,
-        currentUniverse,
-    }))
+    const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(
+        nameSpecsForRows(props.filteredRows, props.article.longname, currentUniverse),
+    )
 
-    const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(statNameSpecs)
+    const plotSpecs = useExpandedPlotSpecs(props.filteredRows, props.article)
 
     const onlyColumns = allColumns
     const cellSpecs: CellSpec[][] = props.filteredRows.map(row => [({
@@ -254,21 +271,6 @@ function ArticleTable(props: {
         simpleOrdinals,
         onlyColumns,
     })])
-
-    const plotSpecs: (PlotSpec | undefined)[] = expandedEach.map((expanded, index) => expanded
-        ? {
-                statDescription: props.filteredRows[index].renderedStatname,
-                plotProps: pullRelevantPlotProps(
-                    props.filteredRows,
-                    index,
-                    colors.hueColors.blue,
-                    props.article.shortname,
-                    props.article.longname,
-                    props.article.articleType,
-                ),
-            }
-        : undefined,
-    )
 
     const topLeftSpec = { type: 'top-left-header' } satisfies CellSpec
 
@@ -299,6 +301,9 @@ const editLabelStyle: CSSProperties = { padding: '1px', display: 'flex', alignIt
 // box keeps its intrinsic (square) size against the table's row text.
 const editCheckboxStyle: CSSProperties = { cursor: 'pointer', flex: '0 0 auto', height: 'auto' }
 
+/** Percent of the table the name column takes in mobile edit mode, where it has fewer columns to compete with. */
+const mobileEditWidthLeftHeader = 58
+
 /** Layout shared by every row of the edit table. */
 interface EditTableLayout {
     article: Article
@@ -307,10 +312,6 @@ interface EditTableLayout {
     onlyColumns: ColumnIdentifier[]
     simpleOrdinals: boolean
     columnWidthsInfo: CommonLayoutInformation
-}
-
-function highlightStyle(colors: Colors, highlight: boolean): CSSProperties {
-    return highlight ? { backgroundColor: colors.slightlyDifferentBackgroundFocused, borderRadius: '5px' } : {}
 }
 
 function EditStatRow(props: {
@@ -325,7 +326,6 @@ function EditStatRow(props: {
     row: ArticleRow
     plotSpec?: PlotSpec
 }): ReactNode {
-    const colors = useColors()
     const screenshotMode = useScreenshotMode()
     const { article, widthLeftHeader, columnWidth } = props.layout
     const hasExtras = props.row.extraStats.length > 0 && !screenshotMode
@@ -337,7 +337,7 @@ function EditStatRow(props: {
                 <div style={{ width: `${widthLeftHeader}%`, display: 'flex', alignItems: 'center', gap: '0.3em', paddingLeft: `${props.indent * 0.75}em` }}>
                     <label
                         htmlFor={props.checkbox === undefined ? props.checkboxId : undefined}
-                        style={{ ...editLabelStyle, ...highlightStyle(colors, props.highlight) }}
+                        style={{ ...editLabelStyle, ...useHighlightStyle(props.highlight) }}
                     >
                         {props.checkbox}
                         <span className="serif value">{reifyReact(props.displayName)}</span>
@@ -355,30 +355,21 @@ function EditStatRow(props: {
                     extraSpaceRight={0}
                 />
             </TableRowContainer>
-            {props.plotSpec && (
-                <div style={{ width: '100%', position: 'relative' }}>
-                    <RenderedPlot statDescription={props.plotSpec.statDescription} plotProps={props.plotSpec.plotProps} />
-                </div>
-            )}
-            {congressionalRegion && (
-                <div data-test-id="edit-congressional-representatives">
-                    <CongressionalRepresentativesWidget
-                        regions={[congressionalRegion]}
-                        widthLeftHeader={widthLeftHeader}
-                        columnWidth={columnWidth}
-                        extraSpaceRight={[0]}
-                    />
-                </div>
-            )}
+            <RowExtras
+                plotSpec={props.plotSpec}
+                congressionalRegions={congressionalRegion === undefined ? [] : [congressionalRegion]}
+                widthLeftHeader={widthLeftHeader}
+                columnWidth={columnWidth}
+                extraSpaceRight={[0]}
+            />
         </>
     )
 }
 
 function EditGroupHeaderRow(props: { index: number, highlight: boolean, checkbox: ReactNode, name: string }): ReactNode {
-    const colors = useColors()
     return (
         <TableRowContainer index={props.index} isHighlighted={false}>
-            <label style={{ ...editLabelStyle, ...highlightStyle(colors, props.highlight), width: '100%', paddingLeft: '0.75em' }}>
+            <label style={{ ...editLabelStyle, ...useHighlightStyle(props.highlight), width: '100%', paddingLeft: '0.75em' }}>
                 {props.checkbox}
                 <span className="serif value">{props.name}</span>
             </label>
@@ -408,11 +399,11 @@ function EditCategory(props: {
     category: Category
     rowsByGroup: Map<string, ArticleRow[]>
     displayNames: Map<ArticleRow, HumanReadableName>
-    plotSpecByStatpath: Map<string, PlotSpec>
+    plotSpecs: Map<ArticleRow, PlotSpec | undefined>
     hasSearchMatch: boolean
 }): ReactNode {
-    const colors = useColors()
     const tree = useCategoryTreeState(props.category)
+    const highlightStyle = useHighlightStyle(tree.highlight)
     const expanded = props.hasSearchMatch || tree.expanded
 
     let index = 0
@@ -446,7 +437,7 @@ function EditCategory(props: {
                     displayName={props.displayNames.get(groupRows[0])!}
                     indent={1}
                     row={groupRows[0]}
-                    plotSpec={props.plotSpecByStatpath.get(groupRows[0].statpath)}
+                    plotSpec={props.plotSpecs.get(groupRows[0])}
                 />,
             )
         }
@@ -466,7 +457,7 @@ function EditCategory(props: {
                         displayName={props.displayNames.get(row)!}
                         indent={2}
                         row={row}
-                        plotSpec={props.plotSpecByStatpath.get(row.statpath)}
+                        plotSpec={props.plotSpecs.get(row)}
                     />,
                 )
             }
@@ -486,7 +477,7 @@ function EditCategory(props: {
                             aria-label={expanded ? `Collapse ${props.category.name} category` : `Expand ${props.category.name} category`}
                         />
                     )}
-                    <label style={{ ...editLabelStyle, ...highlightStyle(colors, tree.highlight), gap: '0.25em' }}>
+                    <label style={{ ...editLabelStyle, ...highlightStyle, gap: '0.25em' }}>
                         <CheckboxSettingJustBox
                             checked={tree.status === true}
                             indeterminate={tree.status === 'indeterminate'}
@@ -533,33 +524,21 @@ function ArticleEditTable(props: {
     const categories = filterCategoriesBySearch(props.filter, useAvailableCategories(), useAvailableGroups())
     const isMobile = useMobileLayout()
     const editModeContext = useEditMode()
-    const colors = useColors()
     const staged = useIsStaged()
     const [simpleOrdinals] = useSetting('simple_ordinals')
-    const { widthLeftHeader: desktopWidthLeftHeader, columnWidth: desktopColumnWidth } = useWidths()
+    const { widthLeftHeader: defaultWidthLeftHeader, columnWidth: defaultColumnWidth } = useWidths()
 
     // Keep the expandable per-stat plots ("extras") available in edit mode, driven
     // by the same rowExpandedKey setting the normal table uses.
-    const expandedSettings = useSettings(allRows.map(row => rowExpandedKey(row.statpath)))
-    const plotSpecByStatpath = useMemo(() => {
-        const result = new Map<string, PlotSpec>()
-        allRows.forEach((row, index) => {
-            if (row.extraStats.length > 0 && (expandedSettings[rowExpandedKey(row.statpath)] ?? false)) {
-                result.set(row.statpath, {
-                    statDescription: row.renderedStatname,
-                    plotProps: pullRelevantPlotProps(allRows, index, colors.hueColors.blue, props.article.shortname, props.article.longname, props.article.articleType),
-                })
-            }
-        })
-        return result
-    }, [allRows, expandedSettings, colors.hueColors.blue, props.article])
+    const plotSpecList = useExpandedPlotSpecs(allRows, props.article)
+    const plotSpecs = new Map(allRows.map((row, index) => [row, plotSpecList[index]]))
 
     // On mobile, edit mode drops the percentile/ordinal/pointer columns so the
     // checkboxes and names have room; only the value stays. The name column also
     // gets a wider share since it no longer competes with those columns.
     const onlyColumns: ColumnIdentifier[] = isMobile ? ['statval', 'statval_unit'] : allColumns
-    const widthLeftHeader = isMobile ? 58 : desktopWidthLeftHeader
-    const columnWidth = isMobile ? 100 - widthLeftHeader : desktopColumnWidth
+    const widthLeftHeader = isMobile ? mobileEditWidthLeftHeader : defaultWidthLeftHeader
+    const columnWidth = isMobile ? 100 - mobileEditWidthLeftHeader : defaultColumnWidth
 
     const rowsByGroup = useMemo(() => {
         const result = new Map<string, ArticleRow[]>()
@@ -576,14 +555,7 @@ function ArticleEditTable(props: {
     }, [allRows])
 
     const displayNames = useMemo(() => {
-        const statNameSpecs: NameSpec[] = allRows.map(row => ({
-            type: 'statistic-name',
-            longname: props.article.longname,
-            row,
-            renderedStatname: row.renderedStatname,
-            currentUniverse,
-        }))
-        const { updatedNameSpecs } = computeNameSpecsWithGroups(statNameSpecs)
+        const { updatedNameSpecs } = computeNameSpecsWithGroups(nameSpecsForRows(allRows, props.article.longname, currentUniverse))
         const result = new Map<ArticleRow, HumanReadableName>()
         allRows.forEach((row, i) => {
             result.set(row, updatedNameSpecs[i].displayName ?? updatedNameSpecs[i].renderedStatname)
@@ -621,7 +593,7 @@ function ArticleEditTable(props: {
                         category={category}
                         rowsByGroup={rowsByGroup}
                         displayNames={displayNames}
-                        plotSpecByStatpath={plotSpecByStatpath}
+                        plotSpecs={plotSpecs}
                         hasSearchMatch={props.filter !== ''}
                     />
                 ))}

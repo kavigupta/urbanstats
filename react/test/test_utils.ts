@@ -490,6 +490,18 @@ export async function clickUniverseFlag(t: TestController, alt: string): Promise
     })
 }
 
+/** The two window sizes test templates parameterized over layout run at. */
+export async function resizeForPlatform(t: TestController, platform: 'mobile' | 'desktop'): Promise<void> {
+    switch (platform) {
+        case 'mobile':
+            await t.resizeWindow(400, 800)
+            break
+        case 'desktop':
+            await t.resizeWindow(1400, 800)
+            break
+    }
+}
+
 export async function checkIsIndeterminate(t: TestController, selector: string): Promise<boolean> {
     return t.eval(() => {
         const check: HTMLInputElement = document.querySelector(selector)!

@@ -1,5 +1,6 @@
 import { Selector } from 'testcafe'
 
+import { categoryExpandButton, doneButton, editButton, filterBox, setCategoryExpanded } from './article_edit_test_utils'
 import { safeReload, screencap, target, urbanstatsFixture } from './test_utils'
 
 /**
@@ -8,20 +9,11 @@ import { safeReload, screencap, target, urbanstatsFixture } from './test_utils'
  * representatives, disclaimers), staging integration, and the mobile layout.
  */
 
-const editButton = Selector('[data-test-id=edit-mode-edit]')
-const doneButton = Selector('[data-test-id=edit-mode-done]')
-const filterBox = Selector('[data-test-id=edit-mode-filter]')
 const mainCategory = Selector('input[data-test-id=edit_category_main]')
 // Population is a single-stat group in the (default-on) Main category.
 const populationGroup = Selector('input[data-test-id=edit_group_population]')
 // Scoped to the table so it doesn't match the identical sidebar controls.
 const tableStagingControls = Selector('.stats_table [data-test-id=staging_controls]')
-
-// Categories are collapsed by default (the expand state is shared with the sidebar tree).
-async function expandMain(t: TestController): Promise<void> {
-    await t.click(Selector('.stats_table [aria-label="Expand Main category"]'))
-    await t.wait(400)
-}
 
 urbanstatsFixture('article edit mode', `${target}/article.html?longname=California%2C+USA`)
 
@@ -56,7 +48,7 @@ test('edit mode is ephemeral across reloads', async (t) => {
 
 test('clicking a stat name toggles its checkbox', async (t) => {
     await t.click(editButton)
-    await expandMain(t)
+    await setCategoryExpanded(t, 'Main', true)
     await t.expect(populationGroup.checked).ok()
 
     // Click the name label (not the checkbox itself).
@@ -67,15 +59,14 @@ test('clicking a stat name toggles its checkbox', async (t) => {
 test('a checked category can still be collapsed and expanded', async (t) => {
     await t.click(editButton)
     await t.expect(mainCategory.checked).ok()
-    await expandMain(t)
+    await setCategoryExpanded(t, 'Main', true)
     await t.expect(Selector('input[data-test-id=edit_group_population]:not([inert] *)').exists).ok()
 
-    await t.click(Selector('.stats_table [aria-label="Collapse Main category"]'))
-    await t.wait(400)
+    await setCategoryExpanded(t, 'Main', false)
 
     // Collapsing a *checked* category works: its groups become inert, but it stays checked.
     await t.expect(mainCategory.checked).ok()
-    await t.expect(Selector('.stats_table [aria-label="Expand Main category"]').exists).ok()
+    await t.expect(categoryExpandButton('Main', true).exists).ok()
     await t.expect(Selector('input[data-test-id=edit_group_population]:not([inert] *)').exists).notOk()
 })
 
@@ -90,7 +81,7 @@ test('the filter narrows to matching categories', async (t) => {
 
 test('stat extras (plots) can be expanded in edit mode', async (t) => {
     await t.click(editButton)
-    await expandMain(t)
+    await setCategoryExpanded(t, 'Main', true)
     const expandToggle = Selector('.stats_table .expand-toggle:not([inert] *)')
     await t.expect(expandToggle.exists).ok()
 
@@ -146,7 +137,7 @@ test('discarding staged changes also exits edit mode', async (t) => {
 urbanstatsFixture('article edit mode congressional', `${target}/article.html?longname=02139%2C+USA`)
 
 const congressionalGroup = Selector('input[data-test-id=edit_group_metadata_show_metadata_congressional_representatives]')
-const congressionalWidget = Selector('[data-test-id=edit-congressional-representatives]')
+const congressionalWidget = Selector('.stats_table [data-test-id=congressional-representatives]')
 
 test('congressional representatives table shows when the stat is enabled', async (t) => {
     await t.click(editButton)
