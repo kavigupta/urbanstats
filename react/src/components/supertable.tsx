@@ -25,7 +25,7 @@ export interface SuperHeaderSpec {
     groupNames?: (string | undefined)[]
     handleReorder?: (from: number, to: number) => void
     /** Puts the way into edit mode above the table, for layouts whose top-left cell has no room for it. */
-    editMode?: Extract<EditModeHeader, { open: false }>
+    editMode?: EditModeButton
 }
 
 export interface LeftHeaderSpec {
@@ -360,15 +360,22 @@ export interface StatisticRowCellProps {
  * the cell's spec, so the generic table components stay unaware of edit mode; a cell given
  * no `EditModeHeader` renders the plain header.
  */
-export type EditModeHeader =
-    | { open: false, onEdit: () => void, label: string }
-    | {
-        open: true
-        filter: string
-        setFilter: (filter: string) => void
-        /** Unset when something else on the page already offers a way out of edit mode. */
-        onDone?: () => void
-    }
+export type EditModeHeader = EditModeButton | EditModeOpenHeader
+
+/** The way in to edit mode, shown while it's closed. */
+export interface EditModeButton {
+    open: false
+    onEdit: () => void
+    label: string
+}
+
+export interface EditModeOpenHeader {
+    open: true
+    filter: string
+    setFilter: (filter: string) => void
+    /** Unset when something else on the page already offers a way out of edit mode. */
+    onDone?: () => void
+}
 
 export interface TopLeftHeaderProps {
     statNameOverride?: string

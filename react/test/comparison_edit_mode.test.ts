@@ -1,11 +1,13 @@
 import { Selector } from 'testcafe'
 
 import { comparisonTableScope, doneButton, editButton, filterBox, setCategoryExpanded } from './article_edit_test_utils'
-import { comparisonPage, downloadCSV, safeReload, screencap, target, urbanstatsFixture } from './test_utils'
+import { editModeSharedTests } from './edit_mode_test_template'
+import { comparisonPage, downloadCSV, screencap, target, urbanstatsFixture } from './test_utils'
 
 /**
  * Tests for the comparison table's "edit statistics" mode: the same category/group checkbox
- * tree the article table gets, but with a column of values per region being compared.
+ * tree the article table gets, but with a column of values per region being compared. The
+ * behavior it shares with the article table's edit mode is in editModeSharedTests.
  */
 
 const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
@@ -18,8 +20,6 @@ const transposed = `${target}/comparison.html?longnames=%5B%22China%22%2C%22USA%
 const mainCategory = Selector('input[data-test-id=edit_category_main]')
 const populationGroup = Selector('input[data-test-id=edit_group_population]')
 const comparisonTable = Selector(comparisonTableScope)
-// Scoped to the table so it doesn't match the identical sidebar controls.
-const tableStagingControls = comparisonTable.find('[data-test-id=staging_controls]')
 
 urbanstatsFixture('comparison edit mode', twoRegions)
 
@@ -115,16 +115,6 @@ test('csv export in edit mode covers the selected statistics, not the whole tree
     await t.expect(csvContent).notContains('White %')
 })
 
-test('comparison edit mode is ephemeral across reloads', async (t) => {
-    await t.click(editButton)
-    await t.expect(doneButton.exists).ok()
-
-    await safeReload(t)
-
-    await t.expect(editButton.exists).ok()
-    await t.expect(doneButton.exists).notOk()
-})
-
 // A transposed comparison puts the statistics across the top; edit mode has to undo that,
 // since the tree runs down the left column.
 urbanstatsFixture('comparison edit mode transposed', transposed)
@@ -153,52 +143,13 @@ test('mobile comparison edit mode hides the ordinal columns', async (t) => {
     await screencap(t, { fullPage: false })
 })
 
-// Reaching a comparison via a settings link that differs from the saved settings should
-// open edit mode automatically and surface the staging controls on the table.
-urbanstatsFixture('comparison edit mode staging', twoRegions, async (t) => {
-    // Save a setting first, so the link enters staging instead of silently applying.
-    await t.click(Selector('input[data-test-id=use_imperial]'))
-    await t.navigateTo(`${twoRegions}&s=29ZqGgHgeNSXMA9`)
-})
-
-test('comparison edit mode auto-opens in staging', async (t) => {
-    await t.expect(filterBox.exists).ok()
-    await t.expect(tableStagingControls.exists).ok()
-    // Discard/Apply replace the Done button.
-    await t.expect(doneButton.exists).notOk()
-    await screencap(t)
-})
-
-test('applying staged changes also exits comparison edit mode', async (t) => {
-    await t.click(comparisonTable.find('button[data-test-id=apply]'))
-    await t.expect(tableStagingControls.exists).notOk()
-    await t.expect(editButton.exists).ok()
-})
-
-test('discarding staged changes also exits comparison edit mode', async (t) => {
-    await t.click(comparisonTable.find('button[data-test-id=discard]'))
-    await t.expect(tableStagingControls.exists).notOk()
-    await t.expect(editButton.exists).ok()
-})
-
-// The congressional representatives table is a metadata "extra" that hangs below its row;
-// on a comparison it has to cover every region, not just the first.
-urbanstatsFixture('comparison edit mode congressional', comparisonPage(['02139, USA', '10001, USA']))
-
-const congressionalGroup = Selector('input[data-test-id=edit_group_metadata_show_metadata_congressional_representatives]')
-const congressionalWidget = comparisonTable.find('[data-test-id=congressional-representatives]')
-
-test('congressional representatives table covers every region in edit mode', async (t) => {
-    await t.click(editButton)
-    await t.typeText(filterBox, 'Congressional')
-    await t.expect(congressionalGroup.exists).ok()
-
-    // Unchecked: just the row, no table.
-    await t.expect(congressionalWidget.exists).notOk()
-
-    await t.click(congressionalGroup)
-    await t.expect(congressionalWidget.exists).ok()
-    await t.expect(congressionalWidget.textContent).contains('02139')
-    await t.expect(congressionalWidget.textContent).contains('10001')
-    await screencap(t)
+editModeSharedTests({
+    name: 'comparison',
+    page: twoRegions,
+    scope: comparisonTableScope,
+    congressional: {
+        page: comparisonPage(['02139, USA', '10001, USA']),
+        // The widget has to cover every region, not just the first.
+        expectedRegions: ['02139', '10001'],
+    },
 })

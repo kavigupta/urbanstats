@@ -47,12 +47,8 @@ function computeWidths(simpleOrdinals: boolean, isMobile: boolean, screenshotMod
     return { widthLeftHeader, columnWidth }
 }
 
-interface ArticleTableLayout extends TableLayout {
-    currentUniverse: Universe
-}
-
 /** The column shape both the normal article table and its edit mode are laid out against. */
-export function useArticleTableLayout(mode: 'normal' | 'edit'): ArticleTableLayout {
+export function useArticleTableLayout(mode: 'normal' | 'edit'): { currentUniverse: Universe, layout: TableLayout } {
     const currentUniverse = useUniverse()
     assert(currentUniverse !== undefined, 'no universe')
     const [simpleOrdinals] = useSetting('simple_ordinals')
@@ -62,22 +58,20 @@ export function useArticleTableLayout(mode: 'normal' | 'edit'): ArticleTableLayo
     // On mobile, edit mode drops the percentile/ordinal/pointer columns so the
     // checkboxes and names have room; only the value stays. The name column also
     // gets a wider share since it no longer competes with those columns.
-    if (mode === 'edit' && isMobile) {
-        return {
-            currentUniverse,
-            simpleOrdinals,
-            widthLeftHeader: mobileEditWidthLeftHeader,
-            columnWidth: 100 - mobileEditWidthLeftHeader,
-            onlyColumns: ['statval', 'statval_unit'],
-        }
-    }
+    const layout: TableLayout = mode === 'edit' && isMobile
+        ? {
+                simpleOrdinals,
+                widthLeftHeader: mobileEditWidthLeftHeader,
+                columnWidth: 100 - mobileEditWidthLeftHeader,
+                onlyColumns: ['statval', 'statval_unit'],
+            }
+        : {
+                simpleOrdinals,
+                ...computeWidths(simpleOrdinals, isMobile, screenshotMode),
+                onlyColumns: allColumns,
+            }
 
-    return {
-        currentUniverse,
-        simpleOrdinals,
-        ...computeWidths(simpleOrdinals, isMobile, screenshotMode),
-        onlyColumns: allColumns,
-    }
+    return { currentUniverse, layout }
 }
 
 export function ArticleTable(props: {
@@ -85,7 +79,7 @@ export function ArticleTable(props: {
     article: Article
     onEdit: () => void
 }): ReactNode {
-    const { currentUniverse, simpleOrdinals, widthLeftHeader, columnWidth, onlyColumns } = useArticleTableLayout('normal')
+    const { currentUniverse, layout } = useArticleTableLayout('normal')
     const navContext = useContext(Navigator.Context)
 
     // Subscribed to here rather than higher up so that edit mode, which shows every row
@@ -110,8 +104,8 @@ export function ArticleTable(props: {
                 universe: currentUniverse,
             }, { history: 'push', scroll: { kind: 'none' } })
         },
-        simpleOrdinals,
-        onlyColumns,
+        simpleOrdinals: layout.simpleOrdinals,
+        onlyColumns: layout.onlyColumns,
     })])
 
     const topLeftSpec = {
@@ -121,15 +115,12 @@ export function ArticleTable(props: {
 
     return (
         <TableContents
+            {...layout}
             leftHeaderSpec={{ leftHeaderSpecs, groupNames }}
             rowSpecs={cellSpecs}
             horizontalPlotSpecs={plotSpecs}
             verticalPlotSpecs={[]}
             topLeftSpec={topLeftSpec}
-            widthLeftHeader={widthLeftHeader}
-            columnWidth={columnWidth}
-            onlyColumns={onlyColumns}
-            simpleOrdinals={simpleOrdinals}
         />
     )
 }

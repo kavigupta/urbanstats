@@ -29,7 +29,7 @@ import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { Cell, CellSpec, ComparisonLongnameCellProps, EditModeHeader, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
+import { Cell, CellSpec, ComparisonLongnameCellProps, EditModeButton, EditModeOpenHeader, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -122,7 +122,7 @@ export interface SuperHeaderHorizontalProps {
     leftSpacerWidth: number
     groupNames?: (string | undefined)[]
     handleReorder?: (from: number, to: number) => void
-    editMode?: Extract<EditModeHeader, { open: false }>
+    editMode?: EditModeButton
 }
 
 export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactNode {
@@ -294,7 +294,7 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
 }
 
 /** The top-left cell while the edit tree is open: the way out of it, and the tree's search box. */
-function EditModeTopLeftHeader({ header, width }: { header: Extract<EditModeHeader, { open: true }>, width: number }): ReactNode {
+function EditModeTopLeftHeader({ header, width }: { header: EditModeOpenHeader, width: number }): ReactNode {
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '1px', width: `${width}%` }}>
             {header.onDone !== undefined && <HeaderButton onClick={header.onDone} testId="edit-mode-done">Done</HeaderButton>}

@@ -33,7 +33,7 @@ import { createScreenshot, ScreencapElements, useScreenshotMode } from './screen
 import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
 import { computeNameSpecsWithGroups } from './statistic-name-specs'
-import { TableContents, CellSpec, PlotSpec, SuperHeaderSpec } from './supertable'
+import { TableContents, CellSpec, EditModeButton, PlotSpec, SuperHeaderSpec, TableLayout } from './supertable'
 import { ColumnIdentifier, maxLayoutInformation } from './table'
 
 export function ComparisonPanel(props: {
@@ -302,20 +302,22 @@ export function ComparisonPanel(props: {
 
     // "Edit Statistics" rather than "Edit", to distinguish it from editing the regions being
     // compared, which the column headers do.
-    const editStatisticsButton = { open: false as const, onEdit: () => { setEditMode(true) }, label: 'Edit Statistics' }
+    const editStatisticsButton: EditModeButton = { open: false, onEdit: () => { setEditMode(true) }, label: 'Edit Statistics' }
 
     const longnameSuperHeaderSpec: SuperHeaderSpec = { headerSpecs: longnameHeaderSpecs, showBottomBar: true }
+
+    const columnLayout: TableLayout = {
+        widthLeftHeader: leftMarginPercent * 100,
+        columnWidth,
+        onlyColumns,
+        simpleOrdinals: true,
+    }
 
     // Only called in edit mode, so the normal table doesn't pay for laying out every
     // statistic's name and column widths.
     const renderEditTable = (): ReactNode => {
         const layout: EditTableLayout = {
-            widthLeftHeader: leftMarginPercent * 100,
-            columnWidth,
-            onlyColumns,
-            simpleOrdinals: true,
-            // The vertical plots that reserve this space only appear when transposed.
-            extraSpaceRight: localArticlesToUse.map(() => 0),
+            ...columnLayout,
             columnWidthsInfo: dataByArticleStat.map(articleData => maxLayoutInformation(articleData, props.universe, true)),
         }
         const rowsToDisplay = dataByStatArticle.map((_, statIndex) => rowToDisplayForStat(statIndex))
@@ -335,6 +337,25 @@ export function ComparisonPanel(props: {
             />
         )
     }
+
+    // Transposing swaps which axis the statistics run along, so it swaps the headers, the
+    // row specs, and which direction the expanded plots stretch in. Everything else about
+    // the table is the same either way.
+    const orientedSpecs = transpose
+        ? {
+                superHeaderSpec: { headerSpecs: statisticNameHeaderSpecs, showBottomBar: false, groupNames: statisticNameGroupNames },
+                leftHeaderSpec: { leftHeaderSpecs: longnameHeaderSpecs },
+                rowSpecs: rowSpecsByStatTransposed,
+                horizontalPlotSpecs: plotSpecs.map(() => undefined),
+                verticalPlotSpecs: plotSpecs,
+            }
+        : {
+                superHeaderSpec: longnameSuperHeaderSpec,
+                leftHeaderSpec: { leftHeaderSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames },
+                rowSpecs: rowSpecsByStat,
+                horizontalPlotSpecs: plotSpecs,
+                verticalPlotSpecs: [],
+            }
 
     const csvExportCallback = useCSVExport(localArticlesToUse, props.rows, includeOrdinals, joinedString)
 
@@ -399,35 +420,14 @@ export function ComparisonPanel(props: {
                                     <div ref={tableRef} data-test-id="comparison-table">
                                         {editMode
                                             ? renderEditTable()
-                                            : transpose
-                                                ? (
-                                                        <TableContents
-                                                            superHeaderSpec={{ headerSpecs: statisticNameHeaderSpecs, showBottomBar: false, groupNames: statisticNameGroupNames, editMode: editStatisticsButton }}
-                                                            leftHeaderSpec={{ leftHeaderSpecs: longnameHeaderSpecs }}
-                                                            rowSpecs={rowSpecsByStatTransposed}
-                                                            horizontalPlotSpecs={plotSpecs.map(() => undefined)}
-                                                            verticalPlotSpecs={plotSpecs}
-                                                            topLeftSpec={topLeftSpec}
-                                                            widthLeftHeader={leftMarginPercent * 100}
-                                                            columnWidth={columnWidth}
-                                                            onlyColumns={onlyColumns}
-                                                            simpleOrdinals={true}
-                                                        />
-                                                    )
-                                                : (
-                                                        <TableContents
-                                                            superHeaderSpec={{ ...longnameSuperHeaderSpec, editMode: editStatisticsButton }}
-                                                            leftHeaderSpec={{ leftHeaderSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames }}
-                                                            rowSpecs={rowSpecsByStat}
-                                                            horizontalPlotSpecs={plotSpecs}
-                                                            verticalPlotSpecs={[]}
-                                                            topLeftSpec={topLeftSpec}
-                                                            widthLeftHeader={leftMarginPercent * 100}
-                                                            columnWidth={columnWidth}
-                                                            onlyColumns={onlyColumns}
-                                                            simpleOrdinals={true}
-                                                        />
-                                                    )}
+                                            : (
+                                                    <TableContents
+                                                        {...columnLayout}
+                                                        {...orientedSpecs}
+                                                        superHeaderSpec={{ ...orientedSpecs.superHeaderSpec, editMode: editStatisticsButton }}
+                                                        topLeftSpec={topLeftSpec}
+                                                    />
+                                                )}
                                         <ArticleWarnings />
                                     </div>
                                 </MaybeScroll>

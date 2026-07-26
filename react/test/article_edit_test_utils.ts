@@ -25,8 +25,8 @@ export async function exitEditMode(t: TestController): Promise<void> {
     await t.expect(editButton.exists).ok()
 }
 
-/** Scopes the edit tree's selectors to a table, so they don't also match the sidebar's tree. */
-const articleTableScope = '.stats_table'
+/** Scopes the edit tree's selectors to the table it's on, rather than the rest of the page. */
+export const articleTableScope = '.stats_table'
 export const comparisonTableScope = '[data-test-id=comparison-table]'
 
 /**

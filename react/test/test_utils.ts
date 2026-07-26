@@ -560,9 +560,9 @@ export async function checkIsIndeterminate(t: TestController, selector: string):
     }, { dependencies: { selector } }) as Promise<boolean>
 }
 
-/** Unchecks every category checkbox of a statistic tree, identified by its test-id prefix. */
-export async function uncheckAllCategories(t: TestController, testIdPrefix: string): Promise<void> {
-    for (const check of await arrayFromSelector(Selector(`input[data-test-id^=${testIdPrefix}]`))) {
+/** Unchecks every category checkbox of the edit table's statistic tree. */
+export async function uncheckAllCategories(t: TestController): Promise<void> {
+    for (const check of await arrayFromSelector(Selector('input[data-test-id^=edit_category_]'))) {
         if (await check.checked) {
             await t.click(check)
         }

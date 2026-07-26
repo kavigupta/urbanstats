@@ -165,7 +165,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('uncheck-all-categories', async (t) => {
         await enterEditMode(t)
-        await uncheckAll(t)
+        await uncheckAllCategories(t)
         // The warning renders inside the edit table, not just the normal one.
         await t.expect(Selector('.stats_table b').withExactText('No Statistic Categories are selected').exists).ok()
         await screencap(t)
@@ -178,7 +178,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          * Deselecting a year has to reach the edit table's own copy of ArticleWarnings.
          */
         await enterEditMode(t)
-        await uncheckAll(t)
+        await uncheckAllCategories(t)
         await t.click(mainCheck)
         await t.click(year2020Check)
         await t.expect(Selector('.stats_table li').withExactText('To see Main > Population statistics, select 2020, 2010, or 2000.').exists).ok()
@@ -191,7 +191,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          * called out by name, rather than silently showing nothing.
          */
         await enterEditMode(t)
-        await uncheckAll(t)
+        await uncheckAllCategories(t)
         await t.click(year2020Check)
         await t.click(year2010Check)
         await t.click('input[data-test-id=edit_category_health]')
@@ -207,7 +207,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          * the selected years, so Renter % is gone from it by the time the warning appears.
          */
         await enterEditMode(t)
-        await uncheckAll(t)
+        await uncheckAllCategories(t)
         await setCategoryExpanded(t, 'housing', true)
         await t.click('input[data-test-id=edit_group_vacancy]:not([inert] *)')
         await t.click('input[data-test-id=edit_group_rent_or_own_rent]:not([inert] *)')
@@ -420,8 +420,4 @@ async function selectUniverse(t: TestController, alt: string): Promise<void> {
 
 async function setMainExpanded(t: TestController, expanded: boolean): Promise<void> {
     await setCategoryExpanded(t, 'main', expanded)
-}
-
-async function uncheckAll(t: TestController): Promise<void> {
-    await uncheckAllCategories(t, 'edit_category')
 }

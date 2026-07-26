@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode, useMemo, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { checkboxCategoryName, isStagedChange, sourceEnabledKey, useIsStaged, useSetting, useSettingInfo, useSettings } from '../page_template/settings'
+import { checkboxCategoryName, sourceEnabledKey, useIsStaged, useSettings } from '../page_template/settings'
 import { allStatGroupsEnabled, GroupTreeState, statGroupKeys, StatGroupSettings, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, yearSourceKeys } from '../page_template/statistic-settings'
 import { Category, statParents } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
@@ -10,9 +10,9 @@ import { HumanReadableName, reifyReact } from '../utils/human-readable-name'
 import { ExpandButton } from './ExpandButton'
 import { StagingControls } from './StagingControls'
 import { ArticleRow } from './load-article'
-import { BooleanSettingKey, CheckboxSettingJustBox, useHighlightStyle } from './sidebar'
+import { BooleanSettingKey, CheckboxSettingCustomJustInputProps, CheckboxSettingJustBox, useBooleanSetting, useHighlightStyle } from './sidebar'
 import { displayNamesForRows } from './statistic-name-specs'
-import { CellSpec, congressionalRegionsForCells, EditModeHeader, PlotSpec, RowCells, RowExtras, SuperHeaderSpec, TableLayout } from './supertable'
+import { CellSpec, congressionalRegionsForCells, EditModeOpenHeader, PlotSpec, RowCells, RowExtras, SuperHeaderSpec, TableLayout } from './supertable'
 import { CommonLayoutInformation, MainHeaderRow, SuperHeaderHorizontal, TableHeaderContainer, TableRowContainer, useStatisticNameAdornments } from './table'
 
 // Wrapping the name in a label lets a click anywhere on it toggle the associated
@@ -24,11 +24,23 @@ const editLabelStyle: CSSProperties = { padding: '1px', display: 'flex', alignIt
 // box keeps its intrinsic (square) size against the table's row text.
 const editCheckboxStyle: CSSProperties = { cursor: 'pointer', flex: '0 0 auto', height: 'auto' }
 
+/** Every checkbox on an edit table, sized against the table's rows rather than the sidebar's. */
+function EditCheckbox(props: Omit<CheckboxSettingCustomJustInputProps, 'style' | 'fontSize'>): ReactNode {
+    return <CheckboxSettingJustBox {...props} style={editCheckboxStyle} />
+}
+
 /** The column shape every row of an edit table is laid out against. */
 export interface EditTableLayout extends TableLayout {
-    /** Per column, the space reserved to its right, matching what `TableContents` computes. */
-    extraSpaceRight: number[]
+    /** One entry per column, which is also what the column count is read from. */
     columnWidthsInfo: (CommonLayoutInformation | undefined)[]
+}
+
+/**
+ * The space reserved to the right of each column. `TableContents` reserves it for vertical
+ * plots, which only appear when transposed, and an edit table never is.
+ */
+function extraSpaceRight(layout: EditTableLayout): number[] {
+    return layout.columnWidthsInfo.map(() => 0)
 }
 
 /** Each level of the tree is indented by this much relative to the one above it. */
@@ -110,7 +122,8 @@ function EditCheckboxLabel(props: {
 }
 
 function EditStatRow({ layout, index, spec }: { layout: EditTableLayout, index: number, spec: EditStatSpec }): ReactNode {
-    const { widthLeftHeader, columnWidth, extraSpaceRight, columnWidthsInfo } = layout
+    const { widthLeftHeader, columnWidth, columnWidthsInfo } = layout
+    const spaceRight = extraSpaceRight(layout)
     const adornments = useStatisticNameAdornments(spec.editRow.row)
     // Only render the (large) representatives table for enabled stats, matching the normal table.
     const congressionalRegions = spec.enabled ? congressionalRegionsForCells(spec.editRow.cellSpecs) : []
@@ -130,7 +143,7 @@ function EditStatRow({ layout, index, spec }: { layout: EditTableLayout, index: 
                 <RowCells
                     cellSpecs={spec.editRow.cellSpecs}
                     columnWidth={columnWidth}
-                    extraSpaceRight={extraSpaceRight}
+                    extraSpaceRight={spaceRight}
                     columnWidthsInfo={columnWidthsInfo}
                 />
             </TableRowContainer>
@@ -139,7 +152,7 @@ function EditStatRow({ layout, index, spec }: { layout: EditTableLayout, index: 
                 congressionalRegions={congressionalRegions}
                 widthLeftHeader={widthLeftHeader}
                 columnWidth={columnWidth}
-                extraSpaceRight={extraSpaceRight}
+                extraSpaceRight={spaceRight}
             />
         </>
     )
@@ -185,13 +198,12 @@ function categoryBodyRows(groups: GroupTreeState[], rowsByGroup: Map<string, Edi
         }
         const checkboxId = `edit-checkbox-${group.id}`
         const checkbox = (
-            <CheckboxSettingJustBox
+            <EditCheckbox
                 id={checkboxId}
                 checked={enabled}
                 onChange={setEnabled}
                 testId={`edit_group_${group.id}`}
                 highlight={highlight}
-                style={editCheckboxStyle}
             />
         )
         const statSpec = (editRow: EditRow, indent: number): EditStatSpec => ({
@@ -228,7 +240,6 @@ function EditCategory(props: {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25em', padding: '1px', width: '100%' }}>
                     {!props.searching && (
                         <ExpandButton
-                            pointing="right"
                             isExpanded={expanded}
                             data-category-id={props.category.id}
                             onClick={() => { tree.setExpanded(!tree.expanded) }}
@@ -241,13 +252,12 @@ function EditCategory(props: {
                         style={{ gap: '0.25em' }}
                         nameStyle={{ fontWeight: 500 }}
                         checkbox={(
-                            <CheckboxSettingJustBox
+                            <EditCheckbox
                                 checked={tree.status === true}
                                 indeterminate={tree.status === 'indeterminate'}
                                 onChange={tree.toggle}
                                 testId={`edit_category_${props.category.id}`}
                                 highlight={tree.highlight}
-                                style={editCheckboxStyle}
                             />
                         )}
                     >
@@ -296,21 +306,19 @@ function EditSettingRow(props: {
     testId: string
     forcedOn?: boolean
 }): ReactNode {
-    const [checked, setChecked] = useSetting(props.settingKey)
-    const highlight = isStagedChange(useSettingInfo(props.settingKey))
+    const { checked, setChecked, highlight } = useBooleanSetting(props.settingKey, props.forcedOn)
     return (
         <TableRowContainer index={props.index}>
             <EditCheckboxLabel
                 highlight={highlight}
                 style={{ width: '100%', paddingLeft: `${indentEm}em` }}
                 checkbox={(
-                    <CheckboxSettingJustBox
-                        checked={(checked ?? false) || (props.forcedOn ?? false)}
+                    <EditCheckbox
+                        checked={checked}
                         forcedOn={props.forcedOn}
                         onChange={setChecked}
                         testId={props.testId}
                         highlight={highlight}
-                        style={editCheckboxStyle}
                     />
                 )}
             >
@@ -434,11 +442,12 @@ export function EditTable(props: {
     /** Which flavor of top-left cell to use, since the comparison's carries a color bar. */
     topLeftType: 'top-left-header' | 'comparison-top-left-header'
 }): ReactNode {
-    const { widthLeftHeader, columnWidth, onlyColumns, simpleOrdinals, extraSpaceRight, columnWidthsInfo } = props.layout
+    const { widthLeftHeader, columnWidth, onlyColumns, simpleOrdinals, columnWidthsInfo } = props.layout
+    const spaceRight = extraSpaceRight(props.layout)
     const categories = useCategoriesMatchingSearch(props.filter)
     const staged = useIsStaged()
 
-    const editModeHeader: EditModeHeader = {
+    const editModeHeader: EditModeOpenHeader = {
         open: true,
         filter: props.filter,
         setFilter: props.setFilter,
@@ -449,12 +458,12 @@ export function EditTable(props: {
 
     return (
         <>
-            {staged && <StagingControls horizontal onExitStaging={props.onExit} />}
+            {staged && <StagingControls onExitStaging={props.onExit} />}
             {props.superHeaderSpec !== undefined && (
                 <SuperHeaderHorizontal
                     {...props.superHeaderSpec}
                     leftSpacerWidth={widthLeftHeader}
-                    widthsEach={extraSpaceRight.map(extra => columnWidth + extra)}
+                    widthsEach={spaceRight.map(extra => columnWidth + extra)}
                 />
             )}
             <div style={{ position: 'relative' }}>
@@ -464,7 +473,7 @@ export function EditTable(props: {
                         topLeftSpec={topLeftSpec}
                         topLeftWidth={widthLeftHeader}
                         onlyColumns={onlyColumns}
-                        extraSpaceRight={extraSpaceRight}
+                        extraSpaceRight={spaceRight}
                         simpleOrdinals={simpleOrdinals}
                         columnWidthsInfo={columnWidthsInfo}
                     />

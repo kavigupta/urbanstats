@@ -16,7 +16,7 @@ export function ArticleEditTable(props: {
     setFilter: (filter: string) => void
     onExit: () => void
 }): ReactNode {
-    const { currentUniverse, simpleOrdinals, widthLeftHeader, columnWidth, onlyColumns } = useArticleTableLayout('edit')
+    const { currentUniverse, layout: columnLayout } = useArticleTableLayout('edit')
     // This component only renders in edit mode, so every group is always forced on.
     const allRows = useRowsForEditMode(props.rows, true)[0]
     const { longname } = props.article
@@ -24,6 +24,8 @@ export function ArticleEditTable(props: {
     // Keep the expandable per-stat plots ("extras") available in edit mode, driven
     // by the same rowExpandedKey setting the normal table uses.
     const plotSpecs = useExpandedPlotSpecs(allRows, props.article)
+
+    const { simpleOrdinals, onlyColumns } = columnLayout
 
     const rowsByGroup = editRowsByGroup(allRows, longname, currentUniverse, (row, index) => ({
         cellSpecs: [{
@@ -41,14 +43,7 @@ export function ArticleEditTable(props: {
         [allRows, currentUniverse, simpleOrdinals],
     )
 
-    const layout: EditTableLayout = {
-        widthLeftHeader,
-        columnWidth,
-        onlyColumns,
-        simpleOrdinals,
-        extraSpaceRight: [0],
-        columnWidthsInfo: [columnWidthsInfo],
-    }
+    const layout: EditTableLayout = { ...columnLayout, columnWidthsInfo: [columnWidthsInfo] }
 
     return (
         <EditTable

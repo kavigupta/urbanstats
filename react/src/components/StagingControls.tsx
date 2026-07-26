@@ -4,10 +4,9 @@ import { useColors } from '../page_template/colors'
 import { Settings } from '../page_template/settings'
 import { useMobileLayout } from '../utils/responsive'
 
-export function StagingControls({ horizontal = false, onExitStaging }: {
-    horizontal?: boolean
+export function StagingControls({ onExitStaging }: {
     /** Run after either button leaves staging mode. */
-    onExitStaging?: () => void
+    onExitStaging: () => void
 }): ReactNode {
     const settings = useContext(Settings.Context)
     const colors = useColors()
@@ -20,7 +19,7 @@ export function StagingControls({ horizontal = false, onExitStaging }: {
 
     const exitStaging = (action: 'discard' | 'apply') => () => {
         settings.exitStagedMode(action)
-        onExitStaging?.()
+        onExitStaging()
     }
 
     return (
@@ -29,12 +28,12 @@ export function StagingControls({ horizontal = false, onExitStaging }: {
                 backgroundColor: colors.slightlyDifferentBackgroundFocused,
                 borderRadius: '5px',
                 padding: '10px',
-                textAlign: horizontal ? 'left' : 'center',
                 marginBottom: '10px',
                 paddingBottom: '5px',
-                ...(horizontal
-                    ? { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }
-                    : {}),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '10px',
             }}
             data-test-id="staging_controls"
         >
@@ -44,7 +43,7 @@ export function StagingControls({ horizontal = false, onExitStaging }: {
             <div style={{
                 display: 'flex',
                 justifyContent: 'space-evenly',
-                flex: horizontal ? '0 0 auto' : undefined,
+                flex: '0 0 auto',
             }}
             >
                 <button data-test-id="discard" style={buttonStyle} onClick={exitStaging('discard')}>Discard</button>
