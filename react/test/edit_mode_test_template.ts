@@ -1,15 +1,17 @@
 import { Selector } from 'testcafe'
 
-import { categoryCheckbox, doneButton, editButton, filterBox, groupCheckbox } from './edit_mode_test_utils'
-import { safeReload, screencap, urbanstatsFixture } from './test_utils'
+import { categoryCheckbox, doneButton, editButton, filterBox, groupCheckbox, interactableGroupCheckbox, setCategoryExpanded } from './edit_mode_test_utils'
+import { resizeForPlatform, safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 /**
  * The parts of edit mode that behave the same on the article table and the comparison
  * table: that the Edit button opens and closes the tree, that it doesn't survive a reload,
- * that arriving via a settings link opens it with the staging controls on the table, and
- * that a metadata extra renders below its row.
+ * that arriving via a settings link opens it with the staging controls on the table, that
+ * the filter narrows the tree, that a stat's plot and its metadata extras render below its
+ * row, and what the mobile layout gives up.
  *
- * The table-specific behavior (layout, columns, transposition) lives in each caller's file.
+ * The table-specific behavior (transposition, the per-region columns) lives in each
+ * caller's file.
  */
 export function editModeSharedTests(spec: {
     /** Prefixes the fixture names, so the two callers' fixtures stay distinguishable. */
@@ -19,6 +21,11 @@ export function editModeSharedTests(spec: {
     scope: string
     /** The Edit button's text, which names what that table is editing. */
     editButtonLabel: string
+    /**
+     * Names the expanded plot should carry a series for. Empty for a table with a single
+     * column, where the plot has nothing to distinguish.
+     */
+    expectedPlotSeries: string[]
     /** A page whose regions have congressional representatives, and the ones to expect. */
     congressional: { page: string, expectedRegions: string[] }
 }): void {
@@ -45,6 +52,34 @@ export function editModeSharedTests(spec: {
         await t.click(doneButton)
         await t.expect(editButton.exists).ok()
         await t.expect(mainCategory.exists).notOk()
+    })
+
+    test('the filter narrows the tree', async (t) => {
+        await t.click(editButton)
+        await t.typeText(filterBox, 'gene')
+
+        // Filtering expands the matching categories and drops the rest.
+        await t.expect(interactableGroupCheckbox('generation_genx').exists).ok()
+        await t.expect(mainCategory.exists).notOk()
+
+        await t.selectText(filterBox).pressKey('delete')
+        await t.expect(mainCategory.exists).ok()
+    })
+
+    test('a stat can be expanded in edit mode', async (t) => {
+        await t.click(editButton)
+        await setCategoryExpanded(t, 'main', true)
+
+        const expandToggle = table.find('.expand-toggle:not([inert] *)')
+        await t.expect(expandToggle.exists).ok()
+        await t.click(expandToggle.nth(0))
+
+        const histogram = table.find('.histogram-svg-panel')
+        await t.expect(histogram.exists).ok()
+        // Every column is plotted, not just the first.
+        for (const series of spec.expectedPlotSeries) {
+            await t.expect(histogram.textContent).contains(series)
+        }
     })
 
     test('edit mode is ephemeral across reloads', async (t) => {
@@ -87,6 +122,18 @@ export function editModeSharedTests(spec: {
         await t.click(table.find('button[data-test-id=discard]'))
         await t.expect(stagingControls.exists).notOk()
         await t.expect(editButton.exists).ok()
+    })
+
+    urbanstatsFixture(`${spec.name} edit mode mobile`, spec.page, async (t) => {
+        await resizeForPlatform(t, 'mobile')
+    })
+
+    test('mobile edit mode drops every column but the value', async (t) => {
+        await t.click(editButton)
+        await t.expect(filterBox.exists).ok()
+        await t.expect(table.find('.testing-statistic-value').exists).ok()
+        await t.expect(table.find('[data-test-id=statistic-ordinal]').exists).notOk()
+        await screencap(t, { fullPage: false })
     })
 
     // The congressional representatives table is a metadata "extra"; it should render below

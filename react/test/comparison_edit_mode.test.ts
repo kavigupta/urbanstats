@@ -1,13 +1,13 @@
 import { Selector } from 'testcafe'
 
 import { editModeSharedTests } from './edit_mode_test_template'
-import { categoryCheckbox, comparisonTableScope, doneButton, editButton, filterBox, groupCheckbox, groupMemberRow, interactableGroupCheckbox, setCategoryExpanded, yearCheckbox } from './edit_mode_test_utils'
-import { comparisonPage, downloadCSV, resizeForPlatform, screencap, target, urbanstatsFixture } from './test_utils'
+import { comparisonTableScope, doneButton, editButton, filterBox, groupCheckbox, groupMemberRow, setCategoryExpanded, yearCheckbox } from './edit_mode_test_utils'
+import { comparisonPage, downloadCSV, screencap, target, urbanstatsFixture } from './test_utils'
 
 /**
- * Tests for the comparison table's "edit statistics" mode: the same category/group checkbox
- * tree the article table gets, but with a column of values per region being compared. The
- * behavior it shares with the article table's edit mode is in editModeSharedTests.
+ * Tests for what the comparison table's "edit statistics" mode does that the article
+ * table's doesn't: a column of values per region being compared, and coming out of
+ * transpose. The behavior the two share is in editModeSharedTests.
  */
 
 const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
@@ -17,7 +17,6 @@ const twoRegions = comparisonPage([upperSGV, swSGV])
 // Four countries with a settings vector that leaves few enough statistics selected to transpose.
 const transposed = `${target}/comparison.html?longnames=%5B%22China%22%2C%22USA%22%2C%22Japan%22%2C%22Indonesia%22%5D&s=6TunChiToWxwZeDP`
 
-const mainCategory = categoryCheckbox('main')
 const populationGroup = groupCheckbox('population')
 const comparisonTable = Selector(comparisonTableScope)
 
@@ -48,18 +47,6 @@ test('toggling a group in edit mode changes what the comparison shows', async (t
     await t.expect(populationName.exists).ok()
 })
 
-test('the filter narrows the comparison tree', async (t) => {
-    await t.click(editButton)
-    await t.typeText(filterBox, 'gene')
-
-    // Filtering expands the matching categories and drops the rest.
-    await t.expect(interactableGroupCheckbox('generation_genx').exists).ok()
-    await t.expect(mainCategory.exists).notOk()
-
-    await t.selectText(filterBox).pressKey('delete')
-    await t.expect(mainCategory.exists).ok()
-})
-
 test('a multi-row group keeps a column of values per region on every row', async (t) => {
     await t.click(editButton)
     // A second year makes Population a two-row group: a header row carrying the checkbox,
@@ -70,21 +57,6 @@ test('a multi-row group keeps a column of values per region on every row', async
     const row2010 = groupMemberRow('population', '2010')
     await t.expect(row2010.exists).ok()
     await t.expect(row2010.parent('.for-testing-table-row').find('.testing-statistic-value').count).eql(2)
-})
-
-test('expanding a stat in edit mode plots every region', async (t) => {
-    await t.click(editButton)
-    await setCategoryExpanded(t, 'main', true)
-
-    const expandToggle = comparisonTable.find('.expand-toggle:not([inert] *)')
-    await t.expect(expandToggle.exists).ok()
-    await t.click(expandToggle.nth(0))
-
-    const histogram = comparisonTable.find('.histogram-svg-panel')
-    await t.expect(histogram.exists).ok()
-    // One series per region, rather than only the first one's.
-    await t.expect(histogram.textContent).contains('Upper San Gabriel Valley CCD')
-    await t.expect(histogram.textContent).contains('Southwest San Gabriel Valley CCD')
 })
 
 test('csv export in edit mode covers the selected statistics, not the whole tree', async (t) => {
@@ -114,23 +86,13 @@ test('editing a transposed comparison pops out of transpose', async (t) => {
     await screencap(t)
 })
 
-urbanstatsFixture('comparison edit mode mobile', twoRegions, async (t) => {
-    await resizeForPlatform(t, 'mobile')
-})
-
-test('mobile comparison edit mode hides the ordinal columns', async (t) => {
-    await t.click(editButton)
-    await t.expect(filterBox.exists).ok()
-    await t.expect(comparisonTable.find('[data-test-id=statistic-ordinal]').exists).notOk()
-    await screencap(t, { fullPage: false })
-})
-
 editModeSharedTests({
     name: 'comparison',
     page: twoRegions,
     scope: comparisonTableScope,
     // Named to distinguish it from the per-region replace/delete controls.
     editButtonLabel: 'Edit Statistics',
+    expectedPlotSeries: ['Upper San Gabriel Valley CCD', 'Southwest San Gabriel Valley CCD'],
     congressional: {
         page: comparisonPage(['02139, USA', '10001, USA']),
         // The widget has to cover every region, not just the first.
