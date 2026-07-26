@@ -1,7 +1,7 @@
 import React, { CSSProperties, ReactNode, useMemo } from 'react'
 
 import { useIsStaged, useSettings } from '../page_template/settings'
-import { filterCategoriesBySearch, StatGroupSettings, useAvailableCategories, useAvailableGroups, useCategoryTreeState, yearSourceKeys } from '../page_template/statistic-settings'
+import { StatGroupSettings, useCategoriesMatchingSearch, useCategoryTreeState, yearSourceKeys } from '../page_template/statistic-settings'
 import { allGroups, Category, statParents } from '../page_template/statistic-tree'
 import { HumanReadableName, reifyReact } from '../utils/human-readable-name'
 import { Article } from '../utils/protos'
@@ -35,6 +35,8 @@ type EditTableLayout = ArticleTableLayout & {
 interface EditRow {
     row: ArticleRow
     displayName: HumanReadableName
+    /** Position in the full row list, which is what the plot specs are indexed by. */
+    index: number
 }
 
 function EditCheckboxLabel(props: {
@@ -135,11 +137,11 @@ function EditCategory(props: {
     layout: EditTableLayout
     category: Category
     rowsByGroup: Map<string, EditRow[]>
-    plotSpecs: Map<ArticleRow, PlotSpec | undefined>
-    hasSearchMatch: boolean
+    plotSpecs: (PlotSpec | undefined)[]
+    searching: boolean
 }): ReactNode {
     const tree = useCategoryTreeState(props.category)
-    const expanded = props.hasSearchMatch || tree.expanded
+    const expanded = props.searching || tree.expanded
 
     // The category header is row 0, so the body starts at 1 and the striping stays alternating.
     let index = 1
@@ -173,7 +175,7 @@ function EditCategory(props: {
                     displayName={groupRows[0].displayName}
                     indent={1}
                     row={groupRows[0].row}
-                    plotSpec={props.plotSpecs.get(groupRows[0].row)}
+                    plotSpec={props.plotSpecs[groupRows[0].index]}
                 />,
             )
         }
@@ -181,19 +183,19 @@ function EditCategory(props: {
             bodyRows.push(
                 <EditGroupHeaderRow key={`group-${group.id}`} index={index++} highlight={highlight} checkbox={checkbox} name={group.name} />,
             )
-            for (const { row, displayName } of groupRows) {
+            for (const editRow of groupRows) {
                 bodyRows.push(
                     <EditStatRow
-                        key={`stat-${row.statpath}`}
+                        key={`stat-${editRow.row.statpath}`}
                         layout={props.layout}
                         index={index++}
                         highlight={highlight}
                         enabled={enabled}
                         checkboxId={checkboxId}
-                        displayName={displayName}
+                        displayName={editRow.displayName}
                         indent={2}
-                        row={row}
-                        plotSpec={props.plotSpecs.get(row)}
+                        row={editRow.row}
+                        plotSpec={props.plotSpecs[editRow.index]}
                     />,
                 )
             }
@@ -204,7 +206,7 @@ function EditCategory(props: {
         <>
             <TableRowContainer index={0} isHighlighted={false}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25em', padding: '1px', width: '100%' }}>
-                    {!props.hasSearchMatch && (
+                    {!props.searching && (
                         <ExpandButton
                             pointing="right"
                             isExpanded={expanded}
@@ -271,25 +273,24 @@ export function ArticleEditTable(props: {
     const tableLayout = useArticleTableLayout(true)
     const { currentUniverse, simpleOrdinals, widthLeftHeader, columnWidth, onlyColumns } = tableLayout
     const allRows = useAllRows(props.rows)
-    const categories = filterCategoriesBySearch(filter, useAvailableCategories(), useAvailableGroups())
+    const categories = useCategoriesMatchingSearch(filter)
     const staged = useIsStaged()
 
     // Keep the expandable per-stat plots ("extras") available in edit mode, driven
     // by the same rowExpandedKey setting the normal table uses. Kept out of rowsByGroup
     // because it's the only part of a row that changes when the user expands one.
-    const plotSpecList = useExpandedPlotSpecs(allRows, props.article)
-    const plotSpecs = new Map(allRows.map((row, index) => [row, plotSpecList[index]]))
+    const plotSpecs = useExpandedPlotSpecs(allRows, props.article)
 
     const rowsByGroup = useMemo(() => {
         const displayNames = displayNamesForRows(allRows, props.article.longname, currentUniverse)
         const result = new Map<string, EditRow[]>()
-        for (const row of allRows) {
+        for (const [index, row] of allRows.entries()) {
             const parent = statParents.get(row.statpath)
             if (parent === undefined) {
                 continue
             }
             const existing = result.get(parent.group.id) ?? []
-            existing.push({ row, displayName: displayNames.get(row)! })
+            existing.push({ row, displayName: displayNames[index], index })
             result.set(parent.group.id, existing)
         }
         return result
@@ -334,7 +335,7 @@ export function ArticleEditTable(props: {
                         category={category}
                         rowsByGroup={rowsByGroup}
                         plotSpecs={plotSpecs}
-                        hasSearchMatch={filter !== ''}
+                        searching={filter !== ''}
                     />
                 ))}
             </div>

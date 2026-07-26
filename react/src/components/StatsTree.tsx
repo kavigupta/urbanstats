@@ -1,7 +1,7 @@
 import React, { ReactNode, useEffect, useState } from 'react'
 
 import { useIsStaged } from '../page_template/settings'
-import { filterCategoriesBySearch, GroupTreeState, useAvailableCategories, useAvailableGroups, useCategoryTreeState } from '../page_template/statistic-settings'
+import { GroupTreeState, useCategoriesMatchingSearch, useCategoryTreeState } from '../page_template/statistic-settings'
 import { Category } from '../page_template/statistic-tree'
 import { useMobileLayout } from '../utils/responsive'
 import { zIndex } from '../utils/zIndex'
@@ -20,11 +20,11 @@ export function StatsTree(): ReactNode {
         }
     }, [staging])
 
-    const categories = filterCategoriesBySearch(searchTerm, useAvailableCategories(), useAvailableGroups()).map(category => (
+    const categories = useCategoriesMatchingSearch(searchTerm).map(category => (
         <CategoryComponent
             key={category.id}
             category={category}
-            hasSearchMatch={searchTerm !== ''}
+            searching={searchTerm !== ''}
         />
     ))
 
@@ -57,14 +57,14 @@ export function StatsTree(): ReactNode {
     )
 }
 
-function CategoryComponent({ category, hasSearchMatch }: { category: Category, hasSearchMatch: boolean }): ReactNode {
+function CategoryComponent({ category, searching }: { category: Category, searching: boolean }): ReactNode {
     const tree = useCategoryTreeState(category)
     const isMobileLayout = useMobileLayout()
 
     return (
         <li>
             <div style={{ position: 'relative' }}>
-                {hasSearchMatch
+                {searching
                     ? null
                     : (
                             <ExpandButton
@@ -94,7 +94,7 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
             <CategoryContents
                 key={category.id}
                 groups={tree.groups}
-                isExpanded={tree.expanded || hasSearchMatch}
+                isExpanded={tree.expanded || searching}
             />
         </li>
     )

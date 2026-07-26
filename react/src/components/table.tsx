@@ -31,7 +31,7 @@ import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
-import { Cell, CellSpec, ComparisonLongnameCellProps, EditModeHeader, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
+import { ArticleTopLeftHeaderProps, Cell, CellSpec, ComparisonLongnameCellProps, EditModeHeader, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -258,7 +258,7 @@ export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: num
     )
 }
 
-export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
+export function TopLeftHeader(props: ArticleTopLeftHeaderProps & { width: number }): ReactNode {
     const isMobileLayout = useMobileLayout()
     const isScreenshot = useScreenshotMode()
     const isTranspose = useTranspose()

@@ -14,9 +14,10 @@ import { ArticleRow } from './load-article'
  * the statistic category/group checkbox tree is replicated directly on the table.
  *
  * Edit mode is deliberately not persisted (not a setting) — it resets on
- * navigation/reload. It does open on its own whenever the page enters staging mode
- * (e.g. from a settings link) so the pending changes are visible and reviewable on the
- * table; it is not forced closed again when staging ends.
+ * navigation/reload. It opens on its own whenever the page enters staging mode (e.g. from
+ * a settings link) so the pending changes are visible and reviewable on the table. Leaving
+ * staging only closes it when the user does so via the table's own Discard/Apply buttons,
+ * which double as Done.
  */
 export function ArticleTableSection(props: {
     rows: (settings: StatGroupSettings) => ArticleRow[][]

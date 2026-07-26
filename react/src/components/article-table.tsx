@@ -36,11 +36,7 @@ export function useExpandedPlotSpecs(rows: ArticleRow[], article: Article): (Plo
     })
 }
 
-function useWidths(): { widthLeftHeader: number, columnWidth: number } {
-    const [simpleOrdinals] = useSetting('simple_ordinals')
-    const isMobile = useMobileLayout()
-    const screenshotMode = useScreenshotMode()
-
+function computeWidths(simpleOrdinals: boolean, isMobile: boolean, screenshotMode: boolean): { widthLeftHeader: number, columnWidth: number } {
     // TODO clean this up and reduce the amount of magic numbers
     const nonPointerColumns = 15 + 10 + (simpleOrdinals ? 7 + 8 : 17 + 25)
     const pointerColumns = 8 * (screenshotMode ? 0 : (!simpleOrdinals && isMobile ? 1 : 2))
@@ -65,7 +61,8 @@ export function useArticleTableLayout(editMode: boolean): ArticleTableLayout {
     assert(currentUniverse !== undefined, 'no universe')
     const [simpleOrdinals] = useSetting('simple_ordinals')
     const isMobile = useMobileLayout()
-    const { widthLeftHeader, columnWidth } = useWidths()
+    const screenshotMode = useScreenshotMode()
+    const { widthLeftHeader, columnWidth } = computeWidths(simpleOrdinals, isMobile, screenshotMode)
 
     // On mobile, edit mode drops the percentile/ordinal/pointer columns so the
     // checkboxes and names have room; only the value stays. The name column also

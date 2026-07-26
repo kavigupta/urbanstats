@@ -18,6 +18,11 @@ export function StagingControls({ horizontal = false, onExitStaging }: {
         margin: isMobile ? '20px' : '10px',
     }
 
+    const exitStaging = (action: 'discard' | 'apply') => () => {
+        settings.exitStagedMode(action)
+        onExitStaging?.()
+    }
+
     return (
         <div
             style={{
@@ -42,8 +47,8 @@ export function StagingControls({ horizontal = false, onExitStaging }: {
                 flex: horizontal ? '0 0 auto' : undefined,
             }}
             >
-                <button data-test-id="discard" style={buttonStyle} onClick={() => { settings.exitStagedMode('discard'); onExitStaging?.() }}>Discard</button>
-                <button data-test-id="apply" style={buttonStyle} onClick={() => { settings.exitStagedMode('apply'); onExitStaging?.() }}>Apply</button>
+                <button data-test-id="discard" style={buttonStyle} onClick={exitStaging('discard')}>Discard</button>
+                <button data-test-id="apply" style={buttonStyle} onClick={exitStaging('apply')}>Apply</button>
             </div>
         </div>
     )

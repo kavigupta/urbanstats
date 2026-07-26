@@ -262,7 +262,7 @@ export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCell
     ({ type: 'statistic-row' } & StatisticRowCellProps) |
     ({ type: 'statistic-panel-longname' } & StatisticPanelLongnameCellProps) |
     ({ type: 'comparison-top-left-header' } & TopLeftHeaderProps) |
-    ({ type: 'top-left-header' } & TopLeftHeaderProps)
+    ({ type: 'top-left-header' } & ArticleTopLeftHeaderProps)
 
 export function Cell(props: CellSpec & { width: number }): ReactNode {
     switch (props.type) {
@@ -345,5 +345,9 @@ export type EditModeHeader =
 
 export interface TopLeftHeaderProps {
     statNameOverride?: string
+}
+
+/** The top-left header of the article table, which is the only one that has an edit mode. */
+export interface ArticleTopLeftHeaderProps extends TopLeftHeaderProps {
     editMode?: EditModeHeader
 }

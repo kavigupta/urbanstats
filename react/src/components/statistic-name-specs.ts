@@ -81,8 +81,8 @@ export function nameSpecsForRows(rows: ArticleRow[], longname: string, currentUn
     }))
 }
 
-/** The display name each row ends up with once group indentation and source suffixes are applied. */
-export function displayNamesForRows(rows: ArticleRow[], longname: string, currentUniverse: Universe): Map<ArticleRow, HumanReadableName> {
+/** The display name each row ends up with once group indentation and source suffixes are applied, in row order. */
+export function displayNamesForRows(rows: ArticleRow[], longname: string, currentUniverse: Universe): HumanReadableName[] {
     const { updatedNameSpecs } = computeNameSpecsWithGroups(nameSpecsForRows(rows, longname, currentUniverse))
-    return new Map(rows.map((row, i) => [row, updatedNameSpecs[i].displayName ?? updatedNameSpecs[i].renderedStatname]))
+    return updatedNameSpecs.map(spec => spec.displayName ?? spec.renderedStatname)
 }

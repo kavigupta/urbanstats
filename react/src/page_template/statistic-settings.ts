@@ -164,7 +164,9 @@ function searchMatch(searchTerm: string, target: string): boolean {
  * searching, the category checkbox acts on what's visible rather than on the groups
  * the search is hiding.
  */
-export function filterCategoriesBySearch(searchTerm: string, categories: Category[], groups: Group[]): Category[] {
+export function useCategoriesMatchingSearch(searchTerm: string): Category[] {
+    const categories = useAvailableCategories()
+    const groups = useAvailableGroups()
     return categories.flatMap((category) => {
         if (searchMatch(searchTerm, category.name)) {
             return [category]
@@ -255,7 +257,7 @@ export function getAvailableGroups(contextStatPaths: StatPath[], category?: Cate
     return (category?.contents ?? allGroups).filter(group => contextStatPaths.some(statPath => group.statPaths.has(statPath)))
 }
 
-export function useAvailableGroups(category?: Category): Group[] {
+function useAvailableGroups(category?: Category): Group[] {
     const contextStatPaths = useStatPaths()
     return getAvailableGroups(contextStatPaths, category)
 }
@@ -266,7 +268,7 @@ function getAvailableCategories(contextStatPaths: StatPath[]): Category[] {
     return statsTree.filter(category => contextStatPaths.some(statPath => category.statPaths.has(statPath)))
 }
 
-export function useAvailableCategories(): Category[] {
+function useAvailableCategories(): Category[] {
     const contextStatPaths = useStatPaths()
     return getAvailableCategories(contextStatPaths)
 }
