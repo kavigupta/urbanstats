@@ -1,7 +1,7 @@
 import { closestCenter, DndContext, DragEndEvent, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useRef, useState } from 'react'
 
 import { ArticleOrderingListInternal, loadOrdering } from '../load_json'
 import './table.css'
@@ -21,7 +21,6 @@ import { useTranspose } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
 import { Icon } from './Icon'
-import { Modal } from './Modal'
 import { computeDisclaimerText, type Disclaimer } from './disclaimer-text'
 import { Percentile, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
@@ -30,7 +29,6 @@ import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
 import { Cell, CellSpec, ComparisonLongnameCellProps, EditModeHeader, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
@@ -269,56 +267,24 @@ export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: num
 }
 
 export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
-    const isMobileLayout = useMobileLayout()
     const isScreenshot = useScreenshotMode()
-    const isTranspose = useTranspose()
     const editMode = props.editMode
-
-    const [statsModalOpen, setStatsModalOpen] = useState(false)
-
-    const canHaveStatsModal = isMobileLayout && !isScreenshot && !isTranspose
-
-    useEffect(() => {
-        if (!canHaveStatsModal && statsModalOpen) {
-            setStatsModalOpen(false)
-        }
-    }, [canHaveStatsModal, statsModalOpen])
-
-    const sidebarSectionContent = useSidebarSectionContentClassName()
-    const sidebarFontSize = useSidebarFontSize()
 
     if (editMode?.open) {
         return <EditModeTopLeftHeader header={editMode} width={props.width} />
     }
 
     return (
-        <>
-            <div style={{ position: 'relative', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1px', width: `${props.width}%` }}>
-                {editMode !== undefined && !isScreenshot && (
-                    <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}>
-                        <HeaderButton onClick={editMode.onEdit} testId="edit-mode-edit">{editMode.label}</HeaderButton>
-                    </div>
-                )}
-                {canHaveStatsModal
-                    ? (
-                            <HeaderButton onClick={() => { setStatsModalOpen(true) }}>
-                                {props.statNameOverride ?? 'Statistic'}
-                            </HeaderButton>
-                        )
-                    : (
-                            <span className="serif value">
-                                {props.statNameOverride ?? 'Statistic'}
-                            </span>
-                        )}
-            </div>
-            <Modal isOpen={statsModalOpen} onClose={() => { setStatsModalOpen(false) }}>
-                <ul className={sidebarSectionContent} style={{ fontSize: sidebarFontSize }}>
-                    <MaybeStagingControlsSidebarSection />
-                    <SidebarForStatisticChoice />
-                    <SettingsSidebarSection />
-                </ul>
-            </Modal>
-        </>
+        <div style={{ position: 'relative', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1px', width: `${props.width}%` }}>
+            {editMode !== undefined && !isScreenshot && (
+                <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}>
+                    <HeaderButton onClick={editMode.onEdit} testId="edit-mode-edit">{editMode.label}</HeaderButton>
+                </div>
+            )}
+            <span className="serif value">
+                {props.statNameOverride ?? 'Statistic'}
+            </span>
+        </div>
     )
 }
 
