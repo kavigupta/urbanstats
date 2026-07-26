@@ -352,7 +352,7 @@ export function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProp
             disabled={forcedOn}
             onChange={(e) => { props.onChange(e.target.checked) }}
             ref={checkboxRef}
-            style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background, height: props.fontSize ?? defaultFontSize, ...props.style }}
+            style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background, ...props.style, height: props.fontSize ?? defaultFontSize }}
             data-test-id={props.testId}
             data-test-highlight={props.highlight}
         />

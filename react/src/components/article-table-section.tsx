@@ -17,25 +17,23 @@ export function ArticleTableSection(props: {
     rows: (settings: StatGroupSettings) => ArticleRow[][]
     article: Article
 }): ReactNode {
-    const { editMode, setEditMode, filter, setFilter, exitEditMode } = useEditModeState()
+    const editState = useEditModeState()
 
     return (
         <div className="stats_table">
-            {editMode
+            {editState.editMode
                 ? (
                         <ArticleEditTable
                             rows={props.rows}
                             article={props.article}
-                            filter={filter}
-                            setFilter={setFilter}
-                            onExit={exitEditMode}
+                            editState={editState}
                         />
                     )
                 : (
                         <ArticleTable
                             rows={props.rows}
                             article={props.article}
-                            onEdit={() => { setEditMode(true) }}
+                            onEdit={() => { editState.setEditMode(true) }}
                         />
                     )}
             <ArticleWarnings />

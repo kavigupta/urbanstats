@@ -4,7 +4,7 @@ import { StatGroupSettings } from '../page_template/statistic-settings'
 import { Article } from '../utils/protos'
 
 import { useArticleTableLayout, useExpandedPlotSpecs } from './article-table'
-import { EditTable, EditTableLayout, editRowsByGroup, useRowsForEditMode } from './edit-table'
+import { EditModeState, EditTable, EditTableLayout, editRowsByGroup, useVisibleRows } from './edit-table'
 import { ArticleRow } from './load-article'
 import { CellSpec } from './supertable'
 import { maxLayoutInformation } from './table'
@@ -12,13 +12,11 @@ import { maxLayoutInformation } from './table'
 export function ArticleEditTable(props: {
     rows: (settings: StatGroupSettings) => ArticleRow[][]
     article: Article
-    filter: string
-    setFilter: (filter: string) => void
-    onExit: () => void
+    editState: EditModeState
 }): ReactNode {
     const { currentUniverse, layout: columnLayout } = useArticleTableLayout('edit')
     // This component only renders in edit mode, so every group is always forced on.
-    const allRows = useRowsForEditMode(props.rows, true)[0]
+    const allRows = useVisibleRows(props.rows, true)[0]
     const { longname } = props.article
 
     // Keep the expandable per-stat plots ("extras") available in edit mode, driven
@@ -49,9 +47,7 @@ export function ArticleEditTable(props: {
         <EditTable
             rowsByGroup={rowsByGroup}
             layout={layout}
-            filter={props.filter}
-            setFilter={props.setFilter}
-            onExit={props.onExit}
+            editState={props.editState}
             topLeftType="top-left-header"
         />
     )

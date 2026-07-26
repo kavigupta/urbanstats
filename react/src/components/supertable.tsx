@@ -96,34 +96,27 @@ export function TableContents(props: TableContentsProps): ReactNode {
         props.simpleOrdinals,
     ))
 
+    const superHeaderSpec = props.superHeaderSpec === undefined
+        ? undefined
+        : {
+                ...props.superHeaderSpec,
+                headerSpecs: props.superHeaderSpec.headerSpecs.map((spec) => {
+                    if (screenshotMode && spec.type === 'statistic-name' && spec.row?.disclaimer !== undefined) {
+                        return { ...spec, footnoteSymbol: disclaimerFootnotes.getSymbol(spec.row.disclaimer) }
+                    }
+                    return spec
+                }),
+            }
+
     return (
         <>
-            {props.superHeaderSpec !== undefined && (
-                <SuperHeaderHorizontal
-                    {...props.superHeaderSpec}
-                    headerSpecs={props.superHeaderSpec.headerSpecs.map((spec) => {
-                        if (screenshotMode && spec.type === 'statistic-name' && spec.row?.disclaimer !== undefined) {
-                            return { ...spec, footnoteSymbol: disclaimerFootnotes.getSymbol(spec.row.disclaimer) }
-                        }
-                        return spec
-                    })}
-                    leftSpacerWidth={props.widthLeftHeader}
-                    widthsEach={columnFullWidths}
-                />
-            )}
-
-            <div style={{ position: 'relative', minHeight: overallMinHeight }}>
-                <TableHeaderContainer>
-                    <MainHeaderRow
-                        columnWidth={props.columnWidth}
-                        topLeftSpec={props.topLeftSpec}
-                        topLeftWidth={props.widthLeftHeader}
-                        onlyColumns={props.onlyColumns}
-                        extraSpaceRight={extraSpaceRight}
-                        simpleOrdinals={props.simpleOrdinals}
-                        columnWidthsInfo={columnWidthsInfo}
-                    />
-                </TableHeaderContainer>
+            <TableFrame
+                {...props}
+                superHeaderSpec={superHeaderSpec}
+                extraSpaceRight={extraSpaceRight}
+                columnWidthsInfo={columnWidthsInfo}
+                minHeight={overallMinHeight}
+            >
                 {props.rowSpecs.map((rowSpecsForItem, rowIndex) => {
                     const plotSpec = props.horizontalPlotSpecs[rowIndex]
                     return (
@@ -159,7 +152,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
                     : null,
                 )}
                 <RelativeLoader loading={props.loading ?? false} />
-            </div>
+            </TableFrame>
             {screenshotMode && disclaimerFootnotes.footnotes.length > 0 && (
                 <div className="disclaimer-footnotes serif" style={{ fontSize: '0.85em', marginTop: '1em', color: colors.textMain }}>
                     {disclaimerFootnotes.footnotes.map(({ symbol, text }) => (
@@ -171,6 +164,46 @@ export function TableContents(props: TableContentsProps): ReactNode {
                     ))}
                 </div>
             )}
+        </>
+    )
+}
+
+/**
+ * Everything a table has above its rows -- the optional super header, and the main header
+ * row of column names -- plus the positioned container the rows themselves live in, which
+ * the vertical plots are absolutely positioned against.
+ */
+export function TableFrame(props: TableLayout & {
+    superHeaderSpec?: SuperHeaderSpec
+    topLeftSpec: CellSpec
+    extraSpaceRight: number[]
+    columnWidthsInfo: (CommonLayoutInformation | undefined)[]
+    minHeight?: string
+    children: ReactNode
+}): ReactNode {
+    return (
+        <>
+            {props.superHeaderSpec !== undefined && (
+                <SuperHeaderHorizontal
+                    {...props.superHeaderSpec}
+                    leftSpacerWidth={props.widthLeftHeader}
+                    widthsEach={props.extraSpaceRight.map(extra => props.columnWidth + extra)}
+                />
+            )}
+            <div style={{ position: 'relative', minHeight: props.minHeight }}>
+                <TableHeaderContainer>
+                    <MainHeaderRow
+                        columnWidth={props.columnWidth}
+                        topLeftSpec={props.topLeftSpec}
+                        topLeftWidth={props.widthLeftHeader}
+                        onlyColumns={props.onlyColumns}
+                        extraSpaceRight={props.extraSpaceRight}
+                        simpleOrdinals={props.simpleOrdinals}
+                        columnWidthsInfo={props.columnWidthsInfo}
+                    />
+                </TableHeaderContainer>
+                {props.children}
+            </div>
         </>
     )
 }
@@ -381,3 +414,6 @@ export interface TopLeftHeaderProps {
     statNameOverride?: string
     editMode?: EditModeHeader
 }
+
+/** The cell types that can serve as a table's top-left header; the comparison's carries a color bar. */
+export type TopLeftHeaderType = Extract<CellSpec, TopLeftHeaderProps>['type']

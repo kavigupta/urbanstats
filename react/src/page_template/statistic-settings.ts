@@ -135,9 +135,9 @@ export interface CategoryTreeState {
 }
 
 /**
- * State for one category of the statistic tree. The tree is rendered in two places
- * (the sidebar and the article table's edit mode) with different layouts; sharing
- * the state here keeps them from disagreeing about what a checkbox means.
+ * State for one category of the statistic tree. The tree is rendered on both the article
+ * table's edit mode and the comparison table's, with different layouts; sharing the state
+ * here keeps them from disagreeing about what a checkbox means.
  */
 export function useCategoryTreeState(category: Category): CategoryTreeState {
     const settings = useContext(Settings.Context)

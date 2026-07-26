@@ -2,15 +2,16 @@ import React, { ReactNode, useContext } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
-import { rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
-import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
+import { useSetting } from '../page_template/settings'
+import { StatGroupSettings } from '../page_template/statistic-settings'
 import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { Article } from '../utils/protos'
 import { useMobileLayout } from '../utils/responsive'
 
+import { useVisibleRows } from './edit-table'
 import { ArticleRow } from './load-article'
-import { pullRelevantPlotProps } from './plots'
+import { pullRelevantPlotProps, useExpandedByStat } from './plots'
 import { useScreenshotMode } from './screenshot'
 import { computeNameSpecsWithGroups, nameSpecsForRows } from './statistic-name-specs'
 import { CellSpec, PlotSpec, TableContents, TableLayout } from './supertable'
@@ -24,16 +25,14 @@ const mobileEditWidthLeftHeader = 58
 /** A plot for each row whose extras are currently expanded, and undefined for the rest. */
 export function useExpandedPlotSpecs(rows: ArticleRow[], article: Article): (PlotSpec | undefined)[] {
     const colors = useColors()
-    const expandedSettings = useSettings(rows.map(row => rowExpandedKey(row.statpath)))
-    return rows.map((row, index) => {
-        if (row.extraStats.length === 0 || !(expandedSettings[rowExpandedKey(row.statpath)] ?? false)) {
-            return undefined
-        }
-        return {
-            statDescription: row.renderedStatname,
-            plotProps: pullRelevantPlotProps(rows, index, colors.hueColors.blue, article.shortname, article.longname, article.articleType),
-        }
-    })
+    const expanded = useExpandedByStat(rows.map(row => row.statpath), index => rows[index].extraStats.length > 0)
+    return rows.map((row, index) => expanded[index]
+        ? {
+                statDescription: row.renderedStatname,
+                plotProps: pullRelevantPlotProps(rows, index, colors.hueColors.blue, article.shortname, article.longname, article.articleType),
+            }
+        : undefined,
+    )
 }
 
 function computeWidths(simpleOrdinals: boolean, isMobile: boolean, screenshotMode: boolean): { widthLeftHeader: number, columnWidth: number } {
@@ -84,8 +83,7 @@ export function ArticleTable(props: {
 
     // Subscribed to here rather than higher up so that edit mode, which shows every row
     // regardless of the group settings, doesn't redo this filter on every checkbox click.
-    const groupSettings = useSettings(groupYearKeys())
-    const filteredRows = props.rows(groupSettings)[0]
+    const filteredRows = useVisibleRows(props.rows, false)[0]
 
     const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(
         nameSpecsForRows(filteredRows, props.article.longname, currentUniverse),

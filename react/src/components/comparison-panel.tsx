@@ -9,7 +9,6 @@ import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 import { boundingBox, extendBoxes } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
 import { colorFromCycle, useColors } from '../page_template/colors'
-import { rowExpandedKey, useSettings } from '../page_template/settings'
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
@@ -25,10 +24,10 @@ import { zIndex } from '../utils/zIndex'
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { useCSVExport } from './csv-export'
-import { EditTable, EditTableLayout, editRowsByGroup, useEditModeState, useRowsForEditMode } from './edit-table'
+import { EditModeState, EditTable, EditTableLayout, editRowsByGroup, useEditModeState, useVisibleRows } from './edit-table'
 import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
-import { PlotProps, pullRelevantPlotProps } from './plots'
+import { PlotProps, pullRelevantPlotProps, useExpandedByStat } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
@@ -54,7 +53,8 @@ export function ComparisonPanel(props: {
     const [sortByStatIndex, setSortByStatIndex] = useState<number | null>(null)
     const [sortDirection, setSortDirection] = useState<'up' | 'down'>('down')
 
-    const { editMode, setEditMode, filter, setFilter, exitEditMode } = useEditModeState()
+    const editState = useEditModeState()
+    const { editMode, setEditMode } = editState
 
     // Sensors for drag and drop - more sensitive for vertical dragging
     const sensors = useSensors(
@@ -119,7 +119,7 @@ export function ComparisonPanel(props: {
         setActiveId(null)
     }
 
-    const dataByArticleStat = useRowsForEditMode(props.rows, editMode)
+    const dataByArticleStat = useVisibleRows(props.rows, editMode)
     const dataByStatArticle = dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
 
     const handleSort = (statIndex: number): void => {
@@ -166,9 +166,10 @@ export function ComparisonPanel(props: {
         ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
         : ['statval', 'statval_unit']
 
-    const expandedSettings = useSettings(dataByStatArticle.filter(statData => statData.some(row => row.extraStats.length > 0)).map(([{ statpath }]) => rowExpandedKey(statpath)))
-
-    const expandedByStatIndex = dataByStatArticle.map(([{ statpath }]) => expandedSettings[rowExpandedKey(statpath)] ?? false)
+    const expandedByStatIndex = useExpandedByStat(
+        dataByStatArticle.map(([{ statpath }]) => statpath),
+        statIndex => dataByStatArticle[statIndex].some(row => row.extraStats.length > 0),
+    )
     const numExpandedExtras = expandedByStatIndex.filter(v => v).length
 
     let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, showOrdinalColumns)
@@ -313,31 +314,6 @@ export function ComparisonPanel(props: {
         simpleOrdinals: true,
     }
 
-    // Only called in edit mode, so the normal table doesn't pay for laying out every
-    // statistic's name and column widths.
-    const renderEditTable = (): ReactNode => {
-        const layout: EditTableLayout = {
-            ...columnLayout,
-            columnWidthsInfo: dataByArticleStat.map(articleData => maxLayoutInformation(articleData, props.universe, true)),
-        }
-        const rowsToDisplay = dataByStatArticle.map((_, statIndex) => rowToDisplayForStat(statIndex))
-        const rowsByGroup = editRowsByGroup(rowsToDisplay, names[0], props.universe, (_, statIndex) => ({
-            cellSpecs: rowSpecsByStat[statIndex],
-            plotSpec: plotSpecs[statIndex],
-        }))
-        return (
-            <EditTable
-                rowsByGroup={rowsByGroup}
-                layout={layout}
-                filter={filter}
-                setFilter={setFilter}
-                onExit={exitEditMode}
-                superHeaderSpec={longnameSuperHeaderSpec}
-                topLeftType="comparison-top-left-header"
-            />
-        )
-    }
-
     // Transposing swaps which axis the statistics run along, so it swaps the headers, the
     // row specs, and which direction the expanded plots stretch in. Everything else about
     // the table is the same either way.
@@ -419,7 +395,19 @@ export function ComparisonPanel(props: {
                                 <MaybeScroll widthColumns={widthColumns}>
                                     <div ref={tableRef} data-test-id="comparison-table">
                                         {editMode
-                                            ? renderEditTable()
+                                            ? (
+                                                    <ComparisonEditTable
+                                                        universe={props.universe}
+                                                        longname={names[0]}
+                                                        dataByArticleStat={dataByArticleStat}
+                                                        rowsToDisplay={dataByStatArticle.map((_, statIndex) => rowToDisplayForStat(statIndex))}
+                                                        rowSpecsByStat={rowSpecsByStat}
+                                                        plotSpecs={plotSpecs}
+                                                        columnLayout={columnLayout}
+                                                        superHeaderSpec={longnameSuperHeaderSpec}
+                                                        editState={editState}
+                                                    />
+                                                )
                                             : (
                                                     <TableContents
                                                         {...columnLayout}
@@ -455,6 +443,41 @@ export function ComparisonPanel(props: {
                 </PageTemplate>
             </TransposeContext.Provider>
         </universeContext.Provider>
+    )
+}
+
+/**
+ * The comparison's edit tree. Split out so the column width measurement, which is over every
+ * statistic rather than the selected ones, only happens while edit mode is actually open.
+ */
+function ComparisonEditTable(props: {
+    universe: Universe
+    longname: string
+    dataByArticleStat: ArticleRow[][]
+    /** The row whose name and adornments stand for each statistic, in statistic order. */
+    rowsToDisplay: ArticleRow[]
+    rowSpecsByStat: CellSpec[][]
+    plotSpecs: (PlotSpec | undefined)[]
+    columnLayout: TableLayout
+    superHeaderSpec: SuperHeaderSpec
+    editState: EditModeState
+}): ReactNode {
+    const layout: EditTableLayout = {
+        ...props.columnLayout,
+        columnWidthsInfo: props.dataByArticleStat.map(articleData => maxLayoutInformation(articleData, props.universe, true)),
+    }
+    const rowsByGroup = editRowsByGroup(props.rowsToDisplay, props.longname, props.universe, (_, statIndex) => ({
+        cellSpecs: props.rowSpecsByStat[statIndex],
+        plotSpec: props.plotSpecs[statIndex],
+    }))
+    return (
+        <EditTable
+            rowsByGroup={rowsByGroup}
+            layout={layout}
+            editState={props.editState}
+            superHeaderSpec={props.superHeaderSpec}
+            topLeftType="comparison-top-left-header"
+        />
     )
 }
 

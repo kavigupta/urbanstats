@@ -12,16 +12,15 @@ import { StagingControls } from './StagingControls'
 import { ArticleRow } from './load-article'
 import { BooleanSettingKey, CheckboxSettingCustomJustInputProps, CheckboxSettingJustBox, useBooleanSetting, useHighlightStyle } from './sidebar'
 import { displayNamesForRows } from './statistic-name-specs'
-import { CellSpec, congressionalRegionsForCells, EditModeOpenHeader, PlotSpec, RowCells, RowExtras, SuperHeaderSpec, TableLayout } from './supertable'
-import { CommonLayoutInformation, MainHeaderRow, SuperHeaderHorizontal, TableHeaderContainer, TableRowContainer, useStatisticNameAdornments } from './table'
+import { CellSpec, congressionalRegionsForCells, EditModeOpenHeader, PlotSpec, RowCells, RowExtras, SuperHeaderSpec, TableFrame, TableLayout, TopLeftHeaderType } from './supertable'
+import { CommonLayoutInformation, TableRowContainer, useStatisticNameAdornments } from './table'
 
 // Wrapping the name in a label lets a click anywhere on it toggle the associated
 // checkbox. Child rows of a multi-stat group have no checkbox of their own, so
 // they point at the group's checkbox by id.
 const editLabelStyle: CSSProperties = { padding: '1px', display: 'flex', alignItems: 'center', gap: '0.4em', cursor: 'pointer' }
 
-// `height: auto` opts out of the sidebar checkbox's font-size-derived height, so the
-// box keeps its intrinsic (square) size against the table's row text.
+// The label is a flex row, so the box has to opt out of being stretched by the row's text.
 const editCheckboxStyle: CSSProperties = { cursor: 'pointer', flex: '0 0 auto' }
 
 /** Every checkbox on an edit table, sized against the table's rows rather than the sidebar's. */
@@ -36,8 +35,9 @@ export interface EditTableLayout extends TableLayout {
 }
 
 /**
- * The space reserved to the right of each column. `TableContents` reserves it for vertical
- * plots, which only appear when transposed, and an edit table never is.
+ * The space reserved to the right of each column, which also tells the header row how many
+ * columns there are. `TableContents` reserves it for vertical plots, which only appear when
+ * transposed, and an edit table never is, so every entry is zero.
  */
 function extraSpaceRight(layout: EditTableLayout): number[] {
     return layout.columnWidthsInfo.map(() => 0)
@@ -121,9 +121,8 @@ function EditCheckboxLabel(props: {
     )
 }
 
-function EditStatRow({ layout, index, spec }: { layout: EditTableLayout, index: number, spec: EditStatSpec }): ReactNode {
+function EditStatRow({ layout, spaceRight, index, spec }: { layout: EditTableLayout, spaceRight: number[], index: number, spec: EditStatSpec }): ReactNode {
     const { widthLeftHeader, columnWidth, columnWidthsInfo } = layout
-    const spaceRight = extraSpaceRight(layout)
     const adornments = useStatisticNameAdornments(spec.editRow.row)
     // Only render the (large) representatives table for enabled stats, matching the normal table.
     const congressionalRegions = spec.enabled ? congressionalRegionsForCells(spec.editRow.cellSpecs) : []
@@ -226,6 +225,7 @@ function categoryBodyRows(groups: GroupTreeState[], rowsByGroup: Map<string, Edi
 
 function EditCategory(props: {
     layout: EditTableLayout
+    spaceRight: number[]
     category: Category
     rowsByGroup: Map<string, EditRow[]>
     searching: boolean
@@ -272,7 +272,7 @@ function EditCategory(props: {
                   */}
                 {bodyRows.map((spec, position) => spec.kind === 'group-header'
                     ? <EditGroupHeaderRow key={spec.key} index={position + 1} spec={spec} />
-                    : <EditStatRow key={spec.key} layout={props.layout} index={position + 1} spec={spec} />,
+                    : <EditStatRow key={spec.key} layout={props.layout} spaceRight={props.spaceRight} index={position + 1} spec={spec} />,
                 )}
             </AnimatedCollapse>
         </>
@@ -371,16 +371,17 @@ function EditSourceAndYearSections(): ReactNode {
 }
 
 /**
- * The rows to display. While editing, every group is forced on, since the edit tree shows
- * the whole category/group tree rather than the current selection.
+ * The rows a table should display. With `showAllGroups`, every group is forced on, which is
+ * what the edit tree wants: it shows the whole category/group tree rather than the current
+ * selection.
  *
- * While editing, the group checkboxes are also deliberately not subscribed to: they're all
- * forced on, so a click can't change this result, and re-running the filter and sort over
- * every statistic on each click would be wasted work.
+ * The group checkboxes are then deliberately not subscribed to either: they're all forced
+ * on, so a click can't change this result, and re-running the filter and sort over every
+ * statistic on each click would be wasted work.
  */
-export function useRowsForEditMode(rows: (settings: StatGroupSettings) => ArticleRow[][], editMode: boolean): ArticleRow[][] {
+export function useVisibleRows(rows: (settings: StatGroupSettings) => ArticleRow[][], showAllGroups: boolean): ArticleRow[][] {
     const yearSourceSettings = useSettings(yearSourceKeys())
-    const groupSettings = useSettings(editMode ? [] : statGroupKeys())
+    const groupSettings = useSettings(showAllGroups ? [] : statGroupKeys())
     return useMemo(
         () => rows({ ...yearSourceSettings, ...allStatGroupsEnabled, ...groupSettings }),
         [rows, yearSourceSettings, groupSettings],
@@ -435,61 +436,46 @@ export function useEditModeState(): EditModeState {
 export function EditTable(props: {
     rowsByGroup: Map<string, EditRow[]>
     layout: EditTableLayout
-    filter: string
-    setFilter: (filter: string) => void
-    onExit: () => void
+    editState: EditModeState
     superHeaderSpec?: SuperHeaderSpec
     /** Which flavor of top-left cell to use, since the comparison's carries a color bar. */
-    topLeftType: 'top-left-header' | 'comparison-top-left-header'
+    topLeftType: TopLeftHeaderType
 }): ReactNode {
-    const { widthLeftHeader, columnWidth, onlyColumns, simpleOrdinals, columnWidthsInfo } = props.layout
+    const { filter, setFilter, exitEditMode } = props.editState
     const spaceRight = extraSpaceRight(props.layout)
-    const categories = useCategoriesMatchingSearch(props.filter)
+    const categories = useCategoriesMatchingSearch(filter)
     const staged = useIsStaged()
 
     const editModeHeader: EditModeOpenHeader = {
         open: true,
-        filter: props.filter,
-        setFilter: props.setFilter,
+        filter,
+        setFilter,
         // In staging mode the Discard/Apply buttons below double as Done.
-        onDone: staged ? undefined : props.onExit,
+        onDone: staged ? undefined : exitEditMode,
     }
-    const topLeftSpec: CellSpec = { type: props.topLeftType, editMode: editModeHeader }
 
     return (
         <>
-            {staged && <StagingControls onExitStaging={props.onExit} />}
-            {props.superHeaderSpec !== undefined && (
-                <SuperHeaderHorizontal
-                    {...props.superHeaderSpec}
-                    leftSpacerWidth={widthLeftHeader}
-                    widthsEach={spaceRight.map(extra => columnWidth + extra)}
-                />
-            )}
-            <div style={{ position: 'relative' }}>
-                <TableHeaderContainer>
-                    <MainHeaderRow
-                        columnWidth={columnWidth}
-                        topLeftSpec={topLeftSpec}
-                        topLeftWidth={widthLeftHeader}
-                        onlyColumns={onlyColumns}
-                        extraSpaceRight={spaceRight}
-                        simpleOrdinals={simpleOrdinals}
-                        columnWidthsInfo={columnWidthsInfo}
-                    />
-                </TableHeaderContainer>
+            {staged && <StagingControls onExitStaging={exitEditMode} />}
+            <TableFrame
+                {...props.layout}
+                superHeaderSpec={props.superHeaderSpec}
+                topLeftSpec={{ type: props.topLeftType, editMode: editModeHeader }}
+                extraSpaceRight={spaceRight}
+            >
                 <EditSourceAndYearSections />
                 <EditSectionHeader name="Statistics" />
                 {categories.map(category => (
                     <EditCategory
                         key={category.id}
                         layout={props.layout}
+                        spaceRight={spaceRight}
                         category={category}
                         rowsByGroup={props.rowsByGroup}
-                        searching={props.filter !== ''}
+                        searching={filter !== ''}
                     />
                 ))}
-            </div>
+            </TableFrame>
         </>
     )
 }
