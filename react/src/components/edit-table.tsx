@@ -22,7 +22,7 @@ const editLabelStyle: CSSProperties = { padding: '1px', display: 'flex', alignIt
 
 // `height: auto` opts out of the sidebar checkbox's font-size-derived height, so the
 // box keeps its intrinsic (square) size against the table's row text.
-const editCheckboxStyle: CSSProperties = { cursor: 'pointer', flex: '0 0 auto', height: 'auto' }
+const editCheckboxStyle: CSSProperties = { cursor: 'pointer', flex: '0 0 auto' }
 
 /** Every checkbox on an edit table, sized against the table's rows rather than the sidebar's. */
 function EditCheckbox(props: Omit<CheckboxSettingCustomJustInputProps, 'style' | 'fontSize'>): ReactNode {
