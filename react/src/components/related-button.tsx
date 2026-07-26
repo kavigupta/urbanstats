@@ -16,7 +16,7 @@ import { useMobileLayout } from '../utils/responsive'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 import { displayType } from '../utils/text'
 
-import { CheckboxSetting } from './sidebar'
+import { CheckboxSetting } from './checkbox-setting'
 
 interface Region { rowType: string, longname: string, shortname: string }
 

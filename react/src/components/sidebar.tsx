@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, useContext, useEffect, useId, useRef } from 'react'
+import React, { CSSProperties, ReactNode, useContext } from 'react'
 
 import '../style.css'
 import './sidebar.css'
@@ -6,7 +6,7 @@ import './sidebar.css'
 import { Navigator } from '../navigation/Navigator'
 import { Theme } from '../page_template/color-themes'
 import { useColors, useCurrentTheme } from '../page_template/colors'
-import { checkboxCategoryName, SettingsDictionary, sourceEnabledKey, TemperatureUnit, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
+import { checkboxCategoryName, sourceEnabledKey, TemperatureUnit, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
 import { useDataSourceCheckboxes } from '../page_template/statistic-settings'
 import { humanReadableUniverse, useUniverse } from '../universe'
 import { useMobileLayout } from '../utils/responsive'
@@ -14,6 +14,7 @@ import { useMobileLayout } from '../utils/responsive'
 import { StagingControls } from './StagingControls'
 import { StatsTree } from './StatsTree'
 import { Years } from './Years'
+import { CheckboxSetting } from './checkbox-setting'
 
 export function useSidebarSectionContentClassName(): string {
     let sidebarSectionContent = 'sidebar-section-content'
@@ -268,28 +269,6 @@ export function SidebarForStatisticChoice(): ReactNode {
     )
 }
 
-// type representing a key of SettingsDictionary that have boolean values
-type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean | undefined ? K : never]: boolean }
-
-export function CheckboxSetting(props: { name: string, settingKey: BooleanSettingKey, classNameToUse?: string, id?: string, testId?: string, forcedOn?: boolean, fontSize?: string }): ReactNode {
-    const [checked, setChecked] = useSetting(props.settingKey)
-    const info = useSettingInfo(props.settingKey)
-
-    return (
-        <CheckboxSettingCustom
-            name={props.name}
-            checked={(checked ?? false) || (props.forcedOn ?? false)}
-            forcedOn={props.forcedOn}
-            onChange={setChecked}
-            classNameToUse={props.classNameToUse}
-            id={props.id}
-            testId={props.testId}
-            highlight={'stagedValue' in info && info.stagedValue !== info.persistedValue}
-            fontSize={props.fontSize}
-        />
-    )
-};
-
 // represents the color theme setting, which sets it to either 'light' or 'dark'
 function ColorThemeSetting(): ReactNode {
     const [theme, setTheme] = useSetting('theme')
@@ -341,73 +320,3 @@ function TemperatureSetting(): ReactNode {
         </div>
     )
 };
-
-interface CheckboxSettingCustomJustInputProps {
-    checked: boolean
-    onChange: (checked: boolean) => void
-    indeterminate?: boolean
-    id?: string
-    testId?: string
-    highlight?: boolean
-    forcedOn?: boolean
-    style?: CSSProperties
-    fontSize?: string
-}
-
-const defaultFontSize = '16px'
-
-type CheckboxSettingCustomProps = CheckboxSettingCustomJustInputProps & {
-    name: string
-    classNameToUse?: string
-}
-
-export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactNode {
-    const colors = useColors()
-
-    const divStyle: CSSProperties = {
-        backgroundColor: props.highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
-        borderRadius: '5px',
-        display: 'flex',
-        alignItems: 'top',
-        ...props.style,
-    }
-    const id = useId()
-    const inputId = props.id ?? id
-
-    return (
-        <div className={(props.classNameToUse ?? 'checkbox-setting') + (props.forcedOn ? ' testing-checkbox-disabled' : '')} style={divStyle}>
-            <CheckboxSettingJustBox
-                {...props}
-                id={inputId}
-                style={{ ...props.style }}
-            />
-            <label htmlFor={inputId} style={{ fontSize: props.fontSize ?? defaultFontSize }}>{props.name}</label>
-        </div>
-    )
-};
-
-function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProps): ReactNode {
-    const colors = useColors()
-    const id = useId()
-    const checkboxRef = useRef<HTMLInputElement>(null)
-    const inputId = props.id ?? id
-    const forcedOn = props.forcedOn ?? false
-
-    useEffect(() => {
-        checkboxRef.current!.indeterminate = props.indeterminate ?? false
-    }, [props.indeterminate])
-
-    return (
-        <input
-            id={inputId}
-            type="checkbox"
-            checked={props.checked}
-            disabled={forcedOn}
-            onChange={(e) => { props.onChange(e.target.checked) }}
-            ref={checkboxRef}
-            style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background, ...props.style, height: props.fontSize ?? defaultFontSize }}
-            data-test-id={props.testId}
-            data-test-highlight={props.highlight}
-        />
-    )
-}

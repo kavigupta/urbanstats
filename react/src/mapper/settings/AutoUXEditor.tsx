@@ -6,7 +6,7 @@ import React, { ReactNode, useRef } from 'react'
 
 import { ExpandButton } from '../../components/ExpandButton'
 import { RenderTwiceHidden } from '../../components/RenderTwiceHidden'
-import { CheckboxSettingCustom } from '../../components/sidebar'
+import { CheckboxSettingCustom } from '../../components/checkbox-setting'
 import { UrbanStatsASTExpression, UrbanStatsASTArg, locationOf } from '../../urban-stats-script/ast'
 import { hsvColorExpression, rgbColorExpression } from '../../urban-stats-script/constants/color-utils'
 import { EditorError } from '../../urban-stats-script/editor-utils'

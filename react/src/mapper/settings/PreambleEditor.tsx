@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 
-import { CheckboxSettingCustom } from '../../components/sidebar'
+import { CheckboxSettingCustom } from '../../components/checkbox-setting'
 import { locationOf } from '../../urban-stats-script/ast'
 import type { AutoUXNodeMetadata } from '../../urban-stats-script/autoux-node-metadata'
 import { EditorError } from '../../urban-stats-script/editor-utils'

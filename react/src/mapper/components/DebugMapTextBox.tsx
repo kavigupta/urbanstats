@@ -1,6 +1,6 @@
 import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 
-import { CheckboxSettingCustom } from '../../components/sidebar'
+import { CheckboxSettingCustom } from '../../components/checkbox-setting'
 import { MapTextBoxComponent, Selection, SelectionContext } from '../../mapper/components/MapTextBox'
 import { OverrideTheme, useColors } from '../../page_template/colors'
 import { PageTemplate } from '../../page_template/template'

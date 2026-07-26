@@ -8,7 +8,8 @@ import { zIndex } from '../utils/zIndex'
 
 import { ExpandButton } from './ExpandButton'
 import { RenderTwiceHidden } from './RenderTwiceHidden'
-import { CheckboxSettingCustom, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
+import { CheckboxSettingCustom } from './checkbox-setting'
+import { useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
 
 export function StatsTree(): ReactNode {
     const [searchTerm, setSearchTerm] = useState('')
