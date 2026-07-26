@@ -64,5 +64,9 @@ editModeSharedTests({
     page: californiaPage,
     scope: articleTableScope,
     editButtonLabel: 'Edit',
-    congressional: { page: `${target}/article.html?longname=02139%2C+USA`, expectedRegions: [] },
+    congressional: {
+        page: `${target}/article.html?longname=02139%2C+USA`,
+        // The article's single region, which the widget heads its one column with.
+        expectedRegions: ['02139'],
+    },
 })
