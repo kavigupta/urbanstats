@@ -1,23 +1,18 @@
 import { Selector } from 'testcafe'
 
-import { collapseAnimationMs, enterEditMode, withEditMode } from './edit_mode_test_utils'
+import { ensureCategoryExpanded, enterEditMode, withEditMode } from './edit_mode_test_utils'
 import { arrayFromSelector, getLocation, safeReload, screencap, target, urbanstatsFixture } from './test_utils'
 
 /**
  * The statistic tree is on the table's edit mode, and Main has to be expanded to reach the
- * Population group inside it. Staging opens edit mode on its own, and the expanded state is
- * itself a setting, so both steps are conditional.
+ * Population group inside it.
  *
  * Also needed after leaving staging, since the Discard/Apply buttons double as Done and
  * close edit mode with them.
  */
 async function openTree(t: TestController): Promise<void> {
     await enterEditMode(t)
-    const expand = Selector('[data-category-id=main]').withAttribute('aria-label', /^Expand /)
-    if (await expand.exists) {
-        await t.click(expand)
-        await t.wait(collapseAnimationMs)
-    }
+    await ensureCategoryExpanded(t, 'main')
 }
 
 export function linkSettingsTests(baseLink: string): void {

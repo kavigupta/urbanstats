@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { editModeSharedTests } from './edit_mode_test_template'
-import { categoryCheckbox, comparisonTableScope, doneButton, editButton, filterBox, groupCheckbox, interactableGroupCheckbox, setCategoryExpanded, yearCheckbox } from './edit_mode_test_utils'
+import { categoryCheckbox, comparisonTableScope, doneButton, editButton, filterBox, groupCheckbox, groupMemberRow, interactableGroupCheckbox, setCategoryExpanded, yearCheckbox } from './edit_mode_test_utils'
 import { comparisonPage, downloadCSV, resizeForPlatform, screencap, target, urbanstatsFixture } from './test_utils'
 
 /**
@@ -25,7 +25,7 @@ urbanstatsFixture('comparison edit mode', twoRegions)
 
 test('each region keeps a column of values in edit mode', async (t) => {
     await t.click(editButton)
-    await setCategoryExpanded(t, 'main', true, comparisonTableScope)
+    await setCategoryExpanded(t, 'main', true)
     // Population is a single-stat group, so its row is the one carrying the group checkbox.
     const populationRow = populationGroup.parent('.for-testing-table-row')
     await t.expect(populationRow.find('.testing-statistic-value').count).eql(2)
@@ -36,7 +36,7 @@ test('toggling a group in edit mode changes what the comparison shows', async (t
     await t.expect(populationName.exists).ok()
 
     await t.click(editButton)
-    await setCategoryExpanded(t, 'main', true, comparisonTableScope)
+    await setCategoryExpanded(t, 'main', true)
     await t.click(populationGroup)
     await t.click(doneButton)
     await t.expect(populationName.exists).notOk()
@@ -65,16 +65,16 @@ test('a multi-row group keeps a column of values per region on every row', async
     // A second year makes Population a two-row group: a header row carrying the checkbox,
     // and a row per year pointing at it.
     await t.click(yearCheckbox(2010))
-    await setCategoryExpanded(t, 'main', true, comparisonTableScope)
+    await setCategoryExpanded(t, 'main', true)
 
-    const row2010 = Selector(`${comparisonTableScope} label[for=edit-checkbox-population]`).withExactText('2010')
+    const row2010 = groupMemberRow('population', '2010')
     await t.expect(row2010.exists).ok()
     await t.expect(row2010.parent('.for-testing-table-row').find('.testing-statistic-value').count).eql(2)
 })
 
 test('expanding a stat in edit mode plots every region', async (t) => {
     await t.click(editButton)
-    await setCategoryExpanded(t, 'main', true, comparisonTableScope)
+    await setCategoryExpanded(t, 'main', true)
 
     const expandToggle = comparisonTable.find('.expand-toggle:not([inert] *)')
     await t.expect(expandToggle.exists).ok()

@@ -121,15 +121,13 @@ test('comparison-3-plotted-across-180', async (t) => {
 
 /** The source checkboxes live on the table's edit mode, so reading one means opening it. */
 async function checkboxStatus(t: TestController, name: string): Promise<string> {
-    let status = 'missing'
-    await withEditMode(t, async () => {
+    return withEditMode(t, async () => {
         const checkbox = editCheckbox(name)
         if ((await checkbox.count) === 0) {
-            return
+            return 'missing'
         }
-        status = await checkbox.hasAttribute('disabled') ? 'disabled' : 'enabled'
+        return await checkbox.hasAttribute('disabled') ? 'disabled' : 'enabled'
     })
-    return status
 }
 
 const onlyUSAndCanadaCensus = 'AkWGLJMDBPzz5'

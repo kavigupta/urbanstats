@@ -28,10 +28,11 @@ export async function exitEditMode(t: TestController): Promise<void> {
     await t.expect(editButton.exists).ok()
 }
 
-export async function withEditMode(t: TestController, block: () => Promise<void>): Promise<void> {
+export async function withEditMode<T>(t: TestController, block: () => Promise<T>): Promise<T> {
     await enterEditMode(t)
-    await block()
+    const result = await block()
     await exitEditMode(t)
+    return result
 }
 
 /**
@@ -89,7 +90,17 @@ export function editCheckbox(txt: string): Selector {
         .find('input')
 }
 
-/** Scopes the edit tree's selectors to the table it's on, rather than the rest of the page. */
+/**
+ * A statistic row inside a multi-row group, by the name it displays. Matched via the group
+ * checkbox it points at, which distinguishes these rows from the year and source rows above
+ * (whose labels carry the same text). A group with a single row collapses into that row,
+ * which then carries the checkbox itself, so it has no rows of this kind.
+ */
+export function groupMemberRow(groupId: string, name: string): Selector {
+    return Selector(`label[for=edit-checkbox-${groupId}]`).withExactText(name)
+}
+
+/** Scopes selectors to the table the edit tree is on, rather than the rest of the page. */
 export const articleTableScope = '.stats_table'
 export const comparisonTableScope = '[data-test-id=comparison-table]'
 
@@ -97,12 +108,19 @@ export const comparisonTableScope = '[data-test-id=comparison-table]'
  * A category's toggle in the edit tree, matched by the direction it currently offers, so
  * its presence also tells you which state the category is in.
  */
-export function categoryToggleButton(categoryId: string, direction: 'Expand' | 'Collapse', scope = articleTableScope): Selector {
-    return Selector(`${scope} [data-category-id=${categoryId}]`).withAttribute('aria-label', new RegExp(`^${direction} `))
+export function categoryToggleButton(categoryId: string, direction: 'Expand' | 'Collapse'): Selector {
+    return Selector(`[data-category-id=${categoryId}]`).withAttribute('aria-label', new RegExp(`^${direction} `))
 }
 
 /** Categories are collapsed by default, and the toggle animates. */
-export async function setCategoryExpanded(t: TestController, categoryId: string, expanded: boolean, scope = articleTableScope): Promise<void> {
-    await t.click(categoryToggleButton(categoryId, expanded ? 'Expand' : 'Collapse', scope))
+export async function setCategoryExpanded(t: TestController, categoryId: string, expanded: boolean): Promise<void> {
+    await t.click(categoryToggleButton(categoryId, expanded ? 'Expand' : 'Collapse'))
     await t.wait(collapseAnimationMs)
+}
+
+/** Expands a category whose state the caller doesn't know, since expansion is a persisted setting. */
+export async function ensureCategoryExpanded(t: TestController, categoryId: string): Promise<void> {
+    if (await categoryToggleButton(categoryId, 'Expand').exists) {
+        await setCategoryExpanded(t, categoryId, true)
+    }
 }

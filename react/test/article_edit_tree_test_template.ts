@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { categoryCheckbox, categoryToggleButton, enterEditMode, exitEditMode, filterBox, groupCheckbox, interactableGroupCheckbox, setCategoryExpanded, sourceCheckbox, yearCheckbox } from './edit_mode_test_utils'
+import { categoryCheckbox, categoryToggleButton, enterEditMode, exitEditMode, filterBox, groupCheckbox, groupMemberRow, interactableGroupCheckbox, setCategoryExpanded, sourceCheckbox, yearCheckbox } from './edit_mode_test_utils'
 import { clickUniverseFlag, getLocation, resizeForPlatform, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture } from './test_utils'
 
 /**
@@ -25,14 +25,9 @@ const ghslCheck = sourceCheckbox('Population', 'GHSL')
 const year2020Check = yearCheckbox(2020)
 const year2010Check = yearCheckbox(2010)
 
-/**
- * A statistic row of the Population group, by the name it displays. Matched via the group
- * checkbox it points at, which distinguishes these rows from the year and source rows above
- * (whose labels carry the same text). Only multi-row groups get these; a group with a single
- * row collapses into it and takes the checkbox itself.
- */
+/** A statistic row of the Population group, by the name it displays. */
 function populationRow(name: string): Selector {
-    return Selector('.stats_table label[for=edit-checkbox-population]').withExactText(name)
+    return groupMemberRow('population', name)
 }
 
 export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {

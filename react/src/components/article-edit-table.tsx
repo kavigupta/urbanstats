@@ -1,13 +1,12 @@
-import React, { ReactNode, useMemo } from 'react'
+import React, { ReactNode } from 'react'
 
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { Article } from '../utils/protos'
 
 import { useArticleTableLayout, useExpandedPlotSpecs } from './article-table'
-import { EditModeState, EditTable, EditTableLayout, editRowsByGroup, useVisibleRows } from './edit-table'
+import { EditModeState, EditTable, editRowsByGroup, useEditTableLayout, useVisibleRows } from './edit-table'
 import { ArticleRow } from './load-article'
 import { CellSpec } from './supertable'
-import { maxLayoutInformation } from './table'
 
 export function ArticleEditTable(props: {
     rows: (settings: StatGroupSettings) => ArticleRow[][]
@@ -16,7 +15,8 @@ export function ArticleEditTable(props: {
 }): ReactNode {
     const { currentUniverse, layout: columnLayout } = useArticleTableLayout('edit')
     // This component only renders in edit mode, so every group is always forced on.
-    const allRows = useVisibleRows(props.rows, true)[0]
+    const rowsByArticle = useVisibleRows(props.rows, true)
+    const allRows = rowsByArticle[0]
     const { longname } = props.article
 
     // Keep the expandable per-stat plots ("extras") available in edit mode, driven
@@ -36,12 +36,7 @@ export function ArticleEditTable(props: {
         plotSpec: plotSpecs[index],
     }))
 
-    const columnWidthsInfo = useMemo(
-        () => maxLayoutInformation(allRows, currentUniverse, simpleOrdinals),
-        [allRows, currentUniverse, simpleOrdinals],
-    )
-
-    const layout: EditTableLayout = { ...columnLayout, columnWidthsInfo: [columnWidthsInfo] }
+    const layout = useEditTableLayout(columnLayout, rowsByArticle, currentUniverse)
 
     return (
         <EditTable

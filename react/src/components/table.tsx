@@ -127,7 +127,6 @@ export interface SuperHeaderHorizontalProps {
 
 export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactNode {
     const colors = useColors()
-    const isScreenshot = useScreenshotMode()
     const barHeight = '5px'
     const bars = (backgroundColor: (i: number) => string | undefined): ReactNode => {
         return (
@@ -173,9 +172,7 @@ export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactN
               * comparison is too narrow to hold both a button and the column's name.
               */}
             <div style={{ width: `${props.leftSpacerWidth}%`, display: 'flex', alignItems: 'flex-end', padding: '1px' }}>
-                {props.editMode !== undefined && !isScreenshot && (
-                    <HeaderButton onClick={props.editMode.onEdit} testId="edit-mode-edit">{props.editMode.label}</HeaderButton>
-                )}
+                <EnterEditModeButton editMode={props.editMode} />
             </div>
             {props.handleReorder
                 ? (
@@ -275,15 +272,13 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
         return <EditModeTopLeftHeader header={editMode} width={props.width} />
     }
 
-    const showEditButton = editMode !== undefined && !isScreenshot
+    const hasEditButton = editMode !== undefined && !isScreenshot
     // On a narrow screen this cell is too small to fit both, and the button is the more useful of the two.
-    const showName = !showEditButton || !isMobile
+    const showName = !hasEditButton || !isMobile
 
     return (
         <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '4px', padding: '1px', width: `${props.width}%` }}>
-            {showEditButton && (
-                <HeaderButton onClick={editMode.onEdit} testId="edit-mode-edit">{editMode.label}</HeaderButton>
-            )}
+            <EnterEditModeButton editMode={editMode} />
             {showName && (
                 <span className="serif value" style={{ flexGrow: 1 }}>
                     {props.statNameOverride ?? 'Statistic'}
@@ -291,6 +286,15 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
             )}
         </div>
     )
+}
+
+/** The way in to edit mode, for the tables that offer one. Screenshots never do. */
+function EnterEditModeButton({ editMode }: { editMode?: EditModeButton }): ReactNode {
+    const isScreenshot = useScreenshotMode()
+    if (editMode === undefined || isScreenshot) {
+        return null
+    }
+    return <HeaderButton onClick={editMode.onEdit} testId="edit-mode-edit">{editMode.label}</HeaderButton>
 }
 
 /** The top-left cell while the edit tree is open: the way out of it, and the tree's search box. */

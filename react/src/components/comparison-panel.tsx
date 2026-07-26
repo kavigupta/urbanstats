@@ -24,7 +24,7 @@ import { zIndex } from '../utils/zIndex'
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { useCSVExport } from './csv-export'
-import { EditModeState, EditTable, EditTableLayout, editRowsByGroup, useEditModeState, useVisibleRows } from './edit-table'
+import { EditModeState, EditTable, editRowsByGroup, useEditModeState, useEditTableLayout, useVisibleRows } from './edit-table'
 import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps, pullRelevantPlotProps, useExpandedByStat } from './plots'
@@ -33,7 +33,7 @@ import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from '.
 import { SearchBox } from './search'
 import { computeNameSpecsWithGroups } from './statistic-name-specs'
 import { TableContents, CellSpec, EditModeButton, PlotSpec, SuperHeaderSpec, TableLayout } from './supertable'
-import { ColumnIdentifier, maxLayoutInformation } from './table'
+import { ColumnIdentifier } from './table'
 
 export function ComparisonPanel(props: {
     universe: Universe
@@ -462,10 +462,7 @@ function ComparisonEditTable(props: {
     superHeaderSpec: SuperHeaderSpec
     editState: EditModeState
 }): ReactNode {
-    const layout: EditTableLayout = {
-        ...props.columnLayout,
-        columnWidthsInfo: props.dataByArticleStat.map(articleData => maxLayoutInformation(articleData, props.universe, true)),
-    }
+    const layout = useEditTableLayout(props.columnLayout, props.dataByArticleStat, props.universe)
     const rowsByGroup = editRowsByGroup(props.rowsToDisplay, props.longname, props.universe, (_, statIndex) => ({
         cellSpecs: props.rowSpecsByStat[statIndex],
         plotSpec: props.plotSpecs[statIndex],

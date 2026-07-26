@@ -13,7 +13,7 @@ import { ArticleRow } from './load-article'
 import { BooleanSettingKey, CheckboxSettingCustomJustInputProps, CheckboxSettingJustBox, useBooleanSetting, useHighlightStyle } from './sidebar'
 import { displayNamesForRows } from './statistic-name-specs'
 import { CellSpec, congressionalRegionsForCells, EditModeOpenHeader, PlotSpec, RowCells, RowExtras, SuperHeaderSpec, TableFrame, TableLayout, TopLeftHeaderType } from './supertable'
-import { CommonLayoutInformation, TableRowContainer, useStatisticNameAdornments } from './table'
+import { CommonLayoutInformation, maxLayoutInformation, TableRowContainer, useStatisticNameAdornments } from './table'
 
 // Wrapping the name in a label lets a click anywhere on it toggle the associated
 // checkbox. Child rows of a multi-stat group have no checkbox of their own, so
@@ -32,15 +32,25 @@ function EditCheckbox(props: Omit<CheckboxSettingCustomJustInputProps, 'style' |
 export interface EditTableLayout extends TableLayout {
     /** One entry per column, which is also what the column count is read from. */
     columnWidthsInfo: (CommonLayoutInformation | undefined)[]
+    /**
+     * The space reserved to the right of each column. `TableContents` reserves it for vertical
+     * plots, which only appear when transposed, and an edit table never is, so every entry is zero.
+     */
+    extraSpaceRight: number[]
 }
 
 /**
- * The space reserved to the right of each column, which also tells the header row how many
- * columns there are. `TableContents` reserves it for vertical plots, which only appear when
- * transposed, and an edit table never is, so every entry is zero.
+ * Completes a table's column shape for an edit table, given the rows of each of its columns.
+ * The widths are measured over every statistic, since the edit tree shows them all, so they're
+ * memoized rather than remeasured on each checkbox click.
  */
-function extraSpaceRight(layout: EditTableLayout): number[] {
-    return layout.columnWidthsInfo.map(() => 0)
+export function useEditTableLayout(columnLayout: TableLayout, columnRows: ArticleRow[][], universe: Universe): EditTableLayout {
+    const { simpleOrdinals } = columnLayout
+    const columnWidthsInfo = useMemo(
+        () => columnRows.map(rows => maxLayoutInformation(rows, universe, simpleOrdinals)),
+        [columnRows, universe, simpleOrdinals],
+    )
+    return { ...columnLayout, columnWidthsInfo, extraSpaceRight: columnWidthsInfo.map(() => 0) }
 }
 
 /** Each level of the tree is indented by this much relative to the one above it. */
@@ -121,8 +131,8 @@ function EditCheckboxLabel(props: {
     )
 }
 
-function EditStatRow({ layout, spaceRight, index, spec }: { layout: EditTableLayout, spaceRight: number[], index: number, spec: EditStatSpec }): ReactNode {
-    const { widthLeftHeader, columnWidth, columnWidthsInfo } = layout
+function EditStatRow({ layout, index, spec }: { layout: EditTableLayout, index: number, spec: EditStatSpec }): ReactNode {
+    const { widthLeftHeader, columnWidth, columnWidthsInfo, extraSpaceRight } = layout
     const adornments = useStatisticNameAdornments(spec.editRow.row)
     // Only render the (large) representatives table for enabled stats, matching the normal table.
     const congressionalRegions = spec.enabled ? congressionalRegionsForCells(spec.editRow.cellSpecs) : []
@@ -142,7 +152,7 @@ function EditStatRow({ layout, spaceRight, index, spec }: { layout: EditTableLay
                 <RowCells
                     cellSpecs={spec.editRow.cellSpecs}
                     columnWidth={columnWidth}
-                    extraSpaceRight={spaceRight}
+                    extraSpaceRight={extraSpaceRight}
                     columnWidthsInfo={columnWidthsInfo}
                 />
             </TableRowContainer>
@@ -151,7 +161,7 @@ function EditStatRow({ layout, spaceRight, index, spec }: { layout: EditTableLay
                 congressionalRegions={congressionalRegions}
                 widthLeftHeader={widthLeftHeader}
                 columnWidth={columnWidth}
-                extraSpaceRight={spaceRight}
+                extraSpaceRight={extraSpaceRight}
             />
         </>
     )
@@ -225,7 +235,6 @@ function categoryBodyRows(groups: GroupTreeState[], rowsByGroup: Map<string, Edi
 
 function EditCategory(props: {
     layout: EditTableLayout
-    spaceRight: number[]
     category: Category
     rowsByGroup: Map<string, EditRow[]>
     searching: boolean
@@ -272,7 +281,7 @@ function EditCategory(props: {
                   */}
                 {bodyRows.map((spec, position) => spec.kind === 'group-header'
                     ? <EditGroupHeaderRow key={spec.key} index={position + 1} spec={spec} />
-                    : <EditStatRow key={spec.key} layout={props.layout} spaceRight={props.spaceRight} index={position + 1} spec={spec} />,
+                    : <EditStatRow key={spec.key} layout={props.layout} index={position + 1} spec={spec} />,
                 )}
             </AnimatedCollapse>
         </>
@@ -442,7 +451,6 @@ export function EditTable(props: {
     topLeftType: TopLeftHeaderType
 }): ReactNode {
     const { filter, setFilter, exitEditMode } = props.editState
-    const spaceRight = extraSpaceRight(props.layout)
     const categories = useCategoriesMatchingSearch(filter)
     const staged = useIsStaged()
 
@@ -461,7 +469,6 @@ export function EditTable(props: {
                 {...props.layout}
                 superHeaderSpec={props.superHeaderSpec}
                 topLeftSpec={{ type: props.topLeftType, editMode: editModeHeader }}
-                extraSpaceRight={spaceRight}
             >
                 <EditSourceAndYearSections />
                 <EditSectionHeader name="Statistics" />
@@ -469,7 +476,6 @@ export function EditTable(props: {
                     <EditCategory
                         key={category.id}
                         layout={props.layout}
-                        spaceRight={spaceRight}
                         category={category}
                         rowsByGroup={props.rowsByGroup}
                         searching={filter !== ''}
