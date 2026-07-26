@@ -4,13 +4,12 @@ import { isNoValue, StatisticCellRenderingInfo } from '../components/load-articl
 import { PointerArrow } from '../components/pointer-cell'
 import { computeComparisonWidthColumns, MaybeScroll } from '../components/scrollable'
 import { CellSpec, SuperHeaderSpec, TableContents } from '../components/supertable'
-import { ColumnIdentifier } from '../components/table'
+import { ColumnIdentifier, valueOnlyColumns } from '../components/table'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
-import { useUniverse } from '../universe'
+import { useDefinedUniverse } from '../universe'
 import { orderNonNan } from '../urban-stats-script/constants/table'
 import { TypeEnvironment } from '../urban-stats-script/types-values'
-import { assert } from '../utils/defensive'
 import { reifyString } from '../utils/human-readable-name'
 import { sanitize } from '../utils/paths'
 
@@ -71,10 +70,9 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
 
     const columnWidth = (100 - widthLeftHeader) / (data.table.length === 0 ? 1 : data.table.length)
 
-    const currentUniverse = useUniverse()
-    assert(currentUniverse !== undefined, 'no universe')
+    const currentUniverse = useDefinedUniverse()
 
-    const onlyColumns: ColumnIdentifier[] = data.hideOrdinalsPercentiles ? ['statval', 'statval_unit'] : ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
+    const onlyColumns: ColumnIdentifier[] = data.hideOrdinalsPercentiles ? valueOnlyColumns : ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
 
     const allColumnRows: StatisticCellRenderingInfo[][] = data.table.map((col) => {
         return indexRange.map((rangeIdx) => {

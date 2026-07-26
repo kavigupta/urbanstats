@@ -3,19 +3,17 @@ import React, { ReactNode, useContext } from 'react'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { useSetting } from '../page_template/settings'
-import { StatGroupSettings } from '../page_template/statistic-settings'
-import { Universe, useUniverse } from '../universe'
-import { assert } from '../utils/defensive'
+import { StatGroupSettings, useVisibleRows } from '../page_template/statistic-settings'
+import { useDefinedUniverse } from '../universe'
 import { Article } from '../utils/protos'
 import { useMobileLayout } from '../utils/responsive'
 
-import { useVisibleRows } from './edit-table'
 import { ArticleRow } from './load-article'
 import { pullRelevantPlotProps, useExpandedByStat } from './plots'
 import { useScreenshotMode } from './screenshot'
 import { computeNameSpecsWithGroups, nameSpecsForRows } from './statistic-name-specs'
 import { CellSpec, PlotSpec, TableContents, TableLayout } from './supertable'
-import { ColumnIdentifier } from './table'
+import { ColumnIdentifier, valueOnlyColumns } from './table'
 
 const allColumns: ColumnIdentifier[] = ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
 
@@ -47,22 +45,19 @@ function computeWidths(simpleOrdinals: boolean, isMobile: boolean, screenshotMod
 }
 
 /** The column shape both the normal article table and its edit mode are laid out against. */
-export function useArticleTableLayout(mode: 'normal' | 'edit'): { currentUniverse: Universe, layout: TableLayout } {
-    const currentUniverse = useUniverse()
-    assert(currentUniverse !== undefined, 'no universe')
+export function useArticleTableLayout(mode: 'normal' | 'edit'): TableLayout {
     const [simpleOrdinals] = useSetting('simple_ordinals')
     const isMobile = useMobileLayout()
     const screenshotMode = useScreenshotMode()
 
-    // On mobile, edit mode drops the percentile/ordinal/pointer columns so the
-    // checkboxes and names have room; only the value stays. The name column also
-    // gets a wider share since it no longer competes with those columns.
+    // On mobile, edit mode drops every column but the value, and the name column gets a
+    // wider share since it no longer competes with them.
     const layout: TableLayout = mode === 'edit' && isMobile
         ? {
                 simpleOrdinals,
                 widthLeftHeader: mobileEditWidthLeftHeader,
                 columnWidth: 100 - mobileEditWidthLeftHeader,
-                onlyColumns: ['statval', 'statval_unit'],
+                onlyColumns: valueOnlyColumns,
             }
         : {
                 simpleOrdinals,
@@ -70,7 +65,7 @@ export function useArticleTableLayout(mode: 'normal' | 'edit'): { currentUnivers
                 onlyColumns: allColumns,
             }
 
-    return { currentUniverse, layout }
+    return layout
 }
 
 export function ArticleTable(props: {
@@ -78,7 +73,8 @@ export function ArticleTable(props: {
     article: Article
     onEdit: () => void
 }): ReactNode {
-    const { currentUniverse, layout } = useArticleTableLayout('normal')
+    const currentUniverse = useDefinedUniverse()
+    const layout = useArticleTableLayout('normal')
     const navContext = useContext(Navigator.Context)
 
     // Subscribed to here rather than higher up so that edit mode, which shows every row

@@ -1,10 +1,11 @@
 import React, { ReactNode } from 'react'
 
-import { StatGroupSettings } from '../page_template/statistic-settings'
+import { StatGroupSettings, useVisibleRows } from '../page_template/statistic-settings'
+import { useDefinedUniverse } from '../universe'
 import { Article } from '../utils/protos'
 
 import { useArticleTableLayout, useExpandedPlotSpecs } from './article-table'
-import { EditModeState, EditTable, editRowsByGroup, useEditTableLayout, useVisibleRows } from './edit-table'
+import { EditModeState, EditTable, editRowsByGroup, useEditTableLayout } from './edit-table'
 import { ArticleRow } from './load-article'
 import { CellSpec } from './supertable'
 
@@ -13,7 +14,8 @@ export function ArticleEditTable(props: {
     article: Article
     editState: EditModeState
 }): ReactNode {
-    const { currentUniverse, layout: columnLayout } = useArticleTableLayout('edit')
+    const currentUniverse = useDefinedUniverse()
+    const columnLayout = useArticleTableLayout('edit')
     // This component only renders in edit mode, so every group is always forced on.
     const rowsByArticle = useVisibleRows(props.rows, true)
     const allRows = rowsByArticle[0]

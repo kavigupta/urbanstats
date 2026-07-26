@@ -9,7 +9,7 @@ import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 import { boundingBox, extendBoxes } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
 import { colorFromCycle, useColors } from '../page_template/colors'
-import { StatGroupSettings } from '../page_template/statistic-settings'
+import { StatGroupSettings, useVisibleRows } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
 import { Universe, universeContext } from '../universe'
@@ -24,7 +24,7 @@ import { zIndex } from '../utils/zIndex'
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { useCSVExport } from './csv-export'
-import { EditModeState, EditTable, editRowsByGroup, useEditModeState, useEditTableLayout, useVisibleRows } from './edit-table'
+import { EditModeState, EditTable, editRowsByGroup, useEditModeState, useEditTableLayout } from './edit-table'
 import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps, pullRelevantPlotProps, useExpandedByStat } from './plots'
@@ -33,7 +33,7 @@ import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from '.
 import { SearchBox } from './search'
 import { computeNameSpecsWithGroups } from './statistic-name-specs'
 import { TableContents, CellSpec, EditModeButton, PlotSpec, SuperHeaderSpec, TableLayout } from './supertable'
-import { ColumnIdentifier } from './table'
+import { ColumnIdentifier, valueOnlyColumns } from './table'
 
 export function ComparisonPanel(props: {
     universe: Universe
@@ -160,11 +160,10 @@ export function ComparisonPanel(props: {
         && (validOrdinalsByStat.length === 0 || validOrdinalsByStat.some(x => x))
     )
 
-    // On mobile, edit mode drops the ordinal columns so the checkboxes and names have room.
     const showOrdinalColumns = includeOrdinals && !(editMode && mobileLayout)
     const onlyColumns: ColumnIdentifier[] = showOrdinalColumns
         ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
-        : ['statval', 'statval_unit']
+        : valueOnlyColumns
 
     const expandedByStatIndex = useExpandedByStat(
         dataByStatArticle.map(([{ statpath }]) => statpath),

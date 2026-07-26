@@ -9,7 +9,7 @@ import { Navigator } from '../navigation/Navigator'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
-import { Universe, useUniverse } from '../universe'
+import { Universe, useDefinedUniverse, useUniverse } from '../universe'
 import { withButtonRole } from '../utils/a11y'
 import { assert } from '../utils/defensive'
 import { HumanReadableName, reifyReact, reifyString } from '../utils/human-readable-name'
@@ -32,6 +32,12 @@ import { SearchBox } from './search'
 import { Cell, CellSpec, ComparisonLongnameCellProps, EditModeButton, EditModeOpenHeader, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
+
+/**
+ * Just the value, for the tables that have no room for the ordinal and percentile columns.
+ * On mobile that's what edit mode gives up, so the checkboxes and names have room.
+ */
+export const valueOnlyColumns: ColumnIdentifier[] = ['statval', 'statval_unit']
 
 const leftBarMargin = 0.02
 
@@ -272,9 +278,9 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
         return <EditModeTopLeftHeader header={editMode} width={props.width} />
     }
 
-    const hasEditButton = editMode !== undefined && !isScreenshot
-    // On a narrow screen this cell is too small to fit both, and the button is the more useful of the two.
-    const showName = !hasEditButton || !isMobile
+    // On a narrow screen this cell is too small to fit both the button and the name, and the
+    // button is the more useful of the two. Screenshots have no button, so they keep the name.
+    const showName = !isMobile || editMode === undefined || isScreenshot
 
     return (
         <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '4px', padding: '1px', width: `${props.width}%` }}>
@@ -1268,8 +1274,7 @@ function Ordinal(props: {
     simpleOrdinals: boolean
     onNavigate?: (newArticle: string) => void
 }): ReactNode {
-    const currentUniverse = useUniverse()
-    assert(currentUniverse !== undefined, 'no universe')
+    const currentUniverse = useDefinedUniverse()
     const onNewNumber = async (number: number): Promise<void> => {
         if (props.onNavigate === undefined) {
             return
@@ -1331,8 +1336,7 @@ function Ordinal(props: {
 
 // Lacks some customization since its column is not show in the comparison view
 function PointerButtonsIndex(props: { ordinal?: number, statpath: string, type: string, total: number, longname: string, overallFirstLast?: FirstLastStatus }): ReactNode {
-    const currentUniverse = useUniverse()
-    assert(currentUniverse !== undefined, 'no universe')
+    const currentUniverse = useDefinedUniverse()
     const getData = async (): Promise<ArticleOrderingListInternal> => await loadOrdering(currentUniverse, props.statpath, props.type)
     return (
         <span style={{ margin: 'auto', whiteSpace: 'nowrap' }}>
