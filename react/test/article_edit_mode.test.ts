@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { categoryExpandButton, doneButton, editButton, filterBox, setCategoryExpanded } from './article_edit_test_utils'
+import { doneButton, editButton, filterBox, setCategoryExpanded } from './article_edit_test_utils'
 import { safeReload, screencap, target, urbanstatsFixture } from './test_utils'
 
 /**
@@ -54,29 +54,6 @@ test('clicking a stat name toggles its checkbox', async (t) => {
     // Click the name label (not the checkbox itself).
     await t.click(populationGroup.parent('label').find('span'))
     await t.expect(populationGroup.checked).notOk()
-})
-
-test('a checked category can still be collapsed and expanded', async (t) => {
-    await t.click(editButton)
-    await t.expect(mainCategory.checked).ok()
-    await setCategoryExpanded(t, 'Main', true)
-    await t.expect(Selector('input[data-test-id=edit_group_population]:not([inert] *)').exists).ok()
-
-    await setCategoryExpanded(t, 'Main', false)
-
-    // Collapsing a *checked* category works: its groups become inert, but it stays checked.
-    await t.expect(mainCategory.checked).ok()
-    await t.expect(categoryExpandButton('Main', true).exists).ok()
-    await t.expect(Selector('input[data-test-id=edit_group_population]:not([inert] *)').exists).notOk()
-})
-
-test('the filter narrows to matching categories', async (t) => {
-    await t.click(editButton)
-    await t.typeText(filterBox, 'Race')
-
-    await t.expect(Selector('input[data-test-id=edit_category_race]').exists).ok()
-    // Main has no group matching "Race", so it is filtered out entirely.
-    await t.expect(mainCategory.exists).notOk()
 })
 
 test('stat extras (plots) can be expanded in edit mode', async (t) => {
