@@ -8,8 +8,8 @@ import { HistogramType, useSetting } from '../page_template/settings'
 import { IHistogram } from '../utils/protos'
 import { useTranspose } from '../utils/transpose'
 
+import { CheckboxSetting } from './checkbox-setting'
 import { axisAndGrid, bottomLabelOffset, bottomLabelOffsetTranspose, computeDashPatterns, DetailedPlotSpec, groupedTipTitle, paddedYDomain, SeriesPlot, transposeAwareTip } from './plots-general'
-import { CheckboxSetting } from './sidebar'
 
 const yPad = 0.025
 

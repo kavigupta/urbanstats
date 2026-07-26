@@ -2,7 +2,7 @@ import assert from 'assert'
 
 import React, { ReactNode } from 'react'
 
-import { CheckboxSettingCustom } from '../../components/sidebar'
+import { CheckboxSettingCustom } from '../../components/checkbox-setting'
 import { DisplayResults } from '../../urban-stats-script/Editor'
 import { locationOf, UrbanStatsASTExpression, UrbanStatsASTStatement } from '../../urban-stats-script/ast'
 import { EditorError } from '../../urban-stats-script/editor-utils'
