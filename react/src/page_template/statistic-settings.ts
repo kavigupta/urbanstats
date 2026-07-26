@@ -41,26 +41,17 @@ export function groupYearKeys(): (keyof StatGroupSettings)[] {
     ]
 }
 
-function useCategoryStatus(category: Category): boolean | 'indeterminate' {
-    const groups = useAvailableGroups(category)
-    const settingsValues = useSettings(groupKeys(groups))
-    const checkedGroups = groups.filter(group => settingsValues[`show_stat_group_${group.id}`]).length
-
-    let result: boolean | 'indeterminate'
+function categoryStatus(groups: Group[], enabled: (group: Group) => boolean): boolean | 'indeterminate' {
+    const checkedGroups = groups.filter(enabled).length
 
     switch (checkedGroups) {
         case 0:
-            result = false
-            break
+            return false
         case groups.length:
-            result = true
-            break
+            return true
         default:
-            result = 'indeterminate'
-            break
+            return 'indeterminate'
     }
-
-    return result
 }
 
 function changeStatGroupSetting(settings: Settings, group: Group, newValue: boolean): void {
@@ -77,38 +68,33 @@ function saveIndeterminateState(settings: Settings, category: Category): void {
     )
 }
 
-function useChangeCategorySetting(category: Category): () => void {
-    const categoryStatus = useCategoryStatus(category)
-    const availableGroups = useAvailableGroups(category)
-    const settings = useContext(Settings.Context)
-    return () => {
-        const setAllGroups = (value: (group: Group) => boolean): void => {
-            category.contents.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, value(group)) })
-        }
-        /**
-         * State machine:
-         *
-         * indeterminate -> checked -> unchecked -(if nonempty saved indeterminate)-> indeterminate
-         *                                       -(if empty saved indeterminate)-> checked
-         */
-        switch (categoryStatus) {
-            case 'indeterminate':
+/**
+ * State machine:
+ *
+ * indeterminate -> checked -> unchecked -(if nonempty saved indeterminate)-> indeterminate
+ *                                       -(if empty saved indeterminate)-> checked
+ */
+function toggleCategorySetting(settings: Settings, category: Category, availableGroups: Group[], status: boolean | 'indeterminate'): void {
+    const setAllGroups = (value: (group: Group) => boolean): void => {
+        category.contents.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, value(group)) })
+    }
+    switch (status) {
+        case 'indeterminate':
+            setAllGroups(() => true)
+            break
+        case true:
+            setAllGroups(() => false)
+            break
+        case false:
+            const savedDeterminate = new Set(settings.get(`stat_category_saved_indeterminate_${category.id}`))
+            // The saved state can refer to groups that don't exist on this page, which would restore nothing
+            if (availableGroups.every(group => !savedDeterminate.has(group.id))) {
                 setAllGroups(() => true)
-                break
-            case true:
-                setAllGroups(() => false)
-                break
-            case false:
-                const savedDeterminate = new Set(settings.get(`stat_category_saved_indeterminate_${category.id}`))
-                // The saved state can refer to groups that don't exist on this page, which would restore nothing
-                if (availableGroups.every(group => !savedDeterminate.has(group.id))) {
-                    setAllGroups(() => true)
-                }
-                else {
-                    setAllGroups(group => savedDeterminate.has(group.id))
-                }
-                break
-        }
+            }
+            else {
+                setAllGroups(group => savedDeterminate.has(group.id))
+            }
+            break
     }
 }
 
@@ -136,8 +122,6 @@ export interface CategoryTreeState {
 export function useCategoryTreeState(category: Category): CategoryTreeState {
     const settings = useContext(Settings.Context)
     const availableGroups = useAvailableGroups(category)
-    const status = useCategoryStatus(category)
-    const toggle = useChangeCategorySetting(category)
     const enabled = useSettings(groupKeys(availableGroups))
     const info = useSettingsInfo(groupKeys(availableGroups))
     const [expanded, setExpanded] = useSetting(`stat_category_expanded_${category.id}`)
@@ -149,9 +133,11 @@ export function useCategoryTreeState(category: Category): CategoryTreeState {
         highlight: isStagedChange(info[`show_stat_group_${group.id}`]),
     }))
 
+    const status = categoryStatus(availableGroups, group => enabled[`show_stat_group_${group.id}`])
+
     return {
         status,
-        toggle,
+        toggle: () => { toggleCategorySetting(settings, category, availableGroups, status) },
         highlight: groups.some(group => group.highlight),
         expanded,
         setExpanded,

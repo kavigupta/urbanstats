@@ -4,7 +4,7 @@ import { useColors } from '../page_template/colors'
 import { Settings } from '../page_template/settings'
 import { useMobileLayout } from '../utils/responsive'
 
-export function StagingControls({ horizontal = false, onAction }: { horizontal?: boolean, onAction?: () => void } = {}): ReactNode {
+export function StagingControls({ horizontal = false, onAction }: { horizontal?: boolean, onAction?: () => void }): ReactNode {
     const settings = useContext(Settings.Context)
     const colors = useColors()
     const isMobile = useMobileLayout()

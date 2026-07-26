@@ -93,7 +93,7 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
             </div>
             <CategoryContents
                 key={category.id}
-                category={category}
+                groups={tree.groups}
                 isExpanded={tree.expanded || hasSearchMatch}
             />
         </li>
@@ -115,7 +115,7 @@ function GroupComponent({ state }: { state: GroupTreeState }): ReactNode {
     )
 }
 
-function CategoryContents({ category, isExpanded }: { category: Category, isExpanded: boolean }): ReactNode {
+function CategoryContents({ groups, isExpanded }: { groups: GroupTreeState[], isExpanded: boolean }): ReactNode {
     const sidebarSectionContent = useSidebarSectionContentClassName()
 
     return (
@@ -131,7 +131,7 @@ function CategoryContents({ category, isExpanded }: { category: Category, isExpa
                                 style={{ opacity: 0, position: 'absolute' }}
                                 ref={arg.ref}
                             >
-                                <CategoryCoreContents category={category} />
+                                <CategoryCoreContents groups={groups} />
                             </ul>
                         )
                     case 'visible':
@@ -150,7 +150,7 @@ function CategoryContents({ category, isExpanded }: { category: Category, isExpa
                                 className={sidebarSectionContent}
                                 style={{ maxHeight, marginTop, opacity: 1, padding: 0 }}
                             >
-                                <CategoryCoreContents category={category} />
+                                <CategoryCoreContents groups={groups} />
                             </ul>
                         )
                 }
@@ -159,6 +159,6 @@ function CategoryContents({ category, isExpanded }: { category: Category, isExpa
     )
 }
 
-function CategoryCoreContents({ category }: { category: Category }): ReactNode {
-    return useCategoryTreeState(category).groups.map(state => <GroupComponent key={state.group.id} state={state} />)
+function CategoryCoreContents({ groups }: { groups: GroupTreeState[] }): ReactNode {
+    return groups.map(state => <GroupComponent key={state.group.id} state={state} />)
 }

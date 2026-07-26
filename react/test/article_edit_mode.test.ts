@@ -48,7 +48,7 @@ test('edit mode is ephemeral across reloads', async (t) => {
 
 test('clicking a stat name toggles its checkbox', async (t) => {
     await t.click(editButton)
-    await setCategoryExpanded(t, 'Main', true)
+    await setCategoryExpanded(t, 'main', true)
     await t.expect(populationGroup.checked).ok()
 
     // Click the name label (not the checkbox itself).
@@ -58,7 +58,7 @@ test('clicking a stat name toggles its checkbox', async (t) => {
 
 test('stat extras (plots) can be expanded in edit mode', async (t) => {
     await t.click(editButton)
-    await setCategoryExpanded(t, 'Main', true)
+    await setCategoryExpanded(t, 'main', true)
     const expandToggle = Selector('.stats_table .expand-toggle:not([inert] *)')
     await t.expect(expandToggle.exists).ok()
 

@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { categoryExpandButton, collapseAnimationMs, enterEditMode, exitEditMode, filterBox, setCategoryExpanded } from './article_edit_test_utils'
+import { categoryToggleButton, collapseAnimationMs, enterEditMode, exitEditMode, filterBox, setCategoryExpanded } from './article_edit_test_utils'
 import { checkIsIndeterminate, clickUniverseFlag, resizeForPlatform, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, withHamburgerMenu } from './test_utils'
 
 /**
@@ -19,7 +19,8 @@ const populationCheck = 'input[data-test-id=edit_group_population]'
 // Collapsed categories stay mounted (so the height transition has content) but are
 // marked inert, so clicking requires the interactable variant.
 const populationCheckInteractable = `${populationCheck}:not([inert] *)`
-const mainExpand = categoryExpandButton('Main', true)
+// Present only while Main is collapsed, since the toggle then offers to expand.
+const mainExpandButton = categoryToggleButton('main', 'Expand')
 // The sidebar's copy of the same group, for cross-tree checks.
 const sidebarPopulationCheck = 'input[data-test-id=group_population]:not([inert] *)'
 
@@ -234,7 +235,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
             await t.wait(collapseAnimationMs)
             await t.expect(Selector(sidebarPopulationCheck).exists).notOk()
         })
-        await t.expect(mainExpand.exists).ok()
+        await t.expect(mainExpandButton.exists).ok()
         await t.expect(Selector(populationCheckInteractable).exists).notOk()
     })
 
@@ -253,7 +254,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.selectText(filterBox).pressKey('delete')
         await t.expect(Selector(mainCheck).exists).ok()
         // Filtering doesn't leave the categories it expanded expanded.
-        await t.expect(mainExpand.exists).ok()
+        await t.expect(mainExpandButton.exists).ok()
     })
 
     test('trees-stay-in-sync', async (t) => {
@@ -320,7 +321,7 @@ async function selectUniverse(t: TestController, alt: string): Promise<void> {
 }
 
 async function setMainExpanded(t: TestController, expanded: boolean): Promise<void> {
-    await setCategoryExpanded(t, 'Main', expanded)
+    await setCategoryExpanded(t, 'main', expanded)
 }
 
 async function uncheckAll(t: TestController): Promise<void> {

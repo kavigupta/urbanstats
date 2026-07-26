@@ -22,12 +22,16 @@ export async function exitEditMode(t: TestController): Promise<void> {
     await t.expect(editButton.exists).ok()
 }
 
-export function categoryExpandButton(category: string, expanded: boolean): Selector {
-    return Selector(`.stats_table [aria-label="${expanded ? 'Expand' : 'Collapse'} ${category} category"]`)
+/**
+ * A category's toggle in the edit tree, matched by the direction it currently offers, so
+ * its presence also tells you which state the category is in.
+ */
+export function categoryToggleButton(categoryId: string, direction: 'Expand' | 'Collapse'): Selector {
+    return Selector(`.stats_table [data-category-id=${categoryId}]`).withAttribute('aria-label', new RegExp(`^${direction} `))
 }
 
 /** Categories are collapsed by default, and the toggle animates. */
-export async function setCategoryExpanded(t: TestController, category: string, expanded: boolean): Promise<void> {
-    await t.click(categoryExpandButton(category, expanded))
+export async function setCategoryExpanded(t: TestController, categoryId: string, expanded: boolean): Promise<void> {
+    await t.click(categoryToggleButton(categoryId, expanded ? 'Expand' : 'Collapse'))
     await t.wait(collapseAnimationMs)
 }

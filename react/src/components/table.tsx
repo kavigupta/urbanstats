@@ -283,7 +283,7 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
         // In staging mode the Discard/Apply buttons double as Done, so hide the Done button.
         return (
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '1px', width: `${props.width}%` }}>
-                {!staged && <EditModeButton onClick={() => { editModeContext.setEditMode(false) }} text="Done" />}
+                {!staged && <EditModeButton onClick={() => { editModeContext.setEditMode(false) }} text="Done" testId="edit-mode-done" />}
                 <input
                     type="text"
                     className="serif"
@@ -302,7 +302,7 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
             <div style={{ position: 'relative', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1px', width: `${props.width}%` }}>
                 {editModeContext !== undefined && !isScreenshot && (
                     <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}>
-                        <EditModeButton onClick={() => { editModeContext.setEditMode(true) }} text="Edit" />
+                        <EditModeButton onClick={() => { editModeContext.setEditMode(true) }} text="Edit" testId="edit-mode-edit" />
                     </div>
                 )}
                 {canHaveStatsModal
@@ -328,14 +328,14 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     )
 }
 
-function EditModeButton({ onClick, text }: { onClick: () => void, text: string }): ReactNode {
+function EditModeButton({ onClick, text, testId }: { onClick: () => void, text: string, testId: string }): ReactNode {
     // Matches the mobile "Statistic" header button (serif value, taller, larger text).
     return (
         <button
             className="serif value"
             style={{ padding: '2px 10px', cursor: 'pointer' }}
             onClick={onClick}
-            data-test-id={`edit-mode-${text.toLowerCase()}`}
+            data-test-id={testId}
         >
             {text}
         </button>
@@ -978,7 +978,24 @@ function SortButton(props: StatisticNameCellProps & { sortInfo: NonNullable<Stat
     )
 }
 
-export function ExpansionButton(props: { row: ArticleRow }): ReactNode {
+/**
+ * The controls that sit next to a statistic's name: the plot expander and the disclaimer
+ * marker. Callers are responsible for spacing them, since the table and the edit tree lay
+ * out the name row differently.
+ */
+export function useStatisticNameAdornments(row: ArticleRow | undefined, footnote?: string): ReactNode[] {
+    const screenshotMode = useScreenshotMode()
+    const adornments: ReactNode[] = []
+    if (row !== undefined && row.extraStats.length !== 0 && !screenshotMode) {
+        adornments.push(<ExpansionButton key="expansion" row={row} />)
+    }
+    if (row?.disclaimer !== undefined) {
+        adornments.push(<StatisticNameDisclaimer key="disclaimer" disclaimer={row.disclaimer} footnoteSymbol={footnote} />)
+    }
+    return adornments
+}
+
+function ExpansionButton(props: { row: ArticleRow }): ReactNode {
     const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
     return (
@@ -1042,16 +1059,7 @@ function StatisticName(props: {
                         {reifyReact(props.displayName)}
                     </span>
                 )
-    const screenshotMode = useScreenshotMode()
-    const elements = [link]
-    if (props.row !== undefined && props.row.extraStats.length !== 0 && !screenshotMode) {
-        elements.push(
-            <ExpansionButton key="expansion" row={props.row} />,
-        )
-    }
-    if (props.row?.disclaimer !== undefined) {
-        elements.push(<StatisticNameDisclaimer disclaimer={props.row.disclaimer} footnoteSymbol={props.footnoteSymbol} />)
-    }
+    const elements = [link, ...useStatisticNameAdornments(props.row, props.footnoteSymbol)]
     if (elements.length > 1) {
         const footnoteOnly = elements.length === 2 && props.footnoteSymbol !== undefined
         if (footnoteOnly) {
@@ -1121,7 +1129,7 @@ export function computeDisclaimerFootnotes(rows: { disclaimer?: Disclaimer }[]):
     return { getSymbol, footnotes }
 }
 
-export function StatisticNameDisclaimer(props: { disclaimer: Disclaimer, footnoteSymbol?: string }): ReactNode {
+function StatisticNameDisclaimer(props: { disclaimer: Disclaimer, footnoteSymbol?: string }): ReactNode {
     const colors = useColors()
     const [show, setShow] = useState(false)
     if (props.footnoteSymbol !== undefined) {
