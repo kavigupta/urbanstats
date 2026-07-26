@@ -268,22 +268,27 @@ export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: num
 
 export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
     const isScreenshot = useScreenshotMode()
+    const isMobile = useMobileLayout()
     const editMode = props.editMode
 
     if (editMode?.open) {
         return <EditModeTopLeftHeader header={editMode} width={props.width} />
     }
 
+    const showEditButton = editMode !== undefined && !isScreenshot
+    // On a narrow screen this cell is too small to fit both, and the button is the more useful of the two.
+    const showName = !showEditButton || !isMobile
+
     return (
-        <div style={{ position: 'relative', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1px', width: `${props.width}%` }}>
-            {editMode !== undefined && !isScreenshot && (
-                <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}>
-                    <HeaderButton onClick={editMode.onEdit} testId="edit-mode-edit">{editMode.label}</HeaderButton>
-                </div>
+        <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '4px', padding: '1px', width: `${props.width}%` }}>
+            {showEditButton && (
+                <HeaderButton onClick={editMode.onEdit} testId="edit-mode-edit">{editMode.label}</HeaderButton>
             )}
-            <span className="serif value">
-                {props.statNameOverride ?? 'Statistic'}
-            </span>
+            {showName && (
+                <span className="serif value" style={{ flexGrow: 1 }}>
+                    {props.statNameOverride ?? 'Statistic'}
+                </span>
+            )}
         </div>
     )
 }
