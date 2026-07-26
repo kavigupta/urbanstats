@@ -61,8 +61,10 @@ function EditStatRow(props: {
     index: number
     highlight: boolean
     enabled: boolean
+    /** The group's checkbox, on the row that carries it. */
     checkbox?: ReactNode
-    checkboxId: string
+    /** The id of the group's checkbox, on the rows that only point at it. */
+    htmlFor?: string
     displayName: HumanReadableName
     indent: number
     row: ArticleRow
@@ -74,11 +76,11 @@ function EditStatRow(props: {
     const congressionalRegion = props.enabled ? congressionalDataForRow(props.row, longname) : undefined
     return (
         <>
-            <TableRowContainer index={props.index} isHighlighted={false}>
+            <TableRowContainer index={props.index}>
                 <div style={{ width: `${widthLeftHeader}%`, display: 'flex', alignItems: 'center', gap: '0.3em', paddingLeft: `${props.indent * 0.75}em` }}>
                     <EditCheckboxLabel
                         highlight={props.highlight}
-                        htmlFor={props.checkbox === undefined ? props.checkboxId : undefined}
+                        htmlFor={props.htmlFor}
                         checkbox={props.checkbox}
                     >
                         {reifyReact(props.displayName)}
@@ -108,7 +110,7 @@ function EditStatRow(props: {
 
 function EditGroupHeaderRow(props: { index: number, highlight: boolean, checkbox: ReactNode, name: string }): ReactNode {
     return (
-        <TableRowContainer index={props.index} isHighlighted={false}>
+        <TableRowContainer index={props.index}>
             <EditCheckboxLabel highlight={props.highlight} checkbox={props.checkbox} style={{ width: '100%', paddingLeft: '0.75em' }}>
                 {props.name}
             </EditCheckboxLabel>
@@ -143,9 +145,9 @@ function EditCategory(props: {
     const tree = useCategoryTreeState(props.category)
     const expanded = props.searching || tree.expanded
 
-    // The category header is row 0, so the body starts at 1 and the striping stays alternating.
-    let index = 1
-    const bodyRows: ReactNode[] = []
+    // Each row is rendered against the position it ends up at, so the striping stays
+    // alternating no matter which groups contributed rows.
+    const bodyRows: ((index: number) => ReactNode)[] = []
     for (const { group, enabled, setEnabled, highlight } of tree.groups) {
         const groupRows = props.rowsByGroup.get(group.id) ?? []
         if (groupRows.length === 0) {
@@ -163,48 +165,47 @@ function EditCategory(props: {
             />
         )
         if (groupRows.length === 1) {
-            bodyRows.push(
+            bodyRows.push(index => (
                 <EditStatRow
                     key={`group-${group.id}`}
                     layout={props.layout}
-                    index={index++}
+                    index={index}
                     highlight={highlight}
                     enabled={enabled}
                     checkbox={checkbox}
-                    checkboxId={checkboxId}
                     displayName={groupRows[0].displayName}
                     indent={1}
                     row={groupRows[0].row}
                     plotSpec={props.plotSpecs[groupRows[0].index]}
-                />,
-            )
+                />
+            ))
         }
         else {
-            bodyRows.push(
-                <EditGroupHeaderRow key={`group-${group.id}`} index={index++} highlight={highlight} checkbox={checkbox} name={group.name} />,
-            )
+            bodyRows.push(index => (
+                <EditGroupHeaderRow key={`group-${group.id}`} index={index} highlight={highlight} checkbox={checkbox} name={group.name} />
+            ))
             for (const editRow of groupRows) {
-                bodyRows.push(
+                bodyRows.push(index => (
                     <EditStatRow
                         key={`stat-${editRow.row.statpath}`}
                         layout={props.layout}
-                        index={index++}
+                        index={index}
                         highlight={highlight}
                         enabled={enabled}
-                        checkboxId={checkboxId}
+                        htmlFor={checkboxId}
                         displayName={editRow.displayName}
                         indent={2}
                         row={editRow.row}
                         plotSpec={props.plotSpecs[editRow.index]}
-                    />,
-                )
+                    />
+                ))
             }
         }
     }
 
     return (
         <>
-            <TableRowContainer index={0} isHighlighted={false}>
+            <TableRowContainer index={0}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25em', padding: '1px', width: '100%' }}>
                     {!props.searching && (
                         <ExpandButton
@@ -236,7 +237,8 @@ function EditCategory(props: {
                 </div>
             </TableRowContainer>
             <AnimatedCollapse expanded={expanded}>
-                {bodyRows}
+                {/* The category header is row 0, so the body starts at 1. */}
+                {bodyRows.map((renderRow, position) => renderRow(position + 1))}
             </AnimatedCollapse>
         </>
     )

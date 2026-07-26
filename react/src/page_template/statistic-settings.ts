@@ -48,13 +48,13 @@ export function groupYearKeys(): (keyof StatGroupSettings)[] {
     ]
 }
 
-function categoryStatus(groups: Group[], enabled: (group: Group) => boolean): boolean | 'indeterminate' {
-    const checkedGroups = groups.filter(enabled).length
+function categoryStatus(enabled: boolean[]): boolean | 'indeterminate' {
+    const checkedGroups = enabled.filter(value => value).length
 
     switch (checkedGroups) {
         case 0:
             return false
-        case groups.length:
+        case enabled.length:
             return true
         default:
             return 'indeterminate'
@@ -139,7 +139,7 @@ export function useCategoryTreeState(category: Category): CategoryTreeState {
         highlight: isStagedChange(info[`show_stat_group_${group.id}`]),
     }))
 
-    const status = categoryStatus(availableGroups, group => settingValue(info[`show_stat_group_${group.id}`]))
+    const status = categoryStatus(groups.map(group => group.enabled))
 
     return {
         status,

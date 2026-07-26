@@ -286,14 +286,14 @@ export function TopLeftHeader(props: ArticleTopLeftHeaderProps & { width: number
             <div style={{ position: 'relative', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1px', width: `${props.width}%` }}>
                 {editMode !== undefined && !isScreenshot && (
                     <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}>
-                        <EditModeButton onClick={editMode.onEdit} text="Edit" testId="edit-mode-edit" />
+                        <HeaderButton onClick={editMode.onEdit} testId="edit-mode-edit">Edit</HeaderButton>
                     </div>
                 )}
                 {canHaveStatsModal
                     ? (
-                            <button className="serif value" style={{ padding: '2px 10px' }} onClick={() => { setStatsModalOpen(true) }}>
+                            <HeaderButton onClick={() => { setStatsModalOpen(true) }}>
                                 {props.statNameOverride ?? 'Statistic'}
-                            </button>
+                            </HeaderButton>
                         )
                     : (
                             <span className="serif value">
@@ -316,7 +316,7 @@ export function TopLeftHeader(props: ArticleTopLeftHeaderProps & { width: number
 function EditModeTopLeftHeader({ header, width }: { header: Extract<EditModeHeader, { open: true }>, width: number }): ReactNode {
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '1px', width: `${width}%` }}>
-            {header.onDone !== undefined && <EditModeButton onClick={header.onDone} text="Done" testId="edit-mode-done" />}
+            {header.onDone !== undefined && <HeaderButton onClick={header.onDone} testId="edit-mode-done">Done</HeaderButton>}
             <input
                 type="text"
                 className="serif"
@@ -330,8 +330,8 @@ function EditModeTopLeftHeader({ header, width }: { header: Extract<EditModeHead
     )
 }
 
-function EditModeButton({ onClick, text, testId }: { onClick: () => void, text: string, testId: string }): ReactNode {
-    // Matches the mobile "Statistic" header button (serif value, taller, larger text).
+/** A button sized to sit in the table's top-left cell, alongside the "Statistic" header text. */
+function HeaderButton({ onClick, testId, children }: { onClick: () => void, testId?: string, children: ReactNode }): ReactNode {
     return (
         <button
             className="serif value"
@@ -339,7 +339,7 @@ function EditModeButton({ onClick, text, testId }: { onClick: () => void, text: 
             onClick={onClick}
             data-test-id={testId}
         >
-            {text}
+            {children}
         </button>
     )
 }
@@ -1171,7 +1171,7 @@ function StatisticNameDisclaimer(props: { disclaimer: Disclaimer, footnoteSymbol
     )
 }
 
-export function TableRowContainer({ children, index, minHeight, isHighlighted }: { children: React.ReactNode, index: number, minHeight?: string, isHighlighted: boolean }): React.ReactNode {
+export function TableRowContainer({ children, index, minHeight, isHighlighted = false }: { children: React.ReactNode, index: number, minHeight?: string, isHighlighted?: boolean }): React.ReactNode {
     const colors = useColors()
     const style: React.CSSProperties = {
         ...tableRowStyle,
