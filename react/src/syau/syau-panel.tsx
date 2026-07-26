@@ -43,11 +43,11 @@ export function SYAUPanel(props: { typ?: string, universe?: Universe, counts: Co
                         if (el === null) {
                             return Promise.resolve()
                         }
-                        return createScreenshot({
+                        return createScreenshot(() => ({
                             path: `syau-${sanitize(`${props.typ!}-${props.universe!}`)}.png`,
                             overallWidth: el.offsetWidth * 4,
                             elementsToRender: [el],
-                        }, ...args, true)
+                        }), ...args, true)
                     }
                 : undefined}
         >

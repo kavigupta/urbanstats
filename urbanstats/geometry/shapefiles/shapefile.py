@@ -1,9 +1,12 @@
 import pickle
 from collections import defaultdict
+from typing import Optional
 
 import attr
 import geopandas as gpd
 import pandas as pd
+
+from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 
 
 @attr.s
@@ -23,6 +26,9 @@ class Shapefile:
     special_data_sources = attr.ib(default=attr.Factory(dict))
     universe_provider = attr.ib(kw_only=True)
     subset_masks = attr.ib(default=attr.Factory(dict))
+    cross_source_borders: Optional[CrossSourceBorders] = attr.ib(
+        kw_only=True, default=None
+    )
     abbreviation = attr.ib(kw_only=True)
     data_credit = attr.ib(kw_only=True)
     start_date = attr.ib(kw_only=True, default=None)

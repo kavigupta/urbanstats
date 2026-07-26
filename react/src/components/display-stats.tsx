@@ -124,22 +124,26 @@ export function LeftMargin(props: { value: number }): ReactNode {
     )
 }
 
+// The ordinal suffix ("st"/"nd"/"rd"/"th") for a percentile number.
+function percentileSuffix(percentile: number): string {
+    if (percentile % 10 === 1 && percentile % 100 !== 11) {
+        return 'st'
+    }
+    if (percentile % 10 === 2 && percentile % 100 !== 12) {
+        return 'nd'
+    }
+    if (percentile % 10 === 3 && percentile % 100 !== 13) {
+        return 'rd'
+    }
+    return 'th'
+}
+
 export function percentileText(percentile: number, simpleOrdinals: boolean): string {
-    // something like Xth percentile
-    let text = `${percentile}th percentile`
     if (simpleOrdinals) {
-        text = `${percentile.toString()}%`
+        return `${percentile.toString()}%`
     }
-    else if (percentile % 10 === 1 && percentile % 100 !== 11) {
-        text = `${percentile}st percentile`
-    }
-    else if (percentile % 10 === 2 && percentile % 100 !== 12) {
-        text = `${percentile}nd percentile`
-    }
-    else if (percentile % 10 === 3 && percentile % 100 !== 13) {
-        text = `${percentile}rd percentile`
-    }
-    return text
+    // something like Xth percentile
+    return `${percentile}${percentileSuffix(percentile)} percentile`
 }
 
 export function Percentile(props: {

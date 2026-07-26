@@ -1,3 +1,4 @@
+from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import valid_state
@@ -44,6 +45,10 @@ URBAN_CENTERS = create_urban_center_like_shapefile(
     path=load_ghsl_urban_center,
     meta=dict(type="Urban Center", source="GHSL", type_category="International City"),
     hash_key="urban_centers_6",
+    cross_source_borders=CrossSourceBorders(
+        can_straddle=True,
+        alternative_geography_types=["Urban Area", "CA Population Center"],
+    ),
     abbreviation="URBC",
     data_credit=dict(
         text="We filtered this dataset for urban centers with a quality code (QA2_1V) of 1, indicating a true"

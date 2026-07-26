@@ -1,4 +1,5 @@
 from urbanstats.data.wikipedia.wikidata_sourcer import SimpleWikidataSourcer
+from urbanstats.geometry.shapefiles.cross_source_borders import CrossSourceBorders
 from urbanstats.geometry.shapefiles.shapefile import Shapefile
 from urbanstats.geometry.shapefiles.shapefile_subset import FilteringSubset
 from urbanstats.geometry.shapefiles.shapefiles.subnational_regions import (
@@ -36,6 +37,7 @@ COUNTRIES = Shapefile(
             "Canada", lambda x: extract_country_longname(x) == "Canada"
         ),
     },
+    cross_source_borders=CrossSourceBorders(can_straddle=False),
     abbreviation="CTRY",
     data_credit=SUBNATIONAL_REGIONS.data_credit,
     include_in_syau=True,

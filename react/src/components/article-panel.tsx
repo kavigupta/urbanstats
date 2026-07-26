@@ -58,7 +58,7 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
         >
             <QuerySettingsConnection />
             <PageTemplate
-                screencap={(...args) => createScreenshot(screencapElements(), ...args)}
+                screencap={(...args) => createScreenshot(screencapElements, ...args)}
                 csvExportCallback={csvExportCallback}
             >
                 <div>
