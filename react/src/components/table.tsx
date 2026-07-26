@@ -8,7 +8,7 @@ import './table.css'
 import { Navigator } from '../navigation/Navigator'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
-import { MobileArticlePointers, rowExpandedKey, useIsStaged, useSetting, useSettings } from '../page_template/settings'
+import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { Universe, useUniverse } from '../universe'
 import { withButtonRole } from '../utils/a11y'
 import { assert } from '../utils/defensive'
@@ -32,7 +32,6 @@ import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
 import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
-import { useEditMode } from './table-edit-context'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -263,8 +262,7 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     const isMobileLayout = useMobileLayout()
     const isScreenshot = useScreenshotMode()
     const isTranspose = useTranspose()
-    const editModeContext = useEditMode()
-    const staged = useIsStaged()
+    const editMode = props.editMode
 
     const [statsModalOpen, setStatsModalOpen] = useState(false)
 
@@ -279,18 +277,18 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     const sidebarSectionContent = useSidebarSectionContentClassName()
     const sidebarFontSize = useSidebarFontSize()
 
-    if (editModeContext?.editMode) {
-        // In staging mode the Discard/Apply buttons double as Done, so hide the Done button.
+    if (editMode?.open) {
+        const onDone = editMode.onDone
         return (
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '1px', width: `${props.width}%` }}>
-                {!staged && <EditModeButton onClick={() => { editModeContext.setEditMode(false) }} text="Done" testId="edit-mode-done" />}
+                {onDone !== undefined && <EditModeButton onClick={onDone} text="Done" testId="edit-mode-done" />}
                 <input
                     type="text"
                     className="serif"
                     placeholder="Search Statistics"
                     style={{ flex: '1 1 auto', minWidth: 0, fontSize: '16px' }}
-                    value={editModeContext.filter}
-                    onChange={(e) => { editModeContext.setFilter(e.target.value) }}
+                    value={editMode.filter}
+                    onChange={(e) => { editMode.setFilter(e.target.value) }}
                     data-test-id="edit-mode-filter"
                 />
             </div>
@@ -300,9 +298,9 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     return (
         <>
             <div style={{ position: 'relative', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1px', width: `${props.width}%` }}>
-                {editModeContext !== undefined && !isScreenshot && (
+                {editMode !== undefined && !isScreenshot && (
                     <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}>
-                        <EditModeButton onClick={() => { editModeContext.setEditMode(true) }} text="Edit" testId="edit-mode-edit" />
+                        <EditModeButton onClick={editMode.onEdit} text="Edit" testId="edit-mode-edit" />
                     </div>
                 )}
                 {canHaveStatsModal

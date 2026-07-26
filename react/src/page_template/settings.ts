@@ -300,7 +300,7 @@ export function useSettingsInfo<K extends keyof SettingsDictionary>(keys: K[]): 
     return settings.useSettingsInfo(keys)
 }
 
-export function useStagedSettingKeys(): (keyof SettingsDictionary)[] | undefined {
+function useStagedSettingKeys(): (keyof SettingsDictionary)[] | undefined {
     const settings = useContext(Settings.Context)
     return settings.useStagedKeys()
 }

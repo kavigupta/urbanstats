@@ -1,18 +1,16 @@
 import React, { CSSProperties, ReactNode, useMemo } from 'react'
 
-import { useIsStaged, useSetting, useSettings } from '../page_template/settings'
-import { filterCategoriesBySearch, groupYearKeys, StatGroupSettings, useAvailableCategories, useAvailableGroups, useCategoryTreeState } from '../page_template/statistic-settings'
+import { useIsStaged, useSettings } from '../page_template/settings'
+import { filterCategoriesBySearch, StatGroupSettings, useAvailableCategories, useAvailableGroups, useCategoryTreeState, yearSourceKeys } from '../page_template/statistic-settings'
 import { allGroups, Category, statParents } from '../page_template/statistic-tree'
-import { useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { HumanReadableName, reifyReact } from '../utils/human-readable-name'
 import { Article } from '../utils/protos'
-import { useMobileLayout } from '../utils/responsive'
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { ExpandButton } from './ExpandButton'
 import { StagingControls } from './StagingControls'
-import { allColumns, useExpandedPlotSpecs, useWidths } from './article-table'
+import { useArticleTableLayout, useExpandedPlotSpecs } from './article-table'
 import { congressionalDataForRow } from './congressional-table/model'
 import { ArticleRow } from './load-article'
 import { CheckboxSettingJustBox, useHighlightStyle } from './sidebar'
@@ -29,9 +27,6 @@ const editLabelStyle: CSSProperties = { padding: '1px', display: 'flex', alignIt
 // `height: auto` opts out of the sidebar checkbox's font-size-derived height, so the
 // box keeps its intrinsic (square) size against the table's row text.
 const editCheckboxStyle: CSSProperties = { cursor: 'pointer', flex: '0 0 auto', height: 'auto' }
-
-/** Percent of the table the name column takes in mobile edit mode, where it has fewer columns to compete with. */
-const mobileEditWidthLeftHeader = 58
 
 /** Layout shared by every row of the edit table. */
 interface EditTableLayout {
@@ -256,45 +251,39 @@ function EditCategory(props: {
  * Every available row, regardless of which stat groups are currently enabled, so the
  * edit tree can show the whole category/group tree. Only computed while edit mode is
  * open, since building it means re-running the filter and sort over every statistic.
+ *
+ * Deliberately not subscribed to the group settings: they're all forced on here, so a
+ * checkbox toggle can't change the result, and subscribing would redo that work on
+ * every click.
  */
 function useAllRows(rows: (settings: StatGroupSettings) => ArticleRow[][]): ArticleRow[] {
-    const settings = useSettings(groupYearKeys())
+    const yearSourceSettings = useSettings(yearSourceKeys())
     return useMemo(() => {
-        const allGroupsEnabled = { ...settings }
+        const allGroupsEnabled = { ...yearSourceSettings } as StatGroupSettings
         for (const group of allGroups) {
             allGroupsEnabled[`show_stat_group_${group.id}`] = true
         }
         return rows(allGroupsEnabled)[0]
-    }, [rows, settings])
+    }, [rows, yearSourceSettings])
 }
 
 export function ArticleEditTable(props: {
     rows: (settings: StatGroupSettings) => ArticleRow[][]
     article: Article
-    filter: string
 }): ReactNode {
-    const currentUniverse = useUniverse()
-    assert(currentUniverse !== undefined, 'no universe')
-    const allRows = useAllRows(props.rows)
-    const categories = filterCategoriesBySearch(props.filter, useAvailableCategories(), useAvailableGroups())
-    const isMobile = useMobileLayout()
     const editModeContext = useEditMode()
+    assert(editModeContext !== undefined, 'edit table rendered outside an edit mode context')
+    const { filter } = editModeContext
+    const { currentUniverse, simpleOrdinals, widthLeftHeader, columnWidth, onlyColumns } = useArticleTableLayout(true)
+    const allRows = useAllRows(props.rows)
+    const categories = filterCategoriesBySearch(filter, useAvailableCategories(), useAvailableGroups())
     const staged = useIsStaged()
-    const [simpleOrdinals] = useSetting('simple_ordinals')
-    const { widthLeftHeader: defaultWidthLeftHeader, columnWidth: defaultColumnWidth } = useWidths()
 
     // Keep the expandable per-stat plots ("extras") available in edit mode, driven
     // by the same rowExpandedKey setting the normal table uses. Kept out of rowsByGroup
     // because it's the only part of a row that changes when the user expands one.
     const plotSpecList = useExpandedPlotSpecs(allRows, props.article)
     const plotSpecs = new Map(allRows.map((row, index) => [row, plotSpecList[index]]))
-
-    // On mobile, edit mode drops the percentile/ordinal/pointer columns so the
-    // checkboxes and names have room; only the value stays. The name column also
-    // gets a wider share since it no longer competes with those columns.
-    const onlyColumns: ColumnIdentifier[] = isMobile ? ['statval', 'statval_unit'] : allColumns
-    const widthLeftHeader = isMobile ? mobileEditWidthLeftHeader : defaultWidthLeftHeader
-    const columnWidth = isMobile ? 100 - mobileEditWidthLeftHeader : defaultColumnWidth
 
     const rowsByGroup = useMemo(() => {
         const displayNames = displayNamesForRows(allRows, props.article.longname, currentUniverse)
@@ -317,11 +306,20 @@ export function ArticleEditTable(props: {
     )
 
     const layout: EditTableLayout = { longname: props.article.longname, widthLeftHeader, columnWidth, onlyColumns, simpleOrdinals, columnWidthsInfo }
-    const topLeftSpec = { type: 'top-left-header' } satisfies CellSpec
+    const topLeftSpec = {
+        type: 'top-left-header',
+        editMode: {
+            open: true,
+            filter,
+            setFilter: editModeContext.setFilter,
+            // In staging mode the Discard/Apply buttons below double as Done.
+            onDone: staged ? undefined : () => { editModeContext.setEditMode(false) },
+        },
+    } satisfies CellSpec
 
     return (
         <div className="stats_table">
-            {staged && <StagingControls horizontal onAction={() => { editModeContext?.setEditMode(false) }} />}
+            {staged && <StagingControls horizontal onAction={() => { editModeContext.setEditMode(false) }} />}
             <div style={{ position: 'relative' }}>
                 <TableHeaderContainer>
                     <MainHeaderRow
@@ -341,7 +339,7 @@ export function ArticleEditTable(props: {
                         category={category}
                         rowsByGroup={rowsByGroup}
                         plotSpecs={plotSpecs}
-                        hasSearchMatch={props.filter !== ''}
+                        hasSearchMatch={filter !== ''}
                     />
                 ))}
             </div>

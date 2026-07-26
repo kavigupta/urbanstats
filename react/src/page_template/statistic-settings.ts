@@ -33,11 +33,18 @@ function yearKeys(years: Year[]): StatYearKey[] {
     return years.map(year => `show_stat_year_${year}` as const)
 }
 
+/** Everything that selects which statistics are shown apart from the group checkboxes. */
+export function yearSourceKeys(): (StatYearKey | StatSourceKey)[] {
+    return [
+        ...yearKeys(allYears),
+        ...dataSources.flatMap(({ category, sources }) => sources.map(({ source }) => sourceEnabledKey({ category, name: source }))),
+    ]
+}
+
 export function groupYearKeys(): (keyof StatGroupSettings)[] {
     return [
         ...groupKeys(allGroups),
-        ...allYears.map(year => `show_stat_year_${year}` as const),
-        ...dataSources.flatMap(({ category, sources }) => sources.map(({ source }) => sourceEnabledKey({ category, name: source }))),
+        ...yearSourceKeys(),
     ]
 }
 

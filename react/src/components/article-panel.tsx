@@ -1,7 +1,7 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useContext, useMemo, useRef, useState } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { useIsStaged, useSettings } from '../page_template/settings'
@@ -43,20 +43,18 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     const settings = useSettings(groupYearKeys())
     const filteredRows = rows(settings)[0]
 
-    // Edit mode is ephemeral (not a setting), but it opens automatically when the
-    // page enters staging mode (e.g. from a settings link) so the pending changes
-    // are visible and reviewable on the table. The initial state covers a fresh
-    // load into staging; the effect covers navigating into staging on an already
-    // mounted panel. Neither forces edit mode closed when staging ends.
+    // Edit mode is ephemeral (not a setting), but it opens whenever the page enters
+    // staging mode (e.g. from a settings link) so the pending changes are visible and
+    // reviewable on the table. It is not forced closed again when staging ends.
     const staged = useIsStaged()
     const [editMode, setEditMode] = useState(staged)
-    const wasStaged = useRef(staged)
-    useEffect(() => {
-        if (staged && !wasStaged.current) {
+    const [prevStaged, setPrevStaged] = useState(staged)
+    if (staged !== prevStaged) {
+        setPrevStaged(staged)
+        if (staged) {
             setEditMode(true)
         }
-        wasStaged.current = staged
-    }, [staged])
+    }
     const [filter, setFilter] = useState('')
     const editModeState = useMemo(() => ({ editMode, setEditMode, filter, setFilter }), [editMode, filter])
 
@@ -97,7 +95,7 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
 
                         <div ref={tableRef}>
                             {editMode
-                                ? <ArticleEditTable rows={rows} article={article} filter={filter} />
+                                ? <ArticleEditTable rows={rows} article={article} />
                                 : <ArticleTable filteredRows={filteredRows} article={article} />}
                         </div>
 

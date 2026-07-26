@@ -22,3 +22,18 @@ export const EditModeContext = createContext<EditModeState | undefined>(undefine
 export function useEditMode(): EditModeState | undefined {
     return useContext(EditModeContext)
 }
+
+/**
+ * What the table's top-left cell offers. Passed down as part of the cell's spec rather
+ * than read from the context there, so the generic table components stay unaware of
+ * edit mode; a cell given no `EditModeHeader` renders the plain header.
+ */
+export type EditModeHeader =
+    | { open: false, onEdit: () => void }
+    | {
+        open: true
+        filter: string
+        setFilter: (filter: string) => void
+        /** Unset when something else on the page already offers a way out of edit mode. */
+        onDone?: () => void
+    }

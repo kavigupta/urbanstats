@@ -13,6 +13,7 @@ import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
 import { useScreenshotMode } from './screenshot'
 import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeDisclaimerFootnotes, maxLayoutInformation, CommonLayoutInformation } from './table'
+import { EditModeHeader } from './table-edit-context'
 
 export interface PlotSpec {
     statDescription: string
@@ -329,4 +330,5 @@ export interface StatisticRowCellProps {
 
 export interface TopLeftHeaderProps {
     statNameOverride?: string
+    editMode?: EditModeHeader
 }

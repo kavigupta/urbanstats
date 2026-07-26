@@ -3,7 +3,7 @@ import React, { ReactNode, useContext } from 'react'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
-import { useUniverse } from '../universe'
+import { Universe, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
 import { Article } from '../utils/protos'
 import { useMobileLayout } from '../utils/responsive'
@@ -15,8 +15,12 @@ import { useScreenshotMode } from './screenshot'
 import { computeNameSpecsWithGroups, nameSpecsForRows } from './statistic-name-specs'
 import { CellSpec, PlotSpec, TableContents } from './supertable'
 import { ColumnIdentifier } from './table'
+import { useEditMode } from './table-edit-context'
 
-export const allColumns: ColumnIdentifier[] = ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
+const allColumns: ColumnIdentifier[] = ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
+
+/** Percent of the table the name column takes in mobile edit mode, where it has fewer columns to compete with. */
+const mobileEditWidthLeftHeader = 58
 
 /** A plot for each row whose extras are currently expanded, and undefined for the rest. */
 export function useExpandedPlotSpecs(rows: ArticleRow[], article: Article): (PlotSpec | undefined)[] {
@@ -33,7 +37,7 @@ export function useExpandedPlotSpecs(rows: ArticleRow[], article: Article): (Plo
     })
 }
 
-export function useWidths(): { widthLeftHeader: number, columnWidth: number } {
+function useWidths(): { widthLeftHeader: number, columnWidth: number } {
     const [simpleOrdinals] = useSetting('simple_ordinals')
     const isMobile = useMobileLayout()
     const screenshotMode = useScreenshotMode()
@@ -48,16 +52,45 @@ export function useWidths(): { widthLeftHeader: number, columnWidth: number } {
     return { widthLeftHeader, columnWidth }
 }
 
+export interface ArticleTableLayout {
+    currentUniverse: Universe
+    simpleOrdinals: boolean
+    widthLeftHeader: number
+    columnWidth: number
+    onlyColumns: ColumnIdentifier[]
+}
+
+/** The column shape both the normal article table and its edit mode are laid out against. */
+export function useArticleTableLayout(editMode: boolean): ArticleTableLayout {
+    const currentUniverse = useUniverse()
+    assert(currentUniverse !== undefined, 'no universe')
+    const [simpleOrdinals] = useSetting('simple_ordinals')
+    const isMobile = useMobileLayout()
+    const { widthLeftHeader, columnWidth } = useWidths()
+
+    // On mobile, edit mode drops the percentile/ordinal/pointer columns so the
+    // checkboxes and names have room; only the value stays. The name column also
+    // gets a wider share since it no longer competes with those columns.
+    if (editMode && isMobile) {
+        return {
+            currentUniverse,
+            simpleOrdinals,
+            widthLeftHeader: mobileEditWidthLeftHeader,
+            columnWidth: 100 - mobileEditWidthLeftHeader,
+            onlyColumns: ['statval', 'statval_unit'],
+        }
+    }
+
+    return { currentUniverse, simpleOrdinals, widthLeftHeader, columnWidth, onlyColumns: allColumns }
+}
+
 export function ArticleTable(props: {
     filteredRows: ArticleRow[]
     article: Article
 }): ReactNode {
-    const currentUniverse = useUniverse()
-    assert(currentUniverse !== undefined, 'no universe')
-    const [simpleOrdinals] = useSetting('simple_ordinals')
+    const { currentUniverse, simpleOrdinals, widthLeftHeader, columnWidth, onlyColumns } = useArticleTableLayout(false)
     const navContext = useContext(Navigator.Context)
-
-    const { widthLeftHeader, columnWidth } = useWidths()
+    const editModeContext = useEditMode()
 
     const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(
         nameSpecsForRows(props.filteredRows, props.article.longname, currentUniverse),
@@ -77,10 +110,15 @@ export function ArticleTable(props: {
             }, { history: 'push', scroll: { kind: 'none' } })
         },
         simpleOrdinals,
-        onlyColumns: allColumns,
+        onlyColumns,
     })])
 
-    const topLeftSpec = { type: 'top-left-header' } satisfies CellSpec
+    const topLeftSpec = {
+        type: 'top-left-header',
+        editMode: editModeContext === undefined
+            ? undefined
+            : { open: false, onEdit: () => { editModeContext.setEditMode(true) } },
+    } satisfies CellSpec
 
     return (
         <div className="stats_table">
@@ -92,7 +130,7 @@ export function ArticleTable(props: {
                 topLeftSpec={topLeftSpec}
                 widthLeftHeader={widthLeftHeader}
                 columnWidth={columnWidth}
-                onlyColumns={allColumns}
+                onlyColumns={onlyColumns}
                 simpleOrdinals={simpleOrdinals}
             />
             <ArticleWarnings />
