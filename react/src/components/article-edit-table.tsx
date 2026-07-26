@@ -1,7 +1,8 @@
 import React, { CSSProperties, ReactNode, useMemo } from 'react'
 
-import { useIsStaged, useSettings } from '../page_template/settings'
-import { GroupTreeState, StatGroupSettings, useCategoriesMatchingSearch, useCategoryTreeState, yearSourceKeys } from '../page_template/statistic-settings'
+import { useColors } from '../page_template/colors'
+import { checkboxCategoryName, isStagedChange, sourceEnabledKey, useIsStaged, useSetting, useSettingInfo, useSettings } from '../page_template/settings'
+import { GroupTreeState, StatGroupSettings, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, yearSourceKeys } from '../page_template/statistic-settings'
 import { allGroups, Category, statParents } from '../page_template/statistic-tree'
 import { HumanReadableName, reifyReact } from '../utils/human-readable-name'
 import { Article } from '../utils/protos'
@@ -11,7 +12,7 @@ import { StagingControls } from './StagingControls'
 import { ArticleTableLayout, useArticleTableLayout, useExpandedPlotSpecs } from './article-table'
 import { congressionalDataForRow } from './congressional-table/model'
 import { ArticleRow } from './load-article'
-import { CheckboxSettingJustBox, useHighlightStyle } from './sidebar'
+import { BooleanSettingKey, CheckboxSettingJustBox, useHighlightStyle } from './sidebar'
 import { displayNamesForRows } from './statistic-name-specs'
 import { CellSpec, PlotSpec, RowExtras } from './supertable'
 import { CommonLayoutInformation, MainHeaderRow, maxLayoutInformation, StatisticRowCells, TableHeaderContainer, TableRowContainer, useStatisticNameAdornments } from './table'
@@ -255,6 +256,99 @@ function EditCategory(props: {
     )
 }
 
+/** Titles the sections the edit table is divided into, mirroring the sidebar's section titles. */
+function EditSectionHeader({ name }: { name: string }): ReactNode {
+    const colors = useColors()
+    return (
+        <div
+            className="serif"
+            style={{
+                marginTop: '0.5em',
+                paddingBottom: '2px',
+                borderBottom: `1px solid ${colors.borderNonShadow}`,
+                color: colors.ordinalTextColor,
+                fontWeight: 500,
+            }}
+        >
+            {name}
+        </div>
+    )
+}
+
+/** A plain boolean setting as an edit table row, styled like the statistic rows' checkboxes. */
+function EditSettingRow(props: {
+    index: number
+    name: string
+    settingKey: BooleanSettingKey
+    testId: string
+    forcedOn?: boolean
+}): ReactNode {
+    const [checked, setChecked] = useSetting(props.settingKey)
+    const highlight = isStagedChange(useSettingInfo(props.settingKey))
+    return (
+        <TableRowContainer index={props.index}>
+            <EditCheckboxLabel
+                highlight={highlight}
+                style={{ width: '100%', paddingLeft: `${indentEm}em` }}
+                checkbox={(
+                    <CheckboxSettingJustBox
+                        checked={(checked ?? false) || (props.forcedOn ?? false)}
+                        forcedOn={props.forcedOn}
+                        onChange={setChecked}
+                        testId={props.testId}
+                        highlight={highlight}
+                        style={editCheckboxStyle}
+                    />
+                )}
+            >
+                {props.name}
+            </EditCheckboxLabel>
+        </TableRowContainer>
+    )
+}
+
+/**
+ * The source and year selections, which the sidebar puts above its statistic tree. They
+ * aren't part of the tree, so the search box doesn't filter them.
+ */
+function EditSourceAndYearSections(): ReactNode {
+    const sourceCheckboxes = useDataSourceCheckboxes()
+    const years = useAvailableYears()
+    return (
+        <>
+            {sourceCheckboxes.map(({ category, checkboxSpecs }) => (
+                <React.Fragment key={category}>
+                    <EditSectionHeader name={checkboxCategoryName(category)} />
+                    {checkboxSpecs.map(({ name, forcedOn }, index) => (
+                        <EditSettingRow
+                            key={name}
+                            index={index}
+                            name={name}
+                            settingKey={sourceEnabledKey({ category, name })}
+                            forcedOn={forcedOn}
+                            testId={`edit_source ${category} ${name}`}
+                        />
+                    ))}
+                </React.Fragment>
+            ))}
+            {years.length > 0 && (
+                <>
+                    <EditSectionHeader name="Years" />
+                    {years.map((year, index) => (
+                        <EditSettingRow
+                            key={year}
+                            index={index}
+                            name={year.toString()}
+                            settingKey={`show_stat_year_${year}`}
+                            testId={`edit_year_${year}`}
+                        />
+                    ))}
+                </>
+            )}
+        </>
+    )
+}
+
 /**
  * Every available row, regardless of which stat groups are currently enabled, so the
  * edit tree can show the whole category/group tree. Only computed while edit mode is
@@ -341,6 +435,8 @@ export function ArticleEditTable(props: {
                         columnWidthsInfo={[columnWidthsInfo]}
                     />
                 </TableHeaderContainer>
+                <EditSourceAndYearSections />
+                <EditSectionHeader name="Statistics" />
                 {categories.map(category => (
                     <EditCategory
                         key={category.id}

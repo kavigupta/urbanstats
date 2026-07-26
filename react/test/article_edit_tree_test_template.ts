@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { categoryToggleButton, collapseAnimationMs, enterEditMode, exitEditMode, filterBox, setCategoryExpanded } from './article_edit_test_utils'
-import { checkIsIndeterminate, clickUniverseFlag, resizeForPlatform, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, withHamburgerMenu } from './test_utils'
+import { checkIsIndeterminate, clickUniverseFlag, getLocation, resizeForPlatform, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, withHamburgerMenu } from './test_utils'
 
 /**
  * The article table's edit mode replicates the statistic category/group tree that
@@ -23,6 +23,23 @@ const populationCheckInteractable = `${populationCheck}:not([inert] *)`
 const mainExpandButton = categoryToggleButton('main', 'Expand')
 // The sidebar's copy of the same group, for cross-tree checks.
 const sidebarPopulationCheck = 'input[data-test-id=group_population]:not([inert] *)'
+// The source and year sections above the tree, and the sidebar's copies of them.
+const sourceSectionHeader = Selector('.stats_table div').withExactText('Population Sources')
+const ghslCheck = 'input[data-test-id="edit_source Population GHSL"]'
+const sidebarGhslCheck = 'input[data-test-id="source Population GHSL"]'
+const year2020Check = 'input[data-test-id=edit_year_2020]'
+const year2010Check = 'input[data-test-id=edit_year_2010]'
+const sidebarYear2020Check = 'input[data-test-id=year_2020]'
+
+/**
+ * A statistic row of the Population group, by the name it displays. Matched via the group
+ * checkbox it points at, which distinguishes these rows from the year and source rows above
+ * (whose labels carry the same text). Only multi-row groups get these; a group with a single
+ * row collapses into it and takes the checkbox itself.
+ */
+function populationRow(name: string): Selector {
+    return Selector('.stats_table label[for=edit-checkbox-population]').withExactText(name)
+}
 
 export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     urbanstatsFixture('article edit tree', `${target}/article.html?longname=San+Francisco+city%2C+California%2C+USA`, async (t) => {
@@ -164,16 +181,68 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('missing-year-warning', async (t) => {
         /**
-         * Year selection lives only in the sidebar, but its warnings need to reach the
-         * edit table, which renders its own copy of ArticleWarnings.
+         * Deselecting a year has to reach the edit table's own copy of ArticleWarnings,
+         * whether it's done from the sidebar or from the table's year section.
          */
         await enterEditMode(t)
         await uncheckAll(t)
         await t.click(mainCheck)
         await withHamburgerMenu(t, async () => {
-            await t.click(Selector('label').withExactText('2020'))
+            await t.click(sidebarYear2020Check)
         })
         await t.expect(Selector('.stats_table li').withExactText('To see Main > Population statistics, select 2020, 2010, or 2000.').exists).ok()
+        await screencap(t)
+    })
+
+    test('year-section', async (t) => {
+        /**
+         * The year selection is duplicated from the sidebar onto the edit table, over the
+         * same setting, so a change on either side shows up on the other. This article's
+         * population comes from a single source, so it gets no source section.
+         */
+        await enterEditMode(t)
+        await t.expect(sourceSectionHeader.exists).notOk()
+        await t.expect(Selector(year2020Check).checked).eql(true)
+        await screencap(t)
+
+        await t.click(year2020Check)
+        await checkSidebarCopy(t, sidebarYear2020Check, false)
+        await t.expect(Selector(year2020Check).checked).eql(false)
+    })
+
+    test('year-selection-changes-the-edit-table-itself', async (t) => {
+        /**
+         * The edit tree shows every group regardless of whether it's enabled, but it still
+         * respects the year selection, so selecting a year has to add that year's rows to the
+         * table the checkbox lives on. Population then spans two years, so it stops collapsing
+         * into a single row and splits into one row per year.
+         */
+        await enterEditMode(t)
+        await setMainExpanded(t, true)
+        await t.expect(populationRow('2010').exists).notOk()
+
+        await t.click(year2010Check)
+        await t.expect(populationRow('2010').exists).ok()
+        await t.expect(populationRow('2020').exists).ok()
+        await screencap(t)
+    })
+
+    test('staged-year-change-is-highlighted', async (t) => {
+        /**
+         * Staging highlights the controls whose values it's changing. The year rows are new
+         * controls on the table, so they need that highlight too -- otherwise arriving via a
+         * settings link that only changes a year would auto-open edit mode showing nothing
+         * about what's pending.
+         */
+        await enterEditMode(t)
+        await t.click(year2010Check)
+        const linkWith2010 = await getLocation()
+        await t.click(year2010Check)
+
+        // The saved settings now differ from the link, so this enters staging (and edit mode).
+        await t.navigateTo(linkWith2010)
+        await t.expect(filterBox.exists).ok()
+        await t.expect(Selector(year2010Check).getAttribute('data-test-highlight')).eql('true')
         await screencap(t)
     })
 
@@ -288,6 +357,46 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(Selector('input[data-test-id=edit_category_income]').exists).notOk()
     })
 
+    // States have population from both the US Census and GHSL, so they're the articles that
+    // get a source section to choose between them.
+    urbanstatsFixture('article edit tree sources', `${target}/article.html?longname=California%2C+USA`, async (t) => {
+        await resizeForPlatform(t, platform)
+    })
+
+    test('source-section', async (t) => {
+        /**
+         * Like the years, the sources are duplicated from the sidebar onto the edit table
+         * over the same settings, and the search box doesn't filter them out.
+         */
+        await enterEditMode(t)
+        await t.expect(Selector(ghslCheck).checked).eql(false)
+        await screencap(t)
+
+        await t.click(ghslCheck)
+        await checkSidebarCopy(t, sidebarGhslCheck, true)
+        await t.expect(Selector(ghslCheck).checked).eql(true)
+
+        await t.typeText(filterBox, 'gene')
+        await t.expect(sourceSectionHeader.exists).ok()
+        await t.expect(Selector(ghslCheck).exists).ok()
+    })
+
+    test('source-selection-changes-the-edit-table-itself', async (t) => {
+        /**
+         * The year counterpart of this, on the other fixture, splits Population by year.
+         * Enabling a second source splits it by source instead, so the rows say which source
+         * they came from.
+         */
+        await enterEditMode(t)
+        await setMainExpanded(t, true)
+        await t.expect(populationRow('2020 [GHSL]').exists).notOk()
+
+        await t.click(ghslCheck)
+        await t.expect(populationRow('2020 [GHSL]').exists).ok()
+        await t.expect(populationRow('2020 [US Census]').exists).ok()
+        await screencap(t)
+    })
+
     /** Universe Tests */
 
     urbanstatsFixture('article edit tree universe test', `${target}/article.html?longname=USA`, async (t) => {
@@ -313,6 +422,23 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await enterEditMode(t)
         await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
     })
+
+    /**
+     * Asserts the sidebar's copy of a checkbox agrees with the table's, which is the whole
+     * point of both trees reading the same setting.
+     *
+     * Desktop only: on mobile, opening the hamburger menu tears down the article table, and
+     * edit mode is ephemeral, so there's nothing to compare against afterwards. The same
+     * limitation is why expand-state-shared-with-sidebar and trees-stay-in-sync fail on mobile.
+     */
+    async function checkSidebarCopy(t: TestController, sidebarCheck: string, expected: boolean): Promise<void> {
+        if (platform !== 'desktop') {
+            return
+        }
+        await withHamburgerMenu(t, async () => {
+            await t.expect(Selector(sidebarCheck).checked).eql(expected)
+        })
+    }
 }
 
 async function selectUniverse(t: TestController, alt: string): Promise<void> {

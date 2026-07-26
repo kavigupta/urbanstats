@@ -85,8 +85,13 @@ export function linkSettingsTests(baseLink: string): void {
         await t.click('.expandButton[data-category-id=main]')
     })
 
+    /**
+     * Scoped to the sidebar, since on an article page staging also auto-opens the table's
+     * edit mode, which highlights its own copies of these same settings. Those copies are
+     * covered by the article edit mode/tree tests; this file is about the sidebar's.
+     */
     async function expectHighlightedInputTestIds(t: TestController, testIds: string[]): Promise<void> {
-        const highlightedInputs = await arrayFromSelector(Selector('input[data-test-highlight=true]:not([inert] *)'))
+        const highlightedInputs = await arrayFromSelector(Selector('.sidebar-section input[data-test-highlight=true]:not([inert] *)'))
 
         await t.expect(await Promise.all(highlightedInputs.map(input => input.getAttribute('data-test-id')))).eql(testIds)
     }
