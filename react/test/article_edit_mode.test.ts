@@ -1,8 +1,8 @@
 import { Selector } from 'testcafe'
 
-import { articleTableScope, doneButton, editButton, filterBox, setCategoryExpanded } from './article_edit_test_utils'
 import { editModeSharedTests } from './edit_mode_test_template'
-import { screencap, target, urbanstatsFixture } from './test_utils'
+import { articleTableScope, categoryCheckbox, doneButton, editButton, filterBox, groupCheckbox, setCategoryExpanded } from './edit_mode_test_utils'
+import { resizeForPlatform, screencap, target, urbanstatsFixture } from './test_utils'
 
 /**
  * Tests for the article table "edit mode": the statistic category/group checkbox
@@ -13,9 +13,9 @@ import { screencap, target, urbanstatsFixture } from './test_utils'
 
 const californiaPage = `${target}/article.html?longname=California%2C+USA`
 
-const mainCategory = Selector('input[data-test-id=edit_category_main]')
+const mainCategory = categoryCheckbox('main')
 // Population is a single-stat group in the (default-on) Main category.
-const populationGroup = Selector('input[data-test-id=edit_group_population]')
+const populationGroup = groupCheckbox('population')
 
 urbanstatsFixture('article edit mode', californiaPage)
 
@@ -58,7 +58,7 @@ test('stat extras (plots) can be expanded in edit mode', async (t) => {
 })
 
 urbanstatsFixture('article edit mode mobile', californiaPage, async (t) => {
-    await t.resizeWindow(400, 800)
+    await resizeForPlatform(t, 'mobile')
 })
 
 test('mobile edit mode hides percentile/ordinal/pointer columns', async (t) => {

@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
-import { collapseAnimationMs, enterEditMode } from './article_edit_test_utils'
-import { arrayFromSelector, getLocation, safeReload, screencap, target, urbanstatsFixture, withEditMode } from './test_utils'
+import { collapseAnimationMs, enterEditMode, withEditMode } from './edit_mode_test_utils'
+import { arrayFromSelector, getLocation, safeReload, screencap, target, urbanstatsFixture } from './test_utils'
 
 /**
  * The statistic tree is on the table's edit mode, and Main has to be expanded to reach the

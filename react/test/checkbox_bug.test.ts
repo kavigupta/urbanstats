@@ -1,6 +1,4 @@
-import { Selector } from 'testcafe'
-
-import { enterEditMode, setCategoryExpanded } from './article_edit_test_utils'
+import { categoryCheckbox, enterEditMode, interactableGroupCheckbox, setCategoryExpanded } from './edit_mode_test_utils'
 import { target, urbanstatsFixture } from './test_utils'
 
 /**
@@ -13,8 +11,8 @@ import { target, urbanstatsFixture } from './test_utils'
  * no-op, and the checkbox can never be checked again.
  */
 
-const electionCheck = 'input[data-test-id=edit_category_election]'
-const usPresidentialCheck = 'input[data-test-id=edit_group_us_presidential_election]:not([inert] *)'
+const electionCheck = categoryCheckbox('election')
+const usPresidentialCheck = interactableGroupCheckbox('us_presidential_election')
 
 urbanstatsFixture('cross-page category checkbox', `${target}/article.html?longname=California%2C+USA`, async (t) => {
     await t.resizeWindow(1400, 800)
@@ -26,19 +24,19 @@ test('election-checkbox-clickable-after-switching-countries', async (t) => {
     await enterEditMode(t)
     await setCategoryExpanded(t, 'election', true)
     await t.click(usPresidentialCheck)
-    await t.expect(Selector(usPresidentialCheck).checked).eql(true)
+    await t.expect(usPresidentialCheck.checked).eql(true)
 
     // Switch to a Canadian article, where the Election category contains an
     // entirely different set of groups, none of which are selected.
     await t.navigateTo(`${target}/article.html?longname=Toronto+CDR%2C+Ontario%2C+Canada`)
 
     await enterEditMode(t)
-    await t.expect(Selector(electionCheck).checked).eql(false)
+    await t.expect(electionCheck.checked).eql(false)
 
     // Clicking the category checkbox should check it, since the saved
     // indeterminate state has nothing to restore on this page.
     await t.click(electionCheck)
-    await t.expect(Selector(electionCheck).checked).eql(true)
+    await t.expect(electionCheck.checked).eql(true)
 })
 
 test('category-checkbox-affects-groups-from-other-pages', async (t) => {
@@ -53,20 +51,20 @@ test('category-checkbox-affects-groups-from-other-pages', async (t) => {
     await enterEditMode(t)
     await setCategoryExpanded(t, 'election', true)
     await t.click(usPresidentialCheck)
-    await t.expect(Selector(electionCheck).checked).eql(true)
+    await t.expect(electionCheck.checked).eql(true)
 
     await t.navigateTo(`${target}/article.html?longname=Toronto+CDR%2C+Ontario%2C+Canada`)
 
     // Cycle the category through checked and back to unchecked, using only Canadian groups.
     await enterEditMode(t)
     await t.click(electionCheck)
-    await t.expect(Selector(electionCheck).checked).eql(true)
+    await t.expect(electionCheck.checked).eql(true)
     await t.click(electionCheck)
-    await t.expect(Selector(electionCheck).checked).eql(false)
+    await t.expect(electionCheck.checked).eql(false)
 
     await t.navigateTo(`${target}/article.html?longname=California%2C+USA`)
 
     // The unchecking applied to the US group too, even though it isn't shown on the Canadian page.
     await enterEditMode(t)
-    await t.expect(Selector(electionCheck).checked).eql(false)
+    await t.expect(electionCheck.checked).eql(false)
 })

@@ -1,8 +1,8 @@
 import { Selector } from 'testcafe'
 
-import { comparisonTableScope, doneButton, editButton, filterBox, setCategoryExpanded } from './article_edit_test_utils'
 import { editModeSharedTests } from './edit_mode_test_template'
-import { comparisonPage, downloadCSV, screencap, target, urbanstatsFixture } from './test_utils'
+import { categoryCheckbox, comparisonTableScope, doneButton, editButton, filterBox, groupCheckbox, interactableGroupCheckbox, setCategoryExpanded, yearCheckbox } from './edit_mode_test_utils'
+import { comparisonPage, downloadCSV, resizeForPlatform, screencap, target, urbanstatsFixture } from './test_utils'
 
 /**
  * Tests for the comparison table's "edit statistics" mode: the same category/group checkbox
@@ -17,8 +17,8 @@ const twoRegions = comparisonPage([upperSGV, swSGV])
 // Four countries with a settings vector that leaves few enough statistics selected to transpose.
 const transposed = `${target}/comparison.html?longnames=%5B%22China%22%2C%22USA%22%2C%22Japan%22%2C%22Indonesia%22%5D&s=6TunChiToWxwZeDP`
 
-const mainCategory = Selector('input[data-test-id=edit_category_main]')
-const populationGroup = Selector('input[data-test-id=edit_group_population]')
+const mainCategory = categoryCheckbox('main')
+const populationGroup = groupCheckbox('population')
 const comparisonTable = Selector(comparisonTableScope)
 
 urbanstatsFixture('comparison edit mode', twoRegions)
@@ -71,7 +71,7 @@ test('the filter narrows the comparison tree', async (t) => {
     await t.typeText(filterBox, 'gene')
 
     // Filtering expands the matching categories and drops the rest.
-    await t.expect(Selector('input[data-test-id=edit_group_generation_genx]:not([inert] *)').exists).ok()
+    await t.expect(interactableGroupCheckbox('generation_genx').exists).ok()
     await t.expect(mainCategory.exists).notOk()
 
     await t.selectText(filterBox).pressKey('delete')
@@ -82,7 +82,7 @@ test('a multi-row group keeps a column of values per region on every row', async
     await t.click(editButton)
     // A second year makes Population a two-row group: a header row carrying the checkbox,
     // and a row per year pointing at it.
-    await t.click(Selector('input[data-test-id=edit_year_2010]'))
+    await t.click(yearCheckbox(2010))
     await setCategoryExpanded(t, 'main', true, comparisonTableScope)
 
     const row2010 = Selector(`${comparisonTableScope} label[for=edit-checkbox-population]`).withExactText('2010')
@@ -133,7 +133,7 @@ test('editing a transposed comparison pops out of transpose', async (t) => {
 })
 
 urbanstatsFixture('comparison edit mode mobile', twoRegions, async (t) => {
-    await t.resizeWindow(400, 800)
+    await resizeForPlatform(t, 'mobile')
 })
 
 test('mobile comparison edit mode hides the ordinal columns', async (t) => {

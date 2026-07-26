@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { doneButton, editButton, filterBox } from './article_edit_test_utils'
+import { doneButton, editButton, filterBox, groupCheckbox } from './edit_mode_test_utils'
 import { safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 /**
@@ -70,7 +70,7 @@ export function editModeSharedTests(spec: {
     // its row in edit mode once the stat is enabled, covering every region on the table.
     urbanstatsFixture(`${spec.name} edit mode congressional`, spec.congressional.page)
 
-    const congressionalGroup = Selector('input[data-test-id=edit_group_metadata_show_metadata_congressional_representatives]')
+    const congressionalGroup = groupCheckbox('metadata_show_metadata_congressional_representatives')
     const congressionalWidget = table.find('[data-test-id=congressional-representatives]')
 
     test('congressional representatives table shows when the stat is enabled', async (t) => {

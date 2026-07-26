@@ -12,7 +12,7 @@ import { port } from '../port'
 import type { TestWindow } from '../src/utils/TestUtils'
 import { checkString } from '../src/utils/checkString'
 
-import { collapseAnimationMs, enterEditMode, exitEditMode } from './article_edit_test_utils'
+import { collapseAnimationMs, editCheckbox, editCheckboxPrefixes, withEditMode } from './edit_mode_test_utils'
 import { urlFromCode } from './mapper-utils'
 
 export const target = process.env.URBANSTATS_TEST_TARGET ?? `http://localhost:${port()}`
@@ -60,24 +60,6 @@ export async function withHamburgerMenu(t: TestController, block: () => Promise<
     }
 }
 
-export async function withEditMode(t: TestController, block: () => Promise<void>): Promise<void> {
-    await enterEditMode(t)
-    await block()
-    await exitEditMode(t)
-}
-
-/**
- * A checkbox of the table's edit mode, by the text of the row it sits on: a statistic
- * category, a year, a data source, or a group that carries its own checkbox. Rows that
- * point at another row's checkbox with `for` are excluded, since a group's statistics
- * repeat text (a year, a source) that also names a checkbox of its own further up.
- */
-export function editCheckbox(txt: string): Selector {
-    return Selector('label:not([for]):not([inert] *)')
-        .filter(node => (node as HTMLElement).innerText === txt, { txt })
-        .find('input')
-}
-
 /**
  * Statistic selection lives on the table's edit mode, so choosing statistics means
  * opening it. Categories, years and sources are always reachable there; a group inside
@@ -106,8 +88,9 @@ export async function checkIndividualStat(t: TestController, category: string, s
 
 /** Checks every unchecked category, year and source in edit mode; true if it checked any. */
 async function checkUncheckedStatBoxes(t: TestController): Promise<boolean> {
+    const { category, year, source } = editCheckboxPrefixes
     let checkedAny = false
-    for (const prefix of ['edit_category_', 'edit_year_', 'edit_source ']) {
+    for (const prefix of [category, year, source]) {
         for (const check of await arrayFromSelector(Selector(`input[data-test-id^="${prefix}"]`))) {
             // Forced-on sources are disabled, and clicking a checked category would cycle it off.
             if (!await check.checked && !await check.hasAttribute('disabled')) {
@@ -553,16 +536,9 @@ export async function resizeForPlatform(t: TestController, platform: 'mobile' | 
     }
 }
 
-export async function checkIsIndeterminate(t: TestController, selector: string): Promise<boolean> {
-    return t.eval(() => {
-        const check: HTMLInputElement = document.querySelector(selector)!
-        return check.indeterminate
-    }, { dependencies: { selector } }) as Promise<boolean>
-}
-
 /** Unchecks every category checkbox of the edit table's statistic tree. */
 export async function uncheckAllCategories(t: TestController): Promise<void> {
-    for (const check of await arrayFromSelector(Selector('input[data-test-id^=edit_category_]'))) {
+    for (const check of await arrayFromSelector(Selector(`input[data-test-id^=${editCheckboxPrefixes.category}]`))) {
         if (await check.checked) {
             await t.click(check)
         }

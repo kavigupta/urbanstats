@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
-import { categoryToggleButton, enterEditMode, exitEditMode, filterBox, setCategoryExpanded } from './article_edit_test_utils'
-import { checkIsIndeterminate, clickUniverseFlag, getLocation, resizeForPlatform, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture } from './test_utils'
+import { categoryCheckbox, categoryToggleButton, enterEditMode, exitEditMode, filterBox, groupCheckbox, interactableGroupCheckbox, setCategoryExpanded, sourceCheckbox, yearCheckbox } from './edit_mode_test_utils'
+import { clickUniverseFlag, getLocation, resizeForPlatform, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture } from './test_utils'
 
 /**
  * The article table's edit mode is where the statistic category/group tree lives: the
@@ -10,20 +10,20 @@ import { checkIsIndeterminate, clickUniverseFlag, getLocation, resizeForPlatform
  * the article shows when a selection leaves it with nothing to display.
  */
 
-const mainCheck = 'input[data-test-id=edit_category_main]'
+const mainCheck = categoryCheckbox('main')
 // Population is a single-stat group in the (default-on) Main category, so its
 // checkbox sits directly on the Population row.
-const populationCheck = 'input[data-test-id=edit_group_population]'
+const populationCheck = groupCheckbox('population')
 // Collapsed categories stay mounted (so the height transition has content) but are
 // marked inert, so clicking requires the interactable variant.
-const populationCheckInteractable = `${populationCheck}:not([inert] *)`
+const populationCheckInteractable = interactableGroupCheckbox('population')
 // Present only while Main is collapsed, since the toggle then offers to expand.
 const mainExpandButton = categoryToggleButton('main', 'Expand')
 // The source and year sections above the tree.
 const sourceSectionHeader = Selector('.stats_table div').withExactText('Population Sources')
-const ghslCheck = 'input[data-test-id="edit_source Population GHSL"]'
-const year2020Check = 'input[data-test-id=edit_year_2020]'
-const year2010Check = 'input[data-test-id=edit_year_2010]'
+const ghslCheck = sourceCheckbox('Population', 'GHSL')
+const year2020Check = yearCheckbox(2020)
+const year2010Check = yearCheckbox(2010)
 
 /**
  * A statistic row of the Population group, by the name it displays. Matched via the group
@@ -45,11 +45,11 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          * Check that the category checks and unchecks correctly without being expanded.
          */
         await enterEditMode(t)
-        await t.expect(Selector(mainCheck).checked).eql(true)
+        await t.expect(mainCheck.checked).eql(true)
         await t.click(mainCheck)
-        await t.expect(Selector(mainCheck).checked).eql(false)
+        await t.expect(mainCheck.checked).eql(false)
         await t.click(mainCheck)
-        await t.expect(Selector(mainCheck).checked).eql(true)
+        await t.expect(mainCheck.checked).eql(true)
     })
 
     test('indeterminate-cycle-expanded', async (t) => {
@@ -59,23 +59,23 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await enterEditMode(t)
         await setMainExpanded(t, true)
         await t.click(populationCheckInteractable)
-        await t.expect(Selector(populationCheck).checked).eql(false)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
+        await t.expect(populationCheck.checked).eql(false)
+        await t.expect(mainCheck.indeterminate).eql(true)
         await screencap(t)
 
         await t.click(mainCheck)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(false)
-        await t.expect(Selector(mainCheck).checked).eql(true)
-        await t.expect(Selector(populationCheck).checked).eql(true)
+        await t.expect(mainCheck.indeterminate).eql(false)
+        await t.expect(mainCheck.checked).eql(true)
+        await t.expect(populationCheck.checked).eql(true)
 
         await t.click(mainCheck)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(false)
-        await t.expect(Selector(mainCheck).checked).eql(false)
-        await t.expect(Selector(populationCheck).checked).eql(false)
+        await t.expect(mainCheck.indeterminate).eql(false)
+        await t.expect(mainCheck.checked).eql(false)
+        await t.expect(populationCheck.checked).eql(false)
 
         await t.click(mainCheck)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
-        await t.expect(Selector(populationCheck).checked).eql(false)
+        await t.expect(mainCheck.indeterminate).eql(true)
+        await t.expect(populationCheck.checked).eql(false)
     })
 
     test('indeterminate-cycle-collapsed', async (t) => {
@@ -90,8 +90,8 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await setMainExpanded(t, true)
         await t.click(populationCheckInteractable)
         await setMainExpanded(t, false)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
-        await t.expect(Selector(populationCheckInteractable).exists).notOk()
+        await t.expect(mainCheck.indeterminate).eql(true)
+        await t.expect(populationCheckInteractable.exists).notOk()
         if (platform === 'mobile') {
             await screencap(t)
         }
@@ -101,21 +101,21 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
         await enterEditMode(t)
         await t.click(mainCheck)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(false)
-        await t.expect(Selector(mainCheck).checked).eql(true)
+        await t.expect(mainCheck.indeterminate).eql(false)
+        await t.expect(mainCheck.checked).eql(true)
         await exitEditMode(t)
         await t.expect(populationStat.exists).ok()
 
         await enterEditMode(t)
         await t.click(mainCheck)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(false)
-        await t.expect(Selector(mainCheck).checked).eql(false)
+        await t.expect(mainCheck.indeterminate).eql(false)
+        await t.expect(mainCheck.checked).eql(false)
         await exitEditMode(t)
         await t.expect(populationStat.exists).notOk()
 
         await enterEditMode(t)
         await t.click(mainCheck)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
+        await t.expect(mainCheck.indeterminate).eql(true)
         await exitEditMode(t)
         await t.expect(populationStat.exists).notOk()
     })
@@ -127,18 +127,18 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await enterEditMode(t)
         await setMainExpanded(t, true)
         await t.click(populationCheckInteractable)
-        await t.expect(Selector(populationCheck).checked).eql(false)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
+        await t.expect(populationCheck.checked).eql(false)
+        await t.expect(mainCheck.indeterminate).eql(true)
 
         await t.click(populationCheckInteractable)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(false)
-        await t.expect(Selector(mainCheck).checked).eql(true)
-        await t.expect(Selector(populationCheck).checked).eql(true)
+        await t.expect(mainCheck.indeterminate).eql(false)
+        await t.expect(mainCheck.checked).eql(true)
+        await t.expect(populationCheck.checked).eql(true)
 
         await t.click(mainCheck)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(false)
-        await t.expect(Selector(mainCheck).checked).eql(false)
-        await t.expect(Selector(populationCheck).checked).eql(false)
+        await t.expect(mainCheck.indeterminate).eql(false)
+        await t.expect(mainCheck.checked).eql(false)
+        await t.expect(populationCheck.checked).eql(false)
     })
 
     test('indeterminate-exit-uncheck', async (t) => {
@@ -148,19 +148,19 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await enterEditMode(t)
         await setMainExpanded(t, true)
         await t.click(mainCheck)
-        await t.expect(Selector(mainCheck).checked).eql(false)
+        await t.expect(mainCheck.checked).eql(false)
         await t.click(populationCheckInteractable)
-        await t.expect(Selector(populationCheck).checked).eql(true)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
+        await t.expect(populationCheck.checked).eql(true)
+        await t.expect(mainCheck.indeterminate).eql(true)
 
         await t.click(populationCheckInteractable)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(false)
-        await t.expect(Selector(mainCheck).checked).eql(false)
-        await t.expect(Selector(populationCheck).checked).eql(false)
+        await t.expect(mainCheck.indeterminate).eql(false)
+        await t.expect(mainCheck.checked).eql(false)
+        await t.expect(populationCheck.checked).eql(false)
 
         await t.click(mainCheck)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(false)
-        await t.expect(Selector(mainCheck).checked).eql(true)
+        await t.expect(mainCheck.indeterminate).eql(false)
+        await t.expect(mainCheck.checked).eql(true)
     })
 
     test('uncheck-all-categories', async (t) => {
@@ -194,7 +194,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await uncheckAllCategories(t)
         await t.click(year2020Check)
         await t.click(year2010Check)
-        await t.click('input[data-test-id=edit_category_health]')
+        await t.click(categoryCheckbox('health'))
         await t.expect(Selector('.stats_table li').withExactText('To see Health statistics, select 2020.').exists).ok()
         await screencap(t)
     })
@@ -209,8 +209,8 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await enterEditMode(t)
         await uncheckAllCategories(t)
         await setCategoryExpanded(t, 'housing', true)
-        await t.click('input[data-test-id=edit_group_vacancy]:not([inert] *)')
-        await t.click('input[data-test-id=edit_group_rent_or_own_rent]:not([inert] *)')
+        await t.click(interactableGroupCheckbox('vacancy'))
+        await t.click(interactableGroupCheckbox('rent_or_own_rent'))
         await t.click(year2020Check)
         await t.click(year2010Check)
         await t.expect(Selector('.stats_table li').withExactText('To see Housing > Renter % statistics, select 2020.').exists).ok()
@@ -224,11 +224,11 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          */
         await enterEditMode(t)
         await t.expect(sourceSectionHeader.exists).notOk()
-        await t.expect(Selector(year2020Check).checked).eql(true)
+        await t.expect(year2020Check.checked).eql(true)
         await screencap(t)
 
         await t.click(year2020Check)
-        await t.expect(Selector(year2020Check).checked).eql(false)
+        await t.expect(year2020Check.checked).eql(false)
     })
 
     test('year-selection-changes-the-edit-table-itself', async (t) => {
@@ -268,7 +268,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         // The saved settings now differ from the link, so this enters staging (and edit mode).
         await t.navigateTo(linkWith2010)
         await t.expect(filterBox.exists).ok()
-        await t.expect(Selector(year2010Check).getAttribute('data-test-highlight')).eql('true')
+        await t.expect(year2010Check.getAttribute('data-test-highlight')).eql('true')
         await screencap(t)
     })
 
@@ -281,8 +281,8 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.click(populationCheckInteractable)
         await safeReload(t)
         await enterEditMode(t)
-        await t.expect(Selector(populationCheck).checked).eql(false)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
+        await t.expect(populationCheck.checked).eql(false)
+        await t.expect(mainCheck.indeterminate).eql(true)
     })
 
     test('hidden-indeterminate-persistence', async (t) => {
@@ -296,12 +296,12 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.click(mainCheck)
         await safeReload(t)
         await enterEditMode(t)
-        await t.expect(Selector(mainCheck).checked).eql(true)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(false)
+        await t.expect(mainCheck.checked).eql(true)
+        await t.expect(mainCheck.indeterminate).eql(false)
         await t.click(mainCheck)
         await t.click(mainCheck)
-        await t.expect(Selector(populationCheck).checked).eql(false)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
+        await t.expect(populationCheck.checked).eql(false)
+        await t.expect(mainCheck.indeterminate).eql(true)
     })
 
     test('expand-persistence', async (t) => {
@@ -312,10 +312,10 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await setMainExpanded(t, true)
         await exitEditMode(t)
         await enterEditMode(t)
-        await t.expect(Selector(populationCheckInteractable).visible).eql(true)
+        await t.expect(populationCheckInteractable.visible).eql(true)
         await safeReload(t)
         await enterEditMode(t)
-        await t.expect(Selector(populationCheckInteractable).visible).eql(true)
+        await t.expect(populationCheckInteractable.visible).eql(true)
     })
 
     test('search-smoke', async (t) => {
@@ -325,13 +325,13 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          */
         await enterEditMode(t)
         await t.typeText(filterBox, 'gene')
-        await t.expect(Selector('input[data-test-id=edit_group_generation_genx]:not([inert] *)').exists).ok()
-        await t.expect(Selector(mainCheck).exists).notOk()
+        await t.expect(interactableGroupCheckbox('generation_genx').exists).ok()
+        await t.expect(mainCheck.exists).notOk()
         await t.expect(Selector('.stats_table [aria-label$="category"]').exists).notOk()
         await screencap(t)
 
         await t.selectText(filterBox).pressKey('delete')
-        await t.expect(Selector(mainCheck).exists).ok()
+        await t.expect(mainCheck.exists).ok()
         // Filtering doesn't leave the categories it expanded expanded.
         await t.expect(mainExpandButton.exists).ok()
     })
@@ -344,7 +344,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         // Groups that don't exist for an article don't show up in the edit tree
         await enterEditMode(t)
         await t.typeText(filterBox, 'median')
-        await t.expect(Selector('input[data-test-id=edit_category_income]').exists).notOk()
+        await t.expect(categoryCheckbox('income').exists).notOk()
     })
 
     // States have population from both the US Census and GHSL, so they're the articles that
@@ -359,15 +359,15 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          * filter them out.
          */
         await enterEditMode(t)
-        await t.expect(Selector(ghslCheck).checked).eql(false)
+        await t.expect(ghslCheck.checked).eql(false)
         await screencap(t)
 
         await t.click(ghslCheck)
-        await t.expect(Selector(ghslCheck).checked).eql(true)
+        await t.expect(ghslCheck.checked).eql(true)
 
         await t.typeText(filterBox, 'gene')
         await t.expect(sourceSectionHeader.exists).ok()
-        await t.expect(Selector(ghslCheck).exists).ok()
+        await t.expect(ghslCheck.exists).ok()
     })
 
     test('source-selection-changes-the-edit-table-itself', async (t) => {
@@ -400,16 +400,16 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await enterEditMode(t)
         await setMainExpanded(t, true)
         await t.click(populationCheckInteractable)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
+        await t.expect(mainCheck.indeterminate).eql(true)
 
         await selectUniverse(t, 'North America')
         await enterEditMode(t)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
+        await t.expect(mainCheck.indeterminate).eql(true)
         await screencap(t)
 
         await selectUniverse(t, 'USA')
         await enterEditMode(t)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
+        await t.expect(mainCheck.indeterminate).eql(true)
     })
 }
 

@@ -1,6 +1,7 @@
 import { Selector } from 'testcafe'
 
-import { target, checkTextboxes, comparisonPage, downloadImage, editCheckbox, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues, createComparison, downloadOrCheckString, downloadCSV, withEditMode } from './test_utils'
+import { editCheckbox, sourceCheckbox, withEditMode } from './edit_mode_test_utils'
+import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues, createComparison, downloadOrCheckString, downloadCSV } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -210,8 +211,8 @@ test('comparison-american-vs-international-population-stats', async (t) => {
 test('settings param works correctly on url with just ghsl source checked', async (t) => {
     await t.navigateTo(ghslLocation)
     await withEditMode(t, async () => {
-        await t.expect(Selector('[data-test-id="edit_source Population US Census"]').checked).eql(false)
-        await t.expect(Selector('[data-test-id="edit_source Population GHSL"]').checked).eql(true)
+        await t.expect(sourceCheckbox('Population', 'US Census').checked).eql(false)
+        await t.expect(sourceCheckbox('Population', 'GHSL').checked).eql(true)
     })
     await screencap(t)
 })
