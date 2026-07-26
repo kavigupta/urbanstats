@@ -6,11 +6,9 @@ import './sidebar.css'
 import { Navigator } from '../navigation/Navigator'
 import { Theme } from '../page_template/color-themes'
 import { useColors, useCurrentTheme } from '../page_template/colors'
-import { isStagedChange, SettingsDictionary, TemperatureUnit, useIsStaged, useSetting, useSettingInfo } from '../page_template/settings'
+import { isStagedChange, SettingsDictionary, TemperatureUnit, useSetting, useSettingInfo } from '../page_template/settings'
 import { humanReadableUniverse, useUniverse } from '../universe'
 import { useMobileLayout } from '../utils/responsive'
-
-import { StagingControls } from './StagingControls'
 
 function useSidebarSectionContentClassName(): string {
     let sidebarSectionContent = 'sidebar-section-content'
@@ -126,7 +124,6 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                     </li>
                 </ul>
             </div>
-            <MaybeStagingControlsSidebarSection />
             <SettingsSidebarSection />
             <div className="sidebar-section">
                 <div style={sidebarSectionTitle}>Appearance</div>
@@ -152,24 +149,6 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                 </ul>
             </div>
         </div>
-    )
-}
-
-function MaybeStagingControlsSidebarSection(): ReactNode {
-    const sidebarSectionTitle = useSidebarSectionTitleStyle()
-    const sidebarSectionContent = useSidebarSectionContentClassName()
-
-    return (
-        !useIsStaged()
-            ? null
-            : (
-                    <div className="sidebar-section">
-                        <div style={sidebarSectionTitle}>Link Settings</div>
-                        <ul className={sidebarSectionContent}>
-                            <StagingControls />
-                        </ul>
-                    </div>
-                )
     )
 }
 
