@@ -11,6 +11,9 @@ export const collapseAnimationMs = 400
 
 /** Edit mode is ephemeral, so it has to be reopened after any reload or navigation. */
 export async function enterEditMode(t: TestController): Promise<void> {
+    // Neither is present until the table renders, and `exists` doesn't wait, so a check
+    // straight after a navigation would otherwise read the loading page and skip the click.
+    await t.expect(Selector('[data-test-id=edit-mode-edit], [data-test-id=edit-mode-filter]').exists).ok()
     if (await editButton.exists) {
         await t.click(editButton)
     }

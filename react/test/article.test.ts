@@ -4,7 +4,7 @@ import { sanitize } from '../src/utils/paths'
 import { shardBytesFullNum } from '../src/utils/shardHash'
 
 import {
-    target, checkAllCategoryBoxes, checkTextboxes, comparisonPage, downloadImage,
+    target, checkAllCategoryBoxes, checkSidebarTextboxes, checkTextboxes, comparisonPage, downloadImage,
     getLocationWithoutSettings, safeReload, screencap,
     urbanstatsFixture,
     getLocation,
@@ -134,7 +134,7 @@ test('uncheck-box-desktop', async (t) => {
 test('simple', async (t) => {
     await t.resizeWindow(1400, 800)
 
-    await checkTextboxes(t, ['Simple Ordinals'])
+    await checkSidebarTextboxes(t, ['Simple Ordinals'])
 
     await screencap(t)
 })
@@ -267,7 +267,7 @@ test('change to C and back to F', async (t) => {
 })
 
 test('paste C link', async (t) => {
-    await checkTextboxes(t, ['Simple Ordinals']) // to save settings
+    await checkSidebarTextboxes(t, ['Simple Ordinals']) // to save settings
     await t.navigateTo('/article.html?longname=California%2C+USA&s=jV3GG2h8Vfs')
     await t.expect(Selector('[data-test-id=staging_controls]').exists).ok()
     await t.expect(Selector('span').withExactText('26.9').exists).ok()
@@ -365,7 +365,7 @@ test('can navigate back to original navigated shape in map', async (t) => {
 urbanstatsFixture('historical congressional', '/article.html?longname=Historical+Congressional+District+CA-46%2C+108th-112th+Congress%2C+USA')
 
 test('historical congressional', async (t) => {
-    await checkTextboxes(t, ['Include Historical Districts'])
+    await checkSidebarTextboxes(t, ['Include Historical Districts'])
     await screencap(t)
 })
 
@@ -415,10 +415,9 @@ test('uncheck all years exits staged mode', async (t) => {
     // Check all year checkboxes, then uncheck them, and verify that staged mode is exited (staging controls disappear)
     await checkTextboxes(t, ['Geographic Identifiers'])
     await waitForLoading()
-    const yearCheckbox = Selector('.checkbox-setting').withExactText('2020').find('input[type="checkbox"]')
-    await t.click(yearCheckbox)
+    await checkTextboxes(t, ['2020'])
     await waitForLoading()
-    await t.click(yearCheckbox)
+    await checkTextboxes(t, ['2020'])
 })
 
 const edgeCaseHashes: { longname: string, expectedHash: number, expectedCompactness: string }[] = [

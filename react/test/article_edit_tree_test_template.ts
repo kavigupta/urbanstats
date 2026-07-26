@@ -1,15 +1,13 @@
 import { Selector } from 'testcafe'
 
-import { categoryToggleButton, collapseAnimationMs, enterEditMode, exitEditMode, filterBox, setCategoryExpanded } from './article_edit_test_utils'
-import { checkIsIndeterminate, clickUniverseFlag, getLocation, resizeForPlatform, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, withHamburgerMenu } from './test_utils'
+import { categoryToggleButton, enterEditMode, exitEditMode, filterBox, setCategoryExpanded } from './article_edit_test_utils'
+import { checkIsIndeterminate, clickUniverseFlag, getLocation, resizeForPlatform, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture } from './test_utils'
 
 /**
- * The article table's edit mode replicates the statistic category/group tree that
- * lives in the sidebar (StatsTree.tsx). These tests are the edit-mode counterparts
- * of stats_tree_test_template.ts: the same category/group checkbox semantics
- * (indeterminate cycling, saved indeterminate state, persistence, search) exercised
- * through the table instead of the sidebar, plus the two-tree consistency that only
- * becomes testable now that both exist.
+ * The article table's edit mode is where the statistic category/group tree lives: the
+ * category/group checkbox semantics (indeterminate cycling, saved indeterminate state,
+ * persistence, search), the source and year selections above the tree, and the warnings
+ * the article shows when a selection leaves it with nothing to display.
  */
 
 const mainCheck = 'input[data-test-id=edit_category_main]'
@@ -21,15 +19,11 @@ const populationCheck = 'input[data-test-id=edit_group_population]'
 const populationCheckInteractable = `${populationCheck}:not([inert] *)`
 // Present only while Main is collapsed, since the toggle then offers to expand.
 const mainExpandButton = categoryToggleButton('main', 'Expand')
-// The sidebar's copy of the same group, for cross-tree checks.
-const sidebarPopulationCheck = 'input[data-test-id=group_population]:not([inert] *)'
-// The source and year sections above the tree, and the sidebar's copies of them.
+// The source and year sections above the tree.
 const sourceSectionHeader = Selector('.stats_table div').withExactText('Population Sources')
 const ghslCheck = 'input[data-test-id="edit_source Population GHSL"]'
-const sidebarGhslCheck = 'input[data-test-id="source Population GHSL"]'
 const year2020Check = 'input[data-test-id=edit_year_2020]'
 const year2010Check = 'input[data-test-id=edit_year_2010]'
-const sidebarYear2020Check = 'input[data-test-id=year_2020]'
 
 /**
  * A statistic row of the Population group, by the name it displays. Matched via the group
@@ -181,24 +175,52 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('missing-year-warning', async (t) => {
         /**
-         * Deselecting a year has to reach the edit table's own copy of ArticleWarnings,
-         * whether it's done from the sidebar or from the table's year section.
+         * Deselecting a year has to reach the edit table's own copy of ArticleWarnings.
          */
         await enterEditMode(t)
         await uncheckAll(t)
         await t.click(mainCheck)
-        await withHamburgerMenu(t, async () => {
-            await t.click(sidebarYear2020Check)
-        })
+        await t.click(year2020Check)
         await t.expect(Selector('.stats_table li').withExactText('To see Main > Population statistics, select 2020, 2010, or 2000.').exists).ok()
+        await screencap(t)
+    })
+
+    test('missing-year-data', async (t) => {
+        /**
+         * A category whose statistics only exist for a year that isn't selected is
+         * called out by name, rather than silently showing nothing.
+         */
+        await enterEditMode(t)
+        await uncheckAll(t)
+        await t.click(year2020Check)
+        await t.click(year2010Check)
+        await t.click('input[data-test-id=edit_category_health]')
+        await t.expect(Selector('.stats_table li').withExactText('To see Health statistics, select 2020.').exists).ok()
+        await screencap(t)
+    })
+
+    test('missing-partial-year-data', async (t) => {
+        /**
+         * The same warning at group granularity, for a category where only some of the
+         * selected groups are missing the selected year. The groups have to be picked
+         * before the year is switched: the edit tree only lists groups that have rows for
+         * the selected years, so Renter % is gone from it by the time the warning appears.
+         */
+        await enterEditMode(t)
+        await uncheckAll(t)
+        await setCategoryExpanded(t, 'housing', true)
+        await t.click('input[data-test-id=edit_group_vacancy]:not([inert] *)')
+        await t.click('input[data-test-id=edit_group_rent_or_own_rent]:not([inert] *)')
+        await t.click(year2020Check)
+        await t.click(year2010Check)
+        await t.expect(Selector('.stats_table li').withExactText('To see Housing > Renter % statistics, select 2020.').exists).ok()
         await screencap(t)
     })
 
     test('year-section', async (t) => {
         /**
-         * The year selection is duplicated from the sidebar onto the edit table, over the
-         * same setting, so a change on either side shows up on the other. This article's
-         * population comes from a single source, so it gets no source section.
+         * The year selection sits above the tree, not in it. This article's population comes
+         * from a single source, so it gets no source section.
          */
         await enterEditMode(t)
         await t.expect(sourceSectionHeader.exists).notOk()
@@ -206,7 +228,6 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await screencap(t)
 
         await t.click(year2020Check)
-        await checkSidebarCopy(t, sidebarYear2020Check, false)
         await t.expect(Selector(year2020Check).checked).eql(false)
     })
 
@@ -224,6 +245,11 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.click(year2010Check)
         await t.expect(populationRow('2010').exists).ok()
         await t.expect(populationRow('2020').exists).ok()
+        await screencap(t)
+
+        // and on the article itself, once edit mode is out of the way
+        await exitEditMode(t)
+        await t.expect(Selector('a').withExactText('2010').exists).ok()
         await screencap(t)
     })
 
@@ -292,22 +318,6 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(Selector(populationCheckInteractable).visible).eql(true)
     })
 
-    test('expand-state-shared-with-sidebar', async (t) => {
-        /**
-         * Both trees expand under the same setting key, so expanding in one expands the other.
-         */
-        await enterEditMode(t)
-        await setMainExpanded(t, true)
-        await withHamburgerMenu(t, async () => {
-            await t.expect(Selector(sidebarPopulationCheck).exists).ok()
-            await t.click('.expandButton[data-category-id=main]')
-            await t.wait(collapseAnimationMs)
-            await t.expect(Selector(sidebarPopulationCheck).exists).notOk()
-        })
-        await t.expect(mainExpandButton.exists).ok()
-        await t.expect(Selector(populationCheckInteractable).exists).notOk()
-    })
-
     test('search-smoke', async (t) => {
         /**
          * Filtering expands the matching categories, so a group in an otherwise
@@ -324,26 +334,6 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(Selector(mainCheck).exists).ok()
         // Filtering doesn't leave the categories it expanded expanded.
         await t.expect(mainExpandButton.exists).ok()
-    })
-
-    test('trees-stay-in-sync', async (t) => {
-        /**
-         * The edit tree and the sidebar tree are separate components over the same
-         * settings, so a change in either must show up in the other.
-         */
-        await enterEditMode(t)
-        await setMainExpanded(t, true)
-        await t.click(populationCheckInteractable)
-
-        await withHamburgerMenu(t, async () => {
-            await t.expect(Selector(sidebarPopulationCheck).checked).eql(false)
-            await t.expect(await checkIsIndeterminate(t, 'input[data-test-id=category_main]')).eql(true)
-            await t.click(sidebarPopulationCheck)
-        })
-
-        await t.expect(Selector(populationCheck).checked).eql(true)
-        await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(false)
-        await t.expect(Selector(mainCheck).checked).eql(true)
     })
 
     urbanstatsFixture('article edit tree filtering', `${target}/article.html?longname=Venice+Neighborhood%2C+Los+Angeles+City%2C+California%2C+USA`, async (t) => {
@@ -365,15 +355,14 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('source-section', async (t) => {
         /**
-         * Like the years, the sources are duplicated from the sidebar onto the edit table
-         * over the same settings, and the search box doesn't filter them out.
+         * Like the years, the sources sit above the tree, and the search box doesn't
+         * filter them out.
          */
         await enterEditMode(t)
         await t.expect(Selector(ghslCheck).checked).eql(false)
         await screencap(t)
 
         await t.click(ghslCheck)
-        await checkSidebarCopy(t, sidebarGhslCheck, true)
         await t.expect(Selector(ghslCheck).checked).eql(true)
 
         await t.typeText(filterBox, 'gene')
@@ -422,23 +411,6 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await enterEditMode(t)
         await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
     })
-
-    /**
-     * Asserts the sidebar's copy of a checkbox agrees with the table's, which is the whole
-     * point of both trees reading the same setting.
-     *
-     * Desktop only: on mobile, opening the hamburger menu tears down the article table, and
-     * edit mode is ephemeral, so there's nothing to compare against afterwards. The same
-     * limitation is why expand-state-shared-with-sidebar and trees-stay-in-sync fail on mobile.
-     */
-    async function checkSidebarCopy(t: TestController, sidebarCheck: string, expected: boolean): Promise<void> {
-        if (platform !== 'desktop') {
-            return
-        }
-        await withHamburgerMenu(t, async () => {
-            await t.expect(Selector(sidebarCheck).checked).eql(expected)
-        })
-    }
 }
 
 async function selectUniverse(t: TestController, alt: string): Promise<void> {

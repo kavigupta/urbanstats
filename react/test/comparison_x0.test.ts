@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues, createComparison, downloadOrCheckString, downloadCSV } from './test_utils'
+import { target, checkTextboxes, comparisonPage, downloadImage, editCheckbox, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues, createComparison, downloadOrCheckString, downloadCSV, withEditMode } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -118,16 +118,17 @@ test('comparison-3-plotted-across-180', async (t) => {
     await screencap(t)
 })
 
-async function checkboxStatus(name: string): Promise<string> {
-    const selector = Selector('div.checkbox-setting')
-        .filter(node => node.querySelector('label')!.innerText === name, { name })
-    if ((await selector.count) === 0) {
-        return 'missing'
-    }
-    if (await selector.hasClass('testing-checkbox-disabled')) {
-        return 'disabled'
-    }
-    return 'enabled'
+/** The source checkboxes live on the table's edit mode, so reading one means opening it. */
+async function checkboxStatus(t: TestController, name: string): Promise<string> {
+    let status = 'missing'
+    await withEditMode(t, async () => {
+        const checkbox = editCheckbox(name)
+        if ((await checkbox.count) === 0) {
+            return
+        }
+        status = await checkbox.hasAttribute('disabled') ? 'disabled' : 'enabled'
+    })
+    return status
 }
 
 const onlyUSAndCanadaCensus = 'AkWGLJMDBPzz5'
@@ -140,8 +141,8 @@ urbanstatsFixture(
 
 test('comparison-2-non-overlapping-population-stats', async (t) => {
     // no overlap: both are forced onto the screen
-    await t.expect(await checkboxStatus('US Census')).eql('missing')
-    await t.expect(await checkboxStatus('GHSL')).eql('missing')
+    await t.expect(await checkboxStatus(t, 'US Census')).eql('missing')
+    await t.expect(await checkboxStatus(t, 'GHSL')).eql('missing')
     await t.expect(await dataValues()).eql(['119', '420'])
     await screencap(t)
     // heterogenous-sources disclaimer: multiple data sources (US Census vs GHSL)
@@ -158,8 +159,8 @@ urbanstatsFixture(
 
 test('comparison-both-american-states-population-stats', async (t) => {
     // both are American states: only US Census is forced onto the screen
-    await t.expect(await checkboxStatus('US Census')).eql('disabled')
-    await t.expect(await checkboxStatus('GHSL')).eql('enabled')
+    await t.expect(await checkboxStatus(t, 'US Census')).eql('disabled')
+    await t.expect(await checkboxStatus(t, 'GHSL')).eql('enabled')
     // these are the values for the US Census
     await t.expect(await dataValues()).eql(['119', '39.5'])
 })
@@ -171,9 +172,9 @@ urbanstatsFixture(
 
 test('comparison-american-vs-canada-population-stats', async (t) => {
     // forces GHSL onto the screen. US Census is only enabled by the checkbox
-    await t.expect(await checkboxStatus('US Census')).eql('enabled')
-    await t.expect(await checkboxStatus('Canadian Census')).eql('enabled')
-    await t.expect(await checkboxStatus('GHSL')).eql('enabled')
+    await t.expect(await checkboxStatus(t, 'US Census')).eql('enabled')
+    await t.expect(await checkboxStatus(t, 'Canadian Census')).eql('enabled')
+    await t.expect(await checkboxStatus(t, 'GHSL')).eql('enabled')
     // these are the values for the US Census
     await t.expect(await dataValues()).eql(['14.2', '39.5'])
     await checkTextboxes(t, ['US Census'])
@@ -193,8 +194,8 @@ let ghslLocation: string
 
 test('comparison-american-vs-international-population-stats', async (t) => {
     // forces GHSL onto the screen. US Census is only enabled by the checkbox
-    await t.expect(await checkboxStatus('US Census')).eql('enabled')
-    await t.expect(await checkboxStatus('GHSL')).eql('disabled')
+    await t.expect(await checkboxStatus(t, 'US Census')).eql('enabled')
+    await t.expect(await checkboxStatus(t, 'GHSL')).eql('disabled')
     // these are the values for the US Census
     await t.expect(await dataValues()).eql(['NaN', '39.5', '20.8', '40.4'])
     await checkTextboxes(t, ['US Census'])
@@ -208,8 +209,10 @@ test('comparison-american-vs-international-population-stats', async (t) => {
 
 test('settings param works correctly on url with just ghsl source checked', async (t) => {
     await t.navigateTo(ghslLocation)
-    await t.expect(Selector('[data-test-id="source Population US Census"]').checked).eql(false)
-    await t.expect(Selector('[data-test-id="source Population GHSL"]').checked).eql(true)
+    await withEditMode(t, async () => {
+        await t.expect(Selector('[data-test-id="edit_source Population US Census"]').checked).eql(false)
+        await t.expect(Selector('[data-test-id="edit_source Population GHSL"]').checked).eql(true)
+    })
     await screencap(t)
 })
 
@@ -220,8 +223,8 @@ urbanstatsFixture(
 
 test('comparison-usa-vs-usa', async (t) => {
     // both are American states: nothing is forced onto the screen
-    await t.expect(await checkboxStatus('US Census')).eql('enabled')
-    await t.expect(await checkboxStatus('GHSL')).eql('enabled')
+    await t.expect(await checkboxStatus(t, 'US Census')).eql('enabled')
+    await t.expect(await checkboxStatus(t, 'GHSL')).eql('enabled')
     // these are the values for the US Census, since GHSL is disabled
     await t.expect(await dataValues()).eql(['7.03', '39.5'])
 })
