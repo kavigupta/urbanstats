@@ -490,6 +490,22 @@ export async function clickUniverseFlag(t: TestController, alt: string): Promise
     })
 }
 
+export async function checkIsIndeterminate(t: TestController, selector: string): Promise<boolean> {
+    return t.eval(() => {
+        const check: HTMLInputElement = document.querySelector(selector)!
+        return check.indeterminate
+    }, { dependencies: { selector } }) as Promise<boolean>
+}
+
+/** Unchecks every category checkbox of a statistic tree, identified by its test-id prefix. */
+export async function uncheckAllCategories(t: TestController, testIdPrefix: string): Promise<void> {
+    for (const check of await arrayFromSelector(Selector(`input[data-test-id^=${testIdPrefix}]`))) {
+        if (await check.checked) {
+            await t.click(check)
+        }
+    }
+}
+
 // Gets the non-extension part of the test file, e.g. if running search.test.ts -> search
 export function getCurrentTest(t: TestController): string {
     // @ts-expect-error -- TestCafe private API

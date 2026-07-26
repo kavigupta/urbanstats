@@ -304,3 +304,12 @@ export function useStagedSettingKeys(): (keyof SettingsDictionary)[] | undefined
     const settings = useContext(Settings.Context)
     return settings.useStagedKeys()
 }
+
+/** Whether staging is changing this setting, which the UI highlights. */
+export function isStagedChange<K extends keyof SettingsDictionary>(info: SettingInfo<K>): boolean {
+    return 'stagedValue' in info && info.stagedValue !== info.persistedValue
+}
+
+export function useIsStaged(): boolean {
+    return useStagedSettingKeys() !== undefined
+}

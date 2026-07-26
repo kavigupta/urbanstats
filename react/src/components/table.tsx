@@ -1228,7 +1228,7 @@ function ordinalWidthInEm(ordinal: number, total: number, type: string, universe
     }
 }
 
-export function computeSizesForRow(row: StatisticCellRenderingInfo, universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
+function computeSizesForRow(row: StatisticCellRenderingInfo, universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
     // Compute the size of the ordinal and percentile text
     if (row.kind !== 'statistic') {
         return {
@@ -1247,6 +1247,18 @@ export function computeSizesForRow(row: StatisticCellRenderingInfo, universe: st
         ordinalColumnPadding,
         percentileColumnWidthEm: percentileColumnWidthEm + smallPad,
     }
+}
+
+/** Column widths that fit every row, i.e. the maximum of each row's requirement. */
+export function maxLayoutInformation(rows: StatisticCellRenderingInfo[], universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
+    return rows.reduce<CommonLayoutInformation>((acc, row) => {
+        const curr = computeSizesForRow(row, universe, simpleOrdinals)
+        return {
+            ordinalColumnWidthEm: Math.max(acc.ordinalColumnWidthEm, curr.ordinalColumnWidthEm),
+            percentileColumnWidthEm: Math.max(acc.percentileColumnWidthEm, curr.percentileColumnWidthEm),
+            ordinalColumnPadding: Math.max(acc.ordinalColumnPadding, curr.ordinalColumnPadding),
+        }
+    }, { ordinalColumnWidthEm: 0, percentileColumnWidthEm: 0, ordinalColumnPadding: 0 })
 }
 
 function Ordinal(props: {

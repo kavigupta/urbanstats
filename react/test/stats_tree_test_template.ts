@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { arrayFromSelector, safeReload, screencap, target, urbanstatsFixture, withHamburgerMenu } from './test_utils'
+import { checkIsIndeterminate, clickUniverseFlag, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, withHamburgerMenu } from './test_utils'
 
 const mainCheck = 'input[data-test-id=category_main]'
 const mainExpand = '.expandButton[data-category-id=main]'
@@ -286,13 +286,8 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
             await t.click(populationCheck)
             await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
         })
-        await t
-            .click(Selector('img').withAttribute('class', 'universe-selector'))
-        await t
-            .click(
-                Selector('img')
-                    .withAttribute('class', 'universe-selector-option')
-                    .withAttribute('alt', 'North America'))
+        await t.click(Selector('img').withAttribute('class', 'universe-selector'))
+        await clickUniverseFlag(t, 'North America')
         await withHamburgerMenu(t, async () => {
             await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
             if (platform === 'mobile') {
@@ -300,13 +295,8 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
             }
         })
         await screencap(t)
-        await t
-            .click(Selector('img').withAttribute('class', 'universe-selector'))
-        await t
-            .click(
-                Selector('img')
-                    .withAttribute('class', 'universe-selector-option')
-                    .withAttribute('alt', 'USA'))
+        await t.click(Selector('img').withAttribute('class', 'universe-selector'))
+        await clickUniverseFlag(t, 'USA')
         await withHamburgerMenu(t, async () => {
             await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
         })
@@ -314,16 +304,5 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
 }
 
 async function uncheckAll(t: TestController): Promise<void> {
-    for (const check of await arrayFromSelector(Selector('input[data-test-id^=category]'))) {
-        if (await check.checked) {
-            await t.click(check)
-        }
-    }
-}
-
-async function checkIsIndeterminate(t: TestController, selector: string): Promise<boolean> {
-    return t.eval(() => {
-        const check: HTMLInputElement = document.querySelector(selector)!
-        return check.indeterminate
-    }, { dependencies: { selector } }) as Promise<boolean>
+    await uncheckAllCategories(t, 'category')
 }

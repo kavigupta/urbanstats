@@ -7,12 +7,12 @@ import { assert } from '../utils/defensive'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { Article } from '../utils/protos'
 
-import { CongressionalColumnData, CongressionalRepresentativeEntry } from './congressional-table/model'
+import { congressionalDataForRow } from './congressional-table/model'
 import { CongressionalRepresentativesWidget } from './congressional-table/render'
 import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
 import { useScreenshotMode } from './screenshot'
-import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeDisclaimerFootnotes, computeSizesForRow, CommonLayoutInformation } from './table'
+import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeDisclaimerFootnotes, maxLayoutInformation, CommonLayoutInformation } from './table'
 
 export interface PlotSpec {
     statDescription: string
@@ -81,23 +81,14 @@ export function TableContents(props: TableContentsProps): ReactNode {
     const extraSpaceRight = Array.from({ length: ncols }).map((_, i) => (props.verticalPlotSpecs[i] === undefined ? 0 : props.columnWidth))
     const columnFullWidths = extraSpaceRight.map(extra => props.columnWidth + extra)
 
-    const columnWidthsInfo = Array.from({ length: ncols }).map((_, colIndex) => {
-        const widthsEach = props.rowSpecs.map(row => row[colIndex].type === 'statistic-row' ? computeSizesForRow(row[colIndex].row, universe, props.simpleOrdinals) : undefined)
-        const maxima = widthsEach.reduce((acc, curr) => {
-            if (curr === undefined) {
-                return acc
-            }
-            else if (acc === undefined) {
-                return curr
-            }
-            return {
-                ordinalColumnWidthEm: Math.max(acc.ordinalColumnWidthEm, curr.ordinalColumnWidthEm),
-                percentileColumnWidthEm: Math.max(acc.percentileColumnWidthEm, curr.percentileColumnWidthEm),
-                ordinalColumnPadding: Math.max(acc.ordinalColumnPadding, curr.ordinalColumnPadding),
-            }
-        }, { ordinalColumnWidthEm: 0, percentileColumnWidthEm: 0, ordinalColumnPadding: 0 })
-        return maxima
-    })
+    const columnWidthsInfo = Array.from({ length: ncols }).map((_, colIndex) => maxLayoutInformation(
+        props.rowSpecs.flatMap((row) => {
+            const cell = row[colIndex]
+            return cell.type === 'statistic-row' ? [cell.row] : []
+        }),
+        universe,
+        props.simpleOrdinals,
+    ))
 
     return (
         <>
@@ -202,28 +193,8 @@ function SuperTableRow(props: {
         if (cell.type !== 'statistic-row') {
             return []
         }
-        if (cell.row.kind !== 'metadata') {
-            return []
-        }
-        if (typeof cell.row.statval === 'string') {
-            return []
-        }
-        return [{
-            longname: cell.longname,
-            representatives: cell.row.statval.representatives.map((r): CongressionalRepresentativeEntry => {
-                assert(r.representative.name !== undefined && r.representative.name !== null, 'representative name missing')
-                return {
-                    representative: {
-                        name: r.representative.name,
-                        wikipediaPage: r.representative.wikipediaPage ?? undefined,
-                        party: r.representative.party ?? undefined,
-                    },
-                    districtLongname: r.districtLongname,
-                    startTerm: r.startTerm,
-                    endTerm: r.endTerm,
-                }
-            }),
-        } satisfies CongressionalColumnData]
+        const data = congressionalDataForRow(cell.row, cell.longname)
+        return data === undefined ? [] : [data]
     }), [props.cellSpecs])
 
     return (

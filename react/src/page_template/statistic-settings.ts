@@ -3,7 +3,7 @@ import { useContext } from 'react'
 import { dataSources } from '../data/statistics_tree'
 import { Navigator } from '../navigation/Navigator'
 
-import { Settings, sourceEnabledKey, StatGroupKey, StatYearKey, StatSourceKey, useSettings } from './settings'
+import { isStagedChange, Settings, sourceEnabledKey, StatGroupKey, StatYearKey, StatSourceKey, useSetting, useSettings, useSettingsInfo } from './settings'
 import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, Group, sourceDisambiguation, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
 
 export type StatGroupSettings = Record<StatGroupKey | StatYearKey | StatSourceKey, boolean>
@@ -25,7 +25,7 @@ function sourceApplies(source: DataSource, settings: StatGroupSettings, sourcesB
     return settings[sourceEnabledKey(source) satisfies StatSourceKey]
 }
 
-export function groupKeys(groups: Group[]): StatGroupKey[] {
+function groupKeys(groups: Group[]): StatGroupKey[] {
     return groups.map(group => `show_stat_group_${group.id}` as const)
 }
 
@@ -41,7 +41,7 @@ export function groupYearKeys(): (keyof StatGroupSettings)[] {
     ]
 }
 
-export function useCategoryStatus(category: Category): boolean | 'indeterminate' {
+function useCategoryStatus(category: Category): boolean | 'indeterminate' {
     const groups = useAvailableGroups(category)
     const settingsValues = useSettings(groupKeys(groups))
     const checkedGroups = groups.filter(group => settingsValues[`show_stat_group_${group.id}`]).length
@@ -63,7 +63,7 @@ export function useCategoryStatus(category: Category): boolean | 'indeterminate'
     return result
 }
 
-export function changeStatGroupSetting(settings: Settings, group: Group, newValue: boolean): void {
+function changeStatGroupSetting(settings: Settings, group: Group, newValue: boolean): void {
     settings.setSetting(`show_stat_group_${group.id}`, newValue)
     saveIndeterminateState(settings, group.parent)
 }
@@ -77,7 +77,7 @@ function saveIndeterminateState(settings: Settings, category: Category): void {
     )
 }
 
-export function useChangeCategorySetting(category: Category): () => void {
+function useChangeCategorySetting(category: Category): () => void {
     const categoryStatus = useCategoryStatus(category)
     const availableGroups = useAvailableGroups(category)
     const settings = useContext(Settings.Context)
@@ -110,6 +110,76 @@ export function useChangeCategorySetting(category: Category): () => void {
                 break
         }
     }
+}
+
+export interface GroupTreeState {
+    group: Group
+    enabled: boolean
+    setEnabled: (enabled: boolean) => void
+    highlight: boolean
+}
+
+export interface CategoryTreeState {
+    status: boolean | 'indeterminate'
+    toggle: () => void
+    highlight: boolean
+    expanded: boolean
+    setExpanded: (expanded: boolean) => void
+    groups: GroupTreeState[]
+}
+
+/**
+ * State for one category of the statistic tree. The tree is rendered in two places
+ * (the sidebar and the article table's edit mode) with different layouts; sharing
+ * the state here keeps them from disagreeing about what a checkbox means.
+ */
+export function useCategoryTreeState(category: Category): CategoryTreeState {
+    const settings = useContext(Settings.Context)
+    const availableGroups = useAvailableGroups(category)
+    const status = useCategoryStatus(category)
+    const toggle = useChangeCategorySetting(category)
+    const enabled = useSettings(groupKeys(availableGroups))
+    const info = useSettingsInfo(groupKeys(availableGroups))
+    const [expanded, setExpanded] = useSetting(`stat_category_expanded_${category.id}`)
+
+    const groups = availableGroups.map(group => ({
+        group,
+        enabled: enabled[`show_stat_group_${group.id}`],
+        setEnabled: (newValue: boolean) => { changeStatGroupSetting(settings, group, newValue) },
+        highlight: isStagedChange(info[`show_stat_group_${group.id}`]),
+    }))
+
+    return {
+        status,
+        toggle,
+        highlight: groups.some(group => group.highlight),
+        expanded,
+        setExpanded,
+        groups,
+    }
+}
+
+function searchMatch(searchTerm: string, target: string): boolean {
+    return target.toLowerCase().includes(searchTerm.toLowerCase())
+}
+
+/**
+ * The categories a search term shows. A category whose own name matches is kept
+ * whole; otherwise it is narrowed to its matching groups, and dropped if none match.
+ *
+ * Narrowing produces a category whose `contents` are just the matches, which scopes
+ * everything downstream (including useCategoryTreeState) to those groups — so while
+ * searching, the category checkbox acts on what's visible rather than on the groups
+ * the search is hiding.
+ */
+export function filterCategoriesBySearch(searchTerm: string, categories: Category[], groups: Group[]): Category[] {
+    return categories.flatMap((category) => {
+        if (searchMatch(searchTerm, category.name)) {
+            return [category]
+        }
+        const contents = category.contents.filter(group => groups.includes(group) && searchMatch(searchTerm, group.name))
+        return contents.length > 0 ? [{ ...category, contents }] : []
+    })
 }
 
 export function useSelectedGroups(): Group[] {

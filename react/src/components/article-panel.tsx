@@ -6,9 +6,9 @@ import React, { CSSProperties, ReactNode, useCallback, useContext, useEffect, us
 import { Navigator } from '../navigation/Navigator'
 import { Colors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
-import { rowExpandedKey, Settings, useSetting, useSettings, useSettingsInfo, useStagedSettingKeys } from '../page_template/settings'
-import { changeStatGroupSetting, groupKeys, groupYearKeys, StatGroupSettings, useAvailableCategories, useAvailableGroups, useCategoryStatus, useChangeCategorySetting } from '../page_template/statistic-settings'
-import { allGroups, Category, Group, statParents } from '../page_template/statistic-tree'
+import { rowExpandedKey, useIsStaged, useSetting, useSettings } from '../page_template/settings'
+import { filterCategoriesBySearch, groupYearKeys, StatGroupSettings, useAvailableCategories, useAvailableGroups, useCategoryTreeState } from '../page_template/statistic-settings'
+import { allGroups, Category, statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { Universe, universeContext, useUniverse } from '../universe'
 import { assert } from '../utils/defensive'
@@ -24,7 +24,7 @@ import { ExpandButton } from './ExpandButton'
 import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { StagingControls } from './StagingControls'
-import { CongressionalColumnData, CongressionalRepresentativeEntry } from './congressional-table/model'
+import { congressionalDataForRow } from './congressional-table/model'
 import { CongressionalRepresentativesWidget } from './congressional-table/render'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
@@ -32,8 +32,9 @@ import { pullRelevantPlotProps, RenderedPlot } from './plots'
 import { Related } from './related-button'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
+import { CheckboxSettingJustBox } from './sidebar'
 import { CellSpec, PlotSpec, TableContents } from './supertable'
-import { ColumnIdentifier, CommonLayoutInformation, computeSizesForRow, ExpansionButton, MainHeaderRow, StatisticNameDisclaimer, StatisticRowCells, TableHeaderContainer } from './table'
+import { ColumnIdentifier, CommonLayoutInformation, ExpansionButton, MainHeaderRow, maxLayoutInformation, StatisticNameDisclaimer, StatisticRowCells, TableHeaderContainer, TableRowContainer } from './table'
 import { EditModeContext, useEditMode } from './table-edit-context'
 
 export function ArticlePanel({ article, rows, universe }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][], universe: Universe }): ReactNode {
@@ -54,22 +55,12 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     const settings = useSettings(groupYearKeys())
     const filteredRows = rows(settings)[0]
 
-    // Every available row, regardless of which stat groups are currently enabled.
-    // Used by edit mode to show the full category/group tree on the table.
-    const allRows = useMemo(() => {
-        const allGroupsEnabled = { ...settings }
-        for (const group of allGroups) {
-            allGroupsEnabled[`show_stat_group_${group.id}`] = true
-        }
-        return rows(allGroupsEnabled)[0]
-    }, [rows, settings])
-
     // Edit mode is ephemeral (not a setting), but it opens automatically when the
     // page enters staging mode (e.g. from a settings link) so the pending changes
     // are visible and reviewable on the table. The initial state covers a fresh
     // load into staging; the effect covers navigating into staging on an already
     // mounted panel. Neither forces edit mode closed when staging ends.
-    const staged = useStagedSettingKeys() !== undefined
+    const staged = useIsStaged()
     const [editMode, setEditMode] = useState(staged)
     const wasStaged = useRef(staged)
     useEffect(() => {
@@ -117,11 +108,9 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
                         <div style={{ marginBlockEnd: '16px' }}></div>
 
                         <div ref={tableRef}>
-                            <ArticleTable
-                                filteredRows={filteredRows}
-                                allRows={allRows}
-                                article={article}
-                            />
+                            {editMode
+                                ? <ArticleEditTable rows={rows} article={article} filter={filter} />
+                                : <ArticleTable filteredRows={filteredRows} article={article} />}
                         </div>
 
                         <p></p>
@@ -159,24 +148,44 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     )
 }
 
+const allColumns: ColumnIdentifier[] = ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
+
 type NameSpec = Extract<CellSpec, { type: 'statistic-name' }>
 
-function getGroupAndDisplayNames(nameSpec: NameSpec, nameSpecs: NameSpec[]): [string | undefined, HumanReadableName] {
+interface GroupAggregate {
+    size: number
+    sourceNames: Set<string>
+}
+
+/** Tallies each group once, so naming stays linear in the number of specs. */
+function aggregateByGroup(nameSpecs: NameSpec[]): Map<string | undefined, GroupAggregate> {
+    const aggregates = new Map<string | undefined, GroupAggregate>()
+    for (const spec of nameSpecs) {
+        if (spec.row === undefined) {
+            continue
+        }
+        const statParent = statParents.get(spec.row.statpath)
+        let aggregate = aggregates.get(statParent?.group.id)
+        if (aggregate === undefined) {
+            aggregate = { size: 0, sourceNames: new Set() }
+            aggregates.set(statParent?.group.id, aggregate)
+        }
+        aggregate.size++
+        if (statParent?.source !== null && statParent?.source !== undefined) {
+            aggregate.sourceNames.add(statParent.source.name)
+        }
+    }
+    return aggregates
+}
+
+function getGroupAndDisplayNames(nameSpec: NameSpec, aggregates: Map<string | undefined, GroupAggregate>): [string | undefined, HumanReadableName] {
     if (nameSpec.row === undefined) {
         return [undefined, nameSpec.renderedStatname]
     }
     const statParent = statParents.get(nameSpec.row.statpath)
-
-    const groupRows = nameSpecs.filter(s => s.row !== undefined && statParents.get(s.row.statpath)?.group.id === statParent?.group.id)
-    const groupSize = groupRows.length
-
-    const groupSourcesSet = new Set(
-        groupRows
-            .map(s => statParents.get(s.row!.statpath)?.source)
-            .filter(source => source !== null)
-            .map(source => source!.name),
-    )
-    const groupHasMultipleSources = groupSourcesSet.size > 1
+    const aggregate = aggregates.get(statParent?.group.id)!
+    const groupSize = aggregate.size
+    const groupHasMultipleSources = aggregate.sourceNames.size > 1
 
     const sourceName = statParent?.source?.name
     let displayName = groupSize > 1 ? (statParent?.indentedName ?? nameSpec.renderedStatname) : nameSpec.renderedStatname
@@ -190,9 +199,10 @@ function getGroupAndDisplayNames(nameSpec: NameSpec, nameSpecs: NameSpec[]): [st
 export function computeNameSpecsWithGroups(nameSpecs: NameSpec[]): { updatedNameSpecs: NameSpec[], groupNames: (string | undefined)[] } {
     const updatedNameSpecs: NameSpec[] = []
     const groupNames: (string | undefined)[] = []
+    const aggregates = aggregateByGroup(nameSpecs)
 
     for (const spec of nameSpecs) {
-        const [groupName, displayName] = getGroupAndDisplayNames(spec, nameSpecs)
+        const [groupName, displayName] = getGroupAndDisplayNames(spec, aggregates)
 
         updatedNameSpecs.push({
             ...spec,
@@ -207,10 +217,8 @@ export function computeNameSpecsWithGroups(nameSpecs: NameSpec[]): { updatedName
 
 function ArticleTable(props: {
     filteredRows: ArticleRow[]
-    allRows: ArticleRow[]
     article: Article
 }): ReactNode {
-    const editModeContext = useEditMode()
     const colors = useColors()
     const expandedSettings = useSettings(props.filteredRows.map(row => rowExpandedKey(row.statpath)))
     const expandedEach = props.filteredRows.map(row => row.extraStats.length > 0 && (expandedSettings[rowExpandedKey(row.statpath)] ?? false))
@@ -231,7 +239,7 @@ function ArticleTable(props: {
 
     const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(statNameSpecs)
 
-    const onlyColumns: ColumnIdentifier[] = ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
+    const onlyColumns = allColumns
     const cellSpecs: CellSpec[][] = props.filteredRows.map(row => [({
         type: 'statistic-row',
         longname: props.article.longname,
@@ -264,20 +272,6 @@ function ArticleTable(props: {
 
     const topLeftSpec = { type: 'top-left-header' } satisfies CellSpec
 
-    if (editModeContext?.editMode) {
-        return (
-            <ArticleEditTable
-                allRows={props.allRows}
-                article={props.article}
-                widthLeftHeader={widthLeftHeader}
-                columnWidth={columnWidth}
-                onlyColumns={onlyColumns}
-                simpleOrdinals={simpleOrdinals}
-                filter={editModeContext.filter}
-            />
-        )
-    }
-
     return (
         <div className="stats_table">
             <TableContents
@@ -296,83 +290,31 @@ function ArticleTable(props: {
     )
 }
 
-const editRowStyle = (colors: Colors, index: number): CSSProperties => ({
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'last baseline',
-    backgroundColor: index % 2 === 1 ? colors.slightlyDifferentBackground : undefined,
-})
-
-function searchMatch(searchTerm: string, target: string): boolean {
-    return target.toLowerCase().includes(searchTerm.toLowerCase())
-}
-
-function EditCheckbox(props: { id?: string, checked: boolean, indeterminate?: boolean, onChange: (checked: boolean) => void, testId: string, highlight?: boolean }): ReactNode {
-    const colors = useColors()
-    const ref = useRef<HTMLInputElement>(null)
-    React.useEffect(() => {
-        if (ref.current) {
-            ref.current.indeterminate = props.indeterminate ?? false
-        }
-    }, [props.indeterminate])
-    return (
-        <input
-            ref={ref}
-            id={props.id}
-            type="checkbox"
-            checked={props.checked}
-            onChange={(e) => { props.onChange(e.target.checked) }}
-            data-test-id={props.testId}
-            data-test-highlight={props.highlight}
-            style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background, cursor: 'pointer', flex: '0 0 auto' }}
-        />
-    )
-}
-
 // Wrapping the name in a label lets a click anywhere on it toggle the associated
 // checkbox. Child rows of a multi-stat group have no checkbox of their own, so
 // they point at the group's checkbox by id.
 const editLabelStyle: CSSProperties = { padding: '1px', display: 'flex', alignItems: 'center', gap: '0.4em', cursor: 'pointer' }
 
-interface SharedEditRowProps {
+// `height: auto` opts out of the sidebar checkbox's font-size-derived height, so the
+// box keeps its intrinsic (square) size against the table's row text.
+const editCheckboxStyle: CSSProperties = { cursor: 'pointer', flex: '0 0 auto', height: 'auto' }
+
+/** Layout shared by every row of the edit table. */
+interface EditTableLayout {
     article: Article
     widthLeftHeader: number
     columnWidth: number
     onlyColumns: ColumnIdentifier[]
     simpleOrdinals: boolean
     columnWidthsInfo: CommonLayoutInformation
-    screenshotMode: boolean
 }
 
 function highlightStyle(colors: Colors, highlight: boolean): CSSProperties {
     return highlight ? { backgroundColor: colors.slightlyDifferentBackgroundFocused, borderRadius: '5px' } : {}
 }
 
-// Mirrors SuperTableRow's congressional-region construction so the representatives
-// table (a metadata "extra") can render below its row in edit mode too.
-function congressionalRegionData(row: ArticleRow, longname: string): CongressionalColumnData | undefined {
-    if (row.kind !== 'metadata' || typeof row.statval === 'string') {
-        return undefined
-    }
-    return {
-        longname,
-        representatives: row.statval.representatives.map((r): CongressionalRepresentativeEntry => {
-            assert(r.representative.name !== undefined && r.representative.name !== null, 'representative name missing')
-            return {
-                representative: {
-                    name: r.representative.name,
-                    wikipediaPage: r.representative.wikipediaPage ?? undefined,
-                    party: r.representative.party ?? undefined,
-                },
-                districtLongname: r.districtLongname,
-                startTerm: r.startTerm,
-                endTerm: r.endTerm,
-            }
-        }),
-    }
-}
-
-function EditStatRow(props: SharedEditRowProps & {
+function EditStatRow(props: {
+    layout: EditTableLayout
     index: number
     highlight: boolean
     enabled: boolean
@@ -384,13 +326,15 @@ function EditStatRow(props: SharedEditRowProps & {
     plotSpec?: PlotSpec
 }): ReactNode {
     const colors = useColors()
-    const hasExtras = props.row.extraStats.length > 0 && !props.screenshotMode
+    const screenshotMode = useScreenshotMode()
+    const { article, widthLeftHeader, columnWidth } = props.layout
+    const hasExtras = props.row.extraStats.length > 0 && !screenshotMode
     // Only render the (large) representatives table for enabled stats, matching the normal table.
-    const congressionalRegion = props.enabled ? congressionalRegionData(props.row, props.article.longname) : undefined
+    const congressionalRegion = props.enabled ? congressionalDataForRow(props.row, article.longname) : undefined
     return (
         <>
-            <div className="for-testing-table-row" style={editRowStyle(colors, props.index)}>
-                <div style={{ width: `${props.widthLeftHeader}%`, display: 'flex', alignItems: 'center', gap: '0.3em', paddingLeft: `${props.indent * 0.75}em` }}>
+            <TableRowContainer index={props.index} isHighlighted={false}>
+                <div style={{ width: `${widthLeftHeader}%`, display: 'flex', alignItems: 'center', gap: '0.3em', paddingLeft: `${props.indent * 0.75}em` }}>
                     <label
                         htmlFor={props.checkbox === undefined ? props.checkboxId : undefined}
                         style={{ ...editLabelStyle, ...highlightStyle(colors, props.highlight) }}
@@ -402,15 +346,15 @@ function EditStatRow(props: SharedEditRowProps & {
                     {props.row.disclaimer !== undefined && <StatisticNameDisclaimer disclaimer={props.row.disclaimer} />}
                 </div>
                 <StatisticRowCells
-                    width={props.columnWidth}
-                    longname={props.article.longname}
+                    width={columnWidth}
+                    longname={article.longname}
                     row={props.row}
-                    onlyColumns={props.onlyColumns}
-                    simpleOrdinals={props.simpleOrdinals}
-                    columnWidthsInfo={props.columnWidthsInfo}
+                    onlyColumns={props.layout.onlyColumns}
+                    simpleOrdinals={props.layout.simpleOrdinals}
+                    columnWidthsInfo={props.layout.columnWidthsInfo}
                     extraSpaceRight={0}
                 />
-            </div>
+            </TableRowContainer>
             {props.plotSpec && (
                 <div style={{ width: '100%', position: 'relative' }}>
                     <RenderedPlot statDescription={props.plotSpec.statDescription} plotProps={props.plotSpec.plotProps} />
@@ -420,8 +364,8 @@ function EditStatRow(props: SharedEditRowProps & {
                 <div data-test-id="edit-congressional-representatives">
                     <CongressionalRepresentativesWidget
                         regions={[congressionalRegion]}
-                        widthLeftHeader={props.widthLeftHeader}
-                        columnWidth={props.columnWidth}
+                        widthLeftHeader={widthLeftHeader}
+                        columnWidth={columnWidth}
                         extraSpaceRight={[0]}
                     />
                 </div>
@@ -433,12 +377,12 @@ function EditStatRow(props: SharedEditRowProps & {
 function EditGroupHeaderRow(props: { index: number, highlight: boolean, checkbox: ReactNode, name: string }): ReactNode {
     const colors = useColors()
     return (
-        <div className="for-testing-table-row" style={editRowStyle(colors, props.index)}>
+        <TableRowContainer index={props.index} isHighlighted={false}>
             <label style={{ ...editLabelStyle, ...highlightStyle(colors, props.highlight), width: '100%', paddingLeft: '0.75em' }}>
                 {props.checkbox}
                 <span className="serif value">{props.name}</span>
             </label>
-        </div>
+        </TableRowContainer>
     )
 }
 
@@ -459,66 +403,41 @@ function AnimatedCollapse({ expanded, children }: { expanded: boolean, children:
     )
 }
 
-function EditCategory(props: SharedEditRowProps & {
+function EditCategory(props: {
+    layout: EditTableLayout
     category: Category
     rowsByGroup: Map<string, ArticleRow[]>
     displayNames: Map<ArticleRow, HumanReadableName>
     plotSpecByStatpath: Map<string, PlotSpec>
-    filter: string
+    hasSearchMatch: boolean
 }): ReactNode {
     const colors = useColors()
-    const availableGroups = useAvailableGroups(props.category)
-    const status = useCategoryStatus(props.category)
-    const changeCategory = useChangeCategorySetting(props.category)
-    const settings = useContext(Settings.Context)
-    const groupEnabled = useSettings(groupKeys(availableGroups))
-    const groupInfo = useSettingsInfo(groupKeys(availableGroups))
-    const isStaged = (group: Group): boolean => {
-        const info = groupInfo[`show_stat_group_${group.id}`]
-        return 'stagedValue' in info && info.stagedValue !== info.persistedValue
-    }
-    const categoryHighlight = availableGroups.some(isStaged)
-
-    // Shared with the sidebar tree, so a category expanded in one is expanded in the other.
-    const [isExpanded, setIsExpanded] = useSetting(`stat_category_expanded_${props.category.id}`)
-
-    const filterActive = props.filter !== ''
-    const categoryMatches = searchMatch(props.filter, props.category.name)
-    const visibleGroups = !filterActive || categoryMatches
-        ? availableGroups
-        : availableGroups.filter(group => searchMatch(props.filter, group.name))
-
-    if (filterActive && !categoryMatches && visibleGroups.length === 0) {
-        return null
-    }
-
-    const expanded = filterActive || isExpanded
+    const tree = useCategoryTreeState(props.category)
+    const expanded = props.hasSearchMatch || tree.expanded
 
     let index = 0
     const bodyRows: ReactNode[] = []
-    for (const group of visibleGroups) {
+    for (const { group, enabled, setEnabled, highlight } of tree.groups) {
         const groupRows = props.rowsByGroup.get(group.id) ?? []
         if (groupRows.length === 0) {
             continue
         }
-        const enabled = groupEnabled[`show_stat_group_${group.id}`]
-        const highlight = isStaged(group)
-        const shared: SharedEditRowProps = props
         const checkboxId = `edit-checkbox-${group.id}`
         const checkbox = (
-            <EditCheckbox
+            <CheckboxSettingJustBox
                 id={checkboxId}
                 checked={enabled}
-                onChange={(newValue) => { changeStatGroupSetting(settings, group, newValue) }}
+                onChange={setEnabled}
                 testId={`edit_group_${group.id}`}
                 highlight={highlight}
+                style={editCheckboxStyle}
             />
         )
         if (groupRows.length === 1) {
             bodyRows.push(
                 <EditStatRow
                     key={`group-${group.id}`}
-                    {...shared}
+                    layout={props.layout}
                     index={index++}
                     highlight={highlight}
                     enabled={enabled}
@@ -539,7 +458,7 @@ function EditCategory(props: SharedEditRowProps & {
                 bodyRows.push(
                     <EditStatRow
                         key={`stat-${row.statpath}`}
-                        {...shared}
+                        layout={props.layout}
                         index={index++}
                         highlight={highlight}
                         enabled={enabled}
@@ -556,29 +475,30 @@ function EditCategory(props: SharedEditRowProps & {
 
     return (
         <>
-            <div className="for-testing-table-row" style={editRowStyle(colors, 0)}>
+            <TableRowContainer index={0} isHighlighted={false}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25em', padding: '1px', width: '100%' }}>
-                    {!filterActive && (
+                    {!props.hasSearchMatch && (
                         <ExpandButton
                             pointing="right"
                             isExpanded={expanded}
-                            onClick={() => { setIsExpanded(!isExpanded) }}
+                            onClick={() => { tree.setExpanded(!tree.expanded) }}
                             style={{ backgroundSize: '16px', width: '20px', height: '20px', flex: '0 0 auto' }}
                             aria-label={expanded ? `Collapse ${props.category.name} category` : `Expand ${props.category.name} category`}
                         />
                     )}
-                    <label style={{ ...editLabelStyle, ...highlightStyle(colors, categoryHighlight), gap: '0.25em' }}>
-                        <EditCheckbox
-                            checked={status === true}
-                            indeterminate={status === 'indeterminate'}
-                            onChange={changeCategory}
+                    <label style={{ ...editLabelStyle, ...highlightStyle(colors, tree.highlight), gap: '0.25em' }}>
+                        <CheckboxSettingJustBox
+                            checked={tree.status === true}
+                            indeterminate={tree.status === 'indeterminate'}
+                            onChange={tree.toggle}
                             testId={`edit_category_${props.category.id}`}
-                            highlight={categoryHighlight}
+                            highlight={tree.highlight}
+                            style={editCheckboxStyle}
                         />
                         <span className="serif value" style={{ fontWeight: 500 }}>{props.category.name}</span>
                     </label>
                 </div>
-            </div>
+            </TableRowContainer>
             <AnimatedCollapse expanded={expanded}>
                 {bodyRows}
             </AnimatedCollapse>
@@ -586,83 +506,97 @@ function EditCategory(props: SharedEditRowProps & {
     )
 }
 
+/**
+ * Every available row, regardless of which stat groups are currently enabled, so the
+ * edit tree can show the whole category/group tree. Only computed while edit mode is
+ * open, since building it means re-running the filter and sort over every statistic.
+ */
+function useAllRows(rows: (settings: StatGroupSettings) => ArticleRow[][]): ArticleRow[] {
+    const settings = useSettings(groupYearKeys())
+    return useMemo(() => {
+        const allGroupsEnabled = { ...settings }
+        for (const group of allGroups) {
+            allGroupsEnabled[`show_stat_group_${group.id}`] = true
+        }
+        return rows(allGroupsEnabled)[0]
+    }, [rows, settings])
+}
+
 function ArticleEditTable(props: {
-    allRows: ArticleRow[]
+    rows: (settings: StatGroupSettings) => ArticleRow[][]
     article: Article
-    widthLeftHeader: number
-    columnWidth: number
-    onlyColumns: ColumnIdentifier[]
-    simpleOrdinals: boolean
     filter: string
 }): ReactNode {
     const currentUniverse = useUniverse()
     assert(currentUniverse !== undefined, 'no universe')
-    const categories = useAvailableCategories()
+    const allRows = useAllRows(props.rows)
+    const categories = filterCategoriesBySearch(props.filter, useAvailableCategories(), useAvailableGroups())
     const isMobile = useMobileLayout()
     const editModeContext = useEditMode()
     const colors = useColors()
-    const screenshotMode = useScreenshotMode()
-
-    const staged = useStagedSettingKeys() !== undefined
+    const staged = useIsStaged()
+    const [simpleOrdinals] = useSetting('simple_ordinals')
+    const { widthLeftHeader: desktopWidthLeftHeader, columnWidth: desktopColumnWidth } = useWidths()
 
     // Keep the expandable per-stat plots ("extras") available in edit mode, driven
     // by the same rowExpandedKey setting the normal table uses.
-    const expandedSettings = useSettings(props.allRows.map(row => rowExpandedKey(row.statpath)))
-    const plotSpecByStatpath = new Map<string, PlotSpec>()
-    props.allRows.forEach((row, index) => {
-        if (row.extraStats.length > 0 && (expandedSettings[rowExpandedKey(row.statpath)] ?? false)) {
-            plotSpecByStatpath.set(row.statpath, {
-                statDescription: row.renderedStatname,
-                plotProps: pullRelevantPlotProps(props.allRows, index, colors.hueColors.blue, props.article.shortname, props.article.longname, props.article.articleType),
-            })
-        }
-    })
+    const expandedSettings = useSettings(allRows.map(row => rowExpandedKey(row.statpath)))
+    const plotSpecByStatpath = useMemo(() => {
+        const result = new Map<string, PlotSpec>()
+        allRows.forEach((row, index) => {
+            if (row.extraStats.length > 0 && (expandedSettings[rowExpandedKey(row.statpath)] ?? false)) {
+                result.set(row.statpath, {
+                    statDescription: row.renderedStatname,
+                    plotProps: pullRelevantPlotProps(allRows, index, colors.hueColors.blue, props.article.shortname, props.article.longname, props.article.articleType),
+                })
+            }
+        })
+        return result
+    }, [allRows, expandedSettings, colors.hueColors.blue, props.article])
 
     // On mobile, edit mode drops the percentile/ordinal/pointer columns so the
     // checkboxes and names have room; only the value stays. The name column also
     // gets a wider share since it no longer competes with those columns.
-    const onlyColumns: ColumnIdentifier[] = isMobile
-        ? props.onlyColumns.filter(column => column === 'statval' || column === 'statval_unit')
-        : props.onlyColumns
-    const widthLeftHeader = isMobile ? 58 : props.widthLeftHeader
-    const columnWidth = isMobile ? 100 - widthLeftHeader : props.columnWidth
+    const onlyColumns: ColumnIdentifier[] = isMobile ? ['statval', 'statval_unit'] : allColumns
+    const widthLeftHeader = isMobile ? 58 : desktopWidthLeftHeader
+    const columnWidth = isMobile ? 100 - widthLeftHeader : desktopColumnWidth
 
-    const rowsByGroup = new Map<string, ArticleRow[]>()
-    for (const row of props.allRows) {
-        const parent = statParents.get(row.statpath)
-        if (parent === undefined) {
-            continue
+    const rowsByGroup = useMemo(() => {
+        const result = new Map<string, ArticleRow[]>()
+        for (const row of allRows) {
+            const parent = statParents.get(row.statpath)
+            if (parent === undefined) {
+                continue
+            }
+            const existing = result.get(parent.group.id) ?? []
+            existing.push(row)
+            result.set(parent.group.id, existing)
         }
-        const existing = rowsByGroup.get(parent.group.id) ?? []
-        existing.push(row)
-        rowsByGroup.set(parent.group.id, existing)
-    }
+        return result
+    }, [allRows])
 
-    const statNameSpecs: NameSpec[] = props.allRows.map(row => ({
-        type: 'statistic-name',
-        longname: props.article.longname,
-        row,
-        renderedStatname: row.renderedStatname,
-        currentUniverse,
-    }))
-    const { updatedNameSpecs } = computeNameSpecsWithGroups(statNameSpecs)
-    const displayNames = new Map<ArticleRow, HumanReadableName>()
-    props.allRows.forEach((row, i) => {
-        displayNames.set(row, updatedNameSpecs[i].displayName ?? updatedNameSpecs[i].renderedStatname)
-    })
+    const displayNames = useMemo(() => {
+        const statNameSpecs: NameSpec[] = allRows.map(row => ({
+            type: 'statistic-name',
+            longname: props.article.longname,
+            row,
+            renderedStatname: row.renderedStatname,
+            currentUniverse,
+        }))
+        const { updatedNameSpecs } = computeNameSpecsWithGroups(statNameSpecs)
+        const result = new Map<ArticleRow, HumanReadableName>()
+        allRows.forEach((row, i) => {
+            result.set(row, updatedNameSpecs[i].displayName ?? updatedNameSpecs[i].renderedStatname)
+        })
+        return result
+    }, [allRows, props.article.longname, currentUniverse])
 
-    const columnWidthsInfo = props.allRows.reduce<CommonLayoutInformation>((acc, row) => {
-        if (row.kind !== 'statistic') {
-            return acc
-        }
-        const curr = computeSizesForRow(row, currentUniverse, props.simpleOrdinals)
-        return {
-            ordinalColumnWidthEm: Math.max(acc.ordinalColumnWidthEm, curr.ordinalColumnWidthEm),
-            percentileColumnWidthEm: Math.max(acc.percentileColumnWidthEm, curr.percentileColumnWidthEm),
-            ordinalColumnPadding: Math.max(acc.ordinalColumnPadding, curr.ordinalColumnPadding),
-        }
-    }, { ordinalColumnWidthEm: 0, percentileColumnWidthEm: 0, ordinalColumnPadding: 0 })
+    const columnWidthsInfo = useMemo(
+        () => maxLayoutInformation(allRows, currentUniverse, simpleOrdinals),
+        [allRows, currentUniverse, simpleOrdinals],
+    )
 
+    const layout: EditTableLayout = { article: props.article, widthLeftHeader, columnWidth, onlyColumns, simpleOrdinals, columnWidthsInfo }
     const topLeftSpec = { type: 'top-left-header' } satisfies CellSpec
 
     return (
@@ -676,25 +610,19 @@ function ArticleEditTable(props: {
                         topLeftWidth={widthLeftHeader}
                         onlyColumns={onlyColumns}
                         extraSpaceRight={[0]}
-                        simpleOrdinals={props.simpleOrdinals}
+                        simpleOrdinals={simpleOrdinals}
                         columnWidthsInfo={[columnWidthsInfo]}
                     />
                 </TableHeaderContainer>
                 {categories.map(category => (
                     <EditCategory
                         key={category.id}
+                        layout={layout}
                         category={category}
                         rowsByGroup={rowsByGroup}
                         displayNames={displayNames}
                         plotSpecByStatpath={plotSpecByStatpath}
-                        article={props.article}
-                        widthLeftHeader={widthLeftHeader}
-                        columnWidth={columnWidth}
-                        onlyColumns={onlyColumns}
-                        simpleOrdinals={props.simpleOrdinals}
-                        columnWidthsInfo={columnWidthsInfo}
-                        screenshotMode={screenshotMode}
-                        filter={props.filter}
+                        hasSearchMatch={props.filter !== ''}
                     />
                 ))}
             </div>

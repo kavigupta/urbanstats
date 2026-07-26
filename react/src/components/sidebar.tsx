@@ -6,7 +6,7 @@ import './sidebar.css'
 import { Navigator } from '../navigation/Navigator'
 import { Theme } from '../page_template/color-themes'
 import { useColors, useCurrentTheme } from '../page_template/colors'
-import { checkboxCategoryName, SettingsDictionary, sourceEnabledKey, TemperatureUnit, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
+import { checkboxCategoryName, isStagedChange, SettingsDictionary, sourceEnabledKey, TemperatureUnit, useIsStaged, useSetting, useSettingInfo } from '../page_template/settings'
 import { useDataSourceCheckboxes } from '../page_template/statistic-settings'
 import { humanReadableUniverse, useUniverse } from '../universe'
 import { useMobileLayout } from '../utils/responsive'
@@ -166,7 +166,7 @@ export function MaybeStagingControlsSidebarSection(): ReactNode {
     const sidebarSectionContent = useSidebarSectionContentClassName()
 
     return (
-        useStagedSettingKeys() === undefined
+        !useIsStaged()
             ? null
             : (
                     <div className="sidebar-section">
@@ -284,7 +284,7 @@ export function CheckboxSetting(props: { name: string, settingKey: BooleanSettin
             classNameToUse={props.classNameToUse}
             id={props.id}
             testId={props.testId}
-            highlight={'stagedValue' in info && info.stagedValue !== info.persistedValue}
+            highlight={isStagedChange(info)}
             fontSize={props.fontSize}
         />
     )
@@ -317,7 +317,7 @@ function TemperatureSetting(): ReactNode {
     const info = useSettingInfo('temperature_unit')
     const colors = useColors()
 
-    const highlight = 'stagedValue' in info && info.stagedValue !== info.persistedValue
+    const highlight = isStagedChange(info)
 
     const divStyle: CSSProperties = {
         backgroundColor: highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
@@ -386,7 +386,7 @@ export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactN
     )
 };
 
-function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProps): ReactNode {
+export function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProps): ReactNode {
     const colors = useColors()
     const id = useId()
     const checkboxRef = useRef<HTMLInputElement>(null)
@@ -405,7 +405,7 @@ function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProps): Rea
             disabled={forcedOn}
             onChange={(e) => { props.onChange(e.target.checked) }}
             ref={checkboxRef}
-            style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background, ...props.style, height: props.fontSize ?? defaultFontSize }}
+            style={{ accentColor: colors.hueColors.blue, backgroundColor: colors.background, height: props.fontSize ?? defaultFontSize, ...props.style }}
             data-test-id={props.testId}
             data-test-highlight={props.highlight}
         />

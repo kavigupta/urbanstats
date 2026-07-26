@@ -1,8 +1,8 @@
-import React, { ReactNode, useContext, useEffect, useState } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 
-import { Settings, useSetting, useSettingInfo, useSettingsInfo, useStagedSettingKeys } from '../page_template/settings'
-import { changeStatGroupSetting, groupKeys, useAvailableCategories, useAvailableGroups, useCategoryStatus, useChangeCategorySetting } from '../page_template/statistic-settings'
-import { Category, Group } from '../page_template/statistic-tree'
+import { useIsStaged } from '../page_template/settings'
+import { filterCategoriesBySearch, GroupTreeState, useAvailableCategories, useAvailableGroups, useCategoryTreeState } from '../page_template/statistic-settings'
+import { Category } from '../page_template/statistic-tree'
 import { useMobileLayout } from '../utils/responsive'
 import { zIndex } from '../utils/zIndex'
 
@@ -12,7 +12,7 @@ import { CheckboxSettingCustom, useSidebarFontSize, useSidebarSectionContentClas
 
 export function StatsTree(): ReactNode {
     const [searchTerm, setSearchTerm] = useState('')
-    const staging = useStagedSettingKeys() !== undefined
+    const staging = useIsStaged()
 
     useEffect(() => {
         if (staging) {
@@ -20,7 +20,7 @@ export function StatsTree(): ReactNode {
         }
     }, [staging])
 
-    const categories = filterSearch(searchTerm, useAvailableCategories(), useAvailableGroups()).map(category => (
+    const categories = filterCategoriesBySearch(searchTerm, useAvailableCategories(), useAvailableGroups()).map(category => (
         <CategoryComponent
             key={category.id}
             category={category}
@@ -57,29 +57,9 @@ export function StatsTree(): ReactNode {
     )
 }
 
-function searchMatch(searchTerm: string, targetString: string): boolean {
-    return targetString.toLowerCase().includes(searchTerm.toLowerCase())
-}
-
-function filterSearch(searchTerm: string, categories: Category[], groups: Group[]): Category[] {
-    return categories.flatMap((category) => {
-        if (searchMatch(searchTerm, category.name)) {
-            return [category]
-        }
-        const contents = category.contents.filter(group => groups.includes(group) && searchMatch(searchTerm, group.name))
-        return contents.length > 0 ? [{ ...category, contents }] : []
-    })
-}
-
 function CategoryComponent({ category, hasSearchMatch }: { category: Category, hasSearchMatch: boolean }): ReactNode {
-    const categoryStatus = useCategoryStatus(category)
-    const [isExpanded, setIsExpanded] = useSetting(`stat_category_expanded_${category.id}`)
+    const tree = useCategoryTreeState(category)
     const isMobileLayout = useMobileLayout()
-    const changeCategorySetting = useChangeCategorySetting(category)
-
-    const groups = useAvailableGroups(category)
-    const settingsInfo = useSettingsInfo(groupKeys(groups))
-    const highlight = Object.values(settingsInfo).some(info => 'stagedValue' in info && info.stagedValue !== info.persistedValue)
 
     return (
         <li>
@@ -90,23 +70,23 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
                             <ExpandButton
                                 /* Arrows are on the right on mobile to be used with both thumbs */
                                 pointing={isMobileLayout ? 'left' : 'right'}
-                                isExpanded={isExpanded}
+                                isExpanded={tree.expanded}
                                 data-category-id={category.id}
-                                onClick={() => { setIsExpanded(!isExpanded) }}
+                                onClick={() => { tree.setExpanded(!tree.expanded) }}
                                 className="expandButton"
                                 style={{
                                     backgroundSize: isMobileLayout ? '24px' : '16px',
                                 }}
-                                aria-label={isExpanded ? `Collapse ${category.name} category` : `Expand ${category.name} category`}
+                                aria-label={tree.expanded ? `Collapse ${category.name} category` : `Expand ${category.name} category`}
                             />
                         )}
                 <CheckboxSettingCustom
                     name={category.name}
-                    checked={categoryStatus === true}
-                    indeterminate={categoryStatus === 'indeterminate'}
-                    onChange={changeCategorySetting}
+                    checked={tree.status === true}
+                    indeterminate={tree.status === 'indeterminate'}
+                    onChange={tree.toggle}
                     testId={`category_${category.id}`}
-                    highlight={highlight}
+                    highlight={tree.highlight}
                     style={{ zIndex: zIndex.categoryCheckbox }}
                     fontSize={useSidebarFontSize()}
                 />
@@ -114,24 +94,21 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
             <CategoryContents
                 key={category.id}
                 category={category}
-                isExpanded={isExpanded || hasSearchMatch}
+                isExpanded={tree.expanded || hasSearchMatch}
             />
         </li>
     )
 }
 
-function GroupComponent({ group }: { group: Group }): ReactNode {
-    const settings = useContext(Settings.Context)
-    const [checked] = useSetting(`show_stat_group_${group.id}`)
-    const info = useSettingInfo(`show_stat_group_${group.id}`)
+function GroupComponent({ state }: { state: GroupTreeState }): ReactNode {
     return (
         <li>
             <CheckboxSettingCustom
-                name={group.name}
-                checked={checked}
-                onChange={(newValue) => { changeStatGroupSetting(settings, group, newValue) }}
-                testId={`group_${group.id}`}
-                highlight={'stagedValue' in info && info.stagedValue !== info.persistedValue}
+                name={state.group.name}
+                checked={state.enabled}
+                onChange={state.setEnabled}
+                testId={`group_${state.group.id}`}
+                highlight={state.highlight}
                 fontSize={useSidebarFontSize()}
             />
         </li>
@@ -183,5 +160,5 @@ function CategoryContents({ category, isExpanded }: { category: Category, isExpa
 }
 
 function CategoryCoreContents({ category }: { category: Category }): ReactNode {
-    return useAvailableGroups(category).map(group => <GroupComponent key={group.id} group={group} />)
+    return useCategoryTreeState(category).groups.map(state => <GroupComponent key={state.group.id} state={state} />)
 }

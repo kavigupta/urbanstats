@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { arrayFromSelector, safeReload, screencap, target, urbanstatsFixture, withHamburgerMenu } from './test_utils'
+import { checkIsIndeterminate, clickUniverseFlag, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, withHamburgerMenu } from './test_utils'
 
 /**
  * The article table's edit mode replicates the statistic category/group tree that
@@ -344,10 +344,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
 async function selectUniverse(t: TestController, alt: string): Promise<void> {
     await t.click(Selector('img').withAttribute('class', 'universe-selector'))
-    await t.click(
-        Selector('img')
-            .withAttribute('class', 'universe-selector-option')
-            .withAttribute('alt', alt))
+    await clickUniverseFlag(t, alt)
 }
 
 // Edit mode is ephemeral, so it has to be reopened after any reload or navigation.
@@ -370,16 +367,5 @@ async function setMainExpanded(t: TestController, expanded: boolean): Promise<vo
 }
 
 async function uncheckAll(t: TestController): Promise<void> {
-    for (const check of await arrayFromSelector(Selector('input[data-test-id^=edit_category]'))) {
-        if (await check.checked) {
-            await t.click(check)
-        }
-    }
-}
-
-async function checkIsIndeterminate(t: TestController, selector: string): Promise<boolean> {
-    return t.eval(() => {
-        const check: HTMLInputElement = document.querySelector(selector)!
-        return check.indeterminate
-    }, { dependencies: { selector } }) as Promise<boolean>
+    await uncheckAllCategories(t, 'edit_category')
 }
