@@ -5,7 +5,18 @@ import { useColors } from '../page_template/colors'
 
 import { useScreenshotMode } from './screenshot'
 
-export function EditableString(props: { content: string, onNewContent: (content: string) => void, style: CSSProperties, inputMode: 'text' | 'decimal', testId?: string }): ReactNode {
+export function EditableString(props: {
+    content: string
+    onNewContent: (content: string) => void
+    style: CSSProperties
+    inputMode: 'text' | 'decimal'
+    testId?: string
+    // When true, pressing Enter submits even if the text is unchanged. Needed when the same
+    // displayed value can map to a different action (e.g. the percentile field, where several
+    // geographies share a percentile and submitting it should still jump to that bucket). Blur
+    // stays guarded, so merely focusing and clicking away never submits.
+    alwaysSubmitOnEnter?: boolean
+}): ReactNode {
     /*
      * This code is weird because the `ContentEditable` needs to use refs.
      * See https://www.npmjs.com/package/react-contenteditable
@@ -28,9 +39,9 @@ export function EditableString(props: { content: string, onNewContent: (content:
         html.current = evt.target.value
     }
 
-    const handleSubmit = (): void => {
+    const handleSubmit = (force: boolean): void => {
         const content = contentEditable.current!.innerText
-        if (content !== propsRef.current.content) {
+        if (force || content !== propsRef.current.content) {
             propsRef.current.onNewContent(content)
         }
     }
@@ -56,11 +67,11 @@ export function EditableString(props: { content: string, onNewContent: (content:
             onChange={handleChange}
             onKeyDown={(e: React.KeyboardEvent) => {
                 if (e.key === 'Enter') {
-                    handleSubmit()
+                    handleSubmit(propsRef.current.alwaysSubmitOnEnter ?? false)
                     e.preventDefault()
                 }
             }}
-            onBlur={handleSubmit}
+            onBlur={() => { handleSubmit(false) }}
             tagName="span" // Use a custom HTML tag (uses a div by default)
             inputMode={props.inputMode}
             onFocus={selectAll}
@@ -68,14 +79,14 @@ export function EditableString(props: { content: string, onNewContent: (content:
     )
 }
 
-export function EditableNumber(props: { number: number, onNewNumber: (number: number) => void, testId?: string }): ReactNode {
+export function EditableNumber(props: { number: number, onNewNumber: (number: number) => void, testId?: string, alwaysSubmitOnEnter?: boolean }): ReactNode {
     const colors = useColors()
     if (useScreenshotMode()) {
         return props.number.toString()
     }
     const onNewContent = (content: string): void => {
         const number = parseInt(content)
-        if (!Number.isNaN(number) && number !== props.number) {
+        if (!Number.isNaN(number) && (props.alwaysSubmitOnEnter === true || number !== props.number)) {
             props.onNewNumber(number)
         }
     }
@@ -86,6 +97,7 @@ export function EditableNumber(props: { number: number, onNewNumber: (number: nu
             style={{ minWidth: '2em', display: 'inline-block', border: `1px solid ${colors.borderNonShadow}`, borderRadius: 3, padding: '0 2px' }}
             inputMode="decimal"
             testId={props.testId}
+            alwaysSubmitOnEnter={props.alwaysSubmitOnEnter}
         />
     )
 }
