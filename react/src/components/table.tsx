@@ -23,7 +23,7 @@ import { zIndex } from '../utils/zIndex'
 import { Icon } from './Icon'
 import { Modal } from './Modal'
 import { computeDisclaimerText, type Disclaimer } from './disclaimer-text'
-import { Percentile, percentileText, Statistic } from './display-stats'
+import { percentileSuffix, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
 import { footnoteSymbol } from './footnote-symbol'
 import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
@@ -1206,6 +1206,26 @@ export function computeSizesForRow(row: StatisticCellRenderingInfo, universe: st
         ordinalColumnPadding,
         percentileColumnWidthEm: percentileColumnWidthEm + smallPad,
     }
+}
+
+function Percentile(props: {
+    ordinal: number
+    total: number
+    percentileByPopulation: number
+    simpleOrdinals: boolean
+}): ReactNode {
+    const ordinal = props.ordinal
+    const total = props.total
+    if (ordinal > total) {
+        return <span></span>
+    }
+    const percentile = props.percentileByPopulation
+    return (
+        <div className="serif" style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : undefined }}>
+            {percentile}
+            {props.simpleOrdinals ? '%' : `${percentileSuffix(percentile)} percentile`}
+        </div>
+    )
 }
 
 function Ordinal(props: {
