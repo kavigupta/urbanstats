@@ -1268,6 +1268,7 @@ function Ordinal(props: {
                 <EditableNumber
                     number={ordinal}
                     onNewNumber={onNewNumber}
+                    testId="editable-ordinal"
                 />
             )
         : (

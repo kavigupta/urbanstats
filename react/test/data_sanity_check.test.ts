@@ -9,7 +9,7 @@ async function goToExtremeArticle(t: TestController): Promise<void> {
     const rows = Selector('.for-testing-table-row')
     await t.expect(await rows.count).eql(1)
     while (true) {
-        const editableContent = Selector('.editable_content')
+        const editableContent = Selector('span').withAttribute('data-test-id', 'editable-ordinal')
         await t.click(editableContent)
         await t.pressKey('ctrl+a delete')
         await t.typeText(editableContent, '-1')
