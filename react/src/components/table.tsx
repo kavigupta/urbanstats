@@ -1204,10 +1204,13 @@ export function computeSizesForRow(row: StatisticCellRenderingInfo, universe: st
     const [ordinalColumnWidthEm, ordinalColumnPadding] = ordinalWidthInEm(row.totalCountInClass, row.totalCountInClass, row.articleType, universe, simpleOrdinals)
     const percentileColumnWidthEm = measureTextWidthEm(percentileText(row.percentileByPopulation, simpleOrdinals))
     const smallPad = 0.22
+    // The editable percentile renders the number in a box; its border + padding make it a touch
+    // wider than the plain text, so reserve a little extra width to avoid a spurious wrap.
+    const editableBoxPad = 0.5
     return {
         ordinalColumnWidthEm: ordinalColumnWidthEm + smallPad,
         ordinalColumnPadding,
-        percentileColumnWidthEm: percentileColumnWidthEm + smallPad,
+        percentileColumnWidthEm: percentileColumnWidthEm + editableBoxPad,
     }
 }
 
@@ -1223,9 +1226,7 @@ function Percentile(props: {
     const currentUniverse = useUniverse()
     assert(currentUniverse !== undefined, 'no universe')
     const inScreenshot = useScreenshotMode()
-    // Bumped to remount the editable field, resetting its displayed text back to the actual
-    // percentile when an edit doesn't navigate anywhere (e.g. asking for the 95th percentile
-    // while already on California, whose 88th percentile is the closest match).
+    // Bump to reset if we navigate back to the same page
     const [editableFieldKey, setEditableFieldKey] = useState(0)
     const onNewPercentile = async (target: number): Promise<void> => {
         if (props.onNavigate === undefined) {
@@ -1233,16 +1234,12 @@ function Percentile(props: {
         }
         assert(props.statpath !== undefined, 'statpath must be defined if onNavigate is provided')
         const [data, articleNames] = await loadStatisticsPage(currentUniverse, props.statpath, props.type)
-        // Navigate to the bottom of the requested percentile bucket (see percentileBucketIndex).
         const bestIndex = percentileBucketIndex(data.populationPercentile, target)
-        // The articles are in ordinal order, so the current article is at index ordinal - 1.
         const currentIndex = props.ordinal - 1
         if (bestIndex !== currentIndex) {
             props.onNavigate(articleNames[bestIndex])
         }
         else {
-            // Stayed on the current geography, so props won't change to reset the field --
-            // remount it to restore the displayed percentile.
             setEditableFieldKey(key => key + 1)
         }
     }
@@ -1252,8 +1249,6 @@ function Percentile(props: {
         return <span></span>
     }
     const percentile = props.percentileByPopulation
-    // The number is an editable field when navigation is available, plain text otherwise. The
-    // surrounding number + suffix composition is the same either way.
     const editable = props.onNavigate !== undefined
     let number: ReactNode = editable
         ? (
@@ -1261,27 +1256,37 @@ function Percentile(props: {
                     key={editableFieldKey}
                     number={percentile}
                     onNewNumber={onNewPercentile}
-                    // Several geographies can share a percentile, so submitting the currently-displayed
-                    // one should still navigate to the bottom of that bucket rather than no-op.
                     alwaysSubmitOnEnter
                 />
             )
         : percentile
-    // The editable box has a fixed min-width (so it can always fit "100") with the number
-    // right-aligned within it, leaving dead space on its left. In the narrow simple-ordinals
-    // column the value is centered, so that dead space would push it right; pull the box back
-    // left by the dead space so it centers as if the box hugged the number. (In screenshot mode
-    // the box renders as plain text, so there is no dead space to discount.)
-    if (props.simpleOrdinals && editable && !inScreenshot) {
+    // add a small dead space left to compensate for the extra space in the
+    // editable box
+    if (editable && !inScreenshot) {
         const deadLeftEm = Math.max(0, 2 - measureTextWidthEm(percentile.toString()))
         number = <span style={{ marginLeft: `${-deadLeftEm}em` }}>{number}</span>
     }
-    // whiteSpace: nowrap keeps the editable box on one line even though it is a touch wider than
-    // the plain text the column is sized to.
+    // Keep the number glued to its immediate suffix (so the editable box never breaks onto its
+    // own line), but leave " percentile" free to wrap to the next line in a narrow column, the
+    // way the plain text used to.
     return (
-        <div className="serif" data-test-id="statistic-percentile" style={{ textAlign: 'right', whiteSpace: 'nowrap', marginRight: props.simpleOrdinals ? '5px' : undefined }}>
-            {number}
-            {props.simpleOrdinals ? '%' : `${percentileSuffix(percentile)} percentile`}
+        <div className="serif" data-test-id="statistic-percentile" style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : undefined }}>
+            {props.simpleOrdinals
+                ? (
+                        <span style={{ whiteSpace: 'nowrap' }}>
+                            {number}
+                            %
+                        </span>
+                    )
+                : (
+                        <>
+                            <span style={{ whiteSpace: 'nowrap' }}>
+                                {number}
+                                {percentileSuffix(percentile)}
+                            </span>
+                            {' percentile'}
+                        </>
+                    )}
         </div>
     )
 }

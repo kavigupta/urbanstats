@@ -11,10 +11,6 @@ export function EditableString(props: {
     style: CSSProperties
     inputMode: 'text' | 'decimal'
     testId?: string
-    // When true, pressing Enter submits even if the text is unchanged. Needed when the same
-    // displayed value can map to a different action (e.g. the percentile field, where several
-    // geographies share a percentile and submitting it should still jump to that bucket). Blur
-    // stays guarded, so merely focusing and clicking away never submits.
     alwaysSubmitOnEnter?: boolean
 }): ReactNode {
     /*
@@ -86,7 +82,7 @@ export function EditableNumber(props: { number: number, onNewNumber: (number: nu
     }
     const onNewContent = (content: string): void => {
         const number = parseInt(content)
-        if (!Number.isNaN(number) && (props.alwaysSubmitOnEnter === true || number !== props.number)) {
+        if (!Number.isNaN(number) && ((props.alwaysSubmitOnEnter ?? false) || number !== props.number)) {
             props.onNewNumber(number)
         }
     }
