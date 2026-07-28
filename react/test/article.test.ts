@@ -65,9 +65,10 @@ test('editable-percentile-zeroth-does-not-trap', async (t) => {
         .pressKey('ctrl+a')
         .typeText(editablePercentile, '0')
         .pressKey('enter')
-    const location = await getLocationWithoutSettings()
-    await t.expect(location).match(/\/article\.html\?longname=/)
-    await t.expect(location).notEql(`${target}/article.html?longname=North+Dakota%2C+USA`)
+    // Navigation is async (loadStatisticsPage), so use retrying assertions rather than snapshotting
+    // the URL once, which could read the location before navigation completes.
+    await t.expect(getLocationWithoutSettings()).notEql(`${target}/article.html?longname=North+Dakota%2C+USA`)
+    await t.expect(getLocationWithoutSettings()).match(/\/article\.html\?longname=/)
 })
 
 urbanstatsFixture('cross-country test', '/article.html?longname=Tijuana+Urban+Center%2C+Mexico-USA')
@@ -115,9 +116,10 @@ test('editable-percentile', async (t) => {
         .pressKey('ctrl+a')
         .typeText(editablePercentile, '50')
         .pressKey('enter')
-    const location = await getLocationWithoutSettings()
-    await t.expect(location).match(/\/article\.html\?longname=/)
-    await t.expect(location).notEql(`${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
+    // Navigation is async (loadStatisticsPage), so use retrying assertions rather than snapshotting
+    // the URL once, which could read the location before navigation completes.
+    await t.expect(getLocationWithoutSettings()).notEql(`${target}/article.html?longname=San+Marino+city%2C+California%2C+USA`)
+    await t.expect(getLocationWithoutSettings()).match(/\/article\.html\?longname=/)
 })
 
 test('lr-buttons', async (t) => {
