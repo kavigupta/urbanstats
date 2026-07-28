@@ -1260,10 +1260,13 @@ function Percentile(props: {
                 />
             )
         : percentile
-    // add a small dead space left to compensate for the extra space in the
-    // editable box
-    if (editable && !inScreenshot) {
-        const deadLeftEm = Math.max(0, 2 - measureTextWidthEm(percentile.toString()))
+    // Add a small dead space left to compensate for the extra space in the editable box.
+    // Wrap unconditionally (with a zero margin in screenshot mode, where EditableNumber
+    // renders as plain text) so the tree structure doesn't change when screenshot mode
+    // toggles: restructuring here would unmount/remount EditableNumber mid-capture and
+    // strand its screenshot-ready callback, hanging the screenshot export forever.
+    if (editable) {
+        const deadLeftEm = inScreenshot ? 0 : Math.max(0, 2 - measureTextWidthEm(percentile.toString()))
         number = <span style={{ marginLeft: `${-deadLeftEm}em` }}>{number}</span>
     }
     // Keep the number glued to its immediate suffix (so the editable box never breaks onto its
