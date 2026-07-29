@@ -3,7 +3,7 @@ import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dn
 import { CSS } from '@dnd-kit/utilities'
 import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
 
-import { ArticleOrderingListInternal, loadOrdering } from '../load_json'
+import { ArticleOrderingListInternal, loadOrdering, loadStatisticsPage } from '../load_json'
 import './table.css'
 import { Navigator } from '../navigation/Navigator'
 import { Colors } from '../page_template/color-themes'
@@ -27,6 +27,7 @@ import { percentileSuffix, percentileText, Statistic } from './display-stats'
 import { EditableNumber } from './editable-field'
 import { footnoteSymbol } from './footnote-symbol'
 import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
+import { percentileBucketIndex } from './percentile-navigation'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
@@ -580,7 +581,10 @@ export function StatisticRowCells(props: {
                             ordinal={statisticRow.ordinal}
                             total={statisticRow.totalCountInClass}
                             percentileByPopulation={statisticRow.percentileByPopulation}
+                            type={statisticRow.articleType}
+                            statpath={statisticRow.statpath}
                             simpleOrdinals={props.simpleOrdinals}
+                            onNavigate={props.onNavigate}
                         />
                     </div>
                 ),
@@ -1198,13 +1202,15 @@ export function computeSizesForRow(row: StatisticCellRenderingInfo, universe: st
     }
 
     const [ordinalColumnWidthEm, ordinalColumnPadding] = ordinalWidthInEm(row.totalCountInClass, row.totalCountInClass, row.articleType, universe, simpleOrdinals)
-    const percentileTextSample = percentileText(row.percentileByPopulation, simpleOrdinals)
-    const percentileColumnWidthEm = measureTextWidthEm(percentileTextSample)
+    const percentileColumnWidthEm = measureTextWidthEm(percentileText(row.percentileByPopulation, simpleOrdinals))
     const smallPad = 0.22
+    // The editable percentile renders the number in a box; its border + padding make it a touch
+    // wider than the plain text, so reserve a little extra width to avoid a spurious wrap.
+    const editableBoxPad = 0.5
     return {
         ordinalColumnWidthEm: ordinalColumnWidthEm + smallPad,
         ordinalColumnPadding,
-        percentileColumnWidthEm: percentileColumnWidthEm + smallPad,
+        percentileColumnWidthEm: percentileColumnWidthEm + editableBoxPad,
     }
 }
 
@@ -1212,18 +1218,76 @@ function Percentile(props: {
     ordinal: number
     total: number
     percentileByPopulation: number
+    type: string
+    statpath?: string
     simpleOrdinals: boolean
+    onNavigate?: (newArticle: string) => void
 }): ReactNode {
+    const currentUniverse = useUniverse()
+    assert(currentUniverse !== undefined, 'no universe')
+    const inScreenshot = useScreenshotMode()
+    // Bump to reset if we navigate back to the same page
+    const [editableFieldKey, setEditableFieldKey] = useState(0)
+    const onNewPercentile = async (target: number): Promise<void> => {
+        if (props.onNavigate === undefined) {
+            return
+        }
+        assert(props.statpath !== undefined, 'statpath must be defined if onNavigate is provided')
+        const [data, articleNames] = await loadStatisticsPage(currentUniverse, props.statpath, props.type)
+        const bestIndex = percentileBucketIndex(data.populationPercentile, target)
+        const currentIndex = props.ordinal - 1
+        if (bestIndex !== currentIndex) {
+            props.onNavigate(articleNames[bestIndex])
+        }
+        else {
+            setEditableFieldKey(key => key + 1)
+        }
+    }
     const ordinal = props.ordinal
     const total = props.total
     if (ordinal > total) {
         return <span></span>
     }
     const percentile = props.percentileByPopulation
+    const editable = props.onNavigate !== undefined
+    let number: ReactNode = editable
+        ? (
+                <EditableNumber
+                    key={editableFieldKey}
+                    number={percentile}
+                    onNewNumber={onNewPercentile}
+                    alwaysSubmitOnEnter
+                />
+            )
+        : percentile
+    // Add a small dead space left to compensate for the extra space in the editable box.
+    // Wrap unconditionally (with a zero margin in screenshot mode, where EditableNumber
+    // renders as plain text) so the tree structure doesn't change when screenshot mode
+    // toggles: restructuring here would unmount/remount EditableNumber mid-capture and
+    // strand its screenshot-ready callback, hanging the screenshot export forever.
+    if (editable) {
+        const deadLeftEm = inScreenshot ? 0 : Math.max(0, 2 - measureTextWidthEm(percentile.toString()))
+        number = <span style={{ marginLeft: `${-deadLeftEm}em` }}>{number}</span>
+    }
+    // Number should be grouped with st/nd/rd/th, but we can line-break between that and %/percentile
     return (
-        <div className="serif" style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : undefined }}>
-            {percentile}
-            {props.simpleOrdinals ? '%' : `${percentileSuffix(percentile)} percentile`}
+        <div className="serif" data-test-id="statistic-percentile" style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : undefined }}>
+            {props.simpleOrdinals
+                ? (
+                        <span style={{ whiteSpace: 'nowrap' }}>
+                            {number}
+                            %
+                        </span>
+                    )
+                : (
+                        <>
+                            <span style={{ whiteSpace: 'nowrap' }}>
+                                {number}
+                                {percentileSuffix(percentile)}
+                            </span>
+                            {' percentile'}
+                        </>
+                    )}
         </div>
     )
 }
