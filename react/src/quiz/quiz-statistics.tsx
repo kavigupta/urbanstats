@@ -5,7 +5,7 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { QuizDescriptor, QuizDescriptorWithTime, QuizHistory } from './quiz'
 import { ResultToDisplayForFriends } from './quiz-friends'
-import { getInfiniteQuizzes, parseTimeIdentifier } from './statistics'
+import { getInfiniteQuizzes, historyKeyForTimeIdentifier, parseTimeIdentifier } from './statistics'
 
 export function QuizStatistics(
     props: {
@@ -36,14 +36,7 @@ export function computeUserStatisticsData(
         totalFrequency: number
         frequencies: number[]
     } {
-    const history = (i: number): QuizHistory[string] | undefined => {
-        switch (quiz.kind) {
-            case 'juxtastat':
-                return wholeHistory[i]
-            case 'retrostat':
-                return wholeHistory[`W${i}`]
-        }
-    }
+    const history = (i: number): QuizHistory[string] | undefined => wholeHistory[historyKeyForTimeIdentifier(quiz.kind, i)]
 
     const today = parseTimeIdentifier(quiz.kind, quiz.name.toString())
     const historicalCorrect = new Array(today + 1).fill(-1)
