@@ -56,8 +56,8 @@ test('san-marino-article-test', async (t) => {
 })
 
 test('editable-number', async (t) => {
-    // span with class editable_content
-    const editableNumber = Selector('span').withAttribute('class', 'editable_content').nth(0)
+    // the editable ordinal for the first statistic (population)
+    const editableNumber = Selector('span').withAttribute('data-test-id', 'editable-ordinal').nth(0)
     await t
         .click(editableNumber)
         // select all and delete
