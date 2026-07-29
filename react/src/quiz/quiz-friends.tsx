@@ -11,7 +11,7 @@ import { persistentClient } from '../utils/urbanstats-persistent-client'
 
 import { AuthenticationStateMachine } from './AuthenticationStateMachine'
 import { addFriend } from './friends'
-import { QuizDescriptorWithTime, QuizDescriptorWithStats, QuizFriends, QuizModel, QuizDescriptor } from './quiz'
+import { QuizDescriptorWithTime, QuizDescriptorWithStats, QuizFriends, QuizModel, QuizDescriptor, QuizKindWithTime } from './quiz'
 import { CorrectPattern } from './quiz-result'
 import { parseTimeIdentifier } from './statistics'
 
@@ -67,6 +67,26 @@ export interface UserStatistics {
     maxStreak: number
 }
 
+/**
+ * `today` is the quiz being displayed, `stats` the summary statistics across all quizzes.
+ */
+type ViewMode = 'today' | 'stats'
+
+function viewModeOptions(quizKind: QuizKindWithTime): { value: ViewMode, label: string }[] {
+    const todayLabel = ((): string => {
+        switch (quizKind) {
+            case 'juxtastat':
+                return 'Today'
+            case 'retrostat':
+                return 'This Week'
+        }
+    })()
+    return [
+        { value: 'today', label: todayLabel },
+        { value: 'stats', label: 'Mean Statistics' },
+    ]
+}
+
 export function QuizFriendsPanel(props: {
     quizFriends: QuizFriends
     setQuizFriends: (quizFriends: QuizFriends) => void
@@ -80,7 +100,7 @@ export function QuizFriendsPanel(props: {
     const [friendSummaryStats, setFriendSummaryStats] = useState([] as FriendSummaryStats[])
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | undefined>(undefined)
-    const [viewMode, setViewMode] = useState<'today' | 'stats'>('today')
+    const [viewMode, setViewMode] = useState<ViewMode>('today')
 
     const user = QuizModel.shared.uniquePersistentId.use()
     const secureID = QuizModel.shared.uniqueSecureId.use()
@@ -143,10 +163,7 @@ export function QuizFriendsPanel(props: {
                         <ViewModeToggle
                             value={viewMode}
                             setValue={setViewMode}
-                            options={[
-                                { value: 'today', label: 'Today' },
-                                { value: 'stats', label: 'Mean Statistics' },
-                            ]}
+                            options={viewModeOptions(props.quizDescriptor.kind)}
                         />
                     )
                 : null}
