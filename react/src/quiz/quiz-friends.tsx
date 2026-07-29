@@ -24,8 +24,9 @@ type FriendSummaryStats = { friends: true, meanScore: number, numPlays: number, 
 async function juxtaRetroResponse(
     quizDescriptor: QuizDescriptorWithTime,
     requesters: string[],
+    periodsAgo: number,
 ): Promise<FriendResponse[] | undefined> {
-    const date = parseTimeIdentifier(quizDescriptor.kind, quizDescriptor.name.toString())
+    const date = parseTimeIdentifier(quizDescriptor.kind, quizDescriptor.name.toString()) - periodsAgo
     const { data: friendScoresResponse } = await persistentClient.POST('/juxtastat/todays_score_for', {
         params: {
             header: QuizModel.shared.userHeaders(),
@@ -68,21 +69,23 @@ export interface UserStatistics {
 }
 
 /**
- * `today` is the quiz being displayed, `stats` the summary statistics across all quizzes.
+ * `today` is the quiz being displayed, `previous` the one before it (yesterday's juxtastat,
+ * last week's retrostat), and `stats` the summary statistics across all quizzes.
  */
-type ViewMode = 'today' | 'stats'
+type ViewMode = 'today' | 'previous' | 'stats'
 
 function viewModeOptions(quizKind: QuizKindWithTime): { value: ViewMode, label: string }[] {
-    const todayLabel = ((): string => {
+    const [todayLabel, previousLabel] = ((): [string, string] => {
         switch (quizKind) {
             case 'juxtastat':
-                return 'Today'
+                return ['Today', 'Yesterday']
             case 'retrostat':
-                return 'This Week'
+                return ['This Week', 'Last Week']
         }
     })()
     return [
         { value: 'today', label: todayLabel },
+        { value: 'previous', label: previousLabel },
         { value: 'stats', label: 'Mean Statistics' },
     ]
 }
@@ -92,6 +95,7 @@ export function QuizFriendsPanel(props: {
     setQuizFriends: (quizFriends: QuizFriends) => void
     quizDescriptor: QuizDescriptorWithStats
     myResult: ResultToDisplayForFriends
+    myPreviousResult?: ResultToDisplayForFriends
     userStatistics?: UserStatistics
 }): ReactNode {
     const colors = useColors()
@@ -105,7 +109,13 @@ export function QuizFriendsPanel(props: {
     const user = QuizModel.shared.uniquePersistentId.use()
     const secureID = QuizModel.shared.uniqueSecureId.use()
 
+    const periodsAgo = viewMode === 'previous' ? 1 : 0
+
     useEffect(() => {
+        // toggling the view mode refetches, so guard against a stale response landing last
+        let cancelled = false
+        // a function so that the linter doesn't narrow `cancelled` to its initial value
+        const isCancelled = (): boolean => cancelled
         void (async () => {
             setIsLoading(true)
             setError(undefined)
@@ -117,8 +127,8 @@ export function QuizFriendsPanel(props: {
                 const friendScoresResponse
                     = props.quizDescriptor.kind === 'infinite'
                         ? await infiniteResponse(props.quizDescriptor, requesters)
-                        : await juxtaRetroResponse(props.quizDescriptor, requesters)
-                if (friendScoresResponse === undefined) {
+                        : await juxtaRetroResponse(props.quizDescriptor, requesters, periodsAgo)
+                if (friendScoresResponse === undefined || isCancelled()) {
                     return
                 }
                 setFriendScores(friendScoresResponse.map(
@@ -136,6 +146,9 @@ export function QuizFriendsPanel(props: {
                             quiz_kind: props.quizDescriptor.kind,
                         },
                     })
+                    if (isCancelled()) {
+                        return
+                    }
                     setFriendSummaryStats(summaryStatsResponse?.results ?? [])
                 }
                 else {
@@ -143,15 +156,23 @@ export function QuizFriendsPanel(props: {
                 }
             }
             catch {
-                setError('Network Error')
+                if (!isCancelled()) {
+                    setError('Network Error')
+                }
             }
             finally {
-                setIsLoading(false)
+                if (!isCancelled()) {
+                    setIsLoading(false)
+                }
             }
         })()
-    }, [props.quizDescriptor, props.quizFriends, user, secureID])
+        return () => { cancelled = true }
+    }, [props.quizDescriptor, props.quizFriends, user, secureID, periodsAgo])
 
-    const allResults = [props.myResult, ...friendScores.flatMap(x => x.friends ? [x.result] : [])]
+    const showingScores = viewMode !== 'stats'
+    const myResult = viewMode === 'previous' ? (props.myPreviousResult ?? { corrects: null }) : props.myResult
+
+    const allResults = [myResult, ...friendScores.flatMap(x => x.friends ? [x.result] : [])]
 
     const content = (
         <div>
@@ -189,7 +210,7 @@ export function QuizFriendsPanel(props: {
                             </div>
                         )
                     : null}
-                {viewMode === 'today' ? <PlayerScore result={props.myResult} otherResults={allResults} /> : null}
+                {showingScores ? <PlayerScore result={myResult} otherResults={allResults} /> : null}
                 {viewMode === 'stats' && props.userStatistics !== undefined
                     ? (
                             <MeanStatisticsRow
@@ -221,7 +242,7 @@ export function QuizFriendsPanel(props: {
                                 props.setQuizFriends(newQuizFriends)
                             }
 
-                            return viewMode === 'today'
+                            return showingScores
                                 ? (
                                         <FriendScoreRow
                                             key={friendScore.friendId}
@@ -299,7 +320,7 @@ function ViewModeToggle<T extends string>(props: {
     options: { value: T, label: string }[]
 }): ReactNode {
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5em', marginBottom: '1em' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5em', marginBottom: '1em' }}>
             {props.options.map(option => (
                 <ViewModeButton
                     key={option.value}

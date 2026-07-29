@@ -16,6 +16,8 @@ quizFriendsTest(
         today: retro11,
         yesterday: retro10,
         other: juxta99,
+        todayLabel: 'This Week',
+        yesterdayLabel: 'Last Week',
         platform: 'desktop',
     },
 )
