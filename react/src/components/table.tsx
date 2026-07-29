@@ -1269,9 +1269,7 @@ function Percentile(props: {
         const deadLeftEm = inScreenshot ? 0 : Math.max(0, 2 - measureTextWidthEm(percentile.toString()))
         number = <span style={{ marginLeft: `${-deadLeftEm}em` }}>{number}</span>
     }
-    // Keep the number glued to its immediate suffix (so the editable box never breaks onto its
-    // own line), but leave " percentile" free to wrap to the next line in a narrow column, the
-    // way the plain text used to.
+    // Number should be grouped with st/nd/rd/th, but we can line-break between that and %/percentile
     return (
         <div className="serif" data-test-id="statistic-percentile" style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : undefined }}>
             {props.simpleOrdinals
