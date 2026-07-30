@@ -35,6 +35,71 @@ test('neighboring-state-test', async (t) => {
         .eql(`${target}/article.html?longname=Arizona%2C+USA`)
 })
 
+test('editable-percentile-population-california', async (t) => {
+    // California is the most populous state, so it holds the highest population percentile
+    // (~88th -- the maximum, since it can't be more populous than itself). Asking for the 95th
+    // percentile (above that maximum) should therefore resolve to the top geography, staying on
+    // California, rather than jumping to a less-populous state.
+    const editablePercentile = Selector('div').withAttribute('data-test-id', 'statistic-percentile').nth(0)
+        .find('span').withAttribute('class', 'editable_content')
+    await t
+        .click(editablePercentile)
+        .pressKey('ctrl+a')
+        .typeText(editablePercentile, '95')
+        .pressKey('enter')
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}/article.html?longname=California%2C+USA`)
+    // The field must snap back to California's true maximum percentile (88), not keep
+    // echoing the out-of-range 95 that was entered.
+    await t.expect(editablePercentile.innerText).eql('88')
+})
+
+urbanstatsFixture('zeroth percentile test', '/article.html?longname=North+Dakota%2C+USA')
+
+test('editable-percentile-zeroth-does-not-trap', async (t) => {
+    // North Dakota sits at the 0th population percentile but is not the least-populous state
+    // (several states/territories are tied at the 0th percentile). Submitting the 0th percentile --
+    // even though the field already shows "0" -- must navigate to the bottom of that bucket (the
+    // least-populous state/territory, US Virgin Islands) rather than doing nothing.
+    const editablePercentile = Selector('div').withAttribute('data-test-id', 'statistic-percentile').nth(0)
+        .find('span').withAttribute('class', 'editable_content')
+    await t
+        .click(editablePercentile)
+        .pressKey('ctrl+a')
+        .typeText(editablePercentile, '0')
+        .pressKey('enter')
+    // Navigation is async (loadStatisticsPage), so use a retrying assertion rather than snapshotting
+    // the URL once, which could read the location before navigation completes.
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}${articleUrl('US Virgin Islands, USA')}`)
+})
+
+test('editable-percentile-hundredth-goes-to-top-state', async (t) => {
+    // The 100th percentile resolves to the top of the bucket -- the most-populous state, California.
+    const editablePercentile = Selector('div').withAttribute('data-test-id', 'statistic-percentile').nth(0)
+        .find('span').withAttribute('class', 'editable_content')
+    await t
+        .click(editablePercentile)
+        .pressKey('ctrl+a')
+        .typeText(editablePercentile, '100')
+        .pressKey('enter')
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}${articleUrl('California, USA')}`)
+})
+
+test('editable-percentile-median-state', async (t) => {
+    // The 50th percentile among states/territories resolves to the median, Georgia.
+    const editablePercentile = Selector('div').withAttribute('data-test-id', 'statistic-percentile').nth(0)
+        .find('span').withAttribute('class', 'editable_content')
+    await t
+        .click(editablePercentile)
+        .pressKey('ctrl+a')
+        .typeText(editablePercentile, '50')
+        .pressKey('enter')
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}${articleUrl('Georgia, USA')}`)
+})
+
 urbanstatsFixture('cross-country test', '/article.html?longname=Tijuana+Urban+Center%2C+Mexico-USA')
 
 test('tijuana-article-test', async (t) => {
@@ -56,8 +121,8 @@ test('san-marino-article-test', async (t) => {
 })
 
 test('editable-number', async (t) => {
-    // span with class editable_content
-    const editableNumber = Selector('span').withAttribute('class', 'editable_content').nth(0)
+    // the editable ordinal for the first statistic (population)
+    const editableNumber = Selector('span').withAttribute('data-test-id', 'editable-ordinal').nth(0)
     await t
         .click(editableNumber)
         // select all and delete
@@ -67,6 +132,36 @@ test('editable-number', async (t) => {
     await t.expect(editableNumber.innerText).eql('3')
     await t.expect(getLocationWithoutSettings())
         .eql(`${target}/article.html?longname=Chicago+city%2C+Illinois%2C+USA`)
+})
+
+test('editable-percentile', async (t) => {
+    // the editable percentile for the first statistic (population); editing it jumps to
+    // the bottom of the requested percentile bucket among cities. The 50th percentile
+    // resolves to the median city, Monterey Park.
+    const editablePercentile = Selector('div').withAttribute('data-test-id', 'statistic-percentile').nth(0)
+        .find('span').withAttribute('class', 'editable_content')
+    await t
+        .click(editablePercentile)
+        .pressKey('ctrl+a')
+        .typeText(editablePercentile, '50')
+        .pressKey('enter')
+    // Navigation is async (loadStatisticsPage), so use a retrying assertion rather than snapshotting
+    // the URL once, which could read the location before navigation completes.
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}${articleUrl('Monterey Park city, California, USA')}`)
+})
+
+test('editable-percentile-hundredth-goes-to-top-city', async (t) => {
+    // The 100th percentile resolves to the top of the bucket -- the most-populous city, New York.
+    const editablePercentile = Selector('div').withAttribute('data-test-id', 'statistic-percentile').nth(0)
+        .find('span').withAttribute('class', 'editable_content')
+    await t
+        .click(editablePercentile)
+        .pressKey('ctrl+a')
+        .typeText(editablePercentile, '100')
+        .pressKey('enter')
+    await t.expect(getLocationWithoutSettings())
+        .eql(`${target}${articleUrl('New York city, New York, USA')}`)
 })
 
 test('lr-buttons', async (t) => {

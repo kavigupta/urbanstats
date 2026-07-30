@@ -5,7 +5,7 @@ import { useColors, useJuxtastatColors } from '../page_template/colors'
 
 import { QuizDescriptor, QuizDescriptorWithTime, QuizHistory } from './quiz'
 import { ResultToDisplayForFriends } from './quiz-friends'
-import { getInfiniteQuizzes, parseTimeIdentifier } from './statistics'
+import { getInfiniteQuizzes, historyKeyForTimeIdentifier, parseTimeIdentifier } from './statistics'
 
 export function QuizStatistics(
     props: {
@@ -36,14 +36,7 @@ export function computeUserStatisticsData(
         totalFrequency: number
         frequencies: number[]
     } {
-    const history = (i: number): QuizHistory[string] | undefined => {
-        switch (quiz.kind) {
-            case 'juxtastat':
-                return wholeHistory[i]
-            case 'retrostat':
-                return wholeHistory[`W${i}`]
-        }
-    }
+    const history = (i: number): QuizHistory[string] | undefined => wholeHistory[historyKeyForTimeIdentifier(quiz.kind, i)]
 
     const today = parseTimeIdentifier(quiz.kind, quiz.name.toString())
     const historicalCorrect = new Array(today + 1).fill(-1)
@@ -288,6 +281,26 @@ export function ordinalThis(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHi
         default:
             return undefined
     }
+}
+
+/**
+ * Our result on the quiz immediately preceding `quiz` (yesterday's juxtastat, last week's retrostat).
+ * Quizzes we didn't finish are reported as not done, since that's how friends' unfinished quizzes are reported.
+ */
+export function ourPreviousResultToDisplayForFriends(
+    quiz: QuizDescriptorWithTime,
+    wholeHistory: QuizHistory,
+    isDone: (correctPattern: boolean[]) => boolean,
+): ResultToDisplayForFriends {
+    const previousKey = historyKeyForTimeIdentifier(quiz.kind, parseTimeIdentifier(quiz.kind, quiz.name.toString()) - 1)
+    if (!(previousKey in wholeHistory)) {
+        return { corrects: null }
+    }
+    const corrects = wholeHistory[previousKey].correct_pattern
+    if (!isDone(corrects.map(correct => correct ? true : false))) {
+        return { corrects: null }
+    }
+    return { corrects }
 }
 
 export function ourResultToDisplayForFriends(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHistory: QuizHistory): ResultToDisplayForFriends {

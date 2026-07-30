@@ -122,6 +122,16 @@ export function parseTimeIdentifier(quizKind: QuizKindWithTime, today: string): 
     }
 }
 
+/** Inverse of `parseTimeIdentifier`: the key a quiz at this time is stored under in the quiz history. */
+export function historyKeyForTimeIdentifier(quizKind: QuizKindWithTime, timeIdentifier: number): string {
+    switch (quizKind) {
+        case 'juxtastat':
+            return timeIdentifier.toString()
+        case 'retrostat':
+            return `W${timeIdentifier}`
+    }
+}
+
 function parseJuxtastatDay(day: string): number {
     // return -10000 if day doesn't match -?[0-9]+
     if (!/^-?[0-9]+$/.test(day)) {
