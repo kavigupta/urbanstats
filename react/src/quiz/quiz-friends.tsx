@@ -112,10 +112,6 @@ export function QuizFriendsPanel(props: {
     const periodsAgo = viewMode === 'previous' ? 1 : 0
 
     useEffect(() => {
-        // toggling the view mode refetches, so guard against a stale response landing last
-        let cancelled = false
-        // a function so that the linter doesn't narrow `cancelled` to its initial value
-        const isCancelled = (): boolean => cancelled
         void (async () => {
             setIsLoading(true)
             setError(undefined)
@@ -128,7 +124,7 @@ export function QuizFriendsPanel(props: {
                     = props.quizDescriptor.kind === 'infinite'
                         ? await infiniteResponse(props.quizDescriptor, requesters)
                         : await juxtaRetroResponse(props.quizDescriptor, requesters, periodsAgo)
-                if (friendScoresResponse === undefined || isCancelled()) {
+                if (friendScoresResponse === undefined) {
                     return
                 }
                 setFriendScores(friendScoresResponse.map(
@@ -146,9 +142,6 @@ export function QuizFriendsPanel(props: {
                             quiz_kind: props.quizDescriptor.kind,
                         },
                     })
-                    if (isCancelled()) {
-                        return
-                    }
                     setFriendSummaryStats(summaryStatsResponse?.results ?? [])
                 }
                 else {
@@ -156,17 +149,12 @@ export function QuizFriendsPanel(props: {
                 }
             }
             catch {
-                if (!isCancelled()) {
-                    setError('Network Error')
-                }
+                setError('Network Error')
             }
             finally {
-                if (!isCancelled()) {
-                    setIsLoading(false)
-                }
+                setIsLoading(false)
             }
         })()
-        return () => { cancelled = true }
     }, [props.quizDescriptor, props.quizFriends, user, secureID, periodsAgo])
 
     const showingScores = viewMode !== 'stats'
