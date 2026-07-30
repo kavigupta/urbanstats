@@ -381,6 +381,55 @@ test('histogram-monthly-comparison-both-rain-snow-valid', async (t) => {
     await downloadHistogram(t, 0)
 })
 
+// Clicking a point pins its tooltip: unlike the hover tooltip, a pinned one survives the mouse
+// leaving the chart and is drawn into the downloaded image. It is dismissed with the little "x"
+// hanging off its corner, and it is per-plot component state, so navigating away clears it.
+urbanstatsFixture('histogram pinned tooltip', `${target}/article.html?longname=Germany&universe=world`)
+
+const pinnedTip = Selector('.histogram-svg-panel').find('g.plot-pinned-tip')
+const dismissPinnedTip = Selector('[data-test-id=dismiss_pinned_tooltip]')
+
+test('histogram-pinned-tooltip', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await t.click(Selector('.expand-toggle'))
+    await t.expect(pinnedTip.exists).notOk('no tooltip is pinned until one is clicked')
+
+    const panel = Selector('.histogram-svg-panel')
+    await t.click(panel, { offsetX: 500, offsetY: 200 })
+    await t.expect(pinnedTip.exists).ok('clicking the chart pins the pointed-at tooltip')
+    await t.expect(pinnedTip.find('tspan').withText(/^.?Density: /).exists).ok('pinned tooltip shows the density it is pinned to')
+    await t.expect(dismissPinnedTip.exists).ok('pinned tooltip has a dismiss button')
+
+    // the pin is what distinguishes this from the hover tooltip: moving off the chart, and even
+    // clicking elsewhere on the page, leaves it in place
+    await t.hover('body', { offsetX: 0, offsetY: 0 })
+    await t.expect(pinnedTip.exists).ok('pinned tooltip outlives the pointer leaving the chart')
+    await t.click(Selector('.expand-toggle'))
+    await t.click(Selector('.expand-toggle'))
+    await t.expect(pinnedTip.exists).notOk('collapsing the plot discards the pin along with the plot')
+
+    await t.click(panel, { offsetX: 500, offsetY: 200 })
+    await t.expect(pinnedTip.exists).ok()
+    await screencap(t)
+    // the point of all this: the tooltip is part of the plot we re-render for the download
+    await downloadHistogram(t, 0)
+
+    await t.click(dismissPinnedTip)
+    await t.expect(pinnedTip.exists).notOk('the dismiss button unpins the tooltip')
+})
+
+test('histogram-pinned-tooltip-cleared-by-navigation', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await t.click(Selector('.expand-toggle'))
+    await t.click(Selector('.histogram-svg-panel'), { offsetX: 500, offsetY: 200 })
+    await t.expect(pinnedTip.exists).ok()
+
+    await t.navigateTo(`${target}/article.html?longname=France&universe=world`)
+    await waitForLoading()
+    await t.expect(Selector('.histogram-svg-panel').exists).ok('the expanded state itself is a setting, so it persists')
+    await t.expect(pinnedTip.exists).notOk('the pin is not persistent state, and does not survive a navigation')
+})
+
 urbanstatsFixture('comparison ordering test', `${target}/comparison.html?longnames=%5B%22USA%22%2C%22United+Kingdom%22%5D`)
 
 test('histogram-ordering', async (t) => {

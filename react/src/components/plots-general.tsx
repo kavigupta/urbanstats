@@ -190,7 +190,8 @@ export function seriesTip(
     prefixFor: (idx: number) => string,
     formatValue: (v: number) => string,
     colors: Colors,
-): Plot.Markish {
+    pinnedTip: PinnedTipIndex,
+): Plot.Markish[] {
     const tipData = idxs.map(i => ({
         x: xFor(i),
         prefix: prefixFor(i),
@@ -199,34 +200,124 @@ export function seriesTip(
     return transposeAwareTip(
         tipData,
         transpose,
-        'x',
+        d => d.x,
         d => d.entries.map(e => e.value),
         d => groupedTipTitle(d.prefix, d.entries, formatValue),
         colors,
+        pinnedTip,
     )
 }
 
+// The tooltip the user has clicked on, identified by its position in the tip mark's data. An index
+// rather than the datum itself because the data is rebuilt from scratch whenever the plot
+// re-renders, and it means the same point stays pinned across a transpose or a settings change.
+export type PinnedTipIndex = number | null
+
+// each tip datum is wrapped so that the plot's `value` (which Plot sets to the pointed-at datum)
+// tells us which tooltip a click would pin
+interface TipRow<T> { datum: T, tipIndex: number }
+
+// the index of the tooltip the pointer is currently over, or null if it isn't over the plot
+function pointedTipIndex(plot: HTMLElement | SVGSVGElement): PinnedTipIndex {
+    const value: unknown = (plot as { value?: unknown }).value
+    if (typeof value !== 'object' || value === null || !('tipIndex' in value)) {
+        return null
+    }
+    const { tipIndex } = value as TipRow<unknown>
+    return tipIndex
+}
+
 // a Plot.tip anchored at the tallest series' value at each point, swapping x/y when transposed,
-// styled with the theme's tooltip colors
+// styled with the theme's tooltip colors. Comes in two flavors: the one that follows the pointer,
+// and, if the user has pinned one, an ordinary (non-interactive) mark drawn at the pinned point.
 export function transposeAwareTip<T>(
     data: T[],
     transpose: boolean,
-    xKey: string,
+    getX: (d: T) => number,
     getValues: (d: T) => number[],
     title: (d: T) => string,
     colors: Colors,
-): Plot.Markish {
-    return Plot.tip(
-        data,
-        (transpose ? Plot.pointerY : Plot.pointerX)({
-            x: transpose ? (d: T) => Math.max(...getValues(d)) : xKey,
-            y: transpose ? xKey : (d: T) => Math.max(...getValues(d)),
-            title,
-            fill: colors.slightlyDifferentBackground,
-            stroke: colors.borderNonShadow,
-            textColor: colors.textMain,
-        }),
-    )
+    pinnedTip: PinnedTipIndex,
+): Plot.Markish[] {
+    const rows: TipRow<T>[] = data.map((datum, tipIndex) => ({ datum, tipIndex }))
+    const position = (row: TipRow<T>): number => getX(row.datum)
+    const value = (row: TipRow<T>): number => Math.max(...getValues(row.datum))
+    const options = {
+        x: transpose ? value : position,
+        y: transpose ? position : value,
+        title: (row: TipRow<T>) => title(row.datum),
+        fill: colors.slightlyDifferentBackground,
+        stroke: colors.borderNonShadow,
+        textColor: colors.textMain,
+    }
+    const marks: Plot.Markish[] = [Plot.tip(rows, (transpose ? Plot.pointerY : Plot.pointerX)(options))]
+    // being a plain mark rather than a pointer-driven one, the pinned tooltip stays put when the
+    // mouse leaves, and is drawn into the plot we re-render for the downloaded image
+    if (pinnedTip !== null && pinnedTip < rows.length) {
+        marks.push(Plot.tip([rows[pinnedTip]], { ...options, className: pinnedTipClassName }))
+    }
+    return marks
+}
+
+const pinnedTipClassName = 'plot-pinned-tip'
+// tied to CSS (plots.css), which hides the button while a screenshot of the page is being taken
+const dismissButtonClassName = 'plot-tip-dismiss'
+
+// the little "x" that dismisses a pinned tooltip. Drawn into the plot's SVG rather than overlaid as
+// HTML, so that it stays glued to the tooltip when the plot is scaled down to fit a narrow screen.
+function createDismissButton(colors: Colors, scale: number, onDismiss: () => void): SVGElement {
+    const svgNS = 'http://www.w3.org/2000/svg'
+    const group = document.createElementNS(svgNS, 'g')
+    group.setAttribute('class', dismissButtonClassName)
+    group.setAttribute('data-test-id', 'dismiss_pinned_tooltip')
+    group.setAttribute('role', 'button')
+    group.setAttribute('tabindex', '0')
+    group.setAttribute('aria-label', 'Dismiss tooltip')
+
+    const radius = 8 * scale
+    const background = document.createElementNS(svgNS, 'circle')
+    background.setAttribute('r', String(radius))
+    background.setAttribute('fill', colors.slightlyDifferentBackground)
+    background.setAttribute('stroke', colors.textMain)
+    group.appendChild(background)
+
+    const arm = radius * 0.45
+    const cross = document.createElementNS(svgNS, 'path')
+    cross.setAttribute('d', `M${-arm},${-arm}L${arm},${arm}M${-arm},${arm}L${arm},${-arm}`)
+    cross.setAttribute('stroke', colors.textMain)
+    cross.setAttribute('stroke-width', String(1.5 * scale))
+    cross.setAttribute('stroke-linecap', 'round')
+    cross.setAttribute('fill', 'none')
+    group.appendChild(cross)
+
+    // clicks are handled by the plot-wide pointerdown listener, which sees this button's class;
+    // the keyboard has no such listener to piggyback on
+    group.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            onDismiss()
+        }
+    })
+    return group
+}
+
+function isDismissButton(target: EventTarget | null): boolean {
+    return target instanceof Element && target.closest(`.${dismissButtonClassName}`) !== null
+}
+
+// Plot sizes and places a tooltip asynchronously, once it can measure the rendered text, so where
+// the tooltip's corner is -- and hence where the dismiss button goes -- is only known a frame later.
+function attachDismissButton(plot: Element, colors: Colors, transpose: boolean, onDismiss: () => void): void {
+    const tip = plot.querySelector(`g.${pinnedTipClassName}`)
+    if (!(tip instanceof SVGGraphicsElement)) {
+        return
+    }
+    const box = tip.getBBox()
+    // hung half in and half out of the tooltip's top right corner, where the rounded corner leaves
+    // a gap in the text. Transposed plots draw at double the font size, so scale to match.
+    const button = createDismissButton(colors, transpose ? 2 : 1, onDismiss)
+    button.setAttribute('transform', `translate(${box.x + box.width} ${box.y})`)
+    tip.appendChild(button)
 }
 
 // the screenshot-download icon shared by every plot type's settings bar
@@ -239,6 +330,9 @@ function PlotDownloadButton(props: { makePlot: () => HTMLElement, shortnames: st
             onClick={async () => {
                 const plot = props.makePlot()
                 document.body.appendChild(plot)
+                // a pinned tooltip is laid out on the frame after the plot is rendered, so wait for
+                // it; otherwise the capture below can catch the tooltip before it is placed
+                await new Promise<void>((resolve) => { requestAnimationFrame(() => { resolve() }) })
                 const uniqueShortnames = Array.from(new Set(props.shortnames))
                 await createScreenshot(
                     () => ({
@@ -534,17 +628,25 @@ export interface DetailedPlotSpec {
 }
 
 export function PlotComponent(props: {
-    plotSpec: (transpose: boolean, leftLabelOffset: number) => DetailedPlotSpec
+    plotSpec: (transpose: boolean, leftLabelOffset: number, pinnedTip: PinnedTipIndex) => DetailedPlotSpec
     settingsElement: (makePlot: () => HTMLElement) => ReactElement
 }): ReactElement {
     const transpose = useTranspose()
+    const colors = useColors()
 
     const plotRef = useRef<HTMLDivElement>(null)
+
+    // clicking a point pins its tooltip in place. Deliberately component state rather than a
+    // setting: it should survive clicking elsewhere on the page, but not a navigation or a reload.
+    const [pinnedTip, setPinnedTip] = useState<PinnedTipIndex>(null)
+    // the tooltip the pointer is over, which is the one a click pins. Read at click time rather
+    // than rendered from, so it doesn't need to be state.
+    const pointedTip = useRef<PinnedTipIndex>(null)
 
     const plotSpec = props.plotSpec
 
     const plotConfig = useCallback((transposeConfig: boolean, leftAxis: LeftAxisLayout): Plot.PlotOptions => {
-        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec(transposeConfig, leftAxis.labelOffset)
+        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec(transposeConfig, leftAxis.labelOffset, pinnedTip)
         const result: Plot.PlotOptions = {
             marks,
             x: {
@@ -589,13 +691,45 @@ export function PlotComponent(props: {
             }
         }
         return result
-    }, [plotSpec])
+    }, [plotSpec, pinnedTip])
 
     useEffect(() => {
-        if (plotRef.current) {
-            renderMeasuredPlot(plotRef.current, leftAxis => plotConfig(transpose, leftAxis), transpose)
+        const container = plotRef.current
+        if (container === null) {
+            return
         }
-    }, [props.plotSpec, transpose, plotConfig])
+        const plot = renderMeasuredPlot(container, leftAxis => plotConfig(transpose, leftAxis), transpose)
+
+        const recordPointedTip = (): void => {
+            pointedTip.current = pointedTipIndex(plot)
+        }
+        const handlePointerDown = (event: PointerEvent): void => {
+            // Plot has a click-to-stick tooltip of its own, which would double up with the pinned
+            // one we draw; suppressing it here (before the event reaches the plot) leaves us in
+            // sole charge of what a click does
+            event.stopPropagation()
+            if (isDismissButton(event.target)) {
+                setPinnedTip(null)
+                return
+            }
+            const pointed = pointedTip.current
+            if (pointed !== null) {
+                // clicking the already-pinned point unpins it, like clicking a toggle
+                setPinnedTip(current => current === pointed ? null : pointed)
+            }
+        }
+        plot.addEventListener('input', recordPointedTip)
+        container.addEventListener('pointerdown', handlePointerDown, true)
+        const frame = requestAnimationFrame(() => {
+            attachDismissButton(plot, colors, transpose, () => { setPinnedTip(null) })
+        })
+
+        return () => {
+            cancelAnimationFrame(frame)
+            plot.removeEventListener('input', recordPointedTip)
+            container.removeEventListener('pointerdown', handlePointerDown, true)
+        }
+    }, [transpose, plotConfig, colors])
 
     const screenshotMode = useScreenshotMode()
 
@@ -605,7 +739,9 @@ export function PlotComponent(props: {
     return (
         <>
             <div
-                className="histogram-svg-panel" // tied to CSS
+                // both tied to CSS; the screenshot class hides the pinned tooltip's dismiss button,
+                // which is interactive chrome rather than part of the chart
+                className={screenshotMode ? 'histogram-svg-panel screenshot-mode' : 'histogram-svg-panel'}
                 ref={plotRef}
                 style={
                     {
@@ -655,7 +791,7 @@ export function SeriesPlot<T extends PlotSeriesItem>(props: {
     modeSwitcher?: ReactElement
     dashOrder?: string[]
     extraSettingsControls?: ReactNode
-    buildPlot: (transpose: boolean, leftLabelOffset: number) => DetailedPlotSpec
+    buildPlot: (transpose: boolean, leftLabelOffset: number, pinnedTip: PinnedTipIndex) => DetailedPlotSpec
 }): ReactElement {
     const colors = useColors()
     const { items, dashOrder, buildPlot } = props
@@ -674,9 +810,9 @@ export function SeriesPlot<T extends PlotSeriesItem>(props: {
     )
 
     const plotSpec = useCallback(
-        (transpose: boolean, leftLabelOffset: number): DetailedPlotSpec => {
+        (transpose: boolean, leftLabelOffset: number, pinnedTip: PinnedTipIndex): DetailedPlotSpec => {
             const title = new Set(items.map(i => i.shortname)).size === 1 ? items[0].shortname : ''
-            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose, leftLabelOffset)
+            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose, leftLabelOffset, pinnedTip)
             marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
             marks.push(...manualLegend(items, transpose, colors, dashOrder))
             return { marks, xlabel, ylabel, ydomain, legend }
