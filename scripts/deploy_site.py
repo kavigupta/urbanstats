@@ -35,7 +35,7 @@ def update_scripts(branch):
     """
     synchronize()
     # if the branch isn't the same as the current branch, checkout to the branch
-    current_branch = get_current_branch(".")
+    current_branch = get_current_branch(PATH)
     if current_branch != branch:
         # create a new branch if it doesn't exist
         subprocess.run(["git", "checkout", "-b", branch], cwd=PATH, check=True)
