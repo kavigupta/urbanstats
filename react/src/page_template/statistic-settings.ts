@@ -34,14 +34,14 @@ function yearKeys(years: Year[]): StatYearKey[] {
 }
 
 /** Everything that selects which statistics are shown apart from the group checkboxes. */
-export function yearSourceKeys(): (StatYearKey | StatSourceKey)[] {
+function yearSourceKeys(): (StatYearKey | StatSourceKey)[] {
     return [
         ...yearKeys(allYears),
         ...dataSources.flatMap(({ category, sources }) => sources.map(({ source }) => sourceEnabledKey({ category, name: source }))),
     ]
 }
 
-export function statGroupKeys(): StatGroupKey[] {
+function statGroupKeys(): StatGroupKey[] {
     return groupKeys(allGroups)
 }
 

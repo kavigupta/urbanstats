@@ -167,10 +167,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
                         verticalPlotSpecs={[]}
                         topLeftSpec={topLeftSpec}
                         superHeaderSpec={superHeaderSpec}
-                        widthLeftHeader={widthLeftHeader}
-                        columnWidth={columnWidth}
-                        onlyColumns={onlyColumns}
-                        simpleOrdinals={true}
+                        layout={{ widthLeftHeader, columnWidth, onlyColumns, simpleOrdinals: true }}
                         highlightRowIndex={highlightRowIndex}
                         loading={loading}
                     />

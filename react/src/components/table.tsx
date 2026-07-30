@@ -1111,11 +1111,16 @@ function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undef
     )
 }
 
-export function computeDisclaimerFootnotes(rows: { disclaimer?: Disclaimer }[]): { getSymbol: (d: Disclaimer) => string, footnotes: { symbol: string, text: string }[] } {
+/**
+ * The numbered footnotes a table's disclaimers collapse into for a screenshot, drawn from the
+ * statistics its name cells refer to -- the same cells that then show the symbols.
+ */
+export function computeDisclaimerFootnotes(specs: CellSpec[]): { getSymbol: (d: Disclaimer) => string, footnotes: { symbol: string, text: string }[] } {
     const uniqueMessages: string[] = []
-    for (const row of rows) {
-        if (row.disclaimer !== undefined) {
-            const msg = computeDisclaimerText(row.disclaimer)
+    for (const spec of specs) {
+        const disclaimer = spec.type === 'statistic-name' ? spec.row?.disclaimer : undefined
+        if (disclaimer !== undefined) {
+            const msg = computeDisclaimerText(disclaimer)
             if (!uniqueMessages.includes(msg)) {
                 uniqueMessages.push(msg)
             }

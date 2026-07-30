@@ -53,7 +53,33 @@ export interface MeasuredTableLayout extends TableLayout {
     extraSpaceRight: number[]
 }
 
-export interface TableContentsProps extends TableLayout {
+/**
+ * Measures each column against the rows it contains. Separate from `measuredLayout` so the
+ * edit table can memoize it: it measures every statistic rather than the selected ones.
+ */
+export function measureColumns(columnRows: StatisticCellRenderingInfo[][], universe: Universe, simpleOrdinals: boolean): CommonLayoutInformation[] {
+    return columnRows.map(rows => maxLayoutInformation(rows, universe, simpleOrdinals))
+}
+
+/**
+ * The layout rows are rendered against. `extraSpaceRight` is asked for per column rather
+ * than passed as an array, so it can't disagree with the measurements about the column count.
+ */
+export function measuredLayout(layout: TableLayout, columnWidthsInfo: CommonLayoutInformation[], extraSpaceRight: (columnIndex: number) => number): MeasuredTableLayout {
+    return {
+        ...layout,
+        columnWidthsInfo,
+        extraSpaceRight: columnWidthsInfo.map((_, columnIndex) => extraSpaceRight(columnIndex)),
+    }
+}
+
+/** Each column's width including the space reserved to its right. */
+export function columnFullWidths(layout: MeasuredTableLayout): number[] {
+    return layout.extraSpaceRight.map(extra => layout.columnWidth + extra)
+}
+
+export interface TableContentsProps {
+    layout: TableLayout
     superHeaderSpec?: SuperHeaderSpec
     leftHeaderSpec: LeftHeaderSpec
     rowSpecs: CellSpec[][]
@@ -68,60 +94,48 @@ export function TableContents(props: TableContentsProps): ReactNode {
     const universe = useDefinedUniverse()
     const colors = useColors()
     const screenshotMode = useScreenshotMode()
+    const { widthLeftHeader, columnWidth, simpleOrdinals } = props.layout
 
-    const rowsForFootnotes = useMemo(() => {
-        const fromLeft = props.leftHeaderSpec.leftHeaderSpecs.filter((s): s is CellSpec & { type: 'statistic-name', row: ArticleRow } =>
-            s.type === 'statistic-name' && s.row !== undefined,
-        ).map(s => s.row)
-        const fromSuper = (props.superHeaderSpec?.headerSpecs ?? []).filter((s): s is CellSpec & { type: 'statistic-name', row: ArticleRow } =>
-            s.type === 'statistic-name' && s.row !== undefined,
-        ).map(s => s.row)
-        return [...fromLeft, ...fromSuper]
-    }, [props.leftHeaderSpec.leftHeaderSpecs, props.superHeaderSpec?.headerSpecs])
-    const disclaimerFootnotes = useMemo(() => computeDisclaimerFootnotes(rowsForFootnotes), [rowsForFootnotes])
+    const { leftHeaderSpecs } = props.leftHeaderSpec
+    const superHeaderSpecs = props.superHeaderSpec?.headerSpecs
+
+    const disclaimerFootnotes = useMemo(
+        () => computeDisclaimerFootnotes([...leftHeaderSpecs, ...(superHeaderSpecs ?? [])]),
+        [leftHeaderSpecs, superHeaderSpecs],
+    )
+
+    // In screenshot mode the disclaimers move into numbered footnotes below the table, so the
+    // cells that carry one need to show the symbol that points at theirs.
+    const withFootnote = (spec: CellSpec): CellSpec =>
+        screenshotMode && spec.type === 'statistic-name' && spec.row?.disclaimer !== undefined
+            ? { ...spec, footnoteSymbol: disclaimerFootnotes.getSymbol(spec.row.disclaimer) }
+            : spec
 
     const headerHeight = props.verticalPlotSpecs.flatMap(p => p === undefined ? [] : p.plotProps).map(p => extraHeaderSpaceForVertical(p)).reduce((a, b) => Math.max(a, b), 0)
     const contentHeight = '379.5px'
 
     const shouldSetMinHeight = props.verticalPlotSpecs.some(p => p !== undefined)
     const overallMinHeight = shouldSetMinHeight ? `calc(${headerHeight}px + ${contentHeight})` : undefined
-    const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${props.leftHeaderSpec.leftHeaderSpecs.length})` : undefined
+    const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${leftHeaderSpecs.length})` : undefined
 
     // should be 1 column, unless there are header specs. only use header specs if we can't infer from the cells.
-    const ncols = props.rowSpecs.length !== 0 ? props.rowSpecs[0].length : props.superHeaderSpec?.headerSpecs.length ?? 1
+    const ncols = props.rowSpecs.length !== 0 ? props.rowSpecs[0].length : superHeaderSpecs?.length ?? 1
 
-    const extraSpaceRight = Array.from({ length: ncols }).map((_, i) => (props.verticalPlotSpecs[i] === undefined ? 0 : props.columnWidth))
-    const columnFullWidths = extraSpaceRight.map(extra => props.columnWidth + extra)
+    const columnRows = Array.from({ length: ncols }).map((_, colIndex) => props.rowSpecs.flatMap((row) => {
+        const cell = row[colIndex]
+        return cell.type === 'statistic-row' ? [cell.row] : []
+    }))
 
-    const columnWidthsInfo = Array.from({ length: ncols }).map((_, colIndex) => maxLayoutInformation(
-        props.rowSpecs.flatMap((row) => {
-            const cell = row[colIndex]
-            return cell.type === 'statistic-row' ? [cell.row] : []
-        }),
-        universe,
-        props.simpleOrdinals,
-    ))
-
-    const layout: MeasuredTableLayout = {
-        widthLeftHeader: props.widthLeftHeader,
-        columnWidth: props.columnWidth,
-        onlyColumns: props.onlyColumns,
-        simpleOrdinals: props.simpleOrdinals,
-        columnWidthsInfo,
-        extraSpaceRight,
-    }
+    const layout = measuredLayout(
+        props.layout,
+        measureColumns(columnRows, universe, simpleOrdinals),
+        colIndex => props.verticalPlotSpecs[colIndex] === undefined ? 0 : columnWidth,
+    )
+    const fullWidths = columnFullWidths(layout)
 
     const superHeaderSpec = props.superHeaderSpec === undefined
         ? undefined
-        : {
-                ...props.superHeaderSpec,
-                headerSpecs: props.superHeaderSpec.headerSpecs.map((spec) => {
-                    if (screenshotMode && spec.type === 'statistic-name' && spec.row?.disclaimer !== undefined) {
-                        return { ...spec, footnoteSymbol: disclaimerFootnotes.getSymbol(spec.row.disclaimer) }
-                    }
-                    return spec
-                }),
-            }
+        : { ...props.superHeaderSpec, headerSpecs: props.superHeaderSpec.headerSpecs.map(withFootnote) }
 
     return (
         <>
@@ -141,13 +155,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
                             rowMinHeight={rowMinHeight}
                             cellSpecs={rowSpecsForItem}
                             plotSpec={plotSpec}
-                            leftHeaderSpec={(() => {
-                                const spec = props.leftHeaderSpec.leftHeaderSpecs[rowIndex]
-                                if (screenshotMode && spec.type === 'statistic-name' && spec.row?.disclaimer !== undefined) {
-                                    return { ...spec, footnoteSymbol: disclaimerFootnotes.getSymbol(spec.row.disclaimer) }
-                                }
-                                return spec
-                            })()}
+                            leftHeaderSpec={withFootnote(leftHeaderSpecs[rowIndex])}
                             groupName={props.leftHeaderSpec.groupNames?.[rowIndex]}
                             prevGroupName={rowIndex > 0 ? props.leftHeaderSpec.groupNames?.[rowIndex - 1] : undefined}
                             isHighlighted={props.highlightRowIndex === rowIndex}
@@ -156,7 +164,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
                 })}
                 {props.verticalPlotSpecs.map((plotSpec, statIndex) => plotSpec
                     ? (
-                            <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${props.widthLeftHeader + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + columnFullWidths[i], props.columnWidth)}%`, bottom: 0, width: `${props.columnWidth}%` }}>
+                            <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${widthLeftHeader + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + fullWidths[i], columnWidth)}%`, bottom: 0, width: `${columnWidth}%` }}>
                                 <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
                             </div>
                         )
@@ -198,7 +206,7 @@ export function TableFrame(props: {
                 <SuperHeaderHorizontal
                     {...props.superHeaderSpec}
                     leftSpacerWidth={widthLeftHeader}
-                    widthsEach={extraSpaceRight.map(extra => columnWidth + extra)}
+                    widthsEach={columnFullWidths(props.layout)}
                 />
             )}
             <div style={{ position: 'relative', minHeight: props.minHeight }}>

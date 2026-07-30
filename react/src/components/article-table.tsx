@@ -109,7 +109,7 @@ export function ArticleTable(props: {
 
     return (
         <TableContents
-            {...layout}
+            layout={layout}
             leftHeaderSpec={{ leftHeaderSpecs, groupNames }}
             rowSpecs={cellSpecs}
             horizontalPlotSpecs={plotSpecs}

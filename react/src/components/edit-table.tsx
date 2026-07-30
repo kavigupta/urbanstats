@@ -12,8 +12,8 @@ import { StagingControls } from './StagingControls'
 import { BooleanSettingKey, CheckboxSettingCustomJustInputProps, CheckboxSettingJustBox, useBooleanSetting, useHighlightStyle } from './checkbox-setting'
 import { ArticleRow } from './load-article'
 import { displayNamesForRows } from './statistic-name-specs'
-import { CellSpec, EditModeOpenHeader, MeasuredTableLayout, PlotSpec, StatisticTableRow, SuperHeaderSpec, TableFrame, TableLayout, TopLeftHeaderType } from './supertable'
-import { maxLayoutInformation, TableRowContainer, useStatisticNameAdornments } from './table'
+import { CellSpec, EditModeOpenHeader, measureColumns, measuredLayout, MeasuredTableLayout, PlotSpec, StatisticTableRow, SuperHeaderSpec, TableFrame, TableLayout, TopLeftHeaderType } from './supertable'
+import { TableRowContainer, useStatisticNameAdornments } from './table'
 
 // Wrapping the name in a label lets a click anywhere on it toggle the associated
 // checkbox. Child rows of a multi-stat group have no checkbox of their own, so
@@ -38,11 +38,13 @@ function EditCheckbox(props: Omit<CheckboxSettingCustomJustInputProps, 'style' |
  */
 export function useEditTableLayout(columnLayout: TableLayout, columnRows: ArticleRow[][], universe: Universe): MeasuredTableLayout {
     const { simpleOrdinals } = columnLayout
+    // Memoized on what the measurement itself depends on, rather than on `columnLayout`, which
+    // callers rebuild on every render.
     const columnWidthsInfo = useMemo(
-        () => columnRows.map(rows => maxLayoutInformation(rows, universe, simpleOrdinals)),
+        () => measureColumns(columnRows, universe, simpleOrdinals),
         [columnRows, universe, simpleOrdinals],
     )
-    return { ...columnLayout, columnWidthsInfo, extraSpaceRight: columnWidthsInfo.map(() => 0) }
+    return measuredLayout(columnLayout, columnWidthsInfo, () => 0)
 }
 
 /** Each level of the tree is indented by this much relative to the one above it. */

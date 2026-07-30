@@ -409,7 +409,7 @@ export function ComparisonPanel(props: {
                                                 )
                                             : (
                                                     <TableContents
-                                                        {...columnLayout}
+                                                        layout={columnLayout}
                                                         {...orientedSpecs}
                                                         superHeaderSpec={{ ...orientedSpecs.superHeaderSpec, editMode: editStatisticsButton }}
                                                         topLeftSpec={topLeftSpec}

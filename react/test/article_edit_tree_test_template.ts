@@ -31,9 +31,13 @@ function populationRow(name: string): Selector {
 }
 
 export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
-    urbanstatsFixture('article edit tree', `${target}/article.html?longname=San+Francisco+city%2C+California%2C+USA`, async (t) => {
-        await resizeForPlatform(t, platform)
-    })
+    const platformFixture = (name: string, url: string): void => {
+        urbanstatsFixture(name, url, async (t) => {
+            await resizeForPlatform(t, platform)
+        })
+    }
+
+    platformFixture('article edit tree', `${target}/article.html?longname=San+Francisco+city%2C+California%2C+USA`)
 
     test('category-check', async (t) => {
         /**
@@ -331,9 +335,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(mainExpandButton.exists).ok()
     })
 
-    urbanstatsFixture('article edit tree filtering', `${target}/article.html?longname=Venice+Neighborhood%2C+Los+Angeles+City%2C+California%2C+USA`, async (t) => {
-        await resizeForPlatform(t, platform)
-    })
+    platformFixture('article edit tree filtering', `${target}/article.html?longname=Venice+Neighborhood%2C+Los+Angeles+City%2C+California%2C+USA`)
 
     test('search-filter', async (t) => {
         // Groups that don't exist for an article don't show up in the edit tree
@@ -344,9 +346,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
     // States have population from both the US Census and GHSL, so they're the articles that
     // get a source section to choose between them.
-    urbanstatsFixture('article edit tree sources', `${target}/article.html?longname=California%2C+USA`, async (t) => {
-        await resizeForPlatform(t, platform)
-    })
+    platformFixture('article edit tree sources', `${target}/article.html?longname=California%2C+USA`)
 
     test('source-section', async (t) => {
         /**
@@ -383,9 +383,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
     /** Universe Tests */
 
-    urbanstatsFixture('article edit tree universe test', `${target}/article.html?longname=USA`, async (t) => {
-        await resizeForPlatform(t, platform)
-    })
+    platformFixture('article edit tree universe test', `${target}/article.html?longname=USA`)
 
     test('switch-universe-indeterminate', async (t) => {
         /**
