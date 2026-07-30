@@ -102,11 +102,6 @@ export function ArticleTable(props: {
         onlyColumns: layout.onlyColumns,
     })])
 
-    const topLeftSpec = {
-        type: 'top-left-header',
-        editMode: { open: false, onEdit: props.onEdit, label: 'Edit' },
-    } satisfies CellSpec
-
     return (
         <TableContents
             layout={layout}
@@ -114,7 +109,8 @@ export function ArticleTable(props: {
             rowSpecs={cellSpecs}
             horizontalPlotSpecs={plotSpecs}
             verticalPlotSpecs={[]}
-            topLeftSpec={topLeftSpec}
+            topLeftSpec={{ type: 'top-left-header' }}
+            editButton={{ open: false, onEdit: props.onEdit, label: 'Edit', placement: 'top-left' }}
         />
     )
 }

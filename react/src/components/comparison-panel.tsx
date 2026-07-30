@@ -32,7 +32,7 @@ import { createScreenshot, ScreencapElements, useScreenshotMode } from './screen
 import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
 import { computeNameSpecsWithGroups } from './statistic-name-specs'
-import { TableContents, CellSpec, EditModeButton, PlotSpec, SuperHeaderSpec, TableLayout } from './supertable'
+import { TableContents, CellSpec, PlotSpec, SuperHeaderSpec, TableEditButton, TableLayout, TopLeftCellSpec } from './supertable'
 import { ColumnIdentifier, valueOnlyColumns } from './table'
 
 export function ComparisonPanel(props: {
@@ -298,11 +298,12 @@ export function ComparisonPanel(props: {
             : undefined,
     )
 
-    const topLeftSpec: CellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
+    const topLeftSpec: TopLeftCellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
 
     // "Edit Statistics" rather than "Edit", to distinguish it from editing the regions being
-    // compared, which the column headers do.
-    const editStatisticsButton: EditModeButton = { open: false, onEdit: () => { setEditMode(true) }, label: 'Edit Statistics' }
+    // compared, which the column headers do. The top-left cell is too narrow here to hold both
+    // the button and the column's name.
+    const editStatisticsButton: TableEditButton = { open: false, onEdit: () => { setEditMode(true) }, label: 'Edit Statistics', placement: 'super-header' }
 
     const longnameSuperHeaderSpec: SuperHeaderSpec = { headerSpecs: longnameHeaderSpecs, showBottomBar: true }
 
@@ -411,7 +412,7 @@ export function ComparisonPanel(props: {
                                                     <TableContents
                                                         layout={columnLayout}
                                                         {...orientedSpecs}
-                                                        superHeaderSpec={{ ...orientedSpecs.superHeaderSpec, editMode: editStatisticsButton }}
+                                                        editButton={editStatisticsButton}
                                                         topLeftSpec={topLeftSpec}
                                                     />
                                                 )}

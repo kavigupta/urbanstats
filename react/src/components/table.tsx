@@ -29,7 +29,7 @@ import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { Cell, CellSpec, ComparisonLongnameCellProps, EditModeButton, EditModeOpenHeader, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
+import { Cell, CellSpec, ComparisonLongnameCellProps, EditModeButton, EditModeOpenHeader, StatisticPanelLongnameCellProps, TopLeftCellSpec, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -270,21 +270,21 @@ export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: num
 }
 
 export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
-    const isScreenshot = useScreenshotMode()
     const isMobile = useMobileLayout()
-    const editMode = props.editMode
+    const closedEditMode = props.editMode?.open === false ? props.editMode : undefined
+    const showsEditButton = useShowsEditButton(closedEditMode)
 
-    if (editMode?.open) {
-        return <EditModeTopLeftHeader header={editMode} width={props.width} />
+    if (props.editMode?.open) {
+        return <EditModeTopLeftHeader header={props.editMode} width={props.width} />
     }
 
     // On a narrow screen this cell is too small to fit both the button and the name, and the
-    // button is the more useful of the two. Screenshots have no button, so they keep the name.
-    const showName = !isMobile || editMode === undefined || isScreenshot
+    // button is the more useful of the two -- so the name only yields when there really is one.
+    const showName = !isMobile || !showsEditButton
 
     return (
         <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '4px', padding: '1px', width: `${props.width}%` }}>
-            <EnterEditModeButton editMode={editMode} />
+            <EnterEditModeButton editMode={closedEditMode} />
             {showName && (
                 <span className="serif value" style={{ flexGrow: 1 }}>
                     {props.statNameOverride ?? 'Statistic'}
@@ -294,10 +294,16 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     )
 }
 
-/** The way in to edit mode, for the tables that offer one. Screenshots never do. */
-function EnterEditModeButton({ editMode }: { editMode?: EditModeButton }): ReactNode {
+/** Screenshots offer no way in to edit mode, since there's nobody there to click it. */
+function useShowsEditButton(editMode?: EditModeButton): boolean {
     const isScreenshot = useScreenshotMode()
-    if (editMode === undefined || isScreenshot) {
+    return editMode !== undefined && !isScreenshot
+}
+
+/** The way in to edit mode, for the tables that offer one. */
+function EnterEditModeButton({ editMode }: { editMode?: EditModeButton }): ReactNode {
+    const shows = useShowsEditButton(editMode)
+    if (editMode === undefined || !shows) {
         return null
     }
     return <HeaderButton onClick={editMode.onEdit} testId="edit-mode-edit">{editMode.label}</HeaderButton>
@@ -340,7 +346,7 @@ function HeaderButton({ onClick, testId, children }: { onClick: () => void, test
 }
 
 export function MainHeaderRow(props: {
-    topLeftSpec: CellSpec
+    topLeftSpec: TopLeftCellSpec
     topLeftWidth: number
     columnWidth: number
     onlyColumns: ColumnIdentifier[]

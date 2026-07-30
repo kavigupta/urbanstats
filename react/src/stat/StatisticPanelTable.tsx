@@ -3,7 +3,7 @@ import React, { ChangeEvent, ReactNode, useContext, useEffect, useMemo, useRef, 
 import { isNoValue, StatisticCellRenderingInfo } from '../components/load-article'
 import { PointerArrow } from '../components/pointer-cell'
 import { computeComparisonWidthColumns, MaybeScroll } from '../components/scrollable'
-import { CellSpec, SuperHeaderSpec, TableContents } from '../components/supertable'
+import { CellSpec, SuperHeaderSpec, TableContents, TopLeftCellSpec } from '../components/supertable'
 import { ColumnIdentifier, valueOnlyColumns } from '../components/table'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
@@ -115,7 +115,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
         } satisfies CellSpec))
     })
 
-    const topLeftSpec: CellSpec = {
+    const topLeftSpec: TopLeftCellSpec = {
         type: 'top-left-header',
         statNameOverride: 'Name',
     }

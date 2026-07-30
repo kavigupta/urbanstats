@@ -23,8 +23,6 @@ export interface SuperHeaderSpec {
     showBottomBar: boolean
     groupNames?: (string | undefined)[]
     handleReorder?: (from: number, to: number) => void
-    /** Puts the way into edit mode above the table, for layouts whose top-left cell has no room for it. */
-    editMode?: EditModeButton
 }
 
 export interface LeftHeaderSpec {
@@ -85,7 +83,9 @@ export interface TableContentsProps {
     rowSpecs: CellSpec[][]
     horizontalPlotSpecs: (PlotSpec | undefined)[]
     verticalPlotSpecs: (PlotSpec | undefined)[]
-    topLeftSpec: CellSpec
+    topLeftSpec: TopLeftCellSpec
+    /** Omitted by the tables that offer no edit mode. */
+    editButton?: TableEditButton
     highlightRowIndex?: number
     loading?: boolean
 }
@@ -137,12 +137,18 @@ export function TableContents(props: TableContentsProps): ReactNode {
         ? undefined
         : { ...props.superHeaderSpec, headerSpecs: props.superHeaderSpec.headerSpecs.map(withFootnote) }
 
+    // The button belongs to the table as a whole, so it's routed here rather than being left
+    // for the caller to attach to one of the two places it can sit.
+    const placedIn = (placement: TableEditButton['placement']): EditModeButton | undefined =>
+        props.editButton?.placement === placement ? props.editButton : undefined
+
     return (
         <>
             <TableFrame
                 layout={layout}
-                topLeftSpec={props.topLeftSpec}
+                topLeftSpec={{ ...props.topLeftSpec, editMode: placedIn('top-left') }}
                 superHeaderSpec={superHeaderSpec}
+                superHeaderEditButton={placedIn('super-header')}
                 minHeight={overallMinHeight}
             >
                 {props.rowSpecs.map((rowSpecsForItem, rowIndex) => {
@@ -195,7 +201,9 @@ export function TableContents(props: TableContentsProps): ReactNode {
 export function TableFrame(props: {
     layout: MeasuredTableLayout
     superHeaderSpec?: SuperHeaderSpec
-    topLeftSpec: CellSpec
+    topLeftSpec: TopLeftCellSpec
+    /** Set only when the table puts its Edit button in the super header's left spacer. */
+    superHeaderEditButton?: EditModeButton
     minHeight?: string
     children: ReactNode
 }): ReactNode {
@@ -205,6 +213,7 @@ export function TableFrame(props: {
             {props.superHeaderSpec !== undefined && (
                 <SuperHeaderHorizontal
                     {...props.superHeaderSpec}
+                    editMode={props.superHeaderEditButton}
                     leftSpacerWidth={widthLeftHeader}
                     widthsEach={columnFullWidths(props.layout)}
                 />
@@ -424,6 +433,18 @@ export interface EditModeButton {
     label: string
 }
 
+/**
+ * The way in to edit mode, and where on the table to hang it. A table declares this once, so
+ * it can't end up with a button in both places.
+ */
+export interface TableEditButton extends EditModeButton {
+    /**
+     * The top-left cell, except where it's too narrow to hold both a button and the column's
+     * name -- a comparison puts the button in the super header's left spacer instead.
+     */
+    placement: 'top-left' | 'super-header'
+}
+
 export interface EditModeOpenHeader {
     open: true
     filter: string
@@ -437,5 +458,7 @@ export interface TopLeftHeaderProps {
     editMode?: EditModeHeader
 }
 
-/** The cell types that can serve as a table's top-left header; the comparison's carries a color bar. */
-export type TopLeftHeaderType = Extract<CellSpec, TopLeftHeaderProps>['type']
+/** The cells that can serve as a table's top-left header; the comparison's carries a color bar. */
+export type TopLeftCellSpec = Extract<CellSpec, TopLeftHeaderProps>
+
+export type TopLeftHeaderType = TopLeftCellSpec['type']
