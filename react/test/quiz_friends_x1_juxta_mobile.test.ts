@@ -16,6 +16,8 @@ quizFriendsTest(
         today: juxta99,
         yesterday: juxta98,
         other: retro11,
+        todayLabel: 'Today',
+        yesterdayLabel: 'Yesterday',
         platform: 'mobile',
     },
 )

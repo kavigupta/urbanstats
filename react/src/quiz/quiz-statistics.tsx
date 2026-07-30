@@ -283,6 +283,26 @@ export function ordinalThis(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHi
     }
 }
 
+/**
+ * Our result on the quiz immediately preceding `quiz` (yesterday's juxtastat, last week's retrostat).
+ * Quizzes we didn't finish are reported as not done, since that's how friends' unfinished quizzes are reported.
+ */
+export function ourPreviousResultToDisplayForFriends(
+    quiz: QuizDescriptorWithTime,
+    wholeHistory: QuizHistory,
+    isDone: (correctPattern: boolean[]) => boolean,
+): ResultToDisplayForFriends {
+    const previousKey = historyKeyForTimeIdentifier(quiz.kind, parseTimeIdentifier(quiz.kind, quiz.name.toString()) - 1)
+    if (!(previousKey in wholeHistory)) {
+        return { corrects: null }
+    }
+    const corrects = wholeHistory[previousKey].correct_pattern
+    if (!isDone(corrects.map(correct => correct ? true : false))) {
+        return { corrects: null }
+    }
+    return { corrects }
+}
+
 export function ourResultToDisplayForFriends(quiz: QuizDescriptor & { kind: 'infinite' }, wholeHistory: QuizHistory): ResultToDisplayForFriends {
     const { sortedIndices, seedVersions, numCorrects } = juxtastatInfiniteDisplay(quiz, wholeHistory)
     const thisIndex = seedVersions.findIndex(([seed, version]) => seed === quiz.seed && version === quiz.version)
