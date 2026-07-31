@@ -1,7 +1,3 @@
-import * as Plot from '@observablehq/plot'
-
-import { assert } from '../utils/defensive'
-
 import './plots.css'
 
 export const pinnedTipClassName = 'plot-pinned-tip'
@@ -22,13 +18,8 @@ const dismissButtonInset = dismissButtonSize / 2 + 2
 
 // stamps a pinned tooltip with its index, so that a click on the dismiss button inside it can be
 // traced back to the tip it closes
-export function pinnedTipRender(tipIndex: number): Plot.RenderFunction {
-    return (index, scales, values, dimensions, context, next) => {
-        assert(next !== undefined, 'pinnedTipRender is a render transform, so it is passed a next')
-        const g = next(index, scales, values, dimensions, context)
-        g?.setAttribute(tipIndexAttribute, String(tipIndex))
-        return g
-    }
+export function stampTipIndex(tipIndex: number): (tip: SVGElement) => void {
+    return (tip) => { tip.setAttribute(tipIndexAttribute, String(tipIndex)) }
 }
 
 // the little red "x" that dismisses a pinned tooltip. Drawn into the plot's SVG rather than overlaid
@@ -82,15 +73,18 @@ export function attachDismissButtons(plot: Element, transpose: boolean, onDismis
     const scale = transpose ? 2 : 1
     for (const tip of Array.from(plot.querySelectorAll(`g.${pinnedTipClassName}`))) {
         const tipIndex = Number(tip.getAttribute(tipIndexAttribute))
-        if (!(tip instanceof SVGGraphicsElement) || !Number.isInteger(tipIndex)) {
+        // the tooltip proper is the first child of the mark's group, which may also hold the leader
+        // drawn back to a displaced tooltip's point -- measuring that too would misplace the button
+        const drawn = tip.firstElementChild
+        if (!(drawn instanceof SVGGraphicsElement) || !Number.isInteger(tipIndex)) {
             continue
         }
-        const box = tip.getBBox()
+        const box = drawn.getBBox()
         const button = createDismissButton(scale, tipIndex, onDismiss)
         // tucked just inside the tooltip's top right corner, where the rounded corner leaves a gap
         // in the text
         const inset = dismissButtonInset * scale
         button.setAttribute('transform', `translate(${box.x + box.width - inset} ${box.y + inset})`)
-        tip.appendChild(button)
+        drawn.appendChild(button)
     }
 }
