@@ -9,6 +9,7 @@ import { IHistogram } from '../utils/protos'
 import { useTranspose } from '../utils/transpose'
 
 import { axisAndGrid, bottomLabelOffset, bottomLabelOffsetTranspose, computeDashPatterns, DetailedPlotSpec, groupedTipTitle, paddedYDomain, SeriesPlot, transposeAwareTip } from './plots-general'
+import { PlotRect } from './plots-tip-anchor'
 import { CheckboxSetting } from './sidebar'
 
 const yPad = 0.025
@@ -49,13 +50,13 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
     const isTransposed = useTranspose()
 
     const buildPlot = useCallback(
-        (transpose: boolean, leftLabelOffset: number): DetailedPlotSpec => {
+        (transpose: boolean, leftLabelOffset: number, legend: PlotRect | undefined): DetailedPlotSpec => {
             const renderY = relative ? (y: number) => `${y.toFixed(2)}%` : (y: number) => renderNumberHighlyRounded(y, 2)
 
             const [xIdxStart, xIdxEnd] = histogramBounds(props.histograms)
             const xidxs = Array.from({ length: xIdxEnd - xIdxStart }, (_, i) => i + xIdxStart)
             const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial, transpose, leftLabelOffset)
-            const [marks, values] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose, systemColors, props.dashOrder)
+            const [marks, values] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose, systemColors, legend, props.dashOrder)
             const maxValue = Math.max(...values)
             marks.push(
                 ...xAxisMarks,
@@ -294,6 +295,7 @@ function createHistogramMarks(
     renderY: (y: number) => string,
     transpose: boolean,
     colors: Colors,
+    legend: PlotRect | undefined,
     dashOrder?: string[],
 ): [Plot.Markish[], number[]] {
     const series = mulitipleSeriesConsistentLength(histograms, xidxs, relative, histogramType === 'Line (cumulative)')
@@ -307,6 +309,7 @@ function createHistogramMarks(
         d => d.entries.map(e => e.value),
         d => groupedTipTitle(`Density: ${renderX(d.xidx)}`, d.entries, renderY, 'Frequency'),
         colors,
+        legend,
     )
     const marks: Plot.Markish[] = []
     if (histogramType === 'Line' || histogramType === 'Line (cumulative)') {

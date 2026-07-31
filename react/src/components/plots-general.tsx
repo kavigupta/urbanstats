@@ -9,6 +9,7 @@ import { assert } from '../utils/defensive'
 import { useTranspose } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
+import { plotFontSize, PlotRect, tipRender } from './plots-tip-anchor'
 import { createScreenshot, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 
@@ -190,6 +191,7 @@ export function seriesTip(
     prefixFor: (idx: number) => string,
     formatValue: (v: number) => string,
     colors: Colors,
+    legend: PlotRect | undefined,
 ): Plot.Markish {
     const tipData = idxs.map(i => ({
         x: xFor(i),
@@ -203,11 +205,12 @@ export function seriesTip(
         d => d.entries.map(e => e.value),
         d => groupedTipTitle(d.prefix, d.entries, formatValue),
         colors,
+        legend,
     )
 }
 
 // a Plot.tip anchored at the tallest series' value at each point, swapping x/y when transposed,
-// styled with the theme's tooltip colors
+// styled with the theme's tooltip colors, and placed by tipRender rather than by Plot's own fitting
 export function transposeAwareTip<T>(
     data: T[],
     transpose: boolean,
@@ -215,7 +218,11 @@ export function transposeAwareTip<T>(
     getValues: (d: T) => number[],
     title: (d: T) => string,
     colors: Colors,
+    legend: PlotRect | undefined,
 ): Plot.Markish {
+    // the plot draws at 1em, or 2em when transposed (see plotConfig), which is what sizes the
+    // tooltip text and hence the box the placement is worked out from
+    const fontSize = transpose ? 2 * plotFontSize : plotFontSize
     return Plot.tip(
         data,
         (transpose ? Plot.pointerY : Plot.pointerX)({
@@ -225,6 +232,7 @@ export function transposeAwareTip<T>(
             fill: colors.slightlyDifferentBackground,
             stroke: colors.borderNonShadow,
             textColor: colors.textMain,
+            render: tipRender({ fontSize, legend, leaderColor: colors.textMain }),
         }),
     )
 }
@@ -389,7 +397,39 @@ export function computeDashPatterns<T extends LegendItem>(items: T[], order?: st
     return dashPatterns
 }
 
-function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, themeColors: Colors, dashOrder?: string[]): Plot.Markish[] {
+const legendPaddingX = 12
+const legendPaddingY = 10
+const legendRowHeight = 22
+const legendSquareSize = 14
+const legendLineLength = 36
+const legendFontSize = 13
+const legendTextSpacing = 10
+
+// the legend sits inside the frame, so tooltips have to know where it is to stay clear of it
+function legendBounds(labels: string[], rows: number, transpose: boolean): PlotRect {
+    let maxTextWidth = 0
+    // Use canvas to measure text width accurately
+    const context = document.createElement('canvas').getContext('2d')
+    if (context !== null) {
+        context.font = `${legendFontSize}px serif`
+        labels.forEach((label) => {
+            maxTextWidth = Math.max(maxTextWidth, context.measureText(label).width)
+        })
+    }
+    // Width = paddingX (left) + max(squareSize/lineLength) + textSpacing + textWidth + paddingX (right)
+    const maxSymbolWidth = Math.max(legendSquareSize, legendLineLength)
+    return {
+        // Position on the left side, but offset enough to avoid the y-axis
+        x: transpose ? 200 : 100,
+        y: 70,
+        width: legendPaddingX + maxSymbolWidth + legendTextSpacing + maxTextWidth + legendPaddingX,
+        height: legendPaddingY * 2 + legendRowHeight * rows,
+    }
+}
+
+interface DrawnLegend { marks: Plot.Markish[], bounds: PlotRect | undefined }
+
+function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, themeColors: Colors, dashOrder?: string[]): DrawnLegend {
     const colorItems = computeColorItems(items)
 
     const dashPatterns = computeDashPatterns(items, dashOrder)
@@ -407,47 +447,26 @@ function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, them
 
     const totalItems = colorItems.length + dashPatternItems.length
     if (totalItems === 0) {
-        return []
+        return { marks: [], bounds: undefined }
     }
+
+    const allLabels = [...colorItems.map(item => item.label), ...dashPatternItems.map(item => item.label)]
+    const bounds = legendBounds(allLabels, totalItems, transpose)
 
     const createLegend = (): SVGElement => {
         const svgNS = 'http://www.w3.org/2000/svg'
         const group = document.createElementNS(svgNS, 'g')
-        // Position on the left side, but offset enough to avoid the y-axis
-        const translateX = transpose ? 200 : 100
-        const translateY = 70
-        group.setAttribute('transform', `translate(${translateX} ${translateY})`)
+        group.setAttribute('data-test-id', 'plot_legend')
+        group.setAttribute('transform', `translate(${bounds.x} ${bounds.y})`)
 
-        const paddingX = 12
-        const paddingY = 10
-        const rowHeight = 22
-        const squareSize = 14
-        const lineLength = 36
-        const fontSize = 13
-        const textSpacing = 10
+        const paddingX = legendPaddingX
+        const paddingY = legendPaddingY
+        const rowHeight = legendRowHeight
+        const squareSize = legendSquareSize
+        const lineLength = legendLineLength
+        const fontSize = legendFontSize
 
-        // Calculate width based on longest label
-        const allLabels = [...colorItems.map(item => item.label), ...dashPatternItems.map(item => item.label)]
-        let maxTextWidth = 0
-        if (allLabels.length > 0) {
-            // Use canvas to measure text width accurately
-            const canvas = document.createElement('canvas')
-            const context = canvas.getContext('2d')
-            if (context) {
-                context.font = `${fontSize}px serif`
-                allLabels.forEach((label) => {
-                    const textWidth = context.measureText(label).width
-                    if (textWidth > maxTextWidth) {
-                        maxTextWidth = textWidth
-                    }
-                })
-            }
-        }
-
-        // Width = paddingX (left) + max(squareSize/lineLength) + textSpacing + textWidth + paddingX (right)
-        const maxSymbolWidth = Math.max(squareSize, lineLength)
-        const width = paddingX + maxSymbolWidth + textSpacing + maxTextWidth + paddingX
-        const height = paddingY * 2 + rowHeight * totalItems
+        const { width, height } = bounds
 
         const background = document.createElementNS(svgNS, 'rect')
         background.setAttribute('width', String(width))
@@ -522,7 +541,7 @@ function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, them
         return group
     }
 
-    return [createLegend]
+    return { marks: [createLegend], bounds }
 }
 
 export interface DetailedPlotSpec {
@@ -655,7 +674,7 @@ export function SeriesPlot<T extends PlotSeriesItem>(props: {
     modeSwitcher?: ReactElement
     dashOrder?: string[]
     extraSettingsControls?: ReactNode
-    buildPlot: (transpose: boolean, leftLabelOffset: number) => DetailedPlotSpec
+    buildPlot: (transpose: boolean, leftLabelOffset: number, legend: PlotRect | undefined) => DetailedPlotSpec
 }): ReactElement {
     const colors = useColors()
     const { items, dashOrder, buildPlot } = props
@@ -676,9 +695,12 @@ export function SeriesPlot<T extends PlotSeriesItem>(props: {
     const plotSpec = useCallback(
         (transpose: boolean, leftLabelOffset: number): DetailedPlotSpec => {
             const title = new Set(items.map(i => i.shortname)).size === 1 ? items[0].shortname : ''
-            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose, leftLabelOffset)
+            // built first so that the tooltips can be told where it is and keep out of it, and
+            // drawn last, over the plot -- a leader up to a point behind it passes underneath
+            const drawnLegend = manualLegend(items, transpose, colors, dashOrder)
+            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose, leftLabelOffset, drawnLegend.bounds)
             marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
-            marks.push(...manualLegend(items, transpose, colors, dashOrder))
+            marks.push(...drawnLegend.marks)
             return { marks, xlabel, ylabel, ydomain, legend }
         },
         [items, buildPlot, colors, dashOrder],
