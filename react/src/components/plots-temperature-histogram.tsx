@@ -65,7 +65,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
                 ),
             )
 
-            const tips = [
+            marks.push(
                 seriesTip(
                     seriesData,
                     binIdxs,
@@ -76,14 +76,14 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
                     colors,
                     legend,
                 ),
-            ]
+            )
 
             const ydomain = paddedYDomain(seriesData.flatMap(s => binIdxs.map(i => s.values[i])), 0.1, 0)
 
             const xlabel = `${props.statDescription} (${unitSuffix})`
             const ylabel = '% of days'
 
-            return { marks, tips, xlabel, ylabel, ydomain }
+            return { marks, xlabel, ylabel, ydomain }
         },
         [props.histograms, props.statDescription, binMin, binSize, numBins, temperatureUnit, unitSuffix, colors],
     )

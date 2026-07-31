@@ -546,10 +546,6 @@ function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, them
 
 export interface DetailedPlotSpec {
     marks: Plot.Markish[]
-    // drawn after the legend, so that a tooltip -- or the leader joining a displaced one to its
-    // point -- is never painted underneath it. Honoured by SeriesPlot; PlotComponent draws `marks`
-    // as it is given them.
-    tips?: Plot.Markish[]
     xlabel: string | null
     ylabel: string
     ydomain?: [number, number]
@@ -699,13 +695,12 @@ export function SeriesPlot<T extends PlotSeriesItem>(props: {
     const plotSpec = useCallback(
         (transpose: boolean, leftLabelOffset: number): DetailedPlotSpec => {
             const title = new Set(items.map(i => i.shortname)).size === 1 ? items[0].shortname : ''
-            // the tooltips are told where the legend is so they can keep out of it, and are drawn
-            // after it so that what does cross it -- a leader up to a point behind it -- is visible
+            // built first so that the tooltips can be told where it is and keep out of it, and
+            // drawn last, over the plot -- a leader up to a point behind it passes underneath
             const drawnLegend = manualLegend(items, transpose, colors, dashOrder)
-            const { marks, tips, xlabel, ylabel, ydomain, legend } = buildPlot(transpose, leftLabelOffset, drawnLegend.bounds)
+            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose, leftLabelOffset, drawnLegend.bounds)
             marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
             marks.push(...drawnLegend.marks)
-            marks.push(...tips ?? [])
             return { marks, xlabel, ylabel, ydomain, legend }
         },
         [items, buildPlot, colors, dashOrder],
