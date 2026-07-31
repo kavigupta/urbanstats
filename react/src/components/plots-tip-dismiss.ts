@@ -1,18 +1,39 @@
-import { Colors } from '../page_template/color-themes'
+import * as Plot from '@observablehq/plot'
+
+import { assert } from '../utils/defensive'
 
 import './plots.css'
 
 export const pinnedTipClassName = 'plot-pinned-tip'
 // tied to CSS (plots.css), which hides the button while a screenshot of the page is being taken
 const dismissButtonClassName = 'plot-tip-dismiss'
+// several tooltips can be pinned at once, so each one records which tip it is, and hence which one
+// its dismiss button closes
+const tipIndexAttribute = 'data-tip-index'
 
-const dismissIconSrc = '/close.png'
-// SVG masks are referenced by id, and there is one dismiss button per plot on the page
-let dismissIconCount = 0
+// unlike close.png, this icon is already the icon set's red, so it is drawn as-is rather than used
+// as a mask for a themed fill the way <Icon /> does
+const dismissIconSrc = '/close-red-small.png'
 
-// the little "x" that dismisses a pinned tooltip. Drawn into the plot's SVG rather than overlaid as
-// HTML, so that it stays glued to the tooltip when the plot is scaled down to fit a narrow screen.
-function createDismissButton(colors: Colors, scale: number, onDismiss: () => void): SVGElement {
+// side length of the icon, which is the whole button and hence also its hit target
+const dismissButtonSize = 16
+// keeps the button clear of the tooltip's rounded corner
+const dismissButtonInset = dismissButtonSize / 2 + 2
+
+// stamps a pinned tooltip with its index, so that a click on the dismiss button inside it can be
+// traced back to the tip it closes
+export function pinnedTipRender(tipIndex: number): Plot.RenderFunction {
+    return (index, scales, values, dimensions, context, next) => {
+        assert(next !== undefined, 'pinnedTipRender is a render transform, so it is passed a next')
+        const g = next(index, scales, values, dimensions, context)
+        g?.setAttribute(tipIndexAttribute, String(tipIndex))
+        return g
+    }
+}
+
+// the little red "x" that dismisses a pinned tooltip. Drawn into the plot's SVG rather than overlaid
+// as HTML, so that it stays glued to the tooltip when the plot is scaled down to fit a narrow screen.
+function createDismissButton(scale: number, tipIndex: number, onDismiss: (dismissed: number) => void): SVGElement {
     const svgNS = 'http://www.w3.org/2000/svg'
     const group = document.createElementNS(svgNS, 'g')
     group.setAttribute('class', dismissButtonClassName)
@@ -21,63 +42,55 @@ function createDismissButton(colors: Colors, scale: number, onDismiss: () => voi
     group.setAttribute('tabindex', '0')
     group.setAttribute('aria-label', 'Dismiss tooltip')
 
-    const radius = 8 * scale
-    const background = document.createElementNS(svgNS, 'circle')
-    background.setAttribute('r', String(radius))
-    background.setAttribute('fill', colors.slightlyDifferentBackground)
-    background.setAttribute('stroke', colors.textMain)
-    group.appendChild(background)
-
-    // the icon is white with transparency, like the rest of the icon set, so it is used as a mask
-    // for the theme's text color rather than drawn directly -- the same trick as <Icon />
-    const size = radius * 1.1
-    const maskId = `${dismissButtonClassName}-mask-${dismissIconCount++}`
-    const mask = document.createElementNS(svgNS, 'mask')
-    mask.setAttribute('id', maskId)
+    const size = dismissButtonSize * scale
     const image = document.createElementNS(svgNS, 'image')
     image.setAttribute('href', dismissIconSrc)
     image.setAttribute('x', String(-size / 2))
     image.setAttribute('y', String(-size / 2))
     image.setAttribute('width', String(size))
     image.setAttribute('height', String(size))
-    mask.appendChild(image)
-    group.appendChild(mask)
-
-    const cross = document.createElementNS(svgNS, 'rect')
-    cross.setAttribute('x', String(-size / 2))
-    cross.setAttribute('y', String(-size / 2))
-    cross.setAttribute('width', String(size))
-    cross.setAttribute('height', String(size))
-    cross.setAttribute('fill', colors.textMain)
-    cross.setAttribute('mask', `url(#${maskId})`)
-    group.appendChild(cross)
+    group.appendChild(image)
 
     // clicks are handled by the plot-wide pointerdown listener, which sees this button's class;
     // the keyboard has no such listener to piggyback on
     group.addEventListener('keydown', (event) => {
         if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault()
-            onDismiss()
+            onDismiss(tipIndex)
         }
     })
     return group
 }
 
-export function isDismissButton(target: EventTarget | null): boolean {
-    return target instanceof Element && target.closest(`.${dismissButtonClassName}`) !== null
+// the pinned tooltip whose dismiss button contains `target`, or null if `target` is not part of one
+export function dismissButtonTipIndex(target: EventTarget | null): number | null {
+    if (!(target instanceof Element) || target.closest(`.${dismissButtonClassName}`) === null) {
+        return null
+    }
+    const attribute = target.closest(`g.${pinnedTipClassName}`)?.getAttribute(tipIndexAttribute)
+    if (attribute === null || attribute === undefined) {
+        return null
+    }
+    const tipIndex = Number(attribute)
+    return Number.isInteger(tipIndex) ? tipIndex : null
 }
 
 // Plot sizes and places a tooltip asynchronously, once it can measure the rendered text, so where
-// the tooltip's corner is -- and hence where the dismiss button goes -- is only known a frame later.
-export function attachDismissButton(plot: Element, colors: Colors, transpose: boolean, onDismiss: () => void): void {
-    const tip = plot.querySelector(`g.${pinnedTipClassName}`)
-    if (!(tip instanceof SVGGraphicsElement)) {
-        return
+// each tooltip's corner is -- and hence where its dismiss button goes -- is only known a frame later.
+export function attachDismissButtons(plot: Element, transpose: boolean, onDismiss: (tipIndex: number) => void): void {
+    // transposed plots draw at double the font size, so the buttons scale to match
+    const scale = transpose ? 2 : 1
+    for (const tip of Array.from(plot.querySelectorAll(`g.${pinnedTipClassName}`))) {
+        const tipIndex = Number(tip.getAttribute(tipIndexAttribute))
+        if (!(tip instanceof SVGGraphicsElement) || !Number.isInteger(tipIndex)) {
+            continue
+        }
+        const box = tip.getBBox()
+        const button = createDismissButton(scale, tipIndex, onDismiss)
+        // tucked just inside the tooltip's top right corner, where the rounded corner leaves a gap
+        // in the text
+        const inset = dismissButtonInset * scale
+        button.setAttribute('transform', `translate(${box.x + box.width - inset} ${box.y + inset})`)
+        tip.appendChild(button)
     }
-    const box = tip.getBBox()
-    // hung half in and half out of the tooltip's top right corner, where the rounded corner leaves
-    // a gap in the text. Transposed plots draw at double the font size, so scale to match.
-    const button = createDismissButton(colors, transpose ? 2 : 1, onDismiss)
-    button.setAttribute('transform', `translate(${box.x + box.width} ${box.y})`)
-    tip.appendChild(button)
 }

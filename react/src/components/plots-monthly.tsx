@@ -6,7 +6,7 @@ import { useSetting } from '../page_template/settings'
 import { convertPrecipitation, convertTemperature } from '../utils/unit'
 
 import { MonthlyExtraStat } from './load-article'
-import { categoricalAxisMarks, computeDashPatterns, DetailedPlotSpec, ordinalSeriesMarks, paddedYDomain, PinnedTipIndex, SeriesPlot, seriesTip } from './plots-general'
+import { categoricalAxisMarks, computeDashPatterns, DetailedPlotSpec, ordinalSeriesMarks, paddedYDomain, PinnedTips, SeriesPlot, seriesTip } from './plots-general'
 
 const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -38,7 +38,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
     const { combinedLabel } = props
 
     const buildPlot = useCallback(
-        (transpose: boolean, leftLabelOffset: number, pinnedTip: PinnedTipIndex): DetailedPlotSpec => {
+        (transpose: boolean, leftLabelOffset: number, pinnedTips: PinnedTips): DetailedPlotSpec => {
             const monthIdxs = Array.from({ length: 12 }, (_, i) => i)
             const seriesData = props.stats.map(series => ({
                 series,
@@ -67,7 +67,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
                     i => monthLabels[i],
                     v => `${v.toFixed(1)}${unitSuffix}`,
                     colors,
-                    pinnedTip,
+                    pinnedTips,
                 ),
             )
 

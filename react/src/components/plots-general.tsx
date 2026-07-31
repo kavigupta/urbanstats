@@ -9,7 +9,7 @@ import { assert } from '../utils/defensive'
 import { useTranspose } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
-import { attachDismissButton, isDismissButton, pinnedTipClassName } from './plots-tip-dismiss'
+import { attachDismissButtons, dismissButtonTipIndex, pinnedTipClassName, pinnedTipRender } from './plots-tip-dismiss'
 import { createScreenshot, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 
@@ -191,7 +191,7 @@ export function seriesTip(
     prefixFor: (idx: number) => string,
     formatValue: (v: number) => string,
     colors: Colors,
-    pinnedTip: PinnedTipIndex,
+    pinnedTips: PinnedTips,
 ): Plot.Markish[] {
     const tipData = idxs.map(i => ({
         x: xFor(i),
@@ -205,21 +205,38 @@ export function seriesTip(
         d => d.entries.map(e => e.value),
         d => groupedTipTitle(d.prefix, d.entries, formatValue),
         colors,
-        pinnedTip,
+        pinnedTips,
     )
 }
 
-// The tooltip the user has clicked on, identified by its position in the tip mark's data. An index
-// rather than the datum itself because the data is rebuilt from scratch whenever the plot
-// re-renders, and it means the same point stays pinned across a transpose or a settings change.
-export type PinnedTipIndex = number | null
+// The tooltips the user has clicked on, identified by their position in the tip mark's data.
+// Indices rather than the data themselves because the data is rebuilt from scratch whenever the
+// plot re-renders, and it means the same points stay pinned across a transpose or a settings change.
+export type PinnedTips = ReadonlySet<number>
+
+function withTipToggled(pinnedTips: PinnedTips, tipIndex: number): PinnedTips {
+    const result = new Set(pinnedTips)
+    // clicking an already-pinned point unpins it, like clicking a toggle
+    if (!result.delete(tipIndex)) {
+        result.add(tipIndex)
+    }
+    return result
+}
+
+function withoutTip(pinnedTips: PinnedTips, tipIndex: number): PinnedTips {
+    const result = new Set(pinnedTips)
+    result.delete(tipIndex)
+    return result
+}
 
 // each tip datum is wrapped so that the plot's `value` (which Plot sets to the pointed-at datum)
 // tells us which tooltip a click would pin
 interface TipRow<T> { datum: T, tipIndex: number }
 
-// the index of the tooltip the pointer is currently over, or null if it isn't over the plot
-function pointedTipIndex(plot: HTMLElement | SVGSVGElement): PinnedTipIndex {
+// the index of the tooltip the pointer is currently over, or null if it isn't over the plot. Plot
+// publishes the pointed-at datum on the plot element whenever it changes, which is on pointer
+// movement and, on a touch device, on the pointerenter the spec requires before every pointerdown
+function pointedTipIndex(plot: HTMLElement | SVGSVGElement): number | null {
     const value: unknown = (plot as { value?: unknown }).value
     if (typeof value !== 'object' || value === null || !('tipIndex' in value)) {
         return null
@@ -230,7 +247,7 @@ function pointedTipIndex(plot: HTMLElement | SVGSVGElement): PinnedTipIndex {
 
 // a Plot.tip anchored at the tallest series' value at each point, swapping x/y when transposed,
 // styled with the theme's tooltip colors. Comes in two flavors: the one that follows the pointer,
-// and, if the user has pinned one, an ordinary (non-interactive) mark drawn at the pinned point.
+// and one ordinary (non-interactive) mark per point the user has pinned.
 export function transposeAwareTip<T>(
     data: T[],
     transpose: boolean,
@@ -238,7 +255,7 @@ export function transposeAwareTip<T>(
     getValues: (d: T) => number[],
     title: (d: T) => string,
     colors: Colors,
-    pinnedTip: PinnedTipIndex,
+    pinnedTips: PinnedTips,
 ): Plot.Markish[] {
     const rows: TipRow<T>[] = data.map((datum, tipIndex) => ({ datum, tipIndex }))
     const position = (row: TipRow<T>): number => getX(row.datum)
@@ -252,10 +269,13 @@ export function transposeAwareTip<T>(
         textColor: colors.textMain,
     }
     const marks: Plot.Markish[] = [Plot.tip(rows, (transpose ? Plot.pointerY : Plot.pointerX)(options))]
-    // being a plain mark rather than a pointer-driven one, the pinned tooltip stays put when the
-    // mouse leaves, and is drawn into the plot we re-render for the downloaded image
-    if (pinnedTip !== null && pinnedTip < rows.length) {
-        marks.push(Plot.tip([rows[pinnedTip]], { ...options, className: pinnedTipClassName }))
+    // being plain marks rather than pointer-driven ones, pinned tooltips stay put when the mouse
+    // leaves, and are drawn into the plot we re-render for the downloaded image
+    for (const tipIndex of pinnedTips) {
+        // a pin can outlive the point it was made on, e.g. if a setting change shortens the data
+        if (tipIndex < rows.length) {
+            marks.push(Plot.tip([rows[tipIndex]], { ...options, className: pinnedTipClassName, render: pinnedTipRender(tipIndex) }))
+        }
     }
     return marks
 }
@@ -568,25 +588,27 @@ export interface DetailedPlotSpec {
 }
 
 export function PlotComponent(props: {
-    plotSpec: (transpose: boolean, leftLabelOffset: number, pinnedTip: PinnedTipIndex) => DetailedPlotSpec
+    plotSpec: (transpose: boolean, leftLabelOffset: number, pinnedTips: PinnedTips) => DetailedPlotSpec
     settingsElement: (makePlot: () => HTMLElement) => ReactElement
 }): ReactElement {
     const transpose = useTranspose()
-    const colors = useColors()
-
+    // the theme reaches the plot through plotSpec, which closes over it; nothing here needs it
     const plotRef = useRef<HTMLDivElement>(null)
 
-    // clicking a point pins its tooltip in place. Deliberately component state rather than a
-    // setting: it should survive clicking elsewhere on the page, but not a navigation or a reload.
-    const [pinnedTip, setPinnedTip] = useState<PinnedTipIndex>(null)
-    // the tooltip the pointer is over, which is the one a click pins. Read at click time rather
-    // than rendered from, so it doesn't need to be state.
-    const pointedTip = useRef<PinnedTipIndex>(null)
+    // clicking a point pins its tooltip in place, and any number of them can be pinned at once.
+    // Deliberately component state rather than a setting: pins should survive clicking elsewhere on
+    // the page, but not a navigation or a reload.
+    const [pinnedTips, setPinnedTips] = useState<PinnedTips>(() => new Set())
+    // the tooltip the pointer is over, which is the one a click pins. Remembered here rather than
+    // read off the plot at click time because pinning re-renders the plot, and the replacement
+    // element's value starts out null -- so a second click without an intervening pointer move
+    // (which is how a point gets unpinned) would see nothing.
+    const pointedTip = useRef<number | null>(null)
 
     const plotSpec = props.plotSpec
 
     const plotConfig = useCallback((transposeConfig: boolean, leftAxis: LeftAxisLayout): Plot.PlotOptions => {
-        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec(transposeConfig, leftAxis.labelOffset, pinnedTip)
+        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec(transposeConfig, leftAxis.labelOffset, pinnedTips)
         const result: Plot.PlotOptions = {
             marks,
             x: {
@@ -631,7 +653,7 @@ export function PlotComponent(props: {
             }
         }
         return result
-    }, [plotSpec, pinnedTip])
+    }, [plotSpec, pinnedTips])
 
     useEffect(() => {
         const container = plotRef.current
@@ -640,28 +662,31 @@ export function PlotComponent(props: {
         }
         const plot = renderMeasuredPlot(container, leftAxis => plotConfig(transpose, leftAxis), transpose)
 
+        const dismiss = (tipIndex: number): void => {
+            setPinnedTips(current => withoutTip(current, tipIndex))
+        }
         const recordPointedTip = (): void => {
             pointedTip.current = pointedTipIndex(plot)
         }
         const handlePointerDown = (event: PointerEvent): void => {
-            // Plot has a click-to-stick tooltip of its own, which would double up with the pinned
-            // one we draw; suppressing it here (before the event reaches the plot) leaves us in
-            // sole charge of what a click does
+            // Plot has a click-to-stick tooltip of its own (mouse only), which would double up with
+            // the pinned ones we draw; suppressing it here (before the event reaches the plot)
+            // leaves us in sole charge of what a click does
             event.stopPropagation()
-            if (isDismissButton(event.target)) {
-                setPinnedTip(null)
+            const dismissed = dismissButtonTipIndex(event.target)
+            if (dismissed !== null) {
+                dismiss(dismissed)
                 return
             }
             const pointed = pointedTip.current
             if (pointed !== null) {
-                // clicking the already-pinned point unpins it, like clicking a toggle
-                setPinnedTip(current => current === pointed ? null : pointed)
+                setPinnedTips(current => withTipToggled(current, pointed))
             }
         }
         plot.addEventListener('input', recordPointedTip)
         container.addEventListener('pointerdown', handlePointerDown, true)
         const frame = requestAnimationFrame(() => {
-            attachDismissButton(plot, colors, transpose, () => { setPinnedTip(null) })
+            attachDismissButtons(plot, transpose, dismiss)
         })
 
         return () => {
@@ -669,7 +694,7 @@ export function PlotComponent(props: {
             plot.removeEventListener('input', recordPointedTip)
             container.removeEventListener('pointerdown', handlePointerDown, true)
         }
-    }, [transpose, plotConfig, colors])
+    }, [transpose, plotConfig])
 
     const screenshotMode = useScreenshotMode()
 
@@ -731,7 +756,7 @@ export function SeriesPlot<T extends PlotSeriesItem>(props: {
     modeSwitcher?: ReactElement
     dashOrder?: string[]
     extraSettingsControls?: ReactNode
-    buildPlot: (transpose: boolean, leftLabelOffset: number, pinnedTip: PinnedTipIndex) => DetailedPlotSpec
+    buildPlot: (transpose: boolean, leftLabelOffset: number, pinnedTips: PinnedTips) => DetailedPlotSpec
 }): ReactElement {
     const colors = useColors()
     const { items, dashOrder, buildPlot } = props
@@ -750,9 +775,9 @@ export function SeriesPlot<T extends PlotSeriesItem>(props: {
     )
 
     const plotSpec = useCallback(
-        (transpose: boolean, leftLabelOffset: number, pinnedTip: PinnedTipIndex): DetailedPlotSpec => {
+        (transpose: boolean, leftLabelOffset: number, pinnedTips: PinnedTips): DetailedPlotSpec => {
             const title = new Set(items.map(i => i.shortname)).size === 1 ? items[0].shortname : ''
-            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose, leftLabelOffset, pinnedTip)
+            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose, leftLabelOffset, pinnedTips)
             marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
             marks.push(...manualLegend(items, transpose, colors, dashOrder))
             return { marks, xlabel, ylabel, ydomain, legend }

@@ -6,7 +6,7 @@ import { useSetting } from '../page_template/settings'
 import { convertTemperature } from '../utils/unit'
 
 import { TemperatureHistogramExtraStat } from './load-article'
-import { categoricalAxisMarks, DetailedPlotSpec, ordinalSeriesBarMarks, paddedYDomain, PinnedTipIndex, SeriesPlot, seriesTip } from './plots-general'
+import { categoricalAxisMarks, DetailedPlotSpec, ordinalSeriesBarMarks, paddedYDomain, PinnedTips, SeriesPlot, seriesTip } from './plots-general'
 import { boundaryLabel, bucketRangeLabel, temperatureHistogramBounds } from './plots-temperature-histogram-bins'
 
 export interface TemperatureHistogramPlotProps {
@@ -32,7 +32,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
     const unitSuffix = convertTemperature(binMin, temperatureUnit).unit
 
     const buildPlot = useCallback(
-        (transpose: boolean, leftLabelOffset: number, pinnedTip: PinnedTipIndex): DetailedPlotSpec => {
+        (transpose: boolean, leftLabelOffset: number, pinnedTips: PinnedTips): DetailedPlotSpec => {
             // excludes the open-ended below-min/above-max buckets (0 and numBins-1, no two-sided
             // interval) and clips to the bins with data, plus one bin of padding
             const [binIdxStart, binIdxEnd] = temperatureHistogramBounds(props.histograms.map(h => h.histogram.counts), numBins)
@@ -73,7 +73,7 @@ export function TemperatureHistogramPlot(props: { histograms: TemperatureHistogr
                     i => bucketRangeLabel(i, binMin, binSize, v => convertTemperature(v, temperatureUnit).value, unitSuffix),
                     v => `${v.toFixed(1)}%`,
                     colors,
-                    pinnedTip,
+                    pinnedTips,
                 ),
             )
 

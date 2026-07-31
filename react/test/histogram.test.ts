@@ -382,8 +382,9 @@ test('histogram-monthly-comparison-both-rain-snow-valid', async (t) => {
 })
 
 // Clicking a point pins its tooltip: unlike the hover tooltip, a pinned one survives the mouse
-// leaving the chart and is drawn into the downloaded image. It is dismissed with the little "x"
-// hanging off its corner, and it is per-plot component state, so navigating away clears it.
+// leaving the chart and is drawn into the downloaded image. Any number of points can be pinned at
+// once, each dismissed with the little "x" in its corner, and the pins are per-plot component
+// state, so navigating away clears them.
 urbanstatsFixture('histogram pinned tooltip', `${target}/article.html?longname=Germany&universe=world`)
 
 const pinnedTip = Selector('.histogram-svg-panel').find('g.plot-pinned-tip')
@@ -410,10 +411,15 @@ test('histogram-pinned-tooltip', async (t) => {
 
     await t.click(panel, { offsetX: 500, offsetY: 200 })
     await t.expect(pinnedTip.exists).ok()
+    // pins accumulate rather than replacing each other
+    await t.click(panel, { offsetX: 250, offsetY: 200 })
+    await t.expect(pinnedTip.count).eql(2, 'a second click pins a second tooltip')
     await screencap(t)
-    // the point of all this: the tooltip is part of the plot we re-render for the download
+    // the point of all this: the tooltips are part of the plot we re-render for the download
     await downloadHistogram(t, 0)
 
+    await t.click(dismissPinnedTip)
+    await t.expect(pinnedTip.count).eql(1, 'a dismiss button unpins only its own tooltip')
     await t.click(dismissPinnedTip)
     await t.expect(pinnedTip.exists).notOk('the dismiss button unpins the tooltip')
 })
