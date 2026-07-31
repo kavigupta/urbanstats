@@ -59,7 +59,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
                 ),
             )
 
-            marks.push(
+            const tips = [
                 seriesTip(
                     seriesData,
                     monthIdxs,
@@ -70,7 +70,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
                     colors,
                     legend,
                 ),
-            )
+            ]
 
             const ydomain = paddedYDomain(seriesData.flatMap(s => s.values), 0.1)
 
@@ -79,7 +79,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
                 ? combinedLabel(unitSuffix)
                 : `${props.stats[0].stat.name} (${unitSuffix})`
 
-            return { marks, xlabel, ylabel, ydomain }
+            return { marks, tips, xlabel, ylabel, ydomain }
         },
         [props.stats, unit, temperatureUnit, useImperial, unitSuffix, colors, props.dashOrder, combinedLabel],
     )

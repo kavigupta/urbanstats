@@ -56,7 +56,7 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
             const [xIdxStart, xIdxEnd] = histogramBounds(props.histograms)
             const xidxs = Array.from({ length: xIdxEnd - xIdxStart }, (_, i) => i + xIdxStart)
             const [xAxisMarks, renderX] = xAxis(xidxs, binSize, binMin, useImperial, transpose, leftLabelOffset)
-            const [marks, values] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose, systemColors, legend, props.dashOrder)
+            const [marks, values, tip] = createHistogramMarks(props.histograms, xidxs, histogramType, relative, renderX, renderY, transpose, systemColors, legend, props.dashOrder)
             const maxValue = Math.max(...values)
             marks.push(
                 ...xAxisMarks,
@@ -65,7 +65,7 @@ export function Histogram(props: { histograms: HistogramProps[], statDescription
             const xlabel = `${props.statDescription} (/${useImperial ? 'mi' : 'km'}²)`
             const ylabel = relative ? '% of total' : 'Population'
             const ydomain = paddedYDomain(values, yPad)
-            return { marks, xlabel, ylabel, ydomain }
+            return { marks, tips: [tip], xlabel, ylabel, ydomain }
         },
         [props.histograms, binMin, binSize, relative, histogramType, useImperial, systemColors, props.statDescription, props.dashOrder],
     )
@@ -297,7 +297,7 @@ function createHistogramMarks(
     colors: Colors,
     legend: PlotRect | undefined,
     dashOrder?: string[],
-): [Plot.Markish[], number[]] {
+): [Plot.Markish[], number[], Plot.Markish] {
     const series = mulitipleSeriesConsistentLength(histograms, xidxs, relative, histogramType === 'Line (cumulative)')
     const seriesSingle = dovetailSequences(series)
 
@@ -342,6 +342,5 @@ function createHistogramMarks(
                 })),
         )
     }
-    marks.push(tip)
-    return [marks, values]
+    return [marks, values, tip]
 }

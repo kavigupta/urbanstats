@@ -232,7 +232,7 @@ export function transposeAwareTip<T>(
             fill: colors.slightlyDifferentBackground,
             stroke: colors.borderNonShadow,
             textColor: colors.textMain,
-            render: tipRender({ fontSize, legend }),
+            render: tipRender({ fontSize, legend, leaderColor: colors.textMain }),
         }),
     )
 }
@@ -546,6 +546,10 @@ function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, them
 
 export interface DetailedPlotSpec {
     marks: Plot.Markish[]
+    // drawn after the legend, so that a tooltip -- or the leader joining a displaced one to its
+    // point -- is never painted underneath it. Honoured by SeriesPlot; PlotComponent draws `marks`
+    // as it is given them.
+    tips?: Plot.Markish[]
     xlabel: string | null
     ylabel: string
     ydomain?: [number, number]
@@ -695,11 +699,13 @@ export function SeriesPlot<T extends PlotSeriesItem>(props: {
     const plotSpec = useCallback(
         (transpose: boolean, leftLabelOffset: number): DetailedPlotSpec => {
             const title = new Set(items.map(i => i.shortname)).size === 1 ? items[0].shortname : ''
-            // drawn last, over the plot, so the tooltips are told where it is and keep out of it
+            // the tooltips are told where the legend is so they can keep out of it, and are drawn
+            // after it so that what does cross it -- a leader up to a point behind it -- is visible
             const drawnLegend = manualLegend(items, transpose, colors, dashOrder)
-            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose, leftLabelOffset, drawnLegend.bounds)
+            const { marks, tips, xlabel, ylabel, ydomain, legend } = buildPlot(transpose, leftLabelOffset, drawnLegend.bounds)
             marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
             marks.push(...drawnLegend.marks)
+            marks.push(...tips ?? [])
             return { marks, xlabel, ylabel, ydomain, legend }
         },
         [items, buildPlot, colors, dashOrder],

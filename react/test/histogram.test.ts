@@ -385,7 +385,7 @@ test('histogram-monthly-comparison-both-rain-snow-valid', async (t) => {
 // very top of the frame, and on a comparison it is several lines tall. Plot would fit such a
 // tooltip into the top margin, drawing it across the frame and under the settings bar (#2083); it
 // belongs below its point instead -- and below the legend, which is drawn in that same corner.
-urbanstatsFixture('tooltip against the top of the frame', comparisonPage(['Canada', 'USA', 'Mexico', 'Germany']))
+urbanstatsFixture('tooltip against the top of the frame', comparisonPage(['China', 'USA', 'Japan', 'Indonesia']))
 
 // what the tooltip has to stay clear of: the top of the frame, taken as its highest gridline, and
 // the legend drawn inside it
@@ -408,7 +408,9 @@ const tooltipGeometry = ClientFunction(() => {
 const tooltipLeader = Selector('.histogram-svg-panel').find('g[aria-label=tip] > path')
 
 test('histogram-tooltip-top-of-frame', async (t) => {
-    await t.click(Selector('.expand-toggle'))
+    // the GHS-POP row, since it is the one every country has data for -- the census rows would
+    // leave a single series, and a lone series draws no legend to run into
+    await t.click(Selector('[aria-label="Expand PW Density (r=1km) [GHS-POP]"]'))
     await t.expect(Selector('[data-test-id=histogram_relative]').checked).ok('relative histograms are on by default, which is what puts the left of the curve at 100%')
     const histogramType = Selector('[data-test-id=histogram_type]')
     await t.click(histogramType).click(histogramType.find('option').withExactText('Line (cumulative)'))
