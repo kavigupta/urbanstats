@@ -424,6 +424,33 @@ test('histogram-pinned-tooltip', async (t) => {
     await t.expect(pinnedTip.exists).notOk('the dismiss button unpins the tooltip')
 })
 
+// pins are per-plot component state, so several graphs on a page each keep their own set, and each
+// graph carries only its own into the image it exports
+test('histogram-pinned-tooltip-multiple-graphs', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await checkTextboxes(t, ['Other Density Metrics'])
+    const count = await Selector('.expand-toggle').count
+    for (let i = 0; i < count; i++) {
+        await t.click(Selector('.expand-toggle').nth(i))
+    }
+    const panels = Selector('.histogram-svg-panel')
+    await t.expect(panels.count).gte(2, 'this test needs more than one graph on the page')
+
+    const firstPanel = panels.nth(0)
+    const secondPanel = panels.nth(1)
+    await t.click(firstPanel, { offsetX: 400, offsetY: 200 })
+    await t.click(firstPanel, { offsetX: 650, offsetY: 200 })
+    await t.click(secondPanel, { offsetX: 500, offsetY: 200 })
+    await t.expect(firstPanel.find('g.plot-pinned-tip').count).eql(2, 'both pins land on the graph they were clicked on')
+    await t.expect(secondPanel.find('g.plot-pinned-tip').count).eql(1, 'a pin on one graph does not show up on another')
+
+    await screencap(t)
+    // the whole-page export and each graph's own export both draw the pins they contain
+    await downloadImage(t)
+    await downloadHistogram(t, 0)
+    await downloadHistogram(t, 1)
+})
+
 test('histogram-pinned-tooltip-cleared-by-navigation', async (t) => {
     await t.resizeWindow(1400, 800)
     await t.click(Selector('.expand-toggle'))
@@ -434,6 +461,29 @@ test('histogram-pinned-tooltip-cleared-by-navigation', async (t) => {
     await waitForLoading()
     await t.expect(Selector('.histogram-svg-panel').exists).ok('the expanded state itself is a setting, so it persists')
     await t.expect(pinnedTip.exists).notOk('the pin is not persistent state, and does not survive a navigation')
+})
+
+// a transposed plot is pointed at by y rather than x, and draws at twice the font size, so its
+// tooltips and their dismiss buttons are scaled to match
+urbanstatsFixture('transposed pinned tooltip', `${target}/comparison.html?longnames=%5B%22Canada%22%2C%22USA%22%2C%22Mexico%22%2C%22Germany%22%5D&s=2qSuS1uGQKdxNXsFAku`)
+
+test('histogram-pinned-tooltip-transposed', async (t) => {
+    const panel = Selector('.histogram-svg-panel')
+    await t.expect(panel.exists).ok('the settings string expands a histogram in transpose mode')
+
+    // a transposed panel is sized from the viewport rather than being a fixed width, so the points
+    // to click are picked as fractions of it
+    const { width, height } = await panel.boundingClientRect
+    await t.click(panel, { offsetX: Math.round(width / 2), offsetY: Math.round(height * 0.4) })
+    await t.click(panel, { offsetX: Math.round(width / 2), offsetY: Math.round(height * 0.6) })
+    await t.expect(pinnedTip.count).eql(2, 'clicking two points of a transposed plot pins both')
+
+    await screencap(t)
+    await downloadImage(t)
+    await downloadHistogram(t, 0)
+
+    await t.click(dismissPinnedTip)
+    await t.expect(pinnedTip.count).eql(1, 'the scaled-up dismiss button unpins only its own tooltip')
 })
 
 urbanstatsFixture('comparison ordering test', `${target}/comparison.html?longnames=%5B%22USA%22%2C%22United+Kingdom%22%5D`)
