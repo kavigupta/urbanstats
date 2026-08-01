@@ -110,19 +110,3 @@ def check_continent_sub_universes(contained_by, present_longnames):
     assert not errors, "CONTINENT_TO_SUB_UNIVERSES is out of date:\n" + "\n".join(
         errors
     )
-
-
-def is_strict_sub_universe(sub_universe, super_universe):
-    """
-    Check if sub_universe is a strict sub-universe of super_universe.
-    """
-    if sub_universe == super_universe:
-        return False
-    if super_universe == "world":
-        return True
-    if super_universe in CONTINENTS:
-        return sub_universe in continent_sub_universes()[super_universe]
-    if super_universe in COUNTRIES:
-        # This is a bit hacky but does work
-        return sub_universe.split(", ")[-1] == super_universe
-    return False
