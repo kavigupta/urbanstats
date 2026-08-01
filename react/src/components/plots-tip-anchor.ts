@@ -106,11 +106,12 @@ function appendLeader(tip: SVGElement, x: number, y: number, dy: number, scale: 
 // pointer-driven tip draws whichever point is being pointed at, so they are set per render rather
 // than up front -- on the mark itself, which Plot reads back out when it lays the tooltip out. That
 // is an internal of Plot's tip mark; should it go away, tooltips fall back to Plot's own fitting
-// rather than breaking.
+// rather than breaking. `decorate` is handed the rendered tooltip, for callers that mark it up.
 export function tipRender(options: {
     fontSize: number
     legend: PlotRect | undefined
     leaderColor: string
+    decorate?: (tip: SVGElement) => void
 }): Plot.RenderFunction {
     return function (this: { anchor?: Plot.FrameAnchor, dy: number }, index, scales, values, dimensions, context, next) {
         assert(next !== undefined, 'tipRender is a render transform, so it is passed a next')
@@ -123,6 +124,7 @@ export function tipRender(options: {
         if (tip === null) {
             return null
         }
+        options.decorate?.(tip)
         if (placed !== undefined && placed.placement.dy !== 0) {
             const { pointer, placement } = placed
             // Plot sizes and positions the tooltip on a later task, and anything added to it before
