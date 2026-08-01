@@ -84,8 +84,9 @@ function placeTip(x: number, y: number, size: { width: number, height: number },
 }
 
 // the line from a displaced tooltip back to the point it belongs to, tipped with an arrowhead. The
-// tooltip's own pointer sits at (x, y); its point is the displacement above that.
-function appendLeader(tip: SVGElement, x: number, y: number, dy: number, scale: number): void {
+// tooltip's own pointer sits at (x, y); its point is the displacement above that. Drawn in the
+// tooltip's own ink rather than its border colour, so that it stays legible over the legend.
+function appendLeader(tip: SVGElement, x: number, y: number, dy: number, scale: number, color: string): void {
     const head = leaderHeadSize * scale
     const pointY = y - dy
     const leader = document.createElementNS('http://www.w3.org/2000/svg', 'path')
@@ -94,7 +95,7 @@ function appendLeader(tip: SVGElement, x: number, y: number, dy: number, scale: 
         `M${x - head},${pointY + head * 1.5}L${x},${pointY}L${x + head},${pointY + head * 1.5}`,
     ].join(''))
     leader.setAttribute('fill', 'none')
-    leader.setAttribute('stroke', tip.getAttribute('stroke') ?? 'currentColor')
+    leader.setAttribute('stroke', color)
     leader.setAttribute('stroke-width', String(1.5 * scale))
     leader.setAttribute('stroke-linecap', 'round')
     leader.setAttribute('stroke-linejoin', 'round')
@@ -109,6 +110,7 @@ function appendLeader(tip: SVGElement, x: number, y: number, dy: number, scale: 
 export function tipRender(options: {
     fontSize: number
     legend: PlotRect | undefined
+    leaderColor: string
     decorate?: (tip: SVGElement) => void
 }): Plot.RenderFunction {
     return function (this: { anchor?: Plot.FrameAnchor, dy: number }, index, scales, values, dimensions, context, next) {
@@ -128,7 +130,7 @@ export function tipRender(options: {
             // Plot sizes and positions the tooltip on a later task, and anything added to it before
             // then is taken for part of the tooltip, so the leader waits for the next frame
             requestAnimationFrame(() => {
-                appendLeader(tip, pointer.x, pointer.y, placement.dy, options.fontSize / plotFontSize)
+                appendLeader(tip, pointer.x, pointer.y, placement.dy, options.fontSize / plotFontSize, options.leaderColor)
             })
         }
         return tip

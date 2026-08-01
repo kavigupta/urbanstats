@@ -463,18 +463,13 @@ test('histogram-pinned-tooltip-cleared-by-navigation', async (t) => {
     await t.expect(pinnedTip.exists).notOk('the pin is not persistent state, and does not survive a navigation')
 })
 
-// A cumulative relative histogram is at 100% on the left, so a tooltip pinned there is anchored at
-// the very top of the frame, and on a comparison it is several lines tall. Plot would fit such a
-// tooltip into the top margin, drawing it across the frame and under the settings bar (#2083); it
-// belongs below its point instead -- and below the legend, which is drawn in that same corner.
-urbanstatsFixture('pinned tooltip against the top of the frame', comparisonPage(['Canada', 'USA', 'Mexico', 'Germany']))
-
-// what the pinned tooltip has to stay clear of: the top of the frame, taken as its highest
-// gridline, and the legend drawn inside it
-const pinnedTipGeometry = ClientFunction(() => {
+// what a tooltip has to stay clear of: the top of the frame, taken as its highest gridline, and the
+// legend drawn inside it. `tipGroup` selects the mark the tooltip belongs to, which is either the
+// pointer-driven tip or a pinned one -- the placement they get is the same either way.
+const tooltipGeometry = ClientFunction((tipGroup: string) => {
     const panel = document.getElementsByClassName('histogram-svg-panel')[0]
     // the tooltip proper is the mark group's child; the leader back to its point is a sibling of it
-    const tooltip = panel.querySelector('g.plot-pinned-tip > g')!.getBoundingClientRect()
+    const tooltip = panel.querySelector(`${tipGroup} > g`)!.getBoundingClientRect()
     const legend = panel.querySelector('[data-test-id=plot_legend]')!.getBoundingClientRect()
     const gridlines = Array.from(panel.querySelectorAll('g[aria-label="y-grid"] line'))
     return {
@@ -487,7 +482,40 @@ const pinnedTipGeometry = ClientFunction(() => {
 
 // the leader is drawn a frame after the tooltip, so this is also what waits for the tooltip to
 // have settled into its final place before it gets measured
+const tooltipLeader = Selector('.histogram-svg-panel').find('g[aria-label=tip] > path')
 const pinnedTipLeader = Selector('.histogram-svg-panel').find('g.plot-pinned-tip > path')
+
+// A cumulative relative histogram is at 100% on the left, so a tooltip there is anchored at the
+// very top of the frame, and on a comparison it is several lines tall. Plot would fit such a
+// tooltip into the top margin, drawing it across the frame and under the settings bar (#2083); it
+// belongs below its point instead -- and below the legend, which is drawn in that same corner.
+urbanstatsFixture('tooltip against the top of the frame', comparisonPage(['China', 'USA', 'Japan', 'Indonesia']))
+
+test('histogram-tooltip-top-of-frame', async (t) => {
+    // the GHS-POP row, since it is the one every country has data for -- the census rows would
+    // leave a single series, and a lone series draws no legend to run into
+    await t.click(Selector('[aria-label="Expand PW Density (r=1km) [GHS-POP]"]'))
+    await t.expect(Selector('[data-test-id=histogram_relative]').checked).ok('relative histograms are on by default, which is what puts the left of the curve at 100%')
+    const histogramType = Selector('[data-test-id=histogram_type]')
+    await t.click(histogramType).click(histogramType.find('option').withExactText('Line (cumulative)'))
+
+    // the left of the curve is both the top of the frame and its left edge, so the tooltip has
+    // nowhere to go but down and to the right
+    await t.hover(Selector('.histogram-svg-panel'), { offsetX: 150, offsetY: 200 })
+    await t.expect(tooltipLeader.exists).ok('a tooltip moved off its point is joined back to it by a leader')
+
+    const { tooltipTop, frameTop, overlapsLegend } = await tooltipGeometry('g[aria-label=tip]')
+    await t.expect(tooltipTop).gte(frameTop - 1, 'the tooltip hangs below its point rather than across the top of the frame')
+    await t.expect(overlapsLegend).notOk('the tooltip is dropped past the legend rather than drawn onto it')
+
+    // fullPage would hover the corner of the page first, which would take the tooltip away with it
+    await screencap(t, { fullPage: false, selector: Selector('.histogram-svg-panel') })
+})
+
+// the same placement, for a tooltip that was pinned at that point rather than hovered -- a pinned
+// one outlives the pointer, so unlike the hover case it can be captured in a full-page screenshot
+// and drawn into the downloaded image
+urbanstatsFixture('pinned tooltip against the top of the frame', comparisonPage(['Canada', 'USA', 'Mexico', 'Germany']))
 
 test('histogram-pinned-tooltip-top-of-frame', async (t) => {
     await t.click(Selector('.expand-toggle'))
@@ -501,7 +529,7 @@ test('histogram-pinned-tooltip-top-of-frame', async (t) => {
     await t.expect(pinnedTip.exists).ok('clicking the left of the curve pins a tooltip')
 
     await t.expect(pinnedTipLeader.exists).ok('a tooltip moved off its point is joined back to it by a leader')
-    const { tooltipTop, frameTop, overlapsLegend } = await pinnedTipGeometry()
+    const { tooltipTop, frameTop, overlapsLegend } = await tooltipGeometry('g.plot-pinned-tip')
     await t.expect(tooltipTop).gte(frameTop - 1, 'the tooltip hangs below its point rather than across the top of the frame')
     await t.expect(overlapsLegend).notOk('the tooltip is dropped past the legend rather than drawn onto it')
 

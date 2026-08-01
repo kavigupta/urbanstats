@@ -249,8 +249,9 @@ function pointedTipIndex(plot: HTMLElement | SVGSVGElement): number | null {
 }
 
 // a Plot.tip anchored at the tallest series' value at each point, swapping x/y when transposed,
-// styled with the theme's tooltip colors. Comes in two flavors: the one that follows the pointer,
-// and one ordinary (non-interactive) mark per point the user has pinned.
+// styled with the theme's tooltip colors, and placed by tipRender rather than by Plot's own fitting.
+// Comes in two flavors: the one that follows the pointer, and one ordinary (non-interactive) mark
+// per point the user has pinned.
 export function transposeAwareTip<T>(
     data: T[],
     transpose: boolean,
@@ -276,7 +277,10 @@ export function transposeAwareTip<T>(
     // tooltip text and hence the box the placement is worked out from
     const fontSize = transpose ? 2 * plotFontSize : plotFontSize
     const marks: Plot.Markish[] = [
-        Plot.tip(rows, (transpose ? Plot.pointerY : Plot.pointerX)({ ...options, render: tipRender({ fontSize, legend }) })),
+        Plot.tip(rows, (transpose ? Plot.pointerY : Plot.pointerX)({
+            ...options,
+            render: tipRender({ fontSize, legend, leaderColor: colors.textMain }),
+        })),
     ]
     // being plain marks rather than pointer-driven ones, pinned tooltips stay put when the mouse
     // leaves, and are drawn into the plot we re-render for the downloaded image
@@ -286,7 +290,7 @@ export function transposeAwareTip<T>(
             marks.push(Plot.tip([rows[tipIndex]], {
                 ...options,
                 className: pinnedTipClassName,
-                render: tipRender({ fontSize, legend, decorate: stampTipIndex(tipIndex) }),
+                render: tipRender({ fontSize, legend, leaderColor: colors.textMain, decorate: stampTipIndex(tipIndex) }),
             }))
         }
     }
@@ -801,7 +805,8 @@ export function SeriesPlot<T extends PlotSeriesItem>(props: {
     const plotSpec = useCallback(
         (transpose: boolean, leftLabelOffset: number, pinnedTips: PinnedTips): DetailedPlotSpec => {
             const title = new Set(items.map(i => i.shortname)).size === 1 ? items[0].shortname : ''
-            // drawn last, over the plot, so the tooltips are told where it is and keep out of it
+            // built first so that the tooltips can be told where it is and keep out of it, and
+            // drawn last, over the plot -- a leader up to a point behind it passes underneath
             const drawnLegend = manualLegend(items, transpose, colors, dashOrder)
             const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose, leftLabelOffset, pinnedTips, drawnLegend.bounds)
             marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
