@@ -57,17 +57,6 @@ def all_universes():
     ]
 
 
-@lru_cache(None)
-def continent_sub_universes():
-    """
-    Maps each continent to the set of universes strictly contained within it.
-    """
-    return {
-        continent: set(sub_universes)
-        for continent, sub_universes in CONTINENT_TO_SUB_UNIVERSES.items()
-    }
-
-
 def check_continent_sub_universes(contained_by, present_longnames):
     """
     Check CONTINENT_TO_SUB_UNIVERSES against the strict containment relationships it was
