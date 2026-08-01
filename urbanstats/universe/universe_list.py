@@ -98,10 +98,14 @@ def check_continent_sub_universes(contained_by, present_longnames):
         if universe in CONTINENTS or universe not in present_longnames:
             continue
         continents = contained_by.get(universe, set()) & set(CONTINENTS) - {universe}
-        expected = {universe_to_containing_continent[universe]} if universe in universe_to_containing_continent else set()
+        expected = (
+            {universe_to_containing_continent[universe]}
+            if universe in universe_to_containing_continent
+            else set()
+        )
         if continents != expected:
             errors.append(
-                f"{universe} is contained by {continents}, but CONTINENT_TO_SUB_UNIVERSES says it should be contained by {universe_to_containing_continent[universe]}"
+                f"{universe} is contained by {continents}, but CONTINENT_TO_SUB_UNIVERSES says it should be contained by {expected}"
             )
     assert not errors, "CONTINENT_TO_SUB_UNIVERSES is out of date:\n" + "\n".join(
         errors
