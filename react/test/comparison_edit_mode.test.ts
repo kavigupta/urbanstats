@@ -24,7 +24,6 @@ urbanstatsFixture('comparison edit mode', twoRegions)
 
 test('each region keeps a column of values in edit mode', async (t) => {
     await t.click(editButton)
-    await setCategoryExpanded(t, 'main', true)
     // Population is a single-stat group, so its row is the one carrying the group checkbox.
     const populationRow = populationGroup.parent('.for-testing-table-row')
     await t.expect(populationRow.find('.testing-statistic-value').count).eql(2)
@@ -35,13 +34,13 @@ test('toggling a group in edit mode changes what the comparison shows', async (t
     await t.expect(populationName.exists).ok()
 
     await t.click(editButton)
-    await setCategoryExpanded(t, 'main', true)
     await t.click(populationGroup)
     await t.click(doneButton)
     await t.expect(populationName.exists).notOk()
 
-    // Main stays expanded, so re-entering goes straight back to the same checkbox.
+    // Now that Population is unselected, its row is behind Main's toggle.
     await t.click(editButton)
+    await setCategoryExpanded(t, 'main', true)
     await t.click(populationGroup)
     await t.click(doneButton)
     await t.expect(populationName.exists).ok()
@@ -52,7 +51,6 @@ test('a multi-row group keeps a column of values per region on every row', async
     // A second year makes Population a two-row group: a header row carrying the checkbox,
     // and a row per year pointing at it.
     await t.click(yearCheckbox(2010))
-    await setCategoryExpanded(t, 'main', true)
 
     const row2010 = groupMemberRow('population', '2010')
     await t.expect(row2010.exists).ok()

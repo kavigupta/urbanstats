@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { categoryCheckbox, doneButton, editButton, filterBox, groupCheckbox, interactableGroupCheckbox, setCategoryExpanded } from './edit_mode_test_utils'
+import { categoryCheckbox, doneButton, editButton, filterBox, groupCheckbox, interactableGroupCheckbox } from './edit_mode_test_utils'
 import { resizeForPlatform, safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 /**
@@ -68,7 +68,6 @@ export function editModeSharedTests(spec: {
 
     test('a stat can be expanded in edit mode', async (t) => {
         await t.click(editButton)
-        await setCategoryExpanded(t, 'main', true)
 
         const expandToggle = table.find('.expand-toggle:not([inert] *)')
         await t.expect(expandToggle.exists).ok()

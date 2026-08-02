@@ -58,8 +58,9 @@ export function categoryCheckbox(categoryId: string): CheckboxSelector {
 }
 
 /**
- * A group's checkbox. Groups live inside their category's collapsible section, so this is
- * only interactable once the category is expanded -- see `setCategoryExpanded`.
+ * A group's checkbox. An unselected group lives inside its category's collapsible section,
+ * so it is only interactable once the category is expanded -- see `setCategoryExpanded`.
+ * Selected groups are shown whether or not their category is expanded.
  */
 export function groupCheckbox(groupId: string): CheckboxSelector {
     return checkboxByTestId(`${editCheckboxPrefixes.group}${groupId}`)
@@ -106,7 +107,8 @@ export const comparisonTableScope = '[data-test-id=comparison-table]'
 
 /**
  * A category's toggle in the edit tree, matched by the direction it currently offers, so
- * its presence also tells you which state the category is in.
+ * its presence also tells you which state the category is in. A category with every group
+ * selected has no toggle at all, since collapsing it would hide nothing.
  */
 export function categoryToggleButton(categoryId: string, direction: 'Expand' | 'Collapse'): Selector {
     return Selector(`[data-category-id=${categoryId}]`).withAttribute('aria-label', new RegExp(`^${direction} `))

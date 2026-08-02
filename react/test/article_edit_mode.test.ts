@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { editModeSharedTests } from './edit_mode_test_template'
-import { articleTableScope, editButton, filterBox, groupCheckbox, setCategoryExpanded } from './edit_mode_test_utils'
+import { articleTableScope, editButton, filterBox, groupCheckbox } from './edit_mode_test_utils'
 import { target, urbanstatsFixture } from './test_utils'
 
 /**
@@ -19,7 +19,6 @@ urbanstatsFixture('article edit mode', californiaPage)
 
 test('clicking a stat name toggles its checkbox', async (t) => {
     await t.click(editButton)
-    await setCategoryExpanded(t, 'main', true)
     await t.expect(populationGroup.checked).ok()
 
     // Click the name label (not the checkbox itself).
