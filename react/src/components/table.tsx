@@ -317,15 +317,40 @@ function EditModeTopLeftHeader({ header, width }: { header: EditModeOpenHeader, 
               * `stretch` and the button's own font size line the box up with the Done button,
               * which its padding otherwise makes the taller of the two.
               */}
-            <input
-                type="text"
-                className="serif"
-                placeholder="Search Statistics"
-                style={{ flex: '1 1 auto', minWidth: 0, alignSelf: 'stretch', fontSize: '18px', padding: '0 6px' }}
-                value={header.filter}
-                onChange={(e) => { header.setFilter(e.target.value) }}
-                data-test-id="edit-mode-filter"
-            />
+            <div style={{ position: 'relative', display: 'flex', flex: '1 1 auto', minWidth: 0, alignSelf: 'stretch' }}>
+                <input
+                    type="text"
+                    className="serif"
+                    placeholder="Search Statistics"
+                    style={{ flex: '1 1 auto', minWidth: 0, fontSize: '18px', padding: '0 24px 0 6px' }}
+                    value={header.filter}
+                    onChange={(e) => { header.setFilter(e.target.value) }}
+                    data-test-id="edit-mode-filter"
+                />
+                {header.filter !== '' && (
+                    <button
+                        type="button"
+                        aria-label="Clear search"
+                        onClick={() => { header.setFilter('') }}
+                        style={{
+                            position: 'absolute',
+                            right: '2px',
+                            top: 0,
+                            bottom: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '0 4px',
+                            border: 'none',
+                            background: 'none',
+                            cursor: 'pointer',
+                        }}
+                        data-test-id="edit-mode-filter-clear"
+                    >
+                        {/* Already the icon set's red, so it is drawn as-is rather than masked to a themed fill. */}
+                        <img src="/close-red-small.png" alt="" width={12} height={12} />
+                    </button>
+                )}
+            </div>
         </div>
     )
 }

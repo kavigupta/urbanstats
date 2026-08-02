@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { categoryCheckbox, doneButton, editButton, filterBox, groupCheckbox, interactableGroupCheckbox } from './edit_mode_test_utils'
+import { categoryCheckbox, clearFilterButton, doneButton, editButton, filterBox, groupCheckbox, interactableGroupCheckbox } from './edit_mode_test_utils'
 import { resizeForPlatform, safeReload, screencap, urbanstatsFixture } from './test_utils'
 
 /**
@@ -63,6 +63,22 @@ export function editModeSharedTests(spec: {
         await t.expect(mainCategory.exists).notOk()
 
         await t.selectText(filterBox).pressKey('delete')
+        await t.expect(mainCategory.exists).ok()
+    })
+
+    test('the filter can be cleared with its x button', async (t) => {
+        await t.click(editButton)
+        // The button is only offered when there is something to clear.
+        await t.expect(clearFilterButton.exists).notOk()
+
+        await t.typeText(filterBox, 'gene')
+        await t.expect(mainCategory.exists).notOk()
+
+        await t.click(clearFilterButton)
+
+        await t.expect(filterBox.value).eql('')
+        await t.expect(clearFilterButton.exists).notOk()
+        // The whole tree is back, not just the box emptied.
         await t.expect(mainCategory.exists).ok()
     })
 

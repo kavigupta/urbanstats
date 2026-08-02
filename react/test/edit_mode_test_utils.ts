@@ -8,6 +8,7 @@ import { Selector } from 'testcafe'
 export const editButton = Selector('[data-test-id=edit-mode-edit]')
 export const doneButton = Selector('[data-test-id=edit-mode-done]')
 export const filterBox = Selector('[data-test-id=edit-mode-filter]')
+export const clearFilterButton = Selector('[data-test-id=edit-mode-filter-clear]')
 
 /** The category collapse/expand is a grid-template-rows transition. */
 export const collapseAnimationMs = 400
