@@ -87,6 +87,7 @@ export function ArticleTable(props: {
 
     return (
         <div className="stats_table">
+            <ArticleWarnings />
             <TableContents
                 layout={layout}
                 leftHeaderSpec={{ leftHeaderSpecs, groupNames }}
@@ -95,7 +96,6 @@ export function ArticleTable(props: {
                 verticalPlotSpecs={[]}
                 topLeftSpec={{ type: 'top-left-header' }}
             />
-            <ArticleWarnings />
         </div>
     )
 }

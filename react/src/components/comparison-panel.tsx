@@ -382,12 +382,12 @@ export function ComparisonPanel(props: {
 
                                 <MaybeScroll widthColumns={widthColumns}>
                                     <div ref={tableRef}>
+                                        <ArticleWarnings />
                                         <TableContents
                                             layout={layout}
                                             {...orientedSpecs}
                                             topLeftSpec={topLeftSpec}
                                         />
-                                        <ArticleWarnings />
                                     </div>
                                 </MaybeScroll>
                                 <div className="gap"></div>
