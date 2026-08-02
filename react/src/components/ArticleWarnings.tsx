@@ -5,6 +5,7 @@ import { useMissingGroups, useSelectedGroups } from '../page_template/statistic-
 import { Category, Group, StatPath, statPathToOrder, Year } from '../page_template/statistic-tree'
 
 import { useScreenshotMode } from './screenshot'
+import { warningRowIndices } from './warning-placement'
 
 /** An explanation of why some statistics aren't there, shown where they would have been. */
 export interface ArticleWarning {
@@ -75,17 +76,10 @@ function firstStatOrder(groupOrCategory: Group | Category): number {
     return Math.min(...Array.from(groupOrCategory.statPaths).map(path => statPathToOrder.get(path)!))
 }
 
-/**
- * Places each warning at the first row that comes after it in statistic tree order, which is where
- * its own statistics would have gone. Metadata rows sit at the end of the table rather than in tree
- * order, so this looks for the first row that is later rather than counting the rows that are earlier.
- */
+/** Places each warning at the row its statistics would have gone in, given the table's rows. */
 export function placeWarnings(statPaths: StatPath[], warnings: ArticleWarning[]): WarningRow[] {
-    const orders = statPaths.map(path => statPathToOrder.get(path)!)
-    return warnings.map(({ order, name, content }) => {
-        const index = orders.findIndex(rowOrder => rowOrder > order)
-        return { index: index === -1 ? orders.length : index, name, content }
-    })
+    const indices = warningRowIndices(statPaths, warnings.map(({ order }) => order))
+    return warnings.map(({ name, content }, warningIndex) => ({ index: indices[warningIndex], name, content }))
 }
 
 function YearList({ years }: { years: Year[] }): ReactNode {

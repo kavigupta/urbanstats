@@ -58,6 +58,29 @@ export async function withHamburgerMenu(t: TestController, block: () => Promise<
     }
 }
 
+/** Must already be inside the hamburger menu, where applicable. */
+export async function uncheckAllCategories(t: TestController): Promise<void> {
+    for (const check of await arrayFromSelector(Selector('input[data-test-id^=category]'))) {
+        if (await check.checked) {
+            await t.click(check)
+        }
+    }
+}
+
+/** The name cell of the warning row carrying `message`, which stands where a statistic's name would. */
+export function warningNamed(message: string, name: string): Selector {
+    return Selector('.for-testing-table-row')
+        .withText(message)
+        .find('[data-test-id=article-warning-name]')
+        .withExactText(name)
+}
+
+/** The statistics each warning row stands in for, in the order the rows appear. */
+export async function warningRowNames(): Promise<string[]> {
+    const cells = await arrayFromSelector(Selector('[data-test-id=article-warning-name]'))
+    return Promise.all(cells.map(async cell => (await cell.innerText).trim()))
+}
+
 // individual (non-category) stat checkboxes -- e.g. "Mean high temp" within the "Weather"
 // category -- are nested inside their category's collapsible tree and only become interactable
 // once the category itself is expanded (see CategoryContents/RenderTwiceHidden in

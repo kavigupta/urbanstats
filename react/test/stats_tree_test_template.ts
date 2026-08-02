@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { arrayFromSelector, safeReload, screencap, target, urbanstatsFixture, withHamburgerMenu } from './test_utils'
+import { checkTextboxes, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
 
 const mainCheck = 'input[data-test-id=category_main]'
 const mainExpand = '.expandButton[data-category-id=main]'
@@ -167,15 +167,17 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('uncheck-all-categories', async (t) => {
         await withHamburgerMenu(t, async () => {
-            await uncheckAll(t)
+            await uncheckAllCategories(t)
         })
         await t.expect(Selector('b').withExactText('No Statistic Categories are selected').exists).ok()
+        // Nothing is missing in particular, so the warning spans the row instead of naming a group
+        await t.expect(Selector('[data-test-id=article-warning-name]').exists).notOk()
         await screencap(t)
     })
 
     test('missing-year-data', async (t) => {
         await withHamburgerMenu(t, async () => {
-            await uncheckAll(t)
+            await uncheckAllCategories(t)
             await t.click(Selector('label').withExactText('2020'))
             await t.click(Selector('label').withExactText('2010'))
             await t.click(Selector('label').withExactText('Health'))
@@ -186,7 +188,7 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('missing-partial-year-data', async (t) => {
         await withHamburgerMenu(t, async () => {
-            await uncheckAll(t)
+            await uncheckAllCategories(t)
             await t.click(Selector('label').withExactText('2020'))
             await t.click(Selector('label').withExactText('2010'))
             await t.click('.expandButton[data-category-id=housing]')
@@ -199,12 +201,44 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('no-years-selected', async (t) => {
         await withHamburgerMenu(t, async () => {
-            await uncheckAll(t)
+            await uncheckAllCategories(t)
             await t.click(mainCheck)
             await t.click(Selector('label').withExactText('2020'))
         })
         await t.expect(Selector('a').withExactText('Area').exists).ok()
         await t.expect(warningNamed('Select 2020, 2010, or 2000 to see this statistic.', 'Population').exists).ok()
+        await screencap(t)
+    })
+
+    test('warning-row-placement', async (t) => {
+        /**
+         * Main's groups that have years show warnings, and its year-less groups still show values.
+         * The warnings belong in the rows those statistics would have occupied -- above Area --
+         * rather than all together below the table.
+         */
+        await withHamburgerMenu(t, async () => {
+            await uncheckAllCategories(t)
+            await t.click(mainCheck)
+            await t.click(Selector('label').withExactText('2020'))
+        })
+        await t.expect(await warningRowNames()).eql(['Population', 'PW Density (r=1km)', 'AW Density'])
+        const rows = Selector('.for-testing-table-row')
+        await t.expect(rows.nth(0).find('[data-test-id=article-warning]').exists).ok()
+        await t.expect(rows.nth(3).find('[data-test-id=article-warning]').exists).notOk()
+        await t.expect(rows.nth(3).find('a').withExactText('Area').exists).ok()
+    })
+
+    test('missing-source-data', async (t) => {
+        // GHSL is off by default, so unchecking the US Census leaves the Population sources with
+        // nothing enabled, and every statistic that comes from one of them disappears.
+        await withHamburgerMenu(t, async () => {
+            await uncheckAllCategories(t)
+            await t.click(mainCheck)
+        })
+        await checkTextboxes(t, ['US Census'])
+        await t.expect(warningNamed('All Population Sources are disabled. Enable one to see this statistic.', 'Population').exists).ok()
+        // Statistics that don't come from a Population source are unaffected
+        await t.expect(Selector('a').withExactText('Area').exists).ok()
         await screencap(t)
     })
 
@@ -313,25 +347,9 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 }
 
-async function uncheckAll(t: TestController): Promise<void> {
-    for (const check of await arrayFromSelector(Selector('input[data-test-id^=category]'))) {
-        if (await check.checked) {
-            await t.click(check)
-        }
-    }
-}
-
 async function checkIsIndeterminate(t: TestController, selector: string): Promise<boolean> {
     return t.eval(() => {
         const check: HTMLInputElement = document.querySelector(selector)!
         return check.indeterminate
     }, { dependencies: { selector } }) as Promise<boolean>
-}
-
-/** The name cell of the warning row carrying `message`, which stands where a statistic's name would. */
-function warningNamed(message: string, name: string): Selector {
-    return Selector('.for-testing-table-row')
-        .withText(message)
-        .find('[data-test-id=article-warning-name]')
-        .withExactText(name)
 }
