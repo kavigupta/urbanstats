@@ -1,11 +1,11 @@
 import React, { CSSProperties, ReactNode, useEffect, useId, useRef } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { SettingsDictionary, useSetting, useSettingInfo } from '../page_template/settings'
+import { isStagedChange, SettingsDictionary, useSetting, useSettingInfo } from '../page_template/settings'
 
 /**
  * The checkbox controls, which started out in the sidebar but are used all over: the
- * mapper's editors, the quiz, the histogram, the statistic tree.
+ * mapper's editors, the quiz, the histogram.
  */
 
 // type representing a key of SettingsDictionary that have boolean values
@@ -24,7 +24,7 @@ export function CheckboxSetting(props: { name: string, settingKey: BooleanSettin
             classNameToUse={props.classNameToUse}
             id={props.id}
             testId={props.testId}
-            highlight={'stagedValue' in info && info.stagedValue !== info.persistedValue}
+            highlight={isStagedChange(info)}
             fontSize={props.fontSize}
         />
     )
@@ -49,12 +49,18 @@ type CheckboxSettingCustomProps = CheckboxSettingCustomJustInputProps & {
     classNameToUse?: string
 }
 
-export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactNode {
+/** Marks a control whose value staging is currently changing. */
+export function useHighlightStyle(highlight: boolean | undefined): CSSProperties {
     const colors = useColors()
-
-    const divStyle: CSSProperties = {
-        backgroundColor: props.highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
+    return {
+        backgroundColor: highlight === true ? colors.slightlyDifferentBackgroundFocused : undefined,
         borderRadius: '5px',
+    }
+}
+
+export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactNode {
+    const divStyle: CSSProperties = {
+        ...useHighlightStyle(props.highlight),
         display: 'flex',
         alignItems: 'top',
         ...props.style,
@@ -74,7 +80,7 @@ export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactN
     )
 };
 
-export function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProps): ReactNode {
+function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProps): ReactNode {
     const colors = useColors()
     const id = useId()
     const checkboxRef = useRef<HTMLInputElement>(null)

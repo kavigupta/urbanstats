@@ -6,7 +6,7 @@ import './sidebar.css'
 import { Navigator } from '../navigation/Navigator'
 import { Theme } from '../page_template/color-themes'
 import { useColors, useCurrentTheme } from '../page_template/colors'
-import { checkboxCategoryName, sourceEnabledKey, TemperatureUnit, useSetting, useSettingInfo, useStagedSettingKeys } from '../page_template/settings'
+import { checkboxCategoryName, isStagedChange, sourceEnabledKey, TemperatureUnit, useIsStaged, useSetting, useSettingInfo } from '../page_template/settings'
 import { useDataSourceCheckboxes } from '../page_template/statistic-settings'
 import { humanReadableUniverse, useUniverse } from '../universe'
 import { useMobileLayout } from '../utils/responsive'
@@ -14,7 +14,7 @@ import { useMobileLayout } from '../utils/responsive'
 import { StagingControls } from './StagingControls'
 import { StatsTree } from './StatsTree'
 import { Years } from './Years'
-import { CheckboxSetting } from './checkbox-setting'
+import { CheckboxSetting, useHighlightStyle } from './checkbox-setting'
 
 export function useSidebarSectionContentClassName(): string {
     let sidebarSectionContent = 'sidebar-section-content'
@@ -167,7 +167,7 @@ export function MaybeStagingControlsSidebarSection(): ReactNode {
     const sidebarSectionContent = useSidebarSectionContentClassName()
 
     return (
-        useStagedSettingKeys() === undefined
+        !useIsStaged()
             ? null
             : (
                     <div className="sidebar-section">
@@ -296,11 +296,8 @@ function TemperatureSetting(): ReactNode {
     const info = useSettingInfo('temperature_unit')
     const colors = useColors()
 
-    const highlight = 'stagedValue' in info && info.stagedValue !== info.persistedValue
-
     const divStyle: CSSProperties = {
-        backgroundColor: highlight ? colors.slightlyDifferentBackgroundFocused : undefined,
-        borderRadius: '5px',
+        ...useHighlightStyle(isStagedChange(info)),
         padding: '0px 5px',
     }
 

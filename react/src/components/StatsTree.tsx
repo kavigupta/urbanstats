@@ -1,6 +1,6 @@
 import React, { ReactNode, useContext, useEffect, useState } from 'react'
 
-import { Settings, useSetting, useSettingInfo, useSettingsInfo, useStagedSettingKeys } from '../page_template/settings'
+import { isStagedChange, Settings, settingValue, useIsStaged, useSetting, useSettingInfo, useSettingsInfo } from '../page_template/settings'
 import { changeStatGroupSetting, groupKeys, useAvailableCategories, useAvailableGroups, useCategoryStatus, useChangeCategorySetting } from '../page_template/statistic-settings'
 import { Category, Group } from '../page_template/statistic-tree'
 import { useMobileLayout } from '../utils/responsive'
@@ -13,7 +13,7 @@ import { useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar
 
 export function StatsTree(): ReactNode {
     const [searchTerm, setSearchTerm] = useState('')
-    const staging = useStagedSettingKeys() !== undefined
+    const staging = useIsStaged()
 
     useEffect(() => {
         if (staging) {
@@ -80,7 +80,7 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
 
     const groups = useAvailableGroups(category)
     const settingsInfo = useSettingsInfo(groupKeys(groups))
-    const highlight = Object.values(settingsInfo).some(info => 'stagedValue' in info && info.stagedValue !== info.persistedValue)
+    const highlight = Object.values(settingsInfo).some(isStagedChange)
 
     return (
         <li>
@@ -123,16 +123,15 @@ function CategoryComponent({ category, hasSearchMatch }: { category: Category, h
 
 function GroupComponent({ group }: { group: Group }): ReactNode {
     const settings = useContext(Settings.Context)
-    const [checked] = useSetting(`show_stat_group_${group.id}`)
     const info = useSettingInfo(`show_stat_group_${group.id}`)
     return (
         <li>
             <CheckboxSettingCustom
                 name={group.name}
-                checked={checked}
+                checked={settingValue(info)}
                 onChange={(newValue) => { changeStatGroupSetting(settings, group, newValue) }}
                 testId={`group_${group.id}`}
-                highlight={'stagedValue' in info && info.stagedValue !== info.persistedValue}
+                highlight={isStagedChange(info)}
                 fontSize={useSidebarFontSize()}
             />
         </li>
