@@ -9,7 +9,7 @@ import { Navigator } from '../navigation/Navigator'
 import { Colors } from '../page_template/color-themes'
 import { colorFromCycle, useColors } from '../page_template/colors'
 import { MobileArticlePointers, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
-import { Universe, useUniverse } from '../universe'
+import { Universe, useDefinedUniverse, useUniverse } from '../universe'
 import { withButtonRole } from '../utils/a11y'
 import { assert } from '../utils/defensive'
 import { HumanReadableName, reifyReact, reifyString } from '../utils/human-readable-name'
@@ -1223,8 +1223,7 @@ function Percentile(props: {
     simpleOrdinals: boolean
     onNavigate?: (newArticle: string) => void
 }): ReactNode {
-    const currentUniverse = useUniverse()
-    assert(currentUniverse !== undefined, 'no universe')
+    const currentUniverse = useDefinedUniverse()
     const inScreenshot = useScreenshotMode()
     // Bump to reset if we navigate back to the same page
     const [editableFieldKey, setEditableFieldKey] = useState(0)
@@ -1300,8 +1299,7 @@ function Ordinal(props: {
     simpleOrdinals: boolean
     onNavigate?: (newArticle: string) => void
 }): ReactNode {
-    const currentUniverse = useUniverse()
-    assert(currentUniverse !== undefined, 'no universe')
+    const currentUniverse = useDefinedUniverse()
     const onNewNumber = async (number: number): Promise<void> => {
         if (props.onNavigate === undefined) {
             return
@@ -1364,8 +1362,7 @@ function Ordinal(props: {
 
 // Lacks some customization since its column is not show in the comparison view
 function PointerButtonsIndex(props: { ordinal?: number, statpath: string, type: string, total: number, longname: string, overallFirstLast?: FirstLastStatus }): ReactNode {
-    const currentUniverse = useUniverse()
-    assert(currentUniverse !== undefined, 'no universe')
+    const currentUniverse = useDefinedUniverse()
     const getData = async (): Promise<ArticleOrderingListInternal> => await loadOrdering(currentUniverse, props.statpath, props.type)
     return (
         <span style={{ margin: 'auto', whiteSpace: 'nowrap' }}>

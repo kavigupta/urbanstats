@@ -9,8 +9,7 @@ import { rowExpandedKey, useSetting, useSettings } from '../page_template/settin
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
-import { Universe, universeContext, useUniverse } from '../universe'
-import { assert } from '../utils/defensive'
+import { Universe, universeContext, useDefinedUniverse, useUniverse } from '../universe'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { sanitize } from '../utils/paths'
 import { Article, IRelatedButtons } from '../utils/protos'
@@ -176,8 +175,7 @@ function ArticleTable(props: {
     const colors = useColors()
     const expandedSettings = useSettings(props.filteredRows.map(row => rowExpandedKey(row.statpath)))
     const expandedEach = props.filteredRows.map(row => row.extraStats.length > 0 && (expandedSettings[rowExpandedKey(row.statpath)] ?? false))
-    const currentUniverse = useUniverse()
-    assert(currentUniverse !== undefined, 'no universe')
+    const currentUniverse = useDefinedUniverse()
     const [simpleOrdinals] = useSetting('simple_ordinals')
     const navContext = useContext(Navigator.Context)
 

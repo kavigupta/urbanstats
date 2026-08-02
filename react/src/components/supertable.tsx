@@ -2,12 +2,11 @@ import React, { CSSProperties, Fragment, ReactNode, useMemo } from 'react'
 
 import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
-import { Universe, useUniverse } from '../universe'
-import { assert } from '../utils/defensive'
+import { Universe, useDefinedUniverse } from '../universe'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { Article } from '../utils/protos'
 
-import { CongressionalColumnData, CongressionalRepresentativeEntry } from './congressional-table/model'
+import { CongressionalColumnData, congressionalDataForRow } from './congressional-table/model'
 import { CongressionalRepresentativesWidget } from './congressional-table/render'
 import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
@@ -52,10 +51,9 @@ export interface TableContentsProps {
 }
 
 export function TableContents(props: TableContentsProps): ReactNode {
-    const universe = useUniverse()
+    const universe = useDefinedUniverse()
     const colors = useColors()
     const screenshotMode = useScreenshotMode()
-    assert(universe !== undefined, 'no universe')
 
     const rowsForFootnotes = useMemo(() => {
         const fromLeft = props.leftHeaderSpec.leftHeaderSpecs.filter((s): s is CellSpec & { type: 'statistic-name', row: ArticleRow } =>
@@ -198,33 +196,7 @@ function SuperTableRow(props: {
     extraSpaceRight: number[]
     isHighlighted: boolean
 }): ReactNode {
-    const congressionalRegions = useMemo(() => props.cellSpecs.flatMap((cell) => {
-        if (cell.type !== 'statistic-row') {
-            return []
-        }
-        if (cell.row.kind !== 'metadata') {
-            return []
-        }
-        if (typeof cell.row.statval === 'string') {
-            return []
-        }
-        return [{
-            longname: cell.longname,
-            representatives: cell.row.statval.representatives.map((r): CongressionalRepresentativeEntry => {
-                assert(r.representative.name !== undefined && r.representative.name !== null, 'representative name missing')
-                return {
-                    representative: {
-                        name: r.representative.name,
-                        wikipediaPage: r.representative.wikipediaPage ?? undefined,
-                        party: r.representative.party ?? undefined,
-                    },
-                    districtLongname: r.districtLongname,
-                    startTerm: r.startTerm,
-                    endTerm: r.endTerm,
-                }
-            }),
-        } satisfies CongressionalColumnData]
-    }), [props.cellSpecs])
+    const congressionalRegions = useMemo(() => congressionalRegionsForCells(props.cellSpecs), [props.cellSpecs])
 
     return (
         <div>
@@ -261,6 +233,17 @@ function SuperTableRow(props: {
             )}
         </div>
     )
+}
+
+/** The representatives tables a row's cells call for, in column order. */
+function congressionalRegionsForCells(cellSpecs: CellSpec[]): CongressionalColumnData[] {
+    return cellSpecs.flatMap((cell) => {
+        if (cell.type !== 'statistic-row') {
+            return []
+        }
+        const data = congressionalDataForRow(cell.row, cell.longname)
+        return data === undefined ? [] : [data]
+    })
 }
 
 export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCellProps) |
