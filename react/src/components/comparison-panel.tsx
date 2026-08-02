@@ -3,13 +3,13 @@ import './article.css'
 
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, TouchSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import { SortableContext, arrayMove, horizontalListSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import React, { ReactNode, useCallback, useContext, useId, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useId, useMemo, useRef, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import { boundingBox, extendBoxes } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
 import { colorFromCycle, useColors } from '../page_template/colors'
-import { rowExpandedKey, useSettings } from '../page_template/settings'
+import { useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
@@ -24,16 +24,16 @@ import { zIndex } from '../utils/zIndex'
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
-import { computeNameSpecsWithGroups } from './article-panel'
-import { generateCSVDataForArticles, CSVExportData } from './csv-export'
+import { useCSVExport } from './csv-export'
 import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
-import { PlotProps, pullRelevantPlotProps } from './plots'
+import { PlotProps, pullRelevantPlotProps, useExpandedByStat } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
-import { TableContents, CellSpec, PlotSpec } from './supertable'
-import { ColumnIdentifier } from './table'
+import { computeNameSpecsWithGroups } from './statistic-name-specs'
+import { TableContents, CellSpec, PlotSpec, TableLayout } from './supertable'
+import { ColumnIdentifier, valueOnlyColumns } from './table'
 
 export function ComparisonPanel(props: {
     universe: Universe
@@ -159,11 +159,12 @@ export function ComparisonPanel(props: {
         && (validOrdinalsByStat.length === 0 || validOrdinalsByStat.some(x => x))
     )
 
-    const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
+    const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : valueOnlyColumns
 
-    const expandedSettings = useSettings(dataByStatArticle.filter(statData => statData.some(row => row.extraStats.length > 0)).map(([{ statpath }]) => rowExpandedKey(statpath)))
-
-    const expandedByStatIndex = dataByStatArticle.map(([{ statpath }]) => expandedSettings[rowExpandedKey(statpath)] ?? false)
+    const expandedByStatIndex = useExpandedByStat(
+        dataByStatArticle.map(([{ statpath }]) => statpath),
+        statIndex => dataByStatArticle[statIndex].some(row => row.extraStats.length > 0),
+    )
     const numExpandedExtras = expandedByStatIndex.filter(v => v).length
 
     let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, includeOrdinals)
@@ -291,11 +292,33 @@ export function ComparisonPanel(props: {
 
     const topLeftSpec: CellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
 
-    const csvExportCallback = useCallback<CSVExportData>(() => {
-        const data = generateCSVDataForArticles(localArticlesToUse, dataByArticleStat, includeOrdinals)
-        const filename = `${sanitize(joinedString)}.csv`
-        return { csvData: data, csvFilename: filename }
-    }, [joinedString, localArticlesToUse, dataByArticleStat, includeOrdinals])
+    const layout: TableLayout = {
+        widthLeftHeader: leftMarginPercent * 100,
+        columnWidth,
+        onlyColumns,
+        simpleOrdinals: true,
+    }
+
+    // Transposing swaps which axis the statistics run along, so it swaps the headers, the
+    // row specs, and which direction the expanded plots stretch in. Everything else about
+    // the table is the same either way.
+    const orientedSpecs = transpose
+        ? {
+                superHeaderSpec: { headerSpecs: statisticNameHeaderSpecs, showBottomBar: false, groupNames: statisticNameGroupNames },
+                leftHeaderSpec: { leftHeaderSpecs: longnameHeaderSpecs },
+                rowSpecs: rowSpecsByStatTransposed,
+                horizontalPlotSpecs: plotSpecs.map(() => undefined),
+                verticalPlotSpecs: plotSpecs,
+            }
+        : {
+                superHeaderSpec: { headerSpecs: longnameHeaderSpecs, showBottomBar: true },
+                leftHeaderSpec: { leftHeaderSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames },
+                rowSpecs: rowSpecsByStat,
+                horizontalPlotSpecs: plotSpecs,
+                verticalPlotSpecs: [],
+            }
+
+    const csvExportCallback = useCSVExport(localArticlesToUse, props.rows, includeOrdinals, joinedString)
 
     return (
         <universeContext.Provider value={{
@@ -356,35 +379,11 @@ export function ComparisonPanel(props: {
 
                                 <MaybeScroll widthColumns={widthColumns}>
                                     <div ref={tableRef}>
-                                        {transpose
-                                            ? (
-                                                    <TableContents
-                                                        superHeaderSpec={{ headerSpecs: statisticNameHeaderSpecs, showBottomBar: false, groupNames: statisticNameGroupNames }}
-                                                        leftHeaderSpec={{ leftHeaderSpecs: longnameHeaderSpecs }}
-                                                        rowSpecs={rowSpecsByStatTransposed}
-                                                        horizontalPlotSpecs={plotSpecs.map(() => undefined)}
-                                                        verticalPlotSpecs={plotSpecs}
-                                                        topLeftSpec={topLeftSpec}
-                                                        widthLeftHeader={leftMarginPercent * 100}
-                                                        columnWidth={columnWidth}
-                                                        onlyColumns={onlyColumns}
-                                                        simpleOrdinals={true}
-                                                    />
-                                                )
-                                            : (
-                                                    <TableContents
-                                                        superHeaderSpec={{ headerSpecs: longnameHeaderSpecs, showBottomBar: true }}
-                                                        leftHeaderSpec={{ leftHeaderSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames }}
-                                                        rowSpecs={rowSpecsByStat}
-                                                        horizontalPlotSpecs={plotSpecs}
-                                                        verticalPlotSpecs={[]}
-                                                        topLeftSpec={topLeftSpec}
-                                                        widthLeftHeader={leftMarginPercent * 100}
-                                                        columnWidth={columnWidth}
-                                                        onlyColumns={onlyColumns}
-                                                        simpleOrdinals={true}
-                                                    />
-                                                )}
+                                        <TableContents
+                                            layout={layout}
+                                            {...orientedSpecs}
+                                            topLeftSpec={topLeftSpec}
+                                        />
                                         <ArticleWarnings />
                                     </div>
                                 </MaybeScroll>

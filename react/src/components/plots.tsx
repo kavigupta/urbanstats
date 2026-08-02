@@ -1,7 +1,7 @@
 import React, { ReactElement, ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { PlotMode, useSetting } from '../page_template/settings'
+import { PlotMode, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
 import { statParents, StatPath, Year } from '../page_template/statistic-tree'
 import { assert } from '../utils/defensive'
 
@@ -206,6 +206,15 @@ function resolveStatYears(rows: ArticleRow[], statIndex: number): { idx: number,
         assert(chosen.length === new Set(chosen.map(c => c.year)).size, 'All statpaths for plot data should have unique years')
     }
     return chosen
+}
+
+/**
+ * Whether each statistic's extras are currently expanded, in statistic order. Only the
+ * statistics that have extras are subscribed to, since the rest can never be expanded.
+ */
+export function useExpandedByStat(statpaths: StatPath[], hasExtras: (statIndex: number) => boolean): boolean[] {
+    const expandedSettings = useSettings(statpaths.filter((_, index) => hasExtras(index)).map(rowExpandedKey))
+    return statpaths.map(statpath => expandedSettings[rowExpandedKey(statpath)] ?? false)
 }
 
 export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {

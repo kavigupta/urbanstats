@@ -2,17 +2,16 @@ import React, { CSSProperties, Fragment, ReactNode, useMemo } from 'react'
 
 import { RelativeLoader } from '../navigation/loading'
 import { useColors } from '../page_template/colors'
-import { Universe, useUniverse } from '../universe'
-import { assert } from '../utils/defensive'
+import { Universe, useDefinedUniverse } from '../universe'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { Article } from '../utils/protos'
 
-import { CongressionalColumnData, CongressionalRepresentativeEntry } from './congressional-table/model'
+import { CongressionalColumnData, congressionalDataForRow } from './congressional-table/model'
 import { CongressionalRepresentativesWidget } from './congressional-table/render'
 import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
 import { useScreenshotMode } from './screenshot'
-import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeDisclaimerFootnotes, computeSizesForRow, CommonLayoutInformation } from './table'
+import { ColumnIdentifier, MainHeaderRow, ComparisonLongnameCell, ComparisonTopLeftHeader, SuperHeaderHorizontal, StatisticNameCell, StatisticPanelLongnameCell, StatisticRowCells, TableHeaderContainer, TableRowContainer, TopLeftHeader, computeDisclaimerFootnotes, maxLayoutInformation, CommonLayoutInformation } from './table'
 
 export interface PlotSpec {
     statDescription: string
@@ -36,124 +35,122 @@ export interface DisclaimerFootnote {
     text: string
 }
 
+/** The column shape a table's rows are laid out against. */
+export interface TableLayout {
+    widthLeftHeader: number
+    columnWidth: number
+    onlyColumns: ColumnIdentifier[]
+    simpleOrdinals: boolean
+}
+
+/** A `TableLayout` with its columns measured, which is what rows are actually rendered against. */
+export interface MeasuredTableLayout extends TableLayout {
+    /** One entry per column, which is also what the column count is read from. */
+    columnWidthsInfo: (CommonLayoutInformation | undefined)[]
+    /** The space reserved to the right of each column, which a vertical plot occupies. */
+    extraSpaceRight: number[]
+}
+
+/** Measures each column against the rows it contains. */
+function measureColumns(columnRows: StatisticCellRenderingInfo[][], universe: Universe, simpleOrdinals: boolean): CommonLayoutInformation[] {
+    return columnRows.map(rows => maxLayoutInformation(rows, universe, simpleOrdinals))
+}
+
+/**
+ * The layout rows are rendered against. `extraSpaceRight` is asked for per column rather
+ * than passed as an array, so it can't disagree with the measurements about the column count.
+ */
+function measuredLayout(layout: TableLayout, columnWidthsInfo: CommonLayoutInformation[], extraSpaceRight: (columnIndex: number) => number): MeasuredTableLayout {
+    return {
+        ...layout,
+        columnWidthsInfo,
+        extraSpaceRight: columnWidthsInfo.map((_, columnIndex) => extraSpaceRight(columnIndex)),
+    }
+}
+
+/** Each column's width including the space reserved to its right. */
+function columnFullWidths(layout: MeasuredTableLayout): number[] {
+    return layout.extraSpaceRight.map(extra => layout.columnWidth + extra)
+}
+
 export interface TableContentsProps {
+    layout: TableLayout
     superHeaderSpec?: SuperHeaderSpec
     leftHeaderSpec: LeftHeaderSpec
     rowSpecs: CellSpec[][]
     horizontalPlotSpecs: (PlotSpec | undefined)[]
     verticalPlotSpecs: (PlotSpec | undefined)[]
     topLeftSpec: CellSpec
-    widthLeftHeader: number
-    columnWidth: number
-    onlyColumns: ColumnIdentifier[]
-    simpleOrdinals: boolean
     highlightRowIndex?: number
     loading?: boolean
 }
 
 export function TableContents(props: TableContentsProps): ReactNode {
-    const universe = useUniverse()
+    const universe = useDefinedUniverse()
     const colors = useColors()
     const screenshotMode = useScreenshotMode()
-    assert(universe !== undefined, 'no universe')
+    const { widthLeftHeader, columnWidth, simpleOrdinals } = props.layout
 
-    const rowsForFootnotes = useMemo(() => {
-        const fromLeft = props.leftHeaderSpec.leftHeaderSpecs.filter((s): s is CellSpec & { type: 'statistic-name', row: ArticleRow } =>
-            s.type === 'statistic-name' && s.row !== undefined,
-        ).map(s => s.row)
-        const fromSuper = (props.superHeaderSpec?.headerSpecs ?? []).filter((s): s is CellSpec & { type: 'statistic-name', row: ArticleRow } =>
-            s.type === 'statistic-name' && s.row !== undefined,
-        ).map(s => s.row)
-        return [...fromLeft, ...fromSuper]
-    }, [props.leftHeaderSpec.leftHeaderSpecs, props.superHeaderSpec?.headerSpecs])
-    const disclaimerFootnotes = useMemo(() => computeDisclaimerFootnotes(rowsForFootnotes), [rowsForFootnotes])
+    const { leftHeaderSpecs } = props.leftHeaderSpec
+    const superHeaderSpecs = props.superHeaderSpec?.headerSpecs
+
+    const disclaimerFootnotes = useMemo(
+        () => computeDisclaimerFootnotes([...leftHeaderSpecs, ...(superHeaderSpecs ?? [])]),
+        [leftHeaderSpecs, superHeaderSpecs],
+    )
+
+    // In screenshot mode the disclaimers move into numbered footnotes below the table, so the
+    // cells that carry one need to show the symbol that points at theirs.
+    const withFootnote = (spec: CellSpec): CellSpec =>
+        screenshotMode && spec.type === 'statistic-name' && spec.row?.disclaimer !== undefined
+            ? { ...spec, footnoteSymbol: disclaimerFootnotes.getSymbol(spec.row.disclaimer) }
+            : spec
 
     const headerHeight = props.verticalPlotSpecs.flatMap(p => p === undefined ? [] : p.plotProps).map(p => extraHeaderSpaceForVertical(p)).reduce((a, b) => Math.max(a, b), 0)
     const contentHeight = '379.5px'
 
     const shouldSetMinHeight = props.verticalPlotSpecs.some(p => p !== undefined)
     const overallMinHeight = shouldSetMinHeight ? `calc(${headerHeight}px + ${contentHeight})` : undefined
-    const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${props.leftHeaderSpec.leftHeaderSpecs.length})` : undefined
+    const rowMinHeight = shouldSetMinHeight ? `calc(${contentHeight} / ${leftHeaderSpecs.length})` : undefined
 
     // should be 1 column, unless there are header specs. only use header specs if we can't infer from the cells.
-    const ncols = props.rowSpecs.length !== 0 ? props.rowSpecs[0].length : props.superHeaderSpec?.headerSpecs.length ?? 1
+    const ncols = props.rowSpecs.length !== 0 ? props.rowSpecs[0].length : superHeaderSpecs?.length ?? 1
 
-    const extraSpaceRight = Array.from({ length: ncols }).map((_, i) => (props.verticalPlotSpecs[i] === undefined ? 0 : props.columnWidth))
-    const columnFullWidths = extraSpaceRight.map(extra => props.columnWidth + extra)
+    const columnRows = Array.from({ length: ncols }).map((_, colIndex) => props.rowSpecs.flatMap((row) => {
+        const cell = row[colIndex]
+        return cell.type === 'statistic-row' ? [cell.row] : []
+    }))
 
-    const columnWidthsInfo = Array.from({ length: ncols }).map((_, colIndex) => {
-        const widthsEach = props.rowSpecs.map(row => row[colIndex].type === 'statistic-row' ? computeSizesForRow(row[colIndex].row, universe, props.simpleOrdinals) : undefined)
-        const maxima = widthsEach.reduce((acc, curr) => {
-            if (curr === undefined) {
-                return acc
-            }
-            else if (acc === undefined) {
-                return curr
-            }
-            return {
-                ordinalColumnWidthEm: Math.max(acc.ordinalColumnWidthEm, curr.ordinalColumnWidthEm),
-                percentileColumnWidthEm: Math.max(acc.percentileColumnWidthEm, curr.percentileColumnWidthEm),
-                ordinalColumnPadding: Math.max(acc.ordinalColumnPadding, curr.ordinalColumnPadding),
-            }
-        }, { ordinalColumnWidthEm: 0, percentileColumnWidthEm: 0, ordinalColumnPadding: 0 })
-        return maxima
-    })
+    const layout = measuredLayout(
+        props.layout,
+        measureColumns(columnRows, universe, simpleOrdinals),
+        colIndex => props.verticalPlotSpecs[colIndex] === undefined ? 0 : columnWidth,
+    )
+    const fullWidths = columnFullWidths(layout)
+
+    const superHeaderSpec = props.superHeaderSpec === undefined
+        ? undefined
+        : { ...props.superHeaderSpec, headerSpecs: props.superHeaderSpec.headerSpecs.map(withFootnote) }
 
     return (
         <>
-            {props.superHeaderSpec !== undefined && (
-                <SuperHeaderHorizontal
-                    {...props.superHeaderSpec}
-                    headerSpecs={props.superHeaderSpec.headerSpecs.map((spec) => {
-                        if (screenshotMode && spec.type === 'statistic-name' && spec.row?.disclaimer !== undefined) {
-                            return { ...spec, footnoteSymbol: disclaimerFootnotes.getSymbol(spec.row.disclaimer) }
-                        }
-                        return spec
-                    })}
-                    leftSpacerWidth={props.widthLeftHeader}
-                    widthsEach={columnFullWidths}
-                />
-            )}
-
-            <div style={{ position: 'relative', minHeight: overallMinHeight }}>
-                <TableHeaderContainer>
-                    <MainHeaderRow
-                        columnWidth={props.columnWidth}
-                        topLeftSpec={props.topLeftSpec}
-                        topLeftWidth={props.widthLeftHeader}
-                        onlyColumns={props.onlyColumns}
-                        extraSpaceRight={extraSpaceRight}
-                        simpleOrdinals={props.simpleOrdinals}
-                        columnWidthsInfo={columnWidthsInfo}
-                    />
-                </TableHeaderContainer>
+            <TableFrame
+                layout={layout}
+                topLeftSpec={props.topLeftSpec}
+                superHeaderSpec={superHeaderSpec}
+                minHeight={overallMinHeight}
+            >
                 {props.rowSpecs.map((rowSpecsForItem, rowIndex) => {
                     const plotSpec = props.horizontalPlotSpecs[rowIndex]
                     return (
                         <SuperTableRow
                             key={`TableRowContainer_${rowIndex}`}
+                            layout={layout}
                             rowIndex={rowIndex}
                             rowMinHeight={rowMinHeight}
-                            cellSpecs={rowSpecsForItem.map((cellSpec, colIndex) => {
-                                if (cellSpec.type === 'statistic-row') {
-                                    return {
-                                        ...cellSpec,
-                                        columnWidthsInfo: columnWidthsInfo[colIndex],
-                                    }
-                                }
-                                return cellSpec
-                            })}
-                            extraSpaceRight={extraSpaceRight}
+                            cellSpecs={rowSpecsForItem}
                             plotSpec={plotSpec}
-                            leftHeaderSpec={(() => {
-                                const spec = props.leftHeaderSpec.leftHeaderSpecs[rowIndex]
-                                if (screenshotMode && spec.type === 'statistic-name' && spec.row?.disclaimer !== undefined) {
-                                    return { ...spec, footnoteSymbol: disclaimerFootnotes.getSymbol(spec.row.disclaimer) }
-                                }
-                                return spec
-                            })()}
-                            widthLeftHeader={props.widthLeftHeader}
-                            columnWidth={props.columnWidth}
+                            leftHeaderSpec={withFootnote(leftHeaderSpecs[rowIndex])}
                             groupName={props.leftHeaderSpec.groupNames?.[rowIndex]}
                             prevGroupName={rowIndex > 0 ? props.leftHeaderSpec.groupNames?.[rowIndex - 1] : undefined}
                             isHighlighted={props.highlightRowIndex === rowIndex}
@@ -162,14 +159,14 @@ export function TableContents(props: TableContentsProps): ReactNode {
                 })}
                 {props.verticalPlotSpecs.map((plotSpec, statIndex) => plotSpec
                     ? (
-                            <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${props.widthLeftHeader + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + columnFullWidths[i], props.columnWidth)}%`, bottom: 0, width: `${props.columnWidth}%` }}>
+                            <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${widthLeftHeader + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + fullWidths[i], columnWidth)}%`, bottom: 0, width: `${columnWidth}%` }}>
                                 <RenderedPlot statDescription={plotSpec.statDescription} plotProps={plotSpec.plotProps} />
                             </div>
                         )
                     : null,
                 )}
                 <RelativeLoader loading={props.loading ?? false} />
-            </div>
+            </TableFrame>
             {screenshotMode && disclaimerFootnotes.footnotes.length > 0 && (
                 <div className="disclaimer-footnotes serif" style={{ fontSize: '0.85em', marginTop: '1em', color: colors.textMain }}>
                     {disclaimerFootnotes.footnotes.map(({ symbol, text }) => (
@@ -185,47 +182,57 @@ export function TableContents(props: TableContentsProps): ReactNode {
     )
 }
 
+/**
+ * Everything a table has above its rows -- the optional super header, and the main header
+ * row of column names -- plus the positioned container the rows themselves live in, which
+ * the vertical plots are absolutely positioned against.
+ */
+function TableFrame(props: {
+    layout: MeasuredTableLayout
+    superHeaderSpec?: SuperHeaderSpec
+    topLeftSpec: CellSpec
+    minHeight?: string
+    children: ReactNode
+}): ReactNode {
+    const { widthLeftHeader, columnWidth, onlyColumns, simpleOrdinals, columnWidthsInfo, extraSpaceRight } = props.layout
+    return (
+        <>
+            {props.superHeaderSpec !== undefined && (
+                <SuperHeaderHorizontal
+                    {...props.superHeaderSpec}
+                    leftSpacerWidth={widthLeftHeader}
+                    widthsEach={columnFullWidths(props.layout)}
+                />
+            )}
+            <div style={{ position: 'relative', minHeight: props.minHeight }}>
+                <TableHeaderContainer>
+                    <MainHeaderRow
+                        columnWidth={columnWidth}
+                        topLeftSpec={props.topLeftSpec}
+                        topLeftWidth={widthLeftHeader}
+                        onlyColumns={onlyColumns}
+                        extraSpaceRight={extraSpaceRight}
+                        simpleOrdinals={simpleOrdinals}
+                        columnWidthsInfo={columnWidthsInfo}
+                    />
+                </TableHeaderContainer>
+                {props.children}
+            </div>
+        </>
+    )
+}
+
 function SuperTableRow(props: {
+    layout: MeasuredTableLayout
     rowIndex: number
     leftHeaderSpec: CellSpec
     cellSpecs: CellSpec[]
     plotSpec?: PlotSpec
-    widthLeftHeader: number
-    columnWidth: number
     rowMinHeight?: string
     groupName?: string
     prevGroupName?: string
-    extraSpaceRight: number[]
     isHighlighted: boolean
 }): ReactNode {
-    const congressionalRegions = useMemo(() => props.cellSpecs.flatMap((cell) => {
-        if (cell.type !== 'statistic-row') {
-            return []
-        }
-        if (cell.row.kind !== 'metadata') {
-            return []
-        }
-        if (typeof cell.row.statval === 'string') {
-            return []
-        }
-        return [{
-            longname: cell.longname,
-            representatives: cell.row.statval.representatives.map((r): CongressionalRepresentativeEntry => {
-                assert(r.representative.name !== undefined && r.representative.name !== null, 'representative name missing')
-                return {
-                    representative: {
-                        name: r.representative.name,
-                        wikipediaPage: r.representative.wikipediaPage ?? undefined,
-                        party: r.representative.party ?? undefined,
-                    },
-                    districtLongname: r.districtLongname,
-                    startTerm: r.startTerm,
-                    endTerm: r.endTerm,
-                }
-            }),
-        } satisfies CongressionalColumnData]
-    }), [props.cellSpecs])
-
     return (
         <div>
             {props.groupName !== undefined && (props.groupName !== props.prevGroupName) && (
@@ -237,14 +244,46 @@ function SuperTableRow(props: {
                     </div>
                 </TableRowContainer>
             )}
-            <TableRowContainer index={props.rowIndex} minHeight={props.rowMinHeight} isHighlighted={props.isHighlighted}>
-                <Cell {...props.leftHeaderSpec} width={props.widthLeftHeader} />
-                {props.cellSpecs.map((spec, colIndex) => (
-                    <Fragment key={`cells_${colIndex}_${props.rowIndex}`}>
-                        <Cell {...spec} width={props.columnWidth} />
-                        <div style={{ width: `${props.extraSpaceRight[colIndex]}%` }}></div>
-                    </Fragment>
-                ))}
+            <StatisticTableRow
+                layout={props.layout}
+                index={props.rowIndex}
+                leftHeader={<Cell {...props.leftHeaderSpec} width={props.layout.widthLeftHeader} />}
+                cellSpecs={props.cellSpecs}
+                plotSpec={props.plotSpec}
+                minHeight={props.rowMinHeight}
+                isHighlighted={props.isHighlighted}
+            />
+        </div>
+    )
+}
+
+/**
+ * The shape every statistic row has: a left header followed by a cell per column, and below
+ * it the blocks the row's extras call for -- its expanded plot and its representatives
+ * table. Callers differ only in what they put in the left header.
+ */
+function StatisticTableRow(props: {
+    layout: MeasuredTableLayout
+    index: number
+    leftHeader: ReactNode
+    cellSpecs: CellSpec[]
+    plotSpec?: PlotSpec
+    minHeight?: string
+    isHighlighted?: boolean
+}): ReactNode {
+    const { layout, cellSpecs } = props
+    /*
+     * Deliberately not memoized. The representatives widget only puts the terms that were
+     * on screen into a screenshot, and it re-measures which those are off a change of
+     * identity here -- so holding this steady across renders empties the screenshot.
+     */
+    const congressionalRegions = congressionalRegionsForCells(cellSpecs)
+
+    return (
+        <>
+            <TableRowContainer index={props.index} minHeight={props.minHeight} isHighlighted={props.isHighlighted}>
+                {props.leftHeader}
+                <RowCells layout={layout} cellSpecs={cellSpecs} />
             </TableRowContainer>
             {props.plotSpec && (
                 <div style={{ width: '100%', position: 'relative' }}>
@@ -254,13 +293,42 @@ function SuperTableRow(props: {
             {congressionalRegions.length > 0 && (
                 <CongressionalRepresentativesWidget
                     regions={congressionalRegions}
-                    widthLeftHeader={props.widthLeftHeader}
-                    columnWidth={props.columnWidth}
-                    extraSpaceRight={props.extraSpaceRight}
+                    widthLeftHeader={layout.widthLeftHeader}
+                    columnWidth={layout.columnWidth}
+                    extraSpaceRight={layout.extraSpaceRight}
                 />
             )}
-        </div>
+        </>
     )
+}
+
+/**
+ * A row's cells, each followed by the space its column reserves to the right. Statistic
+ * cells are given their column's measured widths here, so every table that renders a row
+ * of cells lines its columns up the same way.
+ */
+function RowCells(props: { layout: MeasuredTableLayout, cellSpecs: CellSpec[] }): ReactNode {
+    const { columnWidth, extraSpaceRight, columnWidthsInfo } = props.layout
+    return props.cellSpecs.map((spec, colIndex) => (
+        <Fragment key={colIndex}>
+            <Cell
+                {...(spec.type === 'statistic-row' ? { ...spec, columnWidthsInfo: columnWidthsInfo[colIndex] } : spec)}
+                width={columnWidth}
+            />
+            <div style={{ width: `${extraSpaceRight[colIndex]}%` }}></div>
+        </Fragment>
+    ))
+}
+
+/** The representatives tables a row's cells call for, in column order. */
+function congressionalRegionsForCells(cellSpecs: CellSpec[]): CongressionalColumnData[] {
+    return cellSpecs.flatMap((cell) => {
+        if (cell.type !== 'statistic-row') {
+            return []
+        }
+        const data = congressionalDataForRow(cell.row, cell.longname)
+        return data === undefined ? [] : [data]
+    })
 }
 
 export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCellProps) |

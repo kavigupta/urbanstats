@@ -7,11 +7,10 @@ import { Navigator } from '../navigation/Navigator'
 import { HueColors } from '../page_template/color-themes'
 import { useColors } from '../page_template/colors'
 import { relationshipKey, useSettings } from '../page_template/settings'
-import { useUniverse } from '../universe'
+import { useDefinedUniverse, useUniverse } from '../universe'
 import { DefaultMap } from '../utils/DefaultMap'
 import { withButtonRole } from '../utils/a11y'
 import { mixWithBackground } from '../utils/color'
-import { assert } from '../utils/defensive'
 import { useMobileLayout } from '../utils/responsive'
 import { isAllowedToBeShown } from '../utils/restricted-types'
 import { displayType } from '../utils/text'
@@ -237,8 +236,7 @@ function Row(props: {
 
     const checkId = useId()
 
-    const universe = useUniverse()
-    assert(universe !== undefined, 'no universe')
+    const universe = useDefinedUniverse()
 
     return (
         <li style={{
@@ -306,8 +304,7 @@ export function Related(props: { articleType: string, related: { relationshipTyp
     const showSettings = useSettings(['show_historical_cds', 'show_person_circles'])
     const buttons = new DefaultMap<string, DefaultMap<string, Region[]>>(() => new DefaultMap(() => []))
 
-    const universe = useUniverse()
-    assert(universe !== undefined, 'no universe')
+    const universe = useDefinedUniverse()
 
     const [searchTerm, setSearchTerm] = useState('')
 

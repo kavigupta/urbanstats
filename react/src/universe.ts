@@ -3,6 +3,7 @@ import { z } from 'zod'
 
 import universes_default from './data/universes_default'
 import universes_ordered from './data/universes_ordered'
+import { assert } from './utils/defensive'
 
 export type Universe = (typeof universes_ordered)[number]
 
@@ -12,6 +13,13 @@ export function useUniverseContext(): UniverseContext | undefined {
 
 export function useUniverse(): Universe | undefined {
     return useUniverseContext()?.universe
+}
+
+/** The current universe, for the components that only render on pages that have one. */
+export function useDefinedUniverse(): Universe {
+    const universe = useUniverse()
+    assert(universe !== undefined, 'no universe')
+    return universe
 }
 
 export function defaultArticleUniverse(articleUniverses: Universe[]): typeof universes_default[number] {
