@@ -3,7 +3,8 @@ import React, { ReactNode } from 'react'
 import { useAvailableYears } from '../page_template/statistic-settings'
 import { Year } from '../page_template/statistic-tree'
 
-import { CheckboxSetting, useSidebarFontSize } from './sidebar'
+import { CheckboxSetting } from './checkbox-setting'
+import { useSidebarFontSize } from './sidebar'
 
 export function Years(): ReactNode {
     return useAvailableYears().map(year => <YearCheckbox key={year} year={year} />)
