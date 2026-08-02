@@ -11,20 +11,34 @@ import { isStagedChange, SettingsDictionary, useSetting, useSettingInfo } from '
 // type representing a key of SettingsDictionary that have boolean values
 export type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean | undefined ? K : never]: boolean }
 
+/** What a checkbox needs to render a boolean setting, wherever the checkbox itself lives. */
+function useBooleanSetting(settingKey: BooleanSettingKey, forcedOn?: boolean): {
+    checked: boolean
+    setChecked: (checked: boolean) => void
+    highlight: boolean
+} {
+    const [checked, setChecked] = useSetting(settingKey)
+    const info = useSettingInfo(settingKey)
+    return {
+        checked: (checked ?? false) || (forcedOn ?? false),
+        setChecked,
+        highlight: isStagedChange(info),
+    }
+}
+
 export function CheckboxSetting(props: { name: string, settingKey: BooleanSettingKey, classNameToUse?: string, id?: string, testId?: string, forcedOn?: boolean, fontSize?: string }): ReactNode {
-    const [checked, setChecked] = useSetting(props.settingKey)
-    const info = useSettingInfo(props.settingKey)
+    const { checked, setChecked, highlight } = useBooleanSetting(props.settingKey, props.forcedOn)
 
     return (
         <CheckboxSettingCustom
             name={props.name}
-            checked={(checked ?? false) || (props.forcedOn ?? false)}
+            checked={checked}
             forcedOn={props.forcedOn}
             onChange={setChecked}
             classNameToUse={props.classNameToUse}
             id={props.id}
             testId={props.testId}
-            highlight={isStagedChange(info)}
+            highlight={highlight}
             fontSize={props.fontSize}
         />
     )
