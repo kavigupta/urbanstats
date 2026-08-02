@@ -6,7 +6,8 @@ import { useSetting } from '../page_template/settings'
 import { convertPrecipitation, convertTemperature } from '../utils/unit'
 
 import { MonthlyExtraStat } from './load-article'
-import { categoricalAxisMarks, computeDashPatterns, DetailedPlotSpec, ordinalSeriesMarks, paddedYDomain, SeriesPlot, seriesTip } from './plots-general'
+import { categoricalAxisMarks, computeDashPatterns, DetailedPlotSpec, ordinalSeriesMarks, paddedYDomain, PinnedTips, SeriesPlot, seriesTip } from './plots-general'
+import { PlotRect } from './plots-tip-anchor'
 
 const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -38,7 +39,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
     const { combinedLabel } = props
 
     const buildPlot = useCallback(
-        (transpose: boolean, leftLabelOffset: number): DetailedPlotSpec => {
+        (transpose: boolean, leftLabelOffset: number, pinnedTips: PinnedTips, legend: PlotRect | undefined): DetailedPlotSpec => {
             const monthIdxs = Array.from({ length: 12 }, (_, i) => i)
             const seriesData = props.stats.map(series => ({
                 series,
@@ -59,7 +60,7 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
             )
 
             marks.push(
-                seriesTip(
+                ...seriesTip(
                     seriesData,
                     monthIdxs,
                     transpose,
@@ -67,6 +68,8 @@ export function MonthlyPlot(props: { stats: MonthlyPlotProps[], sharedTypeOfAllA
                     i => monthLabels[i],
                     v => `${v.toFixed(1)}${unitSuffix}`,
                     colors,
+                    pinnedTips,
+                    legend,
                 ),
             )
 

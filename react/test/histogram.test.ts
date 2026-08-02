@@ -1,4 +1,4 @@
-import { Selector } from 'testcafe'
+import { ClientFunction, Selector } from 'testcafe'
 
 import { target, checkIndividualStat, checkSidebarTextboxes, checkTextboxes, comparisonPage, downloadHistogram, downloadImage, downloadOrCheckString, screencap, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult, getLocationWithoutSettings } from './test_utils'
 
@@ -378,6 +378,162 @@ test('histogram-monthly-comparison-both-rain-snow-valid', async (t) => {
     await t.click(Selector('[aria-label="Expand Rainfall"]'))
     await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Rain$/).exists).ok('Rain legend entry')
     await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Snow$/).exists).ok('Snow legend entry')
+    await downloadHistogram(t, 0)
+})
+
+// Clicking a point pins its tooltip: unlike the hover tooltip, a pinned one survives the mouse
+// leaving the chart and is drawn into the downloaded image. Any number of points can be pinned at
+// once, each dismissed with the little "x" in its corner, and the pins are per-plot component
+// state, so navigating away clears them.
+urbanstatsFixture('histogram pinned tooltip', `${target}/article.html?longname=Germany&universe=world`)
+
+const pinnedTip = Selector('.histogram-svg-panel').find('g.plot-pinned-tip')
+const dismissPinnedTip = Selector('[data-test-id=dismiss_pinned_tooltip]')
+
+test('histogram-pinned-tooltip', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await t.click(Selector('.expand-toggle'))
+    await t.expect(pinnedTip.exists).notOk('no tooltip is pinned until one is clicked')
+
+    const panel = Selector('.histogram-svg-panel')
+    await t.click(panel, { offsetX: 500, offsetY: 200 })
+    await t.expect(pinnedTip.exists).ok('clicking the chart pins the pointed-at tooltip')
+    await t.expect(pinnedTip.find('tspan').withText(/^.?Density: /).exists).ok('pinned tooltip shows the density it is pinned to')
+    await t.expect(dismissPinnedTip.exists).ok('pinned tooltip has a dismiss button')
+
+    // the pin is what distinguishes this from the hover tooltip: moving off the chart, and even
+    // clicking elsewhere on the page, leaves it in place
+    await t.hover('body', { offsetX: 0, offsetY: 0 })
+    await t.expect(pinnedTip.exists).ok('pinned tooltip outlives the pointer leaving the chart')
+    await t.click(Selector('.expand-toggle'))
+    await t.click(Selector('.expand-toggle'))
+    await t.expect(pinnedTip.exists).notOk('collapsing the plot discards the pin along with the plot')
+
+    await t.click(panel, { offsetX: 500, offsetY: 200 })
+    await t.expect(pinnedTip.exists).ok()
+    // pins accumulate rather than replacing each other
+    await t.click(panel, { offsetX: 250, offsetY: 200 })
+    await t.expect(pinnedTip.count).eql(2, 'a second click pins a second tooltip')
+    await screencap(t)
+    // the point of all this: the tooltips are part of the plot we re-render for the download
+    await downloadHistogram(t, 0)
+
+    await t.click(dismissPinnedTip)
+    await t.expect(pinnedTip.count).eql(1, 'a dismiss button unpins only its own tooltip')
+    await t.click(dismissPinnedTip)
+    await t.expect(pinnedTip.exists).notOk('the dismiss button unpins the tooltip')
+})
+
+// pins are per-plot component state, so several graphs on a page each keep their own set, and each
+// graph carries only its own into the image it exports
+test('histogram-pinned-tooltip-multiple-graphs', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await checkTextboxes(t, ['Other Density Metrics'])
+    const count = await Selector('.expand-toggle').count
+    for (let i = 0; i < count; i++) {
+        await t.click(Selector('.expand-toggle').nth(i))
+    }
+    const panels = Selector('.histogram-svg-panel')
+    await t.expect(panels.count).gte(2, 'this test needs more than one graph on the page')
+
+    const firstPanel = panels.nth(0)
+    const secondPanel = panels.nth(1)
+    await t.click(firstPanel, { offsetX: 400, offsetY: 200 })
+    await t.click(firstPanel, { offsetX: 650, offsetY: 200 })
+    await t.click(secondPanel, { offsetX: 500, offsetY: 200 })
+    await t.expect(firstPanel.find('g.plot-pinned-tip').count).eql(2, 'both pins land on the graph they were clicked on')
+    await t.expect(secondPanel.find('g.plot-pinned-tip').count).eql(1, 'a pin on one graph does not show up on another')
+
+    await screencap(t)
+    // the whole-page export and each graph's own export both draw the pins they contain
+    await downloadImage(t)
+    await downloadHistogram(t, 0)
+    await downloadHistogram(t, 1)
+})
+
+test('histogram-pinned-tooltip-cleared-by-navigation', async (t) => {
+    await t.resizeWindow(1400, 800)
+    await t.click(Selector('.expand-toggle'))
+    await t.click(Selector('.histogram-svg-panel'), { offsetX: 500, offsetY: 200 })
+    await t.expect(pinnedTip.exists).ok()
+
+    await t.navigateTo(`${target}/article.html?longname=France&universe=world`)
+    await waitForLoading()
+    await t.expect(Selector('.histogram-svg-panel').exists).ok('the expanded state itself is a setting, so it persists')
+    await t.expect(pinnedTip.exists).notOk('the pin is not persistent state, and does not survive a navigation')
+})
+
+// what a tooltip has to stay clear of: the top of the frame, taken as its highest gridline, and the
+// legend drawn inside it. `tipGroup` selects the mark the tooltip belongs to, which is either the
+// pointer-driven tip or a pinned one -- the placement they get is the same either way.
+const tooltipGeometry = ClientFunction((tipGroup: string) => {
+    const panel = document.getElementsByClassName('histogram-svg-panel')[0]
+    // the tooltip proper is the mark group's child; the leader back to its point is a sibling of it
+    const tooltip = panel.querySelector(`${tipGroup} > g`)!.getBoundingClientRect()
+    const legend = panel.querySelector('[data-test-id=plot_legend]')!.getBoundingClientRect()
+    const gridlines = Array.from(panel.querySelectorAll('g[aria-label="y-grid"] line'))
+    return {
+        tooltipTop: tooltip.top,
+        frameTop: Math.min(...gridlines.map(line => line.getBoundingClientRect().top)),
+        overlapsLegend: tooltip.left < legend.right && legend.left < tooltip.right
+        && tooltip.top < legend.bottom && legend.top < tooltip.bottom,
+    }
+})
+
+// the leader is drawn a frame after the tooltip, so this is also what waits for the tooltip to
+// have settled into its final place before it gets measured
+const tooltipLeader = Selector('.histogram-svg-panel').find('g[aria-label=tip] > path')
+const pinnedTipLeader = Selector('.histogram-svg-panel').find('g.plot-pinned-tip > path')
+
+// A cumulative relative histogram is at 100% on the left, so a tooltip there is anchored at the
+// very top of the frame, and on a comparison it is several lines tall. Plot would fit such a
+// tooltip into the top margin, drawing it across the frame and under the settings bar (#2083); it
+// belongs below its point instead -- and below the legend, which is drawn in that same corner.
+urbanstatsFixture('tooltip against the top of the frame', comparisonPage(['China', 'USA', 'Japan', 'Indonesia']))
+
+test('histogram-tooltip-top-of-frame', async (t) => {
+    // the GHS-POP row, since it is the one every country has data for -- the census rows would
+    // leave a single series, and a lone series draws no legend to run into
+    await t.click(Selector('[aria-label="Expand PW Density (r=1km) [GHS-POP]"]'))
+    await t.expect(Selector('[data-test-id=histogram_relative]').checked).ok('relative histograms are on by default, which is what puts the left of the curve at 100%')
+    const histogramType = Selector('[data-test-id=histogram_type]')
+    await t.click(histogramType).click(histogramType.find('option').withExactText('Line (cumulative)'))
+
+    // the left of the curve is both the top of the frame and its left edge, so the tooltip has
+    // nowhere to go but down and to the right
+    await t.hover(Selector('.histogram-svg-panel'), { offsetX: 150, offsetY: 200 })
+    await t.expect(tooltipLeader.exists).ok('a tooltip moved off its point is joined back to it by a leader')
+
+    const { tooltipTop, frameTop, overlapsLegend } = await tooltipGeometry('g[aria-label=tip]')
+    await t.expect(tooltipTop).gte(frameTop - 1, 'the tooltip hangs below its point rather than across the top of the frame')
+    await t.expect(overlapsLegend).notOk('the tooltip is dropped past the legend rather than drawn onto it')
+
+    // fullPage would hover the corner of the page first, which would take the tooltip away with it
+    await screencap(t, { fullPage: false, selector: Selector('.histogram-svg-panel') })
+})
+
+// the same placement, for a tooltip that was pinned at that point rather than hovered -- a pinned
+// one outlives the pointer, so unlike the hover case it can be captured in a full-page screenshot
+// and drawn into the downloaded image
+urbanstatsFixture('pinned tooltip against the top of the frame', comparisonPage(['Canada', 'USA', 'Mexico', 'Germany']))
+
+test('histogram-pinned-tooltip-top-of-frame', async (t) => {
+    await t.click(Selector('.expand-toggle'))
+    await t.expect(Selector('[data-test-id=histogram_relative]').checked).ok('relative histograms are on by default, which is what puts the left of the curve at 100%')
+    const histogramType = Selector('[data-test-id=histogram_type]')
+    await t.click(histogramType).click(histogramType.find('option').withExactText('Line (cumulative)'))
+
+    // the left of the curve is both the top of the frame and its left edge, so the tooltip has
+    // nowhere to go but down and to the right
+    await t.click(Selector('.histogram-svg-panel'), { offsetX: 150, offsetY: 200 })
+    await t.expect(pinnedTip.exists).ok('clicking the left of the curve pins a tooltip')
+
+    await t.expect(pinnedTipLeader.exists).ok('a tooltip moved off its point is joined back to it by a leader')
+    const { tooltipTop, frameTop, overlapsLegend } = await tooltipGeometry('g.plot-pinned-tip')
+    await t.expect(tooltipTop).gte(frameTop - 1, 'the tooltip hangs below its point rather than across the top of the frame')
+    await t.expect(overlapsLegend).notOk('the tooltip is dropped past the legend rather than drawn onto it')
+
+    await screencap(t)
     await downloadHistogram(t, 0)
 })
 
