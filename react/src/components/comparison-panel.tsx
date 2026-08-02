@@ -303,7 +303,7 @@ export function ComparisonPanel(props: {
 
     const topLeftSpec: TopLeftCellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
 
-    // "Edit Statistics" rather than "Edit", to distinguish it from editing the regions being
+    // "Select Statistics" rather than "Select", to distinguish it from editing the regions being
     // compared, which the column headers do. The top-left cell is too narrow here to hold both
     // the button and the column's name.
     const editStatisticsButton: TableEditButton = { open: false, onEdit: () => { setEditMode(true) }, label: 'Select Statistics', placement: 'super-header' }

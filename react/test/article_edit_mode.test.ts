@@ -39,7 +39,7 @@ editModeSharedTests({
     name: 'article',
     page: californiaPage,
     scope: articleTableScope,
-    editButtonLabel: 'Edit',
+    editButtonLabel: 'Select',
     // A single column, so its plot has only the one unnamed series.
     expectedPlotSeries: [],
     congressional: {

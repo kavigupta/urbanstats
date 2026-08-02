@@ -72,7 +72,7 @@ export function measuredLayout(layout: TableLayout, columnWidthsInfo: CommonLayo
 }
 
 /** Each column's width including the space reserved to its right. */
-export function columnFullWidths(layout: MeasuredTableLayout): number[] {
+function columnFullWidths(layout: MeasuredTableLayout): number[] {
     return layout.extraSpaceRight.map(extra => layout.columnWidth + extra)
 }
 

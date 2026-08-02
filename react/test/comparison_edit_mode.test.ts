@@ -89,7 +89,7 @@ editModeSharedTests({
     page: twoRegions,
     scope: comparisonTableScope,
     // Named to distinguish it from the per-region replace/delete controls.
-    editButtonLabel: 'Edit Statistics',
+    editButtonLabel: 'Select Statistics',
     expectedPlotSeries: ['Upper San Gabriel Valley CCD', 'Southwest San Gabriel Valley CCD'],
     congressional: {
         page: comparisonPage(['02139, USA', '10001, USA']),
