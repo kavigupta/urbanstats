@@ -36,6 +36,9 @@ import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCell
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
+/** Just the value, for the tables that have no room for the ordinal and percentile columns. */
+export const valueOnlyColumns: ColumnIdentifier[] = ['statval', 'statval_unit']
+
 const leftBarMargin = 0.02
 
 const tableRowStyle: React.CSSProperties = {
@@ -941,6 +944,22 @@ function SortButton(props: StatisticNameCellProps & { sortInfo: NonNullable<Stat
     )
 }
 
+/**
+ * The controls that sit next to a statistic's name: the plot expander and the disclaimer
+ * marker.
+ */
+function useStatisticNameAdornments(row: ArticleRow | undefined, footnote?: string): ReactNode[] {
+    const screenshotMode = useScreenshotMode()
+    const adornments: ReactNode[] = []
+    if (row !== undefined && row.extraStats.length !== 0 && !screenshotMode) {
+        adornments.push(<ExpansionButton key="expansion" row={row} />)
+    }
+    if (row?.disclaimer !== undefined) {
+        adornments.push(<StatisticNameDisclaimer key="disclaimer" disclaimer={row.disclaimer} footnoteSymbol={footnote} />)
+    }
+    return adornments
+}
+
 function ExpansionButton(props: { row: ArticleRow }): ReactNode {
     const [expanded, setExpanded] = useSetting(rowExpandedKey(props.row.statpath))
     const colors = useColors()
@@ -1005,16 +1024,7 @@ function StatisticName(props: {
                         {reifyReact(props.displayName)}
                     </span>
                 )
-    const screenshotMode = useScreenshotMode()
-    const elements = [link]
-    if (props.row !== undefined && props.row.extraStats.length !== 0 && !screenshotMode) {
-        elements.push(
-            <ExpansionButton key="expansion" row={props.row} />,
-        )
-    }
-    if (props.row?.disclaimer !== undefined) {
-        elements.push(<StatisticNameDisclaimer disclaimer={props.row.disclaimer} footnoteSymbol={props.footnoteSymbol} />)
-    }
+    const elements = [link, ...useStatisticNameAdornments(props.row, props.footnoteSymbol)]
     if (elements.length > 1) {
         const footnoteOnly = elements.length === 2 && props.footnoteSymbol !== undefined
         if (footnoteOnly) {
@@ -1069,11 +1079,16 @@ function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undef
     )
 }
 
-export function computeDisclaimerFootnotes(rows: { disclaimer?: Disclaimer }[]): { getSymbol: (d: Disclaimer) => string, footnotes: { symbol: string, text: string }[] } {
+/**
+ * The numbered footnotes a table's disclaimers collapse into for a screenshot, drawn from the
+ * statistics its name cells refer to -- the same cells that then show the symbols.
+ */
+export function computeDisclaimerFootnotes(specs: CellSpec[]): { getSymbol: (d: Disclaimer) => string, footnotes: { symbol: string, text: string }[] } {
     const uniqueMessages: string[] = []
-    for (const row of rows) {
-        if (row.disclaimer !== undefined) {
-            const msg = computeDisclaimerText(row.disclaimer)
+    for (const spec of specs) {
+        const disclaimer = spec.type === 'statistic-name' ? spec.row?.disclaimer : undefined
+        if (disclaimer !== undefined) {
+            const msg = computeDisclaimerText(disclaimer)
             if (!uniqueMessages.includes(msg)) {
                 uniqueMessages.push(msg)
             }
@@ -1124,7 +1139,7 @@ function StatisticNameDisclaimer(props: { disclaimer: Disclaimer, footnoteSymbol
     )
 }
 
-export function TableRowContainer({ children, index, minHeight, isHighlighted }: { children: React.ReactNode, index: number, minHeight?: string, isHighlighted: boolean }): React.ReactNode {
+export function TableRowContainer({ children, index, minHeight, isHighlighted = false }: { children: React.ReactNode, index: number, minHeight?: string, isHighlighted?: boolean }): React.ReactNode {
     const colors = useColors()
     const style: React.CSSProperties = {
         ...tableRowStyle,
@@ -1191,7 +1206,7 @@ function ordinalWidthInEm(ordinal: number, total: number, type: string, universe
     }
 }
 
-export function computeSizesForRow(row: StatisticCellRenderingInfo, universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
+function computeSizesForRow(row: StatisticCellRenderingInfo, universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
     // Compute the size of the ordinal and percentile text
     if (row.kind !== 'statistic') {
         return {
@@ -1212,6 +1227,18 @@ export function computeSizesForRow(row: StatisticCellRenderingInfo, universe: st
         ordinalColumnPadding,
         percentileColumnWidthEm: percentileColumnWidthEm + editableBoxPad,
     }
+}
+
+/** Column widths that fit every row, i.e. the maximum of each row's requirement. */
+export function maxLayoutInformation(rows: StatisticCellRenderingInfo[], universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
+    return rows.reduce<CommonLayoutInformation>((acc, row) => {
+        const curr = computeSizesForRow(row, universe, simpleOrdinals)
+        return {
+            ordinalColumnWidthEm: Math.max(acc.ordinalColumnWidthEm, curr.ordinalColumnWidthEm),
+            percentileColumnWidthEm: Math.max(acc.percentileColumnWidthEm, curr.percentileColumnWidthEm),
+            ordinalColumnPadding: Math.max(acc.ordinalColumnPadding, curr.ordinalColumnPadding),
+        }
+    }, { ordinalColumnWidthEm: 0, percentileColumnWidthEm: 0, ordinalColumnPadding: 0 })
 }
 
 function Percentile(props: {

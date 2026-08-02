@@ -32,8 +32,8 @@ import { createScreenshot, ScreencapElements, useScreenshotMode } from './screen
 import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
 import { computeNameSpecsWithGroups } from './statistic-name-specs'
-import { TableContents, CellSpec, PlotSpec } from './supertable'
-import { ColumnIdentifier } from './table'
+import { TableContents, CellSpec, PlotSpec, TableLayout } from './supertable'
+import { ColumnIdentifier, valueOnlyColumns } from './table'
 
 export function ComparisonPanel(props: {
     universe: Universe
@@ -159,7 +159,7 @@ export function ComparisonPanel(props: {
         && (validOrdinalsByStat.length === 0 || validOrdinalsByStat.some(x => x))
     )
 
-    const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
+    const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : valueOnlyColumns
 
     const expandedByStatIndex = useExpandedByStat(
         dataByStatArticle.map(([{ statpath }]) => statpath),
@@ -292,6 +292,32 @@ export function ComparisonPanel(props: {
 
     const topLeftSpec: CellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
 
+    const layout: TableLayout = {
+        widthLeftHeader: leftMarginPercent * 100,
+        columnWidth,
+        onlyColumns,
+        simpleOrdinals: true,
+    }
+
+    // Transposing swaps which axis the statistics run along, so it swaps the headers, the
+    // row specs, and which direction the expanded plots stretch in. Everything else about
+    // the table is the same either way.
+    const orientedSpecs = transpose
+        ? {
+                superHeaderSpec: { headerSpecs: statisticNameHeaderSpecs, showBottomBar: false, groupNames: statisticNameGroupNames },
+                leftHeaderSpec: { leftHeaderSpecs: longnameHeaderSpecs },
+                rowSpecs: rowSpecsByStatTransposed,
+                horizontalPlotSpecs: plotSpecs.map(() => undefined),
+                verticalPlotSpecs: plotSpecs,
+            }
+        : {
+                superHeaderSpec: { headerSpecs: longnameHeaderSpecs, showBottomBar: true },
+                leftHeaderSpec: { leftHeaderSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames },
+                rowSpecs: rowSpecsByStat,
+                horizontalPlotSpecs: plotSpecs,
+                verticalPlotSpecs: [],
+            }
+
     const csvExportCallback = useCallback<CSVExportData>(() => {
         const data = generateCSVDataForArticles(localArticlesToUse, dataByArticleStat, includeOrdinals)
         const filename = `${sanitize(joinedString)}.csv`
@@ -357,35 +383,11 @@ export function ComparisonPanel(props: {
 
                                 <MaybeScroll widthColumns={widthColumns}>
                                     <div ref={tableRef}>
-                                        {transpose
-                                            ? (
-                                                    <TableContents
-                                                        superHeaderSpec={{ headerSpecs: statisticNameHeaderSpecs, showBottomBar: false, groupNames: statisticNameGroupNames }}
-                                                        leftHeaderSpec={{ leftHeaderSpecs: longnameHeaderSpecs }}
-                                                        rowSpecs={rowSpecsByStatTransposed}
-                                                        horizontalPlotSpecs={plotSpecs.map(() => undefined)}
-                                                        verticalPlotSpecs={plotSpecs}
-                                                        topLeftSpec={topLeftSpec}
-                                                        widthLeftHeader={leftMarginPercent * 100}
-                                                        columnWidth={columnWidth}
-                                                        onlyColumns={onlyColumns}
-                                                        simpleOrdinals={true}
-                                                    />
-                                                )
-                                            : (
-                                                    <TableContents
-                                                        superHeaderSpec={{ headerSpecs: longnameHeaderSpecs, showBottomBar: true }}
-                                                        leftHeaderSpec={{ leftHeaderSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames }}
-                                                        rowSpecs={rowSpecsByStat}
-                                                        horizontalPlotSpecs={plotSpecs}
-                                                        verticalPlotSpecs={[]}
-                                                        topLeftSpec={topLeftSpec}
-                                                        widthLeftHeader={leftMarginPercent * 100}
-                                                        columnWidth={columnWidth}
-                                                        onlyColumns={onlyColumns}
-                                                        simpleOrdinals={true}
-                                                    />
-                                                )}
+                                        <TableContents
+                                            layout={layout}
+                                            {...orientedSpecs}
+                                            topLeftSpec={topLeftSpec}
+                                        />
                                         <ArticleWarnings />
                                     </div>
                                 </MaybeScroll>

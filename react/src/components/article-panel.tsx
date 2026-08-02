@@ -181,10 +181,7 @@ function ArticleTable(props: {
                 horizontalPlotSpecs={plotSpecs}
                 verticalPlotSpecs={[]}
                 topLeftSpec={topLeftSpec}
-                widthLeftHeader={widthLeftHeader}
-                columnWidth={columnWidth}
-                onlyColumns={onlyColumns}
-                simpleOrdinals={simpleOrdinals}
+                layout={{ widthLeftHeader, columnWidth, onlyColumns, simpleOrdinals }}
             />
             <ArticleWarnings />
         </div>

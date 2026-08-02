@@ -4,7 +4,7 @@ import { isNoValue, StatisticCellRenderingInfo } from '../components/load-articl
 import { PointerArrow } from '../components/pointer-cell'
 import { computeComparisonWidthColumns, MaybeScroll } from '../components/scrollable'
 import { CellSpec, SuperHeaderSpec, TableContents } from '../components/supertable'
-import { ColumnIdentifier } from '../components/table'
+import { ColumnIdentifier, valueOnlyColumns } from '../components/table'
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
 import { useDefinedUniverse } from '../universe'
@@ -72,7 +72,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
 
     const currentUniverse = useDefinedUniverse()
 
-    const onlyColumns: ColumnIdentifier[] = data.hideOrdinalsPercentiles ? ['statval', 'statval_unit'] : ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
+    const onlyColumns: ColumnIdentifier[] = data.hideOrdinalsPercentiles ? valueOnlyColumns : ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
 
     const allColumnRows: StatisticCellRenderingInfo[][] = data.table.map((col) => {
         return indexRange.map((rangeIdx) => {
@@ -167,10 +167,7 @@ export function StatisticPanelTable({ view, stat, data, set, tableRef, loading, 
                         verticalPlotSpecs={[]}
                         topLeftSpec={topLeftSpec}
                         superHeaderSpec={superHeaderSpec}
-                        widthLeftHeader={widthLeftHeader}
-                        columnWidth={columnWidth}
-                        onlyColumns={onlyColumns}
-                        simpleOrdinals={true}
+                        layout={{ widthLeftHeader, columnWidth, onlyColumns, simpleOrdinals: true }}
                         highlightRowIndex={highlightRowIndex}
                         loading={loading}
                     />
