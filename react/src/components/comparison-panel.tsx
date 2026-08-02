@@ -397,6 +397,7 @@ export function ComparisonPanel(props: {
 
                                 <MaybeScroll widthColumns={widthColumns}>
                                     <div ref={tableRef} data-test-id="comparison-table">
+                                        <ArticleWarnings />
                                         {editMode
                                             ? (
                                                     <ComparisonEditTable
@@ -420,7 +421,6 @@ export function ComparisonPanel(props: {
                                                         topLeftSpec={topLeftSpec}
                                                     />
                                                 )}
-                                        <ArticleWarnings />
                                     </div>
                                 </MaybeScroll>
                                 <div className="gap"></div>

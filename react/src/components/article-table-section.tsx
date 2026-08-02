@@ -21,6 +21,7 @@ export function ArticleTableSection(props: {
 
     return (
         <div className="stats_table">
+            <ArticleWarnings />
             {editState.editMode
                 ? (
                         <ArticleEditTable
@@ -36,7 +37,6 @@ export function ArticleTableSection(props: {
                             onEdit={() => { editState.setEditMode(true) }}
                         />
                     )}
-            <ArticleWarnings />
         </div>
     )
 }
