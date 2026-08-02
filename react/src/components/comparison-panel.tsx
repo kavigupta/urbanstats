@@ -22,7 +22,7 @@ import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHead
 import { TransposeContext } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
-import { ArticleWarnings } from './ArticleWarnings'
+import { placeWarnings, useArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { useCSVExport } from './csv-export'
 import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
@@ -293,6 +293,8 @@ export function ComparisonPanel(props: {
             : undefined,
     )
 
+    const warnings = useArticleWarnings()
+
     const topLeftSpec: CellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
 
     const layout: TableLayout = {
@@ -304,7 +306,8 @@ export function ComparisonPanel(props: {
 
     // Transposing swaps which axis the statistics run along, so it swaps the headers, the
     // row specs, and which direction the expanded plots stretch in. Everything else about
-    // the table is the same either way.
+    // the table is the same either way. Transposed, there is no row for a warning to take the
+    // place of, so the warnings go underneath the table instead.
     const orientedSpecs = transpose
         ? {
                 superHeaderSpec: { headerSpecs: statisticNameHeaderSpecs, showBottomBar: false, groupNames: statisticNameGroupNames },
@@ -312,6 +315,7 @@ export function ComparisonPanel(props: {
                 rowSpecs: rowSpecsByStatTransposed,
                 horizontalPlotSpecs: plotSpecs.map(() => undefined),
                 verticalPlotSpecs: plotSpecs,
+                warningRows: warnings.map(({ name, content }) => ({ index: rowSpecsByStatTransposed.length, name, content })),
             }
         : {
                 superHeaderSpec: { headerSpecs: longnameHeaderSpecs, showBottomBar: true },
@@ -319,6 +323,7 @@ export function ComparisonPanel(props: {
                 rowSpecs: rowSpecsByStat,
                 horizontalPlotSpecs: plotSpecs,
                 verticalPlotSpecs: [],
+                warningRows: placeWarnings(dataByStatArticle.map(rowsForStat => rowsForStat[0].statpath), warnings),
             }
 
     const csvExportCallback = useCSVExport(localArticlesToUse, props.rows, includeOrdinals, joinedString)
@@ -387,7 +392,6 @@ export function ComparisonPanel(props: {
                                             {...orientedSpecs}
                                             topLeftSpec={topLeftSpec}
                                         />
-                                        <ArticleWarnings />
                                     </div>
                                 </MaybeScroll>
                                 <div className="gap"></div>

@@ -58,6 +58,6 @@ test('can visit sitemap links', async (t) => {
         await t.navigateTo(url)
         await waitForLoading()
         await t.expect(pageDescriptorKind()).notEql('error')
-        await t.expect(Selector('[data-test-id=article-warnings]').exists).notOk()
+        await t.expect(Selector('[data-test-id=article-warning]').exists).notOk()
     }
 })

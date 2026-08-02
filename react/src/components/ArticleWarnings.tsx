@@ -1,99 +1,91 @@
 import React, { ReactNode } from 'react'
 
-import { useColors } from '../page_template/colors'
-import { checkboxCategoryName, sourceEnabledKey, useSettings } from '../page_template/settings'
-import { groupYearKeys, useAvailableYears, useDataSourceCheckboxes, useGroupsMissingYearSelection, useSelectedGroups } from '../page_template/statistic-settings'
-import { Category, Group, Year } from '../page_template/statistic-tree'
+import { checkboxCategoryName } from '../page_template/settings'
+import { useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
+import { Category, Group, StatPath, statPathToOrder, Year } from '../page_template/statistic-tree'
 
 import { useScreenshotMode } from './screenshot'
 
-export function ArticleWarnings(): ReactNode {
+/** An explanation of why some statistics aren't there, shown where they would have been. */
+export interface ArticleWarning {
+    /** Where the missing statistics sit in statistic tree order. */
+    order: number
+    /** Goes in the left header, where the statistic's name would be. */
+    name?: string
+    content: ReactNode
+}
+
+/** A warning, placed before the row it takes the place of. */
+export interface WarningRow {
+    index: number
+    name?: string
+    content: ReactNode
+}
+
+export function useArticleWarnings(): ArticleWarning[] {
     const screenshotMode = useScreenshotMode()
     const selectedGroups = useSelectedGroups()
-    const groupsMissingYearSelection = useGroupsMissingYearSelection()
-    const availableYears = useAvailableYears()
-    const dataSourceCheckboxes = useDataSourceCheckboxes()
-    const settings = useSettings(groupYearKeys())
-
-    const allUncheckedSourceGroups = dataSourceCheckboxes
-        .filter(({ category, checkboxSpecs }) => checkboxSpecs
-            .every(({ name, forcedOn }) => !forcedOn && !settings[sourceEnabledKey({ category, name })]))
+    const missingGroups = useMissingGroups()
 
     if (screenshotMode) {
-        return null
-    }
-    const warnings = selectedGroups.length === 0
-        ? [
-                <b key="noneSelected">
-                    No Statistic Categories are selected
-                </b>,
-            ]
-        : [
-                ...groupsMissingYearSelection.map(groupOrCategory => (
-                    <>
-                        To see
-                        {' '}
-                        <b><HierarchicalName groupOrCategory={groupOrCategory} /></b>
-                        {' statistics, select '}
-                        <YearList years={availableYears.filter(year => groupOrCategory.years.has(year))} />
-                        .
-                    </>
-                )),
-                ...allUncheckedSourceGroups.map(({ category }) => (
-                    <>
-                        All statistics from the
-                        {' '}
-                        <b>{checkboxCategoryName(category)}</b>
-                        {' '}
-                        are disabled.
-                    </>
-                )),
-            ]
-
-    if (warnings.length === 0) {
-        return null
+        return []
     }
 
-    return <WarningBox warnings={warnings} />
-}
+    if (selectedGroups.length === 0) {
+        return [{
+            order: 0,
+            content: <b>No Statistic Categories are selected</b>,
+        }]
+    }
 
-function WarningBox({ warnings }: { warnings: ReactNode[] }): ReactNode {
-    const colors = useColors()
-
-    return (
-        <div
-            style={{
-                backgroundColor: colors.slightlyDifferentBackgroundFocused,
-                borderRadius: '5px',
-            }}
-            data-test-id="article-warnings"
-        >
-            <ul style={{
-                paddingTop: '1em',
-                paddingBottom: '1em',
-            }}
-            >
-                {
-                    warnings.map(
-                        (warning, key) => (
-                            <li key={key}>
-                                {warning}
-                            </li>
-                        ),
+    return missingGroups
+        .map(({ groupOrCategory, reason }) => ({
+            order: firstStatOrder(groupOrCategory),
+            name: groupOrCategory.name,
+            content: reason.kind === 'year'
+                ? (
+                        <>
+                            {'Select '}
+                            <YearList years={reason.years} />
+                            {` to see ${theseStatistics(groupOrCategory)}.`}
+                        </>
                     )
-                }
-            </ul>
-        </div>
-    )
+                : (
+                        <>
+                            {'All '}
+                            <b>{checkboxCategoryName(reason.category)}</b>
+                            {` are disabled. Enable one to see ${theseStatistics(groupOrCategory)}.`}
+                        </>
+                    ),
+        }))
+        .sort((a, b) => a.order - b.order)
 }
 
-function HierarchicalName({ groupOrCategory }: { groupOrCategory: Group | Category }): ReactNode {
+/** A category's warning stands in for a whole run of statistics, a group's for just its own. */
+function theseStatistics(groupOrCategory: Group | Category): string {
     switch (groupOrCategory.kind) {
         case 'Group':
-            return `${groupOrCategory.parent.name} > ${groupOrCategory.name}`
+            return 'this statistic'
         case 'Category':
-            return groupOrCategory.name
+            return 'these statistics'
     }
+}
+
+function firstStatOrder(groupOrCategory: Group | Category): number {
+    return Math.min(...Array.from(groupOrCategory.statPaths).map(path => statPathToOrder.get(path)!))
+}
+
+/**
+ * Places each warning at the first row that comes after it in statistic tree order, which is where
+ * its own statistics would have gone. Metadata rows sit at the end of the table rather than in tree
+ * order, so this looks for the first row that is later rather than counting the rows that are earlier.
+ */
+export function placeWarnings(statPaths: StatPath[], warnings: ArticleWarning[]): WarningRow[] {
+    const orders = statPaths.map(path => statPathToOrder.get(path)!)
+    return warnings.map(({ order, name, content }) => {
+        const index = orders.findIndex(rowOrder => rowOrder > order)
+        return { index: index === -1 ? orders.length : index, name, content }
+    })
 }
 
 function YearList({ years }: { years: Year[] }): ReactNode {

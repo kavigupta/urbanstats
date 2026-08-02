@@ -4,7 +4,7 @@ import { dataSources } from '../data/statistics_tree'
 import { Navigator } from '../navigation/Navigator'
 
 import { Settings, sourceEnabledKey, StatGroupKey, StatYearKey, StatSourceKey, useSettings } from './settings'
-import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, Group, sourceDisambiguation, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
+import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, Group, SourceCategoryIdentifier, sourceDisambiguation, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
 
 export type StatGroupSettings = Record<StatGroupKey | StatYearKey | StatSourceKey, boolean>
 
@@ -123,14 +123,77 @@ export function useSelectedYears(): Year[] {
     return availableYears.filter(year => settingsValues[`show_stat_year_${year}`])
 }
 
+/** Why a group that the user selected is nonetheless showing no statistics. */
+export type MissingGroupReason =
+    /** None of `years`, the years this page has the group's statistics for, are selected. */
+    { kind: 'year', years: Year[] } |
+    { kind: 'source', category: SourceCategoryIdentifier }
+
+export interface MissingGroup {
+    groupOrCategory: Group | Category
+    reason: MissingGroupReason
+}
+
+/** Groups only consolidate into their category when their warnings would read identically. */
+function reasonKey(reason: MissingGroupReason): string {
+    switch (reason.kind) {
+        case 'year':
+            return `year_${reason.years.join(',')}`
+        case 'source':
+            return `source_${reason.category}`
+    }
+}
+
 /**
- * Which groups are selected, but are not showing any statistics because no intersecting years are selected.
+ * Which selected groups are showing no statistics, and why. Groups are consolidated into their
+ * category only when the whole category is missing for the same reason.
  */
-export function useGroupsMissingYearSelection(): (Group | Category)[] {
+export function useMissingGroups(): MissingGroup[] {
     const selectedGroups = useSelectedGroups()
     const selectedYears = useSelectedYears()
-    const groupsMissingYears = selectedGroups.filter(group => !group.years.has(null) && selectedYears.every(year => !group.years.has(year)))
-    return useConsolidateGroups()(groupsMissingYears)
+    const statPathsAll = useStatPathsAll()
+    const settings = useSettings(groupYearKeys())
+    const consolidateGroups = useConsolidateGroups()
+
+    const pageStatPaths = useMemo(() => new Set(statPathsAll.flat()), [statPathsAll])
+    const ambiguousSources = useMemo(() => findAmbiguousSourcesAll(statPathsAll), [statPathsAll])
+
+    const missingReason = (group: Group): MissingGroupReason | undefined => {
+        // Which years the group has data for is asked of this page rather than of the whole tree,
+        // so that a page that only goes back to 2010 says so instead of naming a year it lacks.
+        const paths = Array.from(group.statPaths).filter(path => pageStatPaths.has(path))
+        if (paths.some(path => statIsEnabled(path, settings, ambiguousSources))) {
+            return undefined
+        }
+        const pathsInSelectedYears = paths.filter((path) => {
+            const { year } = statParents.get(path)!
+            return year === null || selectedYears.includes(year)
+        })
+        if (pathsInSelectedYears.length === 0) {
+            const yearsOnPage = new Set(paths.map(path => statParents.get(path)!.year))
+            return { kind: 'year', years: allYears.filter(year => yearsOnPage.has(year)) }
+        }
+        // Everything left is disabled by its source, so we can only name a reason if they agree on one.
+        const categories = new Set(pathsInSelectedYears.map(path => statParents.get(path)!.source?.category))
+        const [category] = categories
+        return categories.size === 1 && category !== undefined ? { kind: 'source', category } : undefined
+    }
+
+    const byReason = new Map<string, { reason: MissingGroupReason, groups: Group[] }>()
+    for (const group of selectedGroups) {
+        const reason = missingReason(group)
+        if (reason === undefined) {
+            continue
+        }
+        const key = reasonKey(reason)
+        if (!byReason.has(key)) {
+            byReason.set(key, { reason, groups: [] })
+        }
+        byReason.get(key)!.groups.push(group)
+    }
+
+    return Array.from(byReason.values()).flatMap(({ reason, groups }) =>
+        consolidateGroups(groups).map(groupOrCategory => ({ groupOrCategory, reason })))
 }
 
 /**

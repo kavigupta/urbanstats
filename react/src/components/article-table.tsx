@@ -8,7 +8,7 @@ import { useDefinedUniverse } from '../universe'
 import { Article } from '../utils/protos'
 import { useMobileLayout } from '../utils/responsive'
 
-import { ArticleWarnings } from './ArticleWarnings'
+import { placeWarnings, useArticleWarnings } from './ArticleWarnings'
 import { ArticleRow } from './load-article'
 import { pullRelevantPlotProps, useExpandedByStat } from './plots'
 import { useScreenshotMode } from './screenshot'
@@ -64,6 +64,9 @@ export function ArticleTable(props: {
     const settings = useSettings(groupYearKeys())
     const filteredRows = props.rows(settings)[0]
 
+    const warnings = useArticleWarnings()
+    const warningRows = placeWarnings(filteredRows.map(row => row.statpath), warnings)
+
     const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(
         nameSpecsForRows(filteredRows, props.article.longname, currentUniverse),
     )
@@ -94,8 +97,8 @@ export function ArticleTable(props: {
                 horizontalPlotSpecs={plotSpecs}
                 verticalPlotSpecs={[]}
                 topLeftSpec={{ type: 'top-left-header' }}
+                warningRows={warningRows}
             />
-            <ArticleWarnings />
         </div>
     )
 }

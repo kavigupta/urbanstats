@@ -180,7 +180,7 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
             await t.click(Selector('label').withExactText('2010'))
             await t.click(Selector('label').withExactText('Health'))
         })
-        await t.expect(Selector('li').withExactText('To see Health statistics, select 2020.').exists).ok()
+        await t.expect(warningNamed('Select 2020 to see these statistics.', 'Health').exists).ok()
         await screencap(t)
     })
 
@@ -193,7 +193,7 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
             await t.click('input[data-test-id=group_vacancy]:not([inert] *)')
             await t.click('input[data-test-id=group_rent_or_own_rent]:not([inert] *)')
         })
-        await t.expect(Selector('li').withExactText('To see Housing > Renter % statistics, select 2020.').exists).ok()
+        await t.expect(warningNamed('Select 2020 to see this statistic.', 'Renter %').exists).ok()
         await screencap(t)
     })
 
@@ -204,7 +204,7 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
             await t.click(Selector('label').withExactText('2020'))
         })
         await t.expect(Selector('a').withExactText('Area').exists).ok()
-        await t.expect(Selector('li').withExactText('To see Main > Population statistics, select 2020, 2010, or 2000.').exists).ok()
+        await t.expect(warningNamed('Select 2020, 2010, or 2000 to see this statistic.', 'Population').exists).ok()
         await screencap(t)
     })
 
@@ -326,4 +326,12 @@ async function checkIsIndeterminate(t: TestController, selector: string): Promis
         const check: HTMLInputElement = document.querySelector(selector)!
         return check.indeterminate
     }, { dependencies: { selector } }) as Promise<boolean>
+}
+
+/** The name cell of the warning row carrying `message`, which stands where a statistic's name would. */
+function warningNamed(message: string, name: string): Selector {
+    return Selector('.for-testing-table-row')
+        .withText(message)
+        .find('[data-test-id=article-warning-name]')
+        .withExactText(name)
 }
