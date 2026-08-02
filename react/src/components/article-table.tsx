@@ -2,7 +2,8 @@ import React, { ReactNode, useContext } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
-import { useSetting } from '../page_template/settings'
+import { useSetting, useSettings } from '../page_template/settings'
+import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { useDefinedUniverse } from '../universe'
 import { Article } from '../utils/protos'
 import { useMobileLayout } from '../utils/responsive'
@@ -51,20 +52,25 @@ function useArticleTableLayout(): TableLayout {
 }
 
 export function ArticleTable(props: {
-    filteredRows: ArticleRow[]
+    rows: (settings: StatGroupSettings) => ArticleRow[][]
     article: Article
 }): ReactNode {
     const currentUniverse = useDefinedUniverse()
     const layout = useArticleTableLayout()
     const navContext = useContext(Navigator.Context)
 
+    // Subscribed to here rather than in the panel, so that changing which statistics are
+    // shown only re-renders the table, not the map and the surrounding page.
+    const settings = useSettings(groupYearKeys())
+    const filteredRows = props.rows(settings)[0]
+
     const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(
-        nameSpecsForRows(props.filteredRows, props.article.longname, currentUniverse),
+        nameSpecsForRows(filteredRows, props.article.longname, currentUniverse),
     )
 
-    const plotSpecs = useExpandedPlotSpecs(props.filteredRows, props.article)
+    const plotSpecs = useExpandedPlotSpecs(filteredRows, props.article)
 
-    const cellSpecs: CellSpec[][] = props.filteredRows.map(row => [({
+    const cellSpecs: CellSpec[][] = filteredRows.map(row => [({
         type: 'statistic-row',
         longname: props.article.longname,
         row,

@@ -154,8 +154,11 @@ export function ComparisonPanel(props: {
 
     const validOrdinalsByStat = dataByStatArticle.map(statData => statData.every(value => value.kind !== 'metadata' && value.disclaimer !== 'heterogenous-sources'))
 
+    // Ordinals are only meaningful between regions of the same type.
+    const allSameArticleType = localArticlesToUse.every(article => article.articleType === localArticlesToUse[0].articleType)
+
     const includeOrdinals = (
-        localArticlesToUse.every(article => article.articleType === localArticlesToUse[0].articleType)
+        allSameArticleType
         && (validOrdinalsByStat.length === 0 || validOrdinalsByStat.some(x => x))
     )
 
@@ -195,7 +198,7 @@ export function ComparisonPanel(props: {
 
     const navContext = useContext(Navigator.Context)
 
-    const sharedTypeOfAllArticles = localArticlesToUse.every(article => article.articleType === localArticlesToUse[0].articleType) ? localArticlesToUse[0].articleType : undefined
+    const sharedTypeOfAllArticles = allSameArticleType ? localArticlesToUse[0].articleType : undefined
 
     const rowToDisplayForStat = (statIndex: number): ArticleRow => {
         return dataByStatArticle[statIndex].find(row => row.extraStats.length > 0) ?? dataByStatArticle[statIndex][0]

@@ -4,8 +4,7 @@ import './article.css'
 import React, { ReactNode, useContext, useMemo, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
-import { useSettings } from '../page_template/settings'
-import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
+import { StatGroupSettings } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { Universe, universeContext, useUniverse } from '../universe'
 import { sanitize } from '../utils/paths'
@@ -37,9 +36,6 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     const headerTextClass = useHeaderTextClass()
     const subHeaderTextClass = useSubHeaderTextClass()
     const comparisonHeadStyle = useComparisonHeadStyle('right')
-
-    const settings = useSettings(groupYearKeys())
-    const filteredRows = rows(settings)[0]
 
     const articles = useMemo(() => [article], [article])
     const csvExportCallback = useCSVExport(articles, rows, true, article.longname)
@@ -74,7 +70,7 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
 
                     <div ref={tableRef}>
                         <ArticleTable
-                            filteredRows={filteredRows}
+                            rows={rows}
                             article={article}
                         />
                     </div>
