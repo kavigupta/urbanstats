@@ -289,10 +289,12 @@ export function StatisticTableRow(props: {
     isHighlighted?: boolean
 }): ReactNode {
     const { layout, cellSpecs, withCongressional = true } = props
-    const congressionalRegions = useMemo(
-        () => withCongressional ? congressionalRegionsForCells(cellSpecs) : [],
-        [cellSpecs, withCongressional],
-    )
+    /*
+     * Deliberately not memoized. The representatives widget only puts the terms that were
+     * on screen into a screenshot, and it re-measures which those are off a change of
+     * identity here -- so holding this steady across renders empties the screenshot.
+     */
+    const congressionalRegions = withCongressional ? congressionalRegionsForCells(cellSpecs) : []
 
     return (
         <>
