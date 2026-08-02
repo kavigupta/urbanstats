@@ -12,7 +12,7 @@ import { isStagedChange, SettingsDictionary, useSetting, useSettingInfo } from '
 export type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean | undefined ? K : never]: boolean }
 
 /** What a checkbox needs to render a boolean setting, wherever the checkbox itself lives. */
-export function useBooleanSetting(settingKey: BooleanSettingKey, forcedOn?: boolean): {
+function useBooleanSetting(settingKey: BooleanSettingKey, forcedOn?: boolean): {
     checked: boolean
     setChecked: (checked: boolean) => void
     highlight: boolean
