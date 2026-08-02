@@ -272,8 +272,9 @@ export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: num
 
 export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
     const isMobile = useMobileLayout()
+    const isScreenshot = useScreenshotMode()
     const closedEditMode = props.editMode?.open === false ? props.editMode : undefined
-    const showsEditButton = useShowsEditButton(closedEditMode)
+    const showsEditButton = closedEditMode !== undefined && !isScreenshot
 
     if (props.editMode?.open) {
         return <EditModeTopLeftHeader header={props.editMode} width={props.width} />
@@ -295,16 +296,13 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
     )
 }
 
-/** Screenshots offer no way in to edit mode, since there's nobody there to click it. */
-function useShowsEditButton(editMode?: EditModeButton): boolean {
-    const isScreenshot = useScreenshotMode()
-    return editMode !== undefined && !isScreenshot
-}
-
-/** The way in to edit mode, for the tables that offer one. */
+/**
+ * The way in to edit mode, for the tables that offer one. Screenshots don't get it, since
+ * there's nobody there to click it.
+ */
 function EnterEditModeButton({ editMode }: { editMode?: EditModeButton }): ReactNode {
-    const shows = useShowsEditButton(editMode)
-    if (editMode === undefined || !shows) {
+    const isScreenshot = useScreenshotMode()
+    if (editMode === undefined || isScreenshot) {
         return null
     }
     return <HeaderButton onClick={editMode.onEdit} testId="edit-mode-edit">{editMode.label}</HeaderButton>

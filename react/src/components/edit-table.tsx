@@ -12,7 +12,7 @@ import { StagingControls } from './StagingControls'
 import { BooleanSettingKey, CheckboxSettingCustomJustInputProps, CheckboxSettingJustBox, useBooleanSetting, useHighlightStyle } from './checkbox-setting'
 import { ArticleRow } from './load-article'
 import { displayNamesForRows } from './statistic-name-specs'
-import { CellSpec, EditModeOpenHeader, measureColumns, measuredLayout, MeasuredTableLayout, PlotSpec, StatisticTableRow, SuperHeaderSpec, TableFrame, TableLayout, TopLeftHeaderType } from './supertable'
+import { CellSpec, EditModeOpenHeader, measureColumns, measuredLayout, MeasuredTableLayout, PlotSpec, StatisticTableRow, SuperHeaderSpec, TableFrame, TableLayout, TopLeftCellSpec } from './supertable'
 import { TableRowContainer, useStatisticNameAdornments } from './table'
 
 // Wrapping the name in a label lets a click anywhere on it toggle the associated
@@ -87,11 +87,8 @@ export function editRowsByGroup(
 interface EditBodyRowBase {
     key: string
     highlight: boolean
-    indent: number
     /** The group's checkbox, on the row that carries it. */
     checkbox?: ReactNode
-    /** The id of the group's checkbox, on the rows that only point at it. */
-    checkboxId?: string
 }
 
 interface EditGroupHeaderSpec extends EditBodyRowBase {
@@ -101,8 +98,11 @@ interface EditGroupHeaderSpec extends EditBodyRowBase {
 
 interface EditStatSpec extends EditBodyRowBase {
     kind: 'stat'
+    indent: number
     enabled: boolean
     editRow: EditRow
+    /** The id of the group's checkbox, on the rows that only point at it. */
+    checkboxId?: string
 }
 
 /** The rows under a category header, in the order they're displayed. */
@@ -122,6 +122,21 @@ function EditCheckboxLabel(props: {
             {props.checkbox}
             <span className="serif value" style={props.nameStyle}>{props.children}</span>
         </label>
+    )
+}
+
+/** A row that is nothing but a checkbox and its label, indented under its section header. */
+function EditLabelRow(props: { index: number, highlight: boolean, checkbox: ReactNode, name: string }): ReactNode {
+    return (
+        <TableRowContainer index={props.index}>
+            <EditCheckboxLabel
+                highlight={props.highlight}
+                style={{ width: '100%', paddingLeft: `${indentEm}em` }}
+                checkbox={props.checkbox}
+            >
+                {props.name}
+            </EditCheckboxLabel>
+        </TableRowContainer>
     )
 }
 
@@ -148,16 +163,6 @@ function EditStatRow({ layout, index, spec }: { layout: MeasuredTableLayout, ind
             // Only render the (large) representatives table for enabled stats, matching the normal table.
             withCongressional={spec.enabled}
         />
-    )
-}
-
-function EditGroupHeaderRow({ index, spec }: { index: number, spec: EditGroupHeaderSpec }): ReactNode {
-    return (
-        <TableRowContainer index={index}>
-            <EditCheckboxLabel highlight={spec.highlight} checkbox={spec.checkbox} style={{ width: '100%', paddingLeft: `${spec.indent * indentEm}em` }}>
-                {spec.name}
-            </EditCheckboxLabel>
-        </TableRowContainer>
     )
 }
 
@@ -211,7 +216,7 @@ function categoryBodyRows(groups: GroupTreeState[], rowsByGroup: Map<string, Edi
             return [{ ...statSpec(groupRows[0], 1), checkbox }]
         }
         return [
-            { kind: 'group-header', key: `group-${group.id}`, highlight, indent: 1, checkbox, name: group.name },
+            { kind: 'group-header', key: `group-${group.id}`, highlight, checkbox, name: group.name },
             ...groupRows.map(editRow => ({ ...statSpec(editRow, 2), checkboxId })),
         ]
     })
@@ -264,7 +269,7 @@ function EditCategory(props: {
                   * from, so the alternation is unbroken. The category header is row 0.
                   */}
                 {bodyRows.map((spec, position) => spec.kind === 'group-header'
-                    ? <EditGroupHeaderRow key={spec.key} index={position + 1} spec={spec} />
+                    ? <EditLabelRow key={spec.key} index={position + 1} highlight={spec.highlight} checkbox={spec.checkbox} name={spec.name} />
                     : <EditStatRow key={spec.key} layout={props.layout} index={position + 1} spec={spec} />,
                 )}
             </AnimatedCollapse>
@@ -301,23 +306,20 @@ function EditSettingRow(props: {
 }): ReactNode {
     const { checked, setChecked, highlight } = useBooleanSetting(props.settingKey, props.forcedOn)
     return (
-        <TableRowContainer index={props.index}>
-            <EditCheckboxLabel
-                highlight={highlight}
-                style={{ width: '100%', paddingLeft: `${indentEm}em` }}
-                checkbox={(
-                    <EditCheckbox
-                        checked={checked}
-                        forcedOn={props.forcedOn}
-                        onChange={setChecked}
-                        testId={props.testId}
-                        highlight={highlight}
-                    />
-                )}
-            >
-                {props.name}
-            </EditCheckboxLabel>
-        </TableRowContainer>
+        <EditLabelRow
+            index={props.index}
+            highlight={highlight}
+            name={props.name}
+            checkbox={(
+                <EditCheckbox
+                    checked={checked}
+                    forcedOn={props.forcedOn}
+                    onChange={setChecked}
+                    testId={props.testId}
+                    highlight={highlight}
+                />
+            )}
+        />
     )
 }
 
@@ -413,8 +415,8 @@ export function EditTable(props: {
     layout: MeasuredTableLayout
     editState: EditModeState
     superHeaderSpec?: SuperHeaderSpec
-    /** Which flavor of top-left cell to use, since the comparison's carries a color bar. */
-    topLeftType: TopLeftHeaderType
+    /** As the normal table's, so the two agree on what the left column is called. */
+    topLeftSpec: TopLeftCellSpec
 }): ReactNode {
     const { filter, setFilter, exitEditMode } = props.editState
     const categories = useCategoriesMatchingSearch(filter)
@@ -434,7 +436,7 @@ export function EditTable(props: {
             <TableFrame
                 layout={props.layout}
                 superHeaderSpec={props.superHeaderSpec}
-                topLeftSpec={{ type: props.topLeftType, editMode: editModeHeader }}
+                topLeftSpec={{ ...props.topLeftSpec, editMode: editModeHeader }}
             >
                 <EditSourceAndYearSections />
                 <EditSectionHeader name="Statistics" />

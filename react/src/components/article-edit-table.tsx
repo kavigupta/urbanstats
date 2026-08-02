@@ -45,7 +45,7 @@ export function ArticleEditTable(props: {
             rowsByGroup={rowsByGroup}
             layout={layout}
             editState={props.editState}
-            topLeftType="top-left-header"
+            topLeftSpec={{ type: 'top-left-header' }}
         />
     )
 }
