@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { comparisonPage, screencap, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
+import { checkTextboxes, comparisonPage, screencap, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
 
 const mainCheck = 'input[data-test-id=category_main]'
 
@@ -32,6 +32,22 @@ test('comparison-warnings-in-place', async (t) => {
     await t.expect(rows.nth(0).find('[data-test-id=article-warning]').exists).ok()
     await t.expect(rows.nth(3).find('[data-test-id=article-warning]').exists).notOk()
     await t.expect(rows.nth(3).find('a').withExactText('Area').exists).ok()
+    await screencap(t)
+})
+
+// Comparing across countries is what makes the data sources choosable rather than forced on, so
+// it is the only place the sources can all be turned off.
+urbanstatsFixture('comparison warnings across data sources', comparisonPage([
+    'Ontario, Canada',
+    'California, USA',
+]))
+
+test('comparison-warnings-all-sources-disabled', async (t) => {
+    // GHSL is off by default, so turning off the two censuses leaves nothing enabled
+    await checkTextboxes(t, ['US Census', 'Canadian Census'])
+    await t.expect(warningNamed('All Population Sources are disabled. Enable one to see this statistic.', 'Population').exists).ok()
+    // Statistics that don't come from a Population source are unaffected
+    await t.expect(Selector('a').withExactText('Area').exists).ok()
     await screencap(t)
 })
 

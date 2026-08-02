@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { checkTextboxes, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
+import { safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
 
 const mainCheck = 'input[data-test-id=category_main]'
 const mainExpand = '.expandButton[data-category-id=main]'
@@ -226,20 +226,6 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(rows.nth(0).find('[data-test-id=article-warning]').exists).ok()
         await t.expect(rows.nth(3).find('[data-test-id=article-warning]').exists).notOk()
         await t.expect(rows.nth(3).find('a').withExactText('Area').exists).ok()
-    })
-
-    test('missing-source-data', async (t) => {
-        // GHSL is off by default, so unchecking the US Census leaves the Population sources with
-        // nothing enabled, and every statistic that comes from one of them disappears.
-        await withHamburgerMenu(t, async () => {
-            await uncheckAllCategories(t)
-            await t.click(mainCheck)
-        })
-        await checkTextboxes(t, ['US Census'])
-        await t.expect(warningNamed('All Population Sources are disabled. Enable one to see this statistic.', 'Population').exists).ok()
-        // Statistics that don't come from a Population source are unaffected
-        await t.expect(Selector('a').withExactText('Area').exists).ok()
-        await screencap(t)
     })
 
     test('expand-persistence', async (t) => {
