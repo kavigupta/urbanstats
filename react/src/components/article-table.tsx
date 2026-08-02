@@ -110,7 +110,7 @@ export function ArticleTable(props: {
             horizontalPlotSpecs={plotSpecs}
             verticalPlotSpecs={[]}
             topLeftSpec={{ type: 'top-left-header' }}
-            editButton={{ open: false, onEdit: props.onEdit, label: 'Edit', placement: 'top-left' }}
+            editButton={{ open: false, onEdit: props.onEdit, label: 'Select', placement: 'top-left' }}
         />
     )
 }
