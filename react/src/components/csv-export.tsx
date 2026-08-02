@@ -2,15 +2,37 @@ import assert from 'assert'
 
 import { stringify } from 'csv-stringify/sync'
 import { saveAs } from 'file-saver'
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useCallback, useContext } from 'react'
 
+import { Settings } from '../page_template/settings'
+import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { USSOpaqueValue, USSValue } from '../urban-stats-script/types-values'
 import { HumanReadableName, reifyString } from '../utils/human-readable-name'
+import { sanitize } from '../utils/paths'
 import { Article } from '../utils/protos'
 
 import { ArticleRow } from './load-article'
 
 export type CSVExportData = () => { csvData: string[][], csvFilename: string }
+
+/**
+ * The CSV export for a table of articles, named after `filenameBase`.
+ *
+ * The rows are built from the settings read at the moment the export is requested, so the
+ * caller doesn't have to hold them for the export's sake.
+ */
+export function useCSVExport(
+    articles: Article[],
+    rows: (settings: StatGroupSettings) => ArticleRow[][],
+    includeOrdinals: boolean,
+    filenameBase: string,
+): CSVExportData {
+    const settings = useContext(Settings.Context)
+    return useCallback(() => ({
+        csvData: generateCSVDataForArticles(articles, rows(settings.getMultiple(groupYearKeys())), includeOrdinals),
+        csvFilename: `${sanitize(filenameBase)}.csv`,
+    }), [articles, rows, settings, includeOrdinals, filenameBase])
+}
 
 export function exportToCSV(data: string[][], filename: string): void {
     // Use csv-stringify library for proper CSV generation
@@ -45,7 +67,7 @@ export function CSVButton(props: { onClick: () => void }): ReactNode {
     )
 }
 
-export function generateCSVDataForArticles(
+function generateCSVDataForArticles(
     articles: Article[],
     dataByArticleStat: ArticleRow[][],
     includeOrdinals: boolean,

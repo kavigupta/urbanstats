@@ -1,32 +1,27 @@
 import '../common.css'
 import './article.css'
 
-import React, { ReactNode, useCallback, useContext, useRef } from 'react'
+import React, { ReactNode, useContext, useMemo, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
-import { useColors } from '../page_template/colors'
-import { useSetting, useSettings } from '../page_template/settings'
+import { useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
-import { Universe, universeContext, useDefinedUniverse, useUniverse } from '../universe'
+import { Universe, universeContext, useUniverse } from '../universe'
 import { sanitize } from '../utils/paths'
 import { Article, IRelatedButtons } from '../utils/protos'
-import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
+import { useComparisonHeadStyle, useHeaderTextClass, useSubHeaderTextClass } from '../utils/responsive'
 import { NormalizeProto } from '../utils/types'
 
 import { ArticleMap } from './ArticleMap'
-import { ArticleWarnings } from './ArticleWarnings'
 import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
-import { generateCSVDataForArticles, CSVExportData } from './csv-export'
+import { ArticleTable } from './article-table'
+import { useCSVExport } from './csv-export'
 import { ArticleRow } from './load-article'
-import { pullRelevantPlotProps, useExpandedByStat } from './plots'
 import { Related } from './related-button'
-import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
+import { createScreenshot, ScreencapElements } from './screenshot'
 import { SearchBox } from './search'
-import { computeNameSpecsWithGroups, nameSpecsForRows } from './statistic-name-specs'
-import { CellSpec, PlotSpec, TableContents } from './supertable'
-import { ColumnIdentifier } from './table'
 
 export function ArticlePanel({ article, rows, universe }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][], universe: Universe }): ReactNode {
     const headersRef = useRef<HTMLDivElement>(null)
@@ -46,11 +41,8 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     const settings = useSettings(groupYearKeys())
     const filteredRows = rows(settings)[0]
 
-    const csvExportCallback = useCallback<CSVExportData>(() => {
-        const data = generateCSVDataForArticles([article], [filteredRows], true)
-        const filename = `${sanitize(article.longname)}.csv`
-        return { csvData: data, csvFilename: filename }
-    }, [article, filteredRows])
+    const articles = useMemo(() => [article], [article])
+    const csvExportCallback = useCSVExport(articles, rows, true, article.longname)
 
     const navigator = useContext(Navigator.Context)
 
@@ -121,73 +113,6 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     )
 }
 
-function ArticleTable(props: {
-    filteredRows: ArticleRow[]
-    article: Article
-}): ReactNode {
-    const colors = useColors()
-    const expandedEach = useExpandedByStat(
-        props.filteredRows.map(row => row.statpath),
-        index => props.filteredRows[index].extraStats.length > 0,
-    )
-    const currentUniverse = useDefinedUniverse()
-    const [simpleOrdinals] = useSetting('simple_ordinals')
-    const navContext = useContext(Navigator.Context)
-
-    const { widthLeftHeader, columnWidth } = useWidths()
-
-    const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(
-        nameSpecsForRows(props.filteredRows, props.article.longname, currentUniverse),
-    )
-
-    const onlyColumns: ColumnIdentifier[] = ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
-    const cellSpecs: CellSpec[][] = props.filteredRows.map(row => [({
-        type: 'statistic-row',
-        longname: props.article.longname,
-        row,
-        onNavigate: (newArticle) => {
-            void navContext.navigate({
-                kind: 'article',
-                longname: newArticle,
-                universe: currentUniverse,
-            }, { history: 'push', scroll: { kind: 'none' } })
-        },
-        simpleOrdinals,
-        onlyColumns,
-    })])
-
-    const plotSpecs: (PlotSpec | undefined)[] = expandedEach.map((expanded, index) => expanded
-        ? {
-                statDescription: props.filteredRows[index].renderedStatname,
-                plotProps: pullRelevantPlotProps(
-                    props.filteredRows,
-                    index,
-                    colors.hueColors.blue,
-                    props.article.shortname,
-                    props.article.longname,
-                    props.article.articleType,
-                ),
-            }
-        : undefined,
-    )
-
-    const topLeftSpec = { type: 'top-left-header' } satisfies CellSpec
-
-    return (
-        <div className="stats_table">
-            <TableContents
-                leftHeaderSpec={{ leftHeaderSpecs, groupNames }}
-                rowSpecs={cellSpecs}
-                horizontalPlotSpecs={plotSpecs}
-                verticalPlotSpecs={[]}
-                topLeftSpec={topLeftSpec}
-                layout={{ widthLeftHeader, columnWidth, onlyColumns, simpleOrdinals }}
-            />
-            <ArticleWarnings />
-        </div>
-    )
-}
-
 function ComparisonSearchBox({ longname, type }: { longname: string, type: string }): ReactNode {
     const currentUniverse = useUniverse()
     const navContext = useContext(Navigator.Context)
@@ -204,19 +129,4 @@ function ComparisonSearchBox({ longname, type }: { longname: string, type: strin
             prioritizeArticleType={type}
         />
     )
-}
-
-function useWidths(): { widthLeftHeader: number, columnWidth: number } {
-    const [simpleOrdinals] = useSetting('simple_ordinals')
-    const isMobile = useMobileLayout()
-    const screenshotMode = useScreenshotMode()
-
-    // TODO clean this up and reduce the amount of magic numbers
-    const nonPointerColumns = 15 + 10 + (simpleOrdinals ? 7 + 8 : 17 + 25)
-    const pointerColumns = 8 * (screenshotMode ? 0 : (!simpleOrdinals && isMobile ? 1 : 2))
-    const numerator = 31
-    const denominator = nonPointerColumns + pointerColumns + numerator
-    const widthLeftHeader = 100 * (numerator / denominator)
-    const columnWidth = 100 - widthLeftHeader
-    return { widthLeftHeader, columnWidth }
 }

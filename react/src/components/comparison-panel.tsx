@@ -3,7 +3,7 @@ import './article.css'
 
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, TouchSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import { SortableContext, arrayMove, horizontalListSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import React, { ReactNode, useCallback, useContext, useId, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useContext, useId, useMemo, useRef, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import { boundingBox, extendBoxes } from '../map-partition'
@@ -24,7 +24,7 @@ import { zIndex } from '../utils/zIndex'
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
-import { generateCSVDataForArticles, CSVExportData } from './csv-export'
+import { useCSVExport } from './csv-export'
 import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps, pullRelevantPlotProps, useExpandedByStat } from './plots'
@@ -318,11 +318,7 @@ export function ComparisonPanel(props: {
                 verticalPlotSpecs: [],
             }
 
-    const csvExportCallback = useCallback<CSVExportData>(() => {
-        const data = generateCSVDataForArticles(localArticlesToUse, dataByArticleStat, includeOrdinals)
-        const filename = `${sanitize(joinedString)}.csv`
-        return { csvData: data, csvFilename: filename }
-    }, [joinedString, localArticlesToUse, dataByArticleStat, includeOrdinals])
+    const csvExportCallback = useCSVExport(localArticlesToUse, props.rows, includeOrdinals, joinedString)
 
     return (
         <universeContext.Provider value={{
