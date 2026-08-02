@@ -5,12 +5,10 @@ import React, { ReactNode, useCallback, useContext, useRef } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
-import { rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
+import { useSetting, useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
-import { statParents } from '../page_template/statistic-tree'
 import { PageTemplate } from '../page_template/template'
 import { Universe, universeContext, useDefinedUniverse, useUniverse } from '../universe'
-import { HumanReadableName } from '../utils/human-readable-name'
 import { sanitize } from '../utils/paths'
 import { Article, IRelatedButtons } from '../utils/protos'
 import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHeaderTextClass } from '../utils/responsive'
@@ -22,10 +20,11 @@ import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow } from './load-article'
-import { pullRelevantPlotProps } from './plots'
+import { pullRelevantPlotProps, useExpandedByStat } from './plots'
 import { Related } from './related-button'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
+import { computeNameSpecsWithGroups, nameSpecsForRows } from './statistic-name-specs'
 import { CellSpec, PlotSpec, TableContents } from './supertable'
 import { ColumnIdentifier } from './table'
 
@@ -122,74 +121,24 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     )
 }
 
-type NameSpec = Extract<CellSpec, { type: 'statistic-name' }>
-
-function getGroupAndDisplayNames(nameSpec: NameSpec, nameSpecs: NameSpec[]): [string | undefined, HumanReadableName] {
-    if (nameSpec.row === undefined) {
-        return [undefined, nameSpec.renderedStatname]
-    }
-    const statParent = statParents.get(nameSpec.row.statpath)
-
-    const groupRows = nameSpecs.filter(s => s.row !== undefined && statParents.get(s.row.statpath)?.group.id === statParent?.group.id)
-    const groupSize = groupRows.length
-
-    const groupSourcesSet = new Set(
-        groupRows
-            .map(s => statParents.get(s.row!.statpath)?.source)
-            .filter(source => source !== null)
-            .map(source => source!.name),
-    )
-    const groupHasMultipleSources = groupSourcesSet.size > 1
-
-    const sourceName = statParent?.source?.name
-    let displayName = groupSize > 1 ? (statParent?.indentedName ?? nameSpec.renderedStatname) : nameSpec.renderedStatname
-    if (groupHasMultipleSources && sourceName) {
-        displayName = `${displayName} [${sourceName}]`
-    }
-    const groupName = groupSize > 1 ? statParent?.group.name : undefined
-    return [groupName, displayName]
-}
-
-export function computeNameSpecsWithGroups(nameSpecs: NameSpec[]): { updatedNameSpecs: NameSpec[], groupNames: (string | undefined)[] } {
-    const updatedNameSpecs: NameSpec[] = []
-    const groupNames: (string | undefined)[] = []
-
-    for (const spec of nameSpecs) {
-        const [groupName, displayName] = getGroupAndDisplayNames(spec, nameSpecs)
-
-        updatedNameSpecs.push({
-            ...spec,
-            isIndented: groupName !== undefined,
-            displayName,
-        })
-        groupNames.push(groupName)
-    }
-
-    return { updatedNameSpecs, groupNames }
-}
-
 function ArticleTable(props: {
     filteredRows: ArticleRow[]
     article: Article
 }): ReactNode {
     const colors = useColors()
-    const expandedSettings = useSettings(props.filteredRows.map(row => rowExpandedKey(row.statpath)))
-    const expandedEach = props.filteredRows.map(row => row.extraStats.length > 0 && (expandedSettings[rowExpandedKey(row.statpath)] ?? false))
+    const expandedEach = useExpandedByStat(
+        props.filteredRows.map(row => row.statpath),
+        index => props.filteredRows[index].extraStats.length > 0,
+    )
     const currentUniverse = useDefinedUniverse()
     const [simpleOrdinals] = useSetting('simple_ordinals')
     const navContext = useContext(Navigator.Context)
 
     const { widthLeftHeader, columnWidth } = useWidths()
 
-    const statNameSpecs: Extract<CellSpec, { type: 'statistic-name' }>[] = props.filteredRows.map(row => ({
-        type: 'statistic-name',
-        longname: props.article.longname,
-        row,
-        renderedStatname: row.renderedStatname,
-        currentUniverse,
-    }))
-
-    const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(statNameSpecs)
+    const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(
+        nameSpecsForRows(props.filteredRows, props.article.longname, currentUniverse),
+    )
 
     const onlyColumns: ColumnIdentifier[] = ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
     const cellSpecs: CellSpec[][] = props.filteredRows.map(row => [({

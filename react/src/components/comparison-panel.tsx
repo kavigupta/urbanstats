@@ -9,7 +9,7 @@ import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 import { boundingBox, extendBoxes } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
 import { colorFromCycle, useColors } from '../page_template/colors'
-import { rowExpandedKey, useSettings } from '../page_template/settings'
+import { useSettings } from '../page_template/settings'
 import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
@@ -24,14 +24,14 @@ import { zIndex } from '../utils/zIndex'
 
 import { ArticleWarnings } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
-import { computeNameSpecsWithGroups } from './article-panel'
 import { generateCSVDataForArticles, CSVExportData } from './csv-export'
 import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
-import { PlotProps, pullRelevantPlotProps } from './plots'
+import { PlotProps, pullRelevantPlotProps, useExpandedByStat } from './plots'
 import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
 import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
+import { computeNameSpecsWithGroups } from './statistic-name-specs'
 import { TableContents, CellSpec, PlotSpec } from './supertable'
 import { ColumnIdentifier } from './table'
 
@@ -161,9 +161,10 @@ export function ComparisonPanel(props: {
 
     const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : ['statval', 'statval_unit']
 
-    const expandedSettings = useSettings(dataByStatArticle.filter(statData => statData.some(row => row.extraStats.length > 0)).map(([{ statpath }]) => rowExpandedKey(statpath)))
-
-    const expandedByStatIndex = dataByStatArticle.map(([{ statpath }]) => expandedSettings[rowExpandedKey(statpath)] ?? false)
+    const expandedByStatIndex = useExpandedByStat(
+        dataByStatArticle.map(([{ statpath }]) => statpath),
+        statIndex => dataByStatArticle[statIndex].some(row => row.extraStats.length > 0),
+    )
     const numExpandedExtras = expandedByStatIndex.filter(v => v).length
 
     let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, includeOrdinals)
