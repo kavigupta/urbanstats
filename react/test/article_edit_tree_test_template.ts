@@ -210,9 +210,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     test('missing-partial-year-data', async (t) => {
         /**
          * The same warning at group granularity, for a category where only some of the
-         * selected groups are missing the selected year. The groups have to be picked
-         * before the year is switched: the edit tree only lists groups that have rows for
-         * the selected years, so Renter % is gone from it by the time the warning appears.
+         * selected groups are missing the selected year.
          */
         await enterEditMode(t)
         await uncheckAllCategories(t)
@@ -223,6 +221,29 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.click(year2010Check)
         await t.expect(Selector('.stats_table li').withExactText('To see Housing > Renter % statistics, select 2020.').exists).ok()
         await screencap(t)
+    })
+
+    test('group-with-no-selected-years-stays-on-the-edit-tree', async (t) => {
+        /**
+         * A group the year selection leaves with nothing to show keeps its row on the edit
+         * tree -- otherwise there'd be no checkbox to reach it by -- with no value in it.
+         * The warning above is what explains the empty row.
+         */
+        const renterCheck = interactableGroupCheckbox('rent_or_own_rent')
+        await enterEditMode(t)
+        await setCategoryExpanded(t, 'housing', true)
+        await t.click(year2020Check)
+        await t.click(year2010Check)
+
+        await t.expect(renterCheck.exists).ok()
+        await t.expect(renterCheck.parent('.for-testing-table-row').find('.testing-statistic-value').exists).notOk()
+        await screencap(t)
+
+        // Selecting the group doesn't put the row on the article itself, which only shows
+        // statistics it has values for.
+        await t.click(renterCheck)
+        await exitEditMode(t)
+        await t.expect(Selector('[data-test-id=statistic-link]').withExactText('Renter %').exists).notOk()
     })
 
     test('year-section', async (t) => {

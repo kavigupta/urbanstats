@@ -188,13 +188,14 @@ function AnimatedCollapse({ expanded, children }: { expanded: boolean, children:
  * A group with a single statistic collapses into that statistic's row, which then carries
  * the group's checkbox. Otherwise the group gets a header row with the checkbox, and its
  * statistics point at that checkbox rather than having one each.
+ *
+ * A group the year and source selection leaves with no statistics is that header alone: a
+ * row with a checkbox and no value. It exists for this geography, so dropping it from the
+ * tree would leave no way to reach it; the article warnings explain why it has no value.
  */
 function categoryBodyRows(groups: GroupTreeState[], rowsByGroup: Map<string, EditRow[]>): EditBodyRow[] {
     return groups.flatMap(({ group, enabled, setEnabled, highlight }): EditBodyRow[] => {
         const groupRows = rowsByGroup.get(group.id) ?? []
-        if (groupRows.length === 0) {
-            return []
-        }
         const checkboxId = `edit-checkbox-${group.id}`
         const checkbox = (
             <EditCheckbox
