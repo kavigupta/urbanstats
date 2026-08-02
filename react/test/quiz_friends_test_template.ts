@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { addFriend, createUser, JuxtastatUserState, makeAliceBobFriends, removeFriend, restoreUser } from './quiz_friends_test_utils'
+import { addFriend, createUser, JuxtastatUserState, makeAliceBobFriends, removeFriend, restoreUser, startingState } from './quiz_friends_test_utils'
 import { quizFixture, clickButtons, quizScreencap, friendsText } from './quiz_test_utils'
 import { safeReload, target } from './test_utils'
 
@@ -22,6 +22,9 @@ export function quizFriendsTest(
         today: string
         yesterday: string
         other: string
+        // labels of the friends panel toggle for today's quiz and the preceding one
+        todayLabel: string
+        yesterdayLabel: string
         platform: 'desktop' | 'mobile'
     },
 ): void {
@@ -32,9 +35,12 @@ export function quizFriendsTest(
         today,
         yesterday,
         other,
+        todayLabel,
+        yesterdayLabel,
     } = props
 
     const bobPattern = toBobPattern(alicePattern)
+    const bobPatternPrev = toBobPattern(alicePatternPrev)
     const charliePattern = toCharliePattern(alicePattern)
     const charliePatternPrev = toCharliePattern(alicePatternPrev)
 
@@ -155,6 +161,37 @@ export function quizFriendsTest(
         await addFriend(t, 'Bob3', '000000b    ')
         // Bob3 added
         await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob3${bobPattern}Remove`])
+    })
+
+    test(`${props.name}-friends-previous-quiz`, async (t) => {
+        const state = startingState()
+        // Alice and Bob each play the previous quiz before today's, so the server has both results
+        for (const [user, id, choice] of [['Alice', '000000a', 'a'], ['Bob', '000000b', 'b']] as const) {
+            await createUser(t, user, id, state)
+            await t.navigateTo(`${target}/${yesterday}`)
+            await clickButtons(t, [choice, choice, choice, choice, choice])
+            await t.navigateTo(`${target}/${today}`)
+            await clickButtons(t, [choice, choice, choice, choice, choice])
+        }
+        // Bob is the current user
+        await addFriend(t, 'Alice', '000000a')
+        await restoreUser(t, 'Alice', state)
+        await addFriend(t, 'Bob', '000000b')
+        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
+        // the previous quiz's scores, rather than today's
+        await t.click(Selector('button').withExactText(yesterdayLabel))
+        await t.expect(friendsText()).eql([`You${alicePatternPrev}Copy Link`, `Bob${bobPatternPrev}Remove`])
+        await quizScreencap(t) // scores on the previous quiz
+        await t.click(Selector('button').withExactText(todayLabel))
+        await t.expect(friendsText()).eql([`You${alicePattern}Copy Link`, `Bob${bobPattern}Remove`])
+    })
+
+    test(`${props.name}-friends-previous-quiz-not-done`, async (t) => {
+        // Neither Alice nor Bob has played the previous quiz
+        const state = await aliceBobFriends(t, false)
+        await restoreUser(t, 'Alice', state)
+        await t.click(Selector('button').withExactText(yesterdayLabel))
+        await t.expect(friendsText()).eql(['YouNot Done YetCopy Link', 'BobNot Done YetRemove'])
     })
 
     test(`${props.name}-same-on-juxta-and-retro`, async (t) => {

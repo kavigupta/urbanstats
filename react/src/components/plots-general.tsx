@@ -9,6 +9,8 @@ import { assert } from '../utils/defensive'
 import { useTranspose } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
+import { plotFontSize, PlotRect, tipRender } from './plots-tip-anchor'
+import { attachDismissButtons, dismissButtonTipIndex, pinnedTipClassName, stampTipIndex } from './plots-tip-dismiss'
 import { createScreenshot, useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 
@@ -190,7 +192,9 @@ export function seriesTip(
     prefixFor: (idx: number) => string,
     formatValue: (v: number) => string,
     colors: Colors,
-): Plot.Markish {
+    pinnedTips: PinnedTips,
+    legend: PlotRect | undefined,
+): Plot.Markish[] {
     const tipData = idxs.map(i => ({
         x: xFor(i),
         prefix: prefixFor(i),
@@ -199,34 +203,98 @@ export function seriesTip(
     return transposeAwareTip(
         tipData,
         transpose,
-        'x',
+        d => d.x,
         d => d.entries.map(e => e.value),
         d => groupedTipTitle(d.prefix, d.entries, formatValue),
         colors,
+        pinnedTips,
+        legend,
     )
 }
 
+// The tooltips the user has clicked on, identified by their position in the tip mark's data.
+// Indices rather than the data themselves because the data is rebuilt from scratch whenever the
+// plot re-renders, and it means the same points stay pinned across a transpose or a settings change.
+export type PinnedTips = ReadonlySet<number>
+
+function withTipToggled(pinnedTips: PinnedTips, tipIndex: number): PinnedTips {
+    const result = new Set(pinnedTips)
+    // clicking an already-pinned point unpins it, like clicking a toggle
+    if (!result.delete(tipIndex)) {
+        result.add(tipIndex)
+    }
+    return result
+}
+
+function withoutTip(pinnedTips: PinnedTips, tipIndex: number): PinnedTips {
+    const result = new Set(pinnedTips)
+    result.delete(tipIndex)
+    return result
+}
+
+// each tip datum is wrapped so that the plot's `value` (which Plot sets to the pointed-at datum)
+// tells us which tooltip a click would pin
+interface TipRow<T> { datum: T, tipIndex: number }
+
+// the index of the tooltip the pointer is currently over, or null if it isn't over the plot. Plot
+// publishes the pointed-at datum on the plot element whenever it changes, which is on pointer
+// movement and, on a touch device, on the pointerenter the spec requires before every pointerdown
+function pointedTipIndex(plot: HTMLElement | SVGSVGElement): number | null {
+    const value: unknown = (plot as { value?: unknown }).value
+    if (typeof value !== 'object' || value === null || !('tipIndex' in value)) {
+        return null
+    }
+    const { tipIndex } = value as TipRow<unknown>
+    return tipIndex
+}
+
 // a Plot.tip anchored at the tallest series' value at each point, swapping x/y when transposed,
-// styled with the theme's tooltip colors
+// styled with the theme's tooltip colors, and placed by tipRender rather than by Plot's own fitting.
+// Comes in two flavors: the one that follows the pointer, and one ordinary (non-interactive) mark
+// per point the user has pinned.
 export function transposeAwareTip<T>(
     data: T[],
     transpose: boolean,
-    xKey: string,
+    getX: (d: T) => number,
     getValues: (d: T) => number[],
     title: (d: T) => string,
     colors: Colors,
-): Plot.Markish {
-    return Plot.tip(
-        data,
-        (transpose ? Plot.pointerY : Plot.pointerX)({
-            x: transpose ? (d: T) => Math.max(...getValues(d)) : xKey,
-            y: transpose ? xKey : (d: T) => Math.max(...getValues(d)),
-            title,
-            fill: colors.slightlyDifferentBackground,
-            stroke: colors.borderNonShadow,
-            textColor: colors.textMain,
-        }),
-    )
+    pinnedTips: PinnedTips,
+    legend: PlotRect | undefined,
+): Plot.Markish[] {
+    const rows: TipRow<T>[] = data.map((datum, tipIndex) => ({ datum, tipIndex }))
+    const position = (row: TipRow<T>): number => getX(row.datum)
+    const value = (row: TipRow<T>): number => Math.max(...getValues(row.datum))
+    const options = {
+        x: transpose ? value : position,
+        y: transpose ? position : value,
+        title: (row: TipRow<T>) => title(row.datum),
+        fill: colors.slightlyDifferentBackground,
+        stroke: colors.borderNonShadow,
+        textColor: colors.textMain,
+    }
+    // the plot draws at 1em, or 2em when transposed (see plotConfig), which is what sizes the
+    // tooltip text and hence the box the placement is worked out from
+    const fontSize = transpose ? 2 * plotFontSize : plotFontSize
+    const marks: Plot.Markish[] = [
+        Plot.tip(rows, (transpose ? Plot.pointerY : Plot.pointerX)({
+            ...options,
+            render: tipRender({ fontSize, legend, leaderColor: colors.textMain }),
+        })),
+    ]
+    // being plain marks rather than pointer-driven ones, pinned tooltips stay put when the mouse
+    // leaves, and are drawn into the plot we re-render for the downloaded image
+    for (const tipIndex of pinnedTips) {
+        // a pin can outlive the point it was made on, e.g. if a setting change shortens the data
+        if (tipIndex < rows.length) {
+            marks.push(Plot.tip([rows[tipIndex]], {
+                ...options,
+                className: pinnedTipClassName,
+                render: tipRender({ fontSize, legend, leaderColor: colors.textMain, decorate: stampTipIndex(tipIndex) }),
+            }))
+        }
+    }
+    return marks
 }
 
 // the screenshot-download icon shared by every plot type's settings bar
@@ -239,6 +307,9 @@ function PlotDownloadButton(props: { makePlot: () => HTMLElement, shortnames: st
             onClick={async () => {
                 const plot = props.makePlot()
                 document.body.appendChild(plot)
+                // a pinned tooltip is laid out on the frame after the plot is rendered, so wait for
+                // it; otherwise the capture below can catch the tooltip before it is placed
+                await new Promise<void>((resolve) => { requestAnimationFrame(() => { resolve() }) })
                 const uniqueShortnames = Array.from(new Set(props.shortnames))
                 await createScreenshot(
                     () => ({
@@ -389,7 +460,39 @@ export function computeDashPatterns<T extends LegendItem>(items: T[], order?: st
     return dashPatterns
 }
 
-function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, themeColors: Colors, dashOrder?: string[]): Plot.Markish[] {
+const legendPaddingX = 12
+const legendPaddingY = 10
+const legendRowHeight = 22
+const legendSquareSize = 14
+const legendLineLength = 36
+const legendFontSize = 13
+const legendTextSpacing = 10
+
+// the legend sits inside the frame, so tooltips have to know where it is to stay clear of it
+function legendBounds(labels: string[], rows: number, transpose: boolean): PlotRect {
+    let maxTextWidth = 0
+    // Use canvas to measure text width accurately
+    const context = document.createElement('canvas').getContext('2d')
+    if (context !== null) {
+        context.font = `${legendFontSize}px serif`
+        labels.forEach((label) => {
+            maxTextWidth = Math.max(maxTextWidth, context.measureText(label).width)
+        })
+    }
+    // Width = paddingX (left) + max(squareSize/lineLength) + textSpacing + textWidth + paddingX (right)
+    const maxSymbolWidth = Math.max(legendSquareSize, legendLineLength)
+    return {
+        // Position on the left side, but offset enough to avoid the y-axis
+        x: transpose ? 200 : 100,
+        y: 70,
+        width: legendPaddingX + maxSymbolWidth + legendTextSpacing + maxTextWidth + legendPaddingX,
+        height: legendPaddingY * 2 + legendRowHeight * rows,
+    }
+}
+
+interface DrawnLegend { marks: Plot.Markish[], bounds: PlotRect | undefined }
+
+function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, themeColors: Colors, dashOrder?: string[]): DrawnLegend {
     const colorItems = computeColorItems(items)
 
     const dashPatterns = computeDashPatterns(items, dashOrder)
@@ -407,47 +510,26 @@ function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, them
 
     const totalItems = colorItems.length + dashPatternItems.length
     if (totalItems === 0) {
-        return []
+        return { marks: [], bounds: undefined }
     }
+
+    const allLabels = [...colorItems.map(item => item.label), ...dashPatternItems.map(item => item.label)]
+    const bounds = legendBounds(allLabels, totalItems, transpose)
 
     const createLegend = (): SVGElement => {
         const svgNS = 'http://www.w3.org/2000/svg'
         const group = document.createElementNS(svgNS, 'g')
-        // Position on the left side, but offset enough to avoid the y-axis
-        const translateX = transpose ? 200 : 100
-        const translateY = 70
-        group.setAttribute('transform', `translate(${translateX} ${translateY})`)
+        group.setAttribute('data-test-id', 'plot_legend')
+        group.setAttribute('transform', `translate(${bounds.x} ${bounds.y})`)
 
-        const paddingX = 12
-        const paddingY = 10
-        const rowHeight = 22
-        const squareSize = 14
-        const lineLength = 36
-        const fontSize = 13
-        const textSpacing = 10
+        const paddingX = legendPaddingX
+        const paddingY = legendPaddingY
+        const rowHeight = legendRowHeight
+        const squareSize = legendSquareSize
+        const lineLength = legendLineLength
+        const fontSize = legendFontSize
 
-        // Calculate width based on longest label
-        const allLabels = [...colorItems.map(item => item.label), ...dashPatternItems.map(item => item.label)]
-        let maxTextWidth = 0
-        if (allLabels.length > 0) {
-            // Use canvas to measure text width accurately
-            const canvas = document.createElement('canvas')
-            const context = canvas.getContext('2d')
-            if (context) {
-                context.font = `${fontSize}px serif`
-                allLabels.forEach((label) => {
-                    const textWidth = context.measureText(label).width
-                    if (textWidth > maxTextWidth) {
-                        maxTextWidth = textWidth
-                    }
-                })
-            }
-        }
-
-        // Width = paddingX (left) + max(squareSize/lineLength) + textSpacing + textWidth + paddingX (right)
-        const maxSymbolWidth = Math.max(squareSize, lineLength)
-        const width = paddingX + maxSymbolWidth + textSpacing + maxTextWidth + paddingX
-        const height = paddingY * 2 + rowHeight * totalItems
+        const { width, height } = bounds
 
         const background = document.createElementNS(svgNS, 'rect')
         background.setAttribute('width', String(width))
@@ -522,7 +604,7 @@ function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, them
         return group
     }
 
-    return [createLegend]
+    return { marks: [createLegend], bounds }
 }
 
 export interface DetailedPlotSpec {
@@ -534,17 +616,27 @@ export interface DetailedPlotSpec {
 }
 
 export function PlotComponent(props: {
-    plotSpec: (transpose: boolean, leftLabelOffset: number) => DetailedPlotSpec
+    plotSpec: (transpose: boolean, leftLabelOffset: number, pinnedTips: PinnedTips) => DetailedPlotSpec
     settingsElement: (makePlot: () => HTMLElement) => ReactElement
 }): ReactElement {
     const transpose = useTranspose()
-
+    // the theme reaches the plot through plotSpec, which closes over it; nothing here needs it
     const plotRef = useRef<HTMLDivElement>(null)
+
+    // clicking a point pins its tooltip in place, and any number of them can be pinned at once.
+    // Deliberately component state rather than a setting: pins should survive clicking elsewhere on
+    // the page, but not a navigation or a reload.
+    const [pinnedTips, setPinnedTips] = useState<PinnedTips>(() => new Set())
+    // the tooltip the pointer is over, which is the one a click pins. Remembered here rather than
+    // read off the plot at click time because pinning re-renders the plot, and the replacement
+    // element's value starts out null -- so a second click without an intervening pointer move
+    // (which is how a point gets unpinned) would see nothing.
+    const pointedTip = useRef<number | null>(null)
 
     const plotSpec = props.plotSpec
 
     const plotConfig = useCallback((transposeConfig: boolean, leftAxis: LeftAxisLayout): Plot.PlotOptions => {
-        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec(transposeConfig, leftAxis.labelOffset)
+        const { marks, xlabel, ylabel, ydomain, legend } = plotSpec(transposeConfig, leftAxis.labelOffset, pinnedTips)
         const result: Plot.PlotOptions = {
             marks,
             x: {
@@ -589,13 +681,48 @@ export function PlotComponent(props: {
             }
         }
         return result
-    }, [plotSpec])
+    }, [plotSpec, pinnedTips])
 
     useEffect(() => {
-        if (plotRef.current) {
-            renderMeasuredPlot(plotRef.current, leftAxis => plotConfig(transpose, leftAxis), transpose)
+        const container = plotRef.current
+        if (container === null) {
+            return
         }
-    }, [props.plotSpec, transpose, plotConfig])
+        const plot = renderMeasuredPlot(container, leftAxis => plotConfig(transpose, leftAxis), transpose)
+
+        const dismiss = (tipIndex: number): void => {
+            setPinnedTips(current => withoutTip(current, tipIndex))
+        }
+        const recordPointedTip = (): void => {
+            pointedTip.current = pointedTipIndex(plot)
+        }
+        const handlePointerDown = (event: PointerEvent): void => {
+            // Plot has a click-to-stick tooltip of its own (mouse only), which would double up with
+            // the pinned ones we draw; suppressing it here (before the event reaches the plot)
+            // leaves us in sole charge of what a click does
+            event.stopPropagation()
+            const dismissed = dismissButtonTipIndex(event.target)
+            if (dismissed !== null) {
+                dismiss(dismissed)
+                return
+            }
+            const pointed = pointedTip.current
+            if (pointed !== null) {
+                setPinnedTips(current => withTipToggled(current, pointed))
+            }
+        }
+        plot.addEventListener('input', recordPointedTip)
+        container.addEventListener('pointerdown', handlePointerDown, true)
+        const frame = requestAnimationFrame(() => {
+            attachDismissButtons(plot, transpose, dismiss)
+        })
+
+        return () => {
+            cancelAnimationFrame(frame)
+            plot.removeEventListener('input', recordPointedTip)
+            container.removeEventListener('pointerdown', handlePointerDown, true)
+        }
+    }, [transpose, plotConfig])
 
     const screenshotMode = useScreenshotMode()
 
@@ -605,7 +732,9 @@ export function PlotComponent(props: {
     return (
         <>
             <div
-                className="histogram-svg-panel" // tied to CSS
+                // both tied to CSS; the screenshot class hides the pinned tooltip's dismiss button,
+                // which is interactive chrome rather than part of the chart
+                className={screenshotMode ? 'histogram-svg-panel screenshot-mode' : 'histogram-svg-panel'}
                 ref={plotRef}
                 style={
                     {
@@ -655,7 +784,7 @@ export function SeriesPlot<T extends PlotSeriesItem>(props: {
     modeSwitcher?: ReactElement
     dashOrder?: string[]
     extraSettingsControls?: ReactNode
-    buildPlot: (transpose: boolean, leftLabelOffset: number) => DetailedPlotSpec
+    buildPlot: (transpose: boolean, leftLabelOffset: number, pinnedTips: PinnedTips, legend: PlotRect | undefined) => DetailedPlotSpec
 }): ReactElement {
     const colors = useColors()
     const { items, dashOrder, buildPlot } = props
@@ -674,11 +803,14 @@ export function SeriesPlot<T extends PlotSeriesItem>(props: {
     )
 
     const plotSpec = useCallback(
-        (transpose: boolean, leftLabelOffset: number): DetailedPlotSpec => {
+        (transpose: boolean, leftLabelOffset: number, pinnedTips: PinnedTips): DetailedPlotSpec => {
             const title = new Set(items.map(i => i.shortname)).size === 1 ? items[0].shortname : ''
-            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose, leftLabelOffset)
+            // built first so that the tooltips can be told where it is and keep out of it, and
+            // drawn last, over the plot -- a leader up to a point behind it passes underneath
+            const drawnLegend = manualLegend(items, transpose, colors, dashOrder)
+            const { marks, xlabel, ylabel, ydomain, legend } = buildPlot(transpose, leftLabelOffset, pinnedTips, drawnLegend.bounds)
             marks.push(Plot.text([title], { frameAnchor: 'top', dy: -40 }))
-            marks.push(...manualLegend(items, transpose, colors, dashOrder))
+            marks.push(...drawnLegend.marks)
             return { marks, xlabel, ylabel, ydomain, legend }
         },
         [items, buildPlot, colors, dashOrder],

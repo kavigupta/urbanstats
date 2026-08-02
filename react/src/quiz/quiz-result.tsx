@@ -21,7 +21,7 @@ import { JuxtaQuestion, QuizDescriptor, QuizHistory, QuizQuestion, RetroQuestion
 import { ExportImport, Header, QuizAuthStatus, UserId } from './quiz-components'
 import { QuizFriendsPanel } from './quiz-friends'
 import { renderQuestion } from './quiz-question'
-import { AudienceStatistics, computeUserStatisticsData, Medal, ordinalThis, ourResultToDisplayForFriends, QuizStatistics } from './quiz-statistics'
+import { AudienceStatistics, computeUserStatisticsData, Medal, ordinalThis, ourPreviousResultToDisplayForFriends, ourResultToDisplayForFriends, QuizStatistics } from './quiz-statistics'
 import { getCachedPerQuestionStats, getPerQuestionStats, PerQuestionStats, reportToServer } from './statistics'
 
 export type CorrectPattern = (boolean | 0 | 1)[]
@@ -167,6 +167,11 @@ export function QuizResult(props: QuizResultProps): ReactNode {
                                         props.quizDescriptor.kind === 'infinite'
                                             ? ourResultToDisplayForFriends(props.quizDescriptor, props.wholeHistory)
                                             : { corrects: correctPattern }
+                                    }
+                                    myPreviousResult={
+                                        props.quizDescriptor.kind === 'infinite'
+                                            ? undefined
+                                            : ourPreviousResultToDisplayForFriends(props.quizDescriptor, props.wholeHistory, props.isDone)
                                     }
                                     userStatistics={
                                         props.quizDescriptor.kind === 'infinite'

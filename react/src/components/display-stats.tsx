@@ -125,7 +125,7 @@ export function LeftMargin(props: { value: number }): ReactNode {
 }
 
 // The ordinal suffix ("st"/"nd"/"rd"/"th") for a percentile number.
-function percentileSuffix(percentile: number): string {
+export function percentileSuffix(percentile: number): string {
     if (percentile % 10 === 1 && percentile % 100 !== 11) {
         return 'st'
     }
@@ -144,23 +144,4 @@ export function percentileText(percentile: number, simpleOrdinals: boolean): str
     }
     // something like Xth percentile
     return `${percentile}${percentileSuffix(percentile)} percentile`
-}
-
-export function Percentile(props: {
-    ordinal: number
-    total: number
-    percentileByPopulation: number
-    simpleOrdinals: boolean
-}): ReactNode {
-    const ordinal = props.ordinal
-    const total = props.total
-    if (ordinal > total) {
-        return <span></span>
-    }
-    // percentile as an integer
-    // used to be keyed by a setting, but now we always use percentile_by_population
-    const percentile = props.percentileByPopulation
-    const text = percentileText(percentile, props.simpleOrdinals)
-
-    return <div className="serif" style={{ textAlign: 'right', marginRight: props.simpleOrdinals ? '5px' : undefined }}>{text}</div>
 }

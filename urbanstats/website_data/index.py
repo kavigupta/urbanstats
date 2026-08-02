@@ -8,6 +8,7 @@ from urbanstats.geometry.relationship import ordering_idx as type_ordering_idx
 from urbanstats.geometry.relationship import type_to_type_category
 from urbanstats.protobuf.utils import save_search_index
 from urbanstats.special_cases.symlinks.compute_symlinks import compute_symlinks
+from urbanstats.universe.universe_list import check_continent_sub_universes
 from urbanstats.website_data.create_article_gzips import universe_to_idx
 
 # maps types to their search priority scores. Higher=less important.
@@ -61,6 +62,8 @@ def containing_universe_idxs(full: Any) -> List[List[int]]:
     contained_by = {k: set(vs) for k, vs in rels["contained_by"].items()}
     same_geography = {k: set(vs) for k, vs in rels["same_geography"].items()}
     full_longnames_set = set(full.longname)
+
+    check_continent_sub_universes(contained_by, full_longnames_set)
 
     return [
         [
