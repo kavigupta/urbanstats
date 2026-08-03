@@ -60,6 +60,20 @@ export async function withHamburgerMenu(t: TestController, block: () => Promise<
     }
 }
 
+/** The name cell of the warning row carrying `message`, which stands where a statistic's name would. */
+export function warningNamed(message: string, name: string): Selector {
+    return Selector('.for-testing-table-row')
+        .withText(message)
+        .find('[data-test-id=article-warning-name]')
+        .withExactText(name)
+}
+
+/** The statistics each warning row stands in for, in the order the rows appear. */
+export async function warningRowNames(): Promise<string[]> {
+    const cells = await arrayFromSelector(Selector('[data-test-id=article-warning-name]'))
+    return Promise.all(cells.map(async cell => (await cell.innerText).trim()))
+}
+
 /**
  * Statistic selection lives on the table's edit mode, so choosing statistics means
  * opening it. Categories, years and sources are always reachable there; a group inside

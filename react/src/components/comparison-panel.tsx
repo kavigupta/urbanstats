@@ -21,27 +21,43 @@ import { useComparisonHeadStyle, useHeaderTextClass, useMobileLayout, useSubHead
 import { TransposeContext } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
-import { ArticleWarnings } from './ArticleWarnings'
+import { placeWarnings, useArticleWarnings, WarningRow } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { useCSVExport } from './csv-export'
 import { EditModeState, EditTable, editRowsByGroup, useEditModeState, useEditTableLayout } from './edit-table'
 import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps, pullRelevantPlotProps, useExpandedByStat } from './plots'
-import { createScreenshot, ScreencapElements, useScreenshotMode } from './screenshot'
+import { createScreenshot, ScreencapElements, ScreenshotContext, ScreenshotContextType, useScreenshotMode } from './screenshot'
 import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
 import { computeNameSpecsWithGroups } from './statistic-name-specs'
 import { TableContents, CellSpec, PlotSpec, SuperHeaderSpec, TableEditButton, TableLayout, TopLeftCellSpec } from './supertable'
 import { ColumnIdentifier, valueOnlyColumns } from './table'
 
-export function ComparisonPanel(props: {
+interface ComparisonPanelProps {
     universe: Universe
     universes: readonly Universe[]
     articles: Article[]
     rows: (settings: StatGroupSettings) => ArticleRow[][]
     mapPartitions: number[][]
-}): ReactNode {
+}
+
+/**
+ * How many columns the table has depends on which statistics are missing, and warnings are left
+ * out of screenshots -- so the panel has to read screenshot mode, which means providing the
+ * context here rather than taking the one `PageTemplate` would otherwise make below it.
+ */
+export function ComparisonPanel(props: ComparisonPanelProps): ReactNode {
+    const screenshotContext = useRef<ScreenshotContextType>({ render: new Set(), wait: new Set() })
+    return (
+        <ScreenshotContext.Provider value={screenshotContext.current}>
+            <ComparisonPanelContents {...props} screenshotContext={screenshotContext.current} />
+        </ScreenshotContext.Provider>
+    )
+}
+
+function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotContext: ScreenshotContextType }): ReactNode {
     const colors = useColors()
     const tableRef = useRef<HTMLDivElement>(null)
     const mapRef = useRef(null)
@@ -122,6 +138,9 @@ export function ComparisonPanel(props: {
     const dataByArticleStat = useVisibleRows(props.rows, editMode)
     const dataByStatArticle = dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
 
+    const warnings = useArticleWarnings()
+    const warningPlacements = placeWarnings(dataByStatArticle.map(rowsForStat => rowsForStat[0].statpath), warnings)
+
     const handleSort = (statIndex: number): void => {
         let newSortDirection: 'up' | 'down' | 'both'
         if (sortByStatIndex === statIndex) {
@@ -174,8 +193,12 @@ export function ComparisonPanel(props: {
     )
     const numExpandedExtras = expandedByStatIndex.filter(v => v).length
 
+    // Transposed, a warning stands in for a column, so it takes up a column's worth of width
+    // alongside the statistics that are still shown.
+    const numTransposedColumns = dataByArticleStat[0].length + warningPlacements.length
+
     let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, showOrdinalColumns)
-    let widthTransposeColumns = (showOrdinalColumns ? 1.5 : 1) * (dataByArticleStat[0].length + numExpandedExtras) + 1.5
+    let widthTransposeColumns = (showOrdinalColumns ? 1.5 : 1) * (numTransposedColumns + numExpandedExtras) + 1.5
 
     const hasCongressionalRepresentativeTable = dataByStatArticle.some(statData =>
         statData.some(row => isCongressionalRepresentativesMetadataRow(row)),
@@ -194,7 +217,7 @@ export function ComparisonPanel(props: {
 
     // The tree needs considerably more room than a column of statistic names does.
     const leftMarginPercent = editMode ? (mobileLayout ? 0.55 : 0.32) : (transpose ? 0.24 : 0.18)
-    const numColumns = transpose ? dataByArticleStat[0].length : localArticlesToUse.length
+    const numColumns = transpose ? numTransposedColumns : localArticlesToUse.length
     const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
 
     const highlightArticleIndicesByStat: (number | undefined)[] = dataByStatArticle.map(articlesStatData => getHighlightIndex(articlesStatData))
@@ -251,6 +274,34 @@ export function ComparisonPanel(props: {
     })
 
     const { updatedNameSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames } = computeNameSpecsWithGroups(statisticNameHeaderSpecsOriginal)
+
+    /**
+     * Transposed, a warning stands in for a column, so it takes a column's worth of space in the
+     * header and in every row. Each warning shifts the ones after it along by one, so the nth
+     * warning's own column ends up n places later than the statistic it displaces.
+     */
+    const warningColumnAt = (warningIndex: number): number => warningPlacements[warningIndex].index + warningIndex
+
+    function insertWarningColumns<T>(values: T[], valueForWarning: (warning: WarningRow) => T): T[] {
+        const result = [...values]
+        warningPlacements.forEach((warning, warningIndex) => {
+            result.splice(warningColumnAt(warningIndex), 0, valueForWarning(warning))
+        })
+        return result
+    }
+
+    const transposedNameSpecs = insertWarningColumns<CellSpec & { type: 'statistic-name' }>(
+        statisticNameHeaderSpecsOriginal,
+        warning => ({
+            type: 'statistic-name',
+            renderedStatname: warning.name ?? '',
+            longname: names[0],
+            currentUniverse: props.universe,
+            center: true,
+            transpose: true,
+        }),
+    )
+    const { updatedNameSpecs: transposedHeaderSpecs, groupNames: transposedGroupNames } = computeNameSpecsWithGroups(transposedNameSpecs)
 
     const rowSpecsByStat: CellSpec[][] = Array.from({ length: dataByStatArticle.length }).map((_, statIndex) => (
         Array.from({ length: localArticlesToUse.length }).map((unused, articleIndex) => {
@@ -317,16 +368,23 @@ export function ComparisonPanel(props: {
         simpleOrdinals: true,
     }
 
-    // Transposing swaps which axis the statistics run along, so it swaps the headers, the
-    // row specs, and which direction the expanded plots stretch in. Everything else about
-    // the table is the same either way.
+    // Transposing swaps which axis the statistics run along, so it swaps the headers, the row
+    // specs, which direction the expanded plots stretch in, and whether a warning stands in for
+    // a row or a column. With no statistics at all there are no transposed rows to hang columns
+    // off, so the warnings fall back to rows there.
     const orientedSpecs = transpose
         ? {
-                superHeaderSpec: { headerSpecs: statisticNameHeaderSpecs, showBottomBar: false, groupNames: statisticNameGroupNames },
+                superHeaderSpec: { headerSpecs: transposedHeaderSpecs, showBottomBar: false, groupNames: transposedGroupNames },
                 leftHeaderSpec: { leftHeaderSpecs: longnameHeaderSpecs },
-                rowSpecs: rowSpecsByStatTransposed,
+                rowSpecs: rowSpecsByStatTransposed.map(row => insertWarningColumns<CellSpec>(row, () => ({ type: 'blank' }))),
                 horizontalPlotSpecs: plotSpecs.map(() => undefined),
-                verticalPlotSpecs: plotSpecs,
+                verticalPlotSpecs: insertWarningColumns<PlotSpec | undefined>(plotSpecs, () => undefined),
+                warningColumns: rowSpecsByStatTransposed.length === 0
+                    ? []
+                    : warningPlacements.map(({ content }, warningIndex) => ({ columnIndex: warningColumnAt(warningIndex), content })),
+                warningRows: rowSpecsByStatTransposed.length === 0
+                    ? warnings.map(({ name, content }) => ({ index: 0, name, content }))
+                    : [],
             }
         : {
                 superHeaderSpec: longnameSuperHeaderSpec,
@@ -334,6 +392,7 @@ export function ComparisonPanel(props: {
                 rowSpecs: rowSpecsByStat,
                 horizontalPlotSpecs: plotSpecs,
                 verticalPlotSpecs: [],
+                warningRows: warningPlacements,
             }
 
     const csvExportCallback = useCSVExport(localArticlesToUse, props.rows, includeOrdinals, joinedString)
@@ -358,6 +417,7 @@ export function ComparisonPanel(props: {
                 <QuerySettingsConnection />
                 <PageTemplate
                     screencap={(...args) => createScreenshot(screencapElements, ...args)}
+                    screenshotContext={props.screenshotContext}
                     csvExportCallback={csvExportCallback}
                 >
                     <DndContext
@@ -397,7 +457,6 @@ export function ComparisonPanel(props: {
 
                                 <MaybeScroll widthColumns={widthColumns}>
                                     <div ref={tableRef} data-test-id="comparison-table">
-                                        <ArticleWarnings />
                                         {editMode
                                             ? (
                                                     <ComparisonEditTable

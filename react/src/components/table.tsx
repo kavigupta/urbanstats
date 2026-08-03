@@ -378,19 +378,30 @@ export function MainHeaderRow(props: {
     extraSpaceRight: number[]
     simpleOrdinals: boolean
     columnWidthsInfo: (CommonLayoutInformation | undefined)[]
+    /** Columns with no values under them, which get no column names either. */
+    blankColumns?: number[]
 }): ReactNode {
     return (
         <>
             <Cell {...props.topLeftSpec} width={props.topLeftWidth} />
             {props.extraSpaceRight.map((_, columnIndex) => (
-                <StatisticHeaderCells
-                    key={`headerCells_${columnIndex}`}
-                    onlyColumns={props.onlyColumns}
-                    simpleOrdinals={props.simpleOrdinals}
-                    totalWidth={props.columnWidth}
-                    extraSpaceRight={props.extraSpaceRight[columnIndex] ?? 0}
-                    columnWidthsInfo={props.columnWidthsInfo[columnIndex]}
-                />
+                props.blankColumns?.includes(columnIndex) ?? false
+                    ? (
+                            <div
+                                key={`headerCells_${columnIndex}`}
+                                style={{ width: `${props.columnWidth + (props.extraSpaceRight[columnIndex] ?? 0)}%` }}
+                            />
+                        )
+                    : (
+                            <StatisticHeaderCells
+                                key={`headerCells_${columnIndex}`}
+                                onlyColumns={props.onlyColumns}
+                                simpleOrdinals={props.simpleOrdinals}
+                                totalWidth={props.columnWidth}
+                                extraSpaceRight={props.extraSpaceRight[columnIndex] ?? 0}
+                                columnWidthsInfo={props.columnWidthsInfo[columnIndex]}
+                            />
+                        )
             ))}
         </>
     )

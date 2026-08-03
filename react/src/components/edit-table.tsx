@@ -2,17 +2,18 @@ import React, { CSSProperties, ReactNode, useMemo, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { checkboxCategoryName, sourceEnabledKey, useIsStaged } from '../page_template/settings'
-import { GroupTreeState, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes } from '../page_template/statistic-settings'
+import { GroupTreeState, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, useSelectedGroups } from '../page_template/statistic-settings'
 import { Category, statParents } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { HumanReadableName, reifyReact } from '../utils/human-readable-name'
 
+import { noCategoriesSelectedContent, useWarningsByGroup } from './ArticleWarnings'
 import { ExpandButton } from './ExpandButton'
 import { StagingControls } from './StagingControls'
 import { BooleanSettingKey, CheckboxSettingCustomJustInputProps, CheckboxSettingJustBox, useBooleanSetting, useHighlightStyle } from './checkbox-setting'
 import { ArticleRow } from './load-article'
 import { displayNamesForRows } from './statistic-name-specs'
-import { CellSpec, EditModeOpenHeader, measureColumns, measuredLayout, MeasuredTableLayout, PlotSpec, StatisticTableRow, SuperHeaderSpec, TableFrame, TableLayout, TopLeftCellSpec } from './supertable'
+import { CellSpec, EditModeOpenHeader, measureColumns, measuredLayout, MeasuredTableLayout, PlotSpec, StatisticTableRow, SuperHeaderSpec, TableFrame, TableLayout, TopLeftCellSpec, WarningRowMessage } from './supertable'
 import { TableRowContainer, useStatisticNameAdornments } from './table'
 
 // Wrapping the name in a label lets a click anywhere on it toggle the associated
@@ -96,6 +97,8 @@ interface EditBodyRowBase {
 interface EditGroupHeaderSpec extends EditBodyRowBase {
     kind: 'group-header'
     name: string
+    /** Set for a group the year or source selection leaves with nothing to show. */
+    warning?: ReactNode
 }
 
 interface EditStatSpec extends EditBodyRowBase {
@@ -126,17 +129,29 @@ function EditCheckboxLabel(props: {
     )
 }
 
-/** A row that is nothing but a checkbox and its label, indented under its section header. */
-function EditLabelRow(props: { index: number, highlight: boolean, checkbox: ReactNode, name: string }): ReactNode {
+/**
+ * A row that is nothing but a checkbox and its label, indented under its section header. A
+ * group with nothing to show is one of these, and carries its warning where its values would
+ * have been -- so the label gives up the width of the columns it stands in for.
+ */
+function EditLabelRow(props: {
+    index: number
+    highlight: boolean
+    checkbox: ReactNode
+    name: string
+    warning?: { layout: MeasuredTableLayout, content: ReactNode }
+}): ReactNode {
+    const { warning } = props
     return (
         <TableRowContainer index={props.index}>
             <EditCheckboxLabel
                 highlight={props.highlight}
-                style={{ width: '100%', paddingLeft: `${indentEm}em` }}
+                style={{ width: warning === undefined ? '100%' : `${warning.layout.widthLeftHeader}%`, paddingLeft: `${indentEm}em` }}
                 checkbox={props.checkbox}
             >
                 {props.name}
             </EditCheckboxLabel>
+            {warning !== undefined && <WarningRowMessage layout={warning.layout} content={warning.content} />}
         </TableRowContainer>
     )
 }
@@ -191,9 +206,9 @@ function AnimatedCollapse({ expanded, children }: { expanded: boolean, children:
  *
  * A group the year and source selection leaves with no statistics is that header alone: a
  * row with a checkbox and no value. It exists for this geography, so dropping it from the
- * tree would leave no way to reach it; the article warnings explain why it has no value.
+ * tree would leave no way to reach it; its warning stands where the value would be.
  */
-function categoryBodyRows(groups: GroupTreeState[], rowsByGroup: Map<string, EditRow[]>): EditBodyRow[] {
+function categoryBodyRows(groups: GroupTreeState[], rowsByGroup: Map<string, EditRow[]>, warningsByGroup: Map<string, ReactNode>): EditBodyRow[] {
     return groups.flatMap(({ group, enabled, setEnabled, highlight }): EditBodyRow[] => {
         const groupRows = rowsByGroup.get(group.id) ?? []
         const checkboxId = `edit-checkbox-${group.id}`
@@ -218,7 +233,7 @@ function categoryBodyRows(groups: GroupTreeState[], rowsByGroup: Map<string, Edi
             return [{ ...statSpec(groupRows[0], 1), checkbox }]
         }
         return [
-            { kind: 'group-header', key: `group-${group.id}`, highlight, enabled, checkbox, name: group.name },
+            { kind: 'group-header', key: `group-${group.id}`, highlight, enabled, checkbox, name: group.name, warning: warningsByGroup.get(group.id) },
             ...groupRows.map(editRow => ({ ...statSpec(editRow, 2), checkboxId })),
         ]
     })
@@ -262,11 +277,12 @@ function EditCategory(props: {
     layout: MeasuredTableLayout
     category: Category
     rowsByGroup: Map<string, EditRow[]>
+    warningsByGroup: Map<string, ReactNode>
     searching: boolean
 }): ReactNode {
     const tree = useCategoryTreeState(props.category)
     const expanded = props.searching || tree.expanded
-    const segments = editBodySegments(categoryBodyRows(tree.groups, props.rowsByGroup), expanded)
+    const segments = editBodySegments(categoryBodyRows(tree.groups, props.rowsByGroup, props.warningsByGroup), expanded)
     // With every statistic selected there is nothing left for expanding to reveal.
     const anythingToExpand = segments.some(segment => segment.collapsible)
 
@@ -306,7 +322,16 @@ function EditCategory(props: {
             </TableRowContainer>
             {segments.map((segment) => {
                 const rows = segment.rows.map(({ spec, index }) => spec.kind === 'group-header'
-                    ? <EditLabelRow key={spec.key} index={index} highlight={spec.highlight} checkbox={spec.checkbox} name={spec.name} />
+                    ? (
+                            <EditLabelRow
+                                key={spec.key}
+                                index={index}
+                                highlight={spec.highlight}
+                                checkbox={spec.checkbox}
+                                name={spec.name}
+                                warning={spec.warning === undefined ? undefined : { layout: props.layout, content: spec.warning }}
+                            />
+                        )
                     : <EditStatRow key={spec.key} layout={props.layout} index={index} spec={spec} />,
                 )
                 return segment.collapsible
@@ -461,6 +486,8 @@ export function EditTable(props: {
     const { filter, setFilter, exitEditMode } = props.editState
     const categories = useCategoriesMatchingSearch(filter)
     const staged = useIsStaged()
+    const warningsByGroup = useWarningsByGroup()
+    const nothingSelected = useSelectedGroups().length === 0
 
     const editModeHeader: EditModeOpenHeader = {
         open: true,
@@ -480,12 +507,19 @@ export function EditTable(props: {
             >
                 <EditSourceAndYearSections />
                 <EditSectionHeader name="Statistics" />
+                {/* No group's row can carry this one, so it goes above the tree the user selects from. */}
+                {nothingSelected && (
+                    <TableRowContainer index={0}>
+                        <WarningRowMessage layout={props.layout} content={noCategoriesSelectedContent} fullRow />
+                    </TableRowContainer>
+                )}
                 {categories.map(category => (
                     <EditCategory
                         key={category.id}
                         layout={props.layout}
                         category={category}
                         rowsByGroup={props.rowsByGroup}
+                        warningsByGroup={warningsByGroup}
                         searching={filter !== ''}
                     />
                 ))}

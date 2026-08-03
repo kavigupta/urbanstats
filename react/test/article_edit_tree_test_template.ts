@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
-import { categoryCheckbox, categoryToggleButton, enterEditMode, exitEditMode, filterBox, groupCheckbox, groupMemberRow, interactableGroupCheckbox, setCategoryExpanded, sourceCheckbox, yearCheckbox } from './edit_mode_test_utils'
-import { clickUniverseFlag, getLocation, resizeForPlatform, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture } from './test_utils'
+import { categoryCheckbox, categoryToggleButton, enterEditMode, exitEditMode, filterBox, groupCheckbox, groupMemberRow, groupWarning, interactableGroupCheckbox, setCategoryExpanded, sourceCheckbox, yearCheckbox } from './edit_mode_test_utils'
+import { clickUniverseFlag, getLocation, resizeForPlatform, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, warningRowNames } from './test_utils'
 
 /**
  * The article table's edit mode is where the statistic category/group tree lives: the
@@ -183,27 +183,47 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('missing-year-warning', async (t) => {
         /**
-         * Deselecting a year has to reach the edit table's own copy of ArticleWarnings.
+         * Deselecting a year has to put the warning on the edit table too, in the row of the
+         * group it leaves empty.
          */
         await enterEditMode(t)
         await uncheckAllCategories(t)
         await t.click(mainCheck)
         await t.click(year2020Check)
-        await t.expect(Selector('.stats_table li').withExactText('To see Main > Population statistics, select 2020, 2010, or 2000.').exists).ok()
+        await t.expect(groupWarning('population').innerText).eql('Select 2020, 2010, or 2000 to see this statistic.')
         await screencap(t)
+    })
+
+    test('warning-row-placement', async (t) => {
+        /**
+         * Main's groups that have years warn, and its year-less groups still show values. On the
+         * article itself the warnings belong in the rows those statistics would have occupied --
+         * above Area -- rather than all together below the table.
+         */
+        await enterEditMode(t)
+        await uncheckAllCategories(t)
+        await t.click(mainCheck)
+        await t.click(year2020Check)
+        await exitEditMode(t)
+
+        await t.expect(await warningRowNames()).eql(['Population', 'PW Density (r=1km)', 'AW Density'])
+        const rows = Selector('.for-testing-table-row')
+        await t.expect(rows.nth(0).find('[data-test-id=article-warning]').exists).ok()
+        await t.expect(rows.nth(3).find('[data-test-id=article-warning]').exists).notOk()
+        await t.expect(rows.nth(3).find('a').withExactText('Area').exists).ok()
     })
 
     test('missing-year-data', async (t) => {
         /**
          * A category whose statistics only exist for a year that isn't selected is
-         * called out by name, rather than silently showing nothing.
+         * called out, rather than silently showing nothing.
          */
         await enterEditMode(t)
         await uncheckAllCategories(t)
         await t.click(year2020Check)
         await t.click(year2010Check)
         await t.click(categoryCheckbox('health'))
-        await t.expect(Selector('.stats_table li').withExactText('To see Health statistics, select 2020.').exists).ok()
+        await t.expect(groupWarning('GHLTH_cdc_2').innerText).eql('Select 2020 to see these statistics.')
         await screencap(t)
     })
 
@@ -219,7 +239,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.click(interactableGroupCheckbox('rent_or_own_rent'))
         await t.click(year2020Check)
         await t.click(year2010Check)
-        await t.expect(Selector('.stats_table li').withExactText('To see Housing > Renter % statistics, select 2020.').exists).ok()
+        await t.expect(groupWarning('rent_or_own_rent').innerText).eql('Select 2020 to see this statistic.')
         await screencap(t)
     })
 

@@ -102,6 +102,15 @@ export function groupMemberRow(groupId: string, name: string): Selector {
     return Selector(`label[for=edit-checkbox-${groupId}]`).withExactText(name)
 }
 
+/**
+ * The warning on a group's own row in the edit tree, which stands where the group's values
+ * would be. A group whose whole category is missing for the same reason carries the
+ * category's warning, since its groups are rows apart on the tree.
+ */
+export function groupWarning(groupId: string): Selector {
+    return groupCheckbox(groupId).parent('.for-testing-table-row').find('[data-test-id=article-warning]')
+}
+
 /** Scopes selectors to the table the edit tree is on, rather than the rest of the page. */
 export const articleTableScope = '.stats_table'
 export const comparisonTableScope = '[data-test-id=comparison-table]'

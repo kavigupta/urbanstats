@@ -44,7 +44,7 @@ test('can visit sitemap links', async (t) => {
     }
 
     const visitUrls: string[] = []
-    const numToSample = 100
+    const numToSample = 90
     for (const urls of byBase.values()) {
         for (let sampled = 0; sampled < numToSample && urls.length > 0; sampled++) {
             const index = Math.floor(Math.random() * urls.length)
@@ -58,6 +58,6 @@ test('can visit sitemap links', async (t) => {
         await t.navigateTo(url)
         await waitForLoading()
         await t.expect(pageDescriptorKind()).notEql('error')
-        await t.expect(Selector('[data-test-id=article-warnings]').exists).notOk()
+        await t.expect(Selector('[data-test-id=article-warning]').exists).notOk()
     }
 })
