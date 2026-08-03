@@ -32,7 +32,7 @@ import { createScreenshot, ScreencapElements, ScreenshotContext, ScreenshotConte
 import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
 import { computeNameSpecsWithGroups } from './statistic-name-specs'
-import { TableContents, CellSpec, PlotSpec, TableLayout } from './supertable'
+import { TableContents, CellSpec, PlotSpec, TableLayout, TopLeftCellSpec } from './supertable'
 import { ColumnIdentifier, valueOnlyColumns } from './table'
 
 interface ComparisonPanelProps {
@@ -344,7 +344,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
             : undefined,
     )
 
-    const topLeftSpec: CellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
+    const topLeftSpec: TopLeftCellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
 
     const layout: TableLayout = {
         widthLeftHeader: leftMarginPercent * 100,

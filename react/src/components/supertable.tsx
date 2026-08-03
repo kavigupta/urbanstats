@@ -84,7 +84,7 @@ export interface TableContentsProps {
     rowSpecs: CellSpec[][]
     horizontalPlotSpecs: (PlotSpec | undefined)[]
     verticalPlotSpecs: (PlotSpec | undefined)[]
-    topLeftSpec: CellSpec
+    topLeftSpec: TopLeftCellSpec
     /** Warnings shown in place of the statistics they are about. */
     warningRows?: WarningRow[]
     /**
@@ -234,7 +234,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
 function TableFrame(props: {
     layout: MeasuredTableLayout
     superHeaderSpec?: SuperHeaderSpec
-    topLeftSpec: CellSpec
+    topLeftSpec: TopLeftCellSpec
     blankColumns?: number[]
     minHeight?: string
     children: ReactNode
@@ -515,3 +515,6 @@ export interface StatisticRowCellProps {
 export interface TopLeftHeaderProps {
     statNameOverride?: string
 }
+
+/** The cells that can serve as a table's top-left header; the comparison's carries a color bar. */
+export type TopLeftCellSpec = Extract<CellSpec, TopLeftHeaderProps>
