@@ -10,9 +10,6 @@ import { useScreenshotCallback } from './screenshot'
  * Use instead of react-map-gl's <Layer> so screenshots wait for the layer.
  * This solves the problem of the layer not being present even after the `render` screenshot phase.
  * If this happens, then map.loaded() doesn't wait for the layer.
- *
- * This component should not be used under a screenshot-mode dependent `key`,
- * as this causes it to not be part of the screenshot render process.
  */
 export function ScreenshotAwareLayer(props: LayerProps & { id: string }): ReactNode {
     const { current: map } = useMap()
@@ -30,7 +27,9 @@ export function ScreenshotAwareLayer(props: LayerProps & { id: string }): ReactN
                 await new Promise(resolve => requestAnimationFrame(resolve))
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Linter is too dumb
                 if (cancelled) {
-                    return // Try again in the next effect
+                    // Either the effect is about to re-run, or we unmounted -- in which case
+                    // unregistering has already settled the screenshot's wait for us.
+                    return
                 }
                 if (map._removed) {
                     break // Nothing will add the layer now, don't stall the screenshot
