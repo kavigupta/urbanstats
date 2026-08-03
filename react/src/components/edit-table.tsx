@@ -11,7 +11,7 @@ import { noCategoriesSelectedContent, useWarningsByGroup } from './ArticleWarnin
 import { ExpandButton } from './ExpandButton'
 import { BooleanSettingKey, CheckboxSettingCustomJustInputProps, CheckboxSettingJustBox, useBooleanSetting, useHighlightStyle } from './checkbox-setting'
 import { ArticleRow } from './load-article'
-import { displayNamesForRows } from './statistic-name-specs'
+import { computeNameSpecsWithGroups, nameSpecsForRows } from './statistic-name-specs'
 import { CellSpec, EditModeOpenHeader, measureColumns, measuredLayout, MeasuredTableLayout, PlotSpec, StatisticTableRow, SuperHeaderSpec, TableFrame, TableLayout, TopLeftCellSpec, WarningRowMessage } from './supertable'
 import { TableRowContainer, useStatisticNameAdornments } from './table'
 
@@ -70,7 +70,8 @@ export function editRowsByGroup(
     currentUniverse: Universe,
     cells: (row: ArticleRow, index: number) => { cellSpecs: CellSpec[], plotSpec?: PlotSpec },
 ): Map<string, EditRow[]> {
-    const displayNames = displayNamesForRows(rows, longname, currentUniverse)
+    const { updatedNameSpecs } = computeNameSpecsWithGroups(nameSpecsForRows(rows, longname, currentUniverse))
+    const displayNames = updatedNameSpecs.map(spec => spec.displayName ?? spec.renderedStatname)
     const result = new Map<string, EditRow[]>()
     rows.forEach((row, index) => {
         const parent = statParents.get(row.statpath)

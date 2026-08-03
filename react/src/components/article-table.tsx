@@ -34,17 +34,6 @@ export function useExpandedPlotSpecs(rows: ArticleRow[], article: Article): (Plo
     )
 }
 
-function computeWidths(simpleOrdinals: boolean, isMobile: boolean, screenshotMode: boolean): { widthLeftHeader: number, columnWidth: number } {
-    // TODO clean this up and reduce the amount of magic numbers
-    const nonPointerColumns = 15 + 10 + (simpleOrdinals ? 7 + 8 : 17 + 25)
-    const pointerColumns = 8 * (screenshotMode ? 0 : (!simpleOrdinals && isMobile ? 1 : 2))
-    const numerator = 31
-    const denominator = nonPointerColumns + pointerColumns + numerator
-    const widthLeftHeader = 100 * (numerator / denominator)
-    const columnWidth = 100 - widthLeftHeader
-    return { widthLeftHeader, columnWidth }
-}
-
 /** The column shape both the normal article table and its edit mode are laid out against. */
 export function useArticleTableLayout(mode: 'normal' | 'edit'): TableLayout {
     const [simpleOrdinals] = useSetting('simple_ordinals')
@@ -53,20 +42,28 @@ export function useArticleTableLayout(mode: 'normal' | 'edit'): TableLayout {
 
     // On mobile, edit mode drops every column but the value, and the name column gets a
     // wider share since it no longer competes with them.
-    const layout: TableLayout = mode === 'edit' && isMobile
-        ? {
-                simpleOrdinals,
-                widthLeftHeader: mobileEditWidthLeftHeader,
-                columnWidth: 100 - mobileEditWidthLeftHeader,
-                onlyColumns: valueOnlyColumns,
-            }
-        : {
-                simpleOrdinals,
-                ...computeWidths(simpleOrdinals, isMobile, screenshotMode),
-                onlyColumns: allColumns,
-            }
+    if (mode === 'edit' && isMobile) {
+        return {
+            simpleOrdinals,
+            widthLeftHeader: mobileEditWidthLeftHeader,
+            columnWidth: 100 - mobileEditWidthLeftHeader,
+            onlyColumns: valueOnlyColumns,
+        }
+    }
 
-    return layout
+    // TODO clean this up and reduce the amount of magic numbers
+    const nonPointerColumns = 15 + 10 + (simpleOrdinals ? 7 + 8 : 17 + 25)
+    const pointerColumns = 8 * (screenshotMode ? 0 : (!simpleOrdinals && isMobile ? 1 : 2))
+    const numerator = 31
+    const denominator = nonPointerColumns + pointerColumns + numerator
+    const widthLeftHeader = 100 * (numerator / denominator)
+
+    return {
+        simpleOrdinals,
+        widthLeftHeader,
+        columnWidth: 100 - widthLeftHeader,
+        onlyColumns: allColumns,
+    }
 }
 
 export function ArticleTable(props: {

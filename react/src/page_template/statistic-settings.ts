@@ -41,13 +41,9 @@ function yearSourceKeys(): (StatYearKey | StatSourceKey)[] {
     ]
 }
 
-function statGroupKeys(): StatGroupKey[] {
-    return groupKeys(allGroups)
-}
-
 export function groupYearKeys(): (keyof StatGroupSettings)[] {
     return [
-        ...statGroupKeys(),
+        ...groupKeys(allGroups),
         ...yearSourceKeys(),
     ]
 }
@@ -72,7 +68,7 @@ const allStatGroupsEnabled = Object.fromEntries(
  */
 export function useVisibleRows<T>(rows: (settings: StatGroupSettings) => T, showAllGroups: boolean): T {
     const yearSourceSettings = useSettings(yearSourceKeys())
-    const groupSettings = useSettings(showAllGroups ? [] : statGroupKeys())
+    const groupSettings = useSettings(showAllGroups ? [] : groupKeys(allGroups))
     return useMemo(
         () => rows({ ...yearSourceSettings, ...allStatGroupsEnabled, ...groupSettings }),
         [rows, yearSourceSettings, groupSettings],
