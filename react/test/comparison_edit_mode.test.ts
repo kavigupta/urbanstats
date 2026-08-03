@@ -14,6 +14,8 @@ const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, Califo
 const swSGV = 'Southwest San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 
 const twoRegions = comparisonPage([upperSGV, swSGV])
+// Enough regions that the table is wider than the screen and scrolls horizontally.
+const scrollingRegions = comparisonPage(['China', 'USA', 'Japan', 'Indonesia', 'India', 'Brazil'])
 // Four countries with a settings vector that leaves few enough statistics selected to transpose.
 const transposed = `${target}/comparison.html?longnames=%5B%22China%22%2C%22USA%22%2C%22Japan%22%2C%22Indonesia%22%5D&s=6TunChiToWxwZeDP`
 
@@ -81,6 +83,24 @@ test('editing a transposed comparison pops out of transpose', async (t) => {
 
     await t.expect(filterBox.exists).ok()
     await t.expect(regionHeader.exists).notOk()
+    await screencap(t)
+})
+
+urbanstatsFixture('comparison edit mode staging while scrolling', scrollingRegions, async (t) => {
+    // Save a setting first, so the link enters staging instead of silently applying.
+    await t.click(Selector('input[data-test-id=use_imperial]'))
+    await t.navigateTo(`${scrollingRegions}&s=29ZqGgHgeNSXMA9`)
+})
+
+test('the staging buttons stay on screen when the table scrolls horizontally', async (t) => {
+    await t.expect(Selector('[data-test-id=staging_controls]').exists).ok()
+    const viewportWidth = await Selector('body').clientWidth
+
+    // Guards the fixture: without a table wider than the screen there's nothing to scroll off.
+    await t.expect((await comparisonTable.boundingClientRect).width).gt(viewportWidth)
+
+    const applyButton = Selector('button[data-test-id=apply]')
+    await t.expect((await applyButton.boundingClientRect).right).lte(viewportWidth)
     await screencap(t)
 })
 

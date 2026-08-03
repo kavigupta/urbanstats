@@ -23,6 +23,7 @@ import { zIndex } from '../utils/zIndex'
 
 import { placeWarnings, useArticleWarnings, WarningRow } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
+import { StagingControls } from './StagingControls'
 import { useCSVExport } from './csv-export'
 import { EditModeState, EditTable, editRowsByGroup, useEditModeState, useEditTableLayout } from './edit-table'
 import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
@@ -454,6 +455,9 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                                 </div>
 
                                 <div style={{ marginBlockEnd: '1em' }}></div>
+
+                                {/* Outside the scroll, so its buttons can't be scrolled off screen. */}
+                                <StagingControls onExitStaging={editState.exitEditMode} />
 
                                 <MaybeScroll widthColumns={widthColumns}>
                                     <div ref={tableRef} data-test-id="comparison-table">

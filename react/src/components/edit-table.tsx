@@ -9,7 +9,6 @@ import { HumanReadableName, reifyReact } from '../utils/human-readable-name'
 
 import { noCategoriesSelectedContent, useWarningsByGroup } from './ArticleWarnings'
 import { ExpandButton } from './ExpandButton'
-import { StagingControls } from './StagingControls'
 import { BooleanSettingKey, CheckboxSettingCustomJustInputProps, CheckboxSettingJustBox, useBooleanSetting, useHighlightStyle } from './checkbox-setting'
 import { ArticleRow } from './load-article'
 import { displayNamesForRows } from './statistic-name-specs'
@@ -501,32 +500,29 @@ export function EditTable(props: {
     }
 
     return (
-        <>
-            {staged && <StagingControls onExitStaging={exitEditMode} />}
-            <TableFrame
-                layout={props.layout}
-                superHeaderSpec={props.superHeaderSpec}
-                topLeftSpec={{ ...props.topLeftSpec, editMode: editModeHeader }}
-            >
-                <EditSourceAndYearSections />
-                <EditSectionHeader name="Statistics" />
-                {/* No group's row can carry this one, so it goes above the tree the user selects from. */}
-                {nothingSelected && (
-                    <TableRowContainer index={0}>
-                        <WarningRowMessage layout={props.layout} content={noCategoriesSelectedContent} fullRow />
-                    </TableRowContainer>
-                )}
-                {categories.map(category => (
-                    <EditCategory
-                        key={category.id}
-                        layout={props.layout}
-                        category={category}
-                        rowsByGroup={props.rowsByGroup}
-                        warningsByGroup={warningsByGroup}
-                        searching={filter !== ''}
-                    />
-                ))}
-            </TableFrame>
-        </>
+        <TableFrame
+            layout={props.layout}
+            superHeaderSpec={props.superHeaderSpec}
+            topLeftSpec={{ ...props.topLeftSpec, editMode: editModeHeader }}
+        >
+            <EditSourceAndYearSections />
+            <EditSectionHeader name="Statistics" />
+            {/* No group's row can carry this one, so it goes above the tree the user selects from. */}
+            {nothingSelected && (
+                <TableRowContainer index={0}>
+                    <WarningRowMessage layout={props.layout} content={noCategoriesSelectedContent} fullRow />
+                </TableRowContainer>
+            )}
+            {categories.map(category => (
+                <EditCategory
+                    key={category.id}
+                    layout={props.layout}
+                    category={category}
+                    rowsByGroup={props.rowsByGroup}
+                    warningsByGroup={warningsByGroup}
+                    searching={filter !== ''}
+                />
+            ))}
+        </TableFrame>
     )
 }

@@ -3,6 +3,7 @@ import React, { ReactNode } from 'react'
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { Article } from '../utils/protos'
 
+import { StagingControls } from './StagingControls'
 import { ArticleEditTable } from './article-edit-table'
 import { ArticleTable } from './article-table'
 import { useEditModeState } from './edit-table'
@@ -20,6 +21,7 @@ export function ArticleTableSection(props: {
 
     return (
         <div className="stats_table">
+            <StagingControls onExitStaging={editState.exitEditMode} />
             {editState.editMode
                 ? (
                         <ArticleEditTable

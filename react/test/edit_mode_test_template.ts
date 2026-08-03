@@ -18,7 +18,7 @@ export function editModeSharedTests(spec: {
     /** Prefixes the fixture names, so the two callers' fixtures stay distinguishable. */
     name: string
     page: string
-    /** The table the edit tree lives on, which the staging controls are looked up inside. */
+    /** The table the edit tree lives on. */
     scope: string
     /** The Edit button's text, which names what that table is editing. */
     editButtonLabel: string
@@ -31,7 +31,8 @@ export function editModeSharedTests(spec: {
     congressional: { page: string, expectedRegions: string[] }
 }): void {
     const table = Selector(spec.scope)
-    const stagingControls = table.find('[data-test-id=staging_controls]')
+    // Above the table rather than on it, so it stays out of the table's horizontal scroll.
+    const stagingControls = Selector('[data-test-id=staging_controls]')
     const mainCategory = categoryCheckbox('main')
     // Population is a single-stat group, so its row is the one carrying the group checkbox.
     const populationGroup = groupCheckbox('population')
@@ -165,13 +166,13 @@ export function editModeSharedTests(spec: {
     })
 
     test('applying staged changes also exits edit mode', async (t) => {
-        await t.click(table.find('button[data-test-id=apply]'))
+        await t.click(stagingControls.find('button[data-test-id=apply]'))
         await t.expect(stagingControls.exists).notOk()
         await t.expect(editButton.exists).ok()
     })
 
     test('discarding staged changes also exits edit mode', async (t) => {
-        await t.click(table.find('button[data-test-id=discard]'))
+        await t.click(stagingControls.find('button[data-test-id=discard]'))
         await t.expect(stagingControls.exists).notOk()
         await t.expect(editButton.exists).ok()
     })
