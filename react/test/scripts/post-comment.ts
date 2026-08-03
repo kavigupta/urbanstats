@@ -49,7 +49,7 @@ async function testsComment(): Promise<string | undefined> {
         return true
     }).sort((a, b) => a.test.localeCompare(b.test))
 
-    const failedExecutions = executions.filter(execution => execution.result.status !== 'success')
+    const failedExecutions = executions.flatMap(execution => execution.result.status === 'success' ? [] : [{ ...execution, result: execution.result }])
 
     if (failedExecutions.length === 0) {
         return
@@ -58,7 +58,7 @@ async function testsComment(): Promise<string | undefined> {
     const lines = await Promise.all(failedExecutions.map(async ({ test, result, retries, github: executionGithub }) => {
         const statusText = result.status === 'timeout'
             ? `timeout (limit: ${result.timeLimitSeconds}s)`
-            : 'failure'
+            : `failure (${result.reason})`
         const retriesText = retries === 0 ? '' : ` (${retries} retries)`
 
         const { data } = await gh.octokit.rest.actions.downloadJobLogsForWorkflowRun({

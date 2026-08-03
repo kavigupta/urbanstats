@@ -37,7 +37,9 @@ export const testHistorySchema = z.array(z.object({
     test: z.string(),
     result: z.discriminatedUnion('status', [
         z.object({ status: z.literal('timeout'), timeLimitSeconds: z.number() }),
-        z.object({ status: z.enum(['success', 'failure']), duration: z.number() }),
+        z.object({ status: z.literal('success'), duration: z.number() }),
+        // The reason is displayed as-is, so that failure reports say what to go look at
+        z.object({ status: z.literal('failure'), duration: z.number(), reason: z.enum(['assertions', 'screenshots']) }),
     ]),
     retries: z.number(),
     github: z.optional(z.object({

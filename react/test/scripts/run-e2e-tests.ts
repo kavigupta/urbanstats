@@ -124,7 +124,7 @@ function printResult({ test, result, retries }: { test: string, result: TestResu
             console.warn(chalkTemplate`{green.bold ${testFile(test)} succeeded (${retries} retries)}`)
             break
         case 'failure':
-            console.warn(chalkTemplate`{red.bold ${testFile(test)} failed (${retries} retries)}`)
+            console.warn(chalkTemplate`{red.bold ${testFile(test)} failed due to ${result.reason} (${retries} retries)}`)
             break
         case 'timeout':
             console.error(chalkTemplate`{red ${testFile(test)} took too long! (allowed duration ${result.timeLimitSeconds}s) (${retries} retries)}`)
@@ -187,24 +187,29 @@ async function runTest(test: string): Promise<TestResult> {
             selectorTimeout: 5000,
             disableMultipleWindows: true,
         })
-        return { status: failed === 0 ? 'success' as const : 'failure' as const, duration: Date.now() - start }
+        return { status: 'ran' as const, assertionsPassed: failed === 0, duration: Date.now() - start }
     })()
 
     const timeLimitSeconds = options.live ? 1_000_000 : (options.timeLimitSeconds ?? 10_000) * (await testFileDidChange(test) ? 1 : 2)
 
     const result = await withTimeout(runningTests, async () => timeLimitSeconds + await getTOTPWait(test))
 
-    const comparisonResult = await maybeCompare(test, result.status === 'success')
-
-    if (result.status === 'success' && !comparisonResult) {
-        return { ...result, status: 'failure' }
-    }
+    const screenshotsPassed = await maybeCompare(test, result.status === 'ran' && result.assertionsPassed)
 
     if (result.status === 'timeout') {
         return { ...result, timeLimitSeconds }
     }
 
-    return result
+    // Assertion failures take precedence: a test that fails stops early, so its screenshots aren't comparable
+    if (!result.assertionsPassed) {
+        return { status: 'failure', duration: result.duration, reason: 'assertions' }
+    }
+
+    if (!screenshotsPassed) {
+        return { status: 'failure', duration: result.duration, reason: 'screenshots' }
+    }
+
+    return { status: 'success', duration: result.duration }
 }
 
 async function maybeCompare(test: string, success: boolean): Promise<boolean> {
