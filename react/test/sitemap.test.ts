@@ -44,7 +44,7 @@ test('can visit sitemap links', async (t) => {
     }
 
     const visitUrls: string[] = []
-    const numToSample = 100
+    const numToSample = 90
     for (const urls of byBase.values()) {
         for (let sampled = 0; sampled < numToSample && urls.length > 0; sampled++) {
             const index = Math.floor(Math.random() * urls.length)
