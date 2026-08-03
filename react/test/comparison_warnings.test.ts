@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { checkTextboxes, comparisonPage, screencap, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
+import { arrayFromSelector, checkTextboxes, comparisonPage, screencap, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
 
 const mainCheck = 'input[data-test-id=category_main]'
 
@@ -17,6 +17,12 @@ async function selectMainWithoutYears(t: TestController): Promise<void> {
 }
 
 const missingMainGroups = ['Population', 'PW Density (r=1km)', 'AW Density']
+
+/** The statistic names heading each column, which transposed is where a warning's name goes. */
+async function columnHeaderNames(): Promise<string[]> {
+    const names = await arrayFromSelector(Selector('[data-test-id=statistic-link]'))
+    return Promise.all(names.map(async name => (await name.innerText).trim()))
+}
 
 urbanstatsFixture('comparison warnings', comparisonPage([
     'San Francisco city, California, USA',
@@ -51,25 +57,29 @@ test('comparison-warnings-all-sources-disabled', async (t) => {
     await screencap(t)
 })
 
-// Five regions and only two statistics left, which is wide enough that the table transposes.
+// Six regions against three warning columns and two statistics, which is enough regions that the
+// table is narrower transposed.
 urbanstatsFixture('transposed comparison warnings', comparisonPage([
     'Santa Clarita city, California, USA',
     'Santa Clara city, California, USA',
     'Boston city, Massachusetts, USA',
     'San Francisco city, California, USA',
     'Denver city, Colorado, USA',
+    'Seattle city, Washington, USA',
 ]))
 
-test('comparison-transposed-warnings-below-the-rows', async (t) => {
+test('comparison-transposed-warnings-are-columns', async (t) => {
     await selectMainWithoutYears(t)
     await t.expect(Selector('span.serif.value').withExactText('Region').exists).ok('the table should have transposed')
-    await t.expect(await warningRowNames()).eql(missingMainGroups)
-    // Transposed, the statistics run along the columns, so there is no row for a warning to stand
-    // in for and they all go after the rows instead.
-    const rows = Selector('.for-testing-table-row')
-    const rowCount = await rows.count
-    for (let fromEnd = 0; fromEnd < missingMainGroups.length; fromEnd++) {
-        await t.expect(rows.nth(rowCount - 1 - fromEnd).find('[data-test-id=article-warning]').exists).ok()
-    }
+    // Transposed, the statistics run along the columns, so each warning stands in for a column:
+    // its group's name heads the column and the message is drawn down it.
+    const warnings = Selector('[data-test-id=article-warning]')
+    await t.expect(warnings.count).eql(missingMainGroups.length)
+    await t.expect(warnings.nth(0).innerText).contains('Select 2020, 2010, or 2000 to see this statistic.')
+    // The names are in the super header, ahead of the statistics that are still shown
+    const columnNames = await columnHeaderNames()
+    await t.expect(columnNames).eql([...missingMainGroups, 'Area', 'Compactness'])
+    // Warnings stand in for columns here, so none of them takes a row
+    await t.expect(Selector('[data-test-id=article-warning-name]').exists).notOk()
     await screencap(t)
 })

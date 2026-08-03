@@ -6,7 +6,7 @@ import { Universe, useDefinedUniverse } from '../universe'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { Article } from '../utils/protos'
 
-import { WarningRow } from './ArticleWarnings'
+import { WarningColumn, WarningRow } from './ArticleWarnings'
 import { CongressionalColumnData, congressionalDataForRow } from './congressional-table/model'
 import { CongressionalRepresentativesWidget } from './congressional-table/render'
 import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
@@ -87,6 +87,11 @@ export interface TableContentsProps {
     topLeftSpec: CellSpec
     /** Warnings shown in place of the statistics they are about. */
     warningRows?: WarningRow[]
+    /**
+     * Warnings that stand in for a column rather than a row, drawn once down the column. The
+     * column itself must already be in `rowSpecs` and the super header, as a blank cell.
+     */
+    warningColumns?: WarningColumn[]
     highlightRowIndex?: number
     loading?: boolean
 }
@@ -182,9 +187,20 @@ export function TableContents(props: TableContentsProps): ReactNode {
                 layout={layout}
                 topLeftSpec={props.topLeftSpec}
                 superHeaderSpec={superHeaderSpec}
+                blankColumns={props.warningColumns?.map(({ columnIndex }) => columnIndex)}
                 minHeight={overallMinHeight}
             >
-                {bodyRows}
+                <div style={{ position: 'relative' }}>
+                    {bodyRows}
+                    {(props.warningColumns ?? []).map(({ columnIndex, content }) => (
+                        <WarningColumnMessage
+                            key={`warningColumn_${columnIndex}`}
+                            layout={layout}
+                            columnIndex={columnIndex}
+                            content={content}
+                        />
+                    ))}
+                </div>
                 {props.verticalPlotSpecs.map((plotSpec, statIndex) => plotSpec
                     ? (
                             <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${widthLeftHeader + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + fullWidths[i], columnWidth)}%`, bottom: 0, width: `${columnWidth}%` }}>
@@ -219,6 +235,7 @@ function TableFrame(props: {
     layout: MeasuredTableLayout
     superHeaderSpec?: SuperHeaderSpec
     topLeftSpec: CellSpec
+    blankColumns?: number[]
     minHeight?: string
     children: ReactNode
 }): ReactNode {
@@ -242,6 +259,7 @@ function TableFrame(props: {
                         extraSpaceRight={extraSpaceRight}
                         simpleOrdinals={simpleOrdinals}
                         columnWidthsInfo={columnWidthsInfo}
+                        blankColumns={props.blankColumns}
                     />
                 </TableHeaderContainer>
                 {props.children}
@@ -275,6 +293,38 @@ function WarningTableRow(props: { layout: MeasuredTableLayout, stripeIndex: numb
                 <span className="serif value">{props.content}</span>
             </div>
         </TableRowContainer>
+    )
+}
+
+/**
+ * The message for a warning that stands in for a column, drawn once down the blank column its
+ * statistics would have filled.
+ */
+function WarningColumnMessage(props: { layout: MeasuredTableLayout, columnIndex: number, content: ReactNode }): ReactNode {
+    const colors = useColors()
+    const fullWidths = columnFullWidths(props.layout)
+    const left = props.layout.widthLeftHeader + fullWidths.slice(0, props.columnIndex).reduce((a, b) => a + b, 0)
+    return (
+        <div
+            style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                left: `${left}%`,
+                width: `${props.layout.columnWidth}%`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+                // Enough horizontal room that neighbouring columns' messages don't read as one
+                padding: '1px 0.75em',
+                color: colors.ordinalTextColor,
+                fontStyle: 'italic',
+            }}
+            data-test-id="article-warning"
+        >
+            <span className="serif value">{props.content}</span>
+        </div>
     )
 }
 
@@ -392,10 +442,15 @@ export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCell
     ({ type: 'statistic-row' } & StatisticRowCellProps) |
     ({ type: 'statistic-panel-longname' } & StatisticPanelLongnameCellProps) |
     ({ type: 'comparison-top-left-header' } & TopLeftHeaderProps) |
-    ({ type: 'top-left-header' } & TopLeftHeaderProps)
+    ({ type: 'top-left-header' } & TopLeftHeaderProps) |
+    /** Holds a column's width open without drawing anything, e.g. under a warning column. */
+    { type: 'blank' }
 
 export function Cell(props: CellSpec & { width: number }): ReactNode {
     switch (props.type) {
+        case 'blank':
+            return <div style={{ width: `${props.width}%` }} />
+
         case 'comparison-longname':
             return <ComparisonLongnameCell {...props} width={props.width} />
         case 'statistic-name':

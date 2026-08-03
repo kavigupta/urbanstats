@@ -20,15 +20,22 @@ export function PageTemplate({
     children,
     showFooter = true,
     topPanel = true,
+    screenshotContext: inheritedScreenshotContext,
 }: {
     screencap?: (currentUniverse: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType) => Promise<void>
+    /**
+     * Supplied by pages that decide part of their layout from screenshot mode, and so have to sit
+     * inside the context rather than take the one created here, which is below them.
+     */
+    screenshotContext?: ScreenshotContextType
     csvExportCallback?: CSVExportData
     children?: React.ReactNode
     showFooter?: boolean
     topPanel?: boolean
 }): ReactNode {
     const [hamburgerOpen, setHamburgerOpen] = useState(false)
-    const screenshotContext = useRef<ScreenshotContextType>({ render: new Set(), wait: new Set() })
+    const ownScreenshotContext = useRef<ScreenshotContextType>({ render: new Set(), wait: new Set() })
+    const screenshotContext = inheritedScreenshotContext ?? ownScreenshotContext.current
     const colors = useColors()
     const mobileLayout = useMobileLayout()
     const hideSidebarDesktop = useHideSidebarDesktop()
@@ -70,7 +77,7 @@ export function PageTemplate({
             return
         }
         try {
-            await screencap(currentUniverse, colors, screenshotContext.current)
+            await screencap(currentUniverse, colors, screenshotContext)
         }
         catch (e) {
             console.error(e)
@@ -81,7 +88,7 @@ export function PageTemplate({
     const runningInTestCafe = (window as unknown as { '%hammerhead%': unknown })['%hammerhead%'] !== undefined
 
     return (
-        <ScreenshotContext.Provider value={screenshotContext.current}>
+        <ScreenshotContext.Provider value={screenshotContext}>
             <meta name="viewport" content="width=device-width, initial-scale=0.75" />
             <div
                 className={mobileLayout ? 'main_panel_mobile' : 'main_panel'}

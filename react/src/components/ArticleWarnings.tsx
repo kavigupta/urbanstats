@@ -23,6 +23,12 @@ export interface WarningRow {
     content: ReactNode
 }
 
+/** A warning that stands in for a column, at its index among the table's final columns. */
+export interface WarningColumn {
+    columnIndex: number
+    content: ReactNode
+}
+
 export function useArticleWarnings(): ArticleWarning[] {
     const screenshotMode = useScreenshotMode()
     const selectedGroups = useSelectedGroups()
