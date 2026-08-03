@@ -6,6 +6,7 @@ import { Universe, useDefinedUniverse } from '../universe'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { Article } from '../utils/protos'
 
+import { WarningColumn, WarningRow } from './ArticleWarnings'
 import { CongressionalColumnData, congressionalDataForRow } from './congressional-table/model'
 import { CongressionalRepresentativesWidget } from './congressional-table/render'
 import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
@@ -51,16 +52,19 @@ export interface MeasuredTableLayout extends TableLayout {
     extraSpaceRight: number[]
 }
 
-/** Measures each column against the rows it contains. */
-function measureColumns(columnRows: StatisticCellRenderingInfo[][], universe: Universe, simpleOrdinals: boolean): CommonLayoutInformation[] {
-    return columnRows.map(rows => maxLayoutInformation(rows, universe, simpleOrdinals))
+/**
+ * Measures each column against the rows it contains. A column with no rows goes unmeasured
+ * rather than measuring as zero, which would cap its header's text at no width at all.
+ */
+function measureColumns(columnRows: StatisticCellRenderingInfo[][], universe: Universe, simpleOrdinals: boolean): (CommonLayoutInformation | undefined)[] {
+    return columnRows.map(rows => rows.length === 0 ? undefined : maxLayoutInformation(rows, universe, simpleOrdinals))
 }
 
 /**
  * The layout rows are rendered against. `extraSpaceRight` is asked for per column rather
  * than passed as an array, so it can't disagree with the measurements about the column count.
  */
-function measuredLayout(layout: TableLayout, columnWidthsInfo: CommonLayoutInformation[], extraSpaceRight: (columnIndex: number) => number): MeasuredTableLayout {
+function measuredLayout(layout: TableLayout, columnWidthsInfo: (CommonLayoutInformation | undefined)[], extraSpaceRight: (columnIndex: number) => number): MeasuredTableLayout {
     return {
         ...layout,
         columnWidthsInfo,
@@ -81,6 +85,13 @@ export interface TableContentsProps {
     horizontalPlotSpecs: (PlotSpec | undefined)[]
     verticalPlotSpecs: (PlotSpec | undefined)[]
     topLeftSpec: CellSpec
+    /** Warnings shown in place of the statistics they are about. */
+    warningRows?: WarningRow[]
+    /**
+     * Warnings that stand in for a column rather than a row, drawn once down the column. The
+     * column itself must already be in `rowSpecs` and the super header, as a blank cell.
+     */
+    warningColumns?: WarningColumn[]
     highlightRowIndex?: number
     loading?: boolean
 }
@@ -132,31 +143,64 @@ export function TableContents(props: TableContentsProps): ReactNode {
         ? undefined
         : { ...props.superHeaderSpec, headerSpecs: props.superHeaderSpec.headerSpecs.map(withFootnote) }
 
+    // Warnings are interleaved with the statistic rows, so the striping has to be counted out
+    // over both rather than read off the statistic's index.
+    const warningRows = props.warningRows ?? []
+    const bodyRows: ReactNode[] = []
+    let nextWarning = 0
+    const emitWarningsBefore = (rowIndex: number): void => {
+        while (nextWarning < warningRows.length && warningRows[nextWarning].index <= rowIndex) {
+            bodyRows.push(
+                <WarningTableRow
+                    key={`warning_${nextWarning}`}
+                    layout={layout}
+                    stripeIndex={bodyRows.length}
+                    name={warningRows[nextWarning].name}
+                    content={warningRows[nextWarning].content}
+                />,
+            )
+            nextWarning++
+        }
+    }
+    props.rowSpecs.forEach((rowSpecsForItem, rowIndex) => {
+        emitWarningsBefore(rowIndex)
+        bodyRows.push(
+            <SuperTableRow
+                key={`TableRowContainer_${rowIndex}`}
+                layout={layout}
+                stripeIndex={bodyRows.length}
+                rowMinHeight={rowMinHeight}
+                cellSpecs={rowSpecsForItem}
+                plotSpec={props.horizontalPlotSpecs[rowIndex]}
+                leftHeaderSpec={withFootnote(leftHeaderSpecs[rowIndex])}
+                groupName={props.leftHeaderSpec.groupNames?.[rowIndex]}
+                prevGroupName={rowIndex > 0 ? props.leftHeaderSpec.groupNames?.[rowIndex - 1] : undefined}
+                isHighlighted={props.highlightRowIndex === rowIndex}
+            />,
+        )
+    })
+    emitWarningsBefore(props.rowSpecs.length)
+
     return (
         <>
             <TableFrame
                 layout={layout}
                 topLeftSpec={props.topLeftSpec}
                 superHeaderSpec={superHeaderSpec}
+                blankColumns={props.warningColumns?.map(({ columnIndex }) => columnIndex)}
                 minHeight={overallMinHeight}
             >
-                {props.rowSpecs.map((rowSpecsForItem, rowIndex) => {
-                    const plotSpec = props.horizontalPlotSpecs[rowIndex]
-                    return (
-                        <SuperTableRow
-                            key={`TableRowContainer_${rowIndex}`}
+                <div style={{ position: 'relative' }}>
+                    {bodyRows}
+                    {(props.warningColumns ?? []).map(({ columnIndex, content }) => (
+                        <WarningColumnMessage
+                            key={`warningColumn_${columnIndex}`}
                             layout={layout}
-                            rowIndex={rowIndex}
-                            rowMinHeight={rowMinHeight}
-                            cellSpecs={rowSpecsForItem}
-                            plotSpec={plotSpec}
-                            leftHeaderSpec={withFootnote(leftHeaderSpecs[rowIndex])}
-                            groupName={props.leftHeaderSpec.groupNames?.[rowIndex]}
-                            prevGroupName={rowIndex > 0 ? props.leftHeaderSpec.groupNames?.[rowIndex - 1] : undefined}
-                            isHighlighted={props.highlightRowIndex === rowIndex}
+                            columnIndex={columnIndex}
+                            content={content}
                         />
-                    )
-                })}
+                    ))}
+                </div>
                 {props.verticalPlotSpecs.map((plotSpec, statIndex) => plotSpec
                     ? (
                             <div key={`statPlot_${statIndex}`} style={{ position: 'absolute', top: 0, left: `${widthLeftHeader + Array.from({ length: statIndex }).reduce((acc: number, unused, i) => acc + fullWidths[i], columnWidth)}%`, bottom: 0, width: `${columnWidth}%` }}>
@@ -191,6 +235,7 @@ function TableFrame(props: {
     layout: MeasuredTableLayout
     superHeaderSpec?: SuperHeaderSpec
     topLeftSpec: CellSpec
+    blankColumns?: number[]
     minHeight?: string
     children: ReactNode
 }): ReactNode {
@@ -214,6 +259,7 @@ function TableFrame(props: {
                         extraSpaceRight={extraSpaceRight}
                         simpleOrdinals={simpleOrdinals}
                         columnWidthsInfo={columnWidthsInfo}
+                        blankColumns={props.blankColumns}
                     />
                 </TableHeaderContainer>
                 {props.children}
@@ -222,9 +268,69 @@ function TableFrame(props: {
     )
 }
 
+/**
+ * An explanation of why some statistics aren't there, laid out like the row they stand in for:
+ * the group's name in the left header, and the warning across the columns the values would fill.
+ * A warning about no group in particular has no name to put in the left header, so it spans the
+ * whole row rather than starting at an empty one.
+ */
+function WarningTableRow(props: { layout: MeasuredTableLayout, stripeIndex: number, name?: string, content: ReactNode }): ReactNode {
+    const colors = useColors()
+    const contentWidth = props.name === undefined
+        ? 100
+        : columnFullWidths(props.layout).reduce((a, b) => a + b, 0)
+    return (
+        <TableRowContainer index={props.stripeIndex}>
+            {props.name !== undefined && (
+                <div style={{ width: `${props.layout.widthLeftHeader}%`, padding: '1px' }} data-test-id="article-warning-name">
+                    <span className="serif value">{props.name}</span>
+                </div>
+            )}
+            <div
+                style={{ width: `${contentWidth}%`, padding: '1px', color: colors.ordinalTextColor, fontStyle: 'italic' }}
+                data-test-id="article-warning"
+            >
+                <span className="serif value">{props.content}</span>
+            </div>
+        </TableRowContainer>
+    )
+}
+
+/**
+ * The message for a warning that stands in for a column, drawn once down the blank column its
+ * statistics would have filled.
+ */
+function WarningColumnMessage(props: { layout: MeasuredTableLayout, columnIndex: number, content: ReactNode }): ReactNode {
+    const colors = useColors()
+    const fullWidths = columnFullWidths(props.layout)
+    const left = props.layout.widthLeftHeader + fullWidths.slice(0, props.columnIndex).reduce((a, b) => a + b, 0)
+    return (
+        <div
+            style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                left: `${left}%`,
+                width: `${props.layout.columnWidth}%`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+                // Enough horizontal room that neighbouring columns' messages don't read as one
+                padding: '1px 0.75em',
+                color: colors.ordinalTextColor,
+                fontStyle: 'italic',
+            }}
+            data-test-id="article-warning"
+        >
+            <span className="serif value">{props.content}</span>
+        </div>
+    )
+}
+
 function SuperTableRow(props: {
     layout: MeasuredTableLayout
-    rowIndex: number
+    stripeIndex: number
     leftHeaderSpec: CellSpec
     cellSpecs: CellSpec[]
     plotSpec?: PlotSpec
@@ -236,7 +342,7 @@ function SuperTableRow(props: {
     return (
         <div>
             {props.groupName !== undefined && (props.groupName !== props.prevGroupName) && (
-                <TableRowContainer index={props.rowIndex} isHighlighted={props.isHighlighted}>
+                <TableRowContainer index={props.stripeIndex} isHighlighted={props.isHighlighted}>
                     <div style={{ width: '100%', padding: '1px' }}>
                         <span className="serif value">
                             <span>{props.groupName}</span>
@@ -246,7 +352,7 @@ function SuperTableRow(props: {
             )}
             <StatisticTableRow
                 layout={props.layout}
-                index={props.rowIndex}
+                index={props.stripeIndex}
                 leftHeader={<Cell {...props.leftHeaderSpec} width={props.layout.widthLeftHeader} />}
                 cellSpecs={props.cellSpecs}
                 plotSpec={props.plotSpec}
@@ -336,10 +442,15 @@ export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCell
     ({ type: 'statistic-row' } & StatisticRowCellProps) |
     ({ type: 'statistic-panel-longname' } & StatisticPanelLongnameCellProps) |
     ({ type: 'comparison-top-left-header' } & TopLeftHeaderProps) |
-    ({ type: 'top-left-header' } & TopLeftHeaderProps)
+    ({ type: 'top-left-header' } & TopLeftHeaderProps) |
+    /** Holds a column's width open without drawing anything, e.g. under a warning column. */
+    { type: 'blank' }
 
 export function Cell(props: CellSpec & { width: number }): ReactNode {
     switch (props.type) {
+        case 'blank':
+            return <div style={{ width: `${props.width}%` }} />
+
         case 'comparison-longname':
             return <ComparisonLongnameCell {...props} width={props.width} />
         case 'statistic-name':

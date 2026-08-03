@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { arrayFromSelector, safeReload, screencap, target, urbanstatsFixture, withHamburgerMenu } from './test_utils'
+import { safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
 
 const mainCheck = 'input[data-test-id=category_main]'
 const mainExpand = '.expandButton[data-category-id=main]'
@@ -167,45 +167,65 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('uncheck-all-categories', async (t) => {
         await withHamburgerMenu(t, async () => {
-            await uncheckAll(t)
+            await uncheckAllCategories(t)
         })
         await t.expect(Selector('b').withExactText('No Statistic Categories are selected').exists).ok()
+        // Nothing is missing in particular, so the warning spans the row instead of naming a group
+        await t.expect(Selector('[data-test-id=article-warning-name]').exists).notOk()
         await screencap(t)
     })
 
     test('missing-year-data', async (t) => {
         await withHamburgerMenu(t, async () => {
-            await uncheckAll(t)
+            await uncheckAllCategories(t)
             await t.click(Selector('label').withExactText('2020'))
             await t.click(Selector('label').withExactText('2010'))
             await t.click(Selector('label').withExactText('Health'))
         })
-        await t.expect(Selector('li').withExactText('To see Health statistics, select 2020.').exists).ok()
+        await t.expect(warningNamed('Select 2020 to see these statistics.', 'Health').exists).ok()
         await screencap(t)
     })
 
     test('missing-partial-year-data', async (t) => {
         await withHamburgerMenu(t, async () => {
-            await uncheckAll(t)
+            await uncheckAllCategories(t)
             await t.click(Selector('label').withExactText('2020'))
             await t.click(Selector('label').withExactText('2010'))
             await t.click('.expandButton[data-category-id=housing]')
             await t.click('input[data-test-id=group_vacancy]:not([inert] *)')
             await t.click('input[data-test-id=group_rent_or_own_rent]:not([inert] *)')
         })
-        await t.expect(Selector('li').withExactText('To see Housing > Renter % statistics, select 2020.').exists).ok()
+        await t.expect(warningNamed('Select 2020 to see this statistic.', 'Renter %').exists).ok()
         await screencap(t)
     })
 
     test('no-years-selected', async (t) => {
         await withHamburgerMenu(t, async () => {
-            await uncheckAll(t)
+            await uncheckAllCategories(t)
             await t.click(mainCheck)
             await t.click(Selector('label').withExactText('2020'))
         })
         await t.expect(Selector('a').withExactText('Area').exists).ok()
-        await t.expect(Selector('li').withExactText('To see Main > Population statistics, select 2020, 2010, or 2000.').exists).ok()
+        await t.expect(warningNamed('Select 2020, 2010, or 2000 to see this statistic.', 'Population').exists).ok()
         await screencap(t)
+    })
+
+    test('warning-row-placement', async (t) => {
+        /**
+         * Main's groups that have years show warnings, and its year-less groups still show values.
+         * The warnings belong in the rows those statistics would have occupied -- above Area --
+         * rather than all together below the table.
+         */
+        await withHamburgerMenu(t, async () => {
+            await uncheckAllCategories(t)
+            await t.click(mainCheck)
+            await t.click(Selector('label').withExactText('2020'))
+        })
+        await t.expect(await warningRowNames()).eql(['Population', 'PW Density (r=1km)', 'AW Density'])
+        const rows = Selector('.for-testing-table-row')
+        await t.expect(rows.nth(0).find('[data-test-id=article-warning]').exists).ok()
+        await t.expect(rows.nth(3).find('[data-test-id=article-warning]').exists).notOk()
+        await t.expect(rows.nth(3).find('a').withExactText('Area').exists).ok()
     })
 
     test('expand-persistence', async (t) => {
@@ -311,14 +331,6 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
             await t.expect(await checkIsIndeterminate(t, mainCheck)).eql(true)
         })
     })
-}
-
-async function uncheckAll(t: TestController): Promise<void> {
-    for (const check of await arrayFromSelector(Selector('input[data-test-id^=category]'))) {
-        if (await check.checked) {
-            await t.click(check)
-        }
-    }
 }
 
 async function checkIsIndeterminate(t: TestController, selector: string): Promise<boolean> {
