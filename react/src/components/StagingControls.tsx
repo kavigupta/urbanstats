@@ -23,9 +23,10 @@ export function StagingControls({ onExitStaging }: {
         return null
     }
 
+    const spacing = isMobile ? '20px' : '10px'
+
     const buttonStyle: CSSProperties = {
         border: `2px solid ${colors.textMain}`,
-        margin: isMobile ? '20px' : '10px',
     }
 
     const exitStaging = (action: 'discard' | 'apply') => () => {
@@ -38,13 +39,12 @@ export function StagingControls({ onExitStaging }: {
             style={{
                 backgroundColor: colors.slightlyDifferentBackgroundFocused,
                 borderRadius: '5px',
-                padding: '10px',
+                padding: spacing,
                 marginBottom: '10px',
-                paddingBottom: '5px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: '10px',
+                gap: spacing,
             }}
             data-test-id="staging_controls"
         >
@@ -53,7 +53,7 @@ export function StagingControls({ onExitStaging }: {
             </div>
             <div style={{
                 display: 'flex',
-                justifyContent: 'space-evenly',
+                gap: spacing,
                 flex: '0 0 auto',
             }}
             >
