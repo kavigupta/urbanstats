@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
 import { editModeSharedTests } from './edit_mode_test_template'
-import { comparisonTableScope, doneButton, editButton, filterBox, groupCheckbox, groupMemberRow, setCategoryExpanded, yearCheckbox } from './edit_mode_test_utils'
+import { comparisonTableScope, doneButton, editButton, filterBox, groupCheckbox, groupMemberRow, yearCheckbox } from './edit_mode_test_utils'
 import { comparisonPage, downloadCSV, screencap, target, urbanstatsFixture } from './test_utils'
 
 /**
@@ -40,9 +40,8 @@ test('toggling a group in edit mode changes what the comparison shows', async (t
     await t.click(doneButton)
     await t.expect(populationName.exists).notOk()
 
-    // Now that Population is unselected, its row is behind Main's toggle.
+    // Main's other groups are still selected, so it stays open and Population keeps its row.
     await t.click(editButton)
-    await setCategoryExpanded(t, 'main', true)
     await t.click(populationGroup)
     await t.click(doneButton)
     await t.expect(populationName.exists).ok()

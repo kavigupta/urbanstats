@@ -61,7 +61,8 @@ export function categoryCheckbox(categoryId: string): CheckboxSelector {
 /**
  * A group's checkbox. An unselected group lives inside its category's collapsible section,
  * so it is only interactable once the category is expanded -- see `setCategoryExpanded`.
- * Selected groups are shown whether or not their category is expanded.
+ * A category with any group selected is forced open, so this only matters for categories
+ * with nothing selected at all.
  */
 export function groupCheckbox(groupId: string): CheckboxSelector {
     return checkboxByTestId(`${editCheckboxPrefixes.group}${groupId}`)
@@ -117,8 +118,8 @@ export const comparisonTableScope = '[data-test-id=comparison-table]'
 
 /**
  * A category's toggle in the edit tree, matched by the direction it currently offers, so
- * its presence also tells you which state the category is in. A category with every group
- * selected has no toggle at all, since collapsing it would hide nothing.
+ * its presence also tells you which state the category is in. A category with any group
+ * selected has no toggle at all, since it is forced open.
  */
 export function categoryToggleButton(categoryId: string, direction: 'Expand' | 'Collapse'): Selector {
     return Selector(`[data-category-id=${categoryId}]`).withAttribute('aria-label', new RegExp(`^${direction} `))
@@ -134,12 +135,5 @@ export async function setCategoryExpanded(t: TestController, categoryId: string,
 export async function ensureCategoryExpanded(t: TestController, categoryId: string): Promise<void> {
     if (await categoryToggleButton(categoryId, 'Expand').exists) {
         await setCategoryExpanded(t, categoryId, true)
-    }
-}
-
-/** As `ensureCategoryExpanded`, in the other direction. */
-export async function ensureCategoryCollapsed(t: TestController, categoryId: string): Promise<void> {
-    if (await categoryToggleButton(categoryId, 'Collapse').exists) {
-        await setCategoryExpanded(t, categoryId, false)
     }
 }

@@ -17,9 +17,8 @@ const populationCheck = groupCheckbox('population')
 // A collapsed category keeps its unselected rows mounted (so the height transition has
 // content) but marks them inert, so clicking requires the interactable variant.
 const populationCheckInteractable = interactableGroupCheckbox('population')
-// Present only while Main is collapsed, since the toggle then offers to expand. Main has
-// no toggle at all until something in it is unselected.
-const mainExpandButton = categoryToggleButton('main', 'Expand')
+// Main has no toggle at all while anything in it is selected, which forces it open.
+const mainCollapseButton = categoryToggleButton('main', 'Collapse')
 // Housing is off by default, so it always has something behind its toggle.
 const housingExpandButton = categoryToggleButton('housing', 'Expand')
 const vacancyCheckInteractable = interactableGroupCheckbox('vacancy')
@@ -49,13 +48,15 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          */
         await enterEditMode(t)
         await t.expect(mainCheck.checked).eql(true)
-        // Every group in Main is selected, so there is nothing for a toggle to reveal.
-        await t.expect(mainExpandButton.exists).notOk()
+        // Main is selected, so it is forced open and offers no toggle.
+        await t.expect(mainCollapseButton.exists).notOk()
         await t.click(mainCheck)
         await t.expect(mainCheck.checked).eql(false)
-        await t.expect(mainExpandButton.exists).ok()
+        // With nothing selected the forcing is released, and Main can be collapsed again.
+        await t.expect(mainCollapseButton.exists).ok()
         await t.click(mainCheck)
         await t.expect(mainCheck.checked).eql(true)
+        await t.expect(mainCollapseButton.exists).notOk()
     })
 
     test('indeterminate-cycle-expanded', async (t) => {
@@ -63,11 +64,12 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
          * Check that the category, when expanded, cycles between indeterminate -> true -> false -> indeterminate states
          */
         await enterEditMode(t)
-        // Population is selected, so it's on display before anything is expanded.
+        // Main is selected, so it's forced open and Population is on display.
         await t.click(populationCheckInteractable)
         await t.expect(populationCheck.checked).eql(false)
         await t.expect(mainCheck.indeterminate).eql(true)
-        await setMainExpanded(t, true)
+        // Still forced open: an indeterminate category has selected groups behind it.
+        await t.expect(mainCollapseButton.exists).notOk()
         await screencap(t)
 
         await t.click(mainCheck)
@@ -87,17 +89,18 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('indeterminate-cycle-collapsed', async (t) => {
         /**
-         * Check that the category, when collapsed, cycles between indeterminate -> true -> false -> indeterminate states.
-         * The effect on the article is observed by leaving edit mode, since an expanded edit
-         * tree shows every row regardless of whether its group is enabled.
+         * Check that the category cycles between indeterminate -> true -> false -> indeterminate
+         * states from its own checkbox, which is reachable however the category is displayed.
+         * The effect on the article is observed by leaving edit mode, since the edit tree shows
+         * every row of an expanded category regardless of whether its group is enabled.
          */
         const populationStat = Selector('a').withExactText('Population')
 
         await enterEditMode(t)
-        // Unchecking Population takes it out of the collapsed category's rows.
+        // Main keeps other groups selected, so it stays open and Population keeps its row.
         await t.click(populationCheckInteractable)
         await t.expect(mainCheck.indeterminate).eql(true)
-        await t.expect(populationCheckInteractable.exists).notOk()
+        await t.expect(populationCheckInteractable.exists).ok()
         if (platform === 'mobile') {
             await screencap(t)
         }
@@ -116,12 +119,17 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.click(mainCheck)
         await t.expect(mainCheck.indeterminate).eql(false)
         await t.expect(mainCheck.checked).eql(false)
+        // With nothing selected Main can be collapsed, which takes its rows off the tree.
+        await setMainExpanded(t, false)
+        await t.expect(populationCheckInteractable.exists).notOk()
         await exitEditMode(t)
         await t.expect(populationStat.exists).notOk()
 
         await enterEditMode(t)
         await t.click(mainCheck)
         await t.expect(mainCheck.indeterminate).eql(true)
+        // Restoring a selection forces the collapsed category back open.
+        await t.expect(populationCheckInteractable.exists).ok()
         await exitEditMode(t)
         await t.expect(populationStat.exists).notOk()
     })
@@ -135,8 +143,6 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(populationCheck.checked).eql(false)
         await t.expect(mainCheck.indeterminate).eql(true)
 
-        // Unchecking Population hid its row, so reaching it again means expanding Main.
-        await setMainExpanded(t, true)
         await t.click(populationCheckInteractable)
         await t.expect(mainCheck.indeterminate).eql(false)
         await t.expect(mainCheck.checked).eql(true)
@@ -155,8 +161,8 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await enterEditMode(t)
         await t.click(mainCheck)
         await t.expect(mainCheck.checked).eql(false)
-        // With nothing in Main selected, its rows are all behind the toggle.
-        await setMainExpanded(t, true)
+        // Unchecking the category releases the forced expansion but leaves it expanded.
+        await t.expect(mainCollapseButton.exists).ok()
         await t.click(populationCheckInteractable)
         await t.expect(populationCheck.checked).eql(true)
         await t.expect(mainCheck.indeterminate).eql(true)

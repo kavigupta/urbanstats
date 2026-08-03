@@ -148,6 +148,8 @@ export interface CategoryTreeState {
     toggle: () => void
     highlight: boolean
     expanded: boolean
+    /** Set while the category's own state leaves it no choice, so it offers no collapse toggle. */
+    forcedExpanded: boolean
     setExpanded: (expanded: boolean) => void
     groups: GroupTreeState[]
 }
@@ -172,20 +174,31 @@ export function useCategoryTreeState(category: Category): CategoryTreeState {
 
     const status = categoryStatus(groups.map(group => group.enabled))
 
+    // A category with anything selected stays open: collapsing it would show a subset of its
+    // groups, which reads as if the rest weren't there. The expansion is written through to
+    // the setting so that the category stays open once its groups are unselected again.
+    const forcedExpanded = status !== false
+    useEffect(() => {
+        if (forcedExpanded && !expanded) {
+            settings.setSetting(`stat_category_expanded_${category.id}`, true)
+        }
+    }, [forcedExpanded, expanded, settings, category.id])
+
     return {
         status,
         toggle: () => { toggleCategorySetting(settings, category, availableGroups, status) },
         highlight: groups.some(group => group.highlight),
-        expanded,
+        expanded: expanded || forcedExpanded,
+        forcedExpanded,
         setExpanded,
         groups,
     }
 }
 
 /**
- * Expands every category that would otherwise hide a change staging is making: a collapsed
- * category shows only its selected groups, so a group staging turns off leaves the category
- * highlighted with nothing behind it to see.
+ * Expands every category that would otherwise hide a change staging is making: a category
+ * staging leaves with nothing selected can be collapsed, and then shows none of the groups
+ * being turned off -- just a highlight with nothing behind it to see.
  *
  * Only acts when `active` becomes true (edit mode opening), so the user can collapse such a
  * category again while staging is still going on.
