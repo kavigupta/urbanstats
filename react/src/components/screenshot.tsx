@@ -176,9 +176,71 @@ export async function screencapElement(ref: HTMLElement, overallWidth: number, {
 
 export type ReadyForScreenshotCallback = () => void
 
+type ScreenshotSubscriber = (callback: ReadyForScreenshotCallback | undefined) => void
+
 export interface ScreenshotContextType {
-    render: Set<(callback: ReadyForScreenshotCallback | undefined) => void>
-    wait: Set<(callback: ReadyForScreenshotCallback | undefined) => void>
+    render: Set<ScreenshotSubscriber>
+    wait: Set<ScreenshotSubscriber>
+}
+
+/**
+ * Settles the wait for a subscriber a capture is currently blocked on. Entering screenshot mode
+ * changes what is rendered -- that is the point of it -- so a subscriber can unmount before it
+ * ever signals ready, and its unregistering has to settle the wait or the capture hangs forever.
+ */
+const settleWaitForSubscriber = new WeakMap<ScreenshotSubscriber, () => void>()
+
+function unregisterSubscriber(subscribers: Set<ScreenshotSubscriber>, subscriber: ScreenshotSubscriber): void {
+    subscribers.delete(subscriber)
+    settleWaitForSubscriber.get(subscriber)?.()
+}
+
+/**
+ * Guards against a pathological tree that mounts a fresh subscriber every time it is put into
+ * screenshot mode, which would otherwise loop forever.
+ */
+const maxNotifyRounds = 10
+
+/**
+ * Puts every subscriber into screenshot mode and waits for each to signal ready or go away.
+ *
+ * Entering screenshot mode is what mounts some of the subscribers -- the footnotes below a table,
+ * or a map layer rebuilt at full resolution -- so this keeps going until a round adds nobody new.
+ * Notifying only whoever was registered up front would render those components interactively into
+ * the screenshot, and would capture without waiting for them.
+ */
+async function notifySubscribers(subscribers: Set<ScreenshotSubscriber>, phase: string): Promise<void> {
+    const notified = new Set<ScreenshotSubscriber>()
+    for (let round = 1; ; round++) {
+        const pending = Array.from(subscribers).filter(subscriber => !notified.has(subscriber))
+        if (pending.length === 0) {
+            return
+        }
+        if (round > maxNotifyRounds) {
+            console.warn(`screenshot: ${pending.length} ${phase} subscriber(s) still appearing after ${maxNotifyRounds} rounds, capturing without them`)
+            return
+        }
+        debugLog('withScreenshotMode:', phase, 'round', round, 'notifying', pending.length, 'subscriber(s)')
+        let ready = 0
+        await Promise.all(pending.map((subscriber) => {
+            notified.add(subscriber)
+            return new Promise<void>((resolve) => {
+                let settled = false
+                const settle = (): void => {
+                    if (settled) {
+                        return
+                    }
+                    settled = true
+                    settleWaitForSubscriber.delete(subscriber)
+                    ready++
+                    debugLog('withScreenshotMode:', phase, 'subscriber', ready, '/', pending.length, 'ready')
+                    resolve()
+                }
+                settleWaitForSubscriber.set(subscriber, settle)
+                subscriber(() => settle)
+            })
+        }))
+    }
 }
 
 export async function withScreenshotMode<T>(context: ScreenshotContextType, fn: () => Promise<T>): Promise<T> {
@@ -186,26 +248,12 @@ export async function withScreenshotMode<T>(context: ScreenshotContextType, fn: 
     // and wait for all to signal ready. This causes React to re-render and commit any
     // DOM changes (like remounting map sources with tolerance=0) before phase 2 starts.
     debugLog('withScreenshotMode: notifying', context.render.size, 'render subscriber(s)')
-    let renderResolved = 0
-    await Promise.all(Array.from(context.render).map(setCallback => new Promise<void>((resolve) => {
-        setCallback(() => () => {
-            renderResolved++
-            debugLog('withScreenshotMode: render subscriber', renderResolved, '/', context.render.size, 'ready')
-            resolve()
-        })
-    })))
+    await notifySubscribers(context.render, 'render')
     debugLog('withScreenshotMode: all render subscribers ready, notifying', context.wait.size, 'wait subscriber(s)')
 
     // Phase 2: trigger wait callbacks (e.g. waiting for map tiles/sources to finish rendering),
     // which run after all render-phase DOM changes have been committed.
-    let waitResolved = 0
-    await Promise.all(Array.from(context.wait).map(setCallback => new Promise<void>((resolve) => {
-        setCallback(() => () => {
-            waitResolved++
-            debugLog('withScreenshotMode: wait subscriber', waitResolved, '/', context.wait.size, 'ready')
-            resolve()
-        })
-    })))
+    await notifySubscribers(context.wait, 'wait')
     debugLog('withScreenshotMode: all subscribers ready, running capture')
     try {
         return await fn()
@@ -296,7 +344,7 @@ export function useScreenshotCallback(kind: 'render' | 'wait'): ReadyForScreensh
         const set = kind === 'render' ? context.render : context.wait
         set.add(setCallback)
         return () => {
-            set.delete(setCallback)
+            unregisterSubscriber(set, setCallback)
         }
     }, [context, kind])
 
