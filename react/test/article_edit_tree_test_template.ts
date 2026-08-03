@@ -246,8 +246,8 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     test('group-with-no-selected-years-stays-on-the-edit-tree', async (t) => {
         /**
          * A group the year selection leaves with nothing to show keeps its row on the edit
-         * tree -- otherwise there'd be no checkbox to reach it by -- with no value in it.
-         * The warning above is what explains the empty row.
+         * tree -- otherwise there'd be no checkbox to reach it by -- with a warning where
+         * its value would be.
          */
         const renterCheck = interactableGroupCheckbox('rent_or_own_rent')
         await enterEditMode(t)
@@ -257,6 +257,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
 
         await t.expect(renterCheck.exists).ok()
         await t.expect(renterCheck.parent('.for-testing-table-row').find('.testing-statistic-value').exists).notOk()
+        await t.expect(groupWarning('rent_or_own_rent').exists).ok()
         await screencap(t)
 
         // Selecting the group doesn't put the row on the article itself, which only shows

@@ -1,14 +1,15 @@
 import { Selector } from 'testcafe'
 
-import { categoryCheckbox, clearFilterButton, doneButton, editButton, filterBox, groupCheckbox, interactableGroupCheckbox } from './edit_mode_test_utils'
-import { resizeForPlatform, safeReload, screencap, urbanstatsFixture } from './test_utils'
+import { categoryCheckbox, clearFilterButton, doneButton, editButton, filterBox, groupCheckbox, groupWarning, interactableGroupCheckbox, yearCheckbox } from './edit_mode_test_utils'
+import { resizeForPlatform, safeReload, screencap, uncheckAllCategories, urbanstatsFixture } from './test_utils'
 
 /**
  * The parts of edit mode that behave the same on the article table and the comparison
  * table: that the Edit button opens and closes the tree, that it doesn't survive a reload,
  * that arriving via a settings link opens it with the staging controls on the table, that
  * the filter narrows the tree, that a stat's plot and its metadata extras render below its
- * row, and what the mobile layout gives up.
+ * row, that a selection leaving the table with nothing to show warns on the tree itself, and
+ * what the mobile layout gives up.
  *
  * The table-specific behavior (transposition, the per-region columns) lives in each
  * caller's file.
@@ -32,6 +33,9 @@ export function editModeSharedTests(spec: {
     const table = Selector(spec.scope)
     const stagingControls = table.find('[data-test-id=staging_controls]')
     const mainCategory = categoryCheckbox('main')
+    // Population is a single-stat group, so its row is the one carrying the group checkbox.
+    const populationGroup = groupCheckbox('population')
+    const year2020 = yearCheckbox(2020)
 
     urbanstatsFixture(`${spec.name} edit mode shared`, spec.page)
 
@@ -95,6 +99,39 @@ export function editModeSharedTests(spec: {
         for (const series of spec.expectedPlotSeries) {
             await t.expect(histogram.textContent).contains(series)
         }
+    })
+
+    test('a group the year selection empties warns in its own row', async (t) => {
+        await t.click(editButton)
+        await t.expect(year2020.checked).eql(true)
+        const populationRow = populationGroup.parent('.for-testing-table-row')
+        await t.expect(populationRow.find('.testing-statistic-value').exists).ok()
+
+        await t.click(year2020)
+
+        // The row stays -- it's the only way back to the checkbox -- and the warning takes the
+        // place of its values, which on a comparison means across every region's column.
+        await t.expect(groupWarning('population').innerText).match(/^\s*Select .*2020.* to see this statistic\.\s*$/)
+        await t.expect(populationRow.find('.testing-statistic-value').exists).notOk()
+        await screencap(t)
+
+        // Reselecting the year puts the values back and takes the warning away.
+        await t.click(year2020)
+        await t.expect(populationRow.find('.testing-statistic-value').exists).ok()
+        await t.expect(groupWarning('population').exists).notOk()
+    })
+
+    test('unselecting every category warns above the tree', async (t) => {
+        await t.click(editButton)
+        await uncheckAllCategories(t)
+
+        // No group's row can carry this one, so it stands above the tree the user fixes it with.
+        await t.expect(table.find('[data-test-id=article-warning]').innerText).match(/^\s*No Statistic Categories are selected\s*$/)
+        await t.expect(table.find('.testing-statistic-value').exists).notOk()
+        await t.expect(mainCategory.exists).ok()
+
+        await t.click(mainCategory)
+        await t.expect(table.find('[data-test-id=article-warning]').exists).notOk()
     })
 
     test('edit mode is ephemeral across reloads', async (t) => {
