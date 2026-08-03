@@ -136,3 +136,10 @@ export async function ensureCategoryExpanded(t: TestController, categoryId: stri
         await setCategoryExpanded(t, categoryId, true)
     }
 }
+
+/** As `ensureCategoryExpanded`, in the other direction. */
+export async function ensureCategoryCollapsed(t: TestController, categoryId: string): Promise<void> {
+    if (await categoryToggleButton(categoryId, 'Collapse').exists) {
+        await setCategoryExpanded(t, categoryId, false)
+    }
+}

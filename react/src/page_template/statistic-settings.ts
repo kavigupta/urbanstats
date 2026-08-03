@@ -1,4 +1,4 @@
-import { useContext, useMemo } from 'react'
+import { useContext, useEffect, useMemo } from 'react'
 
 import { dataSources } from '../data/statistics_tree'
 import { Navigator } from '../navigation/Navigator'
@@ -180,6 +180,36 @@ export function useCategoryTreeState(category: Category): CategoryTreeState {
         setExpanded,
         groups,
     }
+}
+
+/**
+ * Expands every category that would otherwise hide a change staging is making: a collapsed
+ * category shows only its selected groups, so a group staging turns off leaves the category
+ * highlighted with nothing behind it to see.
+ *
+ * Only acts when `active` becomes true (edit mode opening), so the user can collapse such a
+ * category again while staging is still going on.
+ */
+export function useExpandCategoriesHidingStagedChanges(active: boolean): void {
+    const settings = useContext(Settings.Context)
+    const { categories, groups: availableGroups } = useAvailableTree()
+    useEffect(() => {
+        if (!active) {
+            return
+        }
+        for (const category of categories) {
+            const hidesStagedChange = category.contents.some((group) => {
+                if (!availableGroups.has(group)) {
+                    return false
+                }
+                const info = settings.getSettingInfo(`show_stat_group_${group.id}`)
+                return isStagedChange(info) && !settingValue(info)
+            })
+            if (hidesStagedChange) {
+                settings.setSetting(`stat_category_expanded_${category.id}`, true)
+            }
+        }
+    }, [active, categories, availableGroups, settings])
 }
 
 function searchMatch(searchTerm: string, target: string): boolean {

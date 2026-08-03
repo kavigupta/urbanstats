@@ -2,7 +2,7 @@ import React, { CSSProperties, ReactNode, useMemo, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { checkboxCategoryName, sourceEnabledKey, useIsStaged } from '../page_template/settings'
-import { GroupTreeState, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, useSelectedGroups } from '../page_template/statistic-settings'
+import { GroupTreeState, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, useExpandCategoriesHidingStagedChanges, useSelectedGroups } from '../page_template/statistic-settings'
 import { Category, statParents } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { HumanReadableName, reifyReact } from '../utils/human-readable-name'
@@ -443,7 +443,8 @@ export interface EditModeState {
  * navigation/reload. It opens on its own whenever the page enters staging mode (e.g. from
  * a settings link) so the pending changes are visible and reviewable on the table. Leaving
  * staging only closes it when the user does so via the table's own Discard/Apply buttons,
- * which double as Done.
+ * which double as Done. Opening it while staged also expands the categories that would
+ * otherwise hide a staged change.
  */
 export function useEditModeState(): EditModeState {
     const staged = useIsStaged()
@@ -455,6 +456,8 @@ export function useEditModeState(): EditModeState {
             setEditMode(true)
         }
     }
+
+    useExpandCategoriesHidingStagedChanges(editMode && staged)
 
     // Scoped to the current visit to edit mode, so reopening it starts from the whole tree.
     const [filter, setFilter] = useState('')
