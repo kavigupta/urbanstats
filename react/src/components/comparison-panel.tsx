@@ -25,6 +25,7 @@ import { placeWarnings, useArticleWarnings, WarningRow } from './ArticleWarnings
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { StagingControls } from './StagingControls'
 import { useCSVExport } from './csv-export'
+import { TableEditButton } from './edit-mode-header'
 import { EditModeState, EditTable, editRowsByGroup, useEditModeState, useEditTableLayout } from './edit-table'
 import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
@@ -33,7 +34,7 @@ import { createScreenshot, ScreencapElements, ScreenshotContext, ScreenshotConte
 import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
 import { computeNameSpecsWithGroups } from './statistic-name-specs'
-import { TableContents, CellSpec, PlotSpec, SuperHeaderSpec, TableEditButton, TableLayout, TopLeftCellSpec } from './supertable'
+import { TableContents, CellSpec, PlotSpec, SuperHeaderSpec, TableLayout, TopLeftCellSpec } from './supertable'
 import { ColumnIdentifier, valueOnlyColumns } from './table'
 
 interface ComparisonPanelProps {
@@ -42,6 +43,69 @@ interface ComparisonPanelProps {
     articles: Article[]
     rows: (settings: StatGroupSettings) => ArticleRow[][]
     mapPartitions: number[][]
+}
+
+/** Which way round the comparison table runs, and how the width is divided up along it. */
+interface ComparisonTableShape {
+    /** Whether the statistics run along the columns and the regions down the rows. */
+    transpose: boolean
+    onlyColumns: ColumnIdentifier[]
+    /** How wide the table wants to be, in the units `MaybeScroll` decides to scroll by. */
+    widthColumns: number
+    /** The share of the table the left header takes, as a fraction. */
+    leftMarginPercent: number
+    /** The share of the table each column takes, as a percentage. */
+    columnWidth: number
+}
+
+/**
+ * Fits the table to the screen. A comparison of many regions is wider than one screen, and
+ * there are usually more statistics than regions, so turning it on its side is what makes it
+ * fit -- but only when the table is actually too wide, and only when transposing is the
+ * narrower of the two.
+ */
+function comparisonTableShape(params: {
+    numArticles: number
+    numStats: number
+    numWarnings: number
+    numExpandedExtras: number
+    includeOrdinals: boolean
+    hasCongressionalRepresentativeTable: boolean
+    mobileLayout: boolean
+    editMode: boolean
+}): ComparisonTableShape {
+    const { numArticles, numStats, numWarnings, numExpandedExtras, mobileLayout, editMode } = params
+
+    // Mobile edit mode gives up the ordinal and percentile columns, so the tree has room.
+    const showOrdinalColumns = params.includeOrdinals && !(editMode && mobileLayout)
+
+    // Transposed, a warning stands in for a column, so it takes up a column's worth of width
+    // alongside the statistics that are still shown.
+    const numTransposedColumns = numStats + numWarnings
+
+    const widthUntransposed = computeComparisonWidthColumns(numArticles, showOrdinalColumns)
+    const widthTransposed = (showOrdinalColumns ? 1.5 : 1) * (numTransposedColumns + numExpandedExtras) + 1.5
+
+    // The edit tree runs down the left column, and there are almost always more statistics
+    // than regions, so editing always uses the untransposed orientation.
+    const transpose = !editMode
+        && !params.hasCongressionalRepresentativeTable
+        && widthUntransposed > computeMaxColumns(mobileLayout)
+        && widthUntransposed > widthTransposed
+
+    // The tree needs considerably more room than a column of statistic names does.
+    const leftMarginPercent = editMode ? (mobileLayout ? 0.55 : 0.32) : (transpose ? 0.24 : 0.18)
+    const numColumns = transpose ? numTransposedColumns + numExpandedExtras : numArticles
+
+    return {
+        transpose,
+        onlyColumns: showOrdinalColumns
+            ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
+            : valueOnlyColumns,
+        widthColumns: transpose ? widthTransposed : widthUntransposed,
+        leftMarginPercent,
+        columnWidth: 100 * (1 - leftMarginPercent) / numColumns,
+    }
 }
 
 /**
@@ -183,43 +247,23 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
         && (validOrdinalsByStat.length === 0 || validOrdinalsByStat.some(x => x))
     )
 
-    const showOrdinalColumns = includeOrdinals && !(editMode && mobileLayout)
-    const onlyColumns: ColumnIdentifier[] = showOrdinalColumns
-        ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
-        : valueOnlyColumns
-
     const expandedByStatIndex = useExpandedByStat(
         dataByStatArticle.map(([{ statpath }]) => statpath),
         statIndex => dataByStatArticle[statIndex].some(row => row.extraStats.length > 0),
     )
-    const numExpandedExtras = expandedByStatIndex.filter(v => v).length
 
-    // Transposed, a warning stands in for a column, so it takes up a column's worth of width
-    // alongside the statistics that are still shown.
-    const numTransposedColumns = dataByArticleStat[0].length + warningPlacements.length
-
-    let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, showOrdinalColumns)
-    let widthTransposeColumns = (showOrdinalColumns ? 1.5 : 1) * (numTransposedColumns + numExpandedExtras) + 1.5
-
-    const hasCongressionalRepresentativeTable = dataByStatArticle.some(statData =>
-        statData.some(row => isCongressionalRepresentativesMetadataRow(row)),
-    )
-
-    // The edit tree runs down the left column, and there are almost always more statistics
-    // than regions, so editing always uses the untransposed orientation.
-    const transpose = !editMode
-        && !hasCongressionalRepresentativeTable
-        && widthColumns > computeMaxColumns(mobileLayout)
-        && widthColumns > widthTransposeColumns
-
-    if (transpose) {
-        ([widthColumns, widthTransposeColumns] = [widthTransposeColumns, widthColumns])
-    }
-
-    // The tree needs considerably more room than a column of statistic names does.
-    const leftMarginPercent = editMode ? (mobileLayout ? 0.55 : 0.32) : (transpose ? 0.24 : 0.18)
-    const numColumns = transpose ? numTransposedColumns : localArticlesToUse.length
-    const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
+    const { transpose, onlyColumns, widthColumns, leftMarginPercent, columnWidth } = comparisonTableShape({
+        numArticles: localArticlesToUse.length,
+        numStats: dataByArticleStat[0].length,
+        numWarnings: warningPlacements.length,
+        numExpandedExtras: expandedByStatIndex.filter(v => v).length,
+        includeOrdinals,
+        hasCongressionalRepresentativeTable: dataByStatArticle.some(statData =>
+            statData.some(row => isCongressionalRepresentativesMetadataRow(row)),
+        ),
+        mobileLayout,
+        editMode,
+    })
 
     const highlightArticleIndicesByStat: (number | undefined)[] = dataByStatArticle.map(articlesStatData => getHighlightIndex(articlesStatData))
 

@@ -23,6 +23,7 @@ import { zIndex } from '../utils/zIndex'
 import { Icon } from './Icon'
 import { computeDisclaimerText, type Disclaimer } from './disclaimer-text'
 import { percentileSuffix, percentileText, Statistic } from './display-stats'
+import { EditModeButton, EditModeTopLeftHeader, useEnterEditModeButton } from './edit-mode-header'
 import { EditableNumber } from './editable-field'
 import { footnoteSymbol } from './footnote-symbol'
 import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
@@ -30,7 +31,7 @@ import { percentileBucketIndex } from './percentile-navigation'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { Cell, CellSpec, ComparisonLongnameCellProps, EditModeButton, EditModeOpenHeader, StatisticPanelLongnameCellProps, TopLeftCellSpec, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
+import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftCellSpec, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -134,6 +135,7 @@ export interface SuperHeaderHorizontalProps {
 
 export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactNode {
     const colors = useColors()
+    const editButton = useEnterEditModeButton(props.editMode)
     const barHeight = '5px'
     const bars = (backgroundColor: (i: number) => string | undefined): ReactNode => {
         return (
@@ -179,7 +181,7 @@ export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactN
               * comparison is too narrow to hold both a button and the column's name.
               */}
             <div style={{ width: `${props.leftSpacerWidth}%`, display: 'flex', alignItems: 'flex-end', padding: '1px' }}>
-                <EnterEditModeButton editMode={props.editMode} />
+                {editButton}
             </div>
             {props.handleReorder
                 ? (
@@ -272,9 +274,7 @@ export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: num
 
 export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
     const isMobile = useMobileLayout()
-    const isScreenshot = useScreenshotMode()
-    const closedEditMode = props.editMode?.open === false ? props.editMode : undefined
-    const showsEditButton = closedEditMode !== undefined && !isScreenshot
+    const editButton = useEnterEditModeButton(props.editMode)
 
     if (props.editMode?.open) {
         return <EditModeTopLeftHeader header={props.editMode} width={props.width} />
@@ -282,90 +282,17 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
 
     // On a narrow screen this cell is too small to fit both the button and the name, and the
     // button is the more useful of the two -- so the name only yields when there really is one.
-    const showName = !isMobile || !showsEditButton
+    const showName = !isMobile || editButton === undefined
 
     return (
         <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '4px', padding: '1px', width: `${props.width}%` }}>
-            <EnterEditModeButton editMode={closedEditMode} />
+            {editButton}
             {showName && (
                 <span className="serif value" style={{ flexGrow: 1 }}>
                     {props.statNameOverride ?? 'Statistic'}
                 </span>
             )}
         </div>
-    )
-}
-
-/**
- * The way in to edit mode, for the tables that offer one. Screenshots don't get it, since
- * there's nobody there to click it.
- */
-function EnterEditModeButton({ editMode }: { editMode?: EditModeButton }): ReactNode {
-    const isScreenshot = useScreenshotMode()
-    if (editMode === undefined || isScreenshot) {
-        return null
-    }
-    return <HeaderButton onClick={editMode.onEdit} testId="edit-mode-edit">{editMode.label}</HeaderButton>
-}
-
-/** The top-left cell while the edit tree is open: the way out of it, and the tree's search box. */
-function EditModeTopLeftHeader({ header, width }: { header: EditModeOpenHeader, width: number }): ReactNode {
-    return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '1px', width: `${width}%` }}>
-            {header.onDone !== undefined && <HeaderButton onClick={header.onDone} testId="edit-mode-done">Done</HeaderButton>}
-            {/*
-              * `stretch` and the button's own font size line the box up with the Done button,
-              * which its padding otherwise makes the taller of the two.
-              */}
-            <div style={{ position: 'relative', display: 'flex', flex: '1 1 auto', minWidth: 0, alignSelf: 'stretch' }}>
-                <input
-                    type="text"
-                    className="serif"
-                    placeholder="Search Statistics"
-                    style={{ flex: '1 1 auto', minWidth: 0, fontSize: '18px', padding: '0 24px 0 6px' }}
-                    value={header.filter}
-                    onChange={(e) => { header.setFilter(e.target.value) }}
-                    data-test-id="edit-mode-filter"
-                />
-                {header.filter !== '' && (
-                    <button
-                        type="button"
-                        aria-label="Clear search"
-                        onClick={() => { header.setFilter('') }}
-                        style={{
-                            position: 'absolute',
-                            right: '2px',
-                            top: 0,
-                            bottom: 0,
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: '0 4px',
-                            border: 'none',
-                            background: 'none',
-                            cursor: 'pointer',
-                        }}
-                        data-test-id="edit-mode-filter-clear"
-                    >
-                        {/* Already the icon set's red, so it is drawn as-is rather than masked to a themed fill. */}
-                        <img src="/close-red-small.png" alt="" width={12} height={12} />
-                    </button>
-                )}
-            </div>
-        </div>
-    )
-}
-
-/** A button sized to sit in the table's top-left cell, alongside the "Statistic" header text. */
-function HeaderButton({ onClick, testId, children }: { onClick: () => void, testId?: string, children: ReactNode }): ReactNode {
-    return (
-        <button
-            className="serif value"
-            style={{ padding: '2px 10px', cursor: 'pointer' }}
-            onClick={onClick}
-            data-test-id={testId}
-        >
-            {children}
-        </button>
     )
 }
 

@@ -10,9 +10,10 @@ import { HumanReadableName, reifyReact } from '../utils/human-readable-name'
 import { noCategoriesSelectedContent, useWarningsByGroup } from './ArticleWarnings'
 import { ExpandButton } from './ExpandButton'
 import { BooleanSettingKey, CheckboxSettingCustomJustInputProps, CheckboxSettingJustBox, useBooleanSetting, useHighlightStyle } from './checkbox-setting'
+import { EditModeOpenHeader } from './edit-mode-header'
 import { ArticleRow } from './load-article'
 import { computeNameSpecsWithGroups, nameSpecsForRows } from './statistic-name-specs'
-import { CellSpec, EditModeOpenHeader, measureColumns, measuredLayout, MeasuredTableLayout, PlotSpec, StatisticTableRow, SuperHeaderSpec, TableFrame, TableLayout, TopLeftCellSpec, WarningRowMessage } from './supertable'
+import { CellSpec, measureColumns, measuredLayout, MeasuredTableLayout, PlotSpec, StatisticTableRow, SuperHeaderSpec, TableFrame, TableLayout, TopLeftCellSpec, WarningRowMessage } from './supertable'
 import { TableRowContainer, useStatisticNameAdornments } from './table'
 
 // Wrapping the name in a label lets a click anywhere on it toggle the associated
@@ -85,28 +86,30 @@ export function editRowsByGroup(
     return result
 }
 
-interface EditBodyRowBase {
+interface EditGroupHeaderSpec {
+    kind: 'group-header'
     key: string
     highlight: boolean
-    /** The group's checkbox, on the row that carries it. */
-    checkbox?: ReactNode
-}
-
-interface EditGroupHeaderSpec extends EditBodyRowBase {
-    kind: 'group-header'
+    /** The group's checkbox, which this row carries on behalf of the statistics below it. */
+    checkbox: ReactNode
     name: string
     /** Set for a group the year or source selection leaves with nothing to show. */
     warning?: ReactNode
 }
 
-interface EditStatSpec extends EditBodyRowBase {
+interface EditStatSpec {
     kind: 'stat'
+    key: string
+    highlight: boolean
     indent: number
     /** Whether the group this row belongs to is selected. */
     enabled: boolean
     editRow: EditRow
-    /** The id of the group's checkbox, on the rows that only point at it. */
-    checkboxId?: string
+    /**
+     * A group of one collapses into its statistic's row, which then carries the group's
+     * checkbox; the statistics of a larger group point at the header row's checkbox instead.
+     */
+    checkbox: { kind: 'own', node: ReactNode } | { kind: 'headers', id: string }
 }
 
 /** The rows under a category header, in the order they're displayed. */
@@ -166,8 +169,8 @@ function EditStatRow({ layout, index, spec }: { layout: MeasuredTableLayout, ind
                 <div style={{ width: `${layout.widthLeftHeader}%`, display: 'flex', alignItems: 'center', gap: '0.3em', paddingLeft: `${spec.indent * indentEm}em` }}>
                     <EditCheckboxLabel
                         highlight={spec.highlight}
-                        htmlFor={spec.checkboxId}
-                        checkbox={spec.checkbox}
+                        htmlFor={spec.checkbox.kind === 'headers' ? spec.checkbox.id : undefined}
+                        checkbox={spec.checkbox.kind === 'own' ? spec.checkbox.node : undefined}
                     >
                         {reifyReact(spec.editRow.displayName)}
                     </EditCheckboxLabel>
@@ -221,20 +224,21 @@ function categoryBodyRows(groups: GroupTreeState[], rowsByGroup: Map<string, Edi
                 highlight={highlight}
             />
         )
-        const statSpec = (editRow: EditRow, indent: number): EditStatSpec => ({
+        const statSpec = (editRow: EditRow, indent: number, whoseCheckbox: EditStatSpec['checkbox']): EditStatSpec => ({
             kind: 'stat',
             key: `stat-${editRow.row.statpath}`,
             highlight,
             indent,
             enabled,
             editRow,
+            checkbox: whoseCheckbox,
         })
         if (groupRows.length === 1) {
-            return [{ ...statSpec(groupRows[0], 1), checkbox }]
+            return [statSpec(groupRows[0], 1, { kind: 'own', node: checkbox })]
         }
         return [
             { kind: 'group-header', key: `group-${group.id}`, highlight, checkbox, name: group.name, warning: warningsByGroup.get(group.id) },
-            ...groupRows.map(editRow => ({ ...statSpec(editRow, 2), checkboxId })),
+            ...groupRows.map(editRow => statSpec(editRow, 2, { kind: 'headers', id: checkboxId })),
         ]
     })
 }

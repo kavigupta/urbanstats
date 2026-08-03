@@ -9,6 +9,7 @@ import { Article } from '../utils/protos'
 import { WarningColumn, WarningRow } from './ArticleWarnings'
 import { CongressionalColumnData, congressionalDataForRow } from './congressional-table/model'
 import { CongressionalRepresentativesWidget } from './congressional-table/render'
+import { EditModeButton, EditModeHeader, TableEditButton } from './edit-mode-header'
 import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
 import { useScreenshotMode } from './screenshot'
@@ -536,41 +537,6 @@ export interface StatisticRowCellProps {
     simpleOrdinals: boolean
     extraSpaceRight?: number
     columnWidthsInfo?: CommonLayoutInformation
-}
-
-/**
- * What the table's top-left cell offers for "edit mode", in which the statistic
- * category/group checkbox tree is replicated directly on the table. Passed down as part of
- * the cell's spec, so the generic table components stay unaware of edit mode; a cell given
- * no `EditModeHeader` renders the plain header.
- */
-export type EditModeHeader = EditModeButton | EditModeOpenHeader
-
-/** The way in to edit mode, shown while it's closed. */
-export interface EditModeButton {
-    open: false
-    onEdit: () => void
-    label: string
-}
-
-/**
- * The way in to edit mode, and where on the table to hang it. A table declares this once, so
- * it can't end up with a button in both places.
- */
-export interface TableEditButton extends EditModeButton {
-    /**
-     * The top-left cell, except where it's too narrow to hold both a button and the column's
-     * name -- a comparison puts the button in the super header's left spacer instead.
-     */
-    placement: 'top-left' | 'super-header'
-}
-
-export interface EditModeOpenHeader {
-    open: true
-    filter: string
-    setFilter: (filter: string) => void
-    /** Unset when something else on the page already offers a way out of edit mode. */
-    onDone?: () => void
 }
 
 export interface TopLeftHeaderProps {
