@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { arrayFromSelector, checkTextboxes, comparisonPage, screencap, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
+import { arrayFromSelector, checkTextboxes, checkTextboxesDirect, comparisonPage, screencap, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
 
 const mainCheck = 'input[data-test-id=category_main]'
 
@@ -55,6 +55,21 @@ test('comparison-warnings-all-sources-disabled', async (t) => {
     // Statistics that don't come from a Population source are unaffected
     await t.expect(Selector('a').withExactText('Area').exists).ok()
     await screencap(t)
+})
+
+// Two US states, so the US Census and GHSL are both choosable, and GHSL only has 2020.
+urbanstatsFixture('comparison warnings with a year the enabled source lacks', comparisonPage([
+    'Massachusetts, USA',
+    'California, USA',
+]))
+
+test('comparison-warnings-year-missing-from-enabled-source', async (t) => {
+    await withHamburgerMenu(t, async () => {
+        // leaves 2010, the one year GHSL has no data for, as the only year selected
+        await checkTextboxesDirect(t, ['US Census', 'GHSL', '2020', '2010'])
+    })
+    // GHSL is enabled and simply has no data for 2010, so the years are what's missing, not a source
+    await t.expect(warningNamed('Select 2020 or 2000 to see this statistic.', 'Population').exists).ok()
 })
 
 // Six regions against three warning columns and two statistics, which is enough regions that the
