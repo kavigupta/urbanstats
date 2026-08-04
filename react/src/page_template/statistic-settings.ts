@@ -9,10 +9,15 @@ import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSource
 export type StatGroupSettings = Record<StatGroupKey | StatYearKey | StatSourceKey, boolean>
 
 export function statIsEnabled(statId: StatPath, settings: StatGroupSettings, sourcesByCategory: AmbiguousSources): boolean {
-    const { group, year, source } = statParents.get(statId)!
+    const { group, year } = statParents.get(statId)!
     return settings[`show_stat_group_${group.id}`]
         && (year !== null ? settings[`show_stat_year_${year}`] : true)
-        && (source !== null ? sourceApplies(source, settings, sourcesByCategory) : true)
+        && statSourceIsEnabled(statId, settings, sourcesByCategory)
+}
+
+function statSourceIsEnabled(statId: StatPath, settings: StatGroupSettings, sourcesByCategory: AmbiguousSources): boolean {
+    const { source } = statParents.get(statId)!
+    return source === null || sourceApplies(source, settings, sourcesByCategory)
 }
 
 function sourceApplies(source: DataSource, settings: StatGroupSettings, sourcesByCategory: AmbiguousSources): boolean {
@@ -246,7 +251,7 @@ export function useSelectedYears(): Year[] {
 
 /** Why a group that the user selected is nonetheless showing no statistics. */
 export type MissingGroupReason =
-    /** None of `years`, the years this page has the group's statistics for, are selected. */
+    /** None of `years` are selected: the years this page has the group's statistics for from an enabled source. */
     { kind: 'year', years: Year[] } |
     { kind: 'source', category: SourceCategoryIdentifier }
 
@@ -286,18 +291,27 @@ export function useMissingGroups(): MissingGroup[] {
         if (paths.some(path => statIsEnabled(path, settings, ambiguousSources))) {
             return undefined
         }
+        // Statistics whose source is enabled are held back by their year alone.
+        const fromEnabledSources = paths.filter(path => statSourceIsEnabled(path, settings, ambiguousSources))
         const pathsInSelectedYears = paths.filter((path) => {
             const { year } = statParents.get(path)!
             return year === null || selectedYears.includes(year)
         })
-        if (pathsInSelectedYears.length === 0) {
-            const yearsOnPage = new Set(paths.map(path => statParents.get(path)!.year))
-            return { kind: 'year', years: allYears.filter(year => yearsOnPage.has(year)) }
+        if (pathsInSelectedYears.length > 0) {
+            // Everything in the selected years is disabled by its source, so we can name that source
+            // category if they agree on one -- unless the group has a statistic from an enabled
+            // source in another year, which would make "all of them are disabled" a lie.
+            const categories = new Set(pathsInSelectedYears.map(path => statParents.get(path)!.source?.category))
+            const [category] = categories
+            if (categories.size === 1 && category !== undefined
+                && !fromEnabledSources.some(path => statParents.get(path)!.source?.category === category)) {
+                return { kind: 'source', category }
+            }
         }
-        // Everything left is disabled by its source, so we can only name a reason if they agree on one.
-        const categories = new Set(pathsInSelectedYears.map(path => statParents.get(path)!.source?.category))
-        const [category] = categories
-        return categories.size === 1 && category !== undefined ? { kind: 'source', category } : undefined
+        // Otherwise it is the years that are missing: the ones selecting would bring the group back.
+        const yearsToSelect = new Set(fromEnabledSources.map(path => statParents.get(path)!.year))
+        const years = allYears.filter(year => yearsToSelect.has(year))
+        return years.length > 0 ? { kind: 'year', years } : undefined
     }
 
     const byReason = new Map<string, { reason: MissingGroupReason, groups: Group[] }>()

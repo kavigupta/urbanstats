@@ -67,6 +67,19 @@ test('comparison-warnings-enable-one-opens-edit-mode', async (t) => {
     await t.expect(sourceCheckbox('Population', 'US Census').checked).eql(false)
 })
 
+// Two US states, so the US Census and GHSL are both choosable, and GHSL only has 2020.
+urbanstatsFixture('comparison warnings with a year the enabled source lacks', comparisonPage([
+    'Massachusetts, USA',
+    'California, USA',
+]))
+
+test('comparison-warnings-year-missing-from-enabled-source', async (t) => {
+    // leaves 2010, the one year GHSL has no data for, as the only year selected
+    await checkTextboxes(t, ['US Census', 'GHSL', '2020', '2010'])
+    // GHSL is enabled and simply has no data for 2010, so the years are what's missing, not a source
+    await t.expect(warningNamed('Select 2020 or 2000 to see this statistic.', 'Population').exists).ok()
+})
+
 // Six regions against three warning columns and two statistics, which is enough regions that the
 // table is narrower transposed.
 urbanstatsFixture('transposed comparison warnings', comparisonPage([
