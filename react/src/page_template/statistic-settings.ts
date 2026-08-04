@@ -130,7 +130,7 @@ export function useSelectedYears(): Year[] {
 
 /** Why a group that the user selected is nonetheless showing no statistics. */
 export type MissingGroupReason =
-    /** None of `years`, the years this page has the group's statistics for, are selected. */
+    /** None of `years` are selected: the years this page has the group's statistics for from an enabled source. */
     { kind: 'year', years: Year[] } |
     { kind: 'source', category: SourceCategoryIdentifier }
 
