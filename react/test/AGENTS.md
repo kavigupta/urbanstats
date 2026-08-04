@@ -10,10 +10,12 @@ That's the whole thing. In particular:
 
 - **Assume a dev server is already running, and don't start one.** The test runner
   doesn't start or manage it. If nothing is serving the site, ask rather than
-  starting your own — a rebuild takes a long time.
+  starting your own — `npm run watch` needs the path to the site repository, which
+  you have no way to guess.
 - `--test` is required. It may be a glob (`'test/mapper-*.test.ts'`); quote it so the
   shell doesn't expand it first. To narrow further, use `test.only` inside the test file.
-- Don't run the whole suite. It takes hours; CI runs it in parallel per file.
+- Don't run the whole suite. The runner works through the matched files one at a
+  time, whereas CI gives each file its own job — leave it to CI.
 
 ## Ports
 
