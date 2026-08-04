@@ -32,7 +32,7 @@ import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
 import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
-import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
+import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftCellSpec, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
@@ -306,7 +306,7 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
 }
 
 export function MainHeaderRow(props: {
-    topLeftSpec: CellSpec
+    topLeftSpec: TopLeftCellSpec
     topLeftWidth: number
     columnWidth: number
     onlyColumns: ColumnIdentifier[]
