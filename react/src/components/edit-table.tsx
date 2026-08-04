@@ -51,6 +51,17 @@ export function useEditTableLayout(columnLayout: TableLayout, columnRows: Articl
 /** Each level of the tree is indented by this much relative to the one above it. */
 const indentEm = 0.75
 
+const togglePx = 20
+const toggleGapEm = 0.25
+
+/**
+ * The rows under a category start past the expand toggle that precedes the category's own
+ * name, so a category header sits to the left of everything it contains.
+ */
+function treeIndent(level: number): string {
+    return `calc(${togglePx}px + ${toggleGapEm + level * indentEm}em)`
+}
+
 /** A statistic as the edit tree renders it: the name it appears under, and the cells that follow. */
 export interface EditRow {
     displayName: HumanReadableName
@@ -144,6 +155,7 @@ function EditLabelRow(props: {
     highlight: boolean
     checkbox: ReactNode
     name: string
+    paddingLeft: string
     warning?: { layout: MeasuredTableLayout, content: ReactNode }
 }): ReactNode {
     const { warning } = props
@@ -151,7 +163,7 @@ function EditLabelRow(props: {
         <TableRowContainer index={props.index}>
             <EditCheckboxLabel
                 highlight={props.highlight}
-                style={{ width: warning === undefined ? '100%' : `${warning.layout.widthLeftHeader}%`, paddingLeft: `${indentEm}em` }}
+                style={{ width: warning === undefined ? '100%' : `${warning.layout.widthLeftHeader}%`, paddingLeft: props.paddingLeft }}
                 checkbox={props.checkbox}
             >
                 {props.name}
@@ -168,7 +180,7 @@ function EditStatRow({ layout, index, spec }: { layout: MeasuredTableLayout, ind
             layout={layout}
             index={index}
             leftHeader={(
-                <div style={{ width: `${layout.widthLeftHeader}%`, display: 'flex', alignItems: 'center', gap: '0.3em', paddingLeft: `${spec.indent * indentEm}em` }}>
+                <div style={{ width: `${layout.widthLeftHeader}%`, display: 'flex', alignItems: 'center', gap: '0.3em', paddingLeft: treeIndent(spec.indent) }}>
                     <EditCheckboxLabel
                         highlight={spec.highlight}
                         htmlFor={spec.checkbox.kind === 'headers' ? spec.checkbox.id : undefined}
@@ -277,7 +289,7 @@ function editBodySegments(bodyRows: EditBodyRow[], expanded: boolean): EditBodyS
     return segments
 }
 
-const toggleSize: CSSProperties = { width: '20px', height: '20px', flex: '0 0 auto' }
+const toggleSize: CSSProperties = { width: `${togglePx}px`, height: `${togglePx}px`, flex: '0 0 auto' }
 
 function EditCategory(props: {
     layout: MeasuredTableLayout
@@ -295,7 +307,7 @@ function EditCategory(props: {
     return (
         <>
             <TableRowContainer index={0}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25em', padding: '1px', width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: `${toggleGapEm}em`, padding: '1px', width: '100%' }}>
                     {!props.searching && (anythingToExpand
                         ? (
                                 <ExpandButton
@@ -335,6 +347,7 @@ function EditCategory(props: {
                                 highlight={spec.highlight}
                                 checkbox={spec.checkbox}
                                 name={spec.name}
+                                paddingLeft={treeIndent(1)}
                                 warning={spec.warning === undefined ? undefined : { layout: props.layout, content: spec.warning }}
                             />
                         )
@@ -381,6 +394,8 @@ function EditSettingRow(props: {
             index={props.index}
             highlight={highlight}
             name={props.name}
+            // Section headers have no expand toggle, so these indent straight from the left edge.
+            paddingLeft={`${indentEm}em`}
             checkbox={(
                 <EditCheckbox
                     checked={checked}
