@@ -3,16 +3,139 @@ export const dataSources = [
         "category": "Population",
         "sources": [
             {
-                "source": "US Census",
+                "category": "Population",
+                "name": "US Census",
                 "is_default": true
             },
             {
-                "source": "Canadian Census",
+                "category": "Population",
+                "name": "Canadian Census",
                 "is_default": true
             },
             {
-                "source": "GHSL",
+                "category": "Population",
+                "name": "GHSL",
                 "is_default": false
+            }
+        ]
+    },
+    {
+        "category": "Geography",
+        "sources": [
+            {
+                "category": "Geography",
+                "name": "Shapefile Geometry",
+                "is_default": true
+            }
+        ]
+    },
+    {
+        "category": "Elevation",
+        "sources": [
+            {
+                "category": "Elevation",
+                "name": "ASTER GDEM",
+                "is_default": true
+            }
+        ]
+    },
+    {
+        "category": "Traffic Fatalities",
+        "sources": [
+            {
+                "category": "Traffic Fatalities",
+                "name": "NHTSA FARS",
+                "is_default": true
+            }
+        ]
+    },
+    {
+        "category": "Health",
+        "sources": [
+            {
+                "category": "Health",
+                "name": "CDC PLACES",
+                "is_default": true
+            }
+        ]
+    },
+    {
+        "category": "Health Care Performance",
+        "sources": [
+            {
+                "category": "Health Care Performance",
+                "name": "IHME",
+                "is_default": true
+            }
+        ]
+    },
+    {
+        "category": "Pollution",
+        "sources": [
+            {
+                "category": "Pollution",
+                "name": "Atmospheric Composition Analysis Group",
+                "is_default": true
+            }
+        ]
+    },
+    {
+        "category": "US Elections",
+        "sources": [
+            {
+                "category": "US Elections",
+                "name": "US Election Data",
+                "is_default": true
+            }
+        ]
+    },
+    {
+        "category": "Canadian Elections",
+        "sources": [
+            {
+                "category": "Canadian Elections",
+                "name": "Elections Canada",
+                "is_default": true
+            }
+        ]
+    },
+    {
+        "category": "Metadata",
+        "sources": [
+            {
+                "category": "Metadata",
+                "name": "Article Metadata",
+                "is_default": true
+            }
+        ]
+    },
+    {
+        "category": "Distance from Features",
+        "sources": [
+            {
+                "category": "Distance from Features",
+                "name": "Feature Datasets",
+                "is_default": true
+            }
+        ]
+    },
+    {
+        "category": "Food Access",
+        "sources": [
+            {
+                "category": "Food Access",
+                "name": "USDA Food Access Research Atlas",
+                "is_default": true
+            }
+        ]
+    },
+    {
+        "category": "Weather",
+        "sources": [
+            {
+                "category": "Weather",
+                "name": "ERA5",
+                "is_default": true
             }
         ]
     }
@@ -119,7 +242,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 400
                                     }
                                 ],
@@ -130,7 +256,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 404
                                     }
                                 ],
@@ -236,7 +365,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 103
                                     }
                                 ],
@@ -247,7 +379,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 105
                                     }
                                 ],
@@ -331,7 +466,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 431
                                     }
                                 ],
@@ -353,7 +491,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Geography",
+                                            "name": "Shapefile Geometry"
+                                        },
                                         "column": 132
                                     }
                                 ],
@@ -375,7 +516,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Geography",
+                                            "name": "Shapefile Geometry"
+                                        },
                                         "column": 150
                                     }
                                 ],
@@ -403,7 +547,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Elevation",
+                                            "name": "ASTER GDEM"
+                                        },
                                         "column": 225
                                     }
                                 ],
@@ -425,7 +572,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Elevation",
+                                            "name": "ASTER GDEM"
+                                        },
                                         "column": 224
                                     }
                                 ],
@@ -480,7 +630,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 486
                                     }
                                 ],
@@ -496,7 +649,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 485
                                     }
                                 ],
@@ -545,7 +701,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 238
                                     }
                                 ],
@@ -561,7 +720,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 237
                                     }
                                 ],
@@ -610,7 +772,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 142
                                     }
                                 ],
@@ -626,7 +791,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 141
                                     }
                                 ],
@@ -675,7 +843,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 135
                                     }
                                 ],
@@ -691,7 +862,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 134
                                     }
                                 ],
@@ -740,7 +914,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 355
                                     }
                                 ],
@@ -756,7 +933,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 354
                                     }
                                 ],
@@ -805,7 +985,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 228
                                     }
                                 ],
@@ -821,7 +1004,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 227
                                     }
                                 ],
@@ -870,7 +1056,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 394
                                     }
                                 ],
@@ -886,7 +1075,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 393
                                     }
                                 ],
@@ -908,7 +1100,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 240
                                     }
                                 ],
@@ -919,7 +1114,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 243
                                     }
                                 ],
@@ -935,7 +1133,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 241
                                     }
                                 ],
@@ -946,7 +1147,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 244
                                     }
                                 ],
@@ -962,7 +1166,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 242
                                     }
                                 ],
@@ -984,7 +1191,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 440
                                     }
                                 ],
@@ -995,7 +1205,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 443
                                     }
                                 ],
@@ -1011,7 +1224,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 441
                                     }
                                 ],
@@ -1022,7 +1238,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 444
                                     }
                                 ],
@@ -1038,7 +1257,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 442
                                     }
                                 ],
@@ -1060,7 +1282,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 435
                                     }
                                 ],
@@ -1071,7 +1296,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 438
                                     }
                                 ],
@@ -1087,7 +1315,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 436
                                     }
                                 ],
@@ -1098,7 +1329,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 439
                                     }
                                 ],
@@ -1114,7 +1348,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 437
                                     }
                                 ],
@@ -1241,7 +1478,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 137
                                     }
                                 ],
@@ -1263,7 +1503,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 138
                                     }
                                 ],
@@ -1285,7 +1528,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 139
                                     }
                                 ],
@@ -1373,7 +1619,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 314
                                     }
                                 ],
@@ -1395,7 +1644,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 316
                                     }
                                 ],
@@ -1417,7 +1669,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 315
                                     }
                                 ],
@@ -1445,7 +1700,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 414
                                     }
                                 ],
@@ -1467,7 +1725,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 410
                                     }
                                 ],
@@ -1489,7 +1750,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 416
                                     }
                                 ],
@@ -1511,7 +1775,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 411
                                     }
                                 ],
@@ -1533,7 +1800,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 412
                                     }
                                 ],
@@ -1555,7 +1825,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 413
                                     }
                                 ],
@@ -1577,7 +1850,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 417
                                     }
                                 ],
@@ -1599,7 +1875,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 409
                                     }
                                 ],
@@ -1621,7 +1900,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 415
                                     }
                                 ],
@@ -1649,7 +1931,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 195
                                     }
                                 ],
@@ -1671,7 +1956,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 197
                                     }
                                 ],
@@ -1693,7 +1981,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 193
                                     }
                                 ],
@@ -1715,7 +2006,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 196
                                     }
                                 ],
@@ -1737,7 +2031,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 198
                                     }
                                 ],
@@ -1759,7 +2056,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 194
                                     }
                                 ],
@@ -1781,7 +2081,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 191
                                     }
                                 ],
@@ -1803,7 +2106,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 189
                                     }
                                 ],
@@ -1825,7 +2131,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 187
                                     }
                                 ],
@@ -1847,7 +2156,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 192
                                     }
                                 ],
@@ -1869,7 +2181,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 190
                                     }
                                 ],
@@ -1891,7 +2206,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 188
                                     }
                                 ],
@@ -1913,7 +2231,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 200
                                     }
                                 ],
@@ -1935,7 +2256,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 201
                                     }
                                 ],
@@ -1957,7 +2281,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 199
                                     }
                                 ],
@@ -2189,7 +2516,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 352
                                     }
                                 ],
@@ -2211,7 +2541,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 407
                                     }
                                 ],
@@ -2233,7 +2566,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 323
                                     }
                                 ],
@@ -2255,7 +2591,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 325
                                     }
                                 ],
@@ -2277,7 +2616,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 251
                                     }
                                 ],
@@ -2299,7 +2641,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 247
                                     }
                                 ],
@@ -2321,7 +2666,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 249
                                     }
                                 ],
@@ -2343,7 +2691,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 250
                                     }
                                 ],
@@ -2365,7 +2716,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 246
                                     }
                                 ],
@@ -2387,7 +2741,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 248
                                     }
                                 ],
@@ -2409,7 +2766,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 267
                                     }
                                 ],
@@ -2431,7 +2791,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 263
                                     }
                                 ],
@@ -2453,7 +2816,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 265
                                     }
                                 ],
@@ -2475,7 +2841,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 266
                                     }
                                 ],
@@ -2497,7 +2866,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 262
                                     }
                                 ],
@@ -2519,7 +2891,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 264
                                     }
                                 ],
@@ -2574,7 +2949,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 260
                                     }
                                 ],
@@ -2590,7 +2968,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 259
                                     }
                                 ],
@@ -2639,7 +3020,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 256
                                     }
                                 ],
@@ -2655,7 +3039,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 255
                                     }
                                 ],
@@ -2677,7 +3064,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 478
                                     }
                                 ],
@@ -2693,7 +3083,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 480
                                     }
                                 ],
@@ -2709,7 +3102,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 479
                                     }
                                 ],
@@ -2731,7 +3127,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 427
                                     }
                                 ],
@@ -2753,7 +3152,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 424
                                     }
                                 ],
@@ -2775,7 +3177,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 426
                                     }
                                 ],
@@ -2797,7 +3202,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 420
                                     }
                                 ],
@@ -2819,7 +3227,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 418
                                     }
                                 ],
@@ -2841,7 +3252,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 419
                                     }
                                 ],
@@ -2863,7 +3277,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 423
                                     }
                                 ],
@@ -2885,7 +3302,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 421
                                     }
                                 ],
@@ -2907,7 +3327,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 422
                                     }
                                 ],
@@ -2929,7 +3352,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 493
                                     }
                                 ],
@@ -2951,7 +3377,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 494
                                     }
                                 ],
@@ -2973,7 +3402,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 495
                                     }
                                 ],
@@ -2995,7 +3427,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 496
                                     }
                                 ],
@@ -3017,7 +3452,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 497
                                     }
                                 ],
@@ -3039,7 +3477,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 498
                                     }
                                 ],
@@ -3127,7 +3568,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 425
                                     }
                                 ],
@@ -3452,7 +3896,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 483
                                     }
                                 ],
@@ -3474,7 +3921,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 481
                                     }
                                 ],
@@ -3496,7 +3946,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 482
                                     }
                                 ],
@@ -3518,7 +3971,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Traffic Fatalities",
+                                            "name": "NHTSA FARS"
+                                        },
                                         "column": 452
                                     }
                                 ],
@@ -3540,7 +3996,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Traffic Fatalities",
+                                            "name": "NHTSA FARS"
+                                        },
                                         "column": 454
                                     }
                                 ],
@@ -3562,7 +4021,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Traffic Fatalities",
+                                            "name": "NHTSA FARS"
+                                        },
                                         "column": 451
                                     }
                                 ],
@@ -3584,7 +4046,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Traffic Fatalities",
+                                            "name": "NHTSA FARS"
+                                        },
                                         "column": 453
                                     }
                                 ],
@@ -3612,7 +4077,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 70
                                     }
                                 ],
@@ -3634,7 +4102,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 77
                                     }
                                 ],
@@ -3656,7 +4127,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 56
                                     }
                                 ],
@@ -3678,7 +4152,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 60
                                     }
                                 ],
@@ -3700,7 +4177,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 58
                                     }
                                 ],
@@ -3722,7 +4202,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 59
                                     }
                                 ],
@@ -3744,7 +4227,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 73
                                     }
                                 ],
@@ -3766,7 +4252,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 65
                                     }
                                 ],
@@ -3788,7 +4277,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 61
                                     }
                                 ],
@@ -3810,7 +4302,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 68
                                     }
                                 ],
@@ -3832,7 +4327,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 76
                                     }
                                 ],
@@ -3854,7 +4352,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 80
                                     }
                                 ],
@@ -3876,7 +4377,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 69
                                     }
                                 ],
@@ -3898,7 +4402,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 71
                                     }
                                 ],
@@ -3920,7 +4427,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 81
                                     }
                                 ],
@@ -3942,7 +4452,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 64
                                     }
                                 ],
@@ -3964,7 +4477,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 75
                                     }
                                 ],
@@ -3986,7 +4502,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 78
                                     }
                                 ],
@@ -4008,7 +4527,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 72
                                     }
                                 ],
@@ -4030,7 +4552,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 57
                                     }
                                 ],
@@ -4052,7 +4577,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 66
                                     }
                                 ],
@@ -4074,7 +4602,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 74
                                     }
                                 ],
@@ -4096,7 +4627,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 79
                                     }
                                 ],
@@ -4118,7 +4652,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 62
                                     }
                                 ],
@@ -4140,7 +4677,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 67
                                     }
                                 ],
@@ -4162,7 +4702,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health",
+                                            "name": "CDC PLACES"
+                                        },
                                         "column": 63
                                     }
                                 ],
@@ -4184,7 +4727,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health Care Performance",
+                                            "name": "IHME"
+                                        },
                                         "column": 324
                                     }
                                 ],
@@ -4206,7 +4752,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Health Care Performance",
+                                            "name": "IHME"
+                                        },
                                         "column": 397
                                     }
                                 ],
@@ -4234,7 +4783,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Pollution",
+                                            "name": "Atmospheric Composition Analysis Group"
+                                        },
                                         "column": 398
                                     }
                                 ],
@@ -4256,7 +4808,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 235
                                     }
                                 ],
@@ -4278,7 +4833,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 231
                                     }
                                 ],
@@ -4300,7 +4858,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 230
                                     }
                                 ],
@@ -4322,7 +4883,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 232
                                     }
                                 ],
@@ -4344,7 +4908,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 234
                                     }
                                 ],
@@ -4366,7 +4933,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 233
                                     }
                                 ],
@@ -5060,7 +5630,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 357
                                     }
                                 ],
@@ -5082,7 +5655,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 364
                                     }
                                 ],
@@ -5104,7 +5680,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 379
                                     }
                                 ],
@@ -5126,7 +5705,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 359
                                     }
                                 ],
@@ -5148,7 +5730,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 363
                                     }
                                 ],
@@ -5170,7 +5755,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 367
                                     }
                                 ],
@@ -5192,7 +5780,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 377
                                     }
                                 ],
@@ -5214,7 +5805,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 372
                                     }
                                 ],
@@ -5236,7 +5830,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 373
                                     }
                                 ],
@@ -5258,7 +5855,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 361
                                     }
                                 ],
@@ -5280,7 +5880,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 380
                                     }
                                 ],
@@ -5302,7 +5905,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 365
                                     }
                                 ],
@@ -5324,7 +5930,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 368
                                     }
                                 ],
@@ -5346,7 +5955,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 375
                                     }
                                 ],
@@ -5368,7 +5980,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 382
                                     }
                                 ],
@@ -5390,7 +6005,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 387
                                     }
                                 ],
@@ -5412,7 +6030,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 391
                                     }
                                 ],
@@ -5434,7 +6055,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 385
                                     }
                                 ],
@@ -5456,7 +6080,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 388
                                     }
                                 ],
@@ -5478,7 +6105,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 360
                                     }
                                 ],
@@ -5500,7 +6130,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 370
                                     }
                                 ],
@@ -5522,7 +6155,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 374
                                     }
                                 ],
@@ -5544,7 +6180,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 386
                                     }
                                 ],
@@ -5566,7 +6205,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 369
                                     }
                                 ],
@@ -5588,7 +6230,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 376
                                     }
                                 ],
@@ -5610,7 +6255,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 378
                                     }
                                 ],
@@ -5632,7 +6280,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 362
                                     }
                                 ],
@@ -5654,7 +6305,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 383
                                     }
                                 ],
@@ -5676,7 +6330,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 371
                                     }
                                 ],
@@ -5698,7 +6355,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 366
                                     }
                                 ],
@@ -5720,7 +6380,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 358
                                     }
                                 ],
@@ -5742,7 +6405,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 389
                                     }
                                 ],
@@ -5764,7 +6430,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 390
                                     }
                                 ],
@@ -5786,7 +6455,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 384
                                     }
                                 ],
@@ -5808,7 +6480,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "Canadian Census"
+                                        },
                                         "column": 381
                                     }
                                 ],
@@ -5836,7 +6511,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 450
                                     }
                                 ],
@@ -5858,7 +6536,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 447
                                     }
                                 ],
@@ -5880,7 +6561,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 448
                                     }
                                 ],
@@ -5902,7 +6586,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 446
                                     }
                                 ],
@@ -5924,7 +6611,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 449
                                     }
                                 ],
@@ -6051,7 +6741,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "US Elections",
+                                            "name": "US Election Data"
+                                        },
                                         "column": 0
                                     }
                                 ],
@@ -6062,7 +6755,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "US Elections",
+                                            "name": "US Election Data"
+                                        },
                                         "column": 1
                                     }
                                 ],
@@ -6073,7 +6769,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "US Elections",
+                                            "name": "US Election Data"
+                                        },
                                         "column": 2
                                     }
                                 ],
@@ -6084,7 +6783,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "US Elections",
+                                            "name": "US Election Data"
+                                        },
                                         "column": 3
                                     }
                                 ],
@@ -6100,7 +6802,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "US Elections",
+                                            "name": "US Election Data"
+                                        },
                                         "column": 16
                                     }
                                 ],
@@ -6111,7 +6816,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "US Elections",
+                                            "name": "US Election Data"
+                                        },
                                         "column": 17
                                     }
                                 ],
@@ -6122,7 +6830,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "US Elections",
+                                            "name": "US Election Data"
+                                        },
                                         "column": 32
                                     }
                                 ],
@@ -6133,7 +6844,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "US Elections",
+                                            "name": "US Election Data"
+                                        },
                                         "column": 33
                                     }
                                 ],
@@ -6144,7 +6858,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "US Elections",
+                                            "name": "US Election Data"
+                                        },
                                         "column": 48
                                     }
                                 ],
@@ -6166,7 +6883,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 15
                                     }
                                 ],
@@ -6177,7 +6897,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 9
                                     }
                                 ],
@@ -6188,7 +6911,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 31
                                     }
                                 ],
@@ -6199,7 +6925,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 24
                                     }
                                 ],
@@ -6210,7 +6939,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 47
                                     }
                                 ],
@@ -6221,7 +6953,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 40
                                     }
                                 ],
@@ -6232,7 +6967,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 55
                                     }
                                 ],
@@ -6254,7 +6992,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 13
                                     }
                                 ],
@@ -6265,7 +7006,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 7
                                     }
                                 ],
@@ -6276,7 +7020,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 28
                                     }
                                 ],
@@ -6287,7 +7034,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 21
                                     }
                                 ],
@@ -6298,7 +7048,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 44
                                     }
                                 ],
@@ -6309,7 +7062,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 37
                                     }
                                 ],
@@ -6320,7 +7076,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 52
                                     }
                                 ],
@@ -6342,7 +7101,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 11
                                     }
                                 ],
@@ -6353,7 +7115,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 5
                                     }
                                 ],
@@ -6364,7 +7129,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 26
                                     }
                                 ],
@@ -6375,7 +7143,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 19
                                     }
                                 ],
@@ -6386,7 +7157,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 42
                                     }
                                 ],
@@ -6397,7 +7171,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 35
                                     }
                                 ],
@@ -6408,7 +7185,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 50
                                     }
                                 ],
@@ -6430,7 +7210,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 14
                                     }
                                 ],
@@ -6441,7 +7224,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 8
                                     }
                                 ],
@@ -6452,7 +7238,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 29
                                     }
                                 ],
@@ -6463,7 +7252,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 22
                                     }
                                 ],
@@ -6474,7 +7266,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 45
                                     }
                                 ],
@@ -6485,7 +7280,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 38
                                     }
                                 ],
@@ -6496,7 +7294,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 53
                                     }
                                 ],
@@ -6518,7 +7319,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 10
                                     }
                                 ],
@@ -6529,7 +7333,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 4
                                     }
                                 ],
@@ -6540,7 +7347,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 25
                                     }
                                 ],
@@ -6551,7 +7361,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 18
                                     }
                                 ],
@@ -6562,7 +7375,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 41
                                     }
                                 ],
@@ -6573,7 +7389,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 34
                                     }
                                 ],
@@ -6584,7 +7403,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 49
                                     }
                                 ],
@@ -6606,7 +7428,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 12
                                     }
                                 ],
@@ -6617,7 +7442,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 6
                                     }
                                 ],
@@ -6628,7 +7456,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 27
                                     }
                                 ],
@@ -6639,7 +7470,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 20
                                     }
                                 ],
@@ -6650,7 +7484,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 43
                                     }
                                 ],
@@ -6661,7 +7498,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 36
                                     }
                                 ],
@@ -6672,7 +7512,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 51
                                     }
                                 ],
@@ -6694,7 +7537,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 30
                                     }
                                 ],
@@ -6705,7 +7551,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 23
                                     }
                                 ],
@@ -6716,7 +7565,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 46
                                     }
                                 ],
@@ -6727,7 +7579,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 39
                                     }
                                 ],
@@ -6738,7 +7593,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Canadian Elections",
+                                            "name": "Elections Canada"
+                                        },
                                         "column": 54
                                     }
                                 ],
@@ -6760,7 +7618,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "metadata",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Metadata",
+                                            "name": "Article Metadata"
+                                        },
                                         "path": "metadata_show_metadata_representatives",
                                         "metadata_index": 5,
                                         "value_type": "string"
@@ -6790,7 +7651,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Distance from Features",
+                                            "name": "Feature Datasets"
+                                        },
                                         "column": 396
                                     }
                                 ],
@@ -6812,7 +7676,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Distance from Features",
+                                            "name": "Feature Datasets"
+                                        },
                                         "column": 491
                                     }
                                 ],
@@ -6834,7 +7701,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Distance from Features",
+                                            "name": "Feature Datasets"
+                                        },
                                         "column": 334
                                     }
                                 ],
@@ -6856,7 +7726,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Distance from Features",
+                                            "name": "Feature Datasets"
+                                        },
                                         "column": 492
                                     }
                                 ],
@@ -6878,7 +7751,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Distance from Features",
+                                            "name": "Feature Datasets"
+                                        },
                                         "column": 335
                                     }
                                 ],
@@ -6900,7 +7776,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Distance from Features",
+                                            "name": "Feature Datasets"
+                                        },
                                         "column": 490
                                     }
                                 ],
@@ -6922,7 +7801,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Distance from Features",
+                                            "name": "Feature Datasets"
+                                        },
                                         "column": 333
                                     }
                                 ],
@@ -6944,7 +7826,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Distance from Features",
+                                            "name": "Feature Datasets"
+                                        },
                                         "column": 489
                                     }
                                 ],
@@ -6966,7 +7851,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Distance from Features",
+                                            "name": "Feature Datasets"
+                                        },
                                         "column": 332
                                     }
                                 ],
@@ -6988,7 +7876,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Food Access",
+                                            "name": "USDA Food Access Research Atlas"
+                                        },
                                         "column": 322
                                     }
                                 ],
@@ -7010,7 +7901,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Food Access",
+                                            "name": "USDA Food Access Research Atlas"
+                                        },
                                         "column": 320
                                     }
                                 ],
@@ -7032,7 +7926,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Food Access",
+                                            "name": "USDA Food Access Research Atlas"
+                                        },
                                         "column": 319
                                     }
                                 ],
@@ -7054,7 +7951,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Food Access",
+                                            "name": "USDA Food Access Research Atlas"
+                                        },
                                         "column": 321
                                     }
                                 ],
@@ -7082,7 +7982,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 338
                                     }
                                 ],
@@ -7104,7 +8007,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 347
                                     }
                                 ],
@@ -7126,7 +8032,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 337
                                     }
                                 ],
@@ -7148,7 +8057,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 336
                                     }
                                 ],
@@ -7170,7 +8082,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 151
                                     }
                                 ],
@@ -7192,7 +8107,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 153
                                     }
                                 ],
@@ -7214,7 +8132,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 152
                                     }
                                 ],
@@ -7236,7 +8157,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 156
                                     }
                                 ],
@@ -7258,7 +8182,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 155
                                     }
                                 ],
@@ -7280,7 +8207,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 154
                                     }
                                 ],
@@ -7302,7 +8232,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 245
                                     }
                                 ],
@@ -7324,7 +8257,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 408
                                     }
                                 ],
@@ -7346,7 +8282,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 445
                                     }
                                 ],
@@ -7368,7 +8307,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 488
                                     }
                                 ],
@@ -7390,7 +8332,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 339
                                     }
                                 ],
@@ -7412,7 +8357,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 342
                                     }
                                 ],
@@ -7434,7 +8382,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 341
                                     }
                                 ],
@@ -7456,7 +8407,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 343
                                     }
                                 ],
@@ -7478,7 +8432,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 348
                                     }
                                 ],
@@ -7500,7 +8457,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 350
                                     }
                                 ],
@@ -7522,7 +8482,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 349
                                     }
                                 ],
@@ -7544,7 +8507,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 351
                                     }
                                 ],
@@ -7572,7 +8538,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 311
                                     }
                                 ],
@@ -7594,7 +8563,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 309
                                     }
                                 ],
@@ -7616,7 +8588,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 308
                                     }
                                 ],
@@ -7638,7 +8613,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 310
                                     }
                                 ],
@@ -7666,7 +8644,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "metadata",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Metadata",
+                                            "name": "Article Metadata"
+                                        },
                                         "path": "metadata_show_metadata_fips",
                                         "metadata_index": 0,
                                         "value_type": "string"
@@ -7690,7 +8671,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "metadata",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Metadata",
+                                            "name": "Article Metadata"
+                                        },
                                         "path": "metadata_show_metadata_statcan_geocode",
                                         "metadata_index": 1,
                                         "value_type": "string"
@@ -7714,7 +8698,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "metadata",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Metadata",
+                                            "name": "Article Metadata"
+                                        },
                                         "path": "metadata_show_metadata_iso_code",
                                         "metadata_index": 4,
                                         "value_type": "string"
@@ -7820,7 +8807,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 83
                                     }
                                 ],
@@ -7831,7 +8821,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 85
                                     }
                                 ],
@@ -7929,7 +8922,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 88
                                     }
                                 ],
@@ -7940,7 +8936,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 90
                                     }
                                 ],
@@ -8046,7 +9045,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 94
                                     }
                                 ],
@@ -8057,7 +9059,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 96
                                     }
                                 ],
@@ -8163,7 +9168,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 108
                                     }
                                 ],
@@ -8174,7 +9182,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 110
                                     }
                                 ],
@@ -8280,7 +9291,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 118
                                     }
                                 ],
@@ -8291,7 +9305,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 120
                                     }
                                 ],
@@ -8397,7 +9414,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 128
                                     }
                                 ],
@@ -8408,7 +9428,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 130
                                     }
                                 ],
@@ -8514,7 +9537,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 99
                                     }
                                 ],
@@ -8525,7 +9551,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 101
                                     }
                                 ],
@@ -8631,7 +9660,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 113
                                     }
                                 ],
@@ -8642,7 +9674,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 115
                                     }
                                 ],
@@ -8748,7 +9783,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 123
                                     }
                                 ],
@@ -8759,7 +9797,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 125
                                     }
                                 ],
@@ -8787,7 +9828,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 345
                                     }
                                 ],
@@ -8809,7 +9853,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 346
                                     }
                                 ],
@@ -8831,7 +9878,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 340
                                     }
                                 ],
@@ -8853,7 +9903,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Weather",
+                                            "name": "ERA5"
+                                        },
                                         "column": 344
                                     }
                                 ],
@@ -8875,7 +9928,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 468
                                     }
                                 ],
@@ -8897,7 +9953,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 465
                                     }
                                 ],
@@ -8919,7 +9978,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 474
                                     }
                                 ],
@@ -8941,7 +10003,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 471
                                     }
                                 ],
@@ -8963,7 +10028,10 @@ export const rawStatsTree = [
                                 "stats": [
                                     {
                                         "kind": "data",
-                                        "source": null,
+                                        "source": {
+                                            "category": "Population",
+                                            "name": "US Census"
+                                        },
                                         "column": 477
                                     }
                                 ],

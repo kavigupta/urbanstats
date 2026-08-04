@@ -16,8 +16,7 @@ export function statIsEnabled(statId: StatPath, settings: StatGroupSettings, sou
 }
 
 function statSourceIsEnabled(statId: StatPath, settings: StatGroupSettings, sourcesByCategory: AmbiguousSources): boolean {
-    const { source } = statParents.get(statId)!
-    return source === null || sourceApplies(source, settings, sourcesByCategory)
+    return sourceApplies(statParents.get(statId)!.source, settings, sourcesByCategory)
 }
 
 function sourceApplies(source: DataSource, settings: StatGroupSettings, sourcesByCategory: AmbiguousSources): boolean {
@@ -42,7 +41,7 @@ export function groupYearKeys(): (keyof StatGroupSettings)[] {
     return [
         ...groupKeys(allGroups),
         ...allYears.map(year => `show_stat_year_${year}` as const),
-        ...dataSources.flatMap(({ category, sources }) => sources.map(({ source }) => sourceEnabledKey({ category, name: source }))),
+        ...dataSources.flatMap(({ sources }) => sources.map(source => sourceEnabledKey(source))),
     ]
 }
 
@@ -180,10 +179,10 @@ export function useMissingGroups(): MissingGroup[] {
             // Everything in the selected years is disabled by its source, so we can name that source
             // category if they agree on one -- unless the group has a statistic from an enabled
             // source in another year, which would make "all of them are disabled" a lie.
-            const categories = new Set(pathsInSelectedYears.map(path => statParents.get(path)!.source?.category))
+            const categories = new Set(pathsInSelectedYears.map(path => statParents.get(path)!.source.category))
             const [category] = categories
-            if (categories.size === 1 && category !== undefined
-                && !fromEnabledSources.some(path => statParents.get(path)!.source?.category === category)) {
+            if (categories.size === 1
+                && !fromEnabledSources.some(path => statParents.get(path)!.source.category === category)) {
                 return { kind: 'source', category }
             }
         }

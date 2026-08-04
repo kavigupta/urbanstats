@@ -238,13 +238,13 @@ export function SidebarForStatisticChoice(): ReactNode {
                     <div style={sidebarSectionTitle}>{checkboxCategoryName(category)}</div>
                     <ul className={sidebarSectionContent}>
                         {
-                            checkboxSpecs.map(({ name, forcedOn }) => (
-                                <li key={name}>
+                            checkboxSpecs.map(({ source, forcedOn }) => (
+                                <li key={source.name}>
                                     <CheckboxSetting
-                                        name={name}
-                                        settingKey={sourceEnabledKey({ category, name })}
+                                        name={source.name}
+                                        settingKey={sourceEnabledKey(source)}
                                         forcedOn={forcedOn}
-                                        testId={`source ${category} ${name}`}
+                                        testId={`source ${source.category} ${source.name}`}
                                         fontSize={fontSize}
                                     />
                                 </li>
