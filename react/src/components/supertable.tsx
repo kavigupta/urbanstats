@@ -517,4 +517,4 @@ export interface TopLeftHeaderProps {
 }
 
 /** The cells that can serve as a table's top-left header; the comparison's carries a color bar. */
-export type TopLeftCellSpec = Extract<CellSpec, TopLeftHeaderProps>
+export type TopLeftCellSpec = Extract<CellSpec, { type: 'comparison-top-left-header' | 'top-left-header' }>
