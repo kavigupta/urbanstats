@@ -16,6 +16,9 @@ That's the whole thing. In particular:
   shell doesn't expand it first. To narrow further, use `test.only` inside the test file.
 - Don't run the whole suite. The runner works through the matched files one at a
   time, whereas CI gives each file its own job — leave it to CI.
+- **Don't pipe the output through `head`, `tail`, or `grep`.** A run you truncate is a
+  run you have to do again, and these take minutes. The output is small enough to read
+  in full; if you find it too noisy to work with, say so instead of filtering it.
 
 ## Ports
 
