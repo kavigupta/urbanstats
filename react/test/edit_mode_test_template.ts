@@ -8,8 +8,8 @@ import { resizeForPlatform, safeReload, screencap, uncheckAllCategories, urbanst
  * table: that the Edit button opens and closes the tree, that it doesn't survive a reload,
  * that arriving via a settings link opens it with the staging controls on the table, that
  * the filter narrows the tree, that a stat's plot and its metadata extras render below its
- * row, that a selection leaving the table with nothing to show warns on the tree itself, and
- * what the mobile layout gives up.
+ * row, that a selection leaving the table with nothing to show warns on the tree itself, that
+ * such a warning is itself a way back into edit mode, and what the mobile layout gives up.
  *
  * The table-specific behavior (transposition, the per-region columns) lives in each
  * caller's file.
@@ -120,6 +120,23 @@ export function editModeSharedTests(spec: {
         await t.click(year2020)
         await t.expect(populationRow.find('.testing-statistic-value').exists).ok()
         await t.expect(groupWarning('population').exists).notOk()
+    })
+
+    test('a warning is a way into edit mode', async (t) => {
+        await t.click(editButton)
+        await t.click(year2020)
+        // The tree's own warning names settings that are already on screen, so it offers no button.
+        await t.expect(groupWarning('population').find('[data-test-id=warning-edit-action]').exists).notOk()
+        await t.click(doneButton)
+
+        const editAction = table.find('[data-test-id=warning-edit-action]')
+        await t.expect(editAction.nth(0).innerText).eql('Select')
+
+        await t.click(editAction.nth(0))
+
+        // Edit mode, open on the year checkboxes the warning told the user to select from.
+        await t.expect(filterBox.exists).ok()
+        await t.expect(year2020.checked).eql(false)
     })
 
     test('unselecting every category warns above the tree', async (t) => {

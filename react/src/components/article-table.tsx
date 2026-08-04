@@ -79,7 +79,7 @@ export function ArticleTable(props: {
     // regardless of the group settings, doesn't redo this filter on every checkbox click.
     const filteredRows = useVisibleRows(props.rows, false)[0]
 
-    const warnings = useArticleWarnings()
+    const warnings = useArticleWarnings(props.onEdit)
     const warningRows = placeWarnings(filteredRows.map(row => row.statpath), warnings)
 
     const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(
