@@ -26,9 +26,6 @@ the e2e tests. Assume one is already running rather than starting one, and see
 `direnv exec .` — `PORT` comes from `.envrc`, which doesn't reach a non-interactive
 shell. Getting this wrong points the tests at the wrong site, or at nothing.
 
-`fetch failed` / `ECONNRESET` from one of those tests means the dev server didn't
-serve the file, not that your change broke something.
-
 ## Coverage
 
 `npm run test:unit:coverage` takes the same arguments. [README.md](README.md) covers
