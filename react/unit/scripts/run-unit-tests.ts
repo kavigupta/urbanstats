@@ -1,7 +1,7 @@
 /* c8 ignore start */
 import os from 'node:os'
 import { run } from 'node:test'
-import { spec } from 'node:test/reporters'
+import { dot, spec } from 'node:test/reporters'
 
 import { globSync } from 'glob'
 import { z } from 'zod'
@@ -16,6 +16,7 @@ const options = argumentParser({
         test: z.array(z.string()).default(() => { throw new Error(`Missing --test=<glob> argument. E.g. npm run test:unit -- --test='unit/*.test.ts'`) }),
         parallel: z.string().transform(string => parseInt(string)).default(os.cpus().length.toString()),
         only: booleanArgument({ defaultValue: false }),
+        reporter: z.union([z.literal('spec'), z.literal('dot')]).default('spec'),
     }).strict(),
 }).parse(process.argv.slice(2))
 
@@ -39,7 +40,7 @@ const testStream = run({
     only: options.only,
 })
 
-testStream.compose(spec).pipe(process.stdout)
+testStream.compose(options.reporter === 'dot' ? dot : spec).pipe(process.stdout)
 
 testStream.on('test:summary', (event) => {
     if (event.file === undefined) {

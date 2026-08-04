@@ -3,12 +3,16 @@
 Run from `react/`:
 
 ```
-direnv exec . npm run test:unit -- '--test=unit/load_json.test.ts'
+direnv exec . npm run test:unit -- '--test=unit/load_json.test.ts' --reporter=dot
 ```
 
 - `--test` is required. It may be a glob (`'unit/urban-stats-script-*.test.ts'`); quote
   it so the shell doesn't expand it first. Running the whole suite with
   `'unit/*.test.ts'` is fine — unlike the e2e tests, these are quick.
+- **Pass `--reporter=dot`, and don't pipe the output through `head`, `tail`, or
+  `grep`.** The default `spec` reporter prints a line per test, which buries the
+  result; `dot` prints one character per test and still ends with the full failure
+  detail, so a whole-suite run is short enough to read.
 - `test.only` is ignored unless you also pass `--only=true`.
 - `--parallel=N` sets how many files run at once; it defaults to the CPU count.
 
