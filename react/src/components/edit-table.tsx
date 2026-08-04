@@ -90,6 +90,8 @@ interface EditGroupHeaderSpec {
     kind: 'group-header'
     key: string
     highlight: boolean
+    /** Whether the group this row belongs to is selected. Selected rows don't collapse. */
+    enabled: boolean
     /** The group's checkbox, which this row carries on behalf of the statistics below it. */
     checkbox: ReactNode
     name: string
@@ -102,7 +104,7 @@ interface EditStatSpec {
     key: string
     highlight: boolean
     indent: number
-    /** Whether the group this row belongs to is selected. */
+    /** Whether the group this row belongs to is selected. Selected rows don't collapse. */
     enabled: boolean
     editRow: EditRow
     /**
@@ -237,10 +239,42 @@ function categoryBodyRows(groups: GroupTreeState[], rowsByGroup: Map<string, Edi
             return [statSpec(groupRows[0], 1, { kind: 'own', node: checkbox })]
         }
         return [
-            { kind: 'group-header', key: `group-${group.id}`, highlight, checkbox, name: group.name, warning: warningsByGroup.get(group.id) },
+            { kind: 'group-header', key: `group-${group.id}`, highlight, enabled, checkbox, name: group.name, warning: warningsByGroup.get(group.id) },
             ...groupRows.map(editRow => statSpec(editRow, 2, { kind: 'headers', id: checkboxId })),
         ]
     })
+}
+
+/** A run of a category's rows that collapse together, or one that stays visible. */
+interface EditBodySegment {
+    key: string
+    collapsible: boolean
+    rows: { spec: EditBodyRow, index: number }[]
+}
+
+/**
+ * Splits a category's rows into runs of selected rows, which the category shows whether or
+ * not it is expanded, and runs of unselected ones, which only the expanded category shows.
+ *
+ * Rows are striped by the position they end up at, counting only the rows currently on
+ * display, so the alternation is unbroken in either state. The category header is row 0.
+ */
+function editBodySegments(bodyRows: EditBodyRow[], expanded: boolean): EditBodySegment[] {
+    const segments: EditBodySegment[] = []
+    let segment: EditBodySegment | undefined
+    let index = 1
+    for (const spec of bodyRows) {
+        const collapsible = !spec.enabled
+        if (segment === undefined || segment.collapsible !== collapsible) {
+            segment = { key: spec.key, collapsible, rows: [] }
+            segments.push(segment)
+        }
+        segment.rows.push({ spec, index })
+        if (expanded || !collapsible) {
+            index++
+        }
+    }
+    return segments
 }
 
 const toggleSize: CSSProperties = { width: '20px', height: '20px', flex: '0 0 auto' }
@@ -254,17 +288,16 @@ function EditCategory(props: {
 }): ReactNode {
     const tree = useCategoryTreeState(props.category)
     const expanded = props.searching || tree.expanded
-    const bodyRows = categoryBodyRows(tree.groups, props.rowsByGroup, props.warningsByGroup)
+    const segments = editBodySegments(categoryBodyRows(tree.groups, props.rowsByGroup, props.warningsByGroup), expanded)
+    // With every statistic selected there is nothing left for expanding to reveal.
+    const anythingToExpand = segments.some(segment => segment.collapsible)
 
     return (
         <>
             <TableRowContainer index={0}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25em', padding: '1px', width: '100%' }}>
-                    {!props.searching && (tree.forcedExpanded
-                        // A category that can't be collapsed keeps the toggle's space, so
-                        // every category name lines up.
-                        ? <div style={toggleSize} />
-                        : (
+                    {!props.searching && (anythingToExpand
+                        ? (
                                 <ExpandButton
                                     isExpanded={expanded}
                                     data-category-id={props.category.id}
@@ -272,7 +305,9 @@ function EditCategory(props: {
                                     style={{ ...toggleSize, backgroundSize: '16px' }}
                                     aria-label={expanded ? `Collapse ${props.category.name} category` : `Expand ${props.category.name} category`}
                                 />
-                            ))}
+                            )
+                        // Categories without a toggle keep its space, so every category name lines up.
+                        : <div style={toggleSize} />)}
                     <EditCheckboxLabel
                         highlight={tree.highlight}
                         style={{ gap: '0.25em' }}
@@ -291,22 +326,24 @@ function EditCategory(props: {
                     </EditCheckboxLabel>
                 </div>
             </TableRowContainer>
-            {/* Striped from 1, since the category header is row 0. */}
-            <AnimatedCollapse expanded={expanded}>
-                {bodyRows.map((spec, index) => spec.kind === 'group-header'
+            {segments.map((segment) => {
+                const rows = segment.rows.map(({ spec, index }) => spec.kind === 'group-header'
                     ? (
                             <EditLabelRow
                                 key={spec.key}
-                                index={index + 1}
+                                index={index}
                                 highlight={spec.highlight}
                                 checkbox={spec.checkbox}
                                 name={spec.name}
                                 warning={spec.warning === undefined ? undefined : { layout: props.layout, content: spec.warning }}
                             />
                         )
-                    : <EditStatRow key={spec.key} layout={props.layout} index={index + 1} spec={spec} />,
-                )}
-            </AnimatedCollapse>
+                    : <EditStatRow key={spec.key} layout={props.layout} index={index} spec={spec} />,
+                )
+                return segment.collapsible
+                    ? <AnimatedCollapse key={segment.key} expanded={expanded}>{rows}</AnimatedCollapse>
+                    : <React.Fragment key={segment.key}>{rows}</React.Fragment>
+            })}
         </>
     )
 }

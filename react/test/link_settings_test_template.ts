@@ -5,8 +5,7 @@ import { arrayFromSelector, getLocation, safeReload, screencap, target, urbansta
 
 /**
  * The statistic tree is on the table's edit mode, and Main has to be expanded to reach the
- * Population group. Main is normally forced open by its other selected groups, so this only
- * has something to do if a test leaves the whole category unselected.
+ * Population group whenever Population is unselected (a selected group is shown either way).
  *
  * Also needed after leaving staging, since the Discard/Apply buttons double as Done and
  * close edit mode with them.
