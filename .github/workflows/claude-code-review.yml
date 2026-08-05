@@ -43,7 +43,7 @@ jobs:
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
 
-            Read CLAUDE.md for project conventions and what to flag. Then run `gh pr diff` to get the full diff, and review it for:
+            Read CLAUDE.md for project conventions and .github/code-review-guidelines.md for what to flag. Then run `gh pr diff` to get the full diff, and review it for:
             - Code quality and best practices
             - Potential bugs or issues
             - Performance considerations
