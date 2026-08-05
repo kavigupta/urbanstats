@@ -9,6 +9,7 @@ import { Article } from '../utils/protos'
 import { useMobileLayout } from '../utils/responsive'
 
 import { placeWarnings, useArticleWarnings } from './ArticleWarnings'
+import { StagingControls } from './StagingControls'
 import { ArticleRow } from './load-article'
 import { pullRelevantPlotProps, useExpandedByStat } from './plots'
 import { useScreenshotMode } from './screenshot'
@@ -89,6 +90,8 @@ export function ArticleTable(props: {
 
     return (
         <div className="stats_table">
+            {/* Outside the table, so its buttons can't be scrolled off screen. */}
+            <StagingControls />
             <TableContents
                 layout={layout}
                 leftHeaderSpec={{ leftHeaderSpecs, groupNames }}
