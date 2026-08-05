@@ -15,7 +15,7 @@ import { NormalizeProto } from '../utils/types'
 import { ArticleMap } from './ArticleMap'
 import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
-import { ArticleTable } from './article-table'
+import { ArticleTableSection } from './article-table-section'
 import { useCSVExport } from './csv-export'
 import { ArticleRow } from './load-article'
 import { Related } from './related-button'
@@ -69,10 +69,7 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
                     <div style={{ marginBlockEnd: '16px' }}></div>
 
                     <div ref={tableRef}>
-                        <ArticleTable
-                            rows={rows}
-                            article={article}
-                        />
+                        <ArticleTableSection rows={rows} article={article} />
                     </div>
 
                     <p></p>

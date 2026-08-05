@@ -1,6 +1,7 @@
 import { Selector } from 'testcafe'
 
-import { comparisonPage, downloadImage, target, uncheckAllCategories, urbanstatsFixture, withHamburgerMenu } from './test_utils'
+import { categoryCheckbox, withEditMode, yearCheckbox } from './edit_mode_test_utils'
+import { comparisonPage, downloadImage, target, uncheckAllCategories, urbanstatsFixture } from './test_utils'
 
 /**
  * Warnings explain how to change a setting, which means nothing to someone looking at a shared
@@ -8,14 +9,12 @@ import { comparisonPage, downloadImage, target, uncheckAllCategories, urbanstats
  * full of warnings; the reference image comparison is what checks they aren't in it.
  */
 
-const mainCheck = 'input[data-test-id=category_main]'
-
 /** Leaves Main selected with no year selected, so all of its yearly groups warn. */
 async function selectMainWithoutYears(t: TestController): Promise<void> {
-    await withHamburgerMenu(t, async () => {
+    await withEditMode(t, async () => {
         await uncheckAllCategories(t)
-        await t.click(mainCheck)
-        await t.click(Selector('label').withExactText('2020'))
+        await t.click(categoryCheckbox('main'))
+        await t.click(yearCheckbox(2020))
     })
 }
 

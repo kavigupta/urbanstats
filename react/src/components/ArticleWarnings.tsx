@@ -1,8 +1,9 @@
 import React, { ReactNode } from 'react'
 
+import { useColors } from '../page_template/colors'
 import { checkboxCategoryName } from '../page_template/settings'
-import { useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
-import { Category, Group, StatPath, statPathToOrder, Year } from '../page_template/statistic-tree'
+import { MissingGroupReason, useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
+import { Category, Group, GroupIdentifier, StatPath, statPathToOrder, Year } from '../page_template/statistic-tree'
 
 import { useScreenshotMode } from './screenshot'
 import { warningRowIndices } from './warning-placement'
@@ -29,7 +30,10 @@ export interface WarningColumn {
     content: ReactNode
 }
 
-export function useArticleWarnings(): ArticleWarning[] {
+/** Stands in for the table as a whole, which has no rows for the warning to be placed against. */
+const nothingSelectedContent: ReactNode = <b>No Statistics are selected</b>
+
+export function useArticleWarnings(onEdit: () => void): ArticleWarning[] {
     const screenshotMode = useScreenshotMode()
     const selectedGroups = useSelectedGroups()
     const missingGroups = useMissingGroups()
@@ -41,7 +45,7 @@ export function useArticleWarnings(): ArticleWarning[] {
     if (selectedGroups.length === 0) {
         return [{
             order: 0,
-            content: <b>No Statistic Categories are selected</b>,
+            content: nothingSelectedContent,
         }]
     }
 
@@ -49,23 +53,83 @@ export function useArticleWarnings(): ArticleWarning[] {
         .map(({ groupOrCategory, reason }) => ({
             order: firstStatOrder(groupOrCategory),
             name: groupOrCategory.name,
-            content: reason.kind === 'year'
-                ? (
-                        <>
-                            {'Select '}
-                            <YearList years={reason.years} />
-                            {` to see ${theseStatistics(groupOrCategory)}.`}
-                        </>
-                    )
-                : (
-                        <>
-                            {'All '}
-                            <b>{checkboxCategoryName(reason.category)}</b>
-                            {` are disabled. Enable one to see ${theseStatistics(groupOrCategory)}.`}
-                        </>
-                    ),
+            content: warningContent(groupOrCategory, reason, onEdit),
         }))
         .sort((a, b) => a.order - b.order)
+}
+
+/**
+ * The warning each empty group carries, for the edit tree: it lists every group, so a warning
+ * goes in the row the group already has rather than standing in for one. A warning that covers
+ * a whole category is repeated on each of its groups, since they're rows apart on the tree.
+ */
+export function useWarningsByGroup(): Map<GroupIdentifier, ReactNode> {
+    const screenshotMode = useScreenshotMode()
+    const missingGroups = useMissingGroups()
+
+    const result = new Map<GroupIdentifier, ReactNode>()
+    if (screenshotMode) {
+        return result
+    }
+    for (const { groupOrCategory, reason } of missingGroups) {
+        const content = warningContent(groupOrCategory, reason)
+        const groups = groupOrCategory.kind === 'Group' ? [groupOrCategory] : groupOrCategory.contents
+        for (const group of groups) {
+            result.set(group.id, content)
+        }
+    }
+    return result
+}
+
+/** `onEdit` is unset on the edit tree's own warnings, which are already where the user would be sent. */
+function warningContent(groupOrCategory: Group | Category, reason: MissingGroupReason, onEdit?: () => void): ReactNode {
+    return reason.kind === 'year'
+        ? (
+                <>
+                    <EditAction onEdit={onEdit}>Select</EditAction>
+                    {' '}
+                    <YearList years={reason.years} />
+                    {` to see ${theseStatistics(groupOrCategory)}.`}
+                </>
+            )
+        : (
+                <>
+                    {'All '}
+                    <b>{checkboxCategoryName(reason.category)}</b>
+                    {' are disabled. '}
+                    <EditAction onEdit={onEdit}>Enable one</EditAction>
+                    {` to see ${theseStatistics(groupOrCategory)}.`}
+                </>
+            )
+}
+
+/**
+ * The part of a warning that names what to do about it, as a button into edit mode where the
+ * settings it refers to are.
+ */
+function EditAction({ onEdit, children }: { onEdit?: () => void, children: ReactNode }): ReactNode {
+    const colors = useColors()
+    if (onEdit === undefined) {
+        return children
+    }
+    return (
+        <button
+            type="button"
+            onClick={onEdit}
+            style={{
+                display: 'inline',
+                padding: 0,
+                border: 'none',
+                background: 'none',
+                font: 'inherit',
+                color: colors.blueLink,
+                cursor: 'pointer',
+            }}
+            data-test-id="warning-edit-action"
+        >
+            {children}
+        </button>
+    )
 }
 
 /** A category's warning stands in for a whole run of statistics, a group's for just its own. */

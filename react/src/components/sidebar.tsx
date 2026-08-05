@@ -6,17 +6,13 @@ import './sidebar.css'
 import { Navigator } from '../navigation/Navigator'
 import { Theme } from '../page_template/color-themes'
 import { useColors, useCurrentTheme } from '../page_template/colors'
-import { checkboxCategoryName, isStagedChange, sourceEnabledKey, TemperatureUnit, useIsStaged, useSetting, useSettingInfo } from '../page_template/settings'
-import { useDataSourceCheckboxes } from '../page_template/statistic-settings'
+import { isStagedChange, TemperatureUnit, useSetting, useSettingInfo } from '../page_template/settings'
 import { humanReadableUniverse, useUniverse } from '../universe'
 import { useMobileLayout } from '../utils/responsive'
 
-import { StagingControls } from './StagingControls'
-import { StatsTree } from './StatsTree'
-import { Years } from './Years'
 import { CheckboxSetting, useHighlightStyle } from './checkbox-setting'
 
-export function useSidebarSectionContentClassName(): string {
+function useSidebarSectionContentClassName(): string {
     let sidebarSectionContent = 'sidebar-section-content'
     if (useMobileLayout()) {
         sidebarSectionContent += ' sidebar-section-content_mobile'
@@ -33,7 +29,7 @@ function useSidebarSectionTitleStyle(): CSSProperties {
     }
 }
 
-export function useSidebarFontSize(): string {
+function useSidebarFontSize(): string {
     return useMobileLayout() ? '27px' : '16px'
 }
 
@@ -130,11 +126,7 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
                     </li>
                 </ul>
             </div>
-            <MaybeStagingControlsSidebarSection />
             <SettingsSidebarSection />
-            { navContext.useStatPathsAll() !== undefined
-                ? <SidebarForStatisticChoice />
-                : null}
             <div className="sidebar-section">
                 <div style={sidebarSectionTitle}>Appearance</div>
                 <ul className={sidebarSectionContent}>
@@ -162,25 +154,7 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
     )
 }
 
-export function MaybeStagingControlsSidebarSection(): ReactNode {
-    const sidebarSectionTitle = useSidebarSectionTitleStyle()
-    const sidebarSectionContent = useSidebarSectionContentClassName()
-
-    return (
-        !useIsStaged()
-            ? null
-            : (
-                    <div className="sidebar-section">
-                        <div style={sidebarSectionTitle}>Link Settings</div>
-                        <ul className={sidebarSectionContent}>
-                            <StagingControls />
-                        </ul>
-                    </div>
-                )
-    )
-}
-
-export function SettingsSidebarSection(): ReactNode {
+function SettingsSidebarSection(): ReactNode {
     const sidebarSectionTitle = useSidebarSectionTitleStyle()
     const sidebarSectionContent = useSidebarSectionContentClassName()
     const fontSize = useSidebarFontSize()
@@ -223,49 +197,6 @@ export function SettingsSidebarSection(): ReactNode {
                 </li>
             </ul>
         </div>
-    )
-}
-
-export function SidebarForStatisticChoice(): ReactNode {
-    const sidebarSectionContent = useSidebarSectionContentClassName()
-    const sidebarSectionTitle = useSidebarSectionTitleStyle()
-    const checkboxes = useDataSourceCheckboxes()
-    const fontSize = useSidebarFontSize()
-    return (
-        <>
-            {checkboxes.map(({ category, checkboxSpecs }) => (
-                <div className="sidebar-section" key={category}>
-                    <div style={sidebarSectionTitle}>{checkboxCategoryName(category)}</div>
-                    <ul className={sidebarSectionContent}>
-                        {
-                            checkboxSpecs.map(({ name, forcedOn }) => (
-                                <li key={name}>
-                                    <CheckboxSetting
-                                        name={name}
-                                        settingKey={sourceEnabledKey({ category, name })}
-                                        forcedOn={forcedOn}
-                                        testId={`source ${category} ${name}`}
-                                        fontSize={fontSize}
-                                    />
-                                </li>
-                            ))
-                        }
-                    </ul>
-                </div>
-            ))}
-            <div className="sidebar-section">
-                <div style={sidebarSectionTitle}>Years</div>
-                <ul className={sidebarSectionContent}>
-                    <Years />
-                </ul>
-            </div>
-            <div className="sidebar-section">
-                <div style={sidebarSectionTitle}>Statistic Categories</div>
-                <ul className={sidebarSectionContent}>
-                    <StatsTree />
-                </ul>
-            </div>
-        </>
     )
 }
 

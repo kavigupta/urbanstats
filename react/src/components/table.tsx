@@ -1,7 +1,7 @@
 import { closestCenter, DndContext, DragEndEvent, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useRef, useState } from 'react'
 
 import { ArticleOrderingListInternal, loadOrdering, loadStatisticsPage } from '../load_json'
 import './table.css'
@@ -21,9 +21,9 @@ import { useTranspose } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
 import { Icon } from './Icon'
-import { Modal } from './Modal'
 import { computeDisclaimerText, type Disclaimer } from './disclaimer-text'
 import { percentileSuffix, percentileText, Statistic } from './display-stats'
+import { EditModeButton, EditModeTopLeftHeader, useEnterEditModeButton } from './edit-mode-header'
 import { EditableNumber } from './editable-field'
 import { footnoteSymbol } from './footnote-symbol'
 import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
@@ -31,12 +31,14 @@ import { percentileBucketIndex } from './percentile-navigation'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
 import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftCellSpec, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
-/** Just the value, for the tables that have no room for the ordinal and percentile columns. */
+/**
+ * Just the value, for the tables that have no room for the ordinal and percentile columns.
+ * On mobile that's what edit mode gives up, so the checkboxes and names have room.
+ */
 export const valueOnlyColumns: ColumnIdentifier[] = ['statval', 'statval_unit']
 
 const leftBarMargin = 0.02
@@ -128,10 +130,12 @@ export interface SuperHeaderHorizontalProps {
     leftSpacerWidth: number
     groupNames?: (string | undefined)[]
     handleReorder?: (from: number, to: number) => void
+    editMode?: EditModeButton
 }
 
 export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactNode {
     const colors = useColors()
+    const editButton = useEnterEditModeButton(props.editMode)
     const barHeight = '5px'
     const bars = (backgroundColor: (i: number) => string | undefined): ReactNode => {
         return (
@@ -172,7 +176,13 @@ export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactN
 
     const cellsRow = (
         <div style={{ display: 'flex' }}>
-            <div style={{ width: `${props.leftSpacerWidth}%` }} />
+            {/*
+              * The edit button lives here rather than in the top-left cell below, which on a
+              * comparison is too narrow to hold both a button and the column's name.
+              */}
+            <div style={{ width: `${props.leftSpacerWidth}%`, display: 'flex', alignItems: 'flex-end', padding: '1px' }}>
+                {editButton}
+            </div>
             {props.handleReorder
                 ? (
                         <SortableContext items={props.headerSpecs.map((_, idx) => idx.toString())} strategy={horizontalListSortingStrategy}>
@@ -263,45 +273,26 @@ export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: num
 }
 
 export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
-    const isMobileLayout = useMobileLayout()
-    const isScreenshot = useScreenshotMode()
-    const isTranspose = useTranspose()
+    const isMobile = useMobileLayout()
+    const editButton = useEnterEditModeButton(props.editMode)
 
-    const [statsModalOpen, setStatsModalOpen] = useState(false)
+    if (props.editMode?.open) {
+        return <EditModeTopLeftHeader header={props.editMode} width={props.width} />
+    }
 
-    const canHaveStatsModal = isMobileLayout && !isScreenshot && !isTranspose
-
-    useEffect(() => {
-        if (!canHaveStatsModal && statsModalOpen) {
-            setStatsModalOpen(false)
-        }
-    }, [canHaveStatsModal, statsModalOpen])
-
-    const sidebarSectionContent = useSidebarSectionContentClassName()
+    // On a narrow screen this cell is too small to fit both the button and the name, and the
+    // button is the more useful of the two -- so the name only yields when there really is one.
+    const showName = !isMobile || editButton === undefined
 
     return (
-        <>
-            <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', padding: '1px', width: `${props.width}%` }}>
-                {canHaveStatsModal
-                    ? (
-                            <button className="serif value" style={{ padding: '2px 10px' }} onClick={() => { setStatsModalOpen(true) }}>
-                                {props.statNameOverride ?? 'Statistic'}
-                            </button>
-                        )
-                    : (
-                            <span className="serif value">
-                                {props.statNameOverride ?? 'Statistic'}
-                            </span>
-                        )}
-            </div>
-            <Modal isOpen={statsModalOpen} onClose={() => { setStatsModalOpen(false) }}>
-                <ul className={sidebarSectionContent} style={{ fontSize: useSidebarFontSize() }}>
-                    <MaybeStagingControlsSidebarSection />
-                    <SidebarForStatisticChoice />
-                    <SettingsSidebarSection />
-                </ul>
-            </Modal>
-        </>
+        <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '4px', padding: '1px', width: `${props.width}%` }}>
+            {editButton}
+            {showName && (
+                <span className="serif value" style={{ flexGrow: 1 }}>
+                    {props.statNameOverride ?? 'Statistic'}
+                </span>
+            )}
+        </div>
     )
 }
 
@@ -957,9 +948,10 @@ function SortButton(props: StatisticNameCellProps & { sortInfo: NonNullable<Stat
 
 /**
  * The controls that sit next to a statistic's name: the plot expander and the disclaimer
- * marker.
+ * marker. Callers are responsible for spacing them, since the table and the edit tree lay
+ * out the name row differently.
  */
-function useStatisticNameAdornments(row: ArticleRow | undefined, footnote?: string): ReactNode[] {
+export function useStatisticNameAdornments(row: ArticleRow | undefined, footnote?: string): ReactNode[] {
     const screenshotMode = useScreenshotMode()
     const adornments: ReactNode[] = []
     if (row !== undefined && row.extraStats.length !== 0 && !screenshotMode) {

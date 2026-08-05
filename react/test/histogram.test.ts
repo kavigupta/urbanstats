@@ -1,6 +1,6 @@
 import { ClientFunction, Selector } from 'testcafe'
 
-import { target, checkIndividualStat, checkTextboxes, comparisonPage, downloadHistogram, downloadImage, downloadOrCheckString, screencap, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult, getLocationWithoutSettings } from './test_utils'
+import { target, checkIndividualStat, checkSidebarTextboxes, checkTextboxes, comparisonPage, downloadHistogram, downloadImage, downloadOrCheckString, screencap, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult, getLocationWithoutSettings } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -226,7 +226,7 @@ test('histogram-temperature-distribution-clips-axis', async (t) => {
 urbanstatsFixture('comparison test monthly plot with imperial units, precipitation', comparisonPage(['Singapore', 'Canada']))
 
 test('histogram-monthly-comparison-imperial-units-precipitation', async (t) => {
-    await checkTextboxes(t, ['Use Imperial Units'])
+    await checkSidebarTextboxes(t, ['Use Imperial Units'])
     await checkTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Rainfall"]'))
     await downloadHistogram(t, 0)

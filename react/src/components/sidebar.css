@@ -3,21 +3,6 @@
     list-style-type: none;
     padding: 0;
     margin: 0;
-    transition: max-height 0.25s, margin 0.25s, padding 0.25s;
-    overflow-y: clip;
-}
-
-.sidebar-section-content.hidden, .sidebar-section-content.hidden .sidebar-section-content {
-    transition: none
-}
-
-.sidebar-section-content .sidebar-section-content {
-    margin-left: 0.75em;
-    font-size: 15px;
-}
-
-.sidebar-section-content .sidebar-section-content_mobile {
-    font-size: 25px;
 }
 
 .sidebar-section-content a {
@@ -26,7 +11,6 @@
 
 .sidebar-section-content li {
     margin-bottom: 0.5em;
-    position: relative;
 }
 
 .sidebar-section-content_mobile li {
@@ -57,36 +41,4 @@
 
 .sidebar_mobile label {
     padding-left: 0.5em;
-}
-
-.expandButton {
-    padding: 0;
-    border: none;
-    background: none;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: -18px;
-    aspect-ratio: 1 / 1;
-    transition: transform 0.25s;
-    font-size: 12px;
-    vertical-align: middle;
-    border-radius: 50%;
-    max-height: calc(2em - 1px);
-}
-
-.sidebar-section-content .sidebar-section-content .expandButton {
-    left: -16px;
-}
-
-.sidebar-section-content_mobile .expandButton {
-    right: 0;
-    left: unset;
-    font-size: 27px;
-}
-
-.sidebar-section-content .sidebar-section-content.sidebar-section-content_mobile .expandButton {
-    font-size: 25px;
-    left: unset;
-    right: 0px;
 }

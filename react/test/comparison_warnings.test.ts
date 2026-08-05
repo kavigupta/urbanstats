@@ -1,18 +1,17 @@
 import { Selector } from 'testcafe'
 
-import { arrayFromSelector, checkTextboxes, checkTextboxesDirect, comparisonPage, screencap, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
-
-const mainCheck = 'input[data-test-id=category_main]'
+import { categoryCheckbox, filterBox, sourceCheckbox, warningEditAction, withEditMode, yearCheckbox } from './edit_mode_test_utils'
+import { arrayFromSelector, checkTextboxes, comparisonPage, screencap, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames } from './test_utils'
 
 /**
  * Leaves Main selected with no year selected, so its groups that have years are all missing and
  * its year-less groups -- Area and Compactness -- are all that is left in the table.
  */
 async function selectMainWithoutYears(t: TestController): Promise<void> {
-    await withHamburgerMenu(t, async () => {
+    await withEditMode(t, async () => {
         await uncheckAllCategories(t)
-        await t.click(mainCheck)
-        await t.click(Selector('label').withExactText('2020'))
+        await t.click(categoryCheckbox('main'))
+        await t.click(yearCheckbox(2020))
     })
 }
 
@@ -57,6 +56,17 @@ test('comparison-warnings-all-sources-disabled', async (t) => {
     await screencap(t)
 })
 
+test('comparison-warnings-enable-one-opens-edit-mode', async (t) => {
+    await checkTextboxes(t, ['US Census', 'Canadian Census'])
+    await t.expect(warningEditAction.nth(0).innerText).eql('Enable one')
+
+    await t.click(warningEditAction.nth(0))
+
+    // Edit mode, open on the sources the warning told the user to enable one of.
+    await t.expect(filterBox.exists).ok()
+    await t.expect(sourceCheckbox('Population', 'US Census').checked).eql(false)
+})
+
 // Two US states, so the US Census and GHSL are both choosable, and GHSL only has 2020.
 urbanstatsFixture('comparison warnings with a year the enabled source lacks', comparisonPage([
     'Massachusetts, USA',
@@ -64,10 +74,8 @@ urbanstatsFixture('comparison warnings with a year the enabled source lacks', co
 ]))
 
 test('comparison-warnings-year-missing-from-enabled-source', async (t) => {
-    await withHamburgerMenu(t, async () => {
-        // leaves 2010, the one year GHSL has no data for, as the only year selected
-        await checkTextboxesDirect(t, ['US Census', 'GHSL', '2020', '2010'])
-    })
+    // leaves 2010, the one year GHSL has no data for, as the only year selected
+    await checkTextboxes(t, ['US Census', 'GHSL', '2020', '2010'])
     // GHSL is enabled and simply has no data for 2010, so the years are what's missing, not a source
     await t.expect(warningNamed('Select 2020 or 2000 to see this statistic.', 'Population').exists).ok()
 })
@@ -97,4 +105,11 @@ test('comparison-transposed-warnings-are-columns', async (t) => {
     // Warnings stand in for columns here, so none of them takes a row
     await t.expect(Selector('[data-test-id=article-warning-name]').exists).notOk()
     await screencap(t)
+})
+
+test('comparison-transposed-warning-column-opens-edit-mode', async (t) => {
+    await selectMainWithoutYears(t)
+    // Drawn down a column rather than along a row, but still the way into edit mode.
+    await t.click(warningEditAction.nth(0))
+    await t.expect(filterBox.exists).ok()
 })
