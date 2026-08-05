@@ -559,15 +559,6 @@ export async function uncheckAllCategories(t: TestController): Promise<void> {
     }
 }
 
-/** The sidebar's own statistic tree, which still exists alongside the table's edit mode. */
-export async function uncheckAllSidebarCategories(t: TestController): Promise<void> {
-    for (const check of await arrayFromSelector(Selector('input[data-test-id^=category]'))) {
-        if (await check.checked) {
-            await t.click(check)
-        }
-    }
-}
-
 // Gets the non-extension part of the test file, e.g. if running search.test.ts -> search
 export function getCurrentTest(t: TestController): string {
     // @ts-expect-error -- TestCafe private API
