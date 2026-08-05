@@ -38,12 +38,45 @@ function yearKeys(years: Year[]): StatYearKey[] {
     return years.map(year => `show_stat_year_${year}` as const)
 }
 
+/** Everything that selects which statistics are shown apart from the group checkboxes. */
+function yearSourceKeys(): (StatYearKey | StatSourceKey)[] {
+    return [
+        ...yearKeys(allYears),
+        ...dataSources.flatMap(({ category, sources }) => sources.map(({ source }) => sourceEnabledKey({ category, name: source }))),
+    ]
+}
+
 export function groupYearKeys(): (keyof StatGroupSettings)[] {
     return [
         ...groupKeys(allGroups),
-        ...allYears.map(year => `show_stat_year_${year}` as const),
-        ...dataSources.flatMap(({ category, sources }) => sources.map(({ source }) => sourceEnabledKey({ category, name: source }))),
+        ...yearSourceKeys(),
     ]
+}
+
+/**
+ * Every group checkbox forced on, for the views that show the whole statistic tree rather
+ * than the current selection. Spread over the year and source settings to complete a
+ * `StatGroupSettings`.
+ */
+const allStatGroupsEnabled = Object.fromEntries(
+    groupKeys(allGroups).map(key => [key, true]),
+) as Record<StatGroupKey, boolean>
+
+/**
+ * The rows a table should display. With `showAllGroups`, every group is forced on, which is
+ * what a view showing the whole category/group tree wants rather than the current selection.
+ *
+ * The group checkboxes are then deliberately not subscribed to either: they're all forced
+ * on, so a click can't change this result, and re-running the filter and sort over every
+ * statistic on each click would be wasted work.
+ */
+export function useVisibleRows<T>(rows: (settings: StatGroupSettings) => T, showAllGroups: boolean): T {
+    const yearSourceSettings = useSettings(yearSourceKeys())
+    const groupSettings = useSettings(showAllGroups ? [] : groupKeys(allGroups))
+    return useMemo(
+        () => rows({ ...yearSourceSettings, ...allStatGroupsEnabled, ...groupSettings }),
+        [rows, yearSourceSettings, groupSettings],
+    )
 }
 
 function categoryStatus(enabled: boolean[]): boolean | 'indeterminate' {

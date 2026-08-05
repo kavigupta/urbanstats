@@ -2,8 +2,8 @@ import React, { ReactNode, useContext } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
-import { useSetting, useSettings } from '../page_template/settings'
-import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
+import { useSetting } from '../page_template/settings'
+import { StatGroupSettings, useVisibleRows } from '../page_template/statistic-settings'
 import { useDefinedUniverse } from '../universe'
 import { Article } from '../utils/protos'
 import { useMobileLayout } from '../utils/responsive'
@@ -61,8 +61,7 @@ export function ArticleTable(props: {
 
     // Subscribed to here rather than in the panel, so that changing which statistics are
     // shown only re-renders the table, not the map and the surrounding page.
-    const settings = useSettings(groupYearKeys())
-    const filteredRows = props.rows(settings)[0]
+    const filteredRows = useVisibleRows(props.rows, false)[0]
 
     const warnings = useArticleWarnings()
     const warningRows = placeWarnings(filteredRows.map(row => row.statpath), warnings)
