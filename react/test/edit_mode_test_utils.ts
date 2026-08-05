@@ -2,7 +2,7 @@ import { Selector } from 'testcafe'
 
 /**
  * Selectors and helpers for the tables' edit mode -- the statistic category/group checkbox
- * tree.
+ * tree -- shared by the article and comparison test files.
  */
 
 export const editButton = Selector('[data-test-id=edit-mode-edit]')
@@ -113,6 +113,7 @@ export function groupWarning(groupId: string): Selector {
 
 /** Scopes selectors to the table the edit tree is on, rather than the rest of the page. */
 export const articleTableScope = '.stats_table'
+export const comparisonTableScope = '[data-test-id=comparison-table]'
 
 /**
  * A category's toggle in the edit tree, matched by the direction it currently offers, so

@@ -1,18 +1,17 @@
 import { Selector } from 'testcafe'
 
-import { arrayFromSelector, checkTextboxes, checkTextboxesDirect, comparisonPage, screencap, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
-
-const mainCheck = 'input[data-test-id=category_main]'
+import { categoryCheckbox, withEditMode, yearCheckbox } from './edit_mode_test_utils'
+import { arrayFromSelector, checkTextboxes, comparisonPage, screencap, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames } from './test_utils'
 
 /**
  * Leaves Main selected with no year selected, so its groups that have years are all missing and
  * its year-less groups -- Area and Compactness -- are all that is left in the table.
  */
 async function selectMainWithoutYears(t: TestController): Promise<void> {
-    await withHamburgerMenu(t, async () => {
+    await withEditMode(t, async () => {
         await uncheckAllCategories(t)
-        await t.click(mainCheck)
-        await t.click(Selector('label').withExactText('2020'))
+        await t.click(categoryCheckbox('main'))
+        await t.click(yearCheckbox(2020))
     })
 }
 
@@ -64,10 +63,8 @@ urbanstatsFixture('comparison warnings with a year the enabled source lacks', co
 ]))
 
 test('comparison-warnings-year-missing-from-enabled-source', async (t) => {
-    await withHamburgerMenu(t, async () => {
-        // leaves 2010, the one year GHSL has no data for, as the only year selected
-        await checkTextboxesDirect(t, ['US Census', 'GHSL', '2020', '2010'])
-    })
+    // leaves 2010, the one year GHSL has no data for, as the only year selected
+    await checkTextboxes(t, ['US Census', 'GHSL', '2020', '2010'])
     // GHSL is enabled and simply has no data for 2010, so the years are what's missing, not a source
     await t.expect(warningNamed('Select 2020 or 2000 to see this statistic.', 'Population').exists).ok()
 })
