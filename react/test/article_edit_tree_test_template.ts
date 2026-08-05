@@ -174,11 +174,11 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     test('uncheck-all-categories', async (t) => {
         await enterEditMode(t)
         await uncheckAllCategories(t)
-        // The warning renders inside the edit table, not just the normal one.
-        await t.expect(Selector('.stats_table b').withExactText('No Statistic Categories are selected').exists).ok()
+        // The tree itself is how the user fixes this, so the warning would just be in the way.
+        await t.expect(Selector('b').withExactText('No Statistics are selected').exists).notOk()
         await screencap(t)
         await exitEditMode(t)
-        await t.expect(Selector('b').withExactText('No Statistic Categories are selected').exists).ok()
+        await t.expect(Selector('b').withExactText('No Statistics are selected').exists).ok()
     })
 
     test('missing-year-warning', async (t) => {

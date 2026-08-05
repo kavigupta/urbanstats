@@ -31,7 +31,7 @@ export interface WarningColumn {
 }
 
 /** Stands in for the table as a whole, which has no rows for the warning to be placed against. */
-export const noCategoriesSelectedContent: ReactNode = <b>No Statistic Categories are selected</b>
+const nothingSelectedContent: ReactNode = <b>No Statistics are selected</b>
 
 export function useArticleWarnings(onEdit: () => void): ArticleWarning[] {
     const screenshotMode = useScreenshotMode()
@@ -45,7 +45,7 @@ export function useArticleWarnings(onEdit: () => void): ArticleWarning[] {
     if (selectedGroups.length === 0) {
         return [{
             order: 0,
-            content: noCategoriesSelectedContent,
+            content: nothingSelectedContent,
         }]
     }
 

@@ -2,12 +2,12 @@ import React, { CSSProperties, ReactNode, useMemo, useState } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { checkboxCategoryName, sourceEnabledKey, useIsStaged } from '../page_template/settings'
-import { GroupTreeState, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, useExpandCategoriesHidingStagedChanges, useSelectedGroups } from '../page_template/statistic-settings'
+import { GroupTreeState, useAvailableYears, useCategoriesMatchingSearch, useCategoryTreeState, useDataSourceCheckboxes, useExpandCategoriesHidingStagedChanges } from '../page_template/statistic-settings'
 import { Category, statParents } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
 import { HumanReadableName, reifyReact } from '../utils/human-readable-name'
 
-import { noCategoriesSelectedContent, useWarningsByGroup } from './ArticleWarnings'
+import { useWarningsByGroup } from './ArticleWarnings'
 import { ExpandButton } from './ExpandButton'
 import { BooleanSettingKey, CheckboxSettingCustomJustInputProps, CheckboxSettingJustBox, useBooleanSetting, useHighlightStyle } from './checkbox-setting'
 import { EditModeOpenHeader } from './edit-mode-header'
@@ -511,7 +511,6 @@ export function EditTable(props: {
     const categories = useCategoriesMatchingSearch(filter)
     const staged = useIsStaged()
     const warningsByGroup = useWarningsByGroup()
-    const nothingSelected = useSelectedGroups().length === 0
 
     const editModeHeader: EditModeOpenHeader = {
         open: true,
@@ -529,12 +528,6 @@ export function EditTable(props: {
         >
             <EditSourceAndYearSections />
             <EditSectionHeader name="Statistics" />
-            {/* No group's row can carry this one, so it goes above the tree the user selects from. */}
-            {nothingSelected && (
-                <TableRowContainer index={0}>
-                    <WarningRowMessage layout={props.layout} content={noCategoriesSelectedContent} fullRow />
-                </TableRowContainer>
-            )}
             {categories.map(category => (
                 <EditCategory
                     key={category.id}

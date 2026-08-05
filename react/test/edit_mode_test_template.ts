@@ -139,17 +139,17 @@ export function editModeSharedTests(spec: {
         await t.expect(year2020.checked).eql(false)
     })
 
-    test('unselecting every category warns above the tree', async (t) => {
+    test('unselecting every category leaves the tree unwarned', async (t) => {
         await t.click(editButton)
         await uncheckAllCategories(t)
 
-        // No group's row can carry this one, so it stands above the tree the user fixes it with.
-        await t.expect(table.find('[data-test-id=article-warning]').innerText).match(/^\s*No Statistic Categories are selected\s*$/)
+        // The tree the user fixes this with is right there, so there's nothing to warn about.
+        await t.expect(table.find('[data-test-id=article-warning]').exists).notOk()
         await t.expect(table.find('.testing-statistic-value').exists).notOk()
         await t.expect(mainCategory.exists).ok()
 
-        await t.click(mainCategory)
-        await t.expect(table.find('[data-test-id=article-warning]').exists).notOk()
+        await t.click(doneButton)
+        await t.expect(table.find('[data-test-id=article-warning]').innerText).match(/^\s*No Statistics are selected\s*$/)
     })
 
     test('edit mode is ephemeral across reloads', async (t) => {
