@@ -8,7 +8,7 @@ import {
     pageDescriptorKind,
     waitForSelectedSearchResult,
     createComparison,
-    checkTextboxes,
+    checkSidebarTextboxes,
     waitForLoading,
     withInterceptedRequests,
     cdpSessionWithSessionId,
@@ -133,14 +133,14 @@ test('search for a MPC', async (t) => {
     await t.pressKey('enter')
     await t.expect(getLocation()).match(/article\.html\?longname=Perth\+10MPC%2C\+Australia/)
     await waitForLoading()
-    await checkTextboxes(t, ['Include Person Circles'])
+    await checkSidebarTextboxes(t, ['Include Person Circles'])
     await t.click(searchField)
         .typeText(searchField, 'Perth 10MPC')
     await waitForSelectedSearchResult(t)
     await t.pressKey('enter')
     await t.expect(getLocation()).notMatch(/article\.html\?longname=Perth\+10MPC%2C\+Australia/)
     await screencap(t)
-    await checkTextboxes(t, ['Include Person Circles'])
+    await checkSidebarTextboxes(t, ['Include Person Circles'])
     await screencap(t)
 })
 

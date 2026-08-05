@@ -12,6 +12,7 @@ import { port } from '../port'
 import type { TestWindow } from '../src/utils/TestUtils'
 import { checkString } from '../src/utils/checkString'
 
+import { collapseAnimationMs, editCheckbox, editCheckboxPrefixes, withEditMode } from './edit_mode_test_utils'
 import { urlFromCode } from './mapper-utils'
 
 export const target = process.env.URBANSTATS_TEST_TARGET ?? `http://localhost:${port()}`
@@ -41,7 +42,8 @@ export async function checkTextboxesDirect(t: TestController, txts: string[], nt
         await t.click(checkbox)
     }
 }
-export async function checkTextboxes(t: TestController, txts: string[]): Promise<void> {
+/** For the checkboxes that are still in the sidebar: the settings, appearance and random ones. */
+export async function checkSidebarTextboxes(t: TestController, txts: string[]): Promise<void> {
     await withHamburgerMenu(t, async () => {
         await checkTextboxesDirect(t, txts)
     })
@@ -55,15 +57,6 @@ export async function withHamburgerMenu(t: TestController, block: () => Promise<
     await block()
     if (await hamburgerMenu.exists) {
         await t.click(hamburgerMenu)
-    }
-}
-
-/** Must already be inside the hamburger menu, where applicable. */
-export async function uncheckAllCategories(t: TestController): Promise<void> {
-    for (const check of await arrayFromSelector(Selector('input[data-test-id^=category]'))) {
-        if (await check.checked) {
-            await t.click(check)
-        }
     }
 }
 
@@ -81,22 +74,57 @@ export async function warningRowNames(): Promise<string[]> {
     return Promise.all(cells.map(async cell => (await cell.innerText).trim()))
 }
 
-// individual (non-category) stat checkboxes -- e.g. "Mean high temp" within the "Weather"
-// category -- are nested inside their category's collapsible tree and only become interactable
-// once the category itself is expanded (see CategoryContents/RenderTwiceHidden in
-// StatsTree.tsx). checkTextboxes alone only reaches top-level category checkboxes, which are
-// interactable regardless of expand state.
-export async function checkIndividualStat(t: TestController, category: string, stat: string): Promise<void> {
-    await withHamburgerMenu(t, async () => {
-        await t.click(Selector(`[aria-label="Expand ${category} category"]`))
-        // the category's contents animate open (max-height transition) -- give it a moment
-        // before interacting with the now-revealed checkboxes
-        await t.wait(500)
-        await checkTextboxesDirect(t, [stat])
+/**
+ * Statistic selection lives on the table's edit mode, so choosing statistics means
+ * opening it. Categories, years and sources are always reachable there; a group inside
+ * a collapsed category is not (see checkIndividualStat).
+ */
+export async function checkTextboxes(t: TestController, txts: string[]): Promise<void> {
+    await withEditMode(t, async () => {
+        for (const txt of txts) {
+            await t.click(editCheckbox(txt))
+        }
     })
 }
 
+// individual (non-category) stat checkboxes -- e.g. "Mean high temp" within the "Weather"
+// category -- are nested inside their category's collapsible section and only become
+// interactable once the category itself is expanded.
+export async function checkIndividualStat(t: TestController, category: string, stat: string): Promise<void> {
+    await withEditMode(t, async () => {
+        await t.click(Selector(`[aria-label="Expand ${category} category"]`))
+        // the category's contents animate open -- give it a moment before interacting
+        // with the now-revealed checkboxes
+        await t.wait(collapseAnimationMs)
+        await t.click(editCheckbox(stat))
+    })
+}
+
+/** Checks every unchecked category, year and source in edit mode; true if it checked any. */
+async function checkUncheckedStatBoxes(t: TestController): Promise<boolean> {
+    const { category, year, source } = editCheckboxPrefixes
+    let checkedAny = false
+    for (const prefix of [category, year, source]) {
+        for (const check of await arrayFromSelector(Selector(`input[data-test-id^="${prefix}"]`))) {
+            // Forced-on sources are disabled, and clicking a checked category would cycle it off.
+            if (!await check.checked && !await check.hasAttribute('disabled')) {
+                await t.click(check)
+                checkedAny = true
+            }
+        }
+    }
+    return checkedAny
+}
+
 export async function checkAllCategoryBoxes(t: TestController): Promise<void> {
+    await withEditMode(t, async () => {
+        // Enabling a category can reveal years and sources that only its statistics have,
+        // so keep passing over them until nothing is left unchecked.
+        for (let pass = 0; pass < 5 && await checkUncheckedStatBoxes(t); pass++) {
+            // checkUncheckedStatBoxes does the work
+        }
+    })
+    // The appearance and person-circle settings these screenshots are taken under.
     await withHamburgerMenu(t, async () => {
         const checkboxes = Selector('div.checkbox-setting:not([inert] *)')
             .filter((node) => {
@@ -105,9 +133,6 @@ export async function checkAllCategoryBoxes(t: TestController): Promise<void> {
                     label !== 'Use Imperial Units'
                     && label !== 'Include Historical Districts'
                     && label !== 'Simple Ordinals'
-                    && label !== '2020'
-                    && label !== 'Main'
-                    && label !== 'US Census'
                 )
             }).find('input')
         for (let i = 0; i < await checkboxes.count; i++) {
@@ -511,6 +536,36 @@ export async function clickUniverseFlag(t: TestController, alt: string): Promise
                 .withAttribute('class', 'universe-selector-option')
                 .withAttribute('alt', alt))
     })
+}
+
+/** The two window sizes test templates parameterized over layout run at. */
+export async function resizeForPlatform(t: TestController, platform: 'mobile' | 'desktop'): Promise<void> {
+    switch (platform) {
+        case 'mobile':
+            await t.resizeWindow(400, 800)
+            break
+        case 'desktop':
+            await t.resizeWindow(1400, 800)
+            break
+    }
+}
+
+/** Unchecks every category checkbox of the edit table's statistic tree. */
+export async function uncheckAllCategories(t: TestController): Promise<void> {
+    for (const check of await arrayFromSelector(Selector(`input[data-test-id^=${editCheckboxPrefixes.category}]`))) {
+        if (await check.checked) {
+            await t.click(check)
+        }
+    }
+}
+
+/** The sidebar's own statistic tree, which still exists alongside the table's edit mode. */
+export async function uncheckAllSidebarCategories(t: TestController): Promise<void> {
+    for (const check of await arrayFromSelector(Selector('input[data-test-id^=category]'))) {
+        if (await check.checked) {
+            await t.click(check)
+        }
+    }
 }
 
 // Gets the non-extension part of the test file, e.g. if running search.test.ts -> search

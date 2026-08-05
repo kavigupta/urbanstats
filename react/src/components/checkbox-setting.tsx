@@ -5,14 +5,14 @@ import { isStagedChange, SettingsDictionary, useSetting, useSettingInfo } from '
 
 /**
  * The checkbox controls, which started out in the sidebar but are used all over: the
- * mapper's editors, the quiz, the histogram.
+ * mapper's editors, the quiz, the histogram, the tables' edit mode.
  */
 
 // type representing a key of SettingsDictionary that have boolean values
 export type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean | undefined ? K : never]: boolean }
 
 /** What a checkbox needs to render a boolean setting, wherever the checkbox itself lives. */
-function useBooleanSetting(settingKey: BooleanSettingKey, forcedOn?: boolean): {
+export function useBooleanSetting(settingKey: BooleanSettingKey, forcedOn?: boolean): {
     checked: boolean
     setChecked: (checked: boolean) => void
     highlight: boolean
@@ -94,7 +94,7 @@ export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactN
     )
 };
 
-function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProps): ReactNode {
+export function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProps): ReactNode {
     const colors = useColors()
     const id = useId()
     const checkboxRef = useRef<HTMLInputElement>(null)

@@ -160,7 +160,7 @@ export function Sidebar({ onNavigate }: { onNavigate: () => void }): ReactNode {
     )
 }
 
-export function SettingsSidebarSection(): ReactNode {
+function SettingsSidebarSection(): ReactNode {
     const sidebarSectionTitle = useSidebarSectionTitleStyle()
     const sidebarSectionContent = useSidebarSectionContentClassName()
     const fontSize = useSidebarFontSize()
@@ -206,7 +206,7 @@ export function SettingsSidebarSection(): ReactNode {
     )
 }
 
-export function SidebarForStatisticChoice(): ReactNode {
+function SidebarForStatisticChoice(): ReactNode {
     const sidebarSectionContent = useSidebarSectionContentClassName()
     const sidebarSectionTitle = useSidebarSectionTitleStyle()
     const checkboxes = useDataSourceCheckboxes()

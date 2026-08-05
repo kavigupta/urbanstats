@@ -1,8 +1,8 @@
 import React, { ReactNode } from 'react'
 
 import { checkboxCategoryName } from '../page_template/settings'
-import { useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
-import { Category, Group, StatPath, statPathToOrder, Year } from '../page_template/statistic-tree'
+import { MissingGroupReason, useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
+import { Category, Group, GroupIdentifier, StatPath, statPathToOrder, Year } from '../page_template/statistic-tree'
 
 import { useScreenshotMode } from './screenshot'
 import { warningRowIndices } from './warning-placement'
@@ -49,23 +49,50 @@ export function useArticleWarnings(): ArticleWarning[] {
         .map(({ groupOrCategory, reason }) => ({
             order: firstStatOrder(groupOrCategory),
             name: groupOrCategory.name,
-            content: reason.kind === 'year'
-                ? (
-                        <>
-                            {'Select '}
-                            <YearList years={reason.years} />
-                            {` to see ${theseStatistics(groupOrCategory)}.`}
-                        </>
-                    )
-                : (
-                        <>
-                            {'All '}
-                            <b>{checkboxCategoryName(reason.category)}</b>
-                            {` are disabled. Enable one to see ${theseStatistics(groupOrCategory)}.`}
-                        </>
-                    ),
+            content: warningContent(groupOrCategory, reason),
         }))
         .sort((a, b) => a.order - b.order)
+}
+
+/**
+ * The warning each empty group carries, for the edit tree: it lists every group, so a warning
+ * goes in the row the group already has rather than standing in for one. A warning that covers
+ * a whole category is repeated on each of its groups, since they're rows apart on the tree.
+ */
+export function useWarningsByGroup(): Map<GroupIdentifier, ReactNode> {
+    const screenshotMode = useScreenshotMode()
+    const missingGroups = useMissingGroups()
+
+    const result = new Map<GroupIdentifier, ReactNode>()
+    if (screenshotMode) {
+        return result
+    }
+    for (const { groupOrCategory, reason } of missingGroups) {
+        const content = warningContent(groupOrCategory, reason)
+        const groups = groupOrCategory.kind === 'Group' ? [groupOrCategory] : groupOrCategory.contents
+        for (const group of groups) {
+            result.set(group.id, content)
+        }
+    }
+    return result
+}
+
+function warningContent(groupOrCategory: Group | Category, reason: MissingGroupReason): ReactNode {
+    return reason.kind === 'year'
+        ? (
+                <>
+                    {'Select '}
+                    <YearList years={reason.years} />
+                    {` to see ${theseStatistics(groupOrCategory)}.`}
+                </>
+            )
+        : (
+                <>
+                    {'All '}
+                    <b>{checkboxCategoryName(reason.category)}</b>
+                    {` are disabled. Enable one to see ${theseStatistics(groupOrCategory)}.`}
+                </>
+            )
 }
 
 /** A category's warning stands in for a whole run of statistics, a group's for just its own. */
