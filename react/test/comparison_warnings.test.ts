@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { categoryCheckbox, withEditMode, yearCheckbox } from './edit_mode_test_utils'
+import { categoryCheckbox, filterBox, sourceCheckbox, warningEditAction, withEditMode, yearCheckbox } from './edit_mode_test_utils'
 import { arrayFromSelector, checkTextboxes, comparisonPage, screencap, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames } from './test_utils'
 
 /**
@@ -56,6 +56,17 @@ test('comparison-warnings-all-sources-disabled', async (t) => {
     await screencap(t)
 })
 
+test('comparison-warnings-enable-one-opens-edit-mode', async (t) => {
+    await checkTextboxes(t, ['US Census', 'Canadian Census'])
+    await t.expect(warningEditAction.nth(0).innerText).eql('Enable one')
+
+    await t.click(warningEditAction.nth(0))
+
+    // Edit mode, open on the sources the warning told the user to enable one of.
+    await t.expect(filterBox.exists).ok()
+    await t.expect(sourceCheckbox('Population', 'US Census').checked).eql(false)
+})
+
 // Two US states, so the US Census and GHSL are both choosable, and GHSL only has 2020.
 urbanstatsFixture('comparison warnings with a year the enabled source lacks', comparisonPage([
     'Massachusetts, USA',
@@ -94,4 +105,11 @@ test('comparison-transposed-warnings-are-columns', async (t) => {
     // Warnings stand in for columns here, so none of them takes a row
     await t.expect(Selector('[data-test-id=article-warning-name]').exists).notOk()
     await screencap(t)
+})
+
+test('comparison-transposed-warning-column-opens-edit-mode', async (t) => {
+    await selectMainWithoutYears(t)
+    // Drawn down a column rather than along a row, but still the way into edit mode.
+    await t.click(warningEditAction.nth(0))
+    await t.expect(filterBox.exists).ok()
 })

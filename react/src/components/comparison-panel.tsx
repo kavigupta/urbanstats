@@ -203,7 +203,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
     const dataByArticleStat = useVisibleRows(props.rows, editMode)
     const dataByStatArticle = dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
 
-    const warnings = useArticleWarnings()
+    const warnings = useArticleWarnings(() => { setEditMode(true) })
     const warningPlacements = placeWarnings(dataByStatArticle.map(rowsForStat => rowsForStat[0].statpath), warnings)
 
     const handleSort = (statIndex: number): void => {

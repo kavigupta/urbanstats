@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react'
 
+import { useColors } from '../page_template/colors'
 import { checkboxCategoryName } from '../page_template/settings'
 import { MissingGroupReason, useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
 import { Category, Group, GroupIdentifier, StatPath, statPathToOrder, Year } from '../page_template/statistic-tree'
@@ -29,7 +30,10 @@ export interface WarningColumn {
     content: ReactNode
 }
 
-export function useArticleWarnings(): ArticleWarning[] {
+/** Stands in for the table as a whole, which has no rows for the warning to be placed against. */
+const nothingSelectedContent: ReactNode = <b>No Statistics are selected</b>
+
+export function useArticleWarnings(onEdit: () => void): ArticleWarning[] {
     const screenshotMode = useScreenshotMode()
     const selectedGroups = useSelectedGroups()
     const missingGroups = useMissingGroups()
@@ -41,7 +45,7 @@ export function useArticleWarnings(): ArticleWarning[] {
     if (selectedGroups.length === 0) {
         return [{
             order: 0,
-            content: <b>No Statistic Categories are selected</b>,
+            content: nothingSelectedContent,
         }]
     }
 
@@ -49,7 +53,7 @@ export function useArticleWarnings(): ArticleWarning[] {
         .map(({ groupOrCategory, reason }) => ({
             order: firstStatOrder(groupOrCategory),
             name: groupOrCategory.name,
-            content: warningContent(groupOrCategory, reason),
+            content: warningContent(groupOrCategory, reason, onEdit),
         }))
         .sort((a, b) => a.order - b.order)
 }
@@ -77,11 +81,13 @@ export function useWarningsByGroup(): Map<GroupIdentifier, ReactNode> {
     return result
 }
 
-function warningContent(groupOrCategory: Group | Category, reason: MissingGroupReason): ReactNode {
+/** `onEdit` is unset on the edit tree's own warnings, which are already where the user would be sent. */
+function warningContent(groupOrCategory: Group | Category, reason: MissingGroupReason, onEdit?: () => void): ReactNode {
     return reason.kind === 'year'
         ? (
                 <>
-                    {'Select '}
+                    <EditAction onEdit={onEdit}>Select</EditAction>
+                    {' '}
                     <YearList years={reason.years} />
                     {` to see ${theseStatistics(groupOrCategory)}.`}
                 </>
@@ -90,9 +96,40 @@ function warningContent(groupOrCategory: Group | Category, reason: MissingGroupR
                 <>
                     {'All '}
                     <b>{checkboxCategoryName(reason.category)}</b>
-                    {` are disabled. Enable one to see ${theseStatistics(groupOrCategory)}.`}
+                    {' are disabled. '}
+                    <EditAction onEdit={onEdit}>Enable one</EditAction>
+                    {` to see ${theseStatistics(groupOrCategory)}.`}
                 </>
             )
+}
+
+/**
+ * The part of a warning that names what to do about it, as a button into edit mode where the
+ * settings it refers to are.
+ */
+function EditAction({ onEdit, children }: { onEdit?: () => void, children: ReactNode }): ReactNode {
+    const colors = useColors()
+    if (onEdit === undefined) {
+        return children
+    }
+    return (
+        <button
+            type="button"
+            onClick={onEdit}
+            style={{
+                display: 'inline',
+                padding: 0,
+                border: 'none',
+                background: 'none',
+                font: 'inherit',
+                color: colors.blueLink,
+                cursor: 'pointer',
+            }}
+            data-test-id="warning-edit-action"
+        >
+            {children}
+        </button>
+    )
 }
 
 /** A category's warning stands in for a whole run of statistics, a group's for just its own. */
