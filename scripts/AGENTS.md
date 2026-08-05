@@ -37,6 +37,9 @@ up to date", so resolve the conflict, `git add -A && git commit --no-edit`, and 
 again to continue from where it stopped. It leaves you on the branch that failed; otherwise it
 returns you to the branch you started on.
 
+If that branch is old enough to predate this script, the script won't be in the working tree
+to re-run. Copy it somewhere outside the repo first, or finish the chain by hand.
+
 `--check` is worth running before `--push`. An intermediate branch can typecheck on its own
 but break once the branch below it changes, and CI will only tell you that one branch at a
 time.

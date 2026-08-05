@@ -16,7 +16,13 @@
 
 set -uo pipefail
 
-argv="$*"
+# The re-run command printed on a conflict. Absolute, because it is run from a branch that
+# may predate this script, and re-quoted, so an argument the shell would glob-expand survives
+# the copy-paste.
+self="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+rerun=$(printf '%q ' "$self" "$@")
+rerun=${rerun% }
+
 pattern='[0-9][0-9]-*'
 base=''
 check=false
@@ -78,7 +84,7 @@ while read -r branch; do
 Conflict merging $prev into $branch. Resolve it, then:
 
     git add -A && git commit --no-edit
-    scripts/propagate-stack.sh $argv
+    $rerun
 
 Branches already merged are skipped, so the re-run continues from here.
 MSG
@@ -102,8 +108,9 @@ done <<< "$branches"
 
 if $push; then
     echo "==> pushing"
-    # One push, so a rejection leaves every branch unpushed rather than half the stack.
-    git push origin $branches || exit 1
+    # --atomic, so a rejection leaves every branch unpushed rather than half the stack.
+    # Without it git pushes each ref independently and only the rejected one stays behind.
+    git push --atomic origin $branches || exit 1
 fi
 
 echo "==> done"
