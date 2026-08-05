@@ -9,7 +9,7 @@ import { DefaultMap } from '../utils/DefaultMap'
 import { useObserverSets } from '../utils/useObserverSets'
 
 import { Theme } from './color-themes'
-import { allGroups, allYears, CategoryIdentifier, DataSource, GroupIdentifier, SourceCategoryIdentifier, SourceIdentifier, StatPath, statsTree, Year } from './statistic-tree'
+import { allGroups, allYears, CategoryIdentifier, DataSource, GroupIdentifier, SourceCategoryIdentifier, StatPath, statsTree, Year } from './statistic-tree'
 
 export type RelationshipKey = `related__${string}__${string}`
 
@@ -26,7 +26,8 @@ export type StatGroupKey<G extends GroupIdentifier = GroupIdentifier> = `show_st
 export type StatCategorySavedIndeterminateKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_saved_indeterminate_${C}`
 export type StatCategoryExpandedKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_expanded_${C}`
 export type StatYearKey<Y extends Year = Year> = `show_stat_year_${Y}`
-export type StatSourceKey<C extends SourceCategoryIdentifier = SourceCategoryIdentifier, S extends SourceIdentifier = SourceIdentifier> = `show_stat_source_${C}_${S}`
+// Distributes over the sources, so that only the (category, name) pairs that exist are keys
+export type StatSourceKey<D extends DataSource = DataSource> = D extends unknown ? `show_stat_source_${D['category']}_${D['name']}` : never
 
 export type TemperatureUnit = 'fahrenheit' | 'celsius'
 
@@ -57,7 +58,7 @@ export type SettingsDictionary = {
 & { [C in CategoryIdentifier as StatCategorySavedIndeterminateKey<C>]: GroupIdentifier[] }
 & { [C in CategoryIdentifier as StatCategoryExpandedKey<C>]: boolean }
 & { [Y in Year as StatYearKey<Y>]: boolean }
-& { [D in DataSource as StatSourceKey<D['category'], D['name']>]: boolean }
+& { [D in DataSource as StatSourceKey<D>]: boolean }
 & { [P in StatPathWithExtra as RowExpandedKey<P>]: boolean }
 & { [P in Exclude<StatPath, StatPathWithExtra> as RowExpandedKey<P>]?: undefined }
 
@@ -69,8 +70,8 @@ export function rowExpandedKey<P extends StatPath>(statpath: P): RowExpandedKey<
     return `expanded__${statpath}`
 }
 
-export function sourceEnabledKey<C extends SourceCategoryIdentifier, S extends SourceIdentifier>(d: { category: C, name: S }): StatSourceKey<C, S> {
-    return `show_stat_source_${d.category}_${d.name}`
+export function sourceEnabledKey<D extends DataSource>(d: D): StatSourceKey<D> {
+    return `show_stat_source_${d.category}_${d.name}` as StatSourceKey<D>
 }
 
 export function checkboxCategoryName(category: SourceCategoryIdentifier): string {
