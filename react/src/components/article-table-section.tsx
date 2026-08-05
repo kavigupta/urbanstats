@@ -3,10 +3,9 @@ import React, { ReactNode } from 'react'
 import { StatGroupSettings } from '../page_template/statistic-settings'
 import { Article } from '../utils/protos'
 
-import { StagingControls } from './StagingControls'
 import { ArticleEditTable } from './article-edit-table'
 import { ArticleTable } from './article-table'
-import { useEditModeState } from './edit-table'
+import { EditModeState } from './edit-table'
 import { ArticleRow } from './load-article'
 
 /**
@@ -16,12 +15,12 @@ import { ArticleRow } from './load-article'
 export function ArticleTableSection(props: {
     rows: (settings: StatGroupSettings) => ArticleRow[][]
     article: Article
+    editState: EditModeState
 }): ReactNode {
-    const editState = useEditModeState()
+    const { editState } = props
 
     return (
         <div className="stats_table">
-            <StagingControls onExitStaging={editState.exitEditMode} />
             {editState.editMode
                 ? (
                         <ArticleEditTable

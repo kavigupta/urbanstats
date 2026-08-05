@@ -500,7 +500,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
 
                                 <div style={{ marginBlockEnd: '1em' }}></div>
 
-                                {/* Outside the scroll, so its buttons can't be scrolled off screen. */}
+                                {/* Outside the scroll and tableRef, so its buttons stay on screen and out of screenshots. */}
                                 <StagingControls onExitStaging={editState.exitEditMode} />
 
                                 <MaybeScroll widthColumns={widthColumns}>
