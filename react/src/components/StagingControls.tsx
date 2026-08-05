@@ -5,10 +5,11 @@ import { Settings, useIsStaged } from '../page_template/settings'
 import { useMobileLayout } from '../utils/responsive'
 
 /**
- * The Discard/Apply banner for staged settings, or nothing when nothing is staged. The page
- * renders it above its table rather than the sidebar holding it, so it sits next to the
- * settings it is about -- and outside the table's horizontal scroll, where the buttons would
- * end up off screen at the right edge of the scrolled-away content.
+ * The Discard/Apply banner for staged settings, or nothing when nothing is staged. Pages
+ * render it above their table rather than the sidebar holding it, so it sits next to the
+ * settings it is about, but keep it outside both the table's horizontal scroll -- where the
+ * buttons would sit off screen at the right edge of the scrolled-away content -- and the
+ * element that screenshots capture.
  */
 export function StagingControls(): ReactNode {
     const settings = useContext(Settings.Context)

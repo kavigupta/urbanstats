@@ -15,6 +15,7 @@ import { NormalizeProto } from '../utils/types'
 import { ArticleMap } from './ArticleMap'
 import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
+import { StagingControls } from './StagingControls'
 import { ArticleTable } from './article-table'
 import { useCSVExport } from './csv-export'
 import { ArticleRow } from './load-article'
@@ -67,6 +68,9 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
                         <div className={subHeaderTextClass}>{article.longname}</div>
                     </div>
                     <div style={{ marginBlockEnd: '16px' }}></div>
+
+                    {/* Outside tableRef, so it doesn't end up in screenshots of the table. */}
+                    <StagingControls />
 
                     <div ref={tableRef}>
                         <ArticleTable
