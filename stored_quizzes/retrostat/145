@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Racial Homogeneity Change (2010-2020) %",
+      "stat_path": "homogeneity_250_diff_2010",
+      "question": "!FULL Which diversified less between 2010 and 2020?!TOOLTIP We define racial diversity as the average probability a person selecting a random person in a 250m radius will select someone of a different race",
+      "longname_a": "Nashville-Davidson metropolitan government (balance), Tennessee, USA",
+      "longname_b": "San Antonio city, Texas, USA",
+      "stat_a": -0.0670187094329997,
+      "stat_b": -0.03538168863714697
+    },
+    "b": {
+      "stat_column": "Employed in Accommodation and food services %",
+      "stat_path": "industry_accommodation_and_food_services",
+      "question": "higher % of workers employed in the accommodation and food services industry!TOOLTIP hotels, restaurants, bars, caterers, food services contractors, etc.",
+      "longname_a": "Milwaukee County, Wisconsin, USA",
+      "longname_b": "Clark County, Nevada, USA",
+      "stat_a": 0.06881948341305984,
+      "stat_b": 0.15957632656134102
+    },
+    "a_ease": 0.4519155590304926,
+    "b_ease": 0.8521647307286166
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Commute Transit %",
+      "stat_path": "transportation_means_transit_no_wfh",
+      "question": "higher % of people who commute by transit",
+      "longname_a": "WA-03 (2023), USA",
+      "longname_b": "WI-07 (2023), USA",
+      "stat_a": 0.014622382730871804,
+      "stat_b": 0.004117537886701555
+    },
+    "b": {
+      "stat_column": "2025GE 2-Coalition Margin",
+      "stat_path": "2025GE-coalition_margin",
+      "question": "!FULL Which voted more for the left-of-center parties in the 2025 Canadian general election?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "Winnipeg Population Center, MB, Canada",
+      "longname_b": "Oshawa Population Center, ON, Canada",
+      "stat_a": 0.28264662867785484,
+      "stat_b": 0.06605653538394243
+    },
+    "a_ease": 0.8678655199374511,
+    "b_ease": 0.4281524926686217
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Public Insurance %",
+      "stat_path": "insurance_coverage_govt",
+      "question": "higher % of people who are on public insurance!TOOLTIP The denominator for this statistic is the the total number of adults, including those without health insurance coverage.",
+      "longname_a": "Gloucester County, New Jersey, USA",
+      "longname_b": "Collin County, Texas, USA",
+      "stat_a": 0.1513598147985469,
+      "stat_b": 0.043017860154409206
+    },
+    "b": {
+      "stat_column": "PW Density (r=1km)",
+      "stat_path": "ad_1",
+      "question": "higher population-weighted density (r=1km)!TOOLTIP Population-weighted density is computed by computing the density within the given radius for each person in the region and then averaging the results. This is a better measure of the density that people actually experience.",
+      "longname_a": "Memphis Urban Center, USA",
+      "longname_b": "Palmdale Urban Center, USA",
+      "stat_a": 1467.560079119728,
+      "stat_b": 2228.0190517265805
+    },
+    "a_ease": 0.5863914373088684,
+    "b_ease": 0.13601236476043277
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2024 Presidential Election",
+      "stat_path": "2024 Presidential Election-margin",
+      "question": "!FULL Which voted more for Harris in the 2024 presidential election?",
+      "longname_a": "Santa Rosa [Urban Area], CA, USA",
+      "longname_b": "Springfield [Urban Area], MO, USA",
+      "stat_a": 0.444711513927012,
+      "stat_b": -0.16078770181471588
+    },
+    "b": {
+      "stat_column": "Snowfall [rain-equivalent]",
+      "stat_path": "snowfall_4",
+      "question": "higher snowfall (population weighted)!TOOLTIP Population weighted weather statistics are calculated by computing the weather statistic for each person in the region and then averaging the results.",
+      "longname_a": "Busan Urban Center, South Korea",
+      "longname_b": "Changzhou Urban Center, China",
+      "stat_a": 0.005344693171441653,
+      "stat_b": 0.022950257716234337
+    },
+    "a_ease": 0.8718140929535232,
+    "b_ease": 0.4245504300234558
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Household Income < $50k %",
+      "stat_path": "household_income_under_50k",
+      "question": "higher % of households who have household income under $50k",
+      "longname_a": "San Jose [Urban Area], CA, USA",
+      "longname_b": "St. Louis [Urban Area], MO-IL, USA",
+      "stat_a": 0.17410857076456698,
+      "stat_b": 0.3624294397254192
+    },
+    "b": {
+      "stat_column": "LIM-AT %",
+      "stat_path": "lim_at_canada",
+      "question": "higher % of people who are low income based on the Low-income measure, after tax (LIM-AT)",
+      "longname_a": "Montreal Urban Center, Canada",
+      "longname_b": "Oshawa Urban Center, Canada",
+      "stat_a": 0.1374335583380938,
+      "stat_b": 0.0826660053411876
+    },
+    "a_ease": 0.8732612055641422,
+    "b_ease": 0.4244984160506864
+  }
+]
