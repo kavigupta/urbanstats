@@ -60,7 +60,7 @@ export function groupYearKeys(): (keyof StatGroupSettings)[] {
  */
 const allStatGroupsEnabled = Object.fromEntries(
     groupKeys(allGroups).map(key => [key, true]),
-) as Record<StatGroupKey, boolean>
+)
 
 /**
  * The rows a table should display. With `showAllGroups`, every group is forced on, which is
