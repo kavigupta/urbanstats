@@ -42,6 +42,61 @@ interface ComparisonPanelProps {
     mapPartitions: number[][]
 }
 
+/** Which way round the comparison table runs, and how the width is divided up along it. */
+interface ComparisonTableShape {
+    /** Whether the statistics run along the columns and the regions down the rows. */
+    transpose: boolean
+    onlyColumns: ColumnIdentifier[]
+    /** How wide the table wants to be, in the units `MaybeScroll` decides to scroll by. */
+    widthColumns: number
+    /** The share of the table the left header takes, as a fraction. */
+    leftMarginPercent: number
+    /** The share of the table each column takes, as a percentage. */
+    columnWidth: number
+}
+
+/**
+ * Fits the table to the screen. A comparison of many regions is wider than one screen, and
+ * there are usually more statistics than regions, so turning it on its side is what makes it
+ * fit -- but only when the table is actually too wide, and only when transposing is the
+ * narrower of the two.
+ */
+function comparisonTableShape(params: {
+    numArticles: number
+    numStats: number
+    numWarnings: number
+    numExpandedExtras: number
+    includeOrdinals: boolean
+    hasCongressionalRepresentativeTable: boolean
+    mobileLayout: boolean
+}): ComparisonTableShape {
+    const { numArticles, numStats, numWarnings, numExpandedExtras, includeOrdinals, mobileLayout } = params
+
+    // Transposed, a warning stands in for a column, so it takes up a column's worth of width
+    // alongside the statistics that are still shown.
+    const numTransposedColumns = numStats + numWarnings
+
+    const widthUntransposed = computeComparisonWidthColumns(numArticles, includeOrdinals)
+    const widthTransposed = (includeOrdinals ? 1.5 : 1) * (numTransposedColumns + numExpandedExtras) + 1.5
+
+    const transpose = !params.hasCongressionalRepresentativeTable
+        && widthUntransposed > computeMaxColumns(mobileLayout)
+        && widthUntransposed > widthTransposed
+
+    const leftMarginPercent = transpose ? 0.24 : 0.18
+    const numColumns = transpose ? numTransposedColumns + numExpandedExtras : numArticles
+
+    return {
+        transpose,
+        onlyColumns: includeOrdinals
+            ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
+            : valueOnlyColumns,
+        widthColumns: transpose ? widthTransposed : widthUntransposed,
+        leftMarginPercent,
+        columnWidth: 100 * (1 - leftMarginPercent) / numColumns,
+    }
+}
+
 /**
  * How many columns the table has depends on which statistics are missing, and warnings are left
  * out of screenshots -- so the panel has to read screenshot mode, which means providing the
@@ -178,36 +233,22 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
         && (validOrdinalsByStat.length === 0 || validOrdinalsByStat.some(x => x))
     )
 
-    const onlyColumns: ColumnIdentifier[] = includeOrdinals ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile'] : valueOnlyColumns
-
     const expandedByStatIndex = useExpandedByStat(
         dataByStatArticle.map(([{ statpath }]) => statpath),
         statIndex => dataByStatArticle[statIndex].some(row => row.extraStats.length > 0),
     )
-    const numExpandedExtras = expandedByStatIndex.filter(v => v).length
 
-    // Transposed, a warning stands in for a column, so it takes up a column's worth of width
-    // alongside the statistics that are still shown.
-    const numTransposedColumns = dataByArticleStat[0].length + warningPlacements.length
-
-    let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, includeOrdinals)
-    let widthTransposeColumns = (includeOrdinals ? 1.5 : 1) * (numTransposedColumns + numExpandedExtras) + 1.5
-
-    const hasCongressionalRepresentativeTable = dataByStatArticle.some(statData =>
-        statData.some(row => isCongressionalRepresentativesMetadataRow(row)),
-    )
-
-    const transpose = !hasCongressionalRepresentativeTable
-        && widthColumns > computeMaxColumns(mobileLayout)
-        && widthColumns > widthTransposeColumns
-
-    if (transpose) {
-        ([widthColumns, widthTransposeColumns] = [widthTransposeColumns, widthColumns])
-    }
-
-    const leftMarginPercent = transpose ? 0.24 : 0.18
-    const numColumns = transpose ? numTransposedColumns : localArticlesToUse.length
-    const columnWidth = 100 * (1 - leftMarginPercent) / (numColumns + (transpose ? numExpandedExtras : 0))
+    const { transpose, onlyColumns, widthColumns, leftMarginPercent, columnWidth } = comparisonTableShape({
+        numArticles: localArticlesToUse.length,
+        numStats: dataByArticleStat[0].length,
+        numWarnings: warningPlacements.length,
+        numExpandedExtras: expandedByStatIndex.filter(v => v).length,
+        includeOrdinals,
+        hasCongressionalRepresentativeTable: dataByStatArticle.some(statData =>
+            statData.some(row => isCongressionalRepresentativesMetadataRow(row)),
+        ),
+        mobileLayout,
+    })
 
     const highlightArticleIndicesByStat: (number | undefined)[] = dataByStatArticle.map(articlesStatData => getHighlightIndex(articlesStatData))
 
