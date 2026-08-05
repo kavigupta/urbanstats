@@ -13,6 +13,7 @@ Urban Stats (urbanstats.org) is a website for viewing statistics of geographic a
 - **`permacache`** caches Python function results to disk; changing a cached function's signature, module path, or the arguments it's called with can silently break or invalidate the cache
 - `src/data/` in the frontend contains generated files — do not edit manually
 - **Running the tests** is documented in `react/test/AGENTS.md` (e2e) and `react/unit/AGENTS.md` (unit) — read these before trying to run them. DO NOT run tests in code reviews.
+- **Stacked PRs** (a change split into `01-*`, `02-*`, ... branches, each based on the last) have their own rules — read `scripts/AGENTS.md` before moving commits between them
 
 ## What to Flag in Code Reviews
 
