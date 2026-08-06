@@ -16,7 +16,7 @@ export type StatName = (typeof statNames)[number]
 export type CategoryIdentifier = (typeof rawStatsTree)[number]['id']
 export type GroupIdentifier = (typeof rawStatsTree)[number]['contents'][number]['id']
 export type Year = Exclude<(typeof rawStatsTree)[number]['contents'][number]['contents'][number]['year'], null>
-export type DataSource = Exclude<(typeof rawStatsTree)[number]['contents'][number]['contents'][number]['stats_by_source'][number]['stats'][number]['source'], null>
+export type DataSource = (typeof rawStatsTree)[number]['contents'][number]['contents'][number]['stats_by_source'][number]['stats'][number]['source']
 export type SourceCategoryIdentifier = DataSource['category']
 export type SourceIdentifier = DataSource['name']
 
@@ -53,7 +53,7 @@ export interface MultiSourceStatistic {
 }
 
 interface BaseStatistic {
-    source: DataSource | null
+    source: DataSource
     path: StatPath
     name: string
     parent: GroupYear
@@ -167,7 +167,7 @@ interface StatParent {
     year: Year | null
     groupYearName: string
     indentedName?: string
-    source: DataSource | null
+    source: DataSource
     kind: Statistic['kind']
     metadataIndex?: number
 }
@@ -195,7 +195,7 @@ export const statPathToOrder = new Map<StatPath, number>(
     statParentsList.map(([statPath], i) => [statPath, i] as const),
 )
 
-export interface DataSourceCheckbox { name: SourceIdentifier, forcedOn: boolean }
+export interface DataSourceCheckbox { source: DataSource, forcedOn: boolean }
 
 export type DataSourceCheckboxes = { category: SourceCategoryIdentifier, checkboxSpecs: DataSourceCheckbox[] }[]
 
@@ -203,9 +203,6 @@ function findAmbiguousSources(paths: StatPath[]): Map<SourceCategoryIdentifier, 
     const sources = paths.map(statPath => statParents.get(statPath)!.source)
     const ambiguousSources = new Map<SourceCategoryIdentifier, Set<SourceIdentifier>>()
     for (const source of sources) {
-        if (source === null) {
-            continue
-        }
         const category = source.category
         const name = source.name
         if (!ambiguousSources.has(category)) {
@@ -246,20 +243,20 @@ export function findAmbiguousSourcesAll(statPathsEach: StatPath[][]): AmbiguousS
 }
 
 export function sourceDisambiguation(ambiguousSources: AmbiguousSources): DataSourceCheckboxes {
-    function splitSources(sources: SourceIdentifier[], ambiguous: { chooseable: Set<SourceIdentifier>, forcedOn: Set<SourceIdentifier> }): DataSourceCheckbox[] {
+    function splitSources(sources: readonly DataSource[], ambiguous: { chooseable: Set<SourceIdentifier>, forcedOn: Set<SourceIdentifier> }): DataSourceCheckbox[] {
         const result = []
         for (const source of sources) {
             let forcedOn
-            if (ambiguous.forcedOn.has(source)) {
+            if (ambiguous.forcedOn.has(source.name)) {
                 forcedOn = true
             }
-            else if (ambiguous.chooseable.has(source)) {
+            else if (ambiguous.chooseable.has(source.name)) {
                 forcedOn = false
             }
             else {
                 continue
             }
-            result.push({ name: source, forcedOn })
+            result.push({ source, forcedOn })
         }
         return result
     }
@@ -268,6 +265,6 @@ export function sourceDisambiguation(ambiguousSources: AmbiguousSources): DataSo
         .filter(({ category }) => ambiguousSources.has(category) && ambiguousSources.get(category)!.chooseable.size > 0)
         .map(({ category, sources }) => ({
             category,
-            checkboxSpecs: splitSources(sources.map(({ source }) => source), ambiguousSources.get(category)!),
+            checkboxSpecs: splitSources(sources, ambiguousSources.get(category)!),
         }))
 }

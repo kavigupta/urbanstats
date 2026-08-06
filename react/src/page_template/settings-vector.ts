@@ -486,6 +486,18 @@ const settingsVector = [
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_iso_code', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'show_stat_group_metadata_show_metadata_congressional_representatives', coder: booleanSettingCoder }),
     new ActiveSetting({ key: 'plot_mode', coder: plotModeSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Geography_Shapefile Geometry', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Elevation_ASTER GDEM', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Traffic Fatalities_NHTSA FARS', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Health_CDC PLACES', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Health Care Performance_IHME', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Pollution_Atmospheric Composition Analysis Group', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_US Elections_US Election Data', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Canadian Elections_Elections Canada', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Metadata_Article Metadata', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Distance from Features_Feature Datasets', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Food Access_USDA Food Access Research Atlas', coder: booleanSettingCoder }),
+    new ActiveSetting({ key: 'show_stat_source_Weather_ERA5', coder: booleanSettingCoder }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Necessary use of any
 ] satisfies (ActiveSetting<any> | DeprecatedSetting<string>)[]
 
