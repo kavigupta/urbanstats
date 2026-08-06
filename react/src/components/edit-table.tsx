@@ -421,14 +421,14 @@ function EditSourceAndYearSections(): ReactNode {
             {sourceCheckboxes.map(({ category, checkboxSpecs }) => (
                 <React.Fragment key={category}>
                     <EditSectionHeader name={checkboxCategoryName(category)} />
-                    {checkboxSpecs.map(({ name, forcedOn }, index) => (
+                    {checkboxSpecs.map(({ source, forcedOn }, index) => (
                         <EditSettingRow
-                            key={name}
+                            key={source.name}
                             index={index}
-                            name={name}
-                            settingKey={sourceEnabledKey({ category, name })}
+                            name={source.name}
+                            settingKey={sourceEnabledKey(source)}
                             forcedOn={forcedOn}
-                            testId={`edit_source ${category} ${name}`}
+                            testId={`edit_source ${source.category} ${source.name}`}
                         />
                     ))}
                 </React.Fragment>

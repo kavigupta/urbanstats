@@ -1,11 +1,10 @@
 import React, { ReactNode } from 'react'
 
-import { useColors } from '../page_template/colors'
-import { checkboxCategoryName } from '../page_template/settings'
-import { MissingGroupReason, useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
-import { Category, Group, GroupIdentifier, StatPath, statPathToOrder, Year } from '../page_template/statistic-tree'
+import { useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
+import { Category, Group, GroupIdentifier, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 
 import { useScreenshotMode } from './screenshot'
+import { warningMessage } from './warning-message'
 import { warningRowIndices } from './warning-placement'
 
 /** An explanation of why some statistics aren't there, shown where they would have been. */
@@ -53,7 +52,7 @@ export function useArticleWarnings(onEdit: () => void): ArticleWarning[] {
         .map(({ groupOrCategory, reason }) => ({
             order: firstStatOrder(groupOrCategory),
             name: groupOrCategory.name,
-            content: warningContent(groupOrCategory, reason, onEdit),
+            content: warningMessage(reason, groupOrCategory, onEdit),
         }))
         .sort((a, b) => a.order - b.order)
 }
@@ -72,74 +71,13 @@ export function useWarningsByGroup(): Map<GroupIdentifier, ReactNode> {
         return result
     }
     for (const { groupOrCategory, reason } of missingGroups) {
-        const content = warningContent(groupOrCategory, reason)
+        const content = warningMessage(reason, groupOrCategory)
         const groups = groupOrCategory.kind === 'Group' ? [groupOrCategory] : groupOrCategory.contents
         for (const group of groups) {
             result.set(group.id, content)
         }
     }
     return result
-}
-
-/** `onEdit` is unset on the edit tree's own warnings, which are already where the user would be sent. */
-function warningContent(groupOrCategory: Group | Category, reason: MissingGroupReason, onEdit?: () => void): ReactNode {
-    return reason.kind === 'year'
-        ? (
-                <>
-                    <EditAction onEdit={onEdit}>Select</EditAction>
-                    {' '}
-                    <YearList years={reason.years} />
-                    {` to see ${theseStatistics(groupOrCategory)}.`}
-                </>
-            )
-        : (
-                <>
-                    {'All '}
-                    <b>{checkboxCategoryName(reason.category)}</b>
-                    {' are disabled. '}
-                    <EditAction onEdit={onEdit}>Enable one</EditAction>
-                    {` to see ${theseStatistics(groupOrCategory)}.`}
-                </>
-            )
-}
-
-/**
- * The part of a warning that names what to do about it, as a button into edit mode where the
- * settings it refers to are.
- */
-function EditAction({ onEdit, children }: { onEdit?: () => void, children: ReactNode }): ReactNode {
-    const colors = useColors()
-    if (onEdit === undefined) {
-        return children
-    }
-    return (
-        <button
-            type="button"
-            onClick={onEdit}
-            style={{
-                display: 'inline',
-                padding: 0,
-                border: 'none',
-                background: 'none',
-                font: 'inherit',
-                color: colors.blueLink,
-                cursor: 'pointer',
-            }}
-            data-test-id="warning-edit-action"
-        >
-            {children}
-        </button>
-    )
-}
-
-/** A category's warning stands in for a whole run of statistics, a group's for just its own. */
-function theseStatistics(groupOrCategory: Group | Category): string {
-    switch (groupOrCategory.kind) {
-        case 'Group':
-            return 'this statistic'
-        case 'Category':
-            return 'these statistics'
-    }
 }
 
 function firstStatOrder(groupOrCategory: Group | Category): number {
@@ -150,39 +88,4 @@ function firstStatOrder(groupOrCategory: Group | Category): number {
 export function placeWarnings(statPaths: StatPath[], warnings: ArticleWarning[]): WarningRow[] {
     const indices = warningRowIndices(statPaths, warnings.map(({ order }) => order))
     return warnings.map(({ name, content }, warningIndex) => ({ index: indices[warningIndex], name, content }))
-}
-
-function YearList({ years }: { years: Year[] }): ReactNode {
-    switch (years.length) {
-        case 0:
-            return null
-        case 1:
-            return <b>{years[0]}</b>
-        case 2:
-            return (
-                <>
-                    <b>{years[0]}</b>
-                    {' or '}
-                    <b>{years[1]}</b>
-                </>
-            )
-        case 3:
-            return (
-                <>
-                    <b>{years[0]}</b>
-                    {', '}
-                    <b>{years[1]}</b>
-                    {', or '}
-                    <b>{years[2]}</b>
-                </>
-            )
-        default:
-            return (
-                <>
-                    <b>{years[0]}</b>
-                    {', '}
-                    <YearList years={years.slice(1)} />
-                </>
-            )
-    }
 }
