@@ -52,24 +52,10 @@ export function groupYearKeys(): (keyof StatGroupSettings)[] {
     ]
 }
 
-/**
- * Every group checkbox forced on, for the views that show the whole statistic tree rather
- * than the current selection. Spread over the year and source settings to complete a
- * `StatGroupSettings`.
- */
 const allStatGroupsEnabled = Object.fromEntries(
     groupKeys(allGroups).map(key => [key, true]),
 )
 
-/**
- * The rows a table should display. With `showAllGroups`, every group is forced on, which is
- * what the edit tree wants: it shows the whole category/group tree rather than the current
- * selection.
- *
- * The group checkboxes are then deliberately not subscribed to either: they're all forced
- * on, so a click can't change this result, and re-running the filter and sort over every
- * statistic on each click would be wasted work.
- */
 export function useVisibleRows<T>(rows: (settings: StatGroupSettings) => T, showAllGroups: boolean): T {
     const yearSourceSettings = useSettings(yearSourceKeys())
     const groupSettings = useSettings(showAllGroups ? [] : groupKeys(allGroups))
