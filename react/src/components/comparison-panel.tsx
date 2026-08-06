@@ -42,7 +42,6 @@ interface ComparisonPanelProps {
     mapPartitions: number[][]
 }
 
-/** Which way round the comparison table runs, and how the width is divided up along it. */
 interface ComparisonTableShape {
     /** Whether the statistics run along the columns and the regions down the rows. */
     transpose: boolean
