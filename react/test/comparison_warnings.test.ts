@@ -57,7 +57,7 @@ test('comparison-warnings-all-sources-disabled', async (t) => {
     await screencap(t)
 })
 
-test.only('comparison-warnings-name-the-disabled-source', async (t) => {
+test('comparison-warnings-name-the-disabled-source', async (t) => {
     // The generation statistics come from the two censuses only, so turning off the US one leaves
     // Ontario's showing and California's gone -- naming the Population sources as a whole would be
     // a lie, since enabling the others is what brings the population statistic itself back.
