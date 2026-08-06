@@ -6,8 +6,9 @@
 # Merging rather than rebasing means the pushes stay fast-forward, so review threads on the
 # PRs survive.
 #
-# Re-running is safe: merges that already happened report "Already up to date". So after
-# resolving a conflict, commit it and run the script again to pick up where it stopped.
+# Re-running is safe: merges that already happened report "Already up to date", and --check
+# rechecks a branch only if its contents changed. So after resolving a conflict, commit it and
+# run the script again to pick up where it stopped.
 #
 #   scripts/propagate-stack.sh                   # merge up the stack
 #   scripts/propagate-stack.sh --from origin/main  # merge main into the bottom branch first
@@ -72,6 +73,10 @@ run_checks() {
     )
 }
 
+# Trees that have already passed, so a re-run after a conflict doesn't recheck the branches
+# below it. Keyed by tree rather than commit, because the checks only look at the worktree.
+checked="$(git rev-parse --git-dir)/propagate-stack-checked"
+
 prev="$base"
 
 while read -r branch; do
@@ -86,7 +91,7 @@ Conflict merging $prev into $branch. Resolve it, then:
     git add -A && git commit --no-edit
     $rerun
 
-Branches already merged are skipped, so the re-run continues from here.
+The re-run starts from the bottom again, but the work below here is already done.
 MSG
             trap - EXIT
             exit 1
@@ -94,12 +99,18 @@ MSG
     fi
 
     if $check; then
-        echo "==> checking $branch"
         git checkout -q "$branch" || exit 1
-        if ! run_checks; then
-            echo "Checks failed on $branch." >&2
-            trap - EXIT
-            exit 1
+        tree=$(git rev-parse HEAD^{tree})
+        if grep -qxF "$tree" "$checked" 2>/dev/null; then
+            echo "==> $branch unchanged since it last passed, skipping checks"
+        else
+            echo "==> checking $branch"
+            if ! run_checks; then
+                echo "Checks failed on $branch." >&2
+                trap - EXIT
+                exit 1
+            fi
+            echo "$tree" >> "$checked"
         fi
     fi
 
