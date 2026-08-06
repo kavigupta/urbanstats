@@ -4,7 +4,7 @@ import { dataSources } from '../data/statistics_tree'
 import { Navigator } from '../navigation/Navigator'
 
 import { Settings, sourceEnabledKey, StatGroupKey, StatYearKey, StatSourceKey, useSettings } from './settings'
-import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, Group, SourceCategoryIdentifier, sourceDisambiguation, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
+import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, Group, SourceIdentifier, sourceDisambiguation, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
 
 export type StatGroupSettings = Record<StatGroupKey | StatYearKey | StatSourceKey, boolean>
 
@@ -127,11 +127,24 @@ export function useSelectedYears(): Year[] {
     return availableYears.filter(year => settingsValues[`show_stat_year_${year}`])
 }
 
+/**
+ * The sources to name in a warning, and whether enabling any single one of them is enough. We could present
+ * something more complex like a list of subsets, but that would be confusing and not very useful.
+ * So instead, we just say "enable one of these sources" or "enable all of these sources".
+ */
+export interface MissingSources {
+    sources: SourceIdentifier[]
+    anySourceSuffices: boolean
+}
+
 /** Why a group that the user selected is nonetheless showing no statistics. */
 export type MissingGroupReason =
     /** None of `years` are selected: the years this page has the group's statistics for from an enabled source. */
     { kind: 'year', years: Year[] } |
-    { kind: 'source', category: SourceCategoryIdentifier }
+    /** Every source the group has statistics from in a selected year is disabled. */
+    ({ kind: 'source' } & MissingSources) |
+    /** Nothing the group has is in a selected year, and its sources are disabled too. */
+    ({ kind: 'yearAndSource', years: Year[] } & MissingSources)
 
 export interface MissingGroup {
     groupOrCategory: Group | Category
@@ -144,8 +157,21 @@ function reasonKey(reason: MissingGroupReason): string {
         case 'year':
             return `year_${reason.years.join(',')}`
         case 'source':
-            return `source_${reason.category}`
+            return `source_${reason.sources.join(',')}_${reason.anySourceSuffices}`
+        case 'yearAndSource':
+            return `yearAndSource_${reason.years.join(',')}_${reason.sources.join(',')}_${reason.anySourceSuffices}`
     }
+}
+
+const sourceOrder = new Map<SourceIdentifier, number>()
+for (const { sources } of dataSources) {
+    for (const { name } of sources) {
+        sourceOrder.set(name, sourceOrder.size)
+    }
+}
+
+function sortSources(sources: Iterable<SourceIdentifier>): SourceIdentifier[] {
+    return Array.from(new Set(sources)).sort((a, b) => sourceOrder.get(a)! - sourceOrder.get(b)!)
 }
 
 /**
@@ -162,34 +188,51 @@ export function missingGroups(
     },
 ): MissingGroup[] {
     const consolidateGroups = consolidateGroupsIn(availableTree)
-    const pageStatPaths = new Set(statPathsAll.flat())
+    const pageStatPathsEach = statPathsAll.map(statPaths => new Set(statPaths))
     const ambiguousSources = findAmbiguousSourcesAll(statPathsAll)
+
+    const sourceEnabled = (path: StatPath): boolean => statSourceIsEnabled(path, settings, ambiguousSources)
+    const inSelectedYear = (path: StatPath): boolean => {
+        const { year } = statParents.get(path)!
+        return year === null || selectedYears.includes(year)
+    }
+    const yearsOf = (paths: StatPath[]): Year[] => {
+        const years = new Set(paths.map(path => statParents.get(path)!.year))
+        return allYears.filter(year => years.has(year))
+    }
 
     const missingReason = (group: Group): MissingGroupReason | undefined => {
         // Restricted to this page, so a page that only goes back to 2010 doesn't name an earlier year.
-        const paths = Array.from(group.statPaths).filter(path => pageStatPaths.has(path))
-        if (paths.some(path => statIsEnabled(path, settings, ambiguousSources))) {
+        // A region with none of the group's statistics isn't missing them; a comparison warns as soon
+        // as one of its regions is showing nothing, even if the others still are.
+        const blockedEach = pageStatPathsEach
+            .map(pageStatPaths => Array.from(group.statPaths).filter(path => pageStatPaths.has(path)))
+            .filter(paths => paths.length > 0 && !paths.some(path => statIsEnabled(path, settings, ambiguousSources)))
+        if (blockedEach.length === 0) {
             return undefined
         }
-        // Statistics whose source is enabled are held back by their year alone.
-        const fromEnabledSources = paths.filter(path => statSourceIsEnabled(path, settings, ambiguousSources))
-        const pathsInSelectedYears = paths.filter((path) => {
-            const { year } = statParents.get(path)!
-            return year === null || selectedYears.includes(year)
-        })
-        if (pathsInSelectedYears.length > 0) {
-            // Blaming a source category requires that no year of the group has it enabled,
-            // otherwise "all of them are disabled" would be a lie.
-            const categories = new Set(pathsInSelectedYears.map(path => statParents.get(path)!.source.category))
-            const [category] = categories
-            if (categories.size === 1
-                && !fromEnabledSources.some(path => statParents.get(path)!.source.category === category)) {
-                return { kind: 'source', category }
+        const blocked = Array.from(new Set(blockedEach.flat()))
+
+        /** The disabled sources standing in the way, across the regions missing the group. */
+        const missingSources = (candidates: (paths: StatPath[]) => StatPath[]): MissingSources => {
+            const eachRegion = blockedEach.map(paths => new Set(candidates(paths).map(path => statParents.get(path)!.source.name)))
+            const sources = sortSources(eachRegion.flatMap(region => Array.from(region)))
+            return {
+                sources,
+                anySourceSuffices: sources.some(source => eachRegion.every(region => region.has(source))),
             }
         }
-        const yearsToSelect = new Set(fromEnabledSources.map(path => statParents.get(path)!.year))
-        const years = allYears.filter(year => yearsToSelect.has(year))
-        return years.length > 0 ? { kind: 'year', years } : undefined
+
+        // Statistics whose source is enabled are held back by their year alone.
+        const heldBackByYear = blocked.filter(sourceEnabled)
+        if (heldBackByYear.length > 0) {
+            return { kind: 'year', years: yearsOf(heldBackByYear) }
+        }
+        // Every source is disabled, so the statistics already in a selected year name the ones to enable.
+        if (blocked.some(inSelectedYear)) {
+            return { kind: 'source', ...missingSources(paths => paths.filter(inSelectedYear)) }
+        }
+        return { kind: 'yearAndSource', years: yearsOf(blocked), ...missingSources(paths => paths) }
     }
 
     const byReason = new Map<string, { reason: MissingGroupReason, groups: Group[] }>()
