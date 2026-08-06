@@ -59,7 +59,7 @@ test('comparison-warnings-enable-one-opens-edit-mode', async (t) => {
 
     await t.click(warningEditAction.nth(0))
 
-    // Edit mode, open on the sources the warning told the user to enable one of.
+    // Edit mode, open on the sources the warning named.
     await t.expect(filterBox.exists).ok()
     await t.expect(sourceCheckbox('Population', 'US Census').checked).eql(false)
 })

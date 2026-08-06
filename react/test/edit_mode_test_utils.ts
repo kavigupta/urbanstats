@@ -6,7 +6,6 @@ import { Selector } from 'testcafe'
  */
 
 export const editButton = Selector('[data-test-id=edit-mode-edit]')
-/** The way into edit mode a warning offers, in the phrase naming what to do about it. */
 export const warningEditAction = Selector('[data-test-id=warning-edit-action]')
 export const doneButton = Selector('[data-test-id=edit-mode-done]')
 export const filterBox = Selector('[data-test-id=edit-mode-filter]')

@@ -5,10 +5,7 @@ import { checkboxCategoryName } from '../page_template/settings'
 import type { MissingGroupReason } from '../page_template/statistic-settings'
 import type { Category, Group, Year } from '../page_template/statistic-tree'
 
-/**
- * What a warning says about the setting that is keeping a group's statistics off the page.
- * `onEdit` is unset on the edit tree's own warnings, which are already where the user would be sent.
- */
+/** `onEdit` is unset on the edit tree's own warnings, which are already where it would send the user. */
 export function warningMessage(reason: MissingGroupReason, groupOrCategory: Group | Category, onEdit?: () => void): ReactNode {
     switch (reason.kind) {
         case 'year':
@@ -33,12 +30,10 @@ export function warningMessage(reason: MissingGroupReason, groupOrCategory: Grou
     }
 }
 
-/** The part of a warning that names what to do about it, plain text when there's nowhere to send the user. */
 function editAction(label: string, onEdit?: () => void): ReactNode {
     return onEdit === undefined ? label : <EditButton onEdit={onEdit}>{label}</EditButton>
 }
 
-/** A button into edit mode where the settings the warning refers to are. */
 function EditButton({ onEdit, children }: { onEdit: () => void, children: ReactNode }): ReactNode {
     const colors = useColors()
     return (

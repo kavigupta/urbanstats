@@ -29,7 +29,7 @@ export interface WarningColumn {
     content: ReactNode
 }
 
-/** Stands in for the table as a whole, which has no rows for the warning to be placed against. */
+/** About the table as a whole, so there is no row to place this against. */
 const nothingSelectedContent: ReactNode = <b>No Statistics are selected</b>
 
 export function useArticleWarnings(onEdit: () => void): ArticleWarning[] {
