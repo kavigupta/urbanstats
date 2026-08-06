@@ -75,8 +75,8 @@ export function ArticleTable(props: {
     const layout = useArticleTableLayout('normal')
     const navContext = useContext(Navigator.Context)
 
-    // Subscribed to here rather than higher up so that edit mode, which shows every row
-    // regardless of the group settings, doesn't redo this filter on every checkbox click.
+    // Subscribed to here rather than in the panel, so changing the statistics shown doesn't
+    // re-render the map and the surrounding page.
     const filteredRows = useVisibleRows(props.rows, false)[0]
 
     const warnings = useArticleWarnings(props.onEdit)
