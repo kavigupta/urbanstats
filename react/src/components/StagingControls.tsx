@@ -4,9 +4,6 @@ import { useColors } from '../page_template/colors'
 import { Settings, useIsStaged } from '../page_template/settings'
 import { useMobileLayout } from '../utils/responsive'
 
-/**
- * The Discard/Apply banner for staged settings, or nothing when nothing is staged.
- */
 export function StagingControls(): ReactNode {
     const settings = useContext(Settings.Context)
     const colors = useColors()
