@@ -189,8 +189,6 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
     )
     const numExpandedExtras = expandedByStatIndex.filter(v => v).length
 
-    // Transposed, a warning stands in for a column, so it takes up a column's worth of width
-    // alongside the statistics that are still shown.
     const numTransposedColumns = dataByArticleStat[0].length + warningPlacements.length
 
     let widthColumns = computeComparisonWidthColumns(localArticlesToUse.length, includeOrdinals)
@@ -267,11 +265,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
 
     const { updatedNameSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames } = computeNameSpecsWithGroups(statisticNameHeaderSpecsOriginal)
 
-    /**
-     * Transposed, a warning stands in for a column, so it takes a column's worth of space in the
-     * header and in every row. Each warning shifts the ones after it along by one, so the nth
-     * warning's own column ends up n places later than the statistic it displaces.
-     */
+    // Each warning inserted shifts the ones after it along by one.
     const warningColumnAt = (warningIndex: number): number => warningPlacements[warningIndex].index + warningIndex
 
     function insertWarningColumns<T>(values: T[], valueForWarning: (warning: WarningRow) => T): T[] {
@@ -353,10 +347,8 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
         simpleOrdinals: true,
     }
 
-    // Transposing swaps which axis the statistics run along, so it swaps the headers, the row
-    // specs, which direction the expanded plots stretch in, and whether a warning stands in for
-    // a row or a column. With no statistics at all there are no transposed rows to hang columns
-    // off, so the warnings fall back to rows there.
+    // With no statistics at all there are no transposed rows to hang warning columns off, so the
+    // warnings fall back to rows there.
     const orientedSpecs = transpose
         ? {
                 superHeaderSpec: { headerSpecs: transposedHeaderSpecs, showBottomBar: false, groupNames: transposedGroupNames },

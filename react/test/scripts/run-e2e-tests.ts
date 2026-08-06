@@ -200,7 +200,7 @@ async function runTest(test: string): Promise<TestResult> {
         return { ...result, timeLimitSeconds }
     }
 
-    // Assertion failures take precedence: a test that fails stops early, so its screenshots aren't comparable
+    // A test that fails stops early, so its screenshots aren't comparable
     if (!result.assertionsPassed) {
         return { status: 'failure', duration: result.duration, reason: 'assertions' }
     }

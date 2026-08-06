@@ -59,8 +59,8 @@ export function ArticleTable(props: {
     const layout = useArticleTableLayout()
     const navContext = useContext(Navigator.Context)
 
-    // Subscribed to here rather than in the panel, so that changing which statistics are
-    // shown only re-renders the table, not the map and the surrounding page.
+    // Subscribed to here rather than in the panel, so changing the statistics shown doesn't
+    // re-render the map and the surrounding page.
     const settings = useSettings(groupYearKeys())
     const filteredRows = props.rows(settings)[0]
 
