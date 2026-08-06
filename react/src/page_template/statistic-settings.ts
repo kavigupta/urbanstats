@@ -16,8 +16,7 @@ export function statIsEnabled(statId: StatPath, settings: StatGroupSettings, sou
 }
 
 function statSourceIsEnabled(statId: StatPath, settings: StatGroupSettings, sourcesByCategory: AmbiguousSources): boolean {
-    const { source } = statParents.get(statId)!
-    return source === null || sourceApplies(source, settings, sourcesByCategory)
+    return sourceApplies(statParents.get(statId)!.source, settings, sourcesByCategory)
 }
 
 function sourceApplies(source: DataSource, settings: StatGroupSettings, sourcesByCategory: AmbiguousSources): boolean {
@@ -42,7 +41,7 @@ function yearKeys(years: Year[]): StatYearKey[] {
 function yearSourceKeys(): (StatYearKey | StatSourceKey)[] {
     return [
         ...yearKeys(allYears),
-        ...dataSources.flatMap(({ category, sources }) => sources.map(({ source }) => sourceEnabledKey({ category, name: source }))),
+        ...dataSources.flatMap(({ sources }) => sources.map(source => sourceEnabledKey(source))),
     ]
 }
 
@@ -292,15 +291,18 @@ function reasonKey(reason: MissingGroupReason): string {
  * Which selected groups are showing no statistics, and why. Groups are consolidated into their
  * category only when the whole category is missing for the same reason.
  */
-export function useMissingGroups(): MissingGroup[] {
-    const selectedGroups = useSelectedGroups()
-    const selectedYears = useSelectedYears()
-    const statPathsAll = useStatPathsAll()
-    const settings = useSettings(groupYearKeys())
-    const consolidateGroups = useConsolidateGroups()
-
-    const pageStatPaths = useMemo(() => new Set(statPathsAll.flat()), [statPathsAll])
-    const ambiguousSources = useMemo(() => findAmbiguousSourcesAll(statPathsAll), [statPathsAll])
+export function missingGroups(
+    { selectedGroups, selectedYears, statPathsAll, settings, availableTree }: {
+        selectedGroups: Group[]
+        selectedYears: Year[]
+        statPathsAll: StatPath[][]
+        settings: StatGroupSettings
+        availableTree: AvailableTree
+    },
+): MissingGroup[] {
+    const consolidateGroups = consolidateGroupsIn(availableTree)
+    const pageStatPaths = new Set(statPathsAll.flat())
+    const ambiguousSources = findAmbiguousSourcesAll(statPathsAll)
 
     const missingReason = (group: Group): MissingGroupReason | undefined => {
         // Which years the group has data for is asked of this page rather than of the whole tree,
@@ -319,10 +321,10 @@ export function useMissingGroups(): MissingGroup[] {
             // Everything in the selected years is disabled by its source, so we can name that source
             // category if they agree on one -- unless the group has a statistic from an enabled
             // source in another year, which would make "all of them are disabled" a lie.
-            const categories = new Set(pathsInSelectedYears.map(path => statParents.get(path)!.source?.category))
+            const categories = new Set(pathsInSelectedYears.map(path => statParents.get(path)!.source.category))
             const [category] = categories
-            if (categories.size === 1 && category !== undefined
-                && !fromEnabledSources.some(path => statParents.get(path)!.source?.category === category)) {
+            if (categories.size === 1
+                && !fromEnabledSources.some(path => statParents.get(path)!.source.category === category)) {
                 return { kind: 'source', category }
             }
         }
@@ -349,13 +351,22 @@ export function useMissingGroups(): MissingGroup[] {
         consolidateGroups(groups).map(groupOrCategory => ({ groupOrCategory, reason })))
 }
 
+export function useMissingGroups(): MissingGroup[] {
+    const selectedGroups = useSelectedGroups()
+    const selectedYears = useSelectedYears()
+    const statPathsAll = useStatPathsAll()
+    const settings = useSettings(groupYearKeys())
+    const availableTree = useAvailableTree()
+
+    return missingGroups({ selectedGroups, selectedYears, statPathsAll, settings, availableTree })
+}
+
 /**
  * If all of the groups in a category are present in-order in the list, replace them with that category
  *
  * `groups` **must** be a subset of available groups
  */
-function useConsolidateGroups(): (groups: Group[]) => (Group | Category)[] {
-    const { categories: availableCategories, groups: availableGroups } = useAvailableTree()
+function consolidateGroupsIn({ categories: availableCategories, groups: availableGroups }: AvailableTree): (groups: Group[]) => (Group | Category)[] {
     return (groups) => {
         const result: (Group | Category)[] = []
         let indexOfGroup = 0
@@ -421,20 +432,24 @@ function getAvailableCategories(contextStatPaths: StatPath[]): Category[] {
     return statsTree.filter(category => intersectsPage(category.statPaths, pageStatPaths))
 }
 
+interface AvailableTree { categories: Category[], groups: Set<Group> }
+
+export function getAvailableTree(statPathsAll: StatPath[][]): AvailableTree {
+    const contextStatPaths = statPathsAll.flat()
+    return {
+        categories: getAvailableCategories(contextStatPaths),
+        groups: new Set(getAvailableGroups(contextStatPaths)),
+    }
+}
+
 /**
  * The parts of the statistic tree this page has data for. Memoized on the page's own stat
  * paths, which only change on navigation: edit mode puts the whole tree on the table, so
  * otherwise this would be rescanned on every checkbox click and every keystroke in its filter.
  */
-function useAvailableTree(): { categories: Category[], groups: Set<Group> } {
+function useAvailableTree(): AvailableTree {
     const statPathsAll = useStatPathsAll()
-    return useMemo(() => {
-        const contextStatPaths = statPathsAll.flat()
-        return {
-            categories: getAvailableCategories(contextStatPaths),
-            groups: new Set(getAvailableGroups(contextStatPaths)),
-        }
-    }, [statPathsAll])
+    return useMemo(() => getAvailableTree(statPathsAll), [statPathsAll])
 }
 
 export function useAvailableGroups(category?: Category): Group[] {
