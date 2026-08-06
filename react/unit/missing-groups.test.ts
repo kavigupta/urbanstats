@@ -11,8 +11,8 @@ import type { StatGroupKey, StatSourceKey, StatYearKey } from '../src/page_templ
 import type { StatGroupSettings } from '../src/page_template/statistic-settings'
 import type { StatPath } from '../src/page_template/statistic-tree'
 
-// Only the hooks in statistic-settings go through the navigator, which builds the whole router as
-// it loads. These tests hand the statistics and the settings over directly instead.
+// Importing the navigator builds the whole router. These tests only use the non-hook exports,
+// which take the statistics and settings directly.
 mock.module('../src/navigation/Navigator', { namedExports: { Navigator: {} } })
 
 const { getAvailableGroups, getAvailableTree, getAvailableYears, groupYearKeys, missingGroups } = await import('../src/page_template/statistic-settings')
