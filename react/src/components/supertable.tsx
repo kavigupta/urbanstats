@@ -110,8 +110,6 @@ export function TableContents(props: TableContentsProps): ReactNode {
         [leftHeaderSpecs, superHeaderSpecs],
     )
 
-    // In screenshot mode the disclaimers move into numbered footnotes below the table, so the
-    // cells that carry one need to show the symbol that points at theirs.
     const withFootnote = (spec: CellSpec): CellSpec =>
         screenshotMode && spec.type === 'statistic-name' && spec.row?.disclaimer !== undefined
             ? { ...spec, footnoteSymbol: disclaimerFootnotes.getSymbol(spec.row.disclaimer) }
@@ -143,8 +141,7 @@ export function TableContents(props: TableContentsProps): ReactNode {
         ? undefined
         : { ...props.superHeaderSpec, headerSpecs: props.superHeaderSpec.headerSpecs.map(withFootnote) }
 
-    // Warnings are interleaved with the statistic rows, so the striping has to be counted out
-    // over both rather than read off the statistic's index.
+    // Warnings are interleaved with the statistic rows, so the stripes are counted over both.
     const warningRows = props.warningRows ?? []
     const bodyRows: ReactNode[] = []
     let nextWarning = 0
