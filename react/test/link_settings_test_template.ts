@@ -4,11 +4,9 @@ import { ensureCategoryExpanded, enterEditMode, withEditMode } from './edit_mode
 import { arrayFromSelector, getLocation, safeReload, screencap, target, urbanstatsFixture } from './test_utils'
 
 /**
- * The statistic tree is on the table's edit mode, and Main has to be expanded to reach the
- * Population group whenever Population is unselected (a selected group is shown either way).
- *
- * Also needed after leaving staging, since the Discard/Apply buttons double as Done and
- * close edit mode with them.
+ * Main has to be expanded to reach the Population group whenever Population is unselected (a
+ * selected group is shown either way). Needed again after leaving staging, since the
+ * Discard/Apply buttons double as Done.
  */
 async function openTree(t: TestController): Promise<void> {
     await enterEditMode(t)
