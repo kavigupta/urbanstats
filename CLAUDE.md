@@ -25,3 +25,13 @@ Read these when the task calls for them, rather than up front:
 | [`.github/code-review-guidelines.md`](.github/code-review-guidelines.md) | reviewing a change |
 
 DO NOT run tests as part of a code review.
+
+## Some important locations
+
+Most of the time, there is already a live website being served locally at `localhost:8000`. On machine `unimatrix` the website is loaded from `~/temp/site`, build into this directory. On machine `teroknor`, the website is loaded from `~/urbanstats-site-backup/densitydb.github.io/`. To build the website, run
+
+```
+python create_website.py --site-folder <location> --mode dev --target scripts
+```
+
+in bash or zsh.
