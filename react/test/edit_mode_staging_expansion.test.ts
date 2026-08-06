@@ -12,7 +12,6 @@ import { getLocation, target, urbanstatsFixture } from './test_utils'
 
 const californiaPage = `${target}/article.html?longname=California%2C+USA`
 
-/** A link that differs from the defaults only in having Population, a group of Main, off. */
 let populationOffLink: string
 
 urbanstatsFixture('generate link that turns off a group', californiaPage)
@@ -37,8 +36,7 @@ urbanstatsFixture('visit link that turns off a group in a collapsed category', c
 
 test('the category hiding a staged change is expanded', async (t) => {
     await t.expect(Selector('[data-test-id=staging_controls]').exists).ok()
-    // Edit mode auto-opened, and Main with it, since collapsed it would show no sign of the
-    // group staging turns off.
+    // Main is expanded: collapsed, it would show no sign of the group staging turns off.
     await t.expect(filterBox.exists).ok()
     await t.expect(categoryToggleButton('main', 'Collapse').exists).ok()
 

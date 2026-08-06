@@ -18,7 +18,6 @@ import { ColumnIdentifier, valueOnlyColumns } from './table'
 
 const allColumns: ColumnIdentifier[] = ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
 
-/** Percent of the table the name column takes in mobile edit mode, where it has fewer columns to compete with. */
 const mobileEditWidthLeftHeader = 58
 
 /** A plot for each row whose extras are currently expanded, and undefined for the rest. */
@@ -34,14 +33,12 @@ export function useExpandedPlotSpecs(rows: ArticleRow[], article: Article): (Plo
     )
 }
 
-/** The column shape both the normal article table and its edit mode are laid out against. */
 export function useArticleTableLayout(mode: 'normal' | 'edit'): TableLayout {
     const [simpleOrdinals] = useSetting('simple_ordinals')
     const isMobile = useMobileLayout()
     const screenshotMode = useScreenshotMode()
 
-    // On mobile, edit mode drops every column but the value, and the name column gets a
-    // wider share since it no longer competes with them.
+    // On mobile the checkbox tree needs the room the other columns would take.
     if (mode === 'edit' && isMobile) {
         return {
             simpleOrdinals,

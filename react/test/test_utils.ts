@@ -75,9 +75,8 @@ export async function warningRowNames(): Promise<string[]> {
 }
 
 /**
- * Statistic selection lives on the table's edit mode, so choosing statistics means
- * opening it. Categories, years and sources are always reachable there; a group inside
- * a collapsed category is not (see checkIndividualStat).
+ * Categories, years and sources are always reachable on the edit tree; a group inside a
+ * collapsed category is not (see checkIndividualStat).
  */
 export async function checkTextboxes(t: TestController, txts: string[]): Promise<void> {
     await withEditMode(t, async () => {
@@ -100,7 +99,6 @@ export async function checkIndividualStat(t: TestController, category: string, s
     })
 }
 
-/** Checks every unchecked category, year and source in edit mode; true if it checked any. */
 async function checkUncheckedStatBoxes(t: TestController): Promise<boolean> {
     const { category, year, source } = editCheckboxPrefixes
     let checkedAny = false
@@ -124,7 +122,7 @@ export async function checkAllCategoryBoxes(t: TestController): Promise<void> {
             // checkUncheckedStatBoxes does the work
         }
     })
-    // The appearance and person-circle settings these screenshots are taken under.
+    // The appearance settings, which are still in the sidebar.
     await withHamburgerMenu(t, async () => {
         const checkboxes = Selector('div.checkbox-setting:not([inert] *)')
             .filter((node) => {
@@ -538,7 +536,6 @@ export async function clickUniverseFlag(t: TestController, alt: string): Promise
     })
 }
 
-/** The two window sizes test templates parameterized over layout run at. */
 export async function resizeForPlatform(t: TestController, platform: 'mobile' | 'desktop'): Promise<void> {
     switch (platform) {
         case 'mobile':
@@ -550,7 +547,6 @@ export async function resizeForPlatform(t: TestController, platform: 'mobile' | 
     }
 }
 
-/** Unchecks every category checkbox of the edit table's statistic tree. */
 export async function uncheckAllCategories(t: TestController): Promise<void> {
     for (const check of await arrayFromSelector(Selector(`input[data-test-id^=${editCheckboxPrefixes.category}]`))) {
         if (await check.checked) {

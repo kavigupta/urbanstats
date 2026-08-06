@@ -4,30 +4,22 @@ import { categoryCheckbox, clearFilterButton, doneButton, editButton, filterBox,
 import { resizeForPlatform, safeReload, screencap, uncheckAllCategories, urbanstatsFixture } from './test_utils'
 
 /**
- * The parts of edit mode that behave the same on the article table and the comparison
- * table: that the Edit button opens and closes the tree, that it doesn't survive a reload,
- * that arriving via a settings link opens it with the staging controls on the table, that
- * the filter narrows the tree, that a stat's plot and its metadata extras render below its
- * row, that a selection leaving the table with nothing to show warns on the tree itself, that
- * such a warning is itself a way back into edit mode, and what the mobile layout gives up.
- *
- * The table-specific behavior (transposition, the per-region columns) lives in each
- * caller's file.
+ * The parts of edit mode that behave the same on the article table and the comparison table.
+ * The table-specific behavior (transposition, the per-region columns) lives in each caller's
+ * file.
  */
 export function editModeSharedTests(spec: {
     /** Prefixes the fixture names, so the two callers' fixtures stay distinguishable. */
     name: string
     page: string
-    /** The table the edit tree lives on. */
+    /** A selector for the table the edit tree lives on. */
     scope: string
-    /** The Edit button's text, which names what that table is editing. */
     editButtonLabel: string
     /**
      * Names the expanded plot should carry a series for. Empty for a table with a single
      * column, where the plot has nothing to distinguish.
      */
     expectedPlotSeries: string[]
-    /** A page whose regions have congressional representatives, and the ones to expect. */
     congressional: { page: string, expectedRegions: string[] }
 }): void {
     const table = Selector(spec.scope)
@@ -41,14 +33,12 @@ export function editModeSharedTests(spec: {
     urbanstatsFixture(`${spec.name} edit mode shared`, spec.page)
 
     test('edit mode toggles the checkbox tree on the table', async (t) => {
-        // Normal view: the Edit button, and no tree.
         await t.expect(editButton.innerText).eql(spec.editButtonLabel)
         await t.expect(mainCategory.exists).notOk()
         await screencap(t)
 
         await t.click(editButton)
 
-        // Edit view: Done + filter, and the tree with Main checked by default.
         await t.expect(doneButton.exists).ok()
         await t.expect(filterBox.exists).ok()
         await t.expect(mainCategory.checked).ok()
@@ -63,7 +53,6 @@ export function editModeSharedTests(spec: {
         await t.click(editButton)
         await t.typeText(filterBox, 'gene')
 
-        // Filtering expands the matching categories and drops the rest.
         await t.expect(interactableGroupCheckbox('generation_genx').exists).ok()
         await t.expect(mainCategory.exists).notOk()
 
@@ -73,7 +62,6 @@ export function editModeSharedTests(spec: {
 
     test('the filter can be cleared with its x button', async (t) => {
         await t.click(editButton)
-        // The button is only offered when there is something to clear.
         await t.expect(clearFilterButton.exists).notOk()
 
         await t.typeText(filterBox, 'gene')
@@ -83,7 +71,6 @@ export function editModeSharedTests(spec: {
 
         await t.expect(filterBox.value).eql('')
         await t.expect(clearFilterButton.exists).notOk()
-        // The whole tree is back, not just the box emptied.
         await t.expect(mainCategory.exists).ok()
     })
 
@@ -96,7 +83,6 @@ export function editModeSharedTests(spec: {
 
         const histogram = table.find('.histogram-svg-panel')
         await t.expect(histogram.exists).ok()
-        // Every column is plotted, not just the first.
         for (const series of spec.expectedPlotSeries) {
             await t.expect(histogram.textContent).contains(series)
         }
@@ -111,12 +97,11 @@ export function editModeSharedTests(spec: {
         await t.click(year2020)
 
         // The row stays -- it's the only way back to the checkbox -- and the warning takes the
-        // place of its values, which on a comparison means across every region's column.
+        // place of its values.
         await t.expect(groupWarning('population').innerText).match(/^\s*Select .*2020.* to see this statistic\.\s*$/)
         await t.expect(populationRow.find('.testing-statistic-value').exists).notOk()
         await screencap(t)
 
-        // Reselecting the year puts the values back and takes the warning away.
         await t.click(year2020)
         await t.expect(populationRow.find('.testing-statistic-value').exists).ok()
         await t.expect(groupWarning('population').exists).notOk()
@@ -134,7 +119,7 @@ export function editModeSharedTests(spec: {
 
         await t.click(editAction.nth(0))
 
-        // Edit mode, open on the year checkboxes the warning told the user to select from.
+        // Edit mode, open on the year checkboxes the warning named.
         await t.expect(filterBox.exists).ok()
         await t.expect(year2020.checked).eql(false)
     })
@@ -158,13 +143,10 @@ export function editModeSharedTests(spec: {
 
         await safeReload(t)
 
-        // Not persisted: we come back in the normal (non-edit) view.
         await t.expect(editButton.exists).ok()
         await t.expect(doneButton.exists).notOk()
     })
 
-    // Reaching the page via a settings link that differs from the saved settings should open
-    // edit mode automatically and surface the staging controls on the table.
     urbanstatsFixture(`${spec.name} edit mode staging`, spec.page, async (t) => {
         // Save a setting first, so the link enters staging instead of silently applying.
         await t.click(Selector('input[data-test-id=use_imperial]'))
@@ -172,12 +154,10 @@ export function editModeSharedTests(spec: {
     })
 
     test('edit mode auto-opens in staging', async (t) => {
-        // Auto-opened into edit mode (filter present)...
         await t.expect(filterBox.exists).ok()
-        // ...with the staging box above the table, and no Done button (Discard/Apply replace it).
         await t.expect(stagingControls.exists).ok()
+        // Discard/Apply replace the Done button.
         await t.expect(doneButton.exists).notOk()
-        // Staged-changed group checkboxes are highlighted.
         await t.expect(table.find('input[data-test-highlight=true]').exists).ok()
         await screencap(t)
     })
@@ -206,8 +186,6 @@ export function editModeSharedTests(spec: {
         await screencap(t, { fullPage: false })
     })
 
-    // The congressional representatives table is a metadata "extra"; it should render below
-    // its row in edit mode once the stat is enabled, covering every region on the table.
     urbanstatsFixture(`${spec.name} edit mode congressional`, spec.congressional.page)
 
     const congressionalGroup = groupCheckbox('metadata_show_metadata_congressional_representatives')
@@ -218,7 +196,6 @@ export function editModeSharedTests(spec: {
         await t.typeText(filterBox, 'Congressional')
         await t.expect(congressionalGroup.exists).ok()
 
-        // Unchecked: just the row, no table.
         await t.expect(congressionalWidget.exists).notOk()
 
         await t.click(congressionalGroup)

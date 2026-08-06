@@ -138,11 +138,7 @@ export interface CategoryTreeState {
     groups: GroupTreeState[]
 }
 
-/**
- * State for one category of the statistic tree. The tree is rendered on both the article
- * table's edit mode and the comparison table's, with different layouts; sharing the state
- * here keeps them from disagreeing about what a checkbox means.
- */
+/** Shared by the article table's edit mode and the comparison table's, which lay the tree out differently. */
 export function useCategoryTreeState(category: Category): CategoryTreeState {
     const settings = useContext(Settings.Context)
     const availableGroups = useAvailableGroups(category)
@@ -203,13 +199,10 @@ function searchMatch(searchTerm: string, target: string): boolean {
 }
 
 /**
- * The categories a search term shows. A category whose own name matches is kept
- * whole; otherwise it is narrowed to its matching groups, and dropped if none match.
- *
- * Narrowing produces a category whose `contents` are just the matches, which scopes
- * everything downstream (including useCategoryTreeState) to those groups — so while
- * searching, the category checkbox acts on what's visible rather than on the groups
- * the search is hiding.
+ * A category whose own name matches is kept whole; otherwise it is narrowed to its matching
+ * groups. Narrowing scopes everything downstream (including useCategoryTreeState) to those
+ * groups, so while searching, the category checkbox acts on what's visible rather than on
+ * the groups the search is hiding.
  */
 export function useCategoriesMatchingSearch(searchTerm: string): Category[] {
     const { categories, groups } = useAvailableTree()

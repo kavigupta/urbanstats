@@ -88,7 +88,6 @@ export interface TableContentsProps {
     horizontalPlotSpecs: (PlotSpec | undefined)[]
     verticalPlotSpecs: (PlotSpec | undefined)[]
     topLeftSpec: TopLeftCellSpec
-    /** Omitted by the tables that offer no edit mode. */
     editButton?: TableEditButton
     /** Warnings shown in place of the statistics they are about. */
     warningRows?: WarningRow[]
@@ -146,8 +145,6 @@ export function TableContents(props: TableContentsProps): ReactNode {
         ? undefined
         : { ...props.superHeaderSpec, headerSpecs: props.superHeaderSpec.headerSpecs.map(withFootnote) }
 
-    // The button belongs to the table as a whole, so it's routed here rather than being left
-    // for the caller to attach to one of the two places it can sit.
     const placedIn = (placement: TableEditButton['placement']): EditModeButton | undefined =>
         props.editButton?.placement === placement ? props.editButton : undefined
 
@@ -243,7 +240,6 @@ export function TableFrame(props: {
     layout: MeasuredTableLayout
     superHeaderSpec?: SuperHeaderSpec
     topLeftSpec: TopLeftCellSpec
-    /** Set only when the table puts its Edit button in the super header's left spacer. */
     superHeaderEditButton?: EditModeButton
     blankColumns?: number[]
     minHeight?: string
@@ -298,10 +294,6 @@ function WarningTableRow(props: { layout: MeasuredTableLayout, stripeIndex: numb
     )
 }
 
-/**
- * A warning where a row's values would be, spanning the columns it stands in for -- or the
- * whole row, when there is no statistic name beside it to leave room for.
- */
 export function WarningRowMessage(props: { layout: MeasuredTableLayout, content: ReactNode, fullRow?: boolean }): ReactNode {
     const colors = useColors()
     const width = props.fullRow === true ? 100 : columnFullWidths(props.layout).reduce((a, b) => a + b, 0)
@@ -385,8 +377,7 @@ function SuperTableRow(props: {
 /**
  * The shape every statistic row has: a left header followed by a cell per column, and below
  * it the blocks the row's extras call for -- its expanded plot and its representatives
- * table. The normal tables and the edit tree differ only in what they put in the left
- * header, so they share this.
+ * table. Callers differ only in what they put in the left header.
  */
 export function StatisticTableRow(props: {
     layout: MeasuredTableLayout
@@ -394,7 +385,7 @@ export function StatisticTableRow(props: {
     leftHeader: ReactNode
     cellSpecs: CellSpec[]
     plotSpec?: PlotSpec
-    /** Omits the (large) representatives table; the edit tree does this for statistics that are off. */
+    /** Unset omits the (large) representatives table, as the edit tree does for statistics that are off. */
     withCongressional?: boolean
     minHeight?: string
     isHighlighted?: boolean

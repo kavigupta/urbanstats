@@ -54,21 +54,19 @@ function checkboxByTestId(testId: string, extraCss = ''): CheckboxSelector {
         .addCustomDOMProperties({ indeterminate: el => (el as HTMLInputElement).indeterminate }) as CheckboxSelector
 }
 
-/** A category's checkbox, which is reachable whether or not the category is expanded. */
 export function categoryCheckbox(categoryId: string): CheckboxSelector {
     return checkboxByTestId(`${editCheckboxPrefixes.category}${categoryId}`)
 }
 
 /**
- * A group's checkbox. An unselected group lives inside its category's collapsible section,
- * so it is only interactable once the category is expanded -- see `setCategoryExpanded`.
- * Selected groups are shown whether or not their category is expanded.
+ * An unselected group lives inside its category's collapsible section, so it is only
+ * interactable once the category is expanded -- see `interactableGroupCheckbox` and
+ * `setCategoryExpanded`. Selected groups are shown whether or not their category is.
  */
 export function groupCheckbox(groupId: string): CheckboxSelector {
     return checkboxByTestId(`${editCheckboxPrefixes.group}${groupId}`)
 }
 
-/** As `groupCheckbox`, but only matching while the group's category is actually expanded. */
 export function interactableGroupCheckbox(groupId: string): CheckboxSelector {
     return checkboxByTestId(`${editCheckboxPrefixes.group}${groupId}`, ':not([inert] *)')
 }
@@ -94,25 +92,22 @@ export function editCheckbox(txt: string): Selector {
 }
 
 /**
- * A statistic row inside a multi-row group, by the name it displays. Matched via the group
- * checkbox it points at, which distinguishes these rows from the year and source rows above
- * (whose labels carry the same text). A group with a single row collapses into that row,
- * which then carries the checkbox itself, so it has no rows of this kind.
+ * A statistic row inside a multi-row group. Matched via the group checkbox it points at,
+ * which distinguishes these rows from the year and source rows above (whose labels carry the
+ * same text). A group with a single row collapses into that row, so it has none of these.
  */
 export function groupMemberRow(groupId: string, name: string): Selector {
     return Selector(`label[for=edit-checkbox-${groupId}]`).withExactText(name)
 }
 
 /**
- * The warning on a group's own row in the edit tree, which stands where the group's values
- * would be. A group whose whole category is missing for the same reason carries the
- * category's warning, since its groups are rows apart on the tree.
+ * A group whose whole category is missing for the same reason carries the category's warning,
+ * since its groups are rows apart on the tree.
  */
 export function groupWarning(groupId: string): Selector {
     return groupCheckbox(groupId).parent('.for-testing-table-row').find('[data-test-id=article-warning]')
 }
 
-/** Scopes selectors to the table the edit tree is on, rather than the rest of the page. */
 export const articleTableScope = '.stats_table'
 export const comparisonTableScope = '[data-test-id=comparison-table]'
 
@@ -125,20 +120,18 @@ export function categoryToggleButton(categoryId: string, direction: 'Expand' | '
     return Selector(`[data-category-id=${categoryId}]`).withAttribute('aria-label', new RegExp(`^${direction} `))
 }
 
-/** Categories are collapsed by default, and the toggle animates. */
 export async function setCategoryExpanded(t: TestController, categoryId: string, expanded: boolean): Promise<void> {
     await t.click(categoryToggleButton(categoryId, expanded ? 'Expand' : 'Collapse'))
     await t.wait(collapseAnimationMs)
 }
 
-/** Expands a category whose state the caller doesn't know, since expansion is a persisted setting. */
+/** For a category whose state the caller doesn't know, since expansion is a persisted setting. */
 export async function ensureCategoryExpanded(t: TestController, categoryId: string): Promise<void> {
     if (await categoryToggleButton(categoryId, 'Expand').exists) {
         await setCategoryExpanded(t, categoryId, true)
     }
 }
 
-/** As `ensureCategoryExpanded`, in the other direction. */
 export async function ensureCategoryCollapsed(t: TestController, categoryId: string): Promise<void> {
     if (await categoryToggleButton(categoryId, 'Collapse').exists) {
         await setCategoryExpanded(t, categoryId, false)

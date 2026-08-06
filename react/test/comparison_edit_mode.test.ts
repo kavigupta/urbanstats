@@ -4,11 +4,7 @@ import { editModeSharedTests } from './edit_mode_test_template'
 import { comparisonTableScope, doneButton, editButton, filterBox, groupCheckbox, groupMemberRow, setCategoryExpanded, yearCheckbox } from './edit_mode_test_utils'
 import { comparisonPage, downloadCSV, screencap, target, urbanstatsFixture } from './test_utils'
 
-/**
- * Tests for what the comparison table's "edit statistics" mode does that the article
- * table's doesn't: a column of values per region being compared, and coming out of
- * transpose. The behavior the two share is in editModeSharedTests.
- */
+/** What the comparison table's edit mode does that the article table's doesn't. */
 
 const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 const swSGV = 'Southwest San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
@@ -69,12 +65,10 @@ test('csv export in edit mode covers the selected statistics, not the whole tree
     await t.expect(csvContent).notContains('White %')
 })
 
-// A transposed comparison puts the statistics across the top; edit mode has to undo that,
-// since the tree runs down the left column.
+// A transposed comparison puts the statistics across the top, which edit mode has to undo.
 urbanstatsFixture('comparison edit mode transposed', transposed)
 
 test('editing a transposed comparison pops out of transpose', async (t) => {
-    // Transposed: the top-left header names the left column "Region".
     const regionHeader = comparisonTable.find('.serif').withExactText('Region')
     await t.expect(regionHeader.exists).ok()
     await screencap(t)

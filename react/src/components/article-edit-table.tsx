@@ -21,8 +21,6 @@ export function ArticleEditTable(props: {
     const allRows = rowsByArticle[0]
     const { longname } = props.article
 
-    // Keep the expandable per-stat plots ("extras") available in edit mode, driven
-    // by the same rowExpandedKey setting the normal table uses.
     const plotSpecs = useExpandedPlotSpecs(allRows, props.article)
 
     const { simpleOrdinals, onlyColumns } = columnLayout

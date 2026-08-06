@@ -3,27 +3,21 @@ import React, { ReactNode } from 'react'
 import { useScreenshotMode } from './screenshot'
 
 /**
- * What a table's header offers for "edit mode", in which the statistic category/group
- * checkbox tree is replicated directly on the table. The tree itself lives in
- * `edit-table.tsx`; this is only the way in and out of it.
+ * The way in and out of "edit mode", in which the statistic category/group checkbox tree is
+ * replicated directly on the table. The tree itself lives in `edit-table.tsx`.
  *
- * The header is passed down as part of the top-left cell's spec, so the generic table
- * components stay unaware of edit mode: a cell given no `EditModeHeader` renders the plain
- * header.
+ * This is passed down as part of the top-left cell's spec, so the generic table components
+ * stay unaware of edit mode: a cell given no `EditModeHeader` renders the plain header.
  */
 export type EditModeHeader = EditModeButton | EditModeOpenHeader
 
-/** The way in to edit mode, shown while it's closed. */
 export interface EditModeButton {
     open: false
     onEdit: () => void
     label: string
 }
 
-/**
- * The way in to edit mode, and where on the table to hang it. A table declares this once, so
- * it can't end up with a button in both places.
- */
+/** Declared once per table, so a table can't end up with a button in both places. */
 export interface TableEditButton extends EditModeButton {
     /**
      * The top-left cell, except where it's too narrow to hold both a button and the column's
@@ -41,9 +35,8 @@ export interface EditModeOpenHeader {
 }
 
 /**
- * Whether the Edit button should be drawn, and the button itself if so. Screenshots don't get
- * it, since there's nobody there to click it -- and the top-left cell lays itself out around
- * whether the button is there, so it asks the same question.
+ * Screenshots don't get the button, since there's nobody there to click it. The top-left cell
+ * lays itself out around whether the button is there, so it asks the same question.
  */
 export function useEnterEditModeButton(editMode: EditModeHeader | undefined): ReactNode | undefined {
     const isScreenshot = useScreenshotMode()
@@ -53,7 +46,6 @@ export function useEnterEditModeButton(editMode: EditModeHeader | undefined): Re
     return <HeaderButton onClick={editMode.onEdit} testId="edit-mode-edit">{editMode.label}</HeaderButton>
 }
 
-/** The top-left cell while the edit tree is open: the way out of it, and the tree's search box. */
 export function EditModeTopLeftHeader({ header, width }: { header: EditModeOpenHeader, width: number }): ReactNode {
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '1px', width: `${width}%` }}>
@@ -100,7 +92,6 @@ export function EditModeTopLeftHeader({ header, width }: { header: EditModeOpenH
     )
 }
 
-/** A button sized to sit in the table's top-left cell, alongside the "Statistic" header text. */
 function HeaderButton({ onClick, testId, children }: { onClick: () => void, testId?: string, children: ReactNode }): ReactNode {
     return (
         <button
