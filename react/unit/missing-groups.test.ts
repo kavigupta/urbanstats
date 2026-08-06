@@ -32,7 +32,7 @@ const california: StatPath[] = [
 const massachusetts = california
 
 /** A Canadian province: the same statistics, but from the Canadian census instead of the US one. */
-const ontario: StatPath[] = [
+const alberta: StatPath[] = [
     'population_2021_canada', 'population_2011_canada', 'population_change_2011_canada',
     'gpw_population',
     'generation_silent_canada', 'generation_boomer_canada', 'generation_genx_canada',
@@ -40,9 +40,16 @@ const ontario: StatPath[] = [
     'area',
 ]
 
+const ontario = alberta
+
 type EnabledKey = StatGroupKey | StatYearKey | StatSourceKey
 
 const populationGroup: EnabledKey[] = ['show_stat_group_population']
+
+const generationGroups: EnabledKey[] = [
+    'show_stat_group_generation_silent', 'show_stat_group_generation_boomer', 'show_stat_group_generation_genx',
+    'show_stat_group_generation_millenial', 'show_stat_group_generation_genz', 'show_stat_group_generation_genalpha',
+]
 
 function settingsWith(enabled: EnabledKey[]): StatGroupSettings {
     const settings = Object.fromEntries(groupYearKeys().map(key => [key, false])) as StatGroupSettings
@@ -68,7 +75,49 @@ function warnings(statPathsAll: StatPath[][], enabled: EnabledKey[]): string[] {
     })
 }
 
-void test('a year no enabled source has is about the year', () => {
+void test('a statistic that only the disabled source has names that source', () => {
+    // Issue #2165: the Population category has other sources, and they are enabled -- enabling them
+    // is what makes the population statistic itself show up -- but they have no generation data.
+    assert.deepStrictEqual(
+        warnings([california], [
+            ...populationGroup, ...generationGroups, 'show_stat_year_2020',
+            'show_stat_source_Population_GHSL', 'show_stat_source_Population_Canadian Census',
+        ]),
+        ['Generation: **US Census** is disabled. Enable it to see these statistics.'],
+    )
+})
+
+void test('regions missing a statistic for different sources name all of them', () => {
+    assert.deepStrictEqual(
+        warnings([california, alberta], [
+            ...populationGroup, ...generationGroups, 'show_stat_year_2020',
+            'show_stat_source_Population_GHSL',
+        ]),
+        ['Generation: **US Census** and **Canadian Census** are disabled. Enable them to see these statistics.'],
+    )
+})
+
+void test('a comparison warns about the source one of its regions is missing', () => {
+    // The Canadian census is enabled, so Alberta's generation statistics are still in the table;
+    // the warning is about the column California is no longer filling in.
+    assert.deepStrictEqual(
+        warnings([california, alberta], [
+            ...populationGroup, ...generationGroups, 'show_stat_year_2020',
+            'show_stat_source_Population_GHSL', 'show_stat_source_Population_Canadian Census',
+        ]),
+        ['Generation: **US Census** is disabled. Enable it to see these statistics.'],
+    )
+})
+
+void test('every source disabled says so without singling one out', () => {
+    assert.deepStrictEqual(
+        warnings([california, ontario], [...populationGroup, 'show_stat_year_2020']),
+        ['Population: **US Census**, **Canadian Census**, and **GHSL** are disabled. Enable one to see this statistic.'],
+    )
+})
+
+void test('a year the enabled source lacks is about the year, not the source', () => {
+    // GHSL is enabled and simply has no data for 2010, so selecting 2020 is what brings it back.
     assert.deepStrictEqual(
         warnings([massachusetts, california], [
             ...populationGroup, 'show_stat_year_2010', 'show_stat_source_Population_GHSL',
@@ -77,16 +126,11 @@ void test('a year no enabled source has is about the year', () => {
     )
 })
 
-void test('every year the page has is named, not every year the tree has', () => {
+void test('no year selected and no source enabled asks for both', () => {
+    // Issue #2164: neither half of this on its own would bring the statistic back, so naming only
+    // one of them (or, as before, warning about nothing at all) leaves the page unexplained.
     assert.deepStrictEqual(
-        warnings([california], [...populationGroup, 'show_stat_source_Population_US Census']),
-        ['Population: Select **2020**, **2010**, or **2000** to see this statistic.'],
-    )
-})
-
-void test('no source enabled is about the sources', () => {
-    assert.deepStrictEqual(
-        warnings([california, ontario], [...populationGroup, 'show_stat_year_2020']),
-        ['Population: All **Population Sources** are disabled. Enable one to see this statistic.'],
+        warnings([california], [...populationGroup, 'show_stat_source_Population_Canadian Census']),
+        ['Population: Select **2020**, **2010**, or **2000** and enable **US Census** or **GHSL** to see this statistic.'],
     )
 })
