@@ -1,9 +1,8 @@
 import React, { ReactNode } from 'react'
 
 import { useColors } from '../page_template/colors'
-import { checkboxCategoryName } from '../page_template/settings'
-import type { MissingGroupReason } from '../page_template/statistic-settings'
-import type { Category, Group, Year } from '../page_template/statistic-tree'
+import type { MissingGroupReason, MissingSources } from '../page_template/statistic-settings'
+import type { Category, Group } from '../page_template/statistic-tree'
 
 /** `onEdit` is unset on the edit tree's own warnings, which are already where it would send the user. */
 export function warningMessage(reason: MissingGroupReason, groupOrCategory: Group | Category, onEdit?: () => void): ReactNode {
@@ -13,21 +12,38 @@ export function warningMessage(reason: MissingGroupReason, groupOrCategory: Grou
                 <>
                     {editAction('Select', onEdit)}
                     {' '}
-                    <YearList years={reason.years} />
+                    <BoldList items={reason.years} conjunction="or" />
                     {` to see ${theseStatistics(groupOrCategory)}.`}
                 </>
             )
         case 'source':
             return (
                 <>
-                    {'All '}
-                    <b>{checkboxCategoryName(reason.category)}</b>
-                    {' are disabled. '}
-                    {editAction('Enable one', onEdit)}
+                    <BoldList items={reason.sources} conjunction="and" />
+                    {reason.sources.length === 1 ? ' is disabled. ' : ' are disabled. '}
+                    {editAction(enableAction(reason), onEdit)}
+                    {` to see ${theseStatistics(groupOrCategory)}.`}
+                </>
+            )
+        case 'yearAndSource':
+            return (
+                <>
+                    {editAction('Select', onEdit)}
+                    {' '}
+                    <BoldList items={reason.years} conjunction="or" />
+                    {' and enable '}
+                    <BoldList items={reason.sources} conjunction={reason.anySourceSuffices ? 'or' : 'and'} />
                     {` to see ${theseStatistics(groupOrCategory)}.`}
                 </>
             )
     }
+}
+
+function enableAction({ sources, anySourceSuffices }: MissingSources): string {
+    if (sources.length === 1) {
+        return 'Enable it'
+    }
+    return anySourceSuffices ? 'Enable one' : 'Enable them'
 }
 
 function editAction(label: string, onEdit?: () => void): ReactNode {
@@ -66,37 +82,13 @@ function theseStatistics(groupOrCategory: Group | Category): string {
     }
 }
 
-function YearList({ years }: { years: Year[] }): ReactNode {
-    switch (years.length) {
-        case 0:
-            return null
-        case 1:
-            return <b>{years[0]}</b>
-        case 2:
-            return (
-                <>
-                    <b>{years[0]}</b>
-                    {' or '}
-                    <b>{years[1]}</b>
-                </>
-            )
-        case 3:
-            return (
-                <>
-                    <b>{years[0]}</b>
-                    {', '}
-                    <b>{years[1]}</b>
-                    {', or '}
-                    <b>{years[2]}</b>
-                </>
-            )
-        default:
-            return (
-                <>
-                    <b>{years[0]}</b>
-                    {', '}
-                    <YearList years={years.slice(1)} />
-                </>
-            )
-    }
+/** e.g. `2020`, `2020 or 2010`, `2020, 2010, or 2000`. */
+function BoldList({ items, conjunction }: { items: (string | number)[], conjunction: 'or' | 'and' }): ReactNode {
+    return items.map((item, index) => (
+        <React.Fragment key={item}>
+            {index === 0 ? '' : items.length > 2 ? ', ' : ' '}
+            {index > 0 && index === items.length - 1 ? `${conjunction} ` : ''}
+            <b>{item}</b>
+        </React.Fragment>
+    ))
 }

@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { categoryCheckbox, filterBox, sourceCheckbox, warningEditAction, withEditMode, yearCheckbox } from './edit_mode_test_utils'
+import { categoryCheckbox, editCheckbox, filterBox, sourceCheckbox, warningEditAction, withEditMode, yearCheckbox } from './edit_mode_test_utils'
 import { arrayFromSelector, checkTextboxes, comparisonPage, screencap, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames } from './test_utils'
 
 /**
@@ -48,7 +48,7 @@ urbanstatsFixture('comparison warnings across data sources', comparisonPage([
 test('comparison-warnings-all-sources-disabled', async (t) => {
     // GHSL is off by default, so turning off the two censuses leaves nothing enabled
     await checkTextboxes(t, ['US Census', 'Canadian Census'])
-    await t.expect(warningNamed('All Population Sources are disabled. Enable one to see this statistic.', 'Population').exists).ok()
+    await t.expect(warningNamed('US Census, Canadian Census, and GHSL are disabled. Enable one to see this statistic.', 'Population').exists).ok()
     await t.expect(Selector('a').withExactText('Area').exists).ok()
     await screencap(t)
 })
@@ -62,6 +62,20 @@ test('comparison-warnings-enable-one-opens-edit-mode', async (t) => {
     // Edit mode, open on the sources the warning named.
     await t.expect(filterBox.exists).ok()
     await t.expect(sourceCheckbox('Population', 'US Census').checked).eql(false)
+})
+
+test('comparison-warnings-name-the-disabled-source', async (t) => {
+    // The generation statistics come from the two censuses only, so turning off the US one leaves
+    // Ontario's showing and California's gone -- naming the Population sources as a whole would be
+    // a lie, since enabling the others is what brings the population statistic itself back.
+    await withEditMode(t, async () => {
+        await uncheckAllCategories(t)
+        await t.click(categoryCheckbox('generation'))
+        await t.click(editCheckbox('US Census'))
+    })
+    await t.expect(warningNamed('US Census is disabled. Enable it to see these statistics.', 'Generation').exists).ok()
+    // Ontario still has its own, from the Canadian census
+    await t.expect(Selector('a').withExactText('Silent % [StatCan]').exists).ok()
 })
 
 // Two US states, so the US Census and GHSL are both choosable, and GHSL only has 2020.
