@@ -1,10 +1,10 @@
 import React, { ReactNode } from 'react'
 
-import { checkboxCategoryName } from '../page_template/settings'
-import { MissingGroupReason, useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
-import { Category, Group, GroupIdentifier, StatPath, statPathToOrder, Year } from '../page_template/statistic-tree'
+import { useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
+import { Category, Group, GroupIdentifier, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 
 import { useScreenshotMode } from './screenshot'
+import { warningMessage } from './warning-message'
 import { warningRowIndices } from './warning-placement'
 
 /** An explanation of why some statistics aren't there, shown where they would have been. */
@@ -49,7 +49,7 @@ export function useArticleWarnings(): ArticleWarning[] {
         .map(({ groupOrCategory, reason }) => ({
             order: firstStatOrder(groupOrCategory),
             name: groupOrCategory.name,
-            content: warningContent(groupOrCategory, reason),
+            content: warningMessage(reason, groupOrCategory),
         }))
         .sort((a, b) => a.order - b.order)
 }
@@ -68,41 +68,13 @@ export function useWarningsByGroup(): Map<GroupIdentifier, ReactNode> {
         return result
     }
     for (const { groupOrCategory, reason } of missingGroups) {
-        const content = warningContent(groupOrCategory, reason)
+        const content = warningMessage(reason, groupOrCategory)
         const groups = groupOrCategory.kind === 'Group' ? [groupOrCategory] : groupOrCategory.contents
         for (const group of groups) {
             result.set(group.id, content)
         }
     }
     return result
-}
-
-function warningContent(groupOrCategory: Group | Category, reason: MissingGroupReason): ReactNode {
-    return reason.kind === 'year'
-        ? (
-                <>
-                    {'Select '}
-                    <YearList years={reason.years} />
-                    {` to see ${theseStatistics(groupOrCategory)}.`}
-                </>
-            )
-        : (
-                <>
-                    {'All '}
-                    <b>{checkboxCategoryName(reason.category)}</b>
-                    {` are disabled. Enable one to see ${theseStatistics(groupOrCategory)}.`}
-                </>
-            )
-}
-
-/** A category's warning stands in for a whole run of statistics, a group's for just its own. */
-function theseStatistics(groupOrCategory: Group | Category): string {
-    switch (groupOrCategory.kind) {
-        case 'Group':
-            return 'this statistic'
-        case 'Category':
-            return 'these statistics'
-    }
 }
 
 function firstStatOrder(groupOrCategory: Group | Category): number {
@@ -113,39 +85,4 @@ function firstStatOrder(groupOrCategory: Group | Category): number {
 export function placeWarnings(statPaths: StatPath[], warnings: ArticleWarning[]): WarningRow[] {
     const indices = warningRowIndices(statPaths, warnings.map(({ order }) => order))
     return warnings.map(({ name, content }, warningIndex) => ({ index: indices[warningIndex], name, content }))
-}
-
-function YearList({ years }: { years: Year[] }): ReactNode {
-    switch (years.length) {
-        case 0:
-            return null
-        case 1:
-            return <b>{years[0]}</b>
-        case 2:
-            return (
-                <>
-                    <b>{years[0]}</b>
-                    {' or '}
-                    <b>{years[1]}</b>
-                </>
-            )
-        case 3:
-            return (
-                <>
-                    <b>{years[0]}</b>
-                    {', '}
-                    <b>{years[1]}</b>
-                    {', or '}
-                    <b>{years[2]}</b>
-                </>
-            )
-        default:
-            return (
-                <>
-                    <b>{years[0]}</b>
-                    {', '}
-                    <YearList years={years.slice(1)} />
-                </>
-            )
-    }
 }

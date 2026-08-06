@@ -75,10 +75,10 @@ function getStagedSettingsKeys(statPaths: StatPath[][]): readonly VectorSettingK
         ...getAvailableYears(flatStatPaths).map(year => `show_stat_year_${year}` as const),
         ...getAvailableGroups(flatStatPaths).map(group => `show_stat_group_${group.id}` as const),
         ...getDataSourceCheckboxes(statPaths)
-            .flatMap(({ category, checkboxSpecs }) =>
-                checkboxSpecs.flatMap(({ name, forcedOn }) => forcedOn
+            .flatMap(({ checkboxSpecs }) =>
+                checkboxSpecs.flatMap(({ source, forcedOn }) => forcedOn
                     ? []
-                    : [sourceEnabledKey({ category, name })]),
+                    : [sourceEnabledKey(source)]),
             ),
         'temperature_unit',
     ] as const
