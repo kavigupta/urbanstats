@@ -202,10 +202,9 @@ export function missingGroups(
     }
 
     const missingReason = (group: Group): MissingGroupReason | undefined => {
-        // Which years and sources the group has data for is asked of this page rather than of the
-        // whole tree, so that a page that only goes back to 2010 says so instead of naming a year
-        // it lacks. A region with none of the group's statistics isn't missing them; a comparison
-        // warns as soon as one of its regions is showing nothing, even if the others still are.
+        // Restricted to this page, so a page that only goes back to 2010 doesn't name an earlier year.
+        // A region with none of the group's statistics isn't missing them; a comparison warns as soon
+        // as one of its regions is showing nothing, even if the others still are.
         const blockedEach = pageStatPathsEach
             .map(pageStatPaths => Array.from(group.statPaths).filter(path => pageStatPaths.has(path)))
             .filter(paths => paths.length > 0 && !paths.some(path => statIsEnabled(path, settings, ambiguousSources)))
@@ -233,7 +232,6 @@ export function missingGroups(
         if (blocked.some(inSelectedYear)) {
             return { kind: 'source', ...missingSources(paths => paths.filter(inSelectedYear)) }
         }
-        // Nothing is in a selected year either, so both need changing.
         return { kind: 'yearAndSource', years: yearsOf(blocked), ...missingSources(paths => paths) }
     }
 
