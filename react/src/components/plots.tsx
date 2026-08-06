@@ -199,8 +199,7 @@ function resolveStatYears(rows: ArticleRow[], statIndex: number): { idx: number,
         }
         const sources = indices.map(i => sPs[i].sP.source)
         const exactMatch = sources.findIndex(source => JSON.stringify(source) === JSON.stringify(sPs[statIndex].sP.source))
-        const nullMatch = sources.findIndex(source => source === null)
-        return { idx: indices[exactMatch !== -1 ? exactMatch : nullMatch !== -1 ? nullMatch : 0], year }
+        return { idx: indices[exactMatch !== -1 ? exactMatch : 0], year }
     })
     if (chosen.length > 1) {
         assert(chosen.length === new Set(chosen.map(c => c.year)).size, 'All statpaths for plot data should have unique years')
