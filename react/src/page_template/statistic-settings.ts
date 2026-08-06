@@ -273,8 +273,7 @@ export function missingGroups(
     const ambiguousSources = findAmbiguousSourcesAll(statPathsAll)
 
     const missingReason = (group: Group): MissingGroupReason | undefined => {
-        // Which years the group has data for is asked of this page rather than of the whole tree,
-        // so that a page that only goes back to 2010 says so instead of naming a year it lacks.
+        // Restricted to this page, so a page that only goes back to 2010 doesn't name an earlier year.
         const paths = Array.from(group.statPaths).filter(path => pageStatPaths.has(path))
         if (paths.some(path => statIsEnabled(path, settings, ambiguousSources))) {
             return undefined
@@ -286,9 +285,8 @@ export function missingGroups(
             return year === null || selectedYears.includes(year)
         })
         if (pathsInSelectedYears.length > 0) {
-            // Everything in the selected years is disabled by its source, so we can name that source
-            // category if they agree on one -- unless the group has a statistic from an enabled
-            // source in another year, which would make "all of them are disabled" a lie.
+            // Blaming a source category requires that no year of the group has it enabled,
+            // otherwise "all of them are disabled" would be a lie.
             const categories = new Set(pathsInSelectedYears.map(path => statParents.get(path)!.source.category))
             const [category] = categories
             if (categories.size === 1
@@ -296,7 +294,6 @@ export function missingGroups(
                 return { kind: 'source', category }
             }
         }
-        // Otherwise it is the years that are missing: the ones selecting would bring the group back.
         const yearsToSelect = new Set(fromEnabledSources.map(path => statParents.get(path)!.year))
         const years = allYears.filter(year => yearsToSelect.has(year))
         return years.length > 0 ? { kind: 'year', years } : undefined

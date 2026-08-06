@@ -16,7 +16,8 @@ import { ArticleMap } from './ArticleMap'
 import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { StagingControls } from './StagingControls'
-import { ArticleTableSection } from './article-table-section'
+import { ArticleEditTable } from './article-edit-table'
+import { ArticleTable } from './article-table'
 import { useCSVExport } from './csv-export'
 import { useEditModeState } from './edit-table'
 import { ArticleRow } from './load-article'
@@ -78,7 +79,23 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
                     <StagingControls onExitStaging={editState.exitEditMode} />
 
                     <div ref={tableRef}>
-                        <ArticleTableSection rows={rows} article={article} editState={editState} />
+                        <div className="stats_table">
+                            {editState.editMode
+                                ? (
+                                        <ArticleEditTable
+                                            rows={rows}
+                                            article={article}
+                                            editState={editState}
+                                        />
+                                    )
+                                : (
+                                        <ArticleTable
+                                            rows={rows}
+                                            article={article}
+                                            onEdit={() => { editState.setEditMode(true) }}
+                                        />
+                                    )}
+                        </div>
                     </div>
 
                     <p></p>

@@ -32,7 +32,6 @@ test('comparison-warnings-in-place', async (t) => {
     await selectMainWithoutYears(t)
     await t.expect(await warningRowNames()).eql(missingMainGroups)
     await t.expect(warningNamed('Select 2020, 2010, or 2000 to see this statistic.', 'Population').exists).ok()
-    // The warnings stand where the statistics would have been, above the ones that are still shown
     const rows = Selector('.for-testing-table-row')
     await t.expect(rows.nth(0).find('[data-test-id=article-warning]').exists).ok()
     await t.expect(rows.nth(3).find('[data-test-id=article-warning]').exists).notOk()
@@ -40,8 +39,7 @@ test('comparison-warnings-in-place', async (t) => {
     await screencap(t)
 })
 
-// Comparing across countries is what makes the data sources choosable rather than forced on, so
-// it is the only place the sources can all be turned off.
+// Comparing across countries is the only place all the sources can be turned off.
 urbanstatsFixture('comparison warnings across data sources', comparisonPage([
     'Ontario, Canada',
     'California, USA',
@@ -51,7 +49,6 @@ test('comparison-warnings-all-sources-disabled', async (t) => {
     // GHSL is off by default, so turning off the two censuses leaves nothing enabled
     await checkTextboxes(t, ['US Census', 'Canadian Census'])
     await t.expect(warningNamed('All Population Sources are disabled. Enable one to see this statistic.', 'Population').exists).ok()
-    // Statistics that don't come from a Population source are unaffected
     await t.expect(Selector('a').withExactText('Area').exists).ok()
     await screencap(t)
 })
@@ -69,8 +66,7 @@ test('comparison-warnings-year-missing-from-enabled-source', async (t) => {
     await t.expect(warningNamed('Select 2020 to see this statistic.', 'Population').exists).ok()
 })
 
-// Six regions against three warning columns and two statistics, which is enough regions that the
-// table is narrower transposed.
+// Enough regions that the table is narrower transposed.
 urbanstatsFixture('transposed comparison warnings', comparisonPage([
     'Santa Clarita city, California, USA',
     'Santa Clara city, California, USA',
@@ -83,15 +79,12 @@ urbanstatsFixture('transposed comparison warnings', comparisonPage([
 test('comparison-transposed-warnings-are-columns', async (t) => {
     await selectMainWithoutYears(t)
     await t.expect(Selector('span.serif.value').withExactText('Region').exists).ok('the table should have transposed')
-    // Transposed, the statistics run along the columns, so each warning stands in for a column:
-    // its group's name heads the column and the message is drawn down it.
     const warnings = Selector('[data-test-id=article-warning]')
     await t.expect(warnings.count).eql(missingMainGroups.length)
     await t.expect(warnings.nth(0).innerText).contains('Select 2020, 2010, or 2000 to see this statistic.')
-    // The names are in the super header, ahead of the statistics that are still shown
     const columnNames = await columnHeaderNames()
     await t.expect(columnNames).eql([...missingMainGroups, 'Area', 'Compactness'])
-    // Warnings stand in for columns here, so none of them takes a row
+    // The warnings are columns here, so none of them takes a row
     await t.expect(Selector('[data-test-id=article-warning-name]').exists).notOk()
     await screencap(t)
 })
