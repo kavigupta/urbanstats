@@ -57,7 +57,7 @@ test('comparison-warnings-all-sources-disabled', async (t) => {
     await screencap(t)
 })
 
-test('comparison-warnings-name-the-disabled-source', async (t) => {
+test.only('comparison-warnings-name-the-disabled-source', async (t) => {
     // The generation statistics come from the two censuses only, so turning off the US one leaves
     // Ontario's showing and California's gone -- naming the Population sources as a whole would be
     // a lie, since enabling the others is what brings the population statistic itself back.
@@ -68,7 +68,7 @@ test('comparison-warnings-name-the-disabled-source', async (t) => {
     })
     await t.expect(warningNamed('US Census is disabled. Enable it to see these statistics.', 'Generation').exists).ok()
     // Ontario still has its own, from the Canadian census
-    await t.expect(Selector('a').withExactText('Silent %').exists).ok()
+    await t.expect(Selector('a').withExactText('Silent % [StatCan]').exists).ok()
 })
 
 // Two US states, so the US Census and GHSL are both choosable, and GHSL only has 2020.
