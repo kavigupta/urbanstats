@@ -24,22 +24,19 @@ const editLabelStyle: CSSProperties = { padding: '1px', display: 'flex', alignIt
 // The label is a flex row, so the box has to opt out of being stretched by the row's text.
 const editCheckboxStyle: CSSProperties = { cursor: 'pointer', flex: '0 0 auto' }
 
-/** Every checkbox on an edit table, sized against the table's rows rather than the sidebar's. */
 function EditCheckbox(props: Omit<CheckboxSettingCustomJustInputProps, 'style' | 'fontSize'>): ReactNode {
     return <CheckboxSettingJustBox {...props} style={editCheckboxStyle} />
 }
 
 /**
- * Measures a table's columns for an edit table, given the rows of each of its columns. The
- * widths are measured over every statistic, since the edit tree shows them all, so they're
- * memoized rather than remeasured on each checkbox click.
- *
- * No column reserves space to its right: that space is for vertical plots, which only appear
- * when transposed, and an edit table never is.
+ * The widths are measured over every statistic, since the edit tree shows them all, so they're
+ * memoized rather than remeasured on each checkbox click. No column reserves space to its
+ * right: that space is for vertical plots, which only appear when transposed, and an edit
+ * table never is.
  */
 export function useEditTableLayout(columnLayout: TableLayout, columnRows: ArticleRow[][], universe: Universe): MeasuredTableLayout {
     const { simpleOrdinals } = columnLayout
-    // Memoized on what the measurement itself depends on, rather than on `columnLayout`, which
+    // Memoized on the measurement's own dependencies, rather than on `columnLayout`, which
     // callers rebuild on every render.
     const columnWidthsInfo = useMemo(
         () => measureColumns(columnRows, universe, simpleOrdinals),
@@ -48,7 +45,6 @@ export function useEditTableLayout(columnLayout: TableLayout, columnRows: Articl
     return measuredLayout(columnLayout, columnWidthsInfo, () => 0)
 }
 
-/** Each level of the tree is indented by this much relative to the one above it. */
 const indentEm = 0.75
 
 const togglePx = 20
@@ -62,20 +58,15 @@ function treeIndent(level: number): string {
     return `calc(${togglePx}px + ${toggleGapEm + level * indentEm}em)`
 }
 
-/** A statistic as the edit tree renders it: the name it appears under, and the cells that follow. */
 export interface EditRow {
     displayName: HumanReadableName
-    /** Identifies the statistic, and supplies the name's adornments (plot expander, disclaimer marker). */
+    /** Supplies the name's adornments: the plot expander and the disclaimer marker. */
     row: ArticleRow
     cellSpecs: CellSpec[]
     plotSpec?: PlotSpec
 }
 
-/**
- * The rows of an edit tree, bucketed by the statistic tree group they belong to, dropping
- * any that aren't in the tree. Both callers supply one cell spec per column and, where the
- * statistic's extras are expanded, a plot.
- */
+/** Buckets the rows by the statistic tree group they belong to, dropping any that aren't in the tree. */
 export function editRowsByGroup(
     rows: ArticleRow[],
     longname: string,
@@ -101,9 +92,8 @@ interface EditGroupHeaderSpec {
     kind: 'group-header'
     key: string
     highlight: boolean
-    /** Whether the group this row belongs to is selected. Selected rows don't collapse. */
+    /** Selected rows don't collapse. */
     enabled: boolean
-    /** The group's checkbox, which this row carries on behalf of the statistics below it. */
     checkbox: ReactNode
     name: string
     /** Set for a group the year or source selection leaves with nothing to show. */
@@ -115,22 +105,16 @@ interface EditStatSpec {
     key: string
     highlight: boolean
     indent: number
-    /** Whether the group this row belongs to is selected. Selected rows don't collapse. */
+    /** Selected rows don't collapse. */
     enabled: boolean
     editRow: EditRow
-    /**
-     * A group of one collapses into its statistic's row, which then carries the group's
-     * checkbox; the statistics of a larger group point at the header row's checkbox instead.
-     */
     checkbox: { kind: 'own', node: ReactNode } | { kind: 'headers', id: string }
 }
 
-/** The rows under a category header, in the order they're displayed. */
 type EditBodyRow = EditGroupHeaderSpec | EditStatSpec
 
 function EditCheckboxLabel(props: {
     highlight: boolean
-    /** Set only when the checkbox lives on another row, so this label points at it instead of containing it. */
     htmlFor?: string
     checkbox?: ReactNode
     style?: CSSProperties
@@ -146,9 +130,8 @@ function EditCheckboxLabel(props: {
 }
 
 /**
- * A row that is nothing but a checkbox and its label, indented under its section header. A
- * group with nothing to show is one of these, and carries its warning where its values would
- * have been -- so the label gives up the width of the columns it stands in for.
+ * A row that is nothing but a checkbox and its label. Where it carries a warning, the label
+ * gives up the width of the columns the warning stands in for.
  */
 function EditLabelRow(props: {
     index: number
@@ -193,15 +176,13 @@ function EditStatRow({ layout, index, spec }: { layout: MeasuredTableLayout, ind
             )}
             cellSpecs={spec.editRow.cellSpecs}
             plotSpec={spec.editRow.plotSpec}
-            // Only render the (large) representatives table for enabled stats, matching the normal table.
             withCongressional={spec.enabled}
         />
     )
 }
 
-// Animates open/closed like the sidebar's category sections. The body is always
-// mounted so the height transition has content to reveal; `inert` keeps the
-// collapsed (clipped) content out of the tab order and off screen readers.
+// The body is always mounted so the height transition has content to reveal; `inert` keeps
+// the collapsed (clipped) content out of the tab order and off screen readers.
 function AnimatedCollapse({ expanded, children }: { expanded: boolean, children: ReactNode }): ReactNode {
     return (
         <div style={{ display: 'grid', gridTemplateRows: expanded ? '1fr' : '0fr', transition: 'grid-template-rows 0.25s ease' }}>
@@ -257,7 +238,6 @@ function categoryBodyRows(groups: GroupTreeState[], rowsByGroup: Map<string, Edi
     })
 }
 
-/** A run of a category's rows that collapse together, or one that stays visible. */
 interface EditBodySegment {
     key: string
     collapsible: boolean
@@ -362,7 +342,6 @@ function EditCategory(props: {
     )
 }
 
-/** Titles the sections the edit table is divided into, mirroring the sidebar's section titles. */
 function EditSectionHeader({ name }: { name: string }): ReactNode {
     const colors = useColors()
     return (
@@ -381,7 +360,6 @@ function EditSectionHeader({ name }: { name: string }): ReactNode {
     )
 }
 
-/** A plain boolean setting as an edit table row, styled like the statistic rows' checkboxes. */
 function EditSettingRow(props: {
     index: number
     name: string
@@ -410,10 +388,7 @@ function EditSettingRow(props: {
     )
 }
 
-/**
- * The source and year selections, which the sidebar puts above its statistic tree. They
- * aren't part of the tree, so the search box doesn't filter them.
- */
+/** Not part of the statistic tree, so the search box doesn't filter these. */
 function EditSourceAndYearSections(): ReactNode {
     const sourceCheckboxes = useDataSourceCheckboxes()
     const years = useAvailableYears()
@@ -461,12 +436,11 @@ export interface EditModeState {
 }
 
 /**
- * Edit mode is deliberately not persisted (not a setting) — it resets on
- * navigation/reload. It opens on its own whenever the page enters staging mode (e.g. from
- * a settings link) so the pending changes are visible and reviewable on the table. Leaving
- * staging only closes it when the user does so via the table's own Discard/Apply buttons,
- * which double as Done. Opening it while staged also expands the categories that would
- * otherwise hide a staged change.
+ * Edit mode is deliberately not a setting, so it resets on navigation or reload. It opens on
+ * its own whenever the page enters staging mode (e.g. from a settings link) so the pending
+ * changes are visible on the table, and expands the categories that would otherwise hide one.
+ * Leaving staging only closes it when the user does so via the Discard/Apply buttons, which
+ * double as Done.
  */
 export function useEditModeState(): EditModeState {
     const staged = useIsStaged()

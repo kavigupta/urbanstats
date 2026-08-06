@@ -35,10 +35,7 @@ import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCell
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
-/**
- * Just the value, for the tables that have no room for the ordinal and percentile columns.
- * On mobile that's what edit mode gives up, so the checkboxes and names have room.
- */
+/** Just the value, for the tables that have no room for the ordinal and percentile columns. */
 export const valueOnlyColumns: ColumnIdentifier[] = ['statval', 'statval_unit']
 
 const leftBarMargin = 0.02
@@ -176,10 +173,7 @@ export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactN
 
     const cellsRow = (
         <div style={{ display: 'flex' }}>
-            {/*
-              * The edit button lives here rather than in the top-left cell below, which on a
-              * comparison is too narrow to hold both a button and the column's name.
-              */}
+            {/* The top-left cell below is too narrow on a comparison to hold both a button and the column's name. */}
             <div style={{ width: `${props.leftSpacerWidth}%`, display: 'flex', alignItems: 'flex-end', padding: '1px' }}>
                 {editButton}
             </div>
@@ -280,8 +274,7 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
         return <EditModeTopLeftHeader header={props.editMode} width={props.width} />
     }
 
-    // On a narrow screen this cell is too small to fit both the button and the name, and the
-    // button is the more useful of the two -- so the name only yields when there really is one.
+    // On a narrow screen this cell can't fit both, and the button is the more useful of the two.
     const showName = !isMobile || editButton === undefined
 
     return (
@@ -948,8 +941,7 @@ function SortButton(props: StatisticNameCellProps & { sortInfo: NonNullable<Stat
 
 /**
  * The controls that sit next to a statistic's name: the plot expander and the disclaimer
- * marker. Callers are responsible for spacing them, since the table and the edit tree lay
- * out the name row differently.
+ * marker. Callers are responsible for spacing them.
  */
 export function useStatisticNameAdornments(row: ArticleRow | undefined, footnote?: string): ReactNode[] {
     const screenshotMode = useScreenshotMode()
