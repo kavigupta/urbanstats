@@ -119,7 +119,6 @@ test('comparison-3-plotted-across-180', async (t) => {
     await screencap(t)
 })
 
-/** The source checkboxes live on the table's edit mode, so reading one means opening it. */
 async function checkboxStatus(t: TestController, name: string): Promise<string> {
     return withEditMode(t, async () => {
         const checkbox = editCheckbox(name)

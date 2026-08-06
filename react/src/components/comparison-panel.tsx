@@ -85,8 +85,7 @@ function comparisonTableShape(params: {
     const widthUntransposed = computeComparisonWidthColumns(numArticles, showOrdinalColumns)
     const widthTransposed = (showOrdinalColumns ? 1.5 : 1) * (numTransposedColumns + numExpandedExtras) + 1.5
 
-    // The edit tree runs down the left column, and there are almost always more statistics
-    // than regions, so editing always uses the untransposed orientation.
+    // The edit tree runs down the left column, so editing is always untransposed.
     const transpose = !editMode
         && !params.hasCongressionalRepresentativeTable
         && widthUntransposed > computeMaxColumns(mobileLayout)
@@ -395,8 +394,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
     const topLeftSpec: TopLeftCellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
 
     // "Select Statistics" rather than "Select", to distinguish it from editing the regions being
-    // compared, which the column headers do. The top-left cell is too narrow here to hold both
-    // the button and the column's name.
+    // compared, which the column headers do.
     const editStatisticsButton: TableEditButton = { open: false, onEdit: () => { setEditMode(true) }, label: 'Select Statistics', placement: 'super-header' }
 
     const longnameSuperHeaderSpec: SuperHeaderSpec = { headerSpecs: longnameHeaderSpecs, showBottomBar: true }
