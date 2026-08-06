@@ -3,19 +3,11 @@ import { Selector } from 'testcafe'
 import { categoryCheckbox, categoryToggleButton, enterEditMode, exitEditMode, filterBox, groupCheckbox, groupMemberRow, groupWarning, interactableGroupCheckbox, setCategoryExpanded, sourceCheckbox, yearCheckbox } from './edit_mode_test_utils'
 import { clickUniverseFlag, getLocation, resizeForPlatform, safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, warningRowNames } from './test_utils'
 
-/**
- * The article table's edit mode is where the statistic category/group tree lives: the
- * category/group checkbox semantics (indeterminate cycling, saved indeterminate state,
- * persistence, search), the source and year selections above the tree, and the warnings
- * the article shows when a selection leaves it with nothing to display.
- */
-
 const mainCheck = categoryCheckbox('main')
-// Population is a single-stat group in the (default-on) Main category, so its
-// checkbox sits directly on the Population row.
+// Population is a single-stat group, so its checkbox sits directly on the Population row.
 const populationCheck = groupCheckbox('population')
 // A collapsed category keeps its unselected rows mounted (so the height transition has
-// content) but marks them inert, so clicking requires the interactable variant.
+// content) but marks them inert, so clicking one needs the interactable variant.
 const populationCheckInteractable = interactableGroupCheckbox('population')
 // Present only while Main is collapsed, since the toggle then offers to expand. Main has
 // no toggle at all until something in it is unselected.
@@ -23,13 +15,11 @@ const mainExpandButton = categoryToggleButton('main', 'Expand')
 // Housing is off by default, so it always has something behind its toggle.
 const housingExpandButton = categoryToggleButton('housing', 'Expand')
 const vacancyCheckInteractable = interactableGroupCheckbox('vacancy')
-// The source and year sections above the tree.
 const sourceSectionHeader = Selector('.stats_table div').withExactText('Population Sources')
 const ghslCheck = sourceCheckbox('Population', 'GHSL')
 const year2020Check = yearCheckbox(2020)
 const year2010Check = yearCheckbox(2010)
 
-/** A statistic row of the Population group, by the name it displays. */
 function populationRow(name: string): Selector {
     return groupMemberRow('population', name)
 }
@@ -94,7 +84,6 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         const populationStat = Selector('a').withExactText('Population')
 
         await enterEditMode(t)
-        // Unchecking Population takes it out of the collapsed category's rows.
         await t.click(populationCheckInteractable)
         await t.expect(mainCheck.indeterminate).eql(true)
         await t.expect(populationCheckInteractable.exists).notOk()
@@ -182,10 +171,8 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('missing-year-warning', async (t) => {
-        /**
-         * Deselecting a year has to put the warning on the edit table too, in the row of the
-         * group it leaves empty.
-         */
+        // Deselecting a year has to put the warning on the edit table too, in the row of the
+        // group it leaves empty.
         await enterEditMode(t)
         await uncheckAllCategories(t)
         await t.click(mainCheck)
@@ -214,10 +201,8 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('missing-year-data', async (t) => {
-        /**
-         * A category whose statistics only exist for a year that isn't selected is
-         * called out, rather than silently showing nothing.
-         */
+        // A category whose statistics only exist for an unselected year is called out, rather
+        // than silently showing nothing.
         await enterEditMode(t)
         await uncheckAllCategories(t)
         await t.click(year2020Check)
@@ -228,10 +213,8 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('missing-partial-year-data', async (t) => {
-        /**
-         * The same warning at group granularity, for a category where only some of the
-         * selected groups are missing the selected year.
-         */
+        // The same warning at group granularity, for a category where only some of the
+        // selected groups are missing the selected year.
         await enterEditMode(t)
         await uncheckAllCategories(t)
         await setCategoryExpanded(t, 'housing', true)
@@ -244,11 +227,8 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('group-with-no-selected-years-stays-on-the-edit-tree', async (t) => {
-        /**
-         * A group the year selection leaves with nothing to show keeps its row on the edit
-         * tree -- otherwise there'd be no checkbox to reach it by -- with a warning where
-         * its value would be.
-         */
+        // The row stays on the edit tree -- otherwise there'd be no checkbox to reach the
+        // group by -- with a warning where its value would be.
         const renterCheck = interactableGroupCheckbox('rent_or_own_rent')
         await enterEditMode(t)
         await setCategoryExpanded(t, 'housing', true)
@@ -268,10 +248,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('year-section', async (t) => {
-        /**
-         * The year selection sits above the tree, not in it. This article's population comes
-         * from a single source, so it gets no source section.
-         */
+        // This article's population comes from a single source, so it gets no source section.
         await enterEditMode(t)
         await t.expect(sourceSectionHeader.exists).notOk()
         await t.expect(year2020Check.checked).eql(true)
@@ -282,12 +259,9 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('year-selection-changes-the-edit-table-itself', async (t) => {
-        /**
-         * The edit tree shows every group regardless of whether it's enabled, but it still
-         * respects the year selection, so selecting a year has to add that year's rows to the
-         * table the checkbox lives on. Population then spans two years, so it stops collapsing
-         * into a single row and splits into one row per year.
-         */
+        // The edit tree shows every group regardless of whether it's enabled, but it still
+        // respects the year selection. Population then spans two years, so it stops collapsing
+        // into a single row and splits into one row per year.
         await enterEditMode(t)
         await t.expect(populationRow('2010').exists).notOk()
 
@@ -296,19 +270,15 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(populationRow('2020').exists).ok()
         await screencap(t)
 
-        // and on the article itself, once edit mode is out of the way
         await exitEditMode(t)
         await t.expect(Selector('a').withExactText('2010').exists).ok()
         await screencap(t)
     })
 
     test('staged-year-change-is-highlighted', async (t) => {
-        /**
-         * Staging highlights the controls whose values it's changing. The year rows are new
-         * controls on the table, so they need that highlight too -- otherwise arriving via a
-         * settings link that only changes a year would auto-open edit mode showing nothing
-         * about what's pending.
-         */
+        // The year rows are new controls on the table, so staging has to highlight them too --
+        // otherwise a settings link that only changes a year would auto-open edit mode showing
+        // nothing about what's pending.
         await enterEditMode(t)
         await t.click(year2010Check)
         const linkWith2010 = await getLocation()
@@ -322,9 +292,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('indeterminate-persistence', async (t) => {
-        /**
-         * Edit mode itself is ephemeral, but the selections made in it are settings and must persist.
-         */
+        // Edit mode itself is ephemeral, but the selections made in it are settings.
         await enterEditMode(t)
         await t.click(populationCheckInteractable)
         await safeReload(t)
@@ -352,11 +320,9 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('expand-persistence', async (t) => {
-        /**
-         * Expansion is a setting, so it outlives edit mode (which is ephemeral) and the page.
-         * Housing is the category tested, since nothing in it is selected and so all of its
-         * rows are behind the toggle.
-         */
+        // Expansion is a setting, so it outlives edit mode and the page. Housing is the
+        // category tested, since nothing in it is selected and so all of its rows are behind
+        // the toggle.
         await enterEditMode(t)
         await setCategoryExpanded(t, 'housing', true)
         await exitEditMode(t)
@@ -368,10 +334,8 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('search-smoke', async (t) => {
-        /**
-         * Filtering expands the matching categories, so a group in an otherwise
-         * collapsed category becomes reachable, and hides the expand buttons.
-         */
+        // Filtering expands the matching categories, so a group in an otherwise collapsed
+        // category becomes reachable, and hides the expand buttons.
         await enterEditMode(t)
         await t.typeText(filterBox, 'gene')
         await t.expect(interactableGroupCheckbox('generation_genx').exists).ok()
@@ -399,10 +363,7 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     platformFixture('article edit tree sources', `${target}/article.html?longname=California%2C+USA`)
 
     test('source-section', async (t) => {
-        /**
-         * Like the years, the sources sit above the tree, and the search box doesn't
-         * filter them out.
-         */
+        // Like the years, the sources sit above the tree, so the search box doesn't filter them.
         await enterEditMode(t)
         await t.expect(ghslCheck.checked).eql(false)
         await screencap(t)
@@ -416,11 +377,8 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('source-selection-changes-the-edit-table-itself', async (t) => {
-        /**
-         * The year counterpart of this, on the other fixture, splits Population by year.
-         * Enabling a second source splits it by source instead, so the rows say which source
-         * they came from.
-         */
+        // The year counterpart of this splits Population by year; a second source splits it by
+        // source instead, so the rows say which source they came from.
         await enterEditMode(t)
         await t.expect(populationRow('2020 [GHSL]').exists).notOk()
 

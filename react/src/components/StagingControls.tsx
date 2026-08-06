@@ -8,7 +8,6 @@ import { useMobileLayout } from '../utils/responsive'
  * The Discard/Apply banner for staged settings, or nothing when nothing is staged.
  */
 export function StagingControls({ onExitStaging }: {
-    /** Run after either button leaves staging mode. */
     onExitStaging?: () => void
 }): ReactNode {
     const settings = useContext(Settings.Context)
