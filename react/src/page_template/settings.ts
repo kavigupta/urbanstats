@@ -26,7 +26,8 @@ export type StatGroupKey<G extends GroupIdentifier = GroupIdentifier> = `show_st
 export type StatCategorySavedIndeterminateKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_saved_indeterminate_${C}`
 export type StatCategoryExpandedKey<C extends CategoryIdentifier = CategoryIdentifier> = `stat_category_expanded_${C}`
 export type StatYearKey<Y extends Year = Year> = `show_stat_year_${Y}`
-// Distributes over the sources, so that only the (category, name) pairs that exist are keys
+// D extends unknown is vacuous, this is a trick to make sure that D['category'] and D['name'] are coupled
+// so we don't end up with a cartesian product.
 export type StatSourceKey<D extends DataSource = DataSource> = D extends unknown ? `show_stat_source_${D['category']}_${D['name']}` : never
 
 export type TemperatureUnit = 'fahrenheit' | 'celsius'
@@ -71,6 +72,7 @@ export function rowExpandedKey<P extends StatPath>(statpath: P): RowExpandedKey<
 }
 
 export function sourceEnabledKey<D extends DataSource>(d: D): StatSourceKey<D> {
+    // this cast really shouldn't be necessary but for some reason it can't do the coupling
     return `show_stat_source_${d.category}_${d.name}` as StatSourceKey<D>
 }
 
@@ -93,8 +95,8 @@ export const defaultSettingsList = [
     ...statsTree.map(category => [`stat_category_expanded_${category.id}` as const, false] as const),
     ...allYears.map(year => [`show_stat_year_${year}` as const, defaultEnabledYears.has(year)] as const),
     ...dataSources
-        .flatMap(({ category, sources }) => sources
-            .map(({ source, is_default }) => [sourceEnabledKey({ category, name: source }), is_default] as const)),
+        .flatMap(({ sources }) => sources
+            .map(source => [sourceEnabledKey(source), source.is_default] as const)),
     ['show_historical_cds', false] as const,
     ['show_person_circles', true] as const,
     ['simple_ordinals', false] as const,

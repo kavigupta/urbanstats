@@ -125,8 +125,6 @@ def get_human_readable_name_for_variable(
     for multi_source_stat in multi_source_stats:
         for source, stat_name in multi_source_stat.by_source.items():
             if stat_name == stat:
-                if source is None:
-                    return base_name
                 # Only add source information if the base name doesn't already contain source info
                 if " [" in base_name and "]" in base_name:
                     return base_name
@@ -287,8 +285,14 @@ def export_statistics_tree(path: str) -> None:
     result = [
         {
             "category": category,
+            # The category is repeated on each source so that the frontend's types can
+            # tell which (category, name) pairs actually exist.
             "sources": [
-                dict(source=source.name, is_default=source.is_default)
+                dict(
+                    category=source.category,
+                    name=source.name,
+                    is_default=source.is_default,
+                )
                 for source in sources
                 if source.category == category
             ],
