@@ -27,8 +27,8 @@ export function ScreenshotAwareLayer(props: LayerProps & { id: string }): ReactN
                 await new Promise(resolve => requestAnimationFrame(resolve))
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Linter is too dumb
                 if (cancelled) {
-                    // Either the effect is about to re-run, or we unmounted -- in which case
-                    // unregistering has already settled the screenshot's wait for us.
+                    // The cleanup has either unregistered us or is about to re-run the effect,
+                    // so the screenshot's wait is not ours to settle any more.
                     return
                 }
                 if (map._removed) {
