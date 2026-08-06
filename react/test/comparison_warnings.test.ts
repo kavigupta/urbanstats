@@ -63,10 +63,10 @@ urbanstatsFixture('comparison warnings with a year the enabled source lacks', co
 ]))
 
 test('comparison-warnings-year-missing-from-enabled-source', async (t) => {
-    // leaves 2010, the one year GHSL has no data for, as the only year selected
+    // leaves 2010, a year GHSL has no data for, as the only year selected
     await checkTextboxes(t, ['US Census', 'GHSL', '2020', '2010'])
     // GHSL is enabled and simply has no data for 2010, so the years are what's missing, not a source
-    await t.expect(warningNamed('Select 2020 or 2000 to see this statistic.', 'Population').exists).ok()
+    await t.expect(warningNamed('Select 2020 to see this statistic.', 'Population').exists).ok()
 })
 
 // Six regions against three warning columns and two statistics, which is enough regions that the

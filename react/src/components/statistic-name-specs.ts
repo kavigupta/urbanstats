@@ -26,7 +26,7 @@ function aggregateByGroup(nameSpecs: NameSpec[]): Map<string | undefined, GroupA
             aggregates.set(statParent?.group.id, aggregate)
         }
         aggregate.size++
-        if (statParent?.source !== null && statParent?.source !== undefined) {
+        if (statParent !== undefined) {
             aggregate.sourceNames.add(statParent.source.name)
         }
     }
@@ -42,7 +42,7 @@ function getGroupAndDisplayNames(nameSpec: NameSpec, aggregates: Map<string | un
     const groupSize = aggregate.size
     const groupHasMultipleSources = aggregate.sourceNames.size > 1
 
-    const sourceName = statParent?.source?.name
+    const sourceName = statParent?.source.name
     let displayName = groupSize > 1 ? (statParent?.indentedName ?? nameSpec.renderedStatname) : nameSpec.renderedStatname
     if (groupHasMultipleSources && sourceName) {
         displayName = `${displayName} [${sourceName}]`

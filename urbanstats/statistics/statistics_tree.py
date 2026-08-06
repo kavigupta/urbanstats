@@ -29,19 +29,22 @@ class Source:
 @dataclass
 class MultiSource:
     """
-    Represent a statistic that is available from multiple sources.
+    Represent a statistic, as provided by each source that provides it.
     """
 
-    by_source: Dict[Optional[Source], Union[str, Tuple[str, ...]]]
+    by_source: Dict[Source, Union[str, Tuple[str, ...]]]
     multi_source_colname: Optional[str] = None
     indented_name: Optional[str] = None
 
     def __post_init__(self) -> None:
-        if None in self.by_source:
-            assert len(self.by_source) == 1
         for source, col in self.by_source.items():
-            assert isinstance(source, Source) or source is None
+            assert isinstance(source, Source)
             assert isinstance(col, (str, tuple))
+        categories = {source.category for source in self.by_source}
+        assert len(categories) == 1, (
+            f"Sources for a single statistic must all be in the same category, "
+            f"since that is the category the user selects between them in: {categories}"
+        )
 
     def internal_statistics(self) -> List[Union[str, Tuple[str, ...]]]:
         return list(self.by_source.values())
@@ -57,7 +60,7 @@ class MultiSource:
             result.append(
                 {
                     "kind": "data",
-                    "source": source.json() if source is not None else None,
+                    "source": source.json(),
                     "column": names.index(col),
                 }
             )
@@ -90,12 +93,13 @@ class MetadataMultiSource(MultiSource):
         return {}
 
     def flatten(self, name_map: Dict[str, str], names: List[str]) -> Dict[str, Any]:
+        [source] = self.by_source
         output = {
             "name": self.metadata_name,
             "stats": [
                 {
                     "kind": "metadata",
-                    "source": None,
+                    "source": source.json(),
                     "path": self.metadata_path,
                     "metadata_index": self.metadata_index,
                     "value_type": self.metadata_value_type,
@@ -174,7 +178,7 @@ class StatisticGroup:
         short_statcol = self.group_name_statcol
         if short_statcol is None:
             year_to_use = None if None in self.by_year else max(self.by_year)
-            short_statcol = self.by_year[year_to_use][0].by_source[None]
+            short_statcol = self.by_year[year_to_use][0].canonical_column()
         group_name = name_map[short_statcol]
         if len(self.by_year) > 1:
             for year in self.by_year:
@@ -271,27 +275,115 @@ class StatisticTree:
                             result.append(source)
         deduplicated_sources: List[Source] = []
         for source in result:
-            if source not in deduplicated_sources and source is not None:
+            if source not in deduplicated_sources:
                 deduplicated_sources.append(source)
         return deduplicated_sources
 
 
-def single_source(
-    col_name: Union[str, Tuple[str, ...]], indented_name: Optional[str] = None
-) -> MultiSource:
-    return MultiSource({None: col_name}, indented_name=indented_name)
+population_census = Source(
+    "Population", "US Census", is_default=True, priority=1, variable_suffix="us_census"
+)
+population_canada = Source(
+    "Population",
+    "Canadian Census",
+    is_default=True,
+    priority=2,
+    variable_suffix="statcan",
+)
+population_ghsl = Source(
+    "Population", "GHSL", is_default=False, priority=10, variable_suffix="ghsl"
+)
+
+# Each source below is the only one in its category, so no checkboxes are shown for it.
+geography = Source(
+    "Geography",
+    "Shapefile Geometry",
+    is_default=True,
+    priority=1,
+    variable_suffix="geometry",
+)
+elevation_aster = Source(
+    "Elevation", "ASTER GDEM", is_default=True, priority=1, variable_suffix="aster"
+)
+health_cdc = Source(
+    "Health", "CDC PLACES", is_default=True, priority=1, variable_suffix="cdc"
+)
+health_ihme = Source(
+    "Health Care Performance",
+    "IHME",
+    is_default=True,
+    priority=1,
+    variable_suffix="ihme",
+)
+pollution_acag = Source(
+    "Pollution",
+    "Atmospheric Composition Analysis Group",
+    is_default=True,
+    priority=1,
+    variable_suffix="acag",
+)
+traffic_nhtsa = Source(
+    "Traffic Fatalities",
+    "NHTSA FARS",
+    is_default=True,
+    priority=1,
+    variable_suffix="nhtsa",
+)
+features = Source(
+    "Distance from Features",
+    "Feature Datasets",
+    is_default=True,
+    priority=1,
+    variable_suffix="features",
+)
+food_access_usda = Source(
+    "Food Access",
+    "USDA Food Access Research Atlas",
+    is_default=True,
+    priority=1,
+    variable_suffix="usda",
+)
+weather_era5 = Source(
+    "Weather", "ERA5", is_default=True, priority=1, variable_suffix="era5"
+)
+election_us = Source(
+    "US Elections",
+    "US Election Data",
+    is_default=True,
+    priority=1,
+    variable_suffix="us_election",
+)
+election_canada = Source(
+    "Canadian Elections",
+    "Elections Canada",
+    is_default=True,
+    priority=1,
+    variable_suffix="elections_canada",
+)
+metadata_source = Source(
+    "Metadata",
+    "Article Metadata",
+    is_default=True,
+    priority=1,
+    variable_suffix="metadata",
+)
 
 
 def census_basics(col_name: str, *, change: bool) -> Dict[str, StatisticGroup]:
     results: Dict[Optional[int], List[MultiSource]] = {
-        2020: [single_source(col_name, indented_name="2020")],
+        2020: [MultiSource({population_census: col_name}, indented_name="2020")],
     }
     for year in [2010, 2000]:
-        results[year] = [single_source(f"{col_name}_{year}", indented_name=f"{year}")]
+        results[year] = [
+            MultiSource(
+                {population_census: f"{col_name}_{year}"}, indented_name=f"{year}"
+            )
+        ]
         if change:
             results[year].append(
-                single_source(
-                    f"{col_name}_change_{year}", indented_name=f"{year}-2020 Change"
+                MultiSource(
+                    {population_census: f"{col_name}_change_{year}"},
+                    indented_name=f"{year}-2020 Change",
                 )
             )
     group = StatisticGroup(results)
@@ -303,27 +395,39 @@ def census_segregation(col_name: str) -> Dict[str, StatisticGroup]:
         col_name: StatisticGroup(
             {
                 2000: [
-                    single_source(f"{col_name}_2000", indented_name="2000"),
-                    single_source(
-                        f"{col_name}_diff_2000", indented_name="2000-2020 Change"
+                    MultiSource(
+                        {population_census: f"{col_name}_2000"}, indented_name="2000"
+                    ),
+                    MultiSource(
+                        {population_census: f"{col_name}_diff_2000"},
+                        indented_name="2000-2020 Change",
                     ),
                 ],
                 2010: [
-                    single_source(f"{col_name}_2010", indented_name="2010"),
-                    single_source(
-                        f"{col_name}_diff_2010", indented_name="2010-2020 Change"
+                    MultiSource(
+                        {population_census: f"{col_name}_2010"}, indented_name="2010"
+                    ),
+                    MultiSource(
+                        {population_census: f"{col_name}_diff_2010"},
+                        indented_name="2010-2020 Change",
                     ),
                 ],
-                2020: [single_source(f"{col_name}_2020", indented_name="2020")],
+                2020: [
+                    MultiSource(
+                        {population_census: f"{col_name}_2020"}, indented_name="2020"
+                    )
+                ],
             }
         )
     }
 
 
-def just_2020(*col_names: str, year: int = 2020) -> Dict[str, StatisticGroup]:
+def just_2020(
+    *col_names: str, source: Source, year: int = 2020
+) -> Dict[str, StatisticGroup]:
     return {
         col_name: StatisticGroup(
-            {year: [single_source(col_name, indented_name="2020")]}
+            {year: [MultiSource({source: col_name}, indented_name="2020")]}
         )
         for col_name in col_names
     }
@@ -353,12 +457,12 @@ def just_2020_with_canada(
 
 
 def just_2020_category(
-    cat_key: str, cat_name: str, *col_names: str, year: int = 2020
+    cat_key: str, cat_name: str, *col_names: str, source: Source, year: int = 2020
 ) -> Dict[str, StatisticCategory]:
     return {
         cat_key: StatisticCategory(
             name=cat_name,
-            contents=just_2020(*col_names, year=year),
+            contents=just_2020(*col_names, source=source, year=year),
         )
     }
 
@@ -374,26 +478,11 @@ def just_2020_category_with_canada(
     }
 
 
-population_census = Source(
-    "Population", "US Census", is_default=True, priority=1, variable_suffix="us_census"
-)
-population_canada = Source(
-    "Population",
-    "Canadian Census",
-    is_default=True,
-    priority=2,
-    variable_suffix="statcan",
-)
-population_ghsl = Source(
-    "Population", "GHSL", is_default=False, priority=10, variable_suffix="ghsl"
-)
-
-
 def census_basics_with_ghs_and_canada(
     col_name: str, gpw_name: Optional[str], canada_name: str, *, change: bool
 ) -> Dict[str, StatisticGroup]:
     result = census_basics(col_name, change=change)
-    by_source: Dict[Optional[Source], Union[str, Tuple[str, ...]]] = {
+    by_source: Dict[Source, Union[str, Tuple[str, ...]]] = {
         population_census: col_name,
         population_canada: canada_name,
         population_ghsl: gpw_name,
@@ -439,7 +528,7 @@ def census_basics_with_canada(
     if canada_name is None:
         canada_name = f"{col_name}_canada"
     result = census_basics(col_name, change=change)
-    by_source: Dict[Optional[Source], Union[str, Tuple[str, ...]]] = {
+    by_source: Dict[Source, Union[str, Tuple[str, ...]]] = {
         population_census: col_name,
         population_canada: canada_name,
     }
@@ -464,7 +553,7 @@ def geographic_ids_metadata_category() -> Dict[str, StatisticCategory]:
             {
                 None: [
                     MetadataMultiSource(
-                        by_source={None: metadata_path},
+                        by_source={metadata_source: metadata_path},
                         metadata_index=entry["index"],
                         metadata_path=metadata_path,
                         metadata_value_type="string",
@@ -492,7 +581,9 @@ def congressional_representatives_metadata_group() -> StatisticGroup:
     ]
     source = MetadataMultiSource(
         by_source={
-            None: get_statistic_column_path("metadata_show_metadata_representatives")
+            metadata_source: get_statistic_column_path(
+                "metadata_show_metadata_representatives"
+            )
         },
         metadata_index=entry["index"],
         metadata_path=get_statistic_column_path(
@@ -522,8 +613,10 @@ statistics_tree = StatisticTree(
                 **census_basics_with_ghs_and_canada(
                     "sd", "gpw_aw_density", "sd_2021_canada", change=False
                 ),
-                "area": StatisticGroup({None: [single_source("area")]}),
-                "compactness": StatisticGroup({None: [single_source("compactness")]}),
+                "area": StatisticGroup({None: [MultiSource({geography: "area"})]}),
+                "compactness": StatisticGroup(
+                    {None: [MultiSource({geography: "compactness"})]}
+                ),
             },
         ),
         **just_2020_category(
@@ -531,6 +624,7 @@ statistics_tree = StatisticTree(
             "Topography",
             "gridded_hilliness",
             "gridded_elevation",
+            source=elevation_aster,
         ),
         "race": StatisticCategory(
             name="Race",
@@ -559,6 +653,7 @@ statistics_tree = StatisticTree(
                     "birthplace_non_us",
                     "birthplace_us_not_state",
                     "birthplace_us_state",
+                    source=population_census,
                 ),
                 **just_2020_with_canada(
                     "language_english_only",
@@ -567,9 +662,11 @@ statistics_tree = StatisticTree(
                 **just_2020(
                     "language_french_canada",
                     "language_other_non_french_canada",
+                    source=population_canada,
                 ),
                 **just_2020(
                     "language_other",
+                    source=population_census,
                 ),
             },
         ),
@@ -586,27 +683,44 @@ statistics_tree = StatisticTree(
                     "religion_sikh_canada",
                     "religion_buddhist_canada",
                     "religion_other_canada",
+                    source=population_canada,
                 ),
             },
         ),
-        **just_2020_category(
-            "education",
-            "Education",
-            "education_high_school",
-            "education_ugrad",
-            "education_grad",
-            "education_high_school_canada",
-            "education_ugrad_canada",
-            "education_grad_canada",
-            "education_field_stem",
-            "education_field_humanities",
-            "education_field_business",
-            "education_field_stem_canada",
-            "education_field_humanities_canada",
-            "education_field_business_canada",
-            "female_hs_gap_4",
-            "female_ugrad_gap_4",
-            "female_grad_gap_4",
+        "education": StatisticCategory(
+            name="Education",
+            contents={
+                **just_2020(
+                    "education_high_school",
+                    "education_ugrad",
+                    "education_grad",
+                    source=population_census,
+                ),
+                **just_2020(
+                    "education_high_school_canada",
+                    "education_ugrad_canada",
+                    "education_grad_canada",
+                    source=population_canada,
+                ),
+                **just_2020(
+                    "education_field_stem",
+                    "education_field_humanities",
+                    "education_field_business",
+                    source=population_census,
+                ),
+                **just_2020(
+                    "education_field_stem_canada",
+                    "education_field_humanities_canada",
+                    "education_field_business_canada",
+                    source=population_canada,
+                ),
+                **just_2020(
+                    "female_hs_gap_4",
+                    "female_ugrad_gap_4",
+                    "female_grad_gap_4",
+                    source=population_census,
+                ),
+            },
         ),
         **just_2020_category_with_canada(
             "generation",
@@ -618,25 +732,44 @@ statistics_tree = StatisticTree(
             "generation_genz",
             "generation_genalpha",
         ),
-        **just_2020_category(
-            "income",
-            "Income",
-            "median_household_income",
-            "poverty_below_line",
-            "lico_at_canada",
-            "lim_at_canada",
-            "household_income_under_50k",
-            "household_income_50k_to_100k",
-            "household_income_over_100k",
-            "household_income_under_50cad",
-            "household_income_50_to_100cad",
-            "household_income_above_100_cad",
-            "individual_income_under_50k",
-            "individual_income_50k_to_100k",
-            "individual_income_over_100k",
-            "individual_income_under_50cad",
-            "individual_income_50_to_100cad",
-            "individual_income_above_100_cad",
+        "income": StatisticCategory(
+            name="Income",
+            contents={
+                **just_2020(
+                    "median_household_income",
+                    "poverty_below_line",
+                    source=population_census,
+                ),
+                **just_2020(
+                    "lico_at_canada",
+                    "lim_at_canada",
+                    source=population_canada,
+                ),
+                **just_2020(
+                    "household_income_under_50k",
+                    "household_income_50k_to_100k",
+                    "household_income_over_100k",
+                    source=population_census,
+                ),
+                **just_2020(
+                    "household_income_under_50cad",
+                    "household_income_50_to_100cad",
+                    "household_income_above_100_cad",
+                    source=population_canada,
+                ),
+                **just_2020(
+                    "individual_income_under_50k",
+                    "individual_income_50k_to_100k",
+                    "individual_income_over_100k",
+                    source=population_census,
+                ),
+                **just_2020(
+                    "individual_income_under_50cad",
+                    "individual_income_50_to_100cad",
+                    "individual_income_above_100_cad",
+                    source=population_canada,
+                ),
+            },
         ),
         "housing": StatisticCategory(
             name="Housing",
@@ -660,6 +793,7 @@ statistics_tree = StatisticTree(
                     "year_built_1990_to_1999",
                     "year_built_2000_to_2009",
                     "year_built_2010_or_later",
+                    source=population_census,
                 ),
                 **just_2020_with_canada(
                     "household_size_pw",
@@ -669,6 +803,7 @@ statistics_tree = StatisticTree(
                 ),
                 **just_2020(
                     "rent_burden_over_30_canada",
+                    source=population_canada,
                 ),
             },
         ),
@@ -692,55 +827,73 @@ statistics_tree = StatisticTree(
                     "vehicle_ownership_none",
                     "vehicle_ownership_at_least_1",
                     "vehicle_ownership_at_least_2",
+                    source=population_census,
+                ),
+                **just_2020(
                     "traffic_fatalities_last_decade_per_capita",
                     "traffic_fatalities_ped_last_decade_per_capita",
                     "traffic_fatalities_last_decade",
                     "traffic_fatalities_ped_last_decade",
+                    source=traffic_nhtsa,
                 ),
             },
         ),
-        **just_2020_category(
-            "health",
-            "Health",
-            "GHLTH_cdc_2",
-            "PHLTH_cdc_2",
-            "ARTHRITIS_cdc_2",
-            "CASTHMA_cdc_2",
-            "BPHIGH_cdc_2",
-            "CANCER_cdc_2",
-            "KIDNEY_cdc_2",
-            "COPD_cdc_2",
-            "CHD_cdc_2",
-            "DIABETES_cdc_2",
-            "OBESITY_cdc_2",
-            "STROKE_cdc_2",
-            "DISABILITY_cdc_2",
-            "HEARING_cdc_2",
-            "VISION_cdc_2",
-            "COGNITION_cdc_2",
-            "MOBILITY_cdc_2",
-            "SELFCARE_cdc_2",
-            "INDEPLIVE_cdc_2",
-            "BINGE_cdc_2",
-            "CSMOKING_cdc_2",
-            "LPA_cdc_2",
-            "SLEEP_cdc_2",
-            "CHECKUP_cdc_2",
-            "DENTAL_cdc_2",
-            "CHOLSCREEN_cdc_2",
-            "life_expectancy_2019",
-            "performance_score_adj_2019",
+        "health": StatisticCategory(
+            name="Health",
+            contents={
+                **just_2020(
+                    "GHLTH_cdc_2",
+                    "PHLTH_cdc_2",
+                    "ARTHRITIS_cdc_2",
+                    "CASTHMA_cdc_2",
+                    "BPHIGH_cdc_2",
+                    "CANCER_cdc_2",
+                    "KIDNEY_cdc_2",
+                    "COPD_cdc_2",
+                    "CHD_cdc_2",
+                    "DIABETES_cdc_2",
+                    "OBESITY_cdc_2",
+                    "STROKE_cdc_2",
+                    "DISABILITY_cdc_2",
+                    "HEARING_cdc_2",
+                    "VISION_cdc_2",
+                    "COGNITION_cdc_2",
+                    "MOBILITY_cdc_2",
+                    "SELFCARE_cdc_2",
+                    "INDEPLIVE_cdc_2",
+                    "BINGE_cdc_2",
+                    "CSMOKING_cdc_2",
+                    "LPA_cdc_2",
+                    "SLEEP_cdc_2",
+                    "CHECKUP_cdc_2",
+                    "DENTAL_cdc_2",
+                    "CHOLSCREEN_cdc_2",
+                    source=health_cdc,
+                ),
+                **just_2020(
+                    "life_expectancy_2019",
+                    "performance_score_adj_2019",
+                    source=health_ihme,
+                ),
+            },
         ),
-        **just_2020_category(
-            "climate_change",
-            "Environment",
-            "pm_25_2018_2022",
-            "heating_utility_gas",
-            "heating_electricity",
-            "heating_bottled_tank_lp_gas",
-            "heating_feul_oil_kerosene",
-            "heating_other",
-            "heating_no",
+        "climate_change": StatisticCategory(
+            name="Environment",
+            contents={
+                **just_2020(
+                    "pm_25_2018_2022",
+                    source=pollution_acag,
+                ),
+                **just_2020(
+                    "heating_utility_gas",
+                    "heating_electricity",
+                    "heating_bottled_tank_lp_gas",
+                    "heating_feul_oil_kerosene",
+                    "heating_other",
+                    "heating_no",
+                    source=population_census,
+                ),
+            },
         ),
         **just_2020_category_with_canada(
             "industry",
@@ -795,6 +948,7 @@ statistics_tree = StatisticTree(
                     "occupation_personal_care_and_service_occupations",
                     "occupation_firefighting_and_prevention,_and_other_protective_service_workers_including_supervisors",
                     "occupation_law_enforcement_workers_including_supervisors",
+                    source=population_census,
                 ),
                 **just_2020(
                     "occupation_legislative_and_senior_management_canada",
@@ -807,6 +961,7 @@ statistics_tree = StatisticTree(
                     "occupation_trades_transport_equipment_canada",
                     "occupation_natural_resources_agriculture_canada",
                     "occupation_manufacturing_utilities_canada",
+                    source=population_canada,
                 ),
             },
         ),
@@ -819,6 +974,7 @@ statistics_tree = StatisticTree(
                     "sors_cohabiting_partnered_straight",
                     "sors_child",
                     "sors_other",
+                    source=population_census,
                 ),
                 **just_2020_with_canada(
                     "marriage_never_married",
@@ -833,7 +989,9 @@ statistics_tree = StatisticTree(
                 "us_presidential_election": StatisticGroup(
                     {
                         2010: [
-                            single_source(col_name, indented_name=indented_name)
+                            MultiSource(
+                                {election_us: col_name}, indented_name=indented_name
+                            )
                             for (col_name, indented_name) in [
                                 (("2008 Presidential Election", "margin"), "2008"),
                                 (("2008-2012 Swing", "margin"), "2008-2012 Swing"),
@@ -842,7 +1000,9 @@ statistics_tree = StatisticTree(
                             ]
                         ],
                         2020: [
-                            single_source(col_name, indented_name=indented_name)
+                            MultiSource(
+                                {election_us: col_name}, indented_name=indented_name
+                            )
                             for (col_name, indented_name) in [
                                 (("2016 Presidential Election", "margin"), "2016"),
                                 (("2016-2020 Swing", "margin"), "2016-2020 Swing"),
@@ -857,7 +1017,9 @@ statistics_tree = StatisticTree(
                 "canada_general_election_coalition_margin": StatisticGroup(
                     {
                         2020: [
-                            single_source(col_name, indented_name=indented_name)
+                            MultiSource(
+                                {election_canada: col_name}, indented_name=indented_name
+                            )
                             for (col_name, indented_name) in [
                                 (("2015GE", "coalition_margin"), "2015"),
                                 (
@@ -883,7 +1045,9 @@ statistics_tree = StatisticTree(
                 "canada_general_election_lib": StatisticGroup(
                     {
                         2020: [
-                            single_source(col_name, indented_name=indented_name)
+                            MultiSource(
+                                {election_canada: col_name}, indented_name=indented_name
+                            )
                             for (col_name, indented_name) in [
                                 (("2015GE", "V_LIB"), "2015"),
                                 (("2015-2019 Swing", "V_LIB"), "2015-2019 Swing"),
@@ -900,7 +1064,9 @@ statistics_tree = StatisticTree(
                 "canada_general_election_con": StatisticGroup(
                     {
                         2020: [
-                            single_source(col_name, indented_name=indented_name)
+                            MultiSource(
+                                {election_canada: col_name}, indented_name=indented_name
+                            )
                             for (col_name, indented_name) in [
                                 (("2015GE", "V_CON"), "2015"),
                                 (("2015-2019 Swing", "V_CON"), "2015-2019 Swing"),
@@ -917,7 +1083,9 @@ statistics_tree = StatisticTree(
                 "canada_general_election_ndp": StatisticGroup(
                     {
                         2020: [
-                            single_source(col_name, indented_name=indented_name)
+                            MultiSource(
+                                {election_canada: col_name}, indented_name=indented_name
+                            )
                             for (col_name, indented_name) in [
                                 (("2015GE", "V_NDP"), "2015"),
                                 (("2015-2019 Swing", "V_NDP"), "2015-2019 Swing"),
@@ -934,7 +1102,9 @@ statistics_tree = StatisticTree(
                 "canada_general_election_bq": StatisticGroup(
                     {
                         2020: [
-                            single_source(col_name, indented_name=indented_name)
+                            MultiSource(
+                                {election_canada: col_name}, indented_name=indented_name
+                            )
                             for (col_name, indented_name) in [
                                 (("2015GE", "V_BQ"), "2015"),
                                 (("2015-2019 Swing", "V_BQ"), "2015-2019 Swing"),
@@ -951,7 +1121,9 @@ statistics_tree = StatisticTree(
                 "canada_general_election_grn": StatisticGroup(
                     {
                         2020: [
-                            single_source(col_name, indented_name=indented_name)
+                            MultiSource(
+                                {election_canada: col_name}, indented_name=indented_name
+                            )
                             for (col_name, indented_name) in [
                                 (("2015GE", "V_GRN"), "2015"),
                                 (("2015-2019 Swing", "V_GRN"), "2015-2019 Swing"),
@@ -968,7 +1140,9 @@ statistics_tree = StatisticTree(
                 "canada_general_election_ppc": StatisticGroup(
                     {
                         2020: [
-                            single_source(col_name, indented_name=indented_name)
+                            MultiSource(
+                                {election_canada: col_name}, indented_name=indented_name
+                            )
                             for (col_name, indented_name) in [
                                 (("2019GE", "V_PPC"), "2019"),
                                 (("2019-2021 Swing", "V_PPC"), "2019-2021 Swing"),
@@ -983,22 +1157,29 @@ statistics_tree = StatisticTree(
                 "metadata_show_metadata_congressional_representatives": congressional_representatives_metadata_group(),
             },
         ),
-        **just_2020_category(
-            "distance_from_features",
-            "Distance from Features",
-            "park_percent_1km_v2",
-            "within_Hospital_10",
-            "mean_dist_Hospital_updated",
-            "within_Public School_2",
-            "mean_dist_Public School_updated",
-            "within_Airport_30",
-            "mean_dist_Airport_updated",
-            "within_Active Superfund Site_10",
-            "mean_dist_Active Superfund Site_updated",
-            "lapophalfshare_usda_fra_1",
-            "lapop1share_usda_fra_1",
-            "lapop10share_usda_fra_1",
-            "lapop20share_usda_fra_1",
+        "distance_from_features": StatisticCategory(
+            name="Distance from Features",
+            contents={
+                **just_2020(
+                    "park_percent_1km_v2",
+                    "within_Hospital_10",
+                    "mean_dist_Hospital_updated",
+                    "within_Public School_2",
+                    "mean_dist_Public School_updated",
+                    "within_Airport_30",
+                    "mean_dist_Airport_updated",
+                    "within_Active Superfund Site_10",
+                    "mean_dist_Active Superfund Site_updated",
+                    source=features,
+                ),
+                **just_2020(
+                    "lapophalfshare_usda_fra_1",
+                    "lapop1share_usda_fra_1",
+                    "lapop10share_usda_fra_1",
+                    "lapop20share_usda_fra_1",
+                    source=food_access_usda,
+                ),
+            },
         ),
         **just_2020_category(
             "weather",
@@ -1025,6 +1206,7 @@ statistics_tree = StatisticTree(
             "mean_low_temp_mam",
             "mean_low_temp_jja",
             "mean_low_temp_son",
+            source=weather_era5,
         ),
         **just_2020_category(
             "misc",
@@ -1033,6 +1215,7 @@ statistics_tree = StatisticTree(
             "insurance_coverage_none",
             "insurance_coverage_govt",
             "insurance_coverage_private",
+            source=population_census,
         ),
         **geographic_ids_metadata_category(),
         "other_densities": StatisticCategory(
@@ -1052,18 +1235,25 @@ statistics_tree = StatisticTree(
                 for k, v in kvs.items()
             },
         ),
-        **just_2020_category(
-            "deprecated",
-            "Deprecated",
-            "mean_high_temp_summer_4",
-            "mean_high_temp_winter_4",
-            "mean_high_temp_fall_4",
-            "mean_high_temp_spring_4",
-            "transportation_means_car",
-            "transportation_means_bike",
-            "transportation_means_walk",
-            "transportation_means_transit",
-            "transportation_means_worked_at_home",
+        "deprecated": StatisticCategory(
+            name="Deprecated",
+            contents={
+                **just_2020(
+                    "mean_high_temp_summer_4",
+                    "mean_high_temp_winter_4",
+                    "mean_high_temp_fall_4",
+                    "mean_high_temp_spring_4",
+                    source=weather_era5,
+                ),
+                **just_2020(
+                    "transportation_means_car",
+                    "transportation_means_bike",
+                    "transportation_means_walk",
+                    "transportation_means_transit",
+                    "transportation_means_worked_at_home",
+                    source=population_census,
+                ),
+            },
         ),
     }
 )
