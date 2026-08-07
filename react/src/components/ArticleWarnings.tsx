@@ -54,11 +54,6 @@ export function useArticleWarnings(): ArticleWarning[] {
         .sort((a, b) => a.order - b.order)
 }
 
-/**
- * The warning each empty group carries, for the edit tree: it lists every group, so a warning
- * goes in the row the group already has rather than standing in for one. A warning that covers
- * a whole category is repeated on each of its groups, since they're rows apart on the tree.
- */
 export function useWarningsByGroup(): Map<GroupIdentifier, ReactNode> {
     const screenshotMode = useScreenshotMode()
     const missingGroups = useMissingGroups()

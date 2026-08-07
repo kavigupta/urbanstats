@@ -15,14 +15,6 @@ import { ArticleRow } from './load-article'
 
 export type CSVExportData = () => { csvData: string[][], csvFilename: string }
 
-/**
- * The CSV export for a table of articles, named after `filenameBase`.
- *
- * The rows are built from the settings read at the moment the export is requested, rather
- * than from what the table is showing. So the caller doesn't have to hold them for the
- * export's sake, and edit mode -- which shows every statistic regardless of the selection --
- * still exports only the selected ones.
- */
 export function useCSVExport(
     articles: Article[],
     rows: (settings: StatGroupSettings) => ArticleRow[][],
