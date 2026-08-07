@@ -72,7 +72,6 @@ function EditButton({ onEdit, children }: { onEdit: () => void, children: ReactN
     )
 }
 
-/** A category's warning stands in for a whole run of statistics, a group's for just its own. */
 function theseStatistics(groupOrCategory: Group | Category): string {
     switch (groupOrCategory.kind) {
         case 'Group':

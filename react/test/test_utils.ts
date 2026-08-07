@@ -60,7 +60,6 @@ export async function withHamburgerMenu(t: TestController, block: () => Promise<
     }
 }
 
-/** The name cell of the warning row carrying `message`, which stands where a statistic's name would. */
 export function warningNamed(message: string, name: string): Selector {
     return Selector('.for-testing-table-row')
         .withText(message)
@@ -68,7 +67,6 @@ export function warningNamed(message: string, name: string): Selector {
         .withExactText(name)
 }
 
-/** The statistics each warning row stands in for, in the order the rows appear. */
 export async function warningRowNames(): Promise<string[]> {
     const cells = await arrayFromSelector(Selector('[data-test-id=article-warning-name]'))
     return Promise.all(cells.map(async cell => (await cell.innerText).trim()))
