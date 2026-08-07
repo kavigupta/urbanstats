@@ -7,11 +7,9 @@ import { useScreenshotMode } from './screenshot'
 import { warningMessage } from './warning-message'
 import { warningRowIndices } from './warning-placement'
 
-/** An explanation of why some statistics aren't there, shown where they would have been. */
 export interface ArticleWarning {
     /** Where the missing statistics sit in statistic tree order. */
     order: number
-    /** Goes in the left header, where the statistic's name would be. */
     name?: string
     content: ReactNode
 }
@@ -58,7 +56,6 @@ function firstStatOrder(groupOrCategory: Group | Category): number {
     return Math.min(...Array.from(groupOrCategory.statPaths).map(path => statPathToOrder.get(path)!))
 }
 
-/** Places each warning at the row its statistics would have gone in, given the table's rows. */
 export function placeWarnings(statPaths: StatPath[], warnings: ArticleWarning[]): WarningRow[] {
     const indices = warningRowIndices(statPaths, warnings.map(({ order }) => order))
     return warnings.map(({ name, content }, warningIndex) => ({ index: indices[warningIndex], name, content }))
