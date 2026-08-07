@@ -202,8 +202,6 @@ function unregisterSubscriber(subscribers: Set<ScreenshotSubscriber>, subscriber
 const maxNotifyRounds = 10
 
 /**
- * Puts every subscriber into screenshot mode and waits for each to signal ready or go away.
- *
  * Entering screenshot mode is what mounts some of the subscribers -- the footnotes below a table,
  * or a map layer rebuilt at full resolution -- so this keeps going until a round adds nobody new.
  * Notifying only whoever was registered up front would render those components interactively into
