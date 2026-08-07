@@ -120,7 +120,6 @@ done <<< "$branches"
 if $push; then
     echo "==> pushing"
     # --atomic, so a rejection leaves every branch unpushed rather than half the stack.
-    # Without it git pushes each ref independently and only the rejected one stays behind.
     git push --atomic origin $branches || exit 1
 fi
 

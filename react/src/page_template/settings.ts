@@ -308,14 +308,13 @@ function useStagedSettingKeys(): (keyof SettingsDictionary)[] | undefined {
     return settings.useStagedKeys()
 }
 
-/** Whether staging is changing this setting, which the UI highlights. */
 export function isStagedChange<K extends keyof SettingsDictionary>(info: SettingInfo<K>): boolean {
     return 'stagedValue' in info && info.stagedValue !== info.persistedValue
 }
 
 /**
- * The value the setting has right now, which is the staged one while staging. Keyed off the
- * presence of `stagedValue`, since some settings can legitimately be staged as undefined.
+ * Keyed off the presence of `stagedValue`, since some settings can legitimately be staged as
+ * undefined.
  */
 export function settingValue<K extends keyof SettingsDictionary>(info: SettingInfo<K>): SettingsDictionary[K] {
     return 'stagedValue' in info ? info.stagedValue! : info.persistedValue
