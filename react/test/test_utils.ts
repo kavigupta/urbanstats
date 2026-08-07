@@ -118,8 +118,10 @@ export async function checkAllCategoryBoxes(t: TestController): Promise<void> {
     await withEditMode(t, async () => {
         // Enabling a category can reveal years and sources that only its statistics have,
         // so keep passing over them until nothing is left unchecked.
-        for (let pass = 0; pass < 5 && await checkUncheckedStatBoxes(t); pass++) {
-            // checkUncheckedStatBoxes does the work
+        for (let pass = 0; pass < 5; pass++) {
+            if (!await checkUncheckedStatBoxes(t)) {
+                break
+            }
         }
     })
     // The appearance settings, which are still in the sidebar.
