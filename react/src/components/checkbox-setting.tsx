@@ -3,15 +3,9 @@ import React, { CSSProperties, ReactNode, useEffect, useId, useRef } from 'react
 import { useColors } from '../page_template/colors'
 import { isStagedChange, SettingsDictionary, useSetting, useSettingInfo } from '../page_template/settings'
 
-/**
- * The checkbox controls, which started out in the sidebar but are used all over: the
- * mapper's editors, the quiz, the histogram, the tables' edit mode.
- */
-
 // type representing a key of SettingsDictionary that have boolean values
 export type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean | undefined ? K : never]: boolean }
 
-/** What a checkbox needs to render a boolean setting, wherever the checkbox itself lives. */
 export function useBooleanSetting(settingKey: BooleanSettingKey, forcedOn?: boolean): {
     checked: boolean
     setChecked: (checked: boolean) => void
