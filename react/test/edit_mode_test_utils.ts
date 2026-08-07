@@ -1,10 +1,5 @@
 import { Selector } from 'testcafe'
 
-/**
- * Selectors and helpers for the tables' edit mode -- the statistic category/group checkbox
- * tree -- shared by the article and comparison test files.
- */
-
 export const editButton = Selector('[data-test-id=edit-mode-edit]')
 export const warningEditAction = Selector('[data-test-id=warning-edit-action]')
 export const doneButton = Selector('[data-test-id=edit-mode-done]')

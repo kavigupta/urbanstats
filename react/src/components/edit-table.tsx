@@ -16,9 +16,6 @@ import { computeNameSpecsWithGroups, nameSpecsForRows } from './statistic-name-s
 import { CellSpec, measureColumns, measuredLayout, MeasuredTableLayout, PlotSpec, StatisticTableRow, SuperHeaderSpec, TableFrame, TableLayout, TopLeftCellSpec, WarningRowMessage } from './supertable'
 import { TableRowContainer, useStatisticNameAdornments } from './table'
 
-// Wrapping the name in a label lets a click anywhere on it toggle the associated
-// checkbox. Child rows of a multi-stat group have no checkbox of their own, so
-// they point at the group's checkbox by id.
 const editLabelStyle: CSSProperties = { padding: '1px', display: 'flex', alignItems: 'center', gap: '0.4em', cursor: 'pointer' }
 
 // The label is a flex row, so the box has to opt out of being stretched by the row's text.
@@ -55,7 +52,7 @@ export interface EditRow {
     plotSpec?: PlotSpec
 }
 
-/** Buckets the rows by the statistic tree group they belong to, dropping any that aren't in the tree. */
+/** Rows that aren't in the statistic tree are dropped. */
 export function editRowsByGroup(
     rows: ArticleRow[],
     longname: string,
@@ -81,7 +78,6 @@ interface EditGroupHeaderSpec {
     kind: 'group-header'
     key: string
     highlight: boolean
-    /** Selected rows don't collapse. */
     enabled: boolean
     checkbox: ReactNode
     name: string
@@ -94,7 +90,6 @@ interface EditStatSpec {
     key: string
     highlight: boolean
     indent: number
-    /** Selected rows don't collapse. */
     enabled: boolean
     editRow: EditRow
     checkbox: { kind: 'own', node: ReactNode } | { kind: 'headers', id: string }
@@ -118,10 +113,7 @@ function EditCheckboxLabel(props: {
     )
 }
 
-/**
- * A row that is nothing but a checkbox and its label. Where it carries a warning, the label
- * gives up the width of the columns the warning stands in for.
- */
+/** Where the row carries a warning, the label gives up the width of the columns the warning stands in for. */
 function EditLabelRow(props: {
     index: number
     highlight: boolean
@@ -270,7 +262,6 @@ function EditCategory(props: {
     const tree = useCategoryTreeState(props.category)
     const expanded = props.searching || tree.expanded
     const segments = editBodySegments(categoryBodyRows(tree.groups, props.rowsByGroup, props.warningsByGroup), expanded)
-    // With every statistic selected there is nothing left for expanding to reveal.
     const anythingToExpand = segments.some(segment => segment.collapsible)
 
     return (
@@ -443,7 +434,6 @@ export function useEditModeState(): EditModeState {
 
     useExpandCategoriesHidingStagedChanges(editMode && staged)
 
-    // Scoped to the current visit to edit mode, so reopening it starts from the whole tree.
     const [filter, setFilter] = useState('')
 
     return {
