@@ -87,7 +87,7 @@ export function testingContext(effectsOut: Effect[], errorsOut: { msg: string, l
     )
 }
 
-export function emptyContext(effects: Effect[] | undefined = undefined): Context {
+export function emptyContext(effects?: Effect[]): Context {
     return new Context(
         (eff) => {
             if (effects !== undefined) {
@@ -102,7 +102,7 @@ export function emptyContext(effects: Effect[] | undefined = undefined): Context
     )
 }
 
-export function emptyContextWithInsets(effects: Effect[] | undefined = undefined): Context {
+export function emptyContextWithInsets(effects?: Effect[]): Context {
     const insetContinentalUSA = defaultConstants.get('insetContinentalUSA')
     const insetHawaii = defaultConstants.get('insetHawaii')
     const insetAlaska = defaultConstants.get('insetAlaska')

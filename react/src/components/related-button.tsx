@@ -114,7 +114,7 @@ function ExpandButton(props: { rowType: string, expanded: boolean, onToggle: () 
     })
 
     const handleToggle = (event: React.MouseEvent | React.KeyboardEvent): void => {
-        const target = event.currentTarget as Element
+        const target = event.currentTarget
         scrollAdjustRef.current = { element: target, top: target.getBoundingClientRect().top }
         props.onToggle()
     }

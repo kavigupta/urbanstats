@@ -412,9 +412,9 @@ export function renderValue(input: USSValue): string {
             case 'boolean':
             case 'null':
             case 'number':
-                return `${value.value}`
+                return `${value.value as boolean | null | number}`
             case 'string':
-                return `"${value.value}"`
+                return `"${value.value as string}"`
             case 'opaque':
                 const opaqueValue = value.value as USSOpaqueValue
                 switch (opaqueValue.opaqueType) {

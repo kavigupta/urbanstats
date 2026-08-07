@@ -170,7 +170,7 @@ function attemptParseExpr(
                 return undefined
             }
             const tdoc = typeEnvironment.get(fn.name.node)
-            if (!tdoc || tdoc.type.type !== 'function') {
+            if (tdoc?.type.type !== 'function') {
                 return undefined
             }
             const fnType = tdoc.type

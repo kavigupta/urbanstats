@@ -52,7 +52,7 @@ const generationGroups: EnabledKey[] = [
 ]
 
 function settingsWith(enabled: EnabledKey[]): StatGroupSettings {
-    const settings = Object.fromEntries(groupYearKeys().map(key => [key, false])) as StatGroupSettings
+    const settings = Object.fromEntries(groupYearKeys().map(key => [key, false]))
     for (const key of enabled) {
         settings[key] = true
     }

@@ -27,7 +27,7 @@ const nthResult = (testFn: (name: string, testBlock: () => void) => void) => (n:
         parentheticalElements.push(`Prioritizing ${prioritizeType}`)
     }
     if (statsUniverse !== undefined) {
-        parentheticalElements.push(`Stats universe key: ${String(statsUniverse)}`)
+        parentheticalElements.push(`Stats universe key: ${statsUniverse}`)
     }
     const parenthetical = parentheticalElements.length > 0 ? ` (${parentheticalElements.join(', ')})` : ''
 

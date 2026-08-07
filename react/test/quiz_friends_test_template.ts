@@ -52,7 +52,7 @@ export function quizFriendsTest(
         props.platform,
     )
 
-    async function aliceBobFriends(t: TestController, screenshots: boolean, startState: JuxtastatUserState | undefined = undefined): Promise<JuxtastatUserState> {
+    async function aliceBobFriends(t: TestController, screenshots: boolean, startState?: JuxtastatUserState): Promise<JuxtastatUserState> {
         return makeAliceBobFriends(t, screenshots, alicePattern, bobPattern, startState)
     }
 

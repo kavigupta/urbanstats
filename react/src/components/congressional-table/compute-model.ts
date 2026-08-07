@@ -139,7 +139,7 @@ function attemptAlign(startBuckets: DistrictBucketForTerm[] | undefined, current
     newBuckets: DistrictBucketForTerm[]
     isAligned: boolean
 } {
-    if (startBuckets === undefined || startBuckets.length !== currentBuckets.length) {
+    if (startBuckets?.length !== currentBuckets.length) {
         // don't even attempt to unify, since the number of districts is different
         // there's no visual continuity anyway.
         return { newBuckets: currentBuckets, isAligned: false }

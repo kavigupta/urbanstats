@@ -1,7 +1,7 @@
 import { assert } from '../../utils/defensive'
 import { Context } from '../context'
 import { parseNumber } from '../lexer'
-import { USSRawValue, USSValue } from '../types-values'
+import { USSPrimitiveRawValue, USSRawValue, USSValue } from '../types-values'
 
 export const toString = {
     type: {
@@ -13,7 +13,7 @@ export const toString = {
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): string => {
         assert(posArgs.length === 1, `Expected 1 argument for toString, got ${posArgs.length}`)
         assert(Object.keys(namedArgs).length === 0, `Expected no named arguments for toString, got ${Object.keys(namedArgs).length}`)
-        const arg = posArgs[0]
+        const arg = posArgs[0] as USSPrimitiveRawValue
         return String(arg)
     },
     documentation: {

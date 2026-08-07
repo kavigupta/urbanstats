@@ -11,7 +11,7 @@ import { Color, doRender, hexToColor, hsvColorExpression, rgbColorExpression } f
 import { RampT } from '../../urban-stats-script/constants/ramp'
 import { EditorError } from '../../urban-stats-script/editor-utils'
 import { emptyLocation } from '../../urban-stats-script/lexer'
-import { parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
+import { constantString, parseNoErrorAsCustomNode, parseNoErrorAsExpression } from '../../urban-stats-script/parser'
 import { Documentation, TypeEnvironment, USSType } from '../../urban-stats-script/types-values'
 import { TestUtils } from '../../utils/TestUtils'
 import { HumanReadableName, reifyReact, reifyString } from '../../utils/human-readable-name'
@@ -75,7 +75,7 @@ export function Selector(props: {
     const showConstantInput = selected.type === 'constant' && (isNumber || isString)
     const currentValue = (() => {
         if (props.uss.type === 'constant') {
-            return props.uss.value.node.value.toString()
+            return constantString(props.uss.value.node)
         }
         return parseToNumber(props.uss) ?? ''
     })()

@@ -18,9 +18,7 @@ const populationStatcols: DataStatistic[] = allGroups
 let sortedSuffixes: string[] | undefined
 
 function sortedSuffixesList(): string[] {
-    if (sortedSuffixes === undefined) {
-        sortedSuffixes = syau_suffixes.slice().sort((a, b) => b.length - a.length)
-    }
+    sortedSuffixes ??= syau_suffixes.slice().sort((a, b) => b.length - a.length)
     return sortedSuffixes
 }
 

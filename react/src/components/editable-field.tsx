@@ -18,7 +18,7 @@ export function EditableString(props: {
      * See https://www.npmjs.com/package/react-contenteditable
      */
     const contentEditable: React.Ref<HTMLElement> = useRef(null)
-    const html = useRef(props.content.toString())
+    const html = useRef(props.content)
     // https://github.com/lovasoa/react-contenteditable/issues/161
     const propsRef = useRef(props)
     propsRef.current = props
@@ -27,7 +27,7 @@ export function EditableString(props: {
     // This cannot be an effect, as the delay causes rendering problems (such as jumping, scroll position issues)
     const previousContent = useRef(props.content)
     if (props.content !== previousContent.current) {
-        html.current = props.content.toString()
+        html.current = props.content
     }
     previousContent.current = props.content
 

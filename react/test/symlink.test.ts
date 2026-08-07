@@ -1,9 +1,7 @@
 import { screencap, urbanstatsFixture, target, getLocationWithoutSettings } from './test_utils'
 
-function symlinkTest(name: string, link: string, expected: string | undefined = undefined): void {
-    if (expected === undefined) {
-        expected = link
-    }
+function symlinkTest(name: string, link: string, expected?: string): void {
+    expected ??= link
     urbanstatsFixture(name, link)
 
     test(name, async (t) => {

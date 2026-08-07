@@ -5,7 +5,7 @@ import { downloadImage, safeReload, screencap, urbanstatsFixture } from './test_
 
 const syauInput = Selector('input[id="syau-input"]')
 
-async function addInputText(t: TestController, text: string, expected: string | undefined = undefined): Promise<void> {
+async function addInputText(t: TestController, text: string, expected?: string): Promise<void> {
     await t.typeText(syauInput, text)
     await t.expect(syauInput.value).eql(expected ?? text)
 }
