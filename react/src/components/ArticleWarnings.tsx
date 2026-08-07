@@ -29,9 +29,6 @@ export interface WarningColumn {
     content: ReactNode
 }
 
-/** About the table as a whole, so there is no row to place this against. */
-const nothingSelectedContent: ReactNode = <b>No Statistics are selected</b>
-
 export function useArticleWarnings(onEdit: () => void): ArticleWarning[] {
     const screenshotMode = useScreenshotMode()
     const selectedGroups = useSelectedGroups()
@@ -44,7 +41,7 @@ export function useArticleWarnings(onEdit: () => void): ArticleWarning[] {
     if (selectedGroups.length === 0) {
         return [{
             order: 0,
-            content: nothingSelectedContent,
+            content: <b>No Statistics are selected</b>,
         }]
     }
 
