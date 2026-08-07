@@ -75,7 +75,6 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
                     </div>
                     <div style={{ marginBlockEnd: '16px' }}></div>
 
-                    {/* Outside tableRef, so it doesn't end up in screenshots of the table. */}
                     <StagingControls onExitStaging={editState.exitEditMode} />
 
                     <div ref={tableRef}>
