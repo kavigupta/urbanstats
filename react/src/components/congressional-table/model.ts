@@ -17,10 +17,7 @@ export interface CongressionalColumnData {
     representatives: CongressionalRepresentativeEntry[]
 }
 
-/**
- * Returns undefined for rows that aren't a representatives metadata row. Takes the
- * row structurally so it works with both ArticleRow and StatisticCellRenderingInfo.
- */
+/** Takes the row structurally so it works with both ArticleRow and StatisticCellRenderingInfo. */
 export function congressionalDataForRow(
     row: { kind: 'statistic' } | { kind: 'metadata', statval: MetadataStatValue },
     longname: string,

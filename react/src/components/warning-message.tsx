@@ -3,7 +3,6 @@ import React, { ReactNode } from 'react'
 import type { MissingGroupReason, MissingSources } from '../page_template/statistic-settings'
 import type { Category, Group } from '../page_template/statistic-tree'
 
-/** What a warning says about the setting that is keeping a group's statistics off the page. */
 export function warningMessage(reason: MissingGroupReason, groupOrCategory: Group | Category): ReactNode {
     switch (reason.kind) {
         case 'year':
@@ -39,7 +38,6 @@ function enableHowMany({ anySourceSuffices }: MissingSources): string {
     return anySourceSuffices ? 'one' : 'them'
 }
 
-/** A category's warning stands in for a whole run of statistics, a group's for just its own. */
 function theseStatistics(groupOrCategory: Group | Category): string {
     switch (groupOrCategory.kind) {
         case 'Group':

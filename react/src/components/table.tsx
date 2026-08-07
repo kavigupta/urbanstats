@@ -36,7 +36,6 @@ import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCell
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
 
-/** Just the value, for the tables that have no room for the ordinal and percentile columns. */
 export const valueOnlyColumns: ColumnIdentifier[] = ['statval', 'statval_unit']
 
 const leftBarMargin = 0.02
@@ -313,7 +312,6 @@ export function MainHeaderRow(props: {
     extraSpaceRight: number[]
     simpleOrdinals: boolean
     columnWidthsInfo: (CommonLayoutInformation | undefined)[]
-    /** Columns with no values under them, which get no column names either. */
     blankColumns?: number[]
 }): ReactNode {
     return (
@@ -954,10 +952,6 @@ function SortButton(props: StatisticNameCellProps & { sortInfo: NonNullable<Stat
     )
 }
 
-/**
- * The controls that sit next to a statistic's name: the plot expander and the disclaimer
- * marker.
- */
 function useStatisticNameAdornments(row: ArticleRow | undefined, footnote?: string): ReactNode[] {
     const screenshotMode = useScreenshotMode()
     const adornments: ReactNode[] = []
@@ -1089,10 +1083,6 @@ function ComparisonColorBar({ highlightIndex }: { highlightIndex: number | undef
     )
 }
 
-/**
- * The numbered footnotes a table's disclaimers collapse into for a screenshot, drawn from the
- * statistics its name cells refer to -- the same cells that then show the symbols.
- */
 export function computeDisclaimerFootnotes(specs: CellSpec[]): { getSymbol: (d: Disclaimer) => string, footnotes: { symbol: string, text: string }[] } {
     const uniqueMessages: string[] = []
     for (const spec of specs) {
@@ -1239,7 +1229,6 @@ function computeSizesForRow(row: StatisticCellRenderingInfo, universe: string, s
     }
 }
 
-/** Column widths that fit every row, i.e. the maximum of each row's requirement. */
 export function maxLayoutInformation(rows: StatisticCellRenderingInfo[], universe: string, simpleOrdinals: boolean): CommonLayoutInformation {
     return rows.reduce<CommonLayoutInformation>((acc, row) => {
         const curr = computeSizesForRow(row, universe, simpleOrdinals)
