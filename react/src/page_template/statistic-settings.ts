@@ -138,7 +138,6 @@ export interface CategoryTreeState {
     groups: GroupTreeState[]
 }
 
-/** Shared by the article table's edit mode and the comparison table's, which lay the tree out differently. */
 export function useCategoryTreeState(category: Category): CategoryTreeState {
     const settings = useContext(Settings.Context)
     const availableGroups = useAvailableGroups(category)

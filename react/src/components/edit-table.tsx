@@ -113,7 +113,6 @@ function EditCheckboxLabel(props: {
     )
 }
 
-/** Where the row carries a warning, the label gives up the width of the columns the warning stands in for. */
 function EditLabelRow(props: {
     index: number
     highlight: boolean
@@ -179,13 +178,9 @@ function AnimatedCollapse({ expanded, children }: { expanded: boolean, children:
 }
 
 /**
- * A group with a single statistic collapses into that statistic's row, which then carries
- * the group's checkbox. Otherwise the group gets a header row with the checkbox, and its
- * statistics point at that checkbox rather than having one each.
- *
- * A group the year and source selection leaves with no statistics is that header alone: a
- * row with a checkbox and no value. It exists for this geography, so dropping it from the
- * tree would leave no way to reach it; its warning stands where the value would be.
+ * A group the year and source selection leaves with no statistics is a header row alone: a
+ * checkbox and no value. It exists for this geography, so dropping it from the tree would
+ * leave no way to reach it; its warning stands where the value would be.
  */
 function categoryBodyRows(groups: GroupTreeState[], rowsByGroup: Map<string, EditRow[]>, warningsByGroup: Map<string, ReactNode>): EditBodyRow[] {
     return groups.flatMap(({ group, enabled, setEnabled, highlight }): EditBodyRow[] => {
@@ -448,10 +443,6 @@ export function useEditModeState(): EditModeState {
     }
 }
 
-/**
- * The statistic category/group checkbox tree replicated directly on a table, with each
- * statistic's own cells alongside its checkbox.
- */
 export function EditTable(props: {
     rowsByGroup: Map<string, EditRow[]>
     layout: MeasuredTableLayout

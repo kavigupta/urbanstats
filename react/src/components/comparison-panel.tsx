@@ -549,8 +549,8 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
 }
 
 /**
- * The comparison's edit tree. Split out so the column width measurement, which is over every
- * statistic rather than the selected ones, only happens while edit mode is actually open.
+ * Split out so the column width measurement, which is over every statistic rather than the
+ * selected ones, only happens while edit mode is actually open.
  */
 function ComparisonEditTable(props: {
     universe: Universe
