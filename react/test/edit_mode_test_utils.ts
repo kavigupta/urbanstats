@@ -74,10 +74,8 @@ export function sourceCheckbox(category: string, name: string): CheckboxSelector
 }
 
 /**
- * A checkbox of the table's edit mode, by the text of the row it sits on: a statistic
- * category, a year, a data source, or a group that carries its own checkbox. Rows that
- * point at another row's checkbox with `for` are excluded, since a group's statistics
- * repeat text (a year, a source) that also names a checkbox of its own further up.
+ * Rows that point at another row's checkbox with `for` are excluded, since a group's
+ * statistics repeat text (a year, a source) that also names a checkbox of its own further up.
  */
 export function editCheckbox(txt: string): Selector {
     return Selector('label:not([for]):not([inert] *)')
@@ -86,9 +84,9 @@ export function editCheckbox(txt: string): Selector {
 }
 
 /**
- * A statistic row inside a multi-row group. Matched via the group checkbox it points at,
- * which distinguishes these rows from the year and source rows above (whose labels carry the
- * same text). A group with a single row collapses into that row, so it has none of these.
+ * Matched via the group checkbox it points at, which distinguishes these rows from the year
+ * and source rows above (whose labels carry the same text). A group with a single row
+ * collapses into that row, so it has none of these.
  */
 export function groupMemberRow(groupId: string, name: string): Selector {
     return Selector(`label[for=edit-checkbox-${groupId}]`).withExactText(name)
@@ -105,9 +103,9 @@ export function groupWarning(groupId: string): Selector {
 export const articleTableScope = '.stats_table'
 
 /**
- * A category's toggle in the edit tree, matched by the direction it currently offers, so
- * its presence also tells you which state the category is in. A category with every group
- * selected has no toggle at all, since collapsing it would hide nothing.
+ * Matched by the direction the toggle currently offers, so its presence also tells you which
+ * state the category is in. A category with every group selected has no toggle at all, since
+ * collapsing it would hide nothing.
  */
 export function categoryToggleButton(categoryId: string, direction: 'Expand' | 'Collapse'): Selector {
     return Selector(`[data-category-id=${categoryId}]`).withAttribute('aria-label', new RegExp(`^${direction} `))

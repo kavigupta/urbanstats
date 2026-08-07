@@ -42,7 +42,6 @@ export async function checkTextboxesDirect(t: TestController, txts: string[], nt
         await t.click(checkbox)
     }
 }
-/** For the checkboxes that are still in the sidebar: the settings, appearance and random ones. */
 export async function checkSidebarTextboxes(t: TestController, txts: string[]): Promise<void> {
     await withHamburgerMenu(t, async () => {
         await checkTextboxesDirect(t, txts)
@@ -555,7 +554,6 @@ export async function uncheckAllCategories(t: TestController): Promise<void> {
     }
 }
 
-/** The sidebar's tree still exists alongside the table's edit mode. */
 export async function uncheckAllSidebarCategories(t: TestController): Promise<void> {
     for (const check of await arrayFromSelector(Selector('input[data-test-id^=category]'))) {
         if (await check.checked) {
