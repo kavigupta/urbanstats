@@ -15,7 +15,6 @@ export function useUniverse(): Universe | undefined {
     return useUniverseContext()?.universe
 }
 
-/** The current universe, for the components that only render on pages that have one. */
 export function useDefinedUniverse(): Universe {
     const universe = useUniverse()
     assert(universe !== undefined, 'no universe')

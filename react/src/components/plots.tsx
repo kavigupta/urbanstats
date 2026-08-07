@@ -207,10 +207,7 @@ function resolveStatYears(rows: ArticleRow[], statIndex: number): { idx: number,
     return chosen
 }
 
-/**
- * Whether each statistic's extras are currently expanded, in statistic order. Only the
- * statistics that have extras are subscribed to, since the rest can never be expanded.
- */
+/** Only the statistics that have extras are subscribed to, since the rest can never be expanded. */
 export function useExpandedByStat(statpaths: StatPath[], hasExtras: (statIndex: number) => boolean): boolean[] {
     const expandedSettings = useSettings(statpaths.filter((_, index) => hasExtras(index)).map(rowExpandedKey))
     return statpaths.map(statpath => expandedSettings[rowExpandedKey(statpath)] ?? false)

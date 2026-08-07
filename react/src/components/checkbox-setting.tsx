@@ -57,7 +57,6 @@ type CheckboxSettingCustomProps = CheckboxSettingCustomJustInputProps & {
     classNameToUse?: string
 }
 
-/** Marks a control whose value staging is currently changing. */
 export function useHighlightStyle(highlight: boolean | undefined): CSSProperties {
     const colors = useColors()
     return {
