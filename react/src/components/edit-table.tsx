@@ -28,12 +28,6 @@ function EditCheckbox(props: Omit<CheckboxSettingCustomJustInputProps, 'style' |
     return <CheckboxSettingJustBox {...props} style={editCheckboxStyle} />
 }
 
-/**
- * The widths are measured over every statistic, since the edit tree shows them all, so they're
- * memoized rather than remeasured on each checkbox click. No column reserves space to its
- * right: that space is for vertical plots, which only appear when transposed, and an edit
- * table never is.
- */
 export function useEditTableLayout(columnLayout: TableLayout, columnRows: ArticleRow[][], universe: Universe): MeasuredTableLayout {
     const { simpleOrdinals } = columnLayout
     // Memoized on the measurement's own dependencies, rather than on `columnLayout`, which
@@ -50,17 +44,12 @@ const indentEm = 0.75
 const togglePx = 20
 const toggleGapEm = 0.25
 
-/**
- * The rows under a category start past the expand toggle that precedes the category's own
- * name, so a category header sits to the left of everything it contains.
- */
 function treeIndent(level: number): string {
     return `calc(${togglePx}px + ${toggleGapEm + level * indentEm}em)`
 }
 
 export interface EditRow {
     displayName: HumanReadableName
-    /** Supplies the name's adornments: the plot expander and the disclaimer marker. */
     row: ArticleRow
     cellSpecs: CellSpec[]
     plotSpec?: PlotSpec
