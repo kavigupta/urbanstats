@@ -40,7 +40,7 @@ function divergingRamp(first: Color, last: Color, middle: Color = { r: 1, g: 1, 
 }
 
 function reverseRamp(ramp: RampT): RampT {
-    return ramp.slice().reverse().map(([value, color]) => [1 - value, color]) as RampT
+    return ramp.slice().reverse().map(([value, color]) => [1 - value, color])
 }
 
 export const constructRampValue: USSValue = {
@@ -124,7 +124,6 @@ export const divergingRampValue: USSValue = {
         },
         returnType: { type: 'concrete', value: rampType },
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const first = (namedArgs.first as { type: 'opaque', value: Color }).value
         const last = (namedArgs.last as { type: 'opaque', value: Color }).value

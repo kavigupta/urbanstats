@@ -21,9 +21,7 @@ export function executeAsync(request: { descriptor: { kind: 'mapper', geographyK
 export function executeAsync(request: { descriptor: { kind: 'statistics', geographyKind: typeof validGeographies[number], universe: Universe }, stmts: UrbanStatsASTStatement }): Promise<USSExecutionResult<{ type: USSOpaqueType, value: USSOpaqueValue & { opaqueType: 'table' } }>>
 export function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult>
 export async function executeAsync(request: USSExecutionRequest): Promise<USSExecutionResult> {
-    if (sharedUSSWorker === undefined) {
-        sharedUSSWorker = createUSSWorker()
-    }
+    sharedUSSWorker ??= createUSSWorker()
     return await sharedUSSWorker(request)
 }
 

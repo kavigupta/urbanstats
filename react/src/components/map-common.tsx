@@ -32,8 +32,7 @@ void maplibregl.setRTLTextPlugin('https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0
 
 export type CommonMapProps = MapProps & { testId?: string }
 
-// eslint-disable-next-line no-restricted-syntax -- Forwarded ref
-function _CommonMaplibreMap(props: CommonMapProps, ref: React.Ref<MapRef>): ReactNode {
+function CommonMaplibreMapImpl(props: CommonMapProps, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
     const isScreenshotMode = useScreenshotMode()
 
@@ -121,7 +120,7 @@ function SynchronizeMapWithScreenshots(): ReactNode {
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Is a function component
-export const CommonMaplibreMap = React.forwardRef(_CommonMaplibreMap)
+export const CommonMaplibreMap = React.forwardRef(CommonMaplibreMapImpl)
 
 // We don't use refs on these to avoid races, as the mapRef may be assigned after the feature has loaded
 export function useZoomFirstFeature(mapRef: MapRef | null, features: (GeoJSON.Feature | typeof waiting)[]): void {

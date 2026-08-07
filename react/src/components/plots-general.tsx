@@ -421,7 +421,7 @@ interface LegendItem {
     subseriesName: string
 }
 
-function computeColorItems<T extends LegendItem>(items: T[]): { label: string, color: string }[] {
+function computeColorItems(items: LegendItem[]): { label: string, color: string }[] {
     const colorItems: { label: string, color: string }[] = []
     for (const item of items) {
         // handles duplicate names by just putting them all in if they're different colors
@@ -439,7 +439,7 @@ function computeColorItems<T extends LegendItem>(items: T[]): { label: string, c
     return colorItems
 }
 
-export function computeDashPatterns<T extends LegendItem>(items: T[], order?: string[]): Map<string, { pattern: string, name: string }> {
+export function computeDashPatterns(items: LegendItem[], order?: string[]): Map<string, { pattern: string, name: string }> {
     const dashPatterns = new Map<string, { pattern: string, name: string }>()
     const subseriesNames = new Set<string>()
     items.forEach((item) => {
@@ -492,7 +492,7 @@ function legendBounds(labels: string[], rows: number, transpose: boolean): PlotR
 
 interface DrawnLegend { marks: Plot.Markish[], bounds: PlotRect | undefined }
 
-function manualLegend<T extends LegendItem>(items: T[], transpose: boolean, themeColors: Colors, dashOrder?: string[]): DrawnLegend {
+function manualLegend(items: LegendItem[], transpose: boolean, themeColors: Colors, dashOrder?: string[]): DrawnLegend {
     const colorItems = computeColorItems(items)
 
     const dashPatterns = computeDashPatterns(items, dashOrder)
@@ -777,8 +777,8 @@ export interface PlotSeriesItem {
 }
 
 // shared plot shell: title, legend and settings bar from `items`; buildPlot supplies the rest
-export function SeriesPlot<T extends PlotSeriesItem>(props: {
-    items: T[]
+export function SeriesPlot(props: {
+    items: PlotSeriesItem[]
     filenameSuffix: string
     sharedTypeOfAllArticles?: string
     modeSwitcher?: ReactElement

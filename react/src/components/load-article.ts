@@ -371,9 +371,7 @@ function loadSingleArticle(data: Article, counts: CountsByUT, universe: string):
 
 let representativeTableCache: CongressionalRepresentativeTable | undefined = undefined
 async function getRepresentativeTable(): Promise<CongressionalRepresentativeTable> {
-    if (!representativeTableCache) {
-        representativeTableCache = await loadProtobuf('/index/representatives.gz', 'CongressionalRepresentativeTable')
-    }
+    representativeTableCache ??= await loadProtobuf('/index/representatives.gz', 'CongressionalRepresentativeTable')
     return representativeTableCache
 }
 
@@ -504,10 +502,7 @@ export function isNoValue(statval: number | MetadataStatValue): boolean {
         case 'string':
             return statval === ''
         default:
-            switch (statval.kind) {
-                case 'congressional':
-                    return statval.representatives.length === 0
-            }
+            return statval.representatives.length === 0
     }
 }
 

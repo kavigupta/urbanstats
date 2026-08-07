@@ -20,13 +20,13 @@ export function TimeSeriesPlot(props: { stats: TimeSeriesPlotProps[] }): ReactNo
 
     const plotSpec = useMemo(
         () => {
-            const marks = props.stats.map((stat) => {
+            const marks: Plot.Markish[] = props.stats.map((stat) => {
                 const x = stat.stat.years
                 const y = stat.stat.timeSeries
                 return Plot.line(
                     x.map((xval, i) => [xval, y[i]]),
                     { stroke: stat.color, strokeWidth: 2 },
-                ) as Plot.Markish
+                )
             })
             marks.push(
                 Plot.axisX({

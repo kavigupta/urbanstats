@@ -1,6 +1,6 @@
 import { statParents } from '../page_template/statistic-tree'
 import { Universe } from '../universe'
-import { HumanReadableName } from '../utils/human-readable-name'
+import { HumanReadableName, joinHumanReadableNames } from '../utils/human-readable-name'
 
 import { ArticleRow } from './load-article'
 import { CellSpec } from './supertable'
@@ -45,7 +45,7 @@ function getGroupAndDisplayNames(nameSpec: NameSpec, aggregates: Map<string | un
     const sourceName = statParent?.source.name
     let displayName = groupSize > 1 ? (statParent?.indentedName ?? nameSpec.renderedStatname) : nameSpec.renderedStatname
     if (groupHasMultipleSources && sourceName) {
-        displayName = `${displayName} [${sourceName}]`
+        displayName = [...joinHumanReadableNames([displayName]), { type: 'atom', value: ` [${sourceName}]` }]
     }
     const groupName = groupSize > 1 ? statParent?.group.name : undefined
     return [groupName, displayName]

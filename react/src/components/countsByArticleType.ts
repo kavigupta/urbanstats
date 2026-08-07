@@ -9,9 +9,7 @@ export type CountsByUT = Record<string, Record<string, [number, number][]>>
 let countsByArticleType: Promise<CountsByUT> | null = null
 
 export async function getCountsByArticleType(): Promise<CountsByUT> {
-    if (countsByArticleType === null) {
-        countsByArticleType = getCountsByArticleTypeDirect()
-    }
+    countsByArticleType ??= getCountsByArticleTypeDirect()
     return countsByArticleType
 }
 

@@ -17,8 +17,7 @@ interface InsetMapProps {
     interactive: boolean
 }
 
-// eslint-disable-next-line no-restricted-syntax -- Forward Ref
-function _InsetMap({ inset, children, editInset, container, i, numInsets, interactive }: InsetMapProps & {
+function InsetMapImpl({ inset, children, editInset, container, i, numInsets, interactive }: InsetMapProps & {
     children: (mapLibreProps: Partial<CommonMapProps>, mapChildren: ReactNode, subRef: React.Ref<MapRef>) => ReactNode
 }, ref: React.Ref<MapRef>): ReactNode {
     const colors = useColors()
@@ -86,7 +85,7 @@ function _InsetMap({ inset, children, editInset, container, i, numInsets, intera
 }
 
 // eslint-disable-next-line no-restricted-syntax -- Forward Ref
-export const InsetMap = React.forwardRef(_InsetMap)
+export const InsetMap = React.forwardRef(InsetMapImpl)
 
 function HandleInsets({ inset, setCoordBox }: { inset: Inset, setCoordBox: (newBox: Frame) => void }): ReactNode {
     const map = useMap().current!

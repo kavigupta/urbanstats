@@ -112,7 +112,7 @@ test('disclaimer-and-expand-buttons-vertically-aligned', async (t) => {
             }
             // only trust a container that is the single stat-name row (exactly one "+"), not a
             // larger container that would sweep in other rows' expand buttons
-            if (container === null || container.getElementsByClassName('expand-toggle').length !== 1) {
+            if (container?.getElementsByClassName('expand-toggle').length !== 1) {
                 continue
             }
             const d = disclaimer.getBoundingClientRect()

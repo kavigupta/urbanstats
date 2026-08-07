@@ -73,7 +73,6 @@ export const constructInsetValue: USSValue = {
         },
         returnType: { type: 'concrete', value: insetType },
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const screenBoundsObj = namedArgs.screenBounds as Map<string, USSRawValue>
         const mapBoundsObj = namedArgs.mapBounds as Map<string, USSRawValue>

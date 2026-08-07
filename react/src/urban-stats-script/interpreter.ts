@@ -285,7 +285,7 @@ function attrLookupOrSet(
             return attrLookupOrSet(undocValue(x, type.elementType), attr, orSetLookp(i))
         })
         if (resultsOrErr.some(r => r.type === 'error')) {
-            return { type: 'error', message: resultsOrErr.filter(r => r.type === 'error').map(r => (r as { type: 'error', message: string }).message)[0] }
+            return { type: 'error', message: resultsOrErr.filter(r => r.type === 'error').map(r => r.message)[0] }
         }
         const results = resultsOrErr.map(r => (r as { type: 'success', value: USSValue }).value)
         const rawValue = results.map(r => r.value)

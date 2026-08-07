@@ -490,6 +490,7 @@ export function cdpSessionWithSessionId<T extends Object>(cdpSession: T, session
     // https://issues.chromium.org/issues/406821212#comment2
     return new Proxy(cdpSession, {
         get(s, prop: keyof Object) {
+            // eslint-disable-next-line @typescript-eslint/unbound-method -- the proxy binds it to the target below
             const value: unknown = s[prop]
             if (value instanceof Function) {
                 return function (...args: unknown[]) {

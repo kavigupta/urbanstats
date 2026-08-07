@@ -115,7 +115,6 @@ export const constructTextBoxValue: USSValue = {
         },
         returnType: { type: 'concrete', value: textBoxType },
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const screenBounds = namedArgs.screenBounds as Map<string, USSRawValue>
 

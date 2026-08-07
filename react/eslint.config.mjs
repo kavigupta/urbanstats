@@ -1,7 +1,7 @@
 // @ts-check
 
 import stylistic from '@stylistic/eslint-plugin'
-import comments from 'eslint-plugin-eslint-comments'
+import comments from '@eslint-community/eslint-plugin-eslint-comments'
 import importPlugin from 'eslint-plugin-import'
 import tseslint from 'typescript-eslint'
 import reactPlugin from "eslint-plugin-react"
@@ -63,7 +63,7 @@ export default tseslint.config(
         },
     },
     {
-        plugins: { 'eslint-comments': comments },
+        plugins: { '@eslint-community/eslint-comments': comments },
         rules: comments.configs.recommended.rules,
     },
     {
@@ -81,7 +81,7 @@ export default tseslint.config(
             '@typescript-eslint/no-non-null-assertion': 'off',
             'prefer-template': 'error',
             '@typescript-eslint/restrict-template-expressions': 'off',
-            'eslint-comments/no-unused-disable': 'error',
+            '@eslint-community/eslint-comments/no-unused-disable': 'error',
             'no-console': ['error', { "allow": ["warn", "error"] }],
             '@stylistic/max-statements-per-line': 'off',
             '@typescript-eslint/no-unnecessary-condition': ['error', { allowConstantLoopConditions: true }],
@@ -156,7 +156,7 @@ export default tseslint.config(
             ],
             'react/prop-types': 'off',
             'no-shadow': 'error',
-            'eslint-comments/require-description': ['error', {
+            '@eslint-community/eslint-comments/require-description': ['error', {
                 ignore: ['eslint-enable']
             }],
             "@typescript-eslint/method-signature-style": ["error", "property"], // https://www.totaltypescript.com/method-shorthand-syntax-considered-harmful

@@ -53,9 +53,7 @@ function quizForVersion(version: number): QuizInfiniteForVersion {
 let quizSamplingData: Promise<QuizFullData> | null = null
 function loadQuizSamplingData(version: number): Promise<QuizFullData> {
     // cache the data
-    if (quizSamplingData === null) {
-        quizSamplingData = loadProtobuf(`/quiz_sampling_info/${version}/data.gz`, 'QuizFullData')
-    }
+    quizSamplingData ??= loadProtobuf(`/quiz_sampling_info/${version}/data.gz`, 'QuizFullData')
     return quizSamplingData
 }
 

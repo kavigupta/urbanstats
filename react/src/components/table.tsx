@@ -86,7 +86,7 @@ interface ColumnLayoutProps {
 }
 
 // Lays out column content
-function ColumnLayout(props: ColumnLayoutProps): JSX.Element[] {
+function ColumnLayout(props: ColumnLayoutProps): React.JSX.Element[] {
     const cellPercentages: number[] = []
     const cellContents: { content: () => ReactNode, style: CSSProperties }[] = []
     for (const { widthPercentage, columnIdentifier, content, style } of props.cells) {
@@ -908,7 +908,7 @@ export function StatisticNameCell(props: StatisticNameCellProps & { width: numbe
                 <ComparisonColorBar highlightIndex={props.highlightIndex} />
             )}
             <div
-                key={`statName_${props.renderedStatname}`}
+                key={`statName_${reifyString(props.renderedStatname)}`}
                 style={{ width: `${width}%`, padding: '1px', paddingLeft: props.isIndented ? '1em' : '1px', textAlign: props.center ? 'center' : undefined }}
             >
                 <span className="serif value" style={{ display: 'flex', alignItems: 'center', justifyContent: props.center ? 'center' : 'flex-start', gap: '0.25em' }}>
@@ -935,7 +935,7 @@ function displayName(props: StatisticNameCellProps): HumanReadableName {
 }
 
 function SortButton(props: StatisticNameCellProps & { sortInfo: NonNullable<StatisticNameCellProps['sortInfo']> }): ReactNode {
-    const sortButtonLabel = `Sort by ${displayName(props)}${
+    const sortButtonLabel = `Sort by ${reifyString(displayName(props))}${
         props.sortInfo.sortDirection === 'up'
             ? ', currently ascending'
             : props.sortInfo.sortDirection === 'down' ? ', currently descending' : ''
@@ -1171,9 +1171,7 @@ export function TableRowContainer({ children, index, minHeight, isHighlighted = 
 let measureCanvas: HTMLCanvasElement | null = null
 
 function getMeasureCanvas(): HTMLCanvasElement {
-    if (!measureCanvas) {
-        measureCanvas = document.createElement('canvas')
-    }
+    measureCanvas ??= document.createElement('canvas')
     return measureCanvas
 }
 
@@ -1415,7 +1413,7 @@ function PointerButtonsIndex(props: { ordinal?: number, statpath: string, type: 
             <PointerButtonIndex
                 getData={getData}
                 originalPos={props.ordinal}
-                direction={+1}
+                direction={1}
                 total={props.total}
                 longname={props.longname}
                 disable={props.overallFirstLast?.isLast}

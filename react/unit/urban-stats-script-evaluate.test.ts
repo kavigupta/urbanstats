@@ -1,5 +1,6 @@
 import assert from 'assert/strict'
 import { test } from 'node:test'
+import { inspect } from 'node:util'
 
 import { getRamps } from '../src/mapper/ramps'
 import { colorType } from '../src/urban-stats-script/constants/color'
@@ -963,15 +964,15 @@ function assertEquivalentRegressionOutput(
     expected: Map<string, USSRawValue>,
 ): void {
     if (!(actual instanceof Map)) {
-        throw new Error(`Expected a Map for regression output, but got ${actual}`)
+        throw new Error(`Expected a Map for regression output, but got ${inspect(actual)}`)
     }
     for (const [key, value] of actual.entries()) {
         const expectedValue = expected.get(key)
         if (expectedValue !== undefined) {
-            assert.strict(close(value, expectedValue), `Key ${key} has value ${value}, expected ${expectedValue}`)
+            assert.strict(close(value, expectedValue), `Key ${key} has value ${inspect(value)}, expected ${inspect(expectedValue)}`)
         }
         else {
-            assert.deepStrictEqual(value, NaN, `Key ${key} not found in expected output; had value: ${value}`)
+            assert.deepStrictEqual(value, NaN, `Key ${key} not found in expected output; had value: ${inspect(value)}`)
         }
     }
 }

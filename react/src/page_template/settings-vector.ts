@@ -510,7 +510,6 @@ type NotIncludedInSettingsVector = (
     | 'randomFilterByCurrentUniverse'
 )
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- No deprecations yet
 export const activeVectorKeys = settingsVector.flatMap(setting => setting.deprecated ? [] : [setting.key])
 
 export type VectorSettingKey = typeof activeVectorKeys[number]

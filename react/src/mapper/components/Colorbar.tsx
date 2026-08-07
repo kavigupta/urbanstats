@@ -39,12 +39,12 @@ export function Colorbar(props: { ramp: RampToDisplay | undefined, basemap: Base
             padding: '10px',
         }}
         >
-            {props.ramp && props.ramp.type === 'label' && (
+            {props.ramp?.type === 'label' && (
                 <div className="centered_text user_input">
                     {reifyReact(props.ramp.value)}
                 </div>
             )}
-            {props.ramp && props.ramp.type === 'ramp' && (
+            {props.ramp?.type === 'ramp' && (
                 <RampColorbar ramp={props.ramp.value} />
             )}
         </div>
