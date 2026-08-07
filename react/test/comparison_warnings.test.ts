@@ -17,7 +17,6 @@ async function selectMainWithoutYears(t: TestController): Promise<void> {
 
 const missingMainGroups = ['Population', 'PW Density (r=1km)', 'AW Density']
 
-/** The statistic names heading each column, which transposed is where a warning's name goes. */
 async function columnHeaderNames(): Promise<string[]> {
     const names = await arrayFromSelector(Selector('[data-test-id=statistic-link]'))
     return Promise.all(names.map(async name => (await name.innerText).trim()))

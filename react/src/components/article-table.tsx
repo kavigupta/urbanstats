@@ -20,7 +20,6 @@ const allColumns: ColumnIdentifier[] = ['statval', 'statval_unit', 'statistic_pe
 
 const mobileEditWidthLeftHeader = 58
 
-/** A plot for each row whose extras are currently expanded, and undefined for the rest. */
 export function useExpandedPlotSpecs(rows: ArticleRow[], article: Article): (PlotSpec | undefined)[] {
     const colors = useColors()
     const expanded = useExpandedByStat(rows.map(row => row.statpath), index => rows[index].extraStats.length > 0)

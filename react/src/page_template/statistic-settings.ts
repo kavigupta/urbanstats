@@ -245,16 +245,15 @@ export function useSelectedYears(): Year[] {
 }
 
 /**
- * The sources to name in a warning, and whether enabling any single one of them is enough. We could present
- * something more complex like a list of subsets, but that would be confusing and not very useful.
- * So instead, we just say "enable one of these sources" or "enable all of these sources".
+ * We could present something more complex like a list of subsets, but that would be confusing
+ * and not very useful. So instead, we just say "enable one of these sources" or "enable all of
+ * these sources".
  */
 export interface MissingSources {
     sources: SourceIdentifier[]
     anySourceSuffices: boolean
 }
 
-/** Why a group that the user selected is nonetheless showing no statistics. */
 export type MissingGroupReason =
     /** None of `years` are selected: the years this page has the group's statistics for from an enabled source. */
     { kind: 'year', years: Year[] } |
@@ -291,10 +290,7 @@ function sortSources(sources: Iterable<SourceIdentifier>): SourceIdentifier[] {
     return Array.from(new Set(sources)).sort((a, b) => sourceOrder.get(a)! - sourceOrder.get(b)!)
 }
 
-/**
- * Which selected groups are showing no statistics, and why. Groups are consolidated into their
- * category only when the whole category is missing for the same reason.
- */
+/** Which selected groups are showing no statistics, and why. */
 export function missingGroups(
     { selectedGroups, selectedYears, statPathsAll, settings, availableTree }: {
         selectedGroups: Group[]
@@ -330,7 +326,6 @@ export function missingGroups(
         }
         const blocked = Array.from(new Set(blockedEach.flat()))
 
-        /** The disabled sources standing in the way, across the regions missing the group. */
         const missingSources = (candidates: (paths: StatPath[]) => StatPath[]): MissingSources => {
             const eachRegion = blockedEach.map(paths => new Set(candidates(paths).map(path => statParents.get(path)!.source.name)))
             const sources = sortSources(eachRegion.flatMap(region => Array.from(region)))
@@ -340,7 +335,6 @@ export function missingGroups(
             }
         }
 
-        // Statistics whose source is enabled are held back by their year alone.
         const heldBackByYear = blocked.filter(sourceEnabled)
         if (heldBackByYear.length > 0) {
             return { kind: 'year', years: yearsOf(heldBackByYear) }
@@ -426,7 +420,6 @@ export function useStatPathsAll(): StatPath[][] {
     return useContext(Navigator.Context).useStatPathsAll() ?? (() => { throw new Error('Current page does not have StatPath information') })()
 }
 
-/** Whether a group's or category's statistics include any that the page has loaded. */
 function intersectsPage(statPaths: Set<StatPath>, pageStatPaths: Set<StatPath>): boolean {
     for (const statPath of statPaths) {
         if (pageStatPaths.has(statPath)) {
@@ -461,9 +454,9 @@ export function getAvailableTree(statPathsAll: StatPath[][]): AvailableTree {
 }
 
 /**
- * The parts of the statistic tree this page has data for. Memoized on the page's own stat
- * paths, which only change on navigation: edit mode puts the whole tree on the table, so
- * otherwise this would be rescanned on every checkbox click and every keystroke in its filter.
+ * Memoized on the page's own stat paths, which only change on navigation: edit mode puts the
+ * whole tree on the table, so otherwise this would be rescanned on every checkbox click and
+ * every keystroke in its filter.
  */
 function useAvailableTree(): AvailableTree {
     const statPathsAll = useStatPathsAll()
