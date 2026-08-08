@@ -23,6 +23,7 @@ import { zIndex } from '../utils/zIndex'
 
 import { placeWarnings, useArticleWarnings, WarningRow } from './ArticleWarnings'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
+import { StagingControls } from './StagingControls'
 import { useCSVExport } from './csv-export'
 import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
@@ -470,6 +471,9 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                                 </div>
 
                                 <div style={{ marginBlockEnd: '1em' }}></div>
+
+                                {/* Outside the scroll and tableRef, so its buttons stay on screen and out of screenshots. */}
+                                <StagingControls />
 
                                 <MaybeScroll widthColumns={widthColumns}>
                                     <div ref={tableRef}>
