@@ -266,7 +266,6 @@ function EditCategory(props: {
                     {!props.searching && (anythingToExpand
                         ? (
                                 <ExpandButton
-                                    pointing="right"
                                     isExpanded={expanded}
                                     data-category-id={props.category.id}
                                     onClick={() => { tree.setExpanded(!tree.expanded) }}

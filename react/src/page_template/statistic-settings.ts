@@ -29,7 +29,7 @@ function sourceApplies(source: DataSource, settings: StatGroupSettings, sourcesB
     return settings[sourceEnabledKey(source) satisfies StatSourceKey]
 }
 
-export function groupKeys(groups: Group[]): StatGroupKey[] {
+function groupKeys(groups: Group[]): StatGroupKey[] {
     return groups.map(group => `show_stat_group_${group.id}` as const)
 }
 
@@ -78,7 +78,7 @@ function categoryStatus(enabled: boolean[]): boolean | 'indeterminate' {
     }
 }
 
-export function changeStatGroupSetting(settings: Settings, group: Group, newValue: boolean): void {
+function changeStatGroupSetting(settings: Settings, group: Group, newValue: boolean): void {
     settings.setSetting(`show_stat_group_${group.id}`, newValue)
     saveIndeterminateState(settings, group.parent)
 }
@@ -120,23 +120,6 @@ function toggleCategorySetting(settings: Settings, category: Category, available
             }
             break
     }
-}
-
-export function useCategoryStatus(category: Category): boolean | 'indeterminate' {
-    const groups = useAvailableGroups(category)
-    const settingsValues = useSettings(groupKeys(groups))
-    return categoryStatus(groups.map(group => settingsValues[`show_stat_group_${group.id}`]))
-}
-
-export function useChangeCategorySetting(category: Category): () => void {
-    const status = useCategoryStatus(category)
-    const availableGroups = useAvailableGroups(category)
-    const settings = useContext(Settings.Context)
-    return () => { toggleCategorySetting(settings, category, availableGroups, status) }
-}
-
-export function useAvailableCategories(): Category[] {
-    return useAvailableTree().categories
 }
 
 export interface GroupTreeState {
@@ -492,7 +475,7 @@ function useAvailableTree(): AvailableTree {
     return useMemo(() => getAvailableTree(statPathsAll), [statPathsAll])
 }
 
-export function useAvailableGroups(category?: Category): Group[] {
+function useAvailableGroups(category?: Category): Group[] {
     const { groups } = useAvailableTree()
     return (category?.contents ?? allGroups).filter(group => groups.has(group))
 }

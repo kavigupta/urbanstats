@@ -1,5 +1,4 @@
 const layers = [
-    'categoryCheckbox',
     'universeDropdown',
     'screenshotDim',
     'screenshotSpin',
