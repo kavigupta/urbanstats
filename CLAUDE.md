@@ -35,3 +35,8 @@ python create_website.py --site-folder <location> --mode dev --target scripts
 ```
 
 in bash or zsh.
+
+The dev server (`npm run watch`, from `react/`) mirrors its output to
+`react/dev-server.log`, trimmed to its last few thousand lines. Read that to see
+whether a rebuild succeeded. Its incremental builds sometimes get stuck in a bad
+state; `killall rspack-node` fixes that, and the watcher restarts itself.
