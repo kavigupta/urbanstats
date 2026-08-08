@@ -36,7 +36,6 @@ export interface DisclaimerFootnote {
     text: string
 }
 
-/** The column shape a table's rows are laid out against. */
 export interface TableLayout {
     widthLeftHeader: number
     columnWidth: number
@@ -44,25 +43,22 @@ export interface TableLayout {
     simpleOrdinals: boolean
 }
 
-/** A `TableLayout` with its columns measured, which is what rows are actually rendered against. */
 export interface MeasuredTableLayout extends TableLayout {
-    /** One entry per column, which is also what the column count is read from. */
     columnWidthsInfo: (CommonLayoutInformation | undefined)[]
-    /** The space reserved to the right of each column, which a vertical plot occupies. */
     extraSpaceRight: number[]
 }
 
 /**
- * Measures each column against the rows it contains. A column with no rows goes unmeasured
- * rather than measuring as zero, which would cap its header's text at no width at all.
+ * A column with no rows goes unmeasured rather than measuring as zero, which would cap its
+ * header's text at no width at all.
  */
 function measureColumns(columnRows: StatisticCellRenderingInfo[][], universe: Universe, simpleOrdinals: boolean): (CommonLayoutInformation | undefined)[] {
     return columnRows.map(rows => rows.length === 0 ? undefined : maxLayoutInformation(rows, universe, simpleOrdinals))
 }
 
 /**
- * The layout rows are rendered against. `extraSpaceRight` is asked for per column rather
- * than passed as an array, so it can't disagree with the measurements about the column count.
+ * `extraSpaceRight` is asked for per column rather than passed as an array, so it can't
+ * disagree with the measurements about the column count.
  */
 function measuredLayout(layout: TableLayout, columnWidthsInfo: (CommonLayoutInformation | undefined)[], extraSpaceRight: (columnIndex: number) => number): MeasuredTableLayout {
     return {
@@ -72,7 +68,6 @@ function measuredLayout(layout: TableLayout, columnWidthsInfo: (CommonLayoutInfo
     }
 }
 
-/** Each column's width including the space reserved to its right. */
 function columnFullWidths(layout: MeasuredTableLayout): number[] {
     return layout.extraSpaceRight.map(extra => layout.columnWidth + extra)
 }
@@ -85,12 +80,8 @@ export interface TableContentsProps {
     horizontalPlotSpecs: (PlotSpec | undefined)[]
     verticalPlotSpecs: (PlotSpec | undefined)[]
     topLeftSpec: TopLeftCellSpec
-    /** Warnings shown in place of the statistics they are about. */
     warningRows?: WarningRow[]
-    /**
-     * Warnings that stand in for a column rather than a row, drawn once down the column. The
-     * column itself must already be in `rowSpecs` and the super header, as a blank cell.
-     */
+    /** The column itself must already be in `rowSpecs` and the super header, as a blank cell. */
     warningColumns?: WarningColumn[]
     highlightRowIndex?: number
     loading?: boolean
@@ -223,11 +214,6 @@ export function TableContents(props: TableContentsProps): ReactNode {
     )
 }
 
-/**
- * Everything a table has above its rows -- the optional super header, and the main header
- * row of column names -- plus the positioned container the rows themselves live in, which
- * the vertical plots are absolutely positioned against.
- */
 function TableFrame(props: {
     layout: MeasuredTableLayout
     superHeaderSpec?: SuperHeaderSpec
@@ -265,12 +251,6 @@ function TableFrame(props: {
     )
 }
 
-/**
- * An explanation of why some statistics aren't there, laid out like the row they stand in for:
- * the group's name in the left header, and the warning across the columns the values would fill.
- * A warning about no group in particular has no name to put in the left header, so it spans the
- * whole row rather than starting at an empty one.
- */
 function WarningTableRow(props: { layout: MeasuredTableLayout, stripeIndex: number, name?: string, content: ReactNode }): ReactNode {
     const colors = useColors()
     const contentWidth = props.name === undefined
@@ -293,10 +273,6 @@ function WarningTableRow(props: { layout: MeasuredTableLayout, stripeIndex: numb
     )
 }
 
-/**
- * The message for a warning that stands in for a column, drawn once down the blank column its
- * statistics would have filled.
- */
 function WarningColumnMessage(props: { layout: MeasuredTableLayout, columnIndex: number, content: ReactNode }): ReactNode {
     const colors = useColors()
     const fullWidths = columnFullWidths(props.layout)
@@ -360,11 +336,6 @@ function SuperTableRow(props: {
     )
 }
 
-/**
- * The shape every statistic row has: a left header followed by a cell per column, and below
- * it the blocks the row's extras call for -- its expanded plot and its representatives
- * table. Callers differ only in what they put in the left header.
- */
 function StatisticTableRow(props: {
     layout: MeasuredTableLayout
     index: number
@@ -405,11 +376,6 @@ function StatisticTableRow(props: {
     )
 }
 
-/**
- * A row's cells, each followed by the space its column reserves to the right. Statistic
- * cells are given their column's measured widths here, so every table that renders a row
- * of cells lines its columns up the same way.
- */
 function RowCells(props: { layout: MeasuredTableLayout, cellSpecs: CellSpec[] }): ReactNode {
     const { columnWidth, extraSpaceRight, columnWidthsInfo } = props.layout
     return props.cellSpecs.map((spec, colIndex) => (
@@ -423,7 +389,6 @@ function RowCells(props: { layout: MeasuredTableLayout, cellSpecs: CellSpec[] })
     ))
 }
 
-/** The representatives tables a row's cells call for, in column order. */
 function congressionalRegionsForCells(cellSpecs: CellSpec[]): CongressionalColumnData[] {
     return cellSpecs.flatMap((cell) => {
         if (cell.type !== 'statistic-row') {
@@ -440,7 +405,6 @@ export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCell
     ({ type: 'statistic-panel-longname' } & StatisticPanelLongnameCellProps) |
     ({ type: 'comparison-top-left-header' } & TopLeftHeaderProps) |
     ({ type: 'top-left-header' } & TopLeftHeaderProps) |
-    /** Holds a column's width open without drawing anything, e.g. under a warning column. */
     { type: 'blank' }
 
 export function Cell(props: CellSpec & { width: number }): ReactNode {
@@ -513,5 +477,4 @@ export interface TopLeftHeaderProps {
     statNameOverride?: string
 }
 
-/** The cells that can serve as a table's top-left header; the comparison's carries a color bar. */
 export type TopLeftCellSpec = Extract<CellSpec, { type: 'comparison-top-left-header' | 'top-left-header' }>

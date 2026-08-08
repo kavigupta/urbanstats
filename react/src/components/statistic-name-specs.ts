@@ -70,7 +70,6 @@ export function computeNameSpecsWithGroups(nameSpecs: NameSpec[]): { updatedName
     return { updatedNameSpecs, groupNames }
 }
 
-/** The name cell spec for each row, before `computeNameSpecsWithGroups` fills in display names. */
 export function nameSpecsForRows(rows: ArticleRow[], longname: string, currentUniverse: Universe): NameSpec[] {
     return rows.map(row => ({
         type: 'statistic-name',
