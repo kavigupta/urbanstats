@@ -10,6 +10,10 @@ cd react
 # fact, without the color escapes. Once the log reaches max lines, drop all but
 # the last keep lines.
 log_tail() {
+    # ^C reaches every process in the pipeline. Ignoring it here keeps awk alive
+    # to drain the last of rspack's output, and keeps the pipeline's exit status
+    # off 130, which would otherwise take this script down with it.
+    trap '' INT
     awk -v f=dev-server.log -v max=4000 -v keep=2000 '
         BEGIN { ansi = sprintf("%c", 27) "\\[[0-9;?]*[a-zA-Z]" }
         { print; fflush(); line = $0; gsub(ansi, "", line)
