@@ -1,6 +1,7 @@
 import { Selector } from 'testcafe'
 
 export const editButton = Selector('[data-test-id=edit-mode-edit]')
+export const warningEditAction = Selector('[data-test-id=warning-edit-action]')
 export const doneButton = Selector('[data-test-id=edit-mode-done]')
 export const filterBox = Selector('[data-test-id=edit-mode-filter]')
 export const clearFilterButton = Selector('[data-test-id=edit-mode-filter-clear]')
