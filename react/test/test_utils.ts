@@ -122,7 +122,8 @@ export async function checkAllCategoryBoxes(t: TestController): Promise<void> {
             }
         }
     })
-    // The appearance settings, which are still in the sidebar.
+    // The appearance settings, which are still in the sidebar. The years and sources are there
+    // too, so this skips whatever the pass above already turned on rather than undoing it.
     await withHamburgerMenu(t, async () => {
         const checkboxes = Selector('div.checkbox-setting:not([inert] *)')
             .filter((node) => {
@@ -134,7 +135,9 @@ export async function checkAllCategoryBoxes(t: TestController): Promise<void> {
                 )
             }).find('input')
         for (let i = 0; i < await checkboxes.count; i++) {
-            await t.click(checkboxes.nth(i))
+            if (!await checkboxes.nth(i).checked) {
+                await t.click(checkboxes.nth(i))
+            }
         }
     })
     // reload

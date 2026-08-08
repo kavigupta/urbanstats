@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 
-import { useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
+import { useMissingGroupReasonsOfEveryGroup, useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
 import { Category, Group, GroupIdentifier, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 
 import { useScreenshotMode } from './screenshot'
@@ -39,7 +39,7 @@ export function useArticleWarnings(): ArticleWarning[] {
     if (selectedGroups.length === 0) {
         return [{
             order: 0,
-            content: <b>No Statistic Categories are selected</b>,
+            content: <b>No Statistics are selected</b>,
         }]
     }
 
@@ -54,18 +54,14 @@ export function useArticleWarnings(): ArticleWarning[] {
 
 export function useWarningsByGroup(): Map<GroupIdentifier, ReactNode> {
     const screenshotMode = useScreenshotMode()
-    const missingGroups = useMissingGroups()
+    const missing = useMissingGroupReasonsOfEveryGroup()
 
     const result = new Map<GroupIdentifier, ReactNode>()
     if (screenshotMode) {
         return result
     }
-    for (const { groupOrCategory, reason } of missingGroups) {
-        const content = warningMessage(reason, groupOrCategory)
-        const groups = groupOrCategory.kind === 'Group' ? [groupOrCategory] : groupOrCategory.contents
-        for (const group of groups) {
-            result.set(group.id, content)
-        }
+    for (const { group, reason } of missing) {
+        result.set(group.id, warningMessage(reason, group))
     }
     return result
 }
