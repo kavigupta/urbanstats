@@ -169,7 +169,7 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
         await withHamburgerMenu(t, async () => {
             await uncheckAllSidebarCategories(t)
         })
-        await t.expect(Selector('b').withExactText('No Statistic Categories are selected').exists).ok()
+        await t.expect(Selector('b').withExactText('No Statistics are selected').exists).ok()
         // Nothing is missing in particular, so the warning spans the row instead of naming a group
         await t.expect(Selector('[data-test-id=article-warning-name]').exists).notOk()
         await screencap(t)

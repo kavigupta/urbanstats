@@ -289,17 +289,17 @@ function sortSources(sources: Iterable<SourceIdentifier>): SourceIdentifier[] {
     return Array.from(new Set(sources)).sort((a, b) => sourceOrder.get(a)! - sourceOrder.get(b)!)
 }
 
-/** Which selected groups are showing no statistics, and why. */
-export function missingGroups(
-    { selectedGroups, selectedYears, statPathsAll, settings, availableTree }: {
-        selectedGroups: Group[]
-        selectedYears: Year[]
-        statPathsAll: StatPath[][]
-        settings: StatGroupSettings
-        availableTree: AvailableTree
-    },
-): MissingGroup[] {
-    const consolidateGroups = consolidateGroupsIn(availableTree)
+interface MissingGroupsInput {
+    selectedGroups: Group[]
+    selectedYears: Year[]
+    statPathsAll: StatPath[][]
+    settings: StatGroupSettings
+}
+
+/** Which of `selectedGroups` are showing no statistics, and why, one entry per group. */
+function missingGroupReasons(
+    { selectedGroups, selectedYears, statPathsAll, settings }: MissingGroupsInput,
+): { group: Group, reason: MissingGroupReason }[] {
     const pageStatPathsEach = statPathsAll.map(statPaths => new Set(statPaths))
     const ambiguousSources = findAmbiguousSourcesAll(statPathsAll)
 
@@ -345,12 +345,23 @@ export function missingGroups(
         return { kind: 'yearAndSource', years: yearsOf(blocked), ...missingSources(paths => paths) }
     }
 
-    const byReason = new Map<string, { reason: MissingGroupReason, groups: Group[] }>()
-    for (const group of selectedGroups) {
+    return selectedGroups.flatMap((group) => {
         const reason = missingReason(group)
-        if (reason === undefined) {
-            continue
-        }
+        return reason === undefined ? [] : [{ group, reason }]
+    })
+}
+
+/**
+ * The same, with the groups a warning covers rolled up into their category wherever it covers all
+ * of it, so a table that stands one warning in for several statistics can say so once.
+ */
+export function missingGroups(
+    params: MissingGroupsInput & { availableTree: AvailableTree },
+): MissingGroup[] {
+    const consolidateGroups = consolidateGroupsIn(params.availableTree)
+
+    const byReason = new Map<string, { reason: MissingGroupReason, groups: Group[] }>()
+    for (const { group, reason } of missingGroupReasons(params)) {
         const key = reasonKey(reason)
         if (!byReason.has(key)) {
             byReason.set(key, { reason, groups: [] })
@@ -370,6 +381,25 @@ export function useMissingGroups(): MissingGroup[] {
     const availableTree = useAvailableTree()
 
     return missingGroups({ selectedGroups, selectedYears, statPathsAll, settings, availableTree })
+}
+
+/**
+ * For the edit tree, which lists every group and gives each its own row to warn in. A group's own
+ * checkbox is one of the things that can leave a statistic out, so it is left out of the reckoning
+ * -- what remains are the reasons the tree can act on, the years and the sources.
+ */
+export function useMissingGroupReasonsOfEveryGroup(): { group: Group, reason: MissingGroupReason }[] {
+    const availableGroups = useAvailableGroups()
+    const selectedYears = useSelectedYears()
+    const statPathsAll = useStatPathsAll()
+    const settings = useSettings(groupYearKeys())
+
+    return missingGroupReasons({
+        selectedGroups: availableGroups,
+        selectedYears,
+        statPathsAll,
+        settings: { ...settings, ...allStatGroupsEnabled },
+    })
 }
 
 /**

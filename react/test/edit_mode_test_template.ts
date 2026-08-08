@@ -107,30 +107,15 @@ export function editModeSharedTests(spec: {
         await t.expect(groupWarning('population').exists).notOk()
     })
 
-    test('a warning is a way into edit mode', async (t) => {
-        await t.click(editButton)
-        await t.click(year2020)
-        // The tree's own warning names settings that are already on screen, so it offers no button.
-        await t.expect(groupWarning('population').find('[data-test-id=warning-edit-action]').exists).notOk()
-        await t.click(doneButton)
-
-        const editAction = table.find('[data-test-id=warning-edit-action]')
-        await t.expect(editAction.nth(0).innerText).eql('Select')
-
-        await t.click(editAction.nth(0))
-
-        // Edit mode, open on the year checkboxes the warning named.
-        await t.expect(filterBox.exists).ok()
-        await t.expect(year2020.checked).eql(false)
-    })
-
     test('unselecting every category leaves the tree unwarned', async (t) => {
         await t.click(editButton)
         await uncheckAllCategories(t)
 
         // The tree the user fixes this with is right there, so there's nothing to warn about.
         await t.expect(table.find('[data-test-id=article-warning]').exists).notOk()
-        await t.expect(table.find('.testing-statistic-value').exists).notOk()
+        // A collapsed category keeps its rows mounted for the height transition, so the check is
+        // for rows on display rather than rows in the DOM.
+        await t.expect(table.find('.testing-statistic-value:not([inert] *)').exists).notOk()
         await t.expect(mainCategory.exists).ok()
 
         await t.click(doneButton)

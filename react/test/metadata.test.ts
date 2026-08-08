@@ -1,6 +1,7 @@
 import { ClientFunction, Selector } from 'testcafe'
 
 import {
+    checkSidebarTextboxes,
     checkTextboxes,
     comparisonPage,
     dataValues,
@@ -65,7 +66,7 @@ urbanstatsFixture(
 )
 
 test('us-cities-sort-by-fips', async (t) => {
-    await checkTextboxes(t, ['Main', 'Geographic Identifiers'])
+    await checkSidebarTextboxes(t, ['Main', 'Geographic Identifiers'])
     await waitForLoading()
     await t.expect(longnamesFromComparisonUrl(await getLocation())).eql([pas, sm])
     await t.expect(await dataValues()).eql(['0656000', '0668224'])
@@ -85,7 +86,7 @@ urbanstatsFixture(
 )
 
 test('us-can-cities-can-sort-various', async (t) => {
-    await checkTextboxes(t, ['Main', 'Geographic Identifiers'])
+    await checkSidebarTextboxes(t, ['Main', 'Geographic Identifiers'])
     await waitForLoading()
     await t.expect(longnamesFromComparisonUrl(await getLocation())).eql([pas, sm, van, fv])
     await t.expect(await dataValues()).eql(['0656000', '0668224', '', '', '', '', '5915', '5909'])
@@ -106,7 +107,7 @@ urbanstatsFixture(
 )
 
 test('metadata-comparison-mixed-countries-has-empty-metadata-value-cells', async (t) => {
-    await checkTextboxes(t, ['Main', 'Geographic Identifiers'])
+    await checkSidebarTextboxes(t, ['Main', 'Geographic Identifiers'])
     await waitForLoading()
     await screencap(t)
 })

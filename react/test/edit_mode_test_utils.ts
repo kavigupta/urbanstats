@@ -105,10 +105,11 @@ export const articleTableScope = '.stats_table'
 /**
  * Matched by the direction the toggle currently offers, so its presence also tells you which
  * state the category is in. A category with every group selected has no toggle at all, since
- * collapsing it would hide nothing.
+ * collapsing it would hide nothing. The sidebar's tree marks its categories the same way, so
+ * it has to be excluded.
  */
 export function categoryToggleButton(categoryId: string, direction: 'Expand' | 'Collapse'): Selector {
-    return Selector(`[data-category-id=${categoryId}]`).withAttribute('aria-label', new RegExp(`^${direction} `))
+    return Selector(`[data-category-id=${categoryId}]:not(.sidebar-section *)`).withAttribute('aria-label', new RegExp(`^${direction} `))
 }
 
 export async function setCategoryExpanded(t: TestController, categoryId: string, expanded: boolean): Promise<void> {
