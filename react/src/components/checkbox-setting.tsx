@@ -6,7 +6,7 @@ import { isStagedChange, SettingsDictionary, useSetting, useSettingInfo } from '
 // type representing a key of SettingsDictionary that have boolean values
 export type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean | undefined ? K : never]: boolean }
 
-function useBooleanSetting(settingKey: BooleanSettingKey, forcedOn?: boolean): {
+export function useBooleanSetting(settingKey: BooleanSettingKey, forcedOn?: boolean): {
     checked: boolean
     setChecked: (checked: boolean) => void
     highlight: boolean
@@ -87,7 +87,7 @@ export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactN
     )
 };
 
-function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProps): ReactNode {
+export function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProps): ReactNode {
     const colors = useColors()
     const id = useId()
     const checkboxRef = useRef<HTMLInputElement>(null)

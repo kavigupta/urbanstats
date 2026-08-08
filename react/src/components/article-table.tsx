@@ -14,11 +14,13 @@ import { pullRelevantPlotProps, useExpandedByStat } from './plots'
 import { useScreenshotMode } from './screenshot'
 import { computeNameSpecsWithGroups, nameSpecsForRows } from './statistic-name-specs'
 import { CellSpec, PlotSpec, TableContents, TableLayout } from './supertable'
-import { ColumnIdentifier } from './table'
+import { ColumnIdentifier, valueOnlyColumns } from './table'
 
 const allColumns: ColumnIdentifier[] = ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
 
-function useExpandedPlotSpecs(rows: ArticleRow[], article: Article): (PlotSpec | undefined)[] {
+const mobileEditWidthLeftHeader = 58
+
+export function useExpandedPlotSpecs(rows: ArticleRow[], article: Article): (PlotSpec | undefined)[] {
     const colors = useColors()
     const expanded = useExpandedByStat(rows.map(row => row.statpath), index => rows[index].extraStats.length > 0)
     return rows.map((row, index) => expanded[index]
@@ -30,10 +32,20 @@ function useExpandedPlotSpecs(rows: ArticleRow[], article: Article): (PlotSpec |
     )
 }
 
-function useArticleTableLayout(): TableLayout {
+export function useArticleTableLayout(mode: 'normal' | 'edit'): TableLayout {
     const [simpleOrdinals] = useSetting('simple_ordinals')
     const isMobile = useMobileLayout()
     const screenshotMode = useScreenshotMode()
+
+    // On mobile the checkbox tree needs the room the other columns would take.
+    if (mode === 'edit' && isMobile) {
+        return {
+            simpleOrdinals,
+            widthLeftHeader: mobileEditWidthLeftHeader,
+            columnWidth: 100 - mobileEditWidthLeftHeader,
+            onlyColumns: valueOnlyColumns,
+        }
+    }
 
     // TODO clean this up and reduce the amount of magic numbers
     const nonPointerColumns = 15 + 10 + (simpleOrdinals ? 7 + 8 : 17 + 25)
@@ -53,9 +65,10 @@ function useArticleTableLayout(): TableLayout {
 export function ArticleTable(props: {
     rows: (settings: StatGroupSettings) => ArticleRow[][]
     article: Article
+    onEdit: () => void
 }): ReactNode {
     const currentUniverse = useDefinedUniverse()
-    const layout = useArticleTableLayout()
+    const layout = useArticleTableLayout('normal')
     const navContext = useContext(Navigator.Context)
 
     // Subscribed to here rather than in the panel, so changing the statistics shown doesn't
@@ -87,16 +100,15 @@ export function ArticleTable(props: {
     })])
 
     return (
-        <div className="stats_table">
-            <TableContents
-                layout={layout}
-                leftHeaderSpec={{ leftHeaderSpecs, groupNames }}
-                rowSpecs={cellSpecs}
-                horizontalPlotSpecs={plotSpecs}
-                verticalPlotSpecs={[]}
-                topLeftSpec={{ type: 'top-left-header' }}
-                warningRows={warningRows}
-            />
-        </div>
+        <TableContents
+            layout={layout}
+            leftHeaderSpec={{ leftHeaderSpecs, groupNames }}
+            rowSpecs={cellSpecs}
+            horizontalPlotSpecs={plotSpecs}
+            verticalPlotSpecs={[]}
+            topLeftSpec={{ type: 'top-left-header' }}
+            warningRows={warningRows}
+            editButton={{ open: false, onEdit: props.onEdit, label: 'Select', placement: 'top-left' }}
+        />
     )
 }

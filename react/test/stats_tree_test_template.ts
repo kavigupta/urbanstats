@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { safeReload, screencap, target, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
+import { safeReload, screencap, target, uncheckAllSidebarCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
 
 const mainCheck = 'input[data-test-id=category_main]'
 const mainExpand = '.expandButton[data-category-id=main]'
@@ -167,9 +167,9 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('uncheck-all-categories', async (t) => {
         await withHamburgerMenu(t, async () => {
-            await uncheckAllCategories(t)
+            await uncheckAllSidebarCategories(t)
         })
-        await t.expect(Selector('b').withExactText('No Statistic Categories are selected').exists).ok()
+        await t.expect(Selector('b').withExactText('No Statistics are selected').exists).ok()
         // Nothing is missing in particular, so the warning spans the row instead of naming a group
         await t.expect(Selector('[data-test-id=article-warning-name]').exists).notOk()
         await screencap(t)
@@ -177,7 +177,7 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('missing-year-data', async (t) => {
         await withHamburgerMenu(t, async () => {
-            await uncheckAllCategories(t)
+            await uncheckAllSidebarCategories(t)
             await t.click(Selector('label').withExactText('2020'))
             await t.click(Selector('label').withExactText('2010'))
             await t.click(Selector('label').withExactText('Health'))
@@ -188,7 +188,7 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('missing-partial-year-data', async (t) => {
         await withHamburgerMenu(t, async () => {
-            await uncheckAllCategories(t)
+            await uncheckAllSidebarCategories(t)
             await t.click(Selector('label').withExactText('2020'))
             await t.click(Selector('label').withExactText('2010'))
             await t.click('.expandButton[data-category-id=housing]')
@@ -201,7 +201,7 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
 
     test('no-years-selected', async (t) => {
         await withHamburgerMenu(t, async () => {
-            await uncheckAllCategories(t)
+            await uncheckAllSidebarCategories(t)
             await t.click(mainCheck)
             await t.click(Selector('label').withExactText('2020'))
         })
@@ -217,7 +217,7 @@ export function statsTreeTest(platform: 'mobile' | 'desktop'): void {
          * rather than all together below the table.
          */
         await withHamburgerMenu(t, async () => {
-            await uncheckAllCategories(t)
+            await uncheckAllSidebarCategories(t)
             await t.click(mainCheck)
             await t.click(Selector('label').withExactText('2020'))
         })

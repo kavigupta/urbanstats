@@ -1,7 +1,7 @@
 import { closestCenter, DndContext, DragEndEvent, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import React, { CSSProperties, ReactNode, useContext, useEffect, useRef, useState } from 'react'
+import React, { CSSProperties, ReactNode, useContext, useRef, useState } from 'react'
 
 import { ArticleOrderingListInternal, loadOrdering, loadStatisticsPage } from '../load_json'
 import './table.css'
@@ -21,9 +21,9 @@ import { useTranspose } from '../utils/transpose'
 import { zIndex } from '../utils/zIndex'
 
 import { Icon } from './Icon'
-import { Modal } from './Modal'
 import { computeDisclaimerText, type Disclaimer } from './disclaimer-text'
 import { percentileSuffix, percentileText, Statistic } from './display-stats'
+import { EditModeButton, EditModeTopLeftHeader, useEnterEditModeButton } from './edit-mode-header'
 import { EditableNumber } from './editable-field'
 import { footnoteSymbol } from './footnote-symbol'
 import { ArticleRow, FirstLastStatus, StatisticCellRenderingInfo } from './load-article'
@@ -31,7 +31,6 @@ import { percentileBucketIndex } from './percentile-navigation'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
 import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftCellSpec, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
@@ -127,10 +126,12 @@ export interface SuperHeaderHorizontalProps {
     leftSpacerWidth: number
     groupNames?: (string | undefined)[]
     handleReorder?: (from: number, to: number) => void
+    editMode?: EditModeButton
 }
 
 export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactNode {
     const colors = useColors()
+    const editButton = useEnterEditModeButton(props.editMode)
     const barHeight = '5px'
     const bars = (backgroundColor: (i: number) => string | undefined): ReactNode => {
         return (
@@ -171,7 +172,10 @@ export function SuperHeaderHorizontal(props: SuperHeaderHorizontalProps): ReactN
 
     const cellsRow = (
         <div style={{ display: 'flex' }}>
-            <div style={{ width: `${props.leftSpacerWidth}%` }} />
+            {/* The top-left cell below is too narrow on a comparison to hold both a button and the column's name. */}
+            <div style={{ width: `${props.leftSpacerWidth}%`, display: 'flex', alignItems: 'flex-end', padding: '1px' }}>
+                {editButton}
+            </div>
             {props.handleReorder
                 ? (
                         <SortableContext items={props.headerSpecs.map((_, idx) => idx.toString())} strategy={horizontalListSortingStrategy}>
@@ -262,44 +266,25 @@ export function ComparisonTopLeftHeader(props: TopLeftHeaderProps & { width: num
 }
 
 export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): ReactNode {
-    const isMobileLayout = useMobileLayout()
-    const isScreenshot = useScreenshotMode()
-    const isTranspose = useTranspose()
+    const isMobile = useMobileLayout()
+    const editButton = useEnterEditModeButton(props.editMode)
 
-    const [statsModalOpen, setStatsModalOpen] = useState(false)
+    if (props.editMode?.open) {
+        return <EditModeTopLeftHeader header={props.editMode} width={props.width} />
+    }
 
-    const canHaveStatsModal = isMobileLayout && !isScreenshot && !isTranspose
-
-    useEffect(() => {
-        if (!canHaveStatsModal && statsModalOpen) {
-            setStatsModalOpen(false)
-        }
-    }, [canHaveStatsModal, statsModalOpen])
-
-    const sidebarSectionContent = useSidebarSectionContentClassName()
+    // On a narrow screen this cell can't fit both, and the button is the more useful of the two.
+    const showName = !isMobile || editButton === undefined
 
     return (
-        <>
-            <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', padding: '1px', width: `${props.width}%` }}>
-                {canHaveStatsModal
-                    ? (
-                            <button className="serif value" style={{ padding: '2px 10px' }} onClick={() => { setStatsModalOpen(true) }}>
-                                {props.statNameOverride ?? 'Statistic'}
-                            </button>
-                        )
-                    : (
-                            <span className="serif value">
-                                {props.statNameOverride ?? 'Statistic'}
-                            </span>
-                        )}
-            </div>
-            <Modal isOpen={statsModalOpen} onClose={() => { setStatsModalOpen(false) }}>
-                <ul className={sidebarSectionContent} style={{ fontSize: useSidebarFontSize() }}>
-                    <SidebarForStatisticChoice />
-                    <SettingsSidebarSection />
-                </ul>
-            </Modal>
-        </>
+        <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '4px', padding: '1px', width: `${props.width}%` }}>
+            {editButton}
+            {showName && (
+                <span className="serif value" style={{ flexGrow: 1 }}>
+                    {props.statNameOverride ?? 'Statistic'}
+                </span>
+            )}
+        </div>
     )
 }
 
@@ -952,7 +937,8 @@ function SortButton(props: StatisticNameCellProps & { sortInfo: NonNullable<Stat
     )
 }
 
-function useStatisticNameAdornments(row: ArticleRow | undefined, footnote?: string): ReactNode[] {
+/** Callers are responsible for spacing the adornments. */
+export function useStatisticNameAdornments(row: ArticleRow | undefined, footnote?: string): ReactNode[] {
     const screenshotMode = useScreenshotMode()
     const adornments: ReactNode[] = []
     if (row !== undefined && row.extraStats.length !== 0 && !screenshotMode) {

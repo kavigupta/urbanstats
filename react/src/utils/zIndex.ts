@@ -11,7 +11,6 @@ const layers = [
     'statisticNameDisclaimer',
     'mapLoading',
     'mobileUndoRedoControls',
-    'modal',
     'sidebarOverlay',
     'pageLoading',
 ] as const

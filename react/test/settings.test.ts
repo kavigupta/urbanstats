@@ -3,7 +3,7 @@ import fs from 'fs'
 import { Selector } from 'testcafe'
 
 import {
-    target, checkTextboxes, getLocation,
+    target, checkSidebarTextboxes, checkTextboxes, getLocation,
     safeClearLocalStorage,
     safeReload,
     screencap,
@@ -47,7 +47,7 @@ test('check-settings-persistent', async (t) => {
     await doSearch(t, 'Pasadena, CA, USA')
     await t.expect(getLocation()).match(/\/article\.html\?longname=Pasadena\+city%2C\+California%2C\+USA/)
     // check box "Imperial"
-    await checkTextboxes(t, ['Use Imperial Units'])
+    await checkSidebarTextboxes(t, ['Use Imperial Units'])
     // assert mi not in page
     await t.expect(Selector('span').withText(/mi/).exists).notOk()
     // go back to San Marino

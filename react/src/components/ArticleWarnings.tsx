@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react'
 
-import { useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
-import { Category, Group, StatPath, statPathToOrder } from '../page_template/statistic-tree'
+import { useMissingGroupReasonsOfEveryGroup, useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
+import { Category, Group, GroupIdentifier, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 
 import { useScreenshotMode } from './screenshot'
 import { warningMessage } from './warning-message'
@@ -39,7 +39,7 @@ export function useArticleWarnings(): ArticleWarning[] {
     if (selectedGroups.length === 0) {
         return [{
             order: 0,
-            content: <b>No Statistic Categories are selected</b>,
+            content: <b>No Statistics are selected</b>,
         }]
     }
 
@@ -50,6 +50,20 @@ export function useArticleWarnings(): ArticleWarning[] {
             content: warningMessage(reason, groupOrCategory),
         }))
         .sort((a, b) => a.order - b.order)
+}
+
+export function useWarningsByGroup(): Map<GroupIdentifier, ReactNode> {
+    const screenshotMode = useScreenshotMode()
+    const missing = useMissingGroupReasonsOfEveryGroup()
+
+    const result = new Map<GroupIdentifier, ReactNode>()
+    if (screenshotMode) {
+        return result
+    }
+    for (const { group, reason } of missing) {
+        result.set(group.id, warningMessage(reason, group))
+    }
+    return result
 }
 
 function firstStatOrder(groupOrCategory: Group | Category): number {
