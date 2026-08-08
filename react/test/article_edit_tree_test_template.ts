@@ -201,14 +201,14 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     })
 
     test('missing-year-data', async (t) => {
-        // A category whose statistics only exist for an unselected year is called out, rather
+        // A group whose statistics only exist for an unselected year is called out, rather
         // than silently showing nothing.
         await enterEditMode(t)
         await uncheckAllCategories(t)
         await t.click(year2020Check)
         await t.click(year2010Check)
         await t.click(categoryCheckbox('health'))
-        await t.expect(groupWarning('GHLTH_cdc_2').innerText).eql('Select 2020 to see these statistics.')
+        await t.expect(groupWarning('GHLTH_cdc_2').innerText).eql('Select 2020 to see this statistic.')
         await screencap(t)
     })
 
