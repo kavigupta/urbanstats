@@ -241,20 +241,24 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
     INSERT INTO JuxtastatUserDomain VALUES (7, 'testproxy.nonexistent');
     INSERT INTO JuxtastatUserDomain VALUES (8, 'testproxy.nonexistent');
     
-    ${Array.from(Array(30).keys()).map(
+    ${Array.from(Array(29).keys()).map(
         i => `INSERT INTO JuxtaStatIndividualStats VALUES(${i + 30}, 99, 101, 0); INSERT INTO JuxtaStatUserDomain VALUES(${i + 30}, 'testproxy.nonexistent');`,
     ).join('\n')}`,
         platform,
     )
 
+    const otherUsers = `${Array.from(Array(29).keys()).map(i => `${i + 30}|99|101`).join('\n')}\n`
+
+    // The result page fetches the audience statistics in parallel with reporting this
+    // user's own result, so whether the statistics count this user is a race. Assertions
+    // whose outcome would depend on that are made after a reload, once the report has landed.
     test('quiz-percentage-correct', async (t) => {
         await safeReload(t)
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
+        await t.expect(await juxtastatTable(t)).eql(`${otherUsers}7|99|15\n`)
+        await safeReload(t)
         await quizScreencap(t)
-        await t.expect(await juxtastatTable(t)).eql(
-            `${Array.from(Array(30).keys()).map(i => `${i + 30}|99|101`).join('\n')}\n` + `7|99|15\n`,
-        )
-        // assert no element with id quiz-audience-statistics
+        // 30 users is not enough to show the statistics
         await t.expect(Selector('#quiz-audience-statistics').exists).notOk()
         // now become user 8
         await safeClearLocalStorage(t)
@@ -264,14 +268,28 @@ export function quizTest({ platform }: { platform: 'desktop' | 'mobile' }): void
         })
         await safeReload(t)
         await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
-        await quizScreencap(t)
-        await t.expect(await juxtastatTable(t)).eql(
-            `${Array.from(Array(30).keys()).map(i => `${i + 30}|99|101`).join('\n')}\n` + `7|99|15\n` + `8|99|15\n`,
-        )
-        // assert element with id quiz-audience-statistics exists
+        await t.expect(await juxtastatTable(t)).eql(`${otherUsers}7|99|15\n8|99|15\n`)
+        await safeReload(t)
         await t.expect(Selector('#quiz-audience-statistics').exists).ok()
+        await quizScreencap(t)
         const stats = await Selector('#quiz-audience-statistics').innerText
-        await t.expect(stats).eql('Question Difficulty\n100%\nQ1 Correct\n3%\nQ2 Correct\n100%\nQ3 Correct\n3%\nQ4 Correct\n0%\nQ5 Correct')
+        await t.expect(stats).eql('Question Difficulty\n100%\nQ1 Correct\n6%\nQ2 Correct\n100%\nQ3 Correct\n6%\nQ4 Correct\n0%\nQ5 Correct')
+        // now become user 9, for whom there is enough data either way the race goes,
+        // so the statistics show up without a reload
+        await safeClearLocalStorage(t)
+        await t.eval(() => {
+            localStorage.setItem('persistent_id', '000000000000009')
+            localStorage.setItem('testHostname', 'testproxy.nonexistent')
+        })
+        await safeReload(t)
+        await clickButtons(t, ['a', 'a', 'a', 'a', 'a'])
+        await t.expect(Selector('#quiz-audience-statistics').exists).ok()
+        const statsWithoutReload = await Selector('#quiz-audience-statistics').innerText
+        // Whether user 9 is one of the 31 or one of the 32 is the race
+        await t.expect([
+            'Question Difficulty\n100%\nQ1 Correct\n6%\nQ2 Correct\n100%\nQ3 Correct\n6%\nQ4 Correct\n0%\nQ5 Correct',
+            'Question Difficulty\n100%\nQ1 Correct\n9%\nQ2 Correct\n100%\nQ3 Correct\n9%\nQ4 Correct\n0%\nQ5 Correct',
+        ]).contains(statsWithoutReload)
     })
 
     quizFixture(
