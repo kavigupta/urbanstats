@@ -932,7 +932,7 @@ function SortButton(props: StatisticNameCellProps & { sortInfo: NonNullable<Stat
                 marginLeft: props.transpose ? '0' : 'auto',
             }}
         >
-            <ArrowUpOrDown direction={props.sortInfo.sortDirection} shouldAppearInScreenshot={false} />
+            <ArrowUpOrDown direction={props.sortInfo.sortDirection} />
         </span>
     )
 }
@@ -1468,10 +1468,10 @@ function PointerButtonIndex(props: {
     )
 }
 
-function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both', shouldAppearInScreenshot: boolean }): ReactNode {
+function ArrowUpOrDown(props: { direction: 'up' | 'down' | 'both' }): ReactNode {
     const isScreenshot = useScreenshotMode()
 
-    if (isScreenshot && !props.shouldAppearInScreenshot) {
+    if (isScreenshot && props.direction === 'both') {
         return null
     }
 
