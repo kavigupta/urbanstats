@@ -36,11 +36,16 @@ runs:
       id: existing-image
       run: |
         GHCR_TOKEN=$(echo -n ${{ inputs.token }} | base64)
-        echo "response=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${GHCR_TOKEN}" https://${{ inputs.registry }}/v2/${{ inputs.repository }}/manifests/${{ steps.tag.outputs.tag }})" >> $GITHUB_OUTPUT
+        response=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${GHCR_TOKEN}" https://${{ inputs.registry }}/v2/${{ inputs.repository }}/manifests/${{ steps.tag.outputs.tag }})
+        echo "Manifest query returned $response"
+        # Only a 200 means the image is really there. Anything else (an auth failure, a
+        # rate limit, a curl error) has to build, because skipping the build leaves every
+        # job that runs in this container to fail on an unpullable image.
+        echo "exists=$([ "$response" = 200 ] && echo true || echo false)" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Log in to the Container registry
-      if: ${{ steps.existing-image.outputs.response == '404' }}
+      if: ${{ steps.existing-image.outputs.exists == 'false' }}
       uses: docker/login-action@v3
       with:
         registry: ${{ inputs.registry }}
@@ -48,7 +53,7 @@ runs:
         password: ${{ inputs.token }}
 
     - name: Build and push Docker image
-      if: ${{ steps.existing-image.outputs.response == '404' }}
+      if: ${{ steps.existing-image.outputs.exists == 'false' }}
       uses: docker/build-push-action@v6
       with:
         context: .
