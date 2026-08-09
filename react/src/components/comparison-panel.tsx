@@ -3,7 +3,7 @@ import './article.css'
 
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, TouchSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import { SortableContext, arrayMove, horizontalListSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import React, { ReactNode, useContext, useId, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useContext, useId, useMemo, useRef, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import { boundingBox, extendBoxes } from '../map-partition'
@@ -106,6 +106,20 @@ function comparisonTableShape(params: {
     }
 }
 
+function byStatArticle(dataByArticleStat: ArticleRow[][]): ArticleRow[][] {
+    return dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
+}
+
+/** A statistic has an ordinal only if every region reports it from the same source. */
+function validOrdinals(dataByStatArticle: ArticleRow[][]): boolean[] {
+    return dataByStatArticle.map(statData => statData.every(value => value.kind !== 'metadata' && value.disclaimer !== 'heterogenous-sources'))
+}
+
+/** Ordinals are also only meaningful between regions of the same type. */
+function shouldIncludeOrdinals(validOrdinalsByStat: boolean[], allSameArticleType: boolean): boolean {
+    return allSameArticleType && (validOrdinalsByStat.length === 0 || validOrdinalsByStat.some(x => x))
+}
+
 /**
  * How many columns the table has depends on which statistics are missing, and warnings are left
  * out of screenshots -- so the panel has to read screenshot mode, which means providing the
@@ -199,7 +213,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
     }
 
     const dataByArticleStat = useVisibleRows(props.rows, editMode)
-    const dataByStatArticle = dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
+    const dataByStatArticle = byStatArticle(dataByArticleStat)
 
     const warnings = useArticleWarnings(() => { setEditMode(true) })
     const warningPlacements = placeWarnings(dataByStatArticle.map(rowsForStat => rowsForStat[0].statpath), warnings)
@@ -235,14 +249,17 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
 
     const mobileLayout = useMobileLayout()
 
-    const validOrdinalsByStat = dataByStatArticle.map(statData => statData.every(value => value.kind !== 'metadata' && value.disclaimer !== 'heterogenous-sources'))
-
-    // Ordinals are only meaningful between regions of the same type.
     const allSameArticleType = localArticlesToUse.every(article => article.articleType === localArticlesToUse[0].articleType)
 
-    const includeOrdinals = (
-        allSameArticleType
-        && (validOrdinalsByStat.length === 0 || validOrdinalsByStat.some(x => x))
+    const validOrdinalsByStat = validOrdinals(dataByStatArticle)
+
+    const includeOrdinals = shouldIncludeOrdinals(validOrdinalsByStat, allSameArticleType)
+
+    // Edit mode puts the whole statistic tree in `dataByStatArticle`, but the export still covers
+    // only the selected statistics, so it decides about ordinals from the rows it exports.
+    const includeOrdinalsInExport = useCallback(
+        (exportedRows: ArticleRow[][]) => shouldIncludeOrdinals(validOrdinals(byStatArticle(exportedRows)), allSameArticleType),
+        [allSameArticleType],
     )
 
     const expandedByStatIndex = useExpandedByStat(
@@ -431,7 +448,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                 warningRows: warningPlacements,
             }
 
-    const csvExportCallback = useCSVExport(localArticlesToUse, props.rows, includeOrdinals, joinedString)
+    const csvExportCallback = useCSVExport(localArticlesToUse, props.rows, includeOrdinalsInExport, joinedString)
 
     return (
         <universeContext.Provider value={{
