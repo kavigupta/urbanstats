@@ -101,6 +101,7 @@ export function groupWarning(groupId: string): Selector {
 }
 
 export const articleTableScope = '.stats_table'
+export const comparisonTableScope = '[data-test-id=comparison-table]'
 
 /**
  * Matched by the direction the toggle currently offers, so its presence also tells you which

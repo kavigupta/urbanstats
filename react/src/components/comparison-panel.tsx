@@ -3,7 +3,7 @@ import './article.css'
 
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, TouchSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import { SortableContext, arrayMove, horizontalListSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import React, { ReactNode, useContext, useId, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useCallback, useContext, useId, useMemo, useRef, useState } from 'react'
 import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 
 import { boundingBox, extendBoxes } from '../map-partition'
@@ -25,6 +25,8 @@ import { placeWarnings, useArticleWarnings, WarningRow } from './ArticleWarnings
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { StagingControls } from './StagingControls'
 import { useCSVExport } from './csv-export'
+import { TableEditButton } from './edit-mode-header'
+import { EditModeState, EditTable, editRowsByGroup, useEditModeState, useEditTableLayout } from './edit-table'
 import { ArticleRow, isCongressionalRepresentativesMetadataRow, isNoValue } from './load-article'
 import { CommonMaplibreMap, PolygonFeatureCollection, polygonFeatureCollection, useZoomAllFeatures, defaultMapPadding, CustomAttributionControlComponent } from './map-common'
 import { PlotProps, pullRelevantPlotProps, useExpandedByStat } from './plots'
@@ -32,7 +34,7 @@ import { createScreenshot, ScreencapElements, ScreenshotContext, ScreenshotConte
 import { computeComparisonWidthColumns, computeMaxColumns, MaybeScroll } from './scrollable'
 import { SearchBox } from './search'
 import { computeNameSpecsWithGroups } from './statistic-name-specs'
-import { TableContents, CellSpec, PlotSpec, TableLayout, TopLeftCellSpec } from './supertable'
+import { TableContents, CellSpec, PlotSpec, SuperHeaderSpec, TableLayout, TopLeftCellSpec } from './supertable'
 import { ColumnIdentifier, valueOnlyColumns } from './table'
 
 interface ComparisonPanelProps {
@@ -69,32 +71,53 @@ function comparisonTableShape(params: {
     includeOrdinals: boolean
     hasCongressionalRepresentativeTable: boolean
     mobileLayout: boolean
+    editMode: boolean
 }): ComparisonTableShape {
-    const { numArticles, numStats, numWarnings, numExpandedExtras, includeOrdinals, mobileLayout } = params
+    const { numArticles, numStats, numWarnings, numExpandedExtras, mobileLayout, editMode } = params
+
+    // Mobile edit mode gives up the ordinal and percentile columns, so the tree has room.
+    const showOrdinalColumns = params.includeOrdinals && !(editMode && mobileLayout)
 
     // Transposed, a warning stands in for a column, so it takes up a column's worth of width
     // alongside the statistics that are still shown.
     const numTransposedColumns = numStats + numWarnings
 
-    const widthUntransposed = computeComparisonWidthColumns(numArticles, includeOrdinals)
-    const widthTransposed = (includeOrdinals ? 1.5 : 1) * (numTransposedColumns + numExpandedExtras) + 1.5
+    const widthUntransposed = computeComparisonWidthColumns(numArticles, showOrdinalColumns)
+    const widthTransposed = (showOrdinalColumns ? 1.5 : 1) * (numTransposedColumns + numExpandedExtras) + 1.5
 
-    const transpose = !params.hasCongressionalRepresentativeTable
+    // The edit tree runs down the left column, so editing is always untransposed.
+    const transpose = !editMode
+        && !params.hasCongressionalRepresentativeTable
         && widthUntransposed > computeMaxColumns(mobileLayout)
         && widthUntransposed > widthTransposed
 
-    const leftMarginPercent = transpose ? 0.24 : 0.18
+    // The tree needs considerably more room than a column of statistic names does.
+    const leftMarginPercent = editMode ? (mobileLayout ? 0.55 : 0.32) : (transpose ? 0.24 : 0.18)
     const numColumns = transpose ? numTransposedColumns + numExpandedExtras : numArticles
 
     return {
         transpose,
-        onlyColumns: includeOrdinals
+        onlyColumns: showOrdinalColumns
             ? ['statval', 'statval_unit', 'statistic_ordinal', 'statistic_percentile']
             : valueOnlyColumns,
         widthColumns: transpose ? widthTransposed : widthUntransposed,
         leftMarginPercent,
         columnWidth: 100 * (1 - leftMarginPercent) / numColumns,
     }
+}
+
+function byStatArticle(dataByArticleStat: ArticleRow[][]): ArticleRow[][] {
+    return dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
+}
+
+/** A statistic has an ordinal only if every region reports it from the same source. */
+function validOrdinals(dataByStatArticle: ArticleRow[][]): boolean[] {
+    return dataByStatArticle.map(statData => statData.every(value => value.kind !== 'metadata' && value.disclaimer !== 'heterogenous-sources'))
+}
+
+/** Ordinals are also only meaningful between regions of the same type. */
+function shouldIncludeOrdinals(validOrdinalsByStat: boolean[], allSameArticleType: boolean): boolean {
+    return allSameArticleType && (validOrdinalsByStat.length === 0 || validOrdinalsByStat.some(x => x))
 }
 
 /**
@@ -122,6 +145,9 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
 
     const [sortByStatIndex, setSortByStatIndex] = useState<number | null>(null)
     const [sortDirection, setSortDirection] = useState<'up' | 'down'>('down')
+
+    const editState = useEditModeState()
+    const { editMode, setEditMode } = editState
 
     // Sensors for drag and drop - more sensitive for vertical dragging
     const sensors = useSensors(
@@ -186,8 +212,8 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
         setActiveId(null)
     }
 
-    const dataByArticleStat = useVisibleRows(props.rows, false)
-    const dataByStatArticle = dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
+    const dataByArticleStat = useVisibleRows(props.rows, editMode)
+    const dataByStatArticle = byStatArticle(dataByArticleStat)
 
     const warnings = useArticleWarnings()
     const warningPlacements = placeWarnings(dataByStatArticle.map(rowsForStat => rowsForStat[0].statpath), warnings)
@@ -223,14 +249,17 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
 
     const mobileLayout = useMobileLayout()
 
-    const validOrdinalsByStat = dataByStatArticle.map(statData => statData.every(value => value.kind !== 'metadata' && value.disclaimer !== 'heterogenous-sources'))
-
-    // Ordinals are only meaningful between regions of the same type.
     const allSameArticleType = localArticlesToUse.every(article => article.articleType === localArticlesToUse[0].articleType)
 
-    const includeOrdinals = (
-        allSameArticleType
-        && (validOrdinalsByStat.length === 0 || validOrdinalsByStat.some(x => x))
+    const validOrdinalsByStat = validOrdinals(dataByStatArticle)
+
+    const includeOrdinals = shouldIncludeOrdinals(validOrdinalsByStat, allSameArticleType)
+
+    // Edit mode puts the whole statistic tree in `dataByStatArticle`, but the export still covers
+    // only the selected statistics, so it decides about ordinals from the rows it exports.
+    const includeOrdinalsInExport = useCallback(
+        (exportedRows: ArticleRow[][]) => shouldIncludeOrdinals(validOrdinals(byStatArticle(exportedRows)), allSameArticleType),
+        [allSameArticleType],
     )
 
     const expandedByStatIndex = useExpandedByStat(
@@ -248,6 +277,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
             statData.some(row => isCongressionalRepresentativesMetadataRow(row)),
         ),
         mobileLayout,
+        editMode,
     })
 
     const highlightArticleIndicesByStat: (number | undefined)[] = dataByStatArticle.map(articlesStatData => getHighlightIndex(articlesStatData))
@@ -380,7 +410,13 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
 
     const topLeftSpec: TopLeftCellSpec = { type: 'comparison-top-left-header', statNameOverride: transpose ? 'Region' : undefined }
 
-    const layout: TableLayout = {
+    // "Select Statistics" rather than "Select", to distinguish it from editing the regions being
+    // compared, which the column headers do.
+    const editStatisticsButton: TableEditButton = { open: false, onEdit: () => { setEditMode(true) }, label: 'Select Statistics', placement: 'super-header' }
+
+    const longnameSuperHeaderSpec: SuperHeaderSpec = { headerSpecs: longnameHeaderSpecs, showBottomBar: true }
+
+    const columnLayout: TableLayout = {
         widthLeftHeader: leftMarginPercent * 100,
         columnWidth,
         onlyColumns,
@@ -404,7 +440,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                     : [],
             }
         : {
-                superHeaderSpec: { headerSpecs: longnameHeaderSpecs, showBottomBar: true },
+                superHeaderSpec: longnameSuperHeaderSpec,
                 leftHeaderSpec: { leftHeaderSpecs: statisticNameHeaderSpecs, groupNames: statisticNameGroupNames },
                 rowSpecs: rowSpecsByStat,
                 horizontalPlotSpecs: plotSpecs,
@@ -412,7 +448,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                 warningRows: warningPlacements,
             }
 
-    const csvExportCallback = useCSVExport(localArticlesToUse, props.rows, includeOrdinals, joinedString)
+    const csvExportCallback = useCSVExport(localArticlesToUse, props.rows, includeOrdinalsInExport, joinedString)
 
     return (
         <universeContext.Provider value={{
@@ -473,15 +509,33 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                                 <div style={{ marginBlockEnd: '1em' }}></div>
 
                                 {/* Outside the scroll and tableRef, so its buttons stay on screen and out of screenshots. */}
-                                <StagingControls />
+                                <StagingControls onExitStaging={editState.exitEditMode} />
 
                                 <MaybeScroll widthColumns={widthColumns}>
-                                    <div ref={tableRef}>
-                                        <TableContents
-                                            layout={layout}
-                                            {...orientedSpecs}
-                                            topLeftSpec={topLeftSpec}
-                                        />
+                                    <div ref={tableRef} data-test-id="comparison-table">
+                                        {editMode
+                                            ? (
+                                                    <ComparisonEditTable
+                                                        universe={props.universe}
+                                                        longname={names[0]}
+                                                        dataByArticleStat={dataByArticleStat}
+                                                        rowsToDisplay={dataByStatArticle.map((_, statIndex) => rowToDisplayForStat(statIndex))}
+                                                        rowSpecsByStat={rowSpecsByStat}
+                                                        plotSpecs={plotSpecs}
+                                                        columnLayout={columnLayout}
+                                                        superHeaderSpec={longnameSuperHeaderSpec}
+                                                        topLeftSpec={topLeftSpec}
+                                                        editState={editState}
+                                                    />
+                                                )
+                                            : (
+                                                    <TableContents
+                                                        layout={columnLayout}
+                                                        {...orientedSpecs}
+                                                        editButton={editStatisticsButton}
+                                                        topLeftSpec={topLeftSpec}
+                                                    />
+                                                )}
                                     </div>
                                 </MaybeScroll>
                                 <div className="gap"></div>
@@ -508,6 +562,39 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
                 </PageTemplate>
             </TransposeContext.Provider>
         </universeContext.Provider>
+    )
+}
+
+/**
+ * Split out so the column width measurement, which is over every statistic rather than the
+ * selected ones, only happens while edit mode is actually open.
+ */
+function ComparisonEditTable(props: {
+    universe: Universe
+    longname: string
+    dataByArticleStat: ArticleRow[][]
+    /** The row whose name and adornments stand for each statistic, in statistic order. */
+    rowsToDisplay: ArticleRow[]
+    rowSpecsByStat: CellSpec[][]
+    plotSpecs: (PlotSpec | undefined)[]
+    columnLayout: TableLayout
+    superHeaderSpec: SuperHeaderSpec
+    topLeftSpec: TopLeftCellSpec
+    editState: EditModeState
+}): ReactNode {
+    const layout = useEditTableLayout(props.columnLayout, props.dataByArticleStat, props.universe)
+    const rowsByGroup = editRowsByGroup(props.rowsToDisplay, props.longname, props.universe, (_, statIndex) => ({
+        cellSpecs: props.rowSpecsByStat[statIndex],
+        plotSpec: props.plotSpecs[statIndex],
+    }))
+    return (
+        <EditTable
+            rowsByGroup={rowsByGroup}
+            layout={layout}
+            editState={props.editState}
+            superHeaderSpec={props.superHeaderSpec}
+            topLeftSpec={props.topLeftSpec}
+        />
     )
 }
 

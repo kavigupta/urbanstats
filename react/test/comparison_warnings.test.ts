@@ -1,18 +1,17 @@
 import { Selector } from 'testcafe'
 
-import { arrayFromSelector, checkSidebarTextboxes, checkTextboxesDirect, comparisonPage, screencap, uncheckAllSidebarCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
-
-const mainCheck = 'input[data-test-id=category_main]'
+import { categoryCheckbox, editCheckbox, withEditMode, yearCheckbox } from './edit_mode_test_utils'
+import { arrayFromSelector, checkTextboxes, comparisonPage, screencap, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames } from './test_utils'
 
 /**
  * Leaves Main selected with no year selected, so its groups that have years are all missing and
  * its year-less groups -- Area and Compactness -- are all that is left in the table.
  */
 async function selectMainWithoutYears(t: TestController): Promise<void> {
-    await withHamburgerMenu(t, async () => {
-        await uncheckAllSidebarCategories(t)
-        await t.click(mainCheck)
-        await t.click(Selector('label').withExactText('2020'))
+    await withEditMode(t, async () => {
+        await uncheckAllCategories(t)
+        await t.click(categoryCheckbox('main'))
+        await t.click(yearCheckbox(2020))
     })
 }
 
@@ -47,7 +46,7 @@ urbanstatsFixture('comparison warnings across data sources', comparisonPage([
 
 test('comparison-warnings-all-sources-disabled', async (t) => {
     // GHSL is off by default, so turning off the two censuses leaves nothing enabled
-    await checkSidebarTextboxes(t, ['US Census', 'Canadian Census'])
+    await checkTextboxes(t, ['US Census', 'Canadian Census'])
     await t.expect(warningNamed('US Census, Canadian Census, and GHSL are disabled. Enable one to see this statistic.', 'Population').exists).ok()
     await t.expect(Selector('a').withExactText('Area').exists).ok()
     await screencap(t)
@@ -57,10 +56,10 @@ test('comparison-warnings-name-the-disabled-source', async (t) => {
     // The generation statistics come from the two censuses only, so turning off the US one leaves
     // Ontario's showing and California's gone -- naming the Population sources as a whole would be
     // a lie, since enabling the others is what brings the population statistic itself back.
-    await withHamburgerMenu(t, async () => {
-        await uncheckAllSidebarCategories(t)
-        await t.click(Selector('input[data-test-id=category_generation]'))
-        await checkTextboxesDirect(t, ['US Census'])
+    await withEditMode(t, async () => {
+        await uncheckAllCategories(t)
+        await t.click(categoryCheckbox('generation'))
+        await t.click(editCheckbox('US Census'))
     })
     await t.expect(warningNamed('US Census is disabled. Enable it to see these statistics.', 'Generation').exists).ok()
     // Ontario still has its own, from the Canadian census
@@ -74,10 +73,8 @@ urbanstatsFixture('comparison warnings with a year the enabled source lacks', co
 ]))
 
 test('comparison-warnings-year-missing-from-enabled-source', async (t) => {
-    await withHamburgerMenu(t, async () => {
-        // leaves 2010, a year GHSL has no data for, as the only year selected
-        await checkTextboxesDirect(t, ['US Census', 'GHSL', '2020', '2010'])
-    })
+    // leaves 2010, a year GHSL has no data for, as the only year selected
+    await checkTextboxes(t, ['US Census', 'GHSL', '2020', '2010'])
     // GHSL is enabled and simply has no data for 2010, so the years are what's missing, not a source
     await t.expect(warningNamed('Select 2020 to see this statistic.', 'Population').exists).ok()
 })

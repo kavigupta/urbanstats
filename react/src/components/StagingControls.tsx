@@ -5,7 +5,7 @@ import { Settings, useIsStaged } from '../page_template/settings'
 import { useMobileLayout } from '../utils/responsive'
 
 export function StagingControls({ onExitStaging }: {
-    onExitStaging?: () => void
+    onExitStaging: () => void
 }): ReactNode {
     const settings = useContext(Settings.Context)
     const colors = useColors()
@@ -24,7 +24,7 @@ export function StagingControls({ onExitStaging }: {
 
     const exitStaging = (action: 'discard' | 'apply') => () => {
         settings.exitStagedMode(action)
-        onExitStaging?.()
+        onExitStaging()
     }
 
     return (
