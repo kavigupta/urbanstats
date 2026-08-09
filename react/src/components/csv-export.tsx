@@ -15,17 +15,21 @@ import { ArticleRow } from './load-article'
 
 export type CSVExportData = () => { csvData: string[][], csvFilename: string }
 
+/** `includeOrdinals` is given the exported rows, which are not necessarily the displayed ones. */
 export function useCSVExport(
     articles: Article[],
     rows: (settings: StatGroupSettings) => ArticleRow[][],
-    includeOrdinals: boolean,
+    includeOrdinals: (exportedRows: ArticleRow[][]) => boolean,
     filenameBase: string,
 ): CSVExportData {
     const settings = useContext(Settings.Context)
-    return useCallback(() => ({
-        csvData: generateCSVDataForArticles(articles, rows(settings.getMultiple(groupYearKeys())), includeOrdinals),
-        csvFilename: `${sanitize(filenameBase)}.csv`,
-    }), [articles, rows, settings, includeOrdinals, filenameBase])
+    return useCallback(() => {
+        const exportedRows = rows(settings.getMultiple(groupYearKeys()))
+        return {
+            csvData: generateCSVDataForArticles(articles, exportedRows, includeOrdinals(exportedRows)),
+            csvFilename: `${sanitize(filenameBase)}.csv`,
+        }
+    }, [articles, rows, settings, includeOrdinals, filenameBase])
 }
 
 export function exportToCSV(data: string[][], filename: string): void {

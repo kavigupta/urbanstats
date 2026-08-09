@@ -7,6 +7,9 @@ import { port } from "./port.js"
 
 const isProduction = process.env.NODE_ENV === 'production'
 
+// dev-server-advice listens on the dev server's websocket, which only exists under `serve`.
+const isServing = process.argv.includes('serve')
+
 // Helpful for debugging loops in watch mode
 class LogChangedFile {
   apply(compiler) {
@@ -18,7 +21,7 @@ class LogChangedFile {
 
 export default env => ({
     entry: {
-        index: ['./src/index.tsx'],
+        index: [...(isServing ? ['./src/dev-server-advice.ts'] : []), './src/index.tsx'],
         loading: ['./src/loading.ts'],
     },
     output: {

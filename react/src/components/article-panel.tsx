@@ -41,7 +41,7 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     const comparisonHeadStyle = useComparisonHeadStyle('right')
 
     const articles = useMemo(() => [article], [article])
-    const csvExportCallback = useCSVExport(articles, rows, true, article.longname)
+    const csvExportCallback = useCSVExport(articles, rows, () => true, article.longname)
 
     const navigator = useContext(Navigator.Context)
 
