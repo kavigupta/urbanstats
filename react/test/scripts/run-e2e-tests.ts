@@ -25,14 +25,22 @@ const options = argumentParser({
         tries: z.optional(z.coerce.number().int()).default(1), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
         baseRef: z.optional(z.string()),
         live: booleanArgument({ defaultValue: false }),
-        docker: booleanArgument({ defaultValue: false }), // Runs tests in an environment very similar to the CI.
+        // `ci` runs tests in an environment very similar to the CI. `host-arch` builds that environment for the
+        // host's architecture instead, which is much faster on an ARM Mac, but renders differently enough that
+        // `--compare` no longer matches the reference screenshots.
+        docker: z.optional(z.union([
+            z.literal('none'),
+            z.literal('ci'),
+            z.literal('host-arch'),
+            z.null().transform(() => 'ci' as const),
+        ])).default('none'),
         remoteDebuggingPort: z.optional(z.coerce.number().int()), // Connect with `chrome://inspect` in your browser.
     }).strict(),
 }).parse(process.argv.slice(2))
 
-if (options.docker) {
+if (options.docker !== 'none') {
     const argsWithoutDocker = process.argv.slice(2).filter(arg => !/--docker($|=)/.test(arg))
-    const exitCode = await runE2eTestsDocker(argsWithoutDocker)
+    const exitCode = await runE2eTestsDocker(argsWithoutDocker, options.docker === 'host-arch')
     process.exit(exitCode)
 }
 

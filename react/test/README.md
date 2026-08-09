@@ -9,3 +9,31 @@
   `npm run test:e2e -- '--test=test/mapper-edit-text-boxes-desktop.test.ts' --live --docker --browser=chromium --remote-debugging-port=9222`
 
   Visit `chrome://inspect` in your local browser, and click "Inspect" to connect and interact.
+
+- Regenerate the reference screenshots, instead of commenting `!updateScreenshots` on a PR:
+
+  ```
+  npm run test:e2e -- '--test=test/mapper-edit-text-boxes-desktop.test.ts' --docker --browser=chromium --compare=true
+  rsync -a --exclude='*.error.png' changed_screenshots/ ../reference_test_screenshots/
+  ```
+
+- Run the tests off-screen on a Mac, in a container built for the host's architecture:
+
+  `npm run test:e2e -- '--test=test/mapper-edit-text-boxes-desktop.test.ts' --docker=host-arch --browser=chromium`
+
+# Docker modes
+
+| Value | Meaning |
+| --- | --- |
+| `none` (default) | Run on the host, against a browser installed there. |
+| `ci` (what a bare `--docker` means) | Run in a container built for `linux/amd64`, matching the CI. |
+| `host-arch` | Run in the same container, built for the host's architecture instead. |
+
+Either container needs `--browser=chromium`, since it has Chromium rather than Chrome.
+
+`host-arch` avoids emulating `amd64`, but **can't do anything screenshot-related**: `arm64` Chromium
+antialiases a handful of pixels differently, well below what anyone would notice but well above
+`check_images.py`'s near-exact threshold. Use `ci` for `--compare` and for regenerating references.
+
+TestCafe ships no `arm64` build of the helper binaries behind `t.resizeWindow` and friends, so those
+run as `i386` binaries under emulation. Chromium and Node, where the time goes, run natively.
