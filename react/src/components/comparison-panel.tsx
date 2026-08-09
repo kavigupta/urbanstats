@@ -9,8 +9,7 @@ import { FullscreenControl, MapRef } from 'react-map-gl/maplibre'
 import { boundingBox, extendBoxes } from '../map-partition'
 import { Navigator } from '../navigation/Navigator'
 import { colorFromCycle, useColors } from '../page_template/colors'
-import { useSettings } from '../page_template/settings'
-import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
+import { StatGroupSettings, useVisibleRows } from '../page_template/statistic-settings'
 import { PageTemplate } from '../page_template/template'
 import { compareArticleRows } from '../sorting'
 import { Universe, universeContext } from '../universe'
@@ -132,9 +131,7 @@ function ComparisonPanelContents(props: ComparisonPanelProps & { screenshotConte
         setActiveId(null)
     }
 
-    const settings = useSettings(groupYearKeys())
-
-    const dataByArticleStat = props.rows(settings)
+    const dataByArticleStat = useVisibleRows(props.rows, false)
     const dataByStatArticle = dataByArticleStat[0].map((_, statIndex) => dataByArticleStat.map(articleData => articleData[statIndex]))
 
     const warnings = useArticleWarnings()

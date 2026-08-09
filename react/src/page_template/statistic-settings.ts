@@ -37,12 +37,32 @@ function yearKeys(years: Year[]): StatYearKey[] {
     return years.map(year => `show_stat_year_${year}` as const)
 }
 
+/** Everything that selects which statistics are shown apart from the group checkboxes. */
+function yearSourceKeys(): (StatYearKey | StatSourceKey)[] {
+    return [
+        ...yearKeys(allYears),
+        ...dataSources.flatMap(({ sources }) => sources.map(source => sourceEnabledKey(source))),
+    ]
+}
+
 export function groupYearKeys(): (keyof StatGroupSettings)[] {
     return [
         ...groupKeys(allGroups),
-        ...allYears.map(year => `show_stat_year_${year}` as const),
-        ...dataSources.flatMap(({ sources }) => sources.map(source => sourceEnabledKey(source))),
+        ...yearSourceKeys(),
     ]
+}
+
+const allStatGroupsEnabled = Object.fromEntries(
+    groupKeys(allGroups).map(key => [key, true]),
+)
+
+export function useVisibleRows<T>(rows: (settings: StatGroupSettings) => T, showAllGroups: boolean): T {
+    const yearSourceSettings = useSettings(yearSourceKeys())
+    const groupSettings = useSettings(showAllGroups ? [] : groupKeys(allGroups))
+    return useMemo(
+        () => rows({ ...yearSourceSettings, ...allStatGroupsEnabled, ...groupSettings }),
+        [rows, yearSourceSettings, groupSettings],
+    )
 }
 
 function categoryStatus(enabled: boolean[]): boolean | 'indeterminate' {
