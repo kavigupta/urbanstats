@@ -65,6 +65,24 @@ test('csv export in edit mode covers the selected statistics, not the whole tree
     await t.expect(csvContent).notContains('White %')
 })
 
+// USA and Canada are both countries, so their statistics could be ranked against each other, but
+// the generation statistics come from each country's own census, which rules ordinals out.
+const onlyGenerationStats = `${comparisonPage(['USA', 'Canada'])}&s=D7tCowVik3d2eRfvgW`
+
+urbanstatsFixture('comparison edit mode ordinals', onlyGenerationStats)
+
+test('csv export in edit mode leaves out ordinals the selected statistics do not have', async (t) => {
+    await t.expect(await downloadCSV(t)).notContains('(Rank)')
+
+    await t.click(editButton)
+    // The rest of the tree does have ordinals, so the table gains the columns the export must not.
+    await t.expect(comparisonTable.find('.serif').withExactText('Ord').exists).ok()
+
+    const csvContent = await downloadCSV(t)
+    await t.expect(csvContent).contains('Millennial %')
+    await t.expect(csvContent).notContains('(Rank)')
+})
+
 // A transposed comparison puts the statistics across the top, which edit mode has to undo.
 urbanstatsFixture('comparison edit mode transposed', transposed)
 
