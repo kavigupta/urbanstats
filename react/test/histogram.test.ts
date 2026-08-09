@@ -558,6 +558,11 @@ test('histogram-bar-comparison', async (t) => {
     await screencap(t)
 })
 
+test('histogram-bar-comparison-search', async (t) => {
+    await t.typeText(Selector('#searchbox').nth(1), 'Cal')
+    await screencap(t)
+})
+
 urbanstatsFixture('histogram axis labels not clipped', `${target}/comparison.html?longnames=%5B%22Canada%22%2C%22USA%22%2C%22Mexico%22%2C%22Germany%22%5D&s=879GMNZfJ19PW2KpGDBZj`)
 
 test('histogram-axis-labels-not-clipped', async (t) => {
