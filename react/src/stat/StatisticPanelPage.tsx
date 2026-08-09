@@ -64,12 +64,14 @@ export function StatisticPanelPage({ view, stat, data, set, loading, counts, err
                 csvFilename: `${sanitize(reifyString(data.renderedStatname))}.csv`,
             }))}
         >
+            {/* Only the titles are inside headersRef; the controls below it are interactive, and
+                would otherwise end up in the screenshot. */}
             <div ref={headersRef} style={{ position: 'relative' }}>
                 <StatisticPanelHead articleType={stat.articleType} universe={stat.universe} />
                 <div className={subHeaderTextClass}>{reifyReact(subHeaderText)}</div>
-                {!view.edit && <ViewHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} />}
-                <CrossSourceBorderDisclaimer stat={stat} view={view} counts={counts} isFootnote={false} />
             </div>
+            {!view.edit && <ViewHeader stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} />}
+            <CrossSourceBorderDisclaimer stat={stat} view={view} counts={counts} isFootnote={false} />
             <div style={{ marginBlockEnd: '16px' }}></div>
             {view.edit && <EditPreamble stat={stat} view={view} set={set} typeEnvironment={typeEnvironment} counts={counts} errors={errors} assignments={assignments} />}
             {!view.edit && <DisplayResults results={errors.filter(error => error.kind === 'error')} editor={false} />}
