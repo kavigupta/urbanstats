@@ -1,4 +1,4 @@
-import React, { ReactNode, useContext } from 'react'
+import React, { ReactNode, useContext, useMemo } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
@@ -22,14 +22,15 @@ const mobileEditWidthLeftHeader = 58
 
 export function useExpandedPlotSpecs(rows: ArticleRow[], article: Article): (PlotSpec | undefined)[] {
     const colors = useColors()
-    const expanded = useExpandedByStat(rows.map(row => row.statpath), index => rows[index].extraStats.length > 0)
-    return rows.map((row, index) => expanded[index]
+    const statpaths = useMemo(() => rows.map(row => row.statpath), [rows])
+    const expanded = useExpandedByStat(statpaths, index => rows[index].extraStats.length > 0)
+    return useMemo(() => rows.map((row, index) => expanded[index]
         ? {
                 statDescription: row.renderedStatname,
                 plotProps: pullRelevantPlotProps(rows, index, colors.hueColors.blue, article.shortname, article.longname, article.articleType),
             }
         : undefined,
-    )
+    ), [rows, expanded, colors, article])
 }
 
 export function useArticleTableLayout(mode: 'normal' | 'edit'): TableLayout {
