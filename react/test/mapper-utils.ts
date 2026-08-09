@@ -60,7 +60,7 @@ export function getCodeFromMainField(): Promise<string> {
 
 export function getErrors(): Promise<string[]> {
     return ClientFunction(() =>
-        Array.from(document.querySelectorAll('#test-editor-result:not([inert] *)')).map(element => element.textContent!),
+        Array.from(document.querySelectorAll('#test-editor-result:not([inert] *)')).map(element => element.textContent),
     )()
 }
 
