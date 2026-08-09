@@ -366,7 +366,6 @@ async function throwIfTestFailFromConsole(t: TestController): Promise<void> {
 }
 
 const networkEnabled = new WeakSet()
-const requests = new Map<string, unknown>()
 
 async function printFailedNetworkRequests(t: TestController): Promise<void> {
     const cdp = await t.getCurrentCDPSession()
@@ -374,15 +373,56 @@ async function printFailedNetworkRequests(t: TestController): Promise<void> {
         return
     }
     networkEnabled.add(cdp)
-    cdp.Network.on('requestWillBeSent', (event) => {
-        requests.set(event.requestId, event.request)
+
+    const inFlight = new Map<Protocol.Network.RequestId, { sent: Protocol.Network.RequestWillBeSentEvent, response?: Protocol.Network.Response }>()
+
+    cdp.Network.on('requestWillBeSent', (sent) => {
+        inFlight.set(sent.requestId, { sent })
     })
-    cdp.Network.on('loadingFailed', (event) => {
-        if (!event.canceled) {
-            console.error(chalkTemplate`{red Request failed}`, event, requests.get(event.requestId))
+    cdp.Network.on('responseReceived', (event) => {
+        const inFlightRequest = inFlight.get(event.requestId)
+        if (inFlightRequest !== undefined) {
+            inFlightRequest.response = event.response
         }
     })
+    cdp.Network.on('loadingFinished', (event) => {
+        inFlight.delete(event.requestId)
+    })
+    cdp.Network.on('loadingFailed', (event) => {
+        const inFlightRequest = inFlight.get(event.requestId)
+        inFlight.delete(event.requestId)
+        // `inspector` means withInterceptedRequests failed this one on purpose
+        if (event.canceled || event.blockedReason === 'inspector') {
+            return
+        }
+        const { sent, response } = inFlightRequest ?? {}
+        const details = [
+            `${event.errorText} after ${Math.round((event.timestamp - (sent?.timestamp ?? event.timestamp)) * 1000)}ms, type ${event.type}`,
+            ...event.blockedReason === undefined ? [] : [`blocked: ${event.blockedReason}`],
+            ...event.corsErrorStatus === undefined ? [] : [`cors: ${event.corsErrorStatus.corsError} (${event.corsErrorStatus.failedParameter})`],
+            // A response means the headers arrived and the failure was partway through the body
+            ...response === undefined ? [] : [`response: ${response.status} ${response.statusText} from ${response.remoteIPAddress}, headers ${JSON.stringify(response.headers)}`],
+            ...(sent?.initiator.stack?.callFrames ?? []).slice(0, 5).map(frame => `at ${frame.functionName || '<anonymous>'} (${frame.url}:${frame.lineNumber})`),
+        ]
+        console.error(chalkTemplate`{red Request failed} ${sent?.request.method ?? '???'} ${sent?.request.url ?? event.requestId}\n${details.map(line => `    ${line}`).join('\n')}`)
+    })
+
     await cdp.Network.enable({ })
+
+    // The search and script workers fetch too, and requests are only reported on the session of
+    // the target that made them
+    await cdp.Target.setDiscoverTargets({ discover: true })
+    cdp.Target.on('targetCreated', ({ targetInfo }) => {
+        if (targetInfo.type !== 'worker' && targetInfo.type !== 'service_worker') {
+            return
+        }
+        void (async () => {
+            const { sessionId } = await cdp.Target.attachToTarget({ ...targetInfo, flatten: true })
+            await cdpSessionWithSessionId(cdp, sessionId).Network.enable({})
+        })().catch((error: unknown) => {
+            console.warn(chalkTemplate`{yellow Could not watch requests of ${targetInfo.url}}`, error)
+        })
+    })
 }
 
 export function urbanstatsFixture(name: string, url: string, beforeEach?: (t: TestController) => Promise<void>, { afterEach, requestHooks = [] }: {
