@@ -1,15 +1,17 @@
 import React, { ReactNode } from 'react'
 
+import { useColors } from '../page_template/colors'
 import type { MissingGroupReason, MissingSources } from '../page_template/statistic-settings'
 import type { Category, Group } from '../page_template/statistic-tree'
 
-/** What a warning says about the setting that is keeping a group's statistics off the page. */
-export function warningMessage(reason: MissingGroupReason, groupOrCategory: Group | Category): ReactNode {
+/** `onEdit` is unset on the edit tree's own warnings, which are already where it would send the user. */
+export function warningMessage(reason: MissingGroupReason, groupOrCategory: Group | Category, onEdit?: () => void): ReactNode {
     switch (reason.kind) {
         case 'year':
             return (
                 <>
-                    {'Select '}
+                    {editAction('Select', onEdit)}
+                    {' '}
                     <BoldList items={reason.years} conjunction="or" />
                     {` to see ${theseStatistics(groupOrCategory)}.`}
                 </>
@@ -18,14 +20,16 @@ export function warningMessage(reason: MissingGroupReason, groupOrCategory: Grou
             return (
                 <>
                     <BoldList items={reason.sources} conjunction="and" />
-                    {reason.sources.length === 1 ? ' is disabled. Enable it' : ` are disabled. Enable ${enableHowMany(reason)}`}
+                    {reason.sources.length === 1 ? ' is disabled. ' : ' are disabled. '}
+                    {editAction(enableAction(reason), onEdit)}
                     {` to see ${theseStatistics(groupOrCategory)}.`}
                 </>
             )
         case 'yearAndSource':
             return (
                 <>
-                    {'Select '}
+                    {editAction('Select', onEdit)}
+                    {' '}
                     <BoldList items={reason.years} conjunction="or" />
                     {' and enable '}
                     <BoldList items={reason.sources} conjunction={reason.anySourceSuffices ? 'or' : 'and'} />
@@ -35,11 +39,39 @@ export function warningMessage(reason: MissingGroupReason, groupOrCategory: Grou
     }
 }
 
-function enableHowMany({ anySourceSuffices }: MissingSources): string {
-    return anySourceSuffices ? 'one' : 'them'
+function enableAction({ sources, anySourceSuffices }: MissingSources): string {
+    if (sources.length === 1) {
+        return 'Enable it'
+    }
+    return anySourceSuffices ? 'Enable one' : 'Enable them'
 }
 
-/** A category's warning stands in for a whole run of statistics, a group's for just its own. */
+function editAction(label: string, onEdit?: () => void): ReactNode {
+    return onEdit === undefined ? label : <EditButton onEdit={onEdit}>{label}</EditButton>
+}
+
+function EditButton({ onEdit, children }: { onEdit: () => void, children: ReactNode }): ReactNode {
+    const colors = useColors()
+    return (
+        <button
+            type="button"
+            onClick={onEdit}
+            style={{
+                display: 'inline',
+                padding: 0,
+                border: 'none',
+                background: 'none',
+                font: 'inherit',
+                color: colors.blueLink,
+                cursor: 'pointer',
+            }}
+            data-test-id="warning-edit-action"
+        >
+            {children}
+        </button>
+    )
+}
+
 function theseStatistics(groupOrCategory: Group | Category): string {
     switch (groupOrCategory.kind) {
         case 'Group':

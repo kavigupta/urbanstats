@@ -1,5 +1,4 @@
 const layers = [
-    'categoryCheckbox',
     'universeDropdown',
     'screenshotDim',
     'screenshotSpin',
@@ -11,7 +10,6 @@ const layers = [
     'statisticNameDisclaimer',
     'mapLoading',
     'mobileUndoRedoControls',
-    'modal',
     'sidebarOverlay',
     'pageLoading',
 ] as const

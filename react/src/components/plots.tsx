@@ -1,4 +1,4 @@
-import React, { ReactElement, ReactNode } from 'react'
+import React, { ReactElement, ReactNode, useMemo } from 'react'
 
 import { useColors } from '../page_template/colors'
 import { PlotMode, rowExpandedKey, useSetting, useSettings } from '../page_template/settings'
@@ -207,13 +207,13 @@ function resolveStatYears(rows: ArticleRow[], statIndex: number): { idx: number,
     return chosen
 }
 
-/**
- * Whether each statistic's extras are currently expanded, in statistic order. Only the
- * statistics that have extras are subscribed to, since the rest can never be expanded.
- */
+/** Only the statistics that have extras are subscribed to, since the rest can never be expanded. */
 export function useExpandedByStat(statpaths: StatPath[], hasExtras: (statIndex: number) => boolean): boolean[] {
     const expandedSettings = useSettings(statpaths.filter((_, index) => hasExtras(index)).map(rowExpandedKey))
-    return statpaths.map(statpath => expandedSettings[rowExpandedKey(statpath)] ?? false)
+    return useMemo(
+        () => statpaths.map(statpath => expandedSettings[rowExpandedKey(statpath)] ?? false),
+        [statpaths, expandedSettings],
+    )
 }
 
 export function pullRelevantPlotProps(rows: ArticleRow[], statIndex: number, color: string, shortname: string, longname: string, sharedTypeOfAllArticles: string | undefined): PlotProps[] {

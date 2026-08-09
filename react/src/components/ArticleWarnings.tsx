@@ -1,17 +1,15 @@
 import React, { ReactNode } from 'react'
 
-import { useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
-import { Category, Group, StatPath, statPathToOrder } from '../page_template/statistic-tree'
+import { useMissingGroupReasonsOfEveryGroup, useMissingGroups, useSelectedGroups } from '../page_template/statistic-settings'
+import { Category, Group, GroupIdentifier, StatPath, statPathToOrder } from '../page_template/statistic-tree'
 
 import { useScreenshotMode } from './screenshot'
 import { warningMessage } from './warning-message'
 import { warningRowIndices } from './warning-placement'
 
-/** An explanation of why some statistics aren't there, shown where they would have been. */
 export interface ArticleWarning {
     /** Where the missing statistics sit in statistic tree order. */
     order: number
-    /** Goes in the left header, where the statistic's name would be. */
     name?: string
     content: ReactNode
 }
@@ -29,7 +27,7 @@ export interface WarningColumn {
     content: ReactNode
 }
 
-export function useArticleWarnings(): ArticleWarning[] {
+export function useArticleWarnings(onEdit: () => void): ArticleWarning[] {
     const screenshotMode = useScreenshotMode()
     const selectedGroups = useSelectedGroups()
     const missingGroups = useMissingGroups()
@@ -41,7 +39,7 @@ export function useArticleWarnings(): ArticleWarning[] {
     if (selectedGroups.length === 0) {
         return [{
             order: 0,
-            content: <b>No Statistic Categories are selected</b>,
+            content: <b>No Statistics are selected</b>,
         }]
     }
 
@@ -49,16 +47,29 @@ export function useArticleWarnings(): ArticleWarning[] {
         .map(({ groupOrCategory, reason }) => ({
             order: firstStatOrder(groupOrCategory),
             name: groupOrCategory.name,
-            content: warningMessage(reason, groupOrCategory),
+            content: warningMessage(reason, groupOrCategory, onEdit),
         }))
         .sort((a, b) => a.order - b.order)
+}
+
+export function useWarningsByGroup(): Map<GroupIdentifier, ReactNode> {
+    const screenshotMode = useScreenshotMode()
+    const missing = useMissingGroupReasonsOfEveryGroup()
+
+    const result = new Map<GroupIdentifier, ReactNode>()
+    if (screenshotMode) {
+        return result
+    }
+    for (const { group, reason } of missing) {
+        result.set(group.id, warningMessage(reason, group))
+    }
+    return result
 }
 
 function firstStatOrder(groupOrCategory: Group | Category): number {
     return Math.min(...Array.from(groupOrCategory.statPaths).map(path => statPathToOrder.get(path)!))
 }
 
-/** Places each warning at the row its statistics would have gone in, given the table's rows. */
 export function placeWarnings(statPaths: StatPath[], warnings: ArticleWarning[]): WarningRow[] {
     const indices = warningRowIndices(statPaths, warnings.map(({ order }) => order))
     return warnings.map(({ name, content }, warningIndex) => ({ index: indices[warningIndex], name, content }))

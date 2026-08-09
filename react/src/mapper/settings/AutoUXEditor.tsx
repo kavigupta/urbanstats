@@ -119,7 +119,6 @@ function ArgumentEditor(props: {
                     data-test="expand-button"
                     data-test-name={props.name}
                     data-test-state={!collapsed}
-                    pointing="right"
                     isExpanded={!collapsed}
                     style={{
                         position: 'absolute',

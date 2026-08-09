@@ -1,9 +1,9 @@
-import { useContext, useMemo } from 'react'
+import { useContext, useEffect, useMemo } from 'react'
 
 import { dataSources } from '../data/statistics_tree'
 import { Navigator } from '../navigation/Navigator'
 
-import { Settings, sourceEnabledKey, StatGroupKey, StatYearKey, StatSourceKey, useSettings } from './settings'
+import { isStagedChange, Settings, settingValue, sourceEnabledKey, StatGroupKey, StatYearKey, StatSourceKey, useSetting, useSettings, useSettingsInfo } from './settings'
 import { allGroups, allYears, AmbiguousSources, Category, DataSource, DataSourceCheckboxes, findAmbiguousSourcesAll, Group, SourceIdentifier, sourceDisambiguation, statParents, StatPath, statsTree, Year, yearStatPaths } from './statistic-tree'
 
 export type StatGroupSettings = Record<StatGroupKey | StatYearKey | StatSourceKey, boolean>
@@ -29,7 +29,7 @@ function sourceApplies(source: DataSource, settings: StatGroupSettings, sourcesB
     return settings[sourceEnabledKey(source) satisfies StatSourceKey]
 }
 
-export function groupKeys(groups: Group[]): StatGroupKey[] {
+function groupKeys(groups: Group[]): StatGroupKey[] {
     return groups.map(group => `show_stat_group_${group.id}` as const)
 }
 
@@ -37,12 +37,32 @@ function yearKeys(years: Year[]): StatYearKey[] {
     return years.map(year => `show_stat_year_${year}` as const)
 }
 
+/** Everything that selects which statistics are shown apart from the group checkboxes. */
+function yearSourceKeys(): (StatYearKey | StatSourceKey)[] {
+    return [
+        ...yearKeys(allYears),
+        ...dataSources.flatMap(({ sources }) => sources.map(source => sourceEnabledKey(source))),
+    ]
+}
+
 export function groupYearKeys(): (keyof StatGroupSettings)[] {
     return [
         ...groupKeys(allGroups),
-        ...allYears.map(year => `show_stat_year_${year}` as const),
-        ...dataSources.flatMap(({ sources }) => sources.map(source => sourceEnabledKey(source))),
+        ...yearSourceKeys(),
     ]
+}
+
+const allStatGroupsEnabled = Object.fromEntries(
+    groupKeys(allGroups).map(key => [key, true]),
+)
+
+export function useVisibleRows<T>(rows: (settings: StatGroupSettings) => T, showAllGroups: boolean): T {
+    const yearSourceSettings = useSettings(yearSourceKeys())
+    const groupSettings = useSettings(showAllGroups ? [] : groupKeys(allGroups))
+    return useMemo(
+        () => rows({ ...yearSourceSettings, ...allStatGroupsEnabled, ...groupSettings }),
+        [rows, yearSourceSettings, groupSettings],
+    )
 }
 
 function categoryStatus(enabled: boolean[]): boolean | 'indeterminate' {
@@ -58,13 +78,7 @@ function categoryStatus(enabled: boolean[]): boolean | 'indeterminate' {
     }
 }
 
-export function useCategoryStatus(category: Category): boolean | 'indeterminate' {
-    const groups = useAvailableGroups(category)
-    const settingsValues = useSettings(groupKeys(groups))
-    return categoryStatus(groups.map(group => settingsValues[`show_stat_group_${group.id}`]))
-}
-
-export function changeStatGroupSetting(settings: Settings, group: Group, newValue: boolean): void {
+function changeStatGroupSetting(settings: Settings, group: Group, newValue: boolean): void {
     settings.setSetting(`show_stat_group_${group.id}`, newValue)
     saveIndeterminateState(settings, group.parent)
 }
@@ -108,11 +122,96 @@ function toggleCategorySetting(settings: Settings, category: Category, available
     }
 }
 
-export function useChangeCategorySetting(category: Category): () => void {
-    const status = useCategoryStatus(category)
-    const availableGroups = useAvailableGroups(category)
+export interface GroupTreeState {
+    group: Group
+    enabled: boolean
+    setEnabled: (enabled: boolean) => void
+    highlight: boolean
+}
+
+export interface CategoryTreeState {
+    status: boolean | 'indeterminate'
+    toggle: () => void
+    highlight: boolean
+    expanded: boolean
+    setExpanded: (expanded: boolean) => void
+    groups: GroupTreeState[]
+}
+
+export function useCategoryTreeState(category: Category): CategoryTreeState {
     const settings = useContext(Settings.Context)
-    return () => { toggleCategorySetting(settings, category, availableGroups, status) }
+    const availableGroups = useAvailableGroups(category)
+    const info = useSettingsInfo(groupKeys(availableGroups))
+    const [expanded, setExpanded] = useSetting(`stat_category_expanded_${category.id}`)
+
+    const groups = availableGroups.map(group => ({
+        group,
+        enabled: settingValue(info[`show_stat_group_${group.id}`]),
+        setEnabled: (newValue: boolean) => { changeStatGroupSetting(settings, group, newValue) },
+        highlight: isStagedChange(info[`show_stat_group_${group.id}`]),
+    }))
+
+    const status = categoryStatus(groups.map(group => group.enabled))
+
+    return {
+        status,
+        toggle: () => { toggleCategorySetting(settings, category, availableGroups, status) },
+        highlight: groups.some(group => group.highlight),
+        expanded,
+        setExpanded,
+        groups,
+    }
+}
+
+/**
+ * Expands every category that would otherwise hide a change staging is making: a collapsed
+ * category shows only its selected groups, so a group staging turns off leaves the category
+ * highlighted with nothing behind it to see.
+ *
+ * Only acts when `active` becomes true (edit mode opening), so the user can collapse such a
+ * category again while staging is still going on.
+ */
+export function useExpandCategoriesHidingStagedChanges(active: boolean): void {
+    const settings = useContext(Settings.Context)
+    const { categories, groups: availableGroups } = useAvailableTree()
+    useEffect(() => {
+        if (!active) {
+            return
+        }
+        for (const category of categories) {
+            const hidesStagedChange = category.contents.some((group) => {
+                if (!availableGroups.has(group)) {
+                    return false
+                }
+                const info = settings.getSettingInfo(`show_stat_group_${group.id}`)
+                return isStagedChange(info) && !settingValue(info)
+            })
+            if (hidesStagedChange) {
+                settings.setSetting(`stat_category_expanded_${category.id}`, true)
+            }
+        }
+    }, [active, categories, availableGroups, settings])
+}
+
+function searchMatch(searchTerm: string, target: string): boolean {
+    return target.toLowerCase().includes(searchTerm.toLowerCase())
+}
+
+/**
+ * A category whose own name matches is kept whole; otherwise it is narrowed to its matching
+ * groups. Narrowing scopes everything downstream (including useCategoryTreeState) to those
+ * groups, so while searching, the category checkbox acts on what's visible rather than on
+ * the groups the search is hiding.
+ */
+export function useCategoriesMatchingSearch(searchTerm: string): Category[] {
+    const { categories, groups } = useAvailableTree()
+    return categories.flatMap((category) => {
+        if (searchMatch(searchTerm, category.name)) {
+            return [category]
+        }
+        const contents = category.contents.filter(group => groups.has(group) && searchMatch(searchTerm, group.name))
+        return contents.length > 0 ? [{ ...category, contents }] : []
+    })
 }
 
 export function useSelectedGroups(): Group[] {
@@ -128,16 +227,15 @@ export function useSelectedYears(): Year[] {
 }
 
 /**
- * The sources to name in a warning, and whether enabling any single one of them is enough. We could present
- * something more complex like a list of subsets, but that would be confusing and not very useful.
- * So instead, we just say "enable one of these sources" or "enable all of these sources".
+ * We could present something more complex like a list of subsets, but that would be confusing
+ * and not very useful. So instead, we just say "enable one of these sources" or "enable all of
+ * these sources".
  */
 export interface MissingSources {
     sources: SourceIdentifier[]
     anySourceSuffices: boolean
 }
 
-/** Why a group that the user selected is nonetheless showing no statistics. */
 export type MissingGroupReason =
     /** None of `years` are selected: the years this page has the group's statistics for from an enabled source. */
     { kind: 'year', years: Year[] } |
@@ -174,20 +272,17 @@ function sortSources(sources: Iterable<SourceIdentifier>): SourceIdentifier[] {
     return Array.from(new Set(sources)).sort((a, b) => sourceOrder.get(a)! - sourceOrder.get(b)!)
 }
 
-/**
- * Which selected groups are showing no statistics, and why. Groups are consolidated into their
- * category only when the whole category is missing for the same reason.
- */
-export function missingGroups(
-    { selectedGroups, selectedYears, statPathsAll, settings, availableTree }: {
-        selectedGroups: Group[]
-        selectedYears: Year[]
-        statPathsAll: StatPath[][]
-        settings: StatGroupSettings
-        availableTree: AvailableTree
-    },
-): MissingGroup[] {
-    const consolidateGroups = consolidateGroupsIn(availableTree)
+interface MissingGroupsInput {
+    selectedGroups: Group[]
+    selectedYears: Year[]
+    statPathsAll: StatPath[][]
+    settings: StatGroupSettings
+}
+
+/** Which of `selectedGroups` are showing no statistics, and why, one entry per group. */
+function missingGroupReasons(
+    { selectedGroups, selectedYears, statPathsAll, settings }: MissingGroupsInput,
+): { group: Group, reason: MissingGroupReason }[] {
     const pageStatPathsEach = statPathsAll.map(statPaths => new Set(statPaths))
     const ambiguousSources = findAmbiguousSourcesAll(statPathsAll)
 
@@ -213,7 +308,6 @@ export function missingGroups(
         }
         const blocked = Array.from(new Set(blockedEach.flat()))
 
-        /** The disabled sources standing in the way, across the regions missing the group. */
         const missingSources = (candidates: (paths: StatPath[]) => StatPath[]): MissingSources => {
             const eachRegion = blockedEach.map(paths => new Set(candidates(paths).map(path => statParents.get(path)!.source.name)))
             const sources = sortSources(eachRegion.flatMap(region => Array.from(region)))
@@ -223,7 +317,6 @@ export function missingGroups(
             }
         }
 
-        // Statistics whose source is enabled are held back by their year alone.
         const heldBackByYear = blocked.filter(sourceEnabled)
         if (heldBackByYear.length > 0) {
             return { kind: 'year', years: yearsOf(heldBackByYear) }
@@ -235,12 +328,23 @@ export function missingGroups(
         return { kind: 'yearAndSource', years: yearsOf(blocked), ...missingSources(paths => paths) }
     }
 
-    const byReason = new Map<string, { reason: MissingGroupReason, groups: Group[] }>()
-    for (const group of selectedGroups) {
+    return selectedGroups.flatMap((group) => {
         const reason = missingReason(group)
-        if (reason === undefined) {
-            continue
-        }
+        return reason === undefined ? [] : [{ group, reason }]
+    })
+}
+
+/**
+ * The same, with the groups a warning covers rolled up into their category wherever it covers all
+ * of it, so a table that stands one warning in for several statistics can say so once.
+ */
+export function missingGroups(
+    params: MissingGroupsInput & { availableTree: AvailableTree },
+): MissingGroup[] {
+    const consolidateGroups = consolidateGroupsIn(params.availableTree)
+
+    const byReason = new Map<string, { reason: MissingGroupReason, groups: Group[] }>()
+    for (const { group, reason } of missingGroupReasons(params)) {
         const key = reasonKey(reason)
         if (!byReason.has(key)) {
             byReason.set(key, { reason, groups: [] })
@@ -260,6 +364,25 @@ export function useMissingGroups(): MissingGroup[] {
     const availableTree = useAvailableTree()
 
     return missingGroups({ selectedGroups, selectedYears, statPathsAll, settings, availableTree })
+}
+
+/**
+ * For the edit tree, which lists every group and gives each its own row to warn in. A group's own
+ * checkbox is one of the things that can leave a statistic out, so it is left out of the reckoning
+ * -- what remains are the reasons the tree can act on, the years and the sources.
+ */
+export function useMissingGroupReasonsOfEveryGroup(): { group: Group, reason: MissingGroupReason }[] {
+    const availableGroups = useAvailableGroups()
+    const selectedYears = useSelectedYears()
+    const statPathsAll = useStatPathsAll()
+    const settings = useSettings(groupYearKeys())
+
+    return missingGroupReasons({
+        selectedGroups: availableGroups,
+        selectedYears,
+        statPathsAll,
+        settings: { ...settings, ...allStatGroupsEnabled },
+    })
 }
 
 /**
@@ -309,7 +432,6 @@ export function useStatPathsAll(): StatPath[][] {
     return useContext(Navigator.Context).useStatPathsAll() ?? (() => { throw new Error('Current page does not have StatPath information') })()
 }
 
-/** Whether a group's or category's statistics include any that the page has loaded. */
 function intersectsPage(statPaths: Set<StatPath>, pageStatPaths: Set<StatPath>): boolean {
     for (const statPath of statPaths) {
         if (pageStatPaths.has(statPath)) {
@@ -344,22 +466,18 @@ export function getAvailableTree(statPathsAll: StatPath[][]): AvailableTree {
 }
 
 /**
- * The parts of the statistic tree this page has data for. Memoized on the page's own stat
- * paths, which only change on navigation: the tree is scanned once per category rendered,
- * and again on every checkbox click and every keystroke in the search box.
+ * Memoized on the page's own stat paths, which only change on navigation: edit mode puts the
+ * whole tree on the table, so otherwise this would be rescanned on every checkbox click and
+ * every keystroke in its filter.
  */
 function useAvailableTree(): AvailableTree {
     const statPathsAll = useStatPathsAll()
     return useMemo(() => getAvailableTree(statPathsAll), [statPathsAll])
 }
 
-export function useAvailableGroups(category?: Category): Group[] {
+function useAvailableGroups(category?: Category): Group[] {
     const { groups } = useAvailableTree()
     return (category?.contents ?? allGroups).filter(group => groups.has(group))
-}
-
-export function useAvailableCategories(): Category[] {
-    return useAvailableTree().categories
 }
 
 export function getAvailableYears(contextStatPaths: StatPath[]): Year[] {

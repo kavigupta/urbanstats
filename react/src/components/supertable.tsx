@@ -9,6 +9,7 @@ import { Article } from '../utils/protos'
 import { WarningColumn, WarningRow } from './ArticleWarnings'
 import { CongressionalColumnData, congressionalDataForRow } from './congressional-table/model'
 import { CongressionalRepresentativesWidget } from './congressional-table/render'
+import { EditModeButton, EditModeHeader, TableEditButton } from './edit-mode-header'
 import { ArticleRow, StatisticCellRenderingInfo } from './load-article'
 import { extraHeaderSpaceForVertical, PlotProps, RenderedPlot } from './plots'
 import { useScreenshotMode } from './screenshot'
@@ -36,7 +37,6 @@ export interface DisclaimerFootnote {
     text: string
 }
 
-/** The column shape a table's rows are laid out against. */
 export interface TableLayout {
     widthLeftHeader: number
     columnWidth: number
@@ -44,27 +44,25 @@ export interface TableLayout {
     simpleOrdinals: boolean
 }
 
-/** A `TableLayout` with its columns measured, which is what rows are actually rendered against. */
 export interface MeasuredTableLayout extends TableLayout {
-    /** One entry per column, which is also what the column count is read from. */
     columnWidthsInfo: (CommonLayoutInformation | undefined)[]
-    /** The space reserved to the right of each column, which a vertical plot occupies. */
     extraSpaceRight: number[]
 }
 
 /**
- * Measures each column against the rows it contains. A column with no rows goes unmeasured
- * rather than measuring as zero, which would cap its header's text at no width at all.
+ * A column with no rows goes unmeasured rather than measuring as zero, which would cap its
+ * header's text at no width at all. Separate from `measuredLayout` so the edit table can
+ * memoize it: it measures every statistic rather than the selected ones.
  */
-function measureColumns(columnRows: StatisticCellRenderingInfo[][], universe: Universe, simpleOrdinals: boolean): (CommonLayoutInformation | undefined)[] {
+export function measureColumns(columnRows: StatisticCellRenderingInfo[][], universe: Universe, simpleOrdinals: boolean): (CommonLayoutInformation | undefined)[] {
     return columnRows.map(rows => rows.length === 0 ? undefined : maxLayoutInformation(rows, universe, simpleOrdinals))
 }
 
 /**
- * The layout rows are rendered against. `extraSpaceRight` is asked for per column rather
- * than passed as an array, so it can't disagree with the measurements about the column count.
+ * `extraSpaceRight` is asked for per column rather than passed as an array, so it can't
+ * disagree with the measurements about the column count.
  */
-function measuredLayout(layout: TableLayout, columnWidthsInfo: (CommonLayoutInformation | undefined)[], extraSpaceRight: (columnIndex: number) => number): MeasuredTableLayout {
+export function measuredLayout(layout: TableLayout, columnWidthsInfo: (CommonLayoutInformation | undefined)[], extraSpaceRight: (columnIndex: number) => number): MeasuredTableLayout {
     return {
         ...layout,
         columnWidthsInfo,
@@ -72,7 +70,6 @@ function measuredLayout(layout: TableLayout, columnWidthsInfo: (CommonLayoutInfo
     }
 }
 
-/** Each column's width including the space reserved to its right. */
 function columnFullWidths(layout: MeasuredTableLayout): number[] {
     return layout.extraSpaceRight.map(extra => layout.columnWidth + extra)
 }
@@ -85,12 +82,9 @@ export interface TableContentsProps {
     horizontalPlotSpecs: (PlotSpec | undefined)[]
     verticalPlotSpecs: (PlotSpec | undefined)[]
     topLeftSpec: TopLeftCellSpec
-    /** Warnings shown in place of the statistics they are about. */
+    editButton?: TableEditButton
     warningRows?: WarningRow[]
-    /**
-     * Warnings that stand in for a column rather than a row, drawn once down the column. The
-     * column itself must already be in `rowSpecs` and the super header, as a blank cell.
-     */
+    /** The column itself must already be in `rowSpecs` and the super header, as a blank cell. */
     warningColumns?: WarningColumn[]
     highlightRowIndex?: number
     loading?: boolean
@@ -141,6 +135,9 @@ export function TableContents(props: TableContentsProps): ReactNode {
         ? undefined
         : { ...props.superHeaderSpec, headerSpecs: props.superHeaderSpec.headerSpecs.map(withFootnote) }
 
+    const placedIn = (placement: TableEditButton['placement']): EditModeButton | undefined =>
+        props.editButton?.placement === placement ? props.editButton : undefined
+
     // Warnings are interleaved with the statistic rows, so the stripes are counted over both.
     const warningRows = props.warningRows ?? []
     const bodyRows: ReactNode[] = []
@@ -182,8 +179,9 @@ export function TableContents(props: TableContentsProps): ReactNode {
         <>
             <TableFrame
                 layout={layout}
-                topLeftSpec={props.topLeftSpec}
+                topLeftSpec={{ ...props.topLeftSpec, editMode: placedIn('top-left') }}
                 superHeaderSpec={superHeaderSpec}
+                superHeaderEditButton={placedIn('super-header')}
                 blankColumns={props.warningColumns?.map(({ columnIndex }) => columnIndex)}
                 minHeight={overallMinHeight}
             >
@@ -223,15 +221,11 @@ export function TableContents(props: TableContentsProps): ReactNode {
     )
 }
 
-/**
- * Everything a table has above its rows -- the optional super header, and the main header
- * row of column names -- plus the positioned container the rows themselves live in, which
- * the vertical plots are absolutely positioned against.
- */
-function TableFrame(props: {
+export function TableFrame(props: {
     layout: MeasuredTableLayout
     superHeaderSpec?: SuperHeaderSpec
     topLeftSpec: TopLeftCellSpec
+    superHeaderEditButton?: EditModeButton
     blankColumns?: number[]
     minHeight?: string
     children: ReactNode
@@ -242,6 +236,7 @@ function TableFrame(props: {
             {props.superHeaderSpec !== undefined && (
                 <SuperHeaderHorizontal
                     {...props.superHeaderSpec}
+                    editMode={props.superHeaderEditButton}
                     leftSpacerWidth={widthLeftHeader}
                     widthsEach={columnFullWidths(props.layout)}
                 />
@@ -265,17 +260,7 @@ function TableFrame(props: {
     )
 }
 
-/**
- * An explanation of why some statistics aren't there, laid out like the row they stand in for:
- * the group's name in the left header, and the warning across the columns the values would fill.
- * A warning about no group in particular has no name to put in the left header, so it spans the
- * whole row rather than starting at an empty one.
- */
 function WarningTableRow(props: { layout: MeasuredTableLayout, stripeIndex: number, name?: string, content: ReactNode }): ReactNode {
-    const colors = useColors()
-    const contentWidth = props.name === undefined
-        ? 100
-        : columnFullWidths(props.layout).reduce((a, b) => a + b, 0)
     return (
         <TableRowContainer index={props.stripeIndex}>
             {props.name !== undefined && (
@@ -283,20 +268,24 @@ function WarningTableRow(props: { layout: MeasuredTableLayout, stripeIndex: numb
                     <span className="serif value">{props.name}</span>
                 </div>
             )}
-            <div
-                style={{ width: `${contentWidth}%`, padding: '1px', color: colors.ordinalTextColor, fontStyle: 'italic' }}
-                data-test-id="article-warning"
-            >
-                <span className="serif value">{props.content}</span>
-            </div>
+            <WarningRowMessage layout={props.layout} content={props.content} fullRow={props.name === undefined} />
         </TableRowContainer>
     )
 }
 
-/**
- * The message for a warning that stands in for a column, drawn once down the blank column its
- * statistics would have filled.
- */
+export function WarningRowMessage(props: { layout: MeasuredTableLayout, content: ReactNode, fullRow?: boolean }): ReactNode {
+    const colors = useColors()
+    const width = props.fullRow === true ? 100 : columnFullWidths(props.layout).reduce((a, b) => a + b, 0)
+    return (
+        <div
+            style={{ width: `${width}%`, padding: '1px', color: colors.ordinalTextColor, fontStyle: 'italic' }}
+            data-test-id="article-warning"
+        >
+            <span className="serif value">{props.content}</span>
+        </div>
+    )
+}
+
 function WarningColumnMessage(props: { layout: MeasuredTableLayout, columnIndex: number, content: ReactNode }): ReactNode {
     const colors = useColors()
     const fullWidths = columnFullWidths(props.layout)
@@ -360,27 +349,24 @@ function SuperTableRow(props: {
     )
 }
 
-/**
- * The shape every statistic row has: a left header followed by a cell per column, and below
- * it the blocks the row's extras call for -- its expanded plot and its representatives
- * table. Callers differ only in what they put in the left header.
- */
-function StatisticTableRow(props: {
+export function StatisticTableRow(props: {
     layout: MeasuredTableLayout
     index: number
     leftHeader: ReactNode
     cellSpecs: CellSpec[]
     plotSpec?: PlotSpec
+    /** Unset omits the (large) representatives table, as the edit tree does for statistics that are off. */
+    withCongressional?: boolean
     minHeight?: string
     isHighlighted?: boolean
 }): ReactNode {
-    const { layout, cellSpecs } = props
+    const { layout, cellSpecs, withCongressional = true } = props
     /*
      * Deliberately not memoized. The representatives widget only puts the terms that were
      * on screen into a screenshot, and it re-measures which those are off a change of
      * identity here -- so holding this steady across renders empties the screenshot.
      */
-    const congressionalRegions = congressionalRegionsForCells(cellSpecs)
+    const congressionalRegions = withCongressional ? congressionalRegionsForCells(cellSpecs) : []
 
     return (
         <>
@@ -394,22 +380,19 @@ function StatisticTableRow(props: {
                 </div>
             )}
             {congressionalRegions.length > 0 && (
-                <CongressionalRepresentativesWidget
-                    regions={congressionalRegions}
-                    widthLeftHeader={layout.widthLeftHeader}
-                    columnWidth={layout.columnWidth}
-                    extraSpaceRight={layout.extraSpaceRight}
-                />
+                <div data-test-id="congressional-representatives">
+                    <CongressionalRepresentativesWidget
+                        regions={congressionalRegions}
+                        widthLeftHeader={layout.widthLeftHeader}
+                        columnWidth={layout.columnWidth}
+                        extraSpaceRight={layout.extraSpaceRight}
+                    />
+                </div>
             )}
         </>
     )
 }
 
-/**
- * A row's cells, each followed by the space its column reserves to the right. Statistic
- * cells are given their column's measured widths here, so every table that renders a row
- * of cells lines its columns up the same way.
- */
 function RowCells(props: { layout: MeasuredTableLayout, cellSpecs: CellSpec[] }): ReactNode {
     const { columnWidth, extraSpaceRight, columnWidthsInfo } = props.layout
     return props.cellSpecs.map((spec, colIndex) => (
@@ -423,7 +406,6 @@ function RowCells(props: { layout: MeasuredTableLayout, cellSpecs: CellSpec[] })
     ))
 }
 
-/** The representatives tables a row's cells call for, in column order. */
 function congressionalRegionsForCells(cellSpecs: CellSpec[]): CongressionalColumnData[] {
     return cellSpecs.flatMap((cell) => {
         if (cell.type !== 'statistic-row') {
@@ -440,7 +422,6 @@ export type CellSpec = ({ type: 'comparison-longname' } & ComparisonLongnameCell
     ({ type: 'statistic-panel-longname' } & StatisticPanelLongnameCellProps) |
     ({ type: 'comparison-top-left-header' } & TopLeftHeaderProps) |
     ({ type: 'top-left-header' } & TopLeftHeaderProps) |
-    /** Holds a column's width open without drawing anything, e.g. under a warning column. */
     { type: 'blank' }
 
 export function Cell(props: CellSpec & { width: number }): ReactNode {
@@ -511,7 +492,7 @@ export interface StatisticRowCellProps {
 
 export interface TopLeftHeaderProps {
     statNameOverride?: string
+    editMode?: EditModeHeader
 }
 
-/** The cells that can serve as a table's top-left header; the comparison's carries a color bar. */
 export type TopLeftCellSpec = Extract<CellSpec, { type: 'comparison-top-left-header' | 'top-left-header' }>

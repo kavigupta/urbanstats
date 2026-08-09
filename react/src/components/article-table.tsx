@@ -1,9 +1,9 @@
-import React, { ReactNode, useContext } from 'react'
+import React, { ReactNode, useContext, useMemo } from 'react'
 
 import { Navigator } from '../navigation/Navigator'
 import { useColors } from '../page_template/colors'
-import { useSetting, useSettings } from '../page_template/settings'
-import { groupYearKeys, StatGroupSettings } from '../page_template/statistic-settings'
+import { useSetting } from '../page_template/settings'
+import { StatGroupSettings, useVisibleRows } from '../page_template/statistic-settings'
 import { useDefinedUniverse } from '../universe'
 import { Article } from '../utils/protos'
 import { useMobileLayout } from '../utils/responsive'
@@ -14,27 +14,39 @@ import { pullRelevantPlotProps, useExpandedByStat } from './plots'
 import { useScreenshotMode } from './screenshot'
 import { computeNameSpecsWithGroups, nameSpecsForRows } from './statistic-name-specs'
 import { CellSpec, PlotSpec, TableContents, TableLayout } from './supertable'
-import { ColumnIdentifier } from './table'
+import { ColumnIdentifier, valueOnlyColumns } from './table'
 
 const allColumns: ColumnIdentifier[] = ['statval', 'statval_unit', 'statistic_percentile', 'statistic_ordinal', 'pointer_in_class', 'pointer_overall']
 
-/** A plot for each row whose extras are currently expanded, and undefined for the rest. */
-function useExpandedPlotSpecs(rows: ArticleRow[], article: Article): (PlotSpec | undefined)[] {
+const mobileEditWidthLeftHeader = 58
+
+export function useExpandedPlotSpecs(rows: ArticleRow[], article: Article): (PlotSpec | undefined)[] {
     const colors = useColors()
-    const expanded = useExpandedByStat(rows.map(row => row.statpath), index => rows[index].extraStats.length > 0)
-    return rows.map((row, index) => expanded[index]
+    const statpaths = useMemo(() => rows.map(row => row.statpath), [rows])
+    const expanded = useExpandedByStat(statpaths, index => rows[index].extraStats.length > 0)
+    return useMemo(() => rows.map((row, index) => expanded[index]
         ? {
                 statDescription: row.renderedStatname,
                 plotProps: pullRelevantPlotProps(rows, index, colors.hueColors.blue, article.shortname, article.longname, article.articleType),
             }
         : undefined,
-    )
+    ), [rows, expanded, colors, article])
 }
 
-function useArticleTableLayout(): TableLayout {
+export function useArticleTableLayout(mode: 'normal' | 'edit'): TableLayout {
     const [simpleOrdinals] = useSetting('simple_ordinals')
     const isMobile = useMobileLayout()
     const screenshotMode = useScreenshotMode()
+
+    // On mobile the checkbox tree needs the room the other columns would take.
+    if (mode === 'edit' && isMobile) {
+        return {
+            simpleOrdinals,
+            widthLeftHeader: mobileEditWidthLeftHeader,
+            columnWidth: 100 - mobileEditWidthLeftHeader,
+            onlyColumns: valueOnlyColumns,
+        }
+    }
 
     // TODO clean this up and reduce the amount of magic numbers
     const nonPointerColumns = 15 + 10 + (simpleOrdinals ? 7 + 8 : 17 + 25)
@@ -54,17 +66,17 @@ function useArticleTableLayout(): TableLayout {
 export function ArticleTable(props: {
     rows: (settings: StatGroupSettings) => ArticleRow[][]
     article: Article
+    onEdit: () => void
 }): ReactNode {
     const currentUniverse = useDefinedUniverse()
-    const layout = useArticleTableLayout()
+    const layout = useArticleTableLayout('normal')
     const navContext = useContext(Navigator.Context)
 
     // Subscribed to here rather than in the panel, so changing the statistics shown doesn't
     // re-render the map and the surrounding page.
-    const settings = useSettings(groupYearKeys())
-    const filteredRows = props.rows(settings)[0]
+    const filteredRows = useVisibleRows(props.rows, false)[0]
 
-    const warnings = useArticleWarnings()
+    const warnings = useArticleWarnings(props.onEdit)
     const warningRows = placeWarnings(filteredRows.map(row => row.statpath), warnings)
 
     const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(
@@ -89,16 +101,15 @@ export function ArticleTable(props: {
     })])
 
     return (
-        <div className="stats_table">
-            <TableContents
-                layout={layout}
-                leftHeaderSpec={{ leftHeaderSpecs, groupNames }}
-                rowSpecs={cellSpecs}
-                horizontalPlotSpecs={plotSpecs}
-                verticalPlotSpecs={[]}
-                topLeftSpec={{ type: 'top-left-header' }}
-                warningRows={warningRows}
-            />
-        </div>
+        <TableContents
+            layout={layout}
+            leftHeaderSpec={{ leftHeaderSpecs, groupNames }}
+            rowSpecs={cellSpecs}
+            horizontalPlotSpecs={plotSpecs}
+            verticalPlotSpecs={[]}
+            topLeftSpec={{ type: 'top-left-header' }}
+            warningRows={warningRows}
+            editButton={{ open: false, onEdit: props.onEdit, label: 'Select', placement: 'top-left' }}
+        />
     )
 }

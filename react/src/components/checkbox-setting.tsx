@@ -3,16 +3,10 @@ import React, { CSSProperties, ReactNode, useEffect, useId, useRef } from 'react
 import { useColors } from '../page_template/colors'
 import { isStagedChange, SettingsDictionary, useSetting, useSettingInfo } from '../page_template/settings'
 
-/**
- * The checkbox controls, which started out in the sidebar but are used all over: the
- * mapper's editors, the quiz, the histogram.
- */
-
 // type representing a key of SettingsDictionary that have boolean values
 export type BooleanSettingKey = keyof { [K in keyof SettingsDictionary as SettingsDictionary[K] extends boolean | undefined ? K : never]: boolean }
 
-/** What a checkbox needs to render a boolean setting, wherever the checkbox itself lives. */
-function useBooleanSetting(settingKey: BooleanSettingKey, forcedOn?: boolean): {
+export function useBooleanSetting(settingKey: BooleanSettingKey, forcedOn?: boolean): {
     checked: boolean
     setChecked: (checked: boolean) => void
     highlight: boolean
@@ -63,7 +57,6 @@ type CheckboxSettingCustomProps = CheckboxSettingCustomJustInputProps & {
     classNameToUse?: string
 }
 
-/** Marks a control whose value staging is currently changing. */
 export function useHighlightStyle(highlight: boolean | undefined): CSSProperties {
     const colors = useColors()
     return {
@@ -94,7 +87,7 @@ export function CheckboxSettingCustom(props: CheckboxSettingCustomProps): ReactN
     )
 };
 
-function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProps): ReactNode {
+export function CheckboxSettingJustBox(props: CheckboxSettingCustomJustInputProps): ReactNode {
     const colors = useColors()
     const id = useId()
     const checkboxRef = useRef<HTMLInputElement>(null)
