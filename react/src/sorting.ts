@@ -1,4 +1,11 @@
-import { ArticleRow, isNoValue } from './components/load-article'
+import { ArticleRow, isNoValue, MetadataStatValue } from './components/load-article'
+
+function sortKey(statval: number | MetadataStatValue): string {
+    if (typeof statval === 'object') {
+        return statval.representatives.map(representative => representative.districtLongname).join(' ')
+    }
+    return String(statval)
+}
 
 export function compareArticleRows(a: ArticleRow, b: ArticleRow, direction: 'up' | 'down'): number {
     const nameCompared = direction === 'up' ? a.renderedStatname.localeCompare(b.renderedStatname) : b.renderedStatname.localeCompare(a.renderedStatname)
@@ -16,7 +23,7 @@ export function compareArticleRows(a: ArticleRow, b: ArticleRow, direction: 'up'
         directComparison = a.statval - b.statval
     }
     else {
-        directComparison = String(a.statval).localeCompare(String(b.statval))
+        directComparison = sortKey(a.statval).localeCompare(sortKey(b.statval))
     }
     if (directComparison !== 0) {
         return direction === 'up' ? directComparison : -directComparison

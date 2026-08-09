@@ -676,7 +676,7 @@ function extractCompatiblePreviousArgs(expr: UrbanStatsASTExpression, typeEnviro
 
 function getDefaultFunction(selection: Selection & { type: 'function' }, typeEnvironment: TypeEnvironment, blockIdent: string, previous?: UrbanStatsASTExpression): UrbanStatsASTExpression {
     const fn = typeEnvironment.get(selection.name)
-    assert(fn !== undefined && fn.type.type === 'function', `Function ${selection.name} not found or not a function`)
+    assert(fn?.type.type === 'function', `Function ${selection.name} not found or not a function`)
     const compatiblePreviousArg = previous ? extractCompatiblePreviousArgs(previous, typeEnvironment) : undefined
     const args: UrbanStatsASTArg[] = []
     // Only include positional arguments by default, not named arguments with defaults, unless there's an existing value for the named argument

@@ -17,8 +17,8 @@ type CountCategoryKey = `countCategory${number}`
 
 /** GeoJSON feature properties for clustered SYAU centroids (cluster aggregates + point props). */
 export type ClusterFeatureProperties = (
-    { [key in PieChartSizeCategoryKey]: number } &
-    { [key in CountCategoryKey]: number } &
+    Record<PieChartSizeCategoryKey, number> &
+    Record<CountCategoryKey, number> &
     // eslint-disable-next-line no-restricted-syntax -- cluster_id comes from maplibre and is out of our control
     ({ cluster: true, cluster_id: string } | { cluster: undefined, idxIntoCentroids: number })
 )

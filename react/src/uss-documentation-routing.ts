@@ -40,8 +40,6 @@ function constantsDocumentationDirect(): {
 let cachedConstantsDocumentationData: ReturnType<typeof constantsDocumentationDirect> | undefined
 
 export function constantsDocumentationData(): ReturnType<typeof constantsDocumentationDirect> {
-    if (cachedConstantsDocumentationData === undefined) {
-        cachedConstantsDocumentationData = constantsDocumentationDirect()
-    }
+    cachedConstantsDocumentationData ??= constantsDocumentationDirect()
     return cachedConstantsDocumentationData
 }

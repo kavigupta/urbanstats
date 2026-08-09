@@ -50,7 +50,6 @@ export const rgb = {
         },
         returnType: { type: 'concrete', value: colorType },
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const alpha = namedArgs.a as number
         return { type: 'opaque', opaqueType: 'color', value: rgbToColor(posArgs[0] as number, posArgs[1] as number, posArgs[2] as number, alpha) }
@@ -76,7 +75,6 @@ export const hsv = {
         },
         returnType: { type: 'concrete', value: colorType },
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- needed for USSValue interface
     value: (ctx: Context, posArgs: USSRawValue[], namedArgs: Record<string, USSRawValue>): USSRawValue => {
         const alpha = namedArgs.a as number
         return { type: 'opaque', opaqueType: 'color', value: hsvToColor(posArgs[0] as number, posArgs[1] as number, posArgs[2] as number, alpha) }

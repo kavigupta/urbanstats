@@ -16,9 +16,14 @@ export type UrbanStatsASTLHS = (
     { type: 'identifier', name: Decorated<string> } |
     { type: 'attribute', expr: UrbanStatsASTExpression, name: Decorated<string> })
 
+export type UrbanStatsASTConstant = (
+    { type: 'number', value: number } |
+    { type: 'string', value: string } |
+    { type: 'humanReadableElements', value: HumanReadableElement[] })
+
 export type UrbanStatsASTExpression = (
     UrbanStatsASTLHS |
-    { type: 'constant', value: Decorated<{ type: 'number', value: number } | { type: 'string', value: string } | { type: 'humanReadableElements', value: HumanReadableElement[] }> } |
+    { type: 'constant', value: Decorated<UrbanStatsASTConstant> } |
     { type: 'call', fn: UrbanStatsASTExpression, args: UrbanStatsASTArg[], entireLoc: LocInfo } |
     { type: 'binaryOperator', operator: Decorated<BinaryOperatorSymbol>, left: UrbanStatsASTExpression, right: UrbanStatsASTExpression } |
     { type: 'unaryOperator', operator: Decorated<UnaryOperatorSymbol>, expr: UrbanStatsASTExpression } |

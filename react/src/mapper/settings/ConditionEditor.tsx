@@ -48,7 +48,7 @@ export function ConditionEditor({
             />
             {conditionIsCustom && (
                 <CustomEditor
-                    uss={condition as UrbanStatsASTExpression & { type: 'customNode' }}
+                    uss={condition}
                     setUss={setCondition}
                     typeEnvironment={typeEnvironment}
                     errors={errors}

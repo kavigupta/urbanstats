@@ -15,8 +15,8 @@ import { useColors, useStyleElement } from './colors'
 import { useHideSidebarDesktop } from './utils'
 
 export function PageTemplate({
-    screencap = undefined,
-    csvExportCallback = undefined,
+    screencap,
+    csvExportCallback,
     children,
     showFooter = true,
     topPanel = true,

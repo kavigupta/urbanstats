@@ -1,7 +1,8 @@
 import { applyRewriteRules } from '../mapper/settings/auto-ux-rewrite'
 import { assert } from '../utils/defensive'
+import { reifyString } from '../utils/human-readable-name'
 
-import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
+import { locationOf, unify, UrbanStatsAST, UrbanStatsASTArg, UrbanStatsASTConstant, UrbanStatsASTExpression, UrbanStatsASTLHS, UrbanStatsASTStatement } from './ast'
 import { getAutoUXNodeMetadata } from './autoux-node-metadata'
 import { Context } from './context'
 import { AnnotatedToken, AnnotatedTokenWithValue, lex, Keyword, emptyLocation } from './lexer'
@@ -26,6 +27,10 @@ export interface UnparseOptions {
 
 type USSInfixSequenceElement = { type: 'operator', operatorType: 'unary', value: Decorated<UnaryOperatorSymbol> } | { type: 'operator', operatorType: 'binary', value: Decorated<BinaryOperatorSymbol> } | UrbanStatsASTExpression
 
+export function constantString(constant: UrbanStatsASTConstant): string {
+    return constant.type === 'humanReadableElements' ? reifyString(constant.value) : constant.value.toString()
+}
+
 export function toSExp(node: UrbanStatsAST): string {
     /**
      * For testing purposes, we convert the AST to a simple S-expression format.
@@ -36,7 +41,7 @@ export function toSExp(node: UrbanStatsAST): string {
         case 'named':
             return `(named ${node.name.node} ${toSExp(node.value)})`
         case 'constant':
-            return `(const ${node.value.node.value})`
+            return `(const ${constantString(node.value.node)})`
         case 'identifier':
             return `(id ${node.name.node})`
         case 'attribute':
@@ -802,7 +807,7 @@ export function allIdentifiers(node: UrbanStatsASTStatement | UrbanStatsASTExpre
         const newIdentifiers = new Set<string>()
         identifiers.forEach((id) => {
             const t = ctx.getVariable(id)?.type
-            if (t === undefined || t.type !== 'function') {
+            if (t?.type !== 'function') {
                 return
             }
             Object.entries(t.namedArgs).forEach(([, arg]) => {
@@ -868,7 +873,7 @@ export function unparse(node: UrbanStatsASTStatement | UrbanStatsASTExpression, 
                 return JSON.stringify(node.value.node.value)
             }
             else {
-                return node.value.node.value.toString()
+                return constantString(node.value.node)
             }
         case 'identifier':
             return node.name.node

@@ -76,8 +76,8 @@ function numericBinaryOperation(fn: (a: number, b: number) => number): BinaryOpe
 function comparisonOperation(
     fnNumber: (a: number, b: number) => boolean,
     fnString: (a: string, b: string) => boolean,
-    fnBoolean: ((a: boolean, b: boolean) => boolean) | undefined = undefined,
-    fnNull: ((a: null, b: null) => boolean) | undefined = undefined,
+    fnBoolean?: ((a: boolean, b: boolean) => boolean),
+    fnNull?: ((a: null, b: null) => boolean),
 ): BinaryOperation[] {
     const bos = [
         {

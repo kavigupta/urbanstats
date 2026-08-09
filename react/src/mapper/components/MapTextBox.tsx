@@ -1,5 +1,4 @@
 import Color from 'color'
-// eslint-disable-next-line import/no-named-as-default, import/default -- These don't like the import
 import Quill, { Delta, Parchment, Range } from 'quill'
 import React, { createContext, ReactNode, RefObject, useCallback, useContext, useEffect, useRef, useState } from 'react'
 

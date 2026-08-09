@@ -71,9 +71,7 @@ export function computePearsonR2(
     if (w !== undefined && w.length !== dependent.length) {
         throw new Error(`Weights must have the same length as dependent and residuals: ${w.length} vs ${dependent.length}`)
     }
-    if (w === undefined) {
-        w = Array(dependent.length).fill(1)
-    }
+    w ??= Array(dependent.length).fill(1)
     const anyNaN = dependent.map((val, i) => isNaN(val) || isNaN(residuals[i]) || (w && isNaN(w[i])))
     dependent = dependent.filter((_, i) => !anyNaN[i])
     residuals = residuals.filter((_, i) => !anyNaN[i])

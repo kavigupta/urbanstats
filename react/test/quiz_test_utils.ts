@@ -163,7 +163,7 @@ async function collectCorrectJuxtaInfiniteAnswers(t: TestController, seeds: stri
     }
 }
 
-export function collectCorrectJuxtaInfiniteAnswersFixture(seeds: string[], version: number, cas: Map<string, string[]> | undefined = undefined): void {
+export function collectCorrectJuxtaInfiniteAnswersFixture(seeds: string[], version: number, cas?: Map<string, string[]>): void {
     quizFixture(
         'collect correct answers',
         `${target}/quiz.html`,
@@ -177,7 +177,7 @@ export function collectCorrectJuxtaInfiniteAnswersFixture(seeds: string[], versi
     })
 }
 
-export async function provideAnswers(t: TestController, start: number, isCorrect: boolean[] | string, seed: string, cas: Map<string, string[]> | undefined = undefined): Promise<void> {
+export async function provideAnswers(t: TestController, start: number, isCorrect: boolean[] | string, seed: string, cas?: Map<string, string[]>): Promise<void> {
     // check if isCorrect is a string, then interpret as 0s and 1s
     if (typeof isCorrect === 'string') {
         isCorrect = isCorrect.split('').map(c => c === '1')

@@ -291,9 +291,7 @@ function mapSeveral(
         assert(typeof fn === 'function', `Expected a function, but got ${typeof fn}`)
         const kw = Object.fromEntries(kwArgs.map((v, i) => [argumentNames[i], v]))
         try {
-            return (fn as (c: Context, pA: USSRawValue[], nA: Record<string, USSRawValue>, oA: OriginalFunctionArgs) => USSRawValue)(
-                ctx, posArgs, kw, originalArgs,
-            )
+            return fn(ctx, posArgs, kw, originalArgs)
         }
         catch (e) {
             if (e instanceof InterpretationError) {

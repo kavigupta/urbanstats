@@ -1,6 +1,5 @@
 import katex from 'katex'
 import { Scope } from 'parchment'
-// eslint-disable-next-line import/no-named-as-default, import/default -- These don't like the import
 import Quill, { Delta, EmitterSource, Range } from 'quill'
 import React, { CSSProperties, ReactNode, useEffect, useLayoutEffect, useRef } from 'react'
 

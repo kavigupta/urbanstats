@@ -120,9 +120,7 @@ export class AuthenticationStateMachine {
 
     private async syncProfile(token?: string): Promise<void> {
         TestUtils.shared.testSyncing = true
-        if (token === undefined) {
-            token = await this.getAccessToken()
-        }
+        token ??= await this.getAccessToken()
         if (token === undefined) {
             return
         }

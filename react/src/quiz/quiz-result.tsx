@@ -540,7 +540,6 @@ function GenericQuizResultRow(props: GenericQuizResultRowProps): ReactNode {
     )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents -- legacy stat names can be empty
 function Value({ stat, statColumn }: { stat: number, statColumn: StatName | LegacyStatName | '%' }): ReactNode {
     return (
         <span>

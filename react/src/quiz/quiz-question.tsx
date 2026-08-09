@@ -81,7 +81,7 @@ interface QuizQuestionProps {
 
 function QuizQuestion(props: QuizQuestionProps & {
     getQuestion: () => ReactNode
-    getOption: (letter: 'a' | 'b') => ReactNode
+    getOption: (letter: 'a' | 'b') => string
     getDemo: (letter: 'a' | 'b') => ReactNode
 }): ReactNode {
     let buttonA = 'quiz_clickable'
