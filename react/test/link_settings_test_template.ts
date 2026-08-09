@@ -100,18 +100,17 @@ export function linkSettingsTests(baseLink: string): void {
         await openTree(t)
     })
 
-    /** Compared as a set: the sidebar's tree and the edit table's both render a checkbox per group. */
+    /** In document order, so the sidebar's settings come before the edit table's. */
     async function expectHighlightedInputTestIds(t: TestController, testIds: string[]): Promise<void> {
         const highlightedInputs = await arrayFromSelector(Selector('input[data-test-highlight=true]:not([inert] *)'))
-        const actual = await Promise.all(highlightedInputs.map(input => input.getAttribute('data-test-id')))
 
-        await t.expect(actual.slice().sort()).eql(testIds.slice().sort())
+        await t.expect(await Promise.all(highlightedInputs.map(input => input.getAttribute('data-test-id')))).eql(testIds)
     }
 
     test('should have the staging controls', async (t) => {
         await t.expect(Selector('[data-test-id=staging_controls]').exists).ok()
 
-        await expectHighlightedInputTestIds(t, ['use_imperial', 'year_2010', 'category_main', 'group_population', 'edit_year_2010', 'edit_category_main', 'edit_group_population'])
+        await expectHighlightedInputTestIds(t, ['use_imperial', 'edit_year_2010', 'edit_category_main', 'edit_group_population'])
 
         await screencap(t)
     })
@@ -159,7 +158,7 @@ export function linkSettingsTests(baseLink: string): void {
         await t.click('input[data-test-id=use_imperial]')
         await t.click('input[data-test-id=edit_group_population]:not([inert] *)')
 
-        await expectHighlightedInputTestIds(t, ['year_2010', 'edit_year_2010']) // category is unhighlighted because its groups aren't highlighted
+        await expectHighlightedInputTestIds(t, ['edit_year_2010']) // category is unhighlighted because its groups aren't highlighted
 
         await t.click('input[data-test-id=edit_year_2010]')
 
@@ -178,7 +177,7 @@ export function linkSettingsTests(baseLink: string): void {
         // Apply everything but use_imperial
         await t.click('input[data-test-id=use_imperial]')
 
-        await expectHighlightedInputTestIds(t, ['year_2010', 'category_main', 'group_population', 'edit_year_2010', 'edit_category_main', 'edit_group_population'])
+        await expectHighlightedInputTestIds(t, ['edit_year_2010', 'edit_category_main', 'edit_group_population'])
 
         await t.click('button[data-test-id=apply]')
 
