@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, comparisonPage, screencap, urbanstatsFixture, getLocationWithoutSettings } from './test_utils'
+import { target, comparisonPage, screencap, urbanstatsFixture, getLocationWithoutSettings, resizeForPlatform } from './test_utils'
 
 // Test data for drag and drop tests
 const china = 'China'
@@ -69,4 +69,12 @@ test('drag and drop multiple reorderings', async (t) => {
 
     await t.expect(getLocationWithoutSettings())
         .eql(comparisonPage([japan, usa, indonesia, brazil, china]))
+})
+
+urbanstatsFixture('mobile comparison', `${target}/comparison.html?longnames=%5B%22California%2C+USA%22%2C%22Nevada%2C+USA%22%5D&s=CM4bTBmWGaxvULp8y1L6`, t => resizeForPlatform(t, 'mobile'))
+
+// https://github.com/kavigupta/urbanstats/issues/2189
+test('click on first histogram', async (t) => {
+    await t.click(Selector('.expand-toggle').nth(0))
+    await t.expect(Selector('.histogram-svg-panel').count).eql(1)
 })
