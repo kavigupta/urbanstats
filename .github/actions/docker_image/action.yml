@@ -36,7 +36,9 @@ runs:
       id: existing-image
       run: |
         GHCR_TOKEN=$(echo -n ${{ inputs.token }} | base64)
-        response=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${GHCR_TOKEN}" https://${{ inputs.registry }}/v2/${{ inputs.repository }}/manifests/${{ steps.tag.outputs.tag }})
+        # --http1.1 because ghcr.io intermittently kills the HTTP/2 stream, which curl
+        # reports as exit 92.
+        response=$(curl -s -o /dev/null -w "%{http_code}" --http1.1 --retry 3 --retry-all-errors -H "Authorization: Bearer ${GHCR_TOKEN}" https://${{ inputs.registry }}/v2/${{ inputs.repository }}/manifests/${{ steps.tag.outputs.tag }}) || response="curl exit $?"
         echo "Manifest query returned $response"
         # Only a 200 means the image is really there. Anything else (an auth failure, a
         # rate limit, a curl error) has to build, because skipping the build leaves every
