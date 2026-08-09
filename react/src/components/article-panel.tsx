@@ -16,8 +16,10 @@ import { ArticleMap } from './ArticleMap'
 import { ExternalLinks } from './ExternalLiinks'
 import { QuerySettingsConnection } from './QuerySettingsConnection'
 import { StagingControls } from './StagingControls'
+import { ArticleEditTable } from './article-edit-table'
 import { ArticleTable } from './article-table'
 import { useCSVExport } from './csv-export'
+import { useEditModeState } from './edit-table'
 import { ArticleRow } from './load-article'
 import { Related } from './related-button'
 import { createScreenshot, ScreencapElements } from './screenshot'
@@ -42,6 +44,10 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
     const csvExportCallback = useCSVExport(articles, rows, true, article.longname)
 
     const navigator = useContext(Navigator.Context)
+
+    // Held here rather than in the table section so the staging banner, which leaves edit
+    // mode, can render outside tableRef and stay out of screenshots.
+    const editState = useEditModeState()
 
     return (
         <universeContext.Provider value={{
@@ -69,14 +75,26 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
                     </div>
                     <div style={{ marginBlockEnd: '16px' }}></div>
 
-                    {/* Outside tableRef, so it doesn't end up in screenshots of the table. */}
-                    <StagingControls />
+                    <StagingControls onExitStaging={editState.exitEditMode} />
 
                     <div ref={tableRef}>
-                        <ArticleTable
-                            rows={rows}
-                            article={article}
-                        />
+                        <div className="stats_table">
+                            {editState.editMode
+                                ? (
+                                        <ArticleEditTable
+                                            rows={rows}
+                                            article={article}
+                                            editState={editState}
+                                        />
+                                    )
+                                : (
+                                        <ArticleTable
+                                            rows={rows}
+                                            article={article}
+                                            onEdit={() => { editState.setEditMode(true) }}
+                                        />
+                                    )}
+                        </div>
                     </div>
 
                     <p></p>

@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, getLocation, urbanstatsFixture, withHamburgerMenu, waitForLoading, checkTextboxes, clickUniverseFlag } from './test_utils'
+import { target, getLocation, urbanstatsFixture, withHamburgerMenu, waitForLoading, checkSidebarTextboxes, clickUniverseFlag } from './test_utils'
 
 const repeats = 15
 
@@ -85,7 +85,7 @@ test('sidebar-filter-to-universe-checkbox', async (t) => {
     // By default the checkbox is off — random links should not include a universe param
     await t.expect(unweightedLink.getAttribute('href')).notContains('universe')
 
-    await checkTextboxes(t, ['Filter to universe (California, USA)'])
+    await checkSidebarTextboxes(t, ['Filter to universe (California, USA)'])
 
     await t.expect(unweightedLink.getAttribute('href')).contains(`universe=California%2C+USA`)
 

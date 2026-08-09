@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { arrayFromSelector, checkTextboxes, checkTextboxesDirect, comparisonPage, screencap, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
+import { arrayFromSelector, checkSidebarTextboxes, checkTextboxesDirect, comparisonPage, screencap, uncheckAllSidebarCategories, urbanstatsFixture, warningNamed, warningRowNames, withHamburgerMenu } from './test_utils'
 
 const mainCheck = 'input[data-test-id=category_main]'
 
@@ -10,7 +10,7 @@ const mainCheck = 'input[data-test-id=category_main]'
  */
 async function selectMainWithoutYears(t: TestController): Promise<void> {
     await withHamburgerMenu(t, async () => {
-        await uncheckAllCategories(t)
+        await uncheckAllSidebarCategories(t)
         await t.click(mainCheck)
         await t.click(Selector('label').withExactText('2020'))
     })
@@ -47,7 +47,7 @@ urbanstatsFixture('comparison warnings across data sources', comparisonPage([
 
 test('comparison-warnings-all-sources-disabled', async (t) => {
     // GHSL is off by default, so turning off the two censuses leaves nothing enabled
-    await checkTextboxes(t, ['US Census', 'Canadian Census'])
+    await checkSidebarTextboxes(t, ['US Census', 'Canadian Census'])
     await t.expect(warningNamed('US Census, Canadian Census, and GHSL are disabled. Enable one to see this statistic.', 'Population').exists).ok()
     await t.expect(Selector('a').withExactText('Area').exists).ok()
     await screencap(t)
@@ -58,7 +58,7 @@ test('comparison-warnings-name-the-disabled-source', async (t) => {
     // Ontario's showing and California's gone -- naming the Population sources as a whole would be
     // a lie, since enabling the others is what brings the population statistic itself back.
     await withHamburgerMenu(t, async () => {
-        await uncheckAllCategories(t)
+        await uncheckAllSidebarCategories(t)
         await t.click(Selector('input[data-test-id=category_generation]'))
         await checkTextboxesDirect(t, ['US Census'])
     })

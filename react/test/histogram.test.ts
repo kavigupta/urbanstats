@@ -1,6 +1,6 @@
 import { ClientFunction, Selector } from 'testcafe'
 
-import { target, checkIndividualStat, checkTextboxes, comparisonPage, downloadHistogram, downloadImage, downloadOrCheckString, screencap, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult, getLocationWithoutSettings } from './test_utils'
+import { target, checkIndividualStat, checkSidebarTextboxes, checkTextboxes, comparisonPage, downloadHistogram, downloadImage, downloadOrCheckString, screencap, urbanstatsFixture, waitForLoading, waitForSelectedSearchResult, getLocationWithoutSettings } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -91,7 +91,7 @@ test('histogram-basic-comparison-nan-middle', async (t) => {
 urbanstatsFixture('comparison test monthly plot with mismatched pair validity', comparisonPage(['Singapore', 'Canada']))
 
 test('histogram-monthly-comparison-mismatched-pair-validity', async (t) => {
-    await checkTextboxes(t, ['Weather'])
+    await checkSidebarTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Rainfall"]'))
     await downloadHistogram(t, 0)
 })
@@ -101,7 +101,7 @@ test('histogram-monthly-comparison-mismatched-pair-validity', async (t) => {
 // separate lines that both just say "Canada: <value>". A region with no valid partner
 // data (Singapore has no snowfall) should keep its single unstacked value.
 test('histogram-monthly-tooltip-stacks-rain-snow', async (t) => {
-    await checkTextboxes(t, ['Weather'])
+    await checkSidebarTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Rainfall"]'))
     await t.hover(Selector('g[aria-label="dot"] circle').nth(0))
     const tip = Selector('g[aria-label="tip"] tspan')
@@ -113,7 +113,7 @@ test('histogram-monthly-tooltip-stacks-rain-snow', async (t) => {
 urbanstatsFixture('comparison test monthly plot with mismatched pair validity, three regions', comparisonPage(['Singapore', 'Canada', 'Russia']))
 
 test('histogram-monthly-comparison-mismatched-pair-validity-triple', async (t) => {
-    await checkTextboxes(t, ['Weather'])
+    await checkSidebarTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Rainfall"]'))
     await downloadHistogram(t, 0)
 })
@@ -123,7 +123,7 @@ test('histogram-monthly-comparison-mismatched-pair-validity-triple', async (t) =
 urbanstatsFixture('comparison test monthly plot with symmetric invalid pair', comparisonPage(['Singapore', 'Malaysia']))
 
 test('histogram-monthly-comparison-symmetric-invalid-pair', async (t) => {
-    await checkTextboxes(t, ['Weather'])
+    await checkSidebarTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Rainfall"]'))
     await downloadHistogram(t, 0)
 })
@@ -135,7 +135,7 @@ test('histogram-monthly-comparison-symmetric-invalid-pair', async (t) => {
 urbanstatsFixture('comparison test monthly plot expanding the invalid side of the pair', comparisonPage(['Singapore', 'Canada']))
 
 test('histogram-monthly-comparison-expand-invalid-own-stat', async (t) => {
-    await checkTextboxes(t, ['Weather'])
+    await checkSidebarTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Snowfall [rain-equivalent]"]'))
     await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Singapore$/).exists).ok('Singapore should still appear, via its valid Rain data')
     await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Canada$/).exists).ok('Canada should still appear, with both Rain and Snow')
@@ -153,14 +153,14 @@ test('histogram-monthly-comparison-expand-invalid-own-stat', async (t) => {
 urbanstatsFixture('comparison test monthly plot with high/low temperature pair', comparisonPage(['USA', 'Canada']))
 
 test('histogram-monthly-comparison-temperature-pair', async (t) => {
-    await checkTextboxes(t, ['Weather'])
+    await checkSidebarTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Mean high temp"]'))
     await downloadHistogram(t, 0)
 })
 
 // Same tooltip-stacking check as the rain/snow case, but for the High/Low temperature pair.
 test('histogram-monthly-tooltip-stacks-high-low', async (t) => {
-    await checkTextboxes(t, ['Weather'])
+    await checkSidebarTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Mean high temp"]'))
     await t.hover(Selector('g[aria-label="dot"] circle').nth(0))
     const tip = Selector('g[aria-label="tip"] tspan')
@@ -175,7 +175,7 @@ test('histogram-monthly-tooltip-stacks-high-low', async (t) => {
 urbanstatsFixture('comparison test temperature distribution mode switch', comparisonPage(['USA', 'Canada']))
 
 test('histogram-temperature-distribution-mode-switch', async (t) => {
-    await checkTextboxes(t, ['Weather'])
+    await checkSidebarTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Mean high temp"]'))
     await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Low$/).exists).ok('Low overlay should be visible in Monthly mode')
 
@@ -226,8 +226,8 @@ test('histogram-temperature-distribution-clips-axis', async (t) => {
 urbanstatsFixture('comparison test monthly plot with imperial units, precipitation', comparisonPage(['Singapore', 'Canada']))
 
 test('histogram-monthly-comparison-imperial-units-precipitation', async (t) => {
-    await checkTextboxes(t, ['Use Imperial Units'])
-    await checkTextboxes(t, ['Weather'])
+    await checkSidebarTextboxes(t, ['Use Imperial Units'])
+    await checkSidebarTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Rainfall"]'))
     await downloadHistogram(t, 0)
 })
@@ -239,7 +239,7 @@ test('histogram-monthly-comparison-imperial-units-precipitation', async (t) => {
 urbanstatsFixture('comparison test monthly plot with imperial units, temperature', comparisonPage(['USA', 'Canada']))
 
 test('histogram-monthly-comparison-imperial-units-temperature', async (t) => {
-    await checkTextboxes(t, ['Weather'])
+    await checkSidebarTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Mean high temp"]'))
     const temperatureSelect = Selector('[data-test-id=temperature_select]')
 
@@ -316,7 +316,7 @@ urbanstatsFixture(
 test('histogram-temperature-distribution-comparison-extreme-climates', async (t) => {
     // the combining-diacritic longname (Utqiaġvik) takes a little longer to resolve than a plain-ASCII one
     await waitForLoading()
-    await checkTextboxes(t, ['Weather'])
+    await checkSidebarTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Mean high temp"]'))
     const modeSelect = Selector('[data-test-id=plot_mode]')
     await t.click(modeSelect).click(modeSelect.find('option').withExactText('Distribution'))
@@ -374,7 +374,7 @@ test('histogram-monthly-article-both-rain-snow', async (t) => {
 urbanstatsFixture('comparison test with both rain and snow, both valid', comparisonPage(['Canada', 'Russia']))
 
 test('histogram-monthly-comparison-both-rain-snow-valid', async (t) => {
-    await checkTextboxes(t, ['Weather'])
+    await checkSidebarTextboxes(t, ['Weather'])
     await t.click(Selector('[aria-label="Expand Rainfall"]'))
     await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Rain$/).exists).ok('Rain legend entry')
     await t.expect(Selector('.histogram-svg-panel').find('text').withText(/^Snow$/).exists).ok('Snow legend entry')
@@ -663,7 +663,7 @@ test('histogram-add-region-multiple-years', async (t) => {
 urbanstatsFixture('histogram duplicate', comparisonPage([pasadena, pasadena]))
 
 test('histogram-duplicate-articles', async (t) => {
-    await checkTextboxes(t, ['2020', '2010'])
+    await checkSidebarTextboxes(t, ['2020', '2010'])
     await t.click(Selector('.expand-toggle'))
     await screencap(t)
 })
@@ -686,7 +686,7 @@ test('histogram-comparison-multiple-years', async (t) => {
     const histogramTypeSelect = Selector('[data-test-id=histogram_type]')
     await t.click(histogramTypeSelect).click(histogramTypeSelect.find('option').withExactText('Bar'))
     await screencap(t)
-    await checkTextboxes(t, ['2010', '2000'])
+    await checkSidebarTextboxes(t, ['2010', '2000'])
     await screencap(t)
     await downloadOrCheckHistogram(t, 'histogram-comparison-multiple-years')
 })
@@ -694,7 +694,7 @@ test('histogram-comparison-multiple-years', async (t) => {
 urbanstatsFixture('histogram comparison with country with only one year', comparisonPage([pasadena, upperSGV, 'Canada', 'Germany']))
 
 test('histogram-comparison-multiple-years-and-nan', async (t) => {
-    await checkTextboxes(t, ['2000', '2010'])
+    await checkSidebarTextboxes(t, ['2000', '2010'])
     await t.click(Selector('.expand-toggle'))
     await screencap(t)
     await downloadOrCheckHistogram(t, 'histogram-comparison-multiple-years-and-nan')

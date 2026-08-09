@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { target, checkTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues, createComparison, downloadOrCheckString, downloadCSV } from './test_utils'
+import { target, checkSidebarTextboxes, comparisonPage, downloadImage, getLocation, getLocationWithoutSettings, screencap, urbanstatsFixture, waitForSelectedSearchResult, dataValues, createComparison, downloadOrCheckString, downloadCSV } from './test_utils'
 
 export const upperSGV = 'Upper San Gabriel Valley CCD [CCD], Los Angeles County, California, USA'
 export const pasadena = 'Pasadena CCD [CCD], Los Angeles County, California, USA'
@@ -176,11 +176,11 @@ test('comparison-american-vs-canada-population-stats', async (t) => {
     await t.expect(await checkboxStatus('GHSL')).eql('enabled')
     // these are the values for the US Census
     await t.expect(await dataValues()).eql(['14.2', '39.5'])
-    await checkTextboxes(t, ['US Census'])
+    await checkSidebarTextboxes(t, ['US Census'])
     // these are the values for StatCan
     await t.expect(await dataValues()).eql(['14.2', 'NaN'])
     // enable everything
-    await checkTextboxes(t, ['US Census', 'GHSL'])
+    await checkSidebarTextboxes(t, ['US Census', 'GHSL'])
     await t.expect(await dataValues()).eql(['14.2', '39.5', '14.3', '40.4'])
 })
 
@@ -197,12 +197,12 @@ test('comparison-american-vs-international-population-stats', async (t) => {
     await t.expect(await checkboxStatus('GHSL')).eql('disabled')
     // these are the values for the US Census
     await t.expect(await dataValues()).eql(['NaN', '39.5', '20.8', '40.4'])
-    await checkTextboxes(t, ['US Census'])
+    await checkSidebarTextboxes(t, ['US Census'])
     ghslLocation = await getLocation()
     // these are the values for GHSL
     await t.expect(await dataValues()).eql(['20.8', '40.4'])
     // disabled so this does nothing
-    await checkTextboxes(t, ['GHSL'])
+    await checkSidebarTextboxes(t, ['GHSL'])
     await t.expect(getLocation()).eql(ghslLocation)
 })
 
