@@ -27,7 +27,7 @@ export interface WarningColumn {
     content: ReactNode
 }
 
-export function useArticleWarnings(): ArticleWarning[] {
+export function useArticleWarnings(onEdit: () => void): ArticleWarning[] {
     const screenshotMode = useScreenshotMode()
     const selectedGroups = useSelectedGroups()
     const missingGroups = useMissingGroups()
@@ -47,7 +47,7 @@ export function useArticleWarnings(): ArticleWarning[] {
         .map(({ groupOrCategory, reason }) => ({
             order: firstStatOrder(groupOrCategory),
             name: groupOrCategory.name,
-            content: warningMessage(reason, groupOrCategory),
+            content: warningMessage(reason, groupOrCategory, onEdit),
         }))
         .sort((a, b) => a.order - b.order)
 }

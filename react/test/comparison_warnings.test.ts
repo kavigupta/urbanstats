@@ -1,6 +1,6 @@
 import { Selector } from 'testcafe'
 
-import { categoryCheckbox, editCheckbox, withEditMode, yearCheckbox } from './edit_mode_test_utils'
+import { categoryCheckbox, editCheckbox, filterBox, sourceCheckbox, warningEditAction, withEditMode, yearCheckbox } from './edit_mode_test_utils'
 import { arrayFromSelector, checkTextboxes, comparisonPage, screencap, uncheckAllCategories, urbanstatsFixture, warningNamed, warningRowNames } from './test_utils'
 
 /**
@@ -52,6 +52,17 @@ test('comparison-warnings-all-sources-disabled', async (t) => {
     await screencap(t)
 })
 
+test('comparison-warnings-enable-one-opens-edit-mode', async (t) => {
+    await checkTextboxes(t, ['US Census', 'Canadian Census'])
+    await t.expect(warningEditAction.nth(0).innerText).eql('Enable one')
+
+    await t.click(warningEditAction.nth(0))
+
+    // Edit mode, open on the sources the warning named.
+    await t.expect(filterBox.exists).ok()
+    await t.expect(sourceCheckbox('Population', 'US Census').checked).eql(false)
+})
+
 test('comparison-warnings-name-the-disabled-source', async (t) => {
     // The generation statistics come from the two censuses only, so turning off the US one leaves
     // Ontario's showing and California's gone -- naming the Population sources as a whole would be
@@ -100,4 +111,11 @@ test('comparison-transposed-warnings-are-columns', async (t) => {
     // The warnings are columns here, so none of them takes a row
     await t.expect(Selector('[data-test-id=article-warning-name]').exists).notOk()
     await screencap(t)
+})
+
+test('comparison-transposed-warning-column-opens-edit-mode', async (t) => {
+    await selectMainWithoutYears(t)
+    // Drawn down a column rather than along a row, but still the way into edit mode.
+    await t.click(warningEditAction.nth(0))
+    await t.expect(filterBox.exists).ok()
 })

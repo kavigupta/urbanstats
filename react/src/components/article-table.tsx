@@ -76,7 +76,7 @@ export function ArticleTable(props: {
     // re-render the map and the surrounding page.
     const filteredRows = useVisibleRows(props.rows, false)[0]
 
-    const warnings = useArticleWarnings()
+    const warnings = useArticleWarnings(props.onEdit)
     const warningRows = placeWarnings(filteredRows.map(row => row.statpath), warnings)
 
     const { updatedNameSpecs: leftHeaderSpecs, groupNames } = computeNameSpecsWithGroups(
