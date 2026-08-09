@@ -16,6 +16,41 @@ import { port } from '../../port'
 
 import { github } from './github-utils'
 
+/**
+ * jsdelivr occasionally stalls on a file and answers with a 504 a full minute later, which is
+ * long enough on its own to blow a test's time limit. This is a socket inactivity timeout, so a
+ * large file that is downloading slowly but steadily isn't affected.
+ */
+const attemptTimeoutMs = 10_000
+const attempts = 3
+
+const handOffToNextAttempt: proxy.ProxyOptions = {
+    skipToNextHandlerFilter: proxyRes => (proxyRes.statusCode ?? 500) >= 500,
+    proxyErrorHandler: (error, res, next) => { next() },
+}
+
+function jsdelivrProxy(sha: string, retryOnFailure: boolean): express.RequestHandler {
+    return proxy(`https://cdn.jsdelivr.net`, {
+        timeout: attemptTimeoutMs,
+        proxyReqPathResolver(req) {
+            // We must get by SHA, since if we used branch name jsdelvir would cache the result for 12 hours and we couldn't get new changes from the branch
+            return `/gh/densitydb/densitydb.github.io@${sha}${req.path}`
+        },
+        userResHeaderDecorator(headers, userReq) {
+            const fileExtension = (/\.(.+)$/.exec(userReq.path))?.[1]
+            const mimeType = fileExtension ? { html: 'text/html', js: 'text/javascript' }[fileExtension] : undefined
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax -- We're removing the context-security-policy header via destructuring
+            const { 'content-security-policy': _, ...filteredHeaders } = headers
+            return {
+                ...filteredHeaders,
+                'content-type': mimeType ?? headers['content-type'],
+            }
+        },
+        // Hand off to the next attempt. The last one has no successor, so it reports what it got.
+        ...(retryOnFailure ? handOffToNextAttempt : {}),
+    })
+}
+
 export async function startProxy(): Promise<void> {
     const { octokit } = await github()
 
@@ -42,25 +77,18 @@ export async function startProxy(): Promise<void> {
 
     app.use(compression({ enforceEncoding: 'gzip' }))
 
-    app.use(
-        express.static('test/density-db'),
-        proxy(`https://cdn.jsdelivr.net`, {
-            proxyReqPathResolver(req) {
-                // We must get by SHA, since if we used branch name jsdelvir would cache the result for 12 hours and we couldn't get new changes from the branch
-                return `/gh/densitydb/densitydb.github.io@${branch.commit.sha}${req.path}`
-            },
-            userResHeaderDecorator(headers, userReq) {
-                const fileExtension = (/\.(.+)$/.exec(userReq.path))?.[1]
-                const mimeType = fileExtension ? { html: 'text/html', js: 'text/javascript' }[fileExtension] : undefined
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax -- We're removing the context-security-policy header via destructuring
-                const { 'content-security-policy': _, ...filteredHeaders } = headers
-                return {
-                    ...filteredHeaders,
-                    'content-type': mimeType ?? headers['content-type'],
-                }
-            },
-        }),
-    )
+    const handlers: express.RequestHandler[] = []
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+        if (attempt > 1) {
+            handlers.push((req, res, next) => {
+                console.warn(`jsdelivr did not serve ${req.path}; starting attempt ${attempt}`)
+                next()
+            })
+        }
+        handlers.push(jsdelivrProxy(branch.commit.sha, attempt < attempts))
+    }
+
+    app.use(express.static('test/density-db'), ...handlers)
 
     app.listen(port())
 }
