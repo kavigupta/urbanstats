@@ -31,7 +31,7 @@ import { percentileBucketIndex } from './percentile-navigation'
 import { PointerArrow, useSinglePointerCell } from './pointer-cell'
 import { useScreenshotMode } from './screenshot'
 import { SearchBox } from './search'
-import { MaybeStagingControlsSidebarSection, SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
+import { SettingsSidebarSection, SidebarForStatisticChoice, useSidebarFontSize, useSidebarSectionContentClassName } from './sidebar'
 import { Cell, CellSpec, ComparisonLongnameCellProps, StatisticPanelLongnameCellProps, TopLeftCellSpec, TopLeftHeaderProps, StatisticNameCellProps } from './supertable'
 
 export type ColumnIdentifier = 'statval' | 'statval_unit' | 'statistic_percentile' | 'statistic_ordinal' | 'pointer_in_class' | 'pointer_overall'
@@ -295,7 +295,6 @@ export function TopLeftHeader(props: TopLeftHeaderProps & { width: number }): Re
             </div>
             <Modal isOpen={statsModalOpen} onClose={() => { setStatsModalOpen(false) }}>
                 <ul className={sidebarSectionContent} style={{ fontSize: useSidebarFontSize() }}>
-                    <MaybeStagingControlsSidebarSection />
                     <SidebarForStatisticChoice />
                     <SettingsSidebarSection />
                 </ul>
