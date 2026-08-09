@@ -3,7 +3,7 @@
 Run from `react/`:
 
 ```
-direnv exec . npm run test:e2e -- '--test=test/checkbox_bug.test.ts'
+direnv exec . npm run test:e2e -- '--test=test/checkbox_bug.test.ts' > /tmp/e2e.log 2>&1
 ```
 
 That's the whole thing. In particular:
@@ -16,9 +16,16 @@ That's the whole thing. In particular:
   shell doesn't expand it first. To narrow further, use `test.only` inside the test file.
 - Don't run the whole suite. The runner works through the matched files one at a
   time, whereas CI gives each file its own job — leave it to CI.
-- **Don't pipe the output through `head`, `tail`, or `grep`.** A run you truncate is a
-  run you have to do again, and these take minutes. The output is small enough to read
-  in full; if you find it too noisy to work with, say so instead of filtering it.
+- **Redirect to a file, as above, rather than piping through `head`, `tail`, or `grep`.**
+  Runs take minutes and produce a lot of log, and a run you truncate is a run you have to
+  do again. With the whole thing on disk, narrowing down costs nothing:
+
+  ```
+  grep -n failed /tmp/e2e.log
+  ```
+
+  A `PreToolUse` hook in [`.claude/settings.json`](../../.claude/settings.json) rejects
+  the piped form.
 
 ## Ports
 
