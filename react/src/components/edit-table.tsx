@@ -233,7 +233,7 @@ function editBodySegments(bodyRows: EditBodyRow[], expanded: boolean): EditBodyS
     let index = 1
     for (const spec of bodyRows) {
         const collapsible = !spec.enabled
-        if (segment === undefined || segment.collapsible !== collapsible) {
+        if (segment?.collapsible !== collapsible) {
             segment = { key: spec.key, collapsible, rows: [] }
             segments.push(segment)
         }
