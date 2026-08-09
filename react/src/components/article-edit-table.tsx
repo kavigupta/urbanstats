@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useMemo } from 'react'
 
 import { StatGroupSettings, useVisibleRows } from '../page_template/statistic-settings'
 import { useDefinedUniverse } from '../universe'
@@ -25,16 +25,21 @@ export function ArticleEditTable(props: {
 
     const { simpleOrdinals, onlyColumns } = columnLayout
 
-    const rowsByGroup = editRowsByGroup(allRows, longname, currentUniverse, (row, index) => ({
-        cellSpecs: [{
-            type: 'statistic-row',
-            longname,
-            row,
-            onlyColumns,
-            simpleOrdinals,
-        } satisfies CellSpec],
-        plotSpec: plotSpecs[index],
-    }))
+    // Typing in the edit mode filter re-renders this component, but none of the row grouping
+    // depends on the filter.
+    const rowsByGroup = useMemo(
+        () => editRowsByGroup(allRows, longname, currentUniverse, (row, index) => ({
+            cellSpecs: [{
+                type: 'statistic-row',
+                longname,
+                row,
+                onlyColumns,
+                simpleOrdinals,
+            } satisfies CellSpec],
+            plotSpec: plotSpecs[index],
+        })),
+        [allRows, longname, currentUniverse, onlyColumns, simpleOrdinals, plotSpecs],
+    )
 
     const layout = useEditTableLayout(columnLayout, rowsByArticle, currentUniverse)
 
