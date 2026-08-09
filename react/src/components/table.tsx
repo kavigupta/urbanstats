@@ -110,7 +110,7 @@ function ColumnLayout(props: ColumnLayoutProps): React.JSX.Element[] {
         ({ content, style }, i) => {
             const sty: React.CSSProperties = { width: `${cellPercentages[i]}%`, padding: '1px', ...style }
             return (
-                <div key={i} style={sty}>
+                <div key={i} style={sty} className="columnLayoutCellContainer">
                     {content()}
                 </div>
             )

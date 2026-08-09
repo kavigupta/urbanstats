@@ -120,7 +120,7 @@ export const friendsText = ClientFunction<string[], []>(() => {
     const results: string[] = []
     // eslint-disable-next-line @typescript-eslint/prefer-for-of -- No need to convert to array
     for (let i = 0; i < elements.length; i++) {
-        results.push(elements[i].textContent!)
+        results.push(elements[i].textContent)
     }
     return results
 })
