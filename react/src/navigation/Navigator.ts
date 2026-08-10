@@ -55,6 +55,9 @@ export class Navigator {
     /* eslint-disable react-hooks/rules-of-hooks, no-restricted-syntax -- This is a logic class with custom hooks and core navigation functions */
     static Context = createContext(new Navigator())
 
+    // Set by the error boundary, since navigating won't rerender anything once it's displayed
+    static crashed = false
+
     private pageState: PageState
     private pageStateObservers = new Set<() => void>()
 
@@ -89,6 +92,10 @@ export class Navigator {
             void this.navigate(pageDescriptorFromURL(new URL(discordFix(window.location.href))), { history: 'replace', scroll: { kind: 'none' } })
         })
         window.addEventListener('popstate', (popStateEvent: PopStateEvent): void => {
+            if (Navigator.crashed) {
+                location.reload()
+                return
+            }
             if (popStateEvent.state === null) {
                 // When we use window.location.replace for hashes
                 return

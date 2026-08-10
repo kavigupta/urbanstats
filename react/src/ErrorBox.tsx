@@ -3,7 +3,7 @@ import React, { CSSProperties, ReactNode } from 'react'
 import { useColors } from './page_template/colors'
 import { PageTemplate } from './page_template/template'
 
-export function ErrorBox(props: { color?: string, children: ReactNode }): ReactNode {
+export function ErrorBox(props: { color?: string, children: ReactNode } & Partial<Parameters<typeof PageTemplate>[0]>): ReactNode {
     const colors = useColors()
 
     const errorBoxStyle: CSSProperties = {
@@ -14,7 +14,7 @@ export function ErrorBox(props: { color?: string, children: ReactNode }): ReactN
     }
 
     return (
-        <PageTemplate showFooter={false}>
+        <PageTemplate showFooter={false} {...props}>
             <div style={errorBoxStyle}>
                 {props.children}
             </div>
