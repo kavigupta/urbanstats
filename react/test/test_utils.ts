@@ -453,8 +453,16 @@ export function urbanstatsFixture(name: string, url: string, beforeEach?: (t: Te
         }).requestHooks(requestHooks)
 }
 
+let totalTOTPWait = 0
+
+// A flaky block containing a TOTP wait would otherwise spend its whole budget sleeping, and never get a second attempt
+export function creditTOTPWait(wait: number): void {
+    totalTOTPWait += wait
+}
+
 export async function flaky<T>(t: TestController, doThing: () => Promise<T>): Promise<T> {
     const start = Date.now()
+    const startTOTPWait = totalTOTPWait
     while (true) {
         try {
             return await doThing()
@@ -465,7 +473,7 @@ export async function flaky<T>(t: TestController, doThing: () => Promise<T>): Pr
                 path: `${t.browser.name}/${t.test.name}.flaky.error.png`,
                 fullPage: true,
             })
-            if (Date.now() > start + 30 * 1000) {
+            if (Date.now() - (totalTOTPWait - startTOTPWait) > start + 30 * 1000) {
                 console.error(chalkTemplate`{red flaky timed out}`)
                 throw error
             }
