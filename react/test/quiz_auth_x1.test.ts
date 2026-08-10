@@ -1,11 +1,11 @@
 import { Selector } from 'testcafe'
 
-import { quizAuthFixture, urbanStatsGoogleSignIn, waitForSync } from './quiz_auth_test_utils'
+// eslint-disable-next-line no-restricted-syntax -- One of the two auth files
+import { email, quizAuthFixture, signOutLink, urbanStatsGoogleSignIn, waitForSync } from './quiz_auth_test_utils'
 import { addFriend, createUser, removeFriend, restoreUser, startingState } from './quiz_friends_test_utils'
 import { clickButtons, friendsText } from './quiz_test_utils'
-import { target } from './test_utils'
+import { safeReload, target } from './test_utils'
 
-// eslint-disable-next-line no-restricted-syntax -- One of the two auth shards
 quizAuthFixture('no state', `${target}/quiz.html#enableAuth=true`, {}, '', 'desktop')
 
 test('sync quiz progress two devices', async (t) => {
@@ -114,4 +114,14 @@ test(`friends with associated pair of ids`, async (t) => {
         'YounynyyCopy Link',
         'AliceynynnRemove',
     ])
+})
+
+// Balances the two shards. Nothing here reads quiz history, so it doesn't need the seeded
+// fixture it used to sit under.
+test('sign in to google, reload page, remains signed in', async (t) => {
+    await urbanStatsGoogleSignIn(t)
+    await t.expect(signOutLink.exists).ok()
+    await safeReload(t)
+    await t.expect(signOutLink.exists).ok()
+    await t.expect(Selector('div').withText(`Signed in with ${email}.`).exists).ok()
 })

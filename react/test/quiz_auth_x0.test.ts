@@ -1,12 +1,12 @@
 import { Selector } from 'testcafe'
 
+// eslint-disable-next-line no-restricted-syntax -- One of the two auth files
 import { corruptTokens, email, quizAuthFixture, signInLink, signOutLink, urbanStatsGoogleSignIn, waitForSync } from './quiz_auth_test_utils'
 import { addFriend, createUser, restoreUser, startingState } from './quiz_friends_test_utils'
 import { exampleQuizHistory } from './quiz_test_template'
 import { clickButtons, friendsText, withMockedClipboard } from './quiz_test_utils'
 import { safeClearLocalStorage, safeReload, target } from './test_utils'
 
-// eslint-disable-next-line no-restricted-syntax -- One of the two auth shards
 quizAuthFixture('existing state', `${target}/quiz.html#enableAuth=true`, {
     quiz_history: JSON.stringify(exampleQuizHistory(600, 650)),
 }, '', 'desktop')
@@ -44,14 +44,6 @@ test('sign in to google, corrupt tokens, choose to sign out, quiz history is mai
     await t.click(Selector('button').withExactText('Sign Out'))
     // Quiz history should still be present
     await t.expect(Selector('div').withExactText('51\nPlayed').exists).ok()
-})
-
-test('sign in to google, reload page, remains signed in', async (t) => {
-    await urbanStatsGoogleSignIn(t)
-    await t.expect(signOutLink.exists).ok()
-    await safeReload(t)
-    await t.expect(signOutLink.exists).ok()
-    await t.expect(Selector('div').withText(`Signed in with ${email}.`).exists).ok()
 })
 
 test('sign in to google, clear local storage, reload, should require sign in', async (t) => {
