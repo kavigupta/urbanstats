@@ -142,7 +142,15 @@ export default tseslint.config(
                 'Literal[value=/^rgb\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*\\)$/]', // RGB colors
                 'Literal[value=/^rgba\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*[0-9.]+\\)$/]', // RGBA colors
                 'Literal[value=/^(red|green|blue|yellow|orange|purple|pink|brown|black|white|gray|grey|cyan|magenta|lime|navy|olive|teal|aqua|fuchsia|maroon|silver)$/i]', // Named colors
-                'CallExpression[callee.name=quizAuthFixture]', // All must be in one file
+                {
+                    // Each test process signs in from scratch and spends about three TOTP
+                    // codes, and the code service hands out one per period, so shards block
+                    // each other. Splitting N ways costs ~1.5N minutes of serialized waiting
+                    // while only dividing the work by N -- past two shards that trade stops
+                    // paying off.
+                    selector: 'CallExpression[callee.name=quizAuthFixture]',
+                    message: 'Auth fixtures are limited to the two quiz_auth shards, because TOTP codes serialize across jobs.',
+                },
                 'CallExpression[callee.name=useRef][typeArguments.params.0.typeName.name=MapRef]', // Use state instead to avoid races
                 // Should use the zIndex manifest for zIndexes
                 'Property[key.name=zIndex]:not([value.object.name=zIndex])',
