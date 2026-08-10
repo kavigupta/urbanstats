@@ -73,8 +73,27 @@ for (let t = 0; t < knownTests.length; t++) {
     model.addConstr(constr, '==', 1)
 }
 
-// The longest we want a job to be
-const durationLimit = 10 * 60 * 1000
+/*
+ * The e2e phase takes as long as its longest job, so the job count is only a means to
+ * a wall-clock time. Runner minutes are free on a public repo, so the reason not to
+ * shard further is that jobs past the account's concurrency ceiling queue instead of
+ * running, which adds latency rather than removing it. 28 shards have been observed
+ * starting together; this leaves room for the rest of the pipeline on top.
+ */
+const jobBudget = 36
+
+/*
+ * A single test file cannot be divided, so the longest one sets a floor under the whole
+ * phase and packing below it just buys jobs that finish early while everyone waits on
+ * that file anyway. Taking the max means splitting up a long test file is what turns
+ * into a faster pipeline, with no constant here to retune afterwards.
+ */
+const durationLimit = knownTests.length === 0
+    ? 0
+    : Math.max(
+        Math.ceil(knownTests.reduce((total, test) => total + testDurations[test], 0) / jobBudget),
+        ...knownTests.map(test => testDurations[test]),
+    )
 
 // If a test is in a job, that job must be used
 // Also, the tests in a job should not exceed how long we want jobs to be
@@ -82,8 +101,7 @@ const durationLimit = 10 * 60 * 1000
 for (let job = 0; job < knownTests.length; job++) {
     const constr: [number, Var][] = []
     for (let t = 0; t < knownTests.length; t++) {
-        // If a duration is longer than the limit (which sometimes happens), the LP won't be solvable, so clamp it
-        constr.push([Math.min(testDurations[knownTests[t]], durationLimit), testInJob[`${t}_${job}`]])
+        constr.push([testDurations[knownTests[t]], testInJob[`${t}_${job}`]])
     }
     model.addConstr(constr, '<=', [[durationLimit, jobUsed[job]]])
 }
@@ -107,6 +125,8 @@ await execa(
     [
         'test/scripts/lp.lp',
         '--solution_file', 'test/scripts/solution',
+        // Stopping early only costs us a few extra jobs: it is the duration constraint,
+        // not the objective, that decides how long the pipeline takes.
         '--time_limit', '60',
     ],
     { stderr: process.stderr, stdout: process.stderr },
@@ -127,6 +147,13 @@ for (let t = 0; t < knownTests.length; t++) {
             jobs.get(job).push(knownTests[t])
         }
     }
+}
+
+// If the solver gives up without an incumbent, every variable stays unset and the tests
+// silently drop out of the pipeline instead of failing here.
+const assignedCount = Array.from(jobs.values()).reduce((total, jobTests) => total + jobTests.length, 0)
+if (assignedCount !== knownTests.length) {
+    throw new Error(`Solver placed ${assignedCount} of ${knownTests.length} tests into jobs`)
 }
 
 process.stdout.write(JSON.stringify(Array.from(jobs.values())
