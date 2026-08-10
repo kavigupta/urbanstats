@@ -1,0 +1,4 @@
+# Everything tests/check_images.py needs. Kept apart from requirements.txt so the e2e
+# image can install just this, rather than restoring the full environment on every shard.
+numpy==1.26.4
+Pillow==9.5.0

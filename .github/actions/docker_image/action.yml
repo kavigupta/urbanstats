@@ -4,6 +4,10 @@ inputs:
   dockerfile:
     description: "Path to the Dockerfile"
     required: true
+  extra-hash-files:
+    description: "Space separated files the Dockerfile copies in, which must also change the tag"
+    required: false
+    default: ""
   repository:
     description: "The docker respository"
     required: false
@@ -22,9 +26,9 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Create the tag by hashing the dockerfile
+    - name: Create the tag by hashing the dockerfile and whatever it copies in
       id: tag
-      run: echo "tag=$(shasum -a 256 ${{ inputs.dockerfile }} | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+      run: echo "tag=$(shasum -a 256 ${{ inputs.dockerfile }} ${{ inputs.extra-hash-files }} | shasum -a 256 | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: concat the Docker image name
