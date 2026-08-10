@@ -6,7 +6,7 @@ import { TestWindow } from '../src/utils/TestUtils'
 
 import { quizFixture } from './quiz_test_utils'
 import { getTOTPWait, setTOTPWait } from './scripts/util'
-import { flaky, getCurrentTest, safeReload, target, waitForLoading } from './test_utils'
+import { creditTOTPWait, flaky, getCurrentTest, safeReload, target, waitForLoading } from './test_utils'
 
 export const email = 'urban.stats.test@pavonine.co'
 
@@ -33,6 +33,7 @@ async function popTOTP(t: TestController): Promise<string> {
     if (wait > 0) {
         console.warn(`TOTP waiting ${wait} ms...`)
         await setTOTPWait(getCurrentTest(t), await getTOTPWait(getCurrentTest(t)) + wait)
+        creditTOTPWait(wait)
         await t.wait(wait)
     }
     console.warn(`Using TOTP for ${useAfter}`)
@@ -116,7 +117,10 @@ export async function corruptTokens(t: TestController): Promise<void> {
     await t.expect(Selector('h1').withExactText('You were signed out').exists).ok()
 }
 
-export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = true }: { enableDrive?: boolean } = {}): Promise<void> {
+const signedInHeading = Selector('h1').withExactText('Signed In!')
+const signInFailedHeading = Selector('h1').withExactText('Sign In Failed')
+
+async function signInPopup(t: TestController, enableDrive: boolean): Promise<void> {
     if (await signInLink.exists) {
         await t.click(signInLink)
     }
@@ -142,8 +146,22 @@ export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = 
     while (await continueButton.exists) {
         await t.click(continueButton)
     }
+    // Waiting on the outcome first, since waitForLoading needs the callback page to have replaced Google's
+    await t.expect(Selector('h1').withText(/Signed In!|Sign In Failed/).exists).ok()
     await waitForLoading()
-    await t.expect(Selector('h1').withExactText(enableDrive ? 'Signed In!' : 'Sign In Failed').exists).ok()
+}
+
+export async function urbanStatsGoogleSignIn(t: TestController, { enableDrive = true }: { enableDrive?: boolean } = {}): Promise<void> {
+    // Google occasionally fails the token exchange, which spends the authorization code, so the whole flow has to start over
+    for (let attemptsLeft = 3; ; attemptsLeft--) {
+        await signInPopup(t, enableDrive)
+        if (!enableDrive || attemptsLeft === 1 || await signedInHeading.exists) {
+            break
+        }
+        console.warn(`Sign in failed: ${await Selector('code').innerText}. Retrying...`)
+        await t.navigateTo(`${target}/quiz.html`)
+    }
+    await t.expect((enableDrive ? signedInHeading : signInFailedHeading).exists).ok()
     await t.eval(() => window.close = () => { console.warn('window closed') })
     await t.click(Selector('button').withExactText('Close Window'))
     const consoleMessages = await t.getBrowserConsoleMessages()

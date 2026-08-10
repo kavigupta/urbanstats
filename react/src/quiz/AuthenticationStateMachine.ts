@@ -4,7 +4,6 @@ import { z } from 'zod'
 
 import { PageDescriptor, urlFromPageDescriptor } from '../navigation/PageDescriptor'
 import { TestUtils } from '../utils/TestUtils'
-import { retry } from '../utils/retry'
 import { persistentClient } from '../utils/urbanstats-persistent-client'
 import { useObserverSets } from '../utils/useObserverSets'
 
@@ -201,10 +200,11 @@ export class AuthenticationStateMachine {
         }
         localStorage.removeItem(codeVerifierKey)
 
-        const rawToken = await retry(2, () => googleClient.authorizationCode.getTokenFromCodeRedirect(url, {
+        // Not retryable: an authorization code is single use, and redeeming a spent one revokes the tokens it issued
+        const rawToken = await googleClient.authorizationCode.getTokenFromCodeRedirect(url, {
             redirectUri,
             codeVerifier,
-        }))
+        })
 
         const token = tokenSchema.parse(rawToken)
 
