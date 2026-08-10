@@ -21,6 +21,14 @@ jobs:
       image: ${{ steps.image.outputs.image }}
     permissions:
       packages: write
+    env:
+      # Checking out the working tree is ~30s of blob downloads, and every job that needs
+      # the image waits on it. This job only hashes the Dockerfile and hands it to docker
+      # build, so what it checks out is the build context, plus the actions it runs.
+      # Anything a Dockerfile starts COPYing has to be added here.
+      SPARSE_CHECKOUT: |
+        /Dockerfile
+        /.github/actions/*
     steps:
       - &checkout
         name: Checkout repository
@@ -59,6 +67,12 @@ jobs:
       image: ${{ steps.image.outputs.image }}
     permissions:
       packages: write
+    env:
+      # As above: this is the docker build context, not a working tree.
+      SPARSE_CHECKOUT: |
+        /react/test/Dockerfile
+        /requirements*.txt
+        /.github/actions/*
     steps:
       - *checkout
 
