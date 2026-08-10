@@ -21,6 +21,8 @@ test('displays the url and a symbolicated stack', async (t) => {
     await t.expect(errorScreen.innerText).contains('data-credit.html#crashForTesting')
     // Fetching and parsing the source map takes a while
     await t.expect(errorScreen.find('pre').innerText).contains('src/navigation/routers.tsx:', { timeout: 30000 })
+    // The line numbers in the stack shift whenever the code above the throw does
+    await t.eval(() => { document.querySelector('[data-test-id=uncaughtError] pre')!.textContent = '<STACK>' })
     await screencap(t)
 })
 

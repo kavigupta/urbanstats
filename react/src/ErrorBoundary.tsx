@@ -43,7 +43,8 @@ async function symbolicate(stack: string): Promise<string> {
         }
         // The fields are null when the position isn't in the map, which the types don't reflect
         const original: { source: string | null, line: number | null, column: number | null }
-            = (await consumers.get(bundle)!).originalPositionFor({ line: parseInt(lineNumber), column: parseInt(column) })
+            // Stack trace columns are 1-based, source map ones are 0-based
+            = (await consumers.get(bundle)!).originalPositionFor({ line: parseInt(lineNumber), column: parseInt(column) - 1 })
         if (original.source === null) {
             return line
         }
