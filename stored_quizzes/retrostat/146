@@ -1,0 +1,117 @@
+[
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Bachelor's degree [25-64] %",
+      "stat_path": "education_ugrad_canada",
+      "question": "higher % of people between 25 and 64 who have at least an undergrad degree",
+      "longname_a": "Alberta, Canada",
+      "longname_b": "Newfoundland and Labrador, Canada",
+      "stat_a": 0.3040419276029877,
+      "stat_b": 0.1981957578349738
+    },
+    "b": {
+      "stat_column": "Undergrad Business [25-64] % [StatCan]",
+      "stat_path": "education_field_business_canada",
+      "question": "higher % of people between 25 and 64 who have a business degree, as a percentage of the overall population",
+      "longname_a": "Surrey City, Greater Vancouver Regional district, British Columbia, Canada",
+      "longname_b": "Calgary City, Division No. 6, Alberta, Canada",
+      "stat_a": 0.07935144617561267,
+      "stat_b": 0.10373049030491577
+    },
+    "a_ease": 0.747014115092291,
+    "b_ease": 0.33767643865363733
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Protestant (non-Catholic Christian) % [StatCan]",
+      "stat_path": "religion_protestant_canada",
+      "question": "higher % of people who are Protestant",
+      "longname_a": "Edmonton City, Division No. 11, Alberta, Canada",
+      "longname_b": "Qu\u00e9bec Ville, Qu\u00e9bec Territory, Quebec, Canada",
+      "stat_a": 0.2366894197952217,
+      "stat_b": 0.07747818670865234
+    },
+    "b": {
+      "stat_column": "Household income < C$50k %",
+      "stat_path": "household_income_under_50cad",
+      "question": "higher % of households that have household income under C$50k",
+      "longname_a": "Toronto City, Toronto CDR, Ontario, Canada",
+      "longname_b": "Calgary City, Division No. 6, Alberta, Canada",
+      "stat_a": 0.26460976423566784,
+      "stat_b": 0.1883211528986693
+    },
+    "a_ease": 0.7709790209790209,
+    "b_ease": 0.35109983079526225
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "Divorced %",
+      "stat_path": "marriage_divorced",
+      "question": "higher % of people who are divorced",
+      "longname_a": "San Juan Municipio, Puerto Rico, USA",
+      "longname_b": "Forsyth County, North Carolina, USA",
+      "stat_a": 0.13859072435130299,
+      "stat_b": 0.10980439423578264
+    },
+    "b": {
+      "stat_column": "Commute Bike %",
+      "stat_path": "transportation_means_bike_no_wfh",
+      "question": "higher % of people who commute by bike",
+      "longname_a": "Little Rock-Pine Bluff AR Media Market, USA",
+      "longname_b": "Rochester MN-Mason CityIa-Austin MN Media Market, USA",
+      "stat_a": 0.0024472939088763966,
+      "stat_b": 0.006750644912727383
+    },
+    "a_ease": 0.1707901037509976,
+    "b_ease": 0.5786713286713286
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "White %",
+      "stat_path": "white",
+      "question": "higher % of people who are White",
+      "longname_a": "Tulsa city, Oklahoma, USA",
+      "longname_b": "Fresno city, California, USA",
+      "stat_a": 0.48485442627395164,
+      "stat_b": 0.23950527156048884
+    },
+    "b": {
+      "stat_column": "No religion % [StatCan]",
+      "stat_path": "religion_no_religion_canada",
+      "question": "higher % of people with no religion",
+      "longname_a": "Newfoundland and Labrador, Canada",
+      "longname_b": "Quebec, Canada",
+      "stat_a": 0.15905430693651862,
+      "stat_b": 0.27285713101990405
+    },
+    "a_ease": 0.862603305785124,
+    "b_ease": 0.4611689351481185
+  },
+  {
+    "type": "retrostat",
+    "a": {
+      "stat_column": "2019GE 2-Coalition Margin",
+      "stat_path": "2019GE-coalition_margin",
+      "question": "!FULL Which voted more for the left-of-center parties in the 2019 Canadian general election?!TOOLTIP By 2-Coalition Margin, which is calculated as (Lib + NDP + Grn) - (Con + PPC). BQ is excluded from the coalition margin calculation.",
+      "longname_a": "London City, Middlesex County, Ontario, Canada",
+      "longname_b": "Qu\u00e9bec Ville, Qu\u00e9bec Territory, Quebec, Canada",
+      "stat_a": 0.42918243925587174,
+      "stat_b": 0.10867130944098614
+    },
+    "b": {
+      "stat_column": "Mean distance to nearest Airport",
+      "stat_path": "mean_dist_Airport_updated",
+      "question": "!FULL Which has less access to airports (higher population-weighted mean distance)?",
+      "longname_a": "New York, USA",
+      "longname_b": "New Mexico, USA",
+      "stat_a": 17.88158960563463,
+      "stat_b": 58.721710393536505
+    },
+    "a_ease": 0.37913223140495866,
+    "b_ease": 0.8536977491961415
+  }
+]
