@@ -4,6 +4,10 @@ inputs:
   dockerfile:
     description: "Path to the Dockerfile"
     required: true
+  extra-hash-files:
+    description: "Space separated files the Dockerfile copies in, which must also change the tag"
+    required: false
+    default: ""
   repository:
     description: "The docker respository"
     required: false
@@ -22,9 +26,9 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Create the tag by hashing the dockerfile
+    - name: Create the tag by hashing the dockerfile and whatever it copies in
       id: tag
-      run: echo "tag=$(shasum -a 256 ${{ inputs.dockerfile }} | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+      run: echo "tag=$(shasum -a 256 ${{ inputs.dockerfile }} ${{ inputs.extra-hash-files }} | shasum -a 256 | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: concat the Docker image name
@@ -35,16 +39,21 @@ runs:
     - name: Check for existing image
       id: existing-image
       run: |
-        GHCR_TOKEN=$(echo -n ${{ inputs.token }} | base64)
+        # -w0 because base64 otherwise wraps at 76 columns, and a newline in the header
+        # value makes ghcr.io answer 400 to every query, which reads as "image missing".
+        GHCR_TOKEN=$(echo -n "${{ inputs.token }}" | base64 -w0)
         # --http1.1 because ghcr.io intermittently kills the HTTP/2 stream, which curl
         # reports as exit 92. If curl fails anyway, the step fails here rather than
         # guessing about the registry's contents.
         response=$(curl -s -o /dev/null -w "%{http_code}" --http1.1 --retry 3 --retry-all-errors -H "Authorization: Bearer ${GHCR_TOKEN}" https://${{ inputs.registry }}/v2/${{ inputs.repository }}/manifests/${{ steps.tag.outputs.tag }})
         echo "Manifest query returned $response"
-        # Only a 200 means the image is really there. Anything else has to build, because
-        # skipping the build leaves every job that runs in this container to fail on an
-        # unpullable image.
-        echo "exists=$([ "$response" = 200 ] && echo true || echo false)" >> $GITHUB_OUTPUT
+        case "$response" in
+          200) echo "exists=true" >> $GITHUB_OUTPUT ;;
+          404) echo "exists=false" >> $GITHUB_OUTPUT ;;
+          # Treating an unrecognized response as "missing" is how the 400 above went
+          # unnoticed: every run rebuilt, and nothing failed to say so.
+          *) echo "Unexpected response from the registry"; exit 1 ;;
+        esac
       shell: bash
 
     - name: Log in to the Container registry

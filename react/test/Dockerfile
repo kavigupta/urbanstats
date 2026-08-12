@@ -38,4 +38,9 @@ RUN apt-get -y install xdg-user-dirs
 # needed for emoji display in tests
 RUN apt-get -y install fonts-noto-color-emoji fonts-noto-core
 
+# Screenshot comparison is all the Python the e2e jobs do, so they install it here rather
+# than restoring the full environment. Last, so editing it doesn't rebuild the apt layers.
+COPY requirements_screenshots.txt /tmp/requirements_screenshots.txt
+RUN pip3 install -r /tmp/requirements_screenshots.txt && pip3 cache purge
+
 ENTRYPOINT [ "/bin/bash", "-l", "-c" ] 

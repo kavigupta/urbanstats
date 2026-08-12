@@ -5,6 +5,7 @@ import { ErrorBox } from '../ErrorBox'
 import { AboutPanel } from '../components/AboutPanel'
 import { IndexPanel } from '../components/IndexPanel'
 import { PageTemplate } from '../page_template/template'
+import { TestUtils } from '../utils/TestUtils'
 
 import { Navigator } from './Navigator'
 import { PageData, pageTitle, urlFromPageDescriptor } from './PageDescriptor'
@@ -13,6 +14,10 @@ import { InitialLoad, SubsequentLoad } from './loading'
 export function Router(): ReactNode {
     const navigator = useContext(Navigator.Context)
     const pageState = navigator.usePageState()
+
+    if (TestUtils.shared.isTesting && location.hash === '#crashForTesting') {
+        throw new Error('crash for testing')
+    }
 
     useLayoutEffect(() => {
         // Execute the navigator's effects

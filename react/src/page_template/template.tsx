@@ -21,6 +21,7 @@ export function PageTemplate({
     showFooter = true,
     topPanel = true,
     screenshotContext: inheritedScreenshotContext,
+    hideSidebar = false,
 }: {
     screencap?: (currentUniverse: string | undefined, colors: Colors, screenshotContext: ScreenshotContextType) => Promise<void>
     /**
@@ -32,6 +33,7 @@ export function PageTemplate({
     children?: React.ReactNode
     showFooter?: boolean
     topPanel?: boolean
+    hideSidebar?: boolean
 }): ReactNode {
     const [hamburgerOpen, setHamburgerOpen] = useState(false)
     const ownScreenshotContext = useRef<ScreenshotContextType>({ render: new Set(), wait: new Set() })
@@ -125,6 +127,7 @@ export function PageTemplate({
                     mainContent={children}
                     showFooter={showFooter}
                     setHamburgerOpen={setHamburgerOpen}
+                    hideSidebar={hideSidebar}
                 />
             </div>
         </ScreenshotContext.Provider>
@@ -150,7 +153,7 @@ function TemplateFooter(): ReactNode {
     )
 }
 
-function Version(): ReactNode {
+export function Version(): ReactNode {
     return (
         <span id="current-version">
             {TestUtils.shared.isTesting ? '<VERSION>' : '32.0.0'}
@@ -183,16 +186,17 @@ function OtherCredits(): ReactNode {
     )
 }
 
-function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen }: {
+function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen, hideSidebar }: {
     hamburgerOpen: boolean
     mainContent: React.ReactNode
     showFooter: boolean
     setHamburgerOpen: (open: boolean) => void
+    hideSidebar: boolean
 }): ReactNode {
     const mobileLayout = useMobileLayout()
     const hideSidebarDesktop = useHideSidebarDesktop()
 
-    if (hamburgerOpen && (!hideSidebarDesktop || mobileLayout)) {
+    if (!hideSidebar && hamburgerOpen && (!hideSidebarDesktop || mobileLayout)) {
         return <LeftPanel setHamburgerOpen={setHamburgerOpen} />
     }
     return (
@@ -202,12 +206,12 @@ function BodyPanel({ hamburgerOpen, mainContent, showFooter, setHamburgerOpen }:
             display: 'flex',
         }}
         >
-            {(!mobileLayout && (!hideSidebarDesktop || hamburgerOpen)) ? <LeftPanel setHamburgerOpen={setHamburgerOpen} /> : undefined }
+            {(!hideSidebar && !mobileLayout && (!hideSidebarDesktop || hamburgerOpen)) ? <LeftPanel setHamburgerOpen={setHamburgerOpen} /> : undefined }
             <div
                 className={mobileLayout ? 'content_panel_mobile' : 'right_panel'}
                 style={mobileLayout
                     ? { width: '100%' }
-                    : (hideSidebarDesktop
+                    : (hideSidebarDesktop || hideSidebar
                             ? { width: '100%', paddingLeft: '1em', paddingRight: '1em' }
                             : { width: '80%', paddingLeft: '2em' })}
             >

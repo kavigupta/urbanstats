@@ -21,6 +21,14 @@ jobs:
       image: ${{ steps.image.outputs.image }}
     permissions:
       packages: write
+    env:
+      # Checking out the working tree is ~30s of blob downloads, and every job that needs
+      # the image waits on it. This job only hashes the Dockerfile and hands it to docker
+      # build, so what it checks out is the build context, plus the actions it runs.
+      # Anything a Dockerfile starts COPYing has to be added here.
+      SPARSE_CHECKOUT: |
+        /Dockerfile
+        /.github/actions/*
     steps:
       - &checkout
         name: Checkout repository
@@ -59,12 +67,19 @@ jobs:
       image: ${{ steps.image.outputs.image }}
     permissions:
       packages: write
+    env:
+      # As above: this is the docker build context, not a working tree.
+      SPARSE_CHECKOUT: |
+        /react/test/Dockerfile
+        /requirements*.txt
+        /.github/actions/*
     steps:
       - *checkout
 
       - uses: ./.github/actions/docker_image
         with:
           dockerfile: react/test/Dockerfile
+          extra-hash-files: requirements_screenshots.txt
           token: ${{ secrets.GITHUB_TOKEN }}
         id: image
 
@@ -150,7 +165,8 @@ jobs:
       - *checkout
       - run: git fetch origin ${{ github.base_ref }} --depth=1 # needed so test runner can diff tests against base ref
         if: ${{ github.base_ref != '' }}
-      - uses: ./.github/actions/python_environment
+      # No python_environment here: the image carries what check_images.py needs, and the
+      # full venv is a 484MB restore that every shard would pay for.
       - uses: ./.github/actions/node_modules
       - uses: actions/download-artifact@v4
         with:
