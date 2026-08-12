@@ -102,9 +102,11 @@ function toggleCategorySetting(settings: Settings, category: Category, available
     const setAllGroups = (value: (group: Group) => boolean): void => {
         category.contents.forEach((group) => { settings.setSetting(`show_stat_group_${group.id}`, value(group)) })
     }
+    const expandCategory = (): void => { settings.setSetting(`stat_category_expanded_${category.id}`, true) }
     switch (status) {
         case 'indeterminate':
             setAllGroups(() => true)
+            expandCategory()
             break
         case true:
             setAllGroups(() => false)
@@ -118,6 +120,7 @@ function toggleCategorySetting(settings: Settings, category: Category, available
             else {
                 setAllGroups(group => savedDeterminate.has(group.id))
             }
+            expandCategory() // Either way should expand to show the selection
             break
     }
 }
