@@ -45,10 +45,6 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
 
     const navigator = useContext(Navigator.Context)
 
-    // Held here rather than in the table section so the staging banner, which leaves edit
-    // mode, can render outside tableRef and stay out of screenshots.
-    const editState = useEditModeState()
-
     return (
         <universeContext.Provider value={{
             universes: article.universes as readonly Universe[],
@@ -75,26 +71,8 @@ export function ArticlePanel({ article, rows, universe }: { article: Article, ro
                     </div>
                     <div style={{ marginBlockEnd: '16px' }}></div>
 
-                    <StagingControls onExitStaging={editState.exitEditMode} />
-
                     <div ref={tableRef}>
-                        <div className="stats_table">
-                            {editState.editMode
-                                ? (
-                                        <ArticleEditTable
-                                            rows={rows}
-                                            article={article}
-                                            editState={editState}
-                                        />
-                                    )
-                                : (
-                                        <ArticleTable
-                                            rows={rows}
-                                            article={article}
-                                            onEdit={() => { editState.setEditMode(true) }}
-                                        />
-                                    )}
-                        </div>
+                        <ArticlePanelTable article={article} rows={rows} />
                     </div>
 
                     <p></p>
@@ -146,5 +124,29 @@ function ComparisonSearchBox({ longname, type }: { longname: string, type: strin
             autoFocus={false}
             prioritizeArticleType={type}
         />
+    )
+}
+
+function ArticlePanelTable({ rows, article }: { article: Article, rows: (settings: StatGroupSettings) => ArticleRow[][] }): ReactNode {
+    const editState = useEditModeState()
+    return (
+        <div className="stats_table">
+            <StagingControls onExitStaging={editState.exitEditMode} />
+            {editState.editMode
+                ? (
+                        <ArticleEditTable
+                            rows={rows}
+                            article={article}
+                            editState={editState}
+                        />
+                    )
+                : (
+                        <ArticleTable
+                            rows={rows}
+                            article={article}
+                            onEdit={() => { editState.setEditMode(true) }}
+                        />
+                    )}
+        </div>
     )
 }
