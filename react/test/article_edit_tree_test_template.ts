@@ -13,8 +13,11 @@ const populationCheckInteractable = interactableGroupCheckbox('population')
 // no toggle at all until something in it is unselected.
 const mainExpandButton = categoryToggleButton('main', 'Expand')
 // Housing is off by default, so it always has something behind its toggle.
+const housingCheck = categoryCheckbox('housing')
 const housingExpandButton = categoryToggleButton('housing', 'Expand')
+const housingCollapseButton = categoryToggleButton('housing', 'Collapse')
 const vacancyCheckInteractable = interactableGroupCheckbox('vacancy')
+const renterCheckInteractable = interactableGroupCheckbox('rent_or_own_rent')
 const sourceSectionHeader = Selector('.stats_table div').withExactText('Population Sources')
 const ghslCheck = sourceCheckbox('Population', 'GHSL')
 const year2020Check = yearCheckbox(2020)
@@ -46,6 +49,69 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await t.expect(mainExpandButton.exists).ok()
         await t.click(mainCheck)
         await t.expect(mainCheck.checked).eql(true)
+    })
+
+    test('checking-a-category-expands-it', async (t) => {
+        /**
+         * Checking a category selects every group, so nothing is behind the toggle at that
+         * moment -- but the category is left expanded, so the groups stay on display as soon as
+         * one of them is turned off again.
+         */
+        await enterEditMode(t)
+        await t.expect(housingExpandButton.exists).ok()
+        await t.expect(vacancyCheckInteractable.exists).notOk()
+
+        await t.click(housingCheck)
+        await t.expect(housingCheck.checked).eql(true)
+        await t.expect(housingExpandButton.exists).notOk()
+
+        await t.click(vacancyCheckInteractable)
+        await t.expect(housingCheck.indeterminate).eql(true)
+        await t.expect(housingCollapseButton.exists).ok()
+        await t.expect(vacancyCheckInteractable.checked).eql(false)
+    })
+
+    test('restoring-a-saved-selection-expands-the-category', async (t) => {
+        /**
+         * The unchecked -> indeterminate step of the cycle brings back a selection made before,
+         * which a collapsed category would show no sign of.
+         */
+        await enterEditMode(t)
+        await setCategoryExpanded(t, 'housing', true)
+        await t.click(vacancyCheckInteractable)
+        // Round the cycle to unchecked, then undo the expansion the checking did.
+        await t.click(housingCheck)
+        await t.click(housingCheck)
+        await t.expect(housingCheck.checked).eql(false)
+        await setCategoryExpanded(t, 'housing', false)
+
+        await t.click(housingCheck)
+        await t.expect(housingCheck.indeterminate).eql(true)
+        await t.expect(housingCollapseButton.exists).ok()
+        await t.expect(vacancyCheckInteractable.checked).eql(true)
+        // The groups the restored selection leaves out are what the expansion is for.
+        await t.expect(renterCheckInteractable.exists).ok()
+        await t.expect(renterCheckInteractable.checked).eql(false)
+    })
+
+    test('unchecking-a-category-leaves-the-expansion-alone', async (t) => {
+        /**
+         * Unchecking is the one step of the cycle that doesn't expand -- it puts nothing on
+         * display that the user asked to see. Main is the category that shows this, since it
+         * starts out checked and collapsed rather than having to be checked first.
+         */
+        await enterEditMode(t)
+        await t.click(mainCheck)
+        await t.expect(mainCheck.checked).eql(false)
+        await t.expect(mainExpandButton.exists).ok()
+        await t.expect(populationCheckInteractable.exists).notOk()
+
+        // It doesn't collapse either, so a category expanded by checking it stays open.
+        await t.click(mainCheck)
+        await t.click(mainCheck)
+        await t.expect(mainCheck.checked).eql(false)
+        await t.expect(categoryToggleButton('main', 'Collapse').exists).ok()
+        await t.expect(populationCheckInteractable.exists).ok()
     })
 
     test('indeterminate-cycle-expanded', async (t) => {
@@ -218,8 +284,8 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
         await enterEditMode(t)
         await uncheckAllCategories(t)
         await setCategoryExpanded(t, 'housing', true)
-        await t.click(interactableGroupCheckbox('vacancy'))
-        await t.click(interactableGroupCheckbox('rent_or_own_rent'))
+        await t.click(vacancyCheckInteractable)
+        await t.click(renterCheckInteractable)
         await t.click(year2020Check)
         await t.click(year2010Check)
         await t.expect(groupWarning('rent_or_own_rent').innerText).eql('Select 2020 to see this statistic.')
@@ -229,20 +295,19 @@ export function articleEditTreeTest(platform: 'mobile' | 'desktop'): void {
     test('group-with-no-selected-years-stays-on-the-edit-tree', async (t) => {
         // The row stays on the edit tree -- otherwise there'd be no checkbox to reach the
         // group by -- with a warning where its value would be.
-        const renterCheck = interactableGroupCheckbox('rent_or_own_rent')
         await enterEditMode(t)
         await setCategoryExpanded(t, 'housing', true)
         await t.click(year2020Check)
         await t.click(year2010Check)
 
-        await t.expect(renterCheck.exists).ok()
-        await t.expect(renterCheck.parent('.for-testing-table-row').find('.testing-statistic-value').exists).notOk()
+        await t.expect(renterCheckInteractable.exists).ok()
+        await t.expect(renterCheckInteractable.parent('.for-testing-table-row').find('.testing-statistic-value').exists).notOk()
         await t.expect(groupWarning('rent_or_own_rent').exists).ok()
         await screencap(t)
 
         // Selecting the group doesn't put the row on the article itself, which only shows
         // statistics it has values for.
-        await t.click(renterCheck)
+        await t.click(renterCheckInteractable)
         await exitEditMode(t)
         await t.expect(Selector('[data-test-id=statistic-link]').withExactText('Renter %').exists).notOk()
     })
