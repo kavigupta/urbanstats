@@ -4,6 +4,8 @@ import { useColors } from '../page_template/colors'
 import { Settings, useIsStaged } from '../page_template/settings'
 import { useMobileLayout } from '../utils/responsive'
 
+import { useScreenshotMode } from './screenshot'
+
 export function StagingControls({ onExitStaging }: {
     onExitStaging: () => void
 }): ReactNode {
@@ -11,8 +13,9 @@ export function StagingControls({ onExitStaging }: {
     const colors = useColors()
     const isMobile = useMobileLayout()
     const staged = useIsStaged()
+    const isScreenshot = useScreenshotMode()
 
-    if (!staged) {
+    if (!staged || isScreenshot) {
         return null
     }
 

@@ -12,6 +12,7 @@ import { ExpandButton } from './ExpandButton'
 import { BooleanSettingKey, CheckboxSettingCustomJustInputProps, CheckboxSettingJustBox, useBooleanSetting, useHighlightStyle } from './checkbox-setting'
 import { EditModeOpenHeader } from './edit-mode-header'
 import { ArticleRow } from './load-article'
+import { useScreenshotMode } from './screenshot'
 import { computeNameSpecsWithGroups, nameSpecsForRows } from './statistic-name-specs'
 import { CellSpec, measureColumns, measuredLayout, MeasuredTableLayout, PlotSpec, StatisticTableRow, SuperHeaderSpec, TableFrame, TableLayout, TopLeftCellSpec, WarningRowMessage } from './supertable'
 import { TableRowContainer, useStatisticNameAdornments } from './table'
@@ -431,8 +432,10 @@ export function useEditModeState(): EditModeState {
 
     const [filter, setFilter] = useState('')
 
+    const isScreenshot = useScreenshotMode()
+
     return {
-        editMode,
+        editMode: editMode && !isScreenshot,
         setEditMode,
         filter,
         setFilter,
