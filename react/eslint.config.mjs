@@ -105,43 +105,124 @@ export default tseslint.config(
             'no-restricted-syntax': [
                 'error',
                 // Good tool for writing these https://typescript-eslint.io/play/
-                'ExportNamedDeclaration:not([declaration])',
-                'MemberExpression[object.name=location][property.name=reload]',
-                'MemberExpression[property.name=replaceState]',
-                'MemberExpression[property.name=pushState]',
-                'MemberExpression[object.name=window][property.name=location]',
-                'JSXAttribute[name.name=href][value.value=/^\\u002F.*$/]', // https://github.com/eslint/eslint/issues/16555  
-                // Protect branding
-                'JSXText[value=/(^|\\s)((u|U)rban(s|S)tats|urban stats|Urban stats|urban Stats)($|\\s)/]',
-                'Literal[value=/(^|\\s)((u|U)rban(s|S)tats|urban stats|Urban stats|urban Stats)($|\\s)/]',
-                //
-                // Require height on MathJax
-                'JSXOpeningElement[name.name=MathJax]:not(:has(JSXAttribute[name.name=style], JSXAttribute[name.name=inline]))',
+                {
+                    selector: 'ExportNamedDeclaration:not([declaration])',
+                    message: 'Put `export` on the declaration itself. `export { ... }` lists and re-exports are not used here.',
+                },
+                {
+                    selector: 'MemberExpression[object.name=location][property.name=reload]',
+                    message: 'Do not reload the page. Navigate with the Navigator, or in tests use `safeReload` from test_utils.',
+                },
+                {
+                    selector: 'MemberExpression[property.name=replaceState]',
+                    message: 'Do not write history entries directly. Navigate with the Navigator, which takes a `history` option.',
+                },
+                {
+                    selector: 'MemberExpression[property.name=pushState]',
+                    message: 'Do not write history entries directly. Navigate with the Navigator, which takes a `history` option.',
+                },
+                {
+                    selector: 'MemberExpression[object.name=window][property.name=location]',
+                    message: 'Read and change the location through the Navigator and its page descriptors, not `window.location`.',
+                },
+                {
+                    // https://github.com/eslint/eslint/issues/16555
+                    selector: 'JSXAttribute[name.name=href][value.value=/^\\u002F.*$/]',
+                    message: 'A root-relative href does a full page load. Use the Navigator link props for internal links.',
+                },
+                {
+                    selector: 'JSXText[value=/(^|\\s)((u|U)rban(s|S)tats|urban stats|Urban stats|urban Stats)($|\\s)/]',
+                    message: 'Spell the product name "Urban Stats": two words, both capitalized.',
+                },
+                {
+                    selector: 'Literal[value=/(^|\\s)((u|U)rban(s|S)tats|urban stats|Urban stats|urban Stats)($|\\s)/]',
+                    message: 'Spell the product name "Urban Stats": two words, both capitalized.',
+                },
+                {
+                    selector: 'JSXOpeningElement[name.name=MathJax]:not(:has(JSXAttribute[name.name=style], JSXAttribute[name.name=inline]))',
+                    message: 'Give MathJax an explicit height in `style`, or mark it `inline`, so the page does not reflow once it typesets.',
+                },
                 // Rules for identifiers
-                'TSInterfaceDeclaration[id.name=/^[^A-Z]|[^A-Za-z]/]',
-                'VariableDeclarator > Identifier.id[name=/^[^a-z]|[^A-Za-z0-9]/]',
-                'VariableDeclarator > ArrayPattern.id > Identifier.elements[name=/^[^a-z]|[^A-Za-z0-9]/]',
-                'FunctionDeclaration > Identifier.id[name=/[^A-Za-z0-9]/]',
-                'FunctionDeclaration > Identifier.params[name=/^[^a-z]|[^A-Za-z0-9]/]',
-                'TSPropertySignature > Identifier.key[name=/^[^a-z]|[^A-Za-z0-9]/]',
-                'ObjectPattern > Property .value Identifier[name=/^[^a-z]|[^A-Za-z0-9]/]',
-                'ObjectPattern > Property[shorthand=false] .value[name=/^[^a-z]|[^A-Za-z0-9]/]',
-                'MethodDefinition > Identifier.key[name=/^[^a-z]|[^A-Za-z0-9]/]',
-                'FunctionExpression > .params Identifier.parameter[name=/^[^a-z_]|.[^A-Za-z0-9]/]', // Constructors
-                'ArrowFunctionExpression > Identifier.params[name=/^[^a-z_]|^[^_].*[^A-Za-z0-9]/]', // Allow_
-                'TSFunctionType > Identifier.params[name=/^[^a-z]|[^A-Za-z0-9]/]',
-                //
-                'CallExpression[arguments.1][callee.property.name=replace]:not([arguments.0.regex.flags=g])', // Prevent accidentally using `replace` without a global regex, which just replaces the first instance
-                // Prevent calling withText with a string argument, instead use withExactText. Allow regex literals only
-                'CallExpression[callee.property.name=withText][arguments.0.type=Literal][arguments.0.regex=undefined]',
-                'MemberExpression[object.name=document][property.name=title]',
-                // Must use test utils instead to safely clear
-                'CallExpression[callee.object.name=localStorage][callee.property.name=clear]',
-                // Disallow color constants - use design system colors instead
-                'Literal[value=/^#[0-9A-Fa-f]{3,8}$/]', // Hex colors
-                'Literal[value=/^rgb\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*\\)$/]', // RGB colors
-                'Literal[value=/^rgba\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*[0-9.]+\\)$/]', // RGBA colors
-                'Literal[value=/^(red|green|blue|yellow|orange|purple|pink|brown|black|white|gray|grey|cyan|magenta|lime|navy|olive|teal|aqua|fuchsia|maroon|silver)$/i]', // Named colors
+                {
+                    selector: 'TSInterfaceDeclaration[id.name=/^[^A-Z]|[^A-Za-z]/]',
+                    message: 'Interface names should be PascalCase, letters only.',
+                },
+                {
+                    selector: 'VariableDeclarator > Identifier.id[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                    message: 'Variable names should be camelCase.',
+                },
+                {
+                    selector: 'VariableDeclarator > ArrayPattern.id > Identifier.elements[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                    message: 'Variable names should be camelCase.',
+                },
+                {
+                    selector: 'FunctionDeclaration > Identifier.id[name=/[^A-Za-z0-9]/]',
+                    message: 'Function names should be letters and digits only.',
+                },
+                {
+                    selector: 'FunctionDeclaration > Identifier.params[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                    message: 'Parameter names should be camelCase.',
+                },
+                {
+                    selector: 'TSPropertySignature > Identifier.key[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                    message: 'Property names should be camelCase.',
+                },
+                {
+                    selector: 'ObjectPattern > Property .value Identifier[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                    message: 'Destructured names should be camelCase. Rename on the way out if the source is not.',
+                },
+                {
+                    selector: 'ObjectPattern > Property[shorthand=false] .value[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                    message: 'Destructured names should be camelCase. Rename on the way out if the source is not.',
+                },
+                {
+                    selector: 'MethodDefinition > Identifier.key[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                    message: 'Method names should be camelCase.',
+                },
+                {
+                    selector: 'FunctionExpression > .params Identifier.parameter[name=/^[^a-z_]|.[^A-Za-z0-9]/]',
+                    message: 'Parameter names should be camelCase, or start with an underscore for constructor parameter properties.',
+                },
+                {
+                    selector: 'ArrowFunctionExpression > Identifier.params[name=/^[^a-z_]|^[^_].*[^A-Za-z0-9]/]',
+                    message: 'Parameter names should be camelCase, or `_` for one that is unused.',
+                },
+                {
+                    selector: 'TSFunctionType > Identifier.params[name=/^[^a-z]|[^A-Za-z0-9]/]',
+                    message: 'Parameter names should be camelCase.',
+                },
+                {
+                    selector: 'CallExpression[arguments.1][callee.property.name=replace]:not([arguments.0.regex.flags=g])',
+                    message: '`replace` without a global regex only replaces the first match. Pass a /g regex, or use `replaceAll`.',
+                },
+                {
+                    selector: 'CallExpression[callee.property.name=withText][arguments.0.type=Literal][arguments.0.regex=undefined]',
+                    message: '`withText` matches substrings. Use `withExactText` for a string, or pass a regex literal.',
+                },
+                {
+                    selector: 'MemberExpression[object.name=document][property.name=title]',
+                    message: 'The document title is set in one place, the router. Derive it from the page state instead.',
+                },
+                {
+                    selector: 'CallExpression[callee.object.name=localStorage][callee.property.name=clear]',
+                    message: 'Use `safeClearLocalStorage`, which keeps the keys the test harness needs.',
+                },
+                {
+                    selector: 'Literal[value=/^#[0-9A-Fa-f]{3,8}$/]',
+                    message: 'Use a color from the theme rather than a hex literal.',
+                },
+                {
+                    selector: 'Literal[value=/^rgb\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*\\)$/]',
+                    message: 'Use a color from the theme rather than an rgb() literal.',
+                },
+                {
+                    selector: 'Literal[value=/^rgba\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*[0-9.]+\\)$/]',
+                    message: 'Use a color from the theme rather than an rgba() literal.',
+                },
+                {
+                    selector: 'Literal[value=/^(red|green|blue|yellow|orange|purple|pink|brown|black|white|gray|grey|cyan|magenta|lime|navy|olive|teal|aqua|fuchsia|maroon|silver)$/i]',
+                    message: 'Use a color from the theme rather than a named color.',
+                },
                 {
                     // A process signs in once, for about three TOTP codes and 45 seconds, and
                     // then caches the Google session, so every later test and fixture in that
@@ -153,9 +234,14 @@ export default tseslint.config(
                     selector: 'ImportSpecifier[imported.name=quizAuthFixture]',
                     message: 'Auth tests are limited to the two quiz_auth files, because each file is a CI job that signs in, and TOTP codes serialize across jobs.',
                 },
-                'CallExpression[callee.name=useRef][typeArguments.params.0.typeName.name=MapRef]', // Use state instead to avoid races
-                // Should use the zIndex manifest for zIndexes
-                'Property[key.name=zIndex]:not([value.object.name=zIndex])',
+                {
+                    selector: 'CallExpression[callee.name=useRef][typeArguments.params.0.typeName.name=MapRef]',
+                    message: 'Hold the map in state rather than a ref, so renders do not race with the map being attached.',
+                },
+                {
+                    selector: 'Property[key.name=zIndex]:not([value.object.name=zIndex])',
+                    message: 'Take z-indexes from the `zIndex` manifest in utils/zIndex, so the stacking order lives in one place.',
+                },
                 {
                     // Remounting the wrapper loses its screenshot subscription: the render phase snapshots
                     // subscribers up front, so a remounted one stalls it or is never waited on. Change the
