@@ -228,8 +228,7 @@ function UniverseSelector(): ReactNode {
             )
         : undefined
 
-    // wrap dropdown in a div to place it in front of everything else and let it spill out of the header
-    // do NOT use class
+    const colors = useColors()
 
     dropdown = (
         <div style={{
@@ -240,6 +239,8 @@ function UniverseSelector(): ReactNode {
             width: '500%',
             maxHeight: universeCtx.universes.length > showSearchThreshold ? '22em' : '20em',
             overflowY: 'auto',
+            border: `1px solid ${colors.ordinalTextColor}`,
+            backgroundColor: colors.slightlyDifferentBackground,
         }}
         >
             {dropdown}
@@ -317,6 +318,7 @@ function UniverseDropdown(
                 style={{
                     fontWeight: 500,
                     backgroundColor: colors.slightlyDifferentBackground,
+                    padding: '0.5em',
                 }}
             >
                 Select universe for statistics
@@ -325,7 +327,7 @@ function UniverseDropdown(
                 universes.length > showSearchThreshold
                     ? (
                             <div style={{
-                                padding: '0.5em',
+                                padding: '0 0.5em 0.5em 0.5em',
                                 width: '100%',
                                 backgroundColor: colors.slightlyDifferentBackground,
                             }}
