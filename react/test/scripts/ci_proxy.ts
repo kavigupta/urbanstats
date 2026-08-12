@@ -36,7 +36,13 @@ function jsdelivrProxy(sha: string, retryOnFailure: boolean): express.RequestHan
             // We must get by SHA, since if we used branch name jsdelvir would cache the result for 12 hours and we couldn't get new changes from the branch
             return `/gh/densitydb/densitydb.github.io@${sha}${req.path}`
         },
-        userResHeaderDecorator(headers, userReq) {
+        userResHeaderDecorator(headers, userReq, userRes, proxyReq, proxyRes) {
+            const status = proxyRes.statusCode ?? 0
+            if (status < 200 || status > 299) {
+                // 404 and 429 are not retried, and the frontend turns a missing shard into a
+                // "could not find feature" error, so this is where that trail starts
+                console.warn(`jsdelivr answered ${status} for ${userReq.path}`)
+            }
             const fileExtension = (/\.(.+)$/.exec(userReq.path))?.[1]
             const mimeType = fileExtension ? { html: 'text/html', js: 'text/javascript' }[fileExtension] : undefined
             // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-restricted-syntax -- We're removing the context-security-policy header via destructuring
@@ -76,6 +82,16 @@ export async function startProxy(): Promise<void> {
     const app = express()
 
     app.use(compression({ enforceEncoding: 'gzip' }))
+
+    app.use((req, res, next) => {
+        const start = Date.now()
+        res.on('finish', () => {
+            if (res.statusCode >= 400) {
+                console.warn(`Proxy served ${res.statusCode} for ${req.path} after ${Date.now() - start}ms`)
+            }
+        })
+        next()
+    })
 
     const handlers: express.RequestHandler[] = []
     for (let attempt = 1; attempt <= attempts; attempt++) {

@@ -8,6 +8,7 @@ import { dataLink, indexLink, orderingDataLink, orderingLink, shapeLink } from '
 import { Universe } from './universe'
 import { makeDebugLogger } from './utils/debug-logging'
 import { assert } from './utils/defensive'
+import { sanitize } from './utils/paths'
 import {
     Article, ConsolidatedArticles, ConsolidatedShapes, CountsByArticleUniverseAndType, DataLists,
     Feature, IOrderList, OrderList,
@@ -23,6 +24,7 @@ import {
     ArticleUniverseList,
     DefaultUniverseTable,
 } from './utils/protos'
+import { shardBytesFullNum } from './utils/shardHash'
 import { NormalizeProto } from './utils/types'
 
 const debugPerformance = makeDebugLogger('searchPerformance')
@@ -64,6 +66,8 @@ export async function loadProtobuf(filePath: string, name: string, errorOnMissin
     const response = await fetch(filePath)
     if (response.status < 200 || response.status > 299) {
         if (!errorOnMissing) {
+            // Otherwise this is indistinguishable from the shard not containing the longname
+            console.error(`[shard-fetch] ${filePath} returned ${response.status} ${response.statusText}`)
             return undefined
         }
         throw new Error(`Expected response status 2xx for ${filePath}, got ${response.status}: ${response.statusText}`)
@@ -151,6 +155,14 @@ async function getConsolidatedShapesShard(shardUrl: string): Promise<Consolidate
     return loadProtobuf(shardUrl, 'ConsolidatedShapes', false)
 }
 
+/** The shard downloaded fine but does not contain the longname, so either the shard index sent us to
+ * the wrong shard or the longname was never built. Logs the hashes the index reasoned about. */
+function logShardMiss(shardUrl: string, longname: string, names: string[]): void {
+    const hashOf = (name: string): string => shardBytesFullNum(sanitize(name)).toString(16).padStart(8, '0')
+    const hashes = names.map(hashOf).sort()
+    console.error(`[shard-miss] ${longname} (hash ${hashOf(longname)}) absent from ${shardUrl}, which holds ${names.length} names spanning ${hashes[0]}..${hashes[hashes.length - 1]}`)
+}
+
 /** Load one article from a consolidated shard (fetch whole .gz via loadProtobuf, find by longname). Resolves symlinks to target. */
 export async function loadArticleFromConsolidatedShard(shardUrl: string, longname: string): Promise<Article | undefined> {
     const shard = await getConsolidatedArticlesShard(shardUrl)
@@ -162,6 +174,7 @@ export async function loadArticleFromConsolidatedShard(shardUrl: string, longnam
         const target = shard.symlinkTargetNames[symIdx]
         return loadArticleFromConsolidatedShard(await dataLink(target), target)
     }
+    logShardMiss(shardUrl, longname, [...shard.longnames, ...shard.symlinkLinkNames])
     return undefined
 }
 
@@ -176,6 +189,7 @@ export async function loadFeatureFromConsolidatedShard(shardUrl: string, longnam
         const target = shard.symlinkTargetNames[symIdx]
         return loadFeatureFromConsolidatedShard(await shapeLink(target), target)
     }
+    logShardMiss(shardUrl, longname, [...shard.longnames, ...shard.symlinkLinkNames])
     return undefined
 }
 
