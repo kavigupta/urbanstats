@@ -21,7 +21,7 @@ const options = argumentParser({
         headless: booleanArgument({ defaultValue: true }),
         video: booleanArgument({ defaultValue: false }),
         compare: booleanArgument({ defaultValue: false }),
-        timeLimitSeconds: z.optional(z.coerce.number().int()), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
+        timeLimitSeconds: z.optional(z.coerce.number().int()),
         tries: z.optional(z.coerce.number().int()).default(1), // Enforced at 1x if the test file has changed compared to `baseRef`. Otherwise, enforced at 2x
         baseRef: z.optional(z.string()),
         live: booleanArgument({ defaultValue: false }),
@@ -198,7 +198,7 @@ async function runTest(test: string): Promise<TestResult> {
         return { status: 'ran' as const, assertionsPassed: failed === 0, duration: Date.now() - start }
     })()
 
-    const timeLimitSeconds = options.live ? 1_000_000 : (options.timeLimitSeconds ?? 10_000) * (await testFileDidChange(test) ? 1 : 2)
+    const timeLimitSeconds = options.live ? 1_000_000 : (options.timeLimitSeconds ?? 10_000)
 
     const result = await withTimeout(runningTests, async () => timeLimitSeconds + await getTOTPWait(test))
 

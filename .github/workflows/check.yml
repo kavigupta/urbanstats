@@ -172,6 +172,8 @@ jobs:
         with:
           name: frontend-build
           path: react/test/density-db
+      # The time limit is roughly 1.4x the longest test file, which leaves room for the
+      # ~1.3x swing a single file shows between runs.
       - name: Run tests
         run: |
           npm run test:e2e -- \
