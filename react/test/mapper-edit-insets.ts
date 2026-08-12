@@ -5,7 +5,7 @@ import { TestWindow } from '../src/utils/TestUtils'
 import { drag, toggleCustomScript, urlFromCode } from './mapper-utils'
 import { screencap, urbanstatsFixture } from './test_utils'
 
-export function runTests(platform: 'desktop' | 'mobile'): void {
+export function runTests(platform: 'desktop' | 'mobile', shard = 0, numShards = 1): void {
     urbanstatsFixture(`default map`, '/mapper.html', async (t) => {
         if (platform === 'mobile') {
             await t.resizeWindow(400, 800)
@@ -104,6 +104,8 @@ export function runTests(platform: 'desktop' | 'mobile'): void {
 
     const editInsetsButton = Selector('button[data-test=edit-insets]')
 
+    let insetsEditIndex = 0
+
     function insetsEditTest(testFn: () => TestFn, { description, action, before, after, customInsetsAfterEdit }: {
         description: string
         action: (t: TestController) => Promise<void>
@@ -111,6 +113,10 @@ export function runTests(platform: 'desktop' | 'mobile'): void {
         after: MapPositions
         customInsetsAfterEdit: number
     }): void {
+        // Round robin rather than contiguous halves, so neither shard collects all the slow drags.
+        if (insetsEditIndex++ % numShards !== shard) {
+            return
+        }
         for (const confirmation of ['Accept', 'Cancel'] as const) {
             testFn()(`${description} then ${confirmation}`, async (t) => {
                 const check = async (positions: MapPositions): Promise<void> => {
@@ -279,6 +285,12 @@ export function runTests(platform: 'desktop' | 'mobile'): void {
         after: [...defaultUSA.slice(0, 3), defaultUSA[4], defaultUSA[3], ...defaultUSA.slice(5)],
         customInsetsAfterEdit: 0,
     })
+
+    // These three don't participate in the round robin above, so they go to the last shard, which
+    // the round robin leaves one insets edit lighter whenever the count is odd.
+    if (shard !== numShards - 1) {
+        return
+    }
 
     test('no duplicate/delete on main', async (t) => {
         await t.click(editInsetsButton)

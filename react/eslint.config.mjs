@@ -142,7 +142,17 @@ export default tseslint.config(
                 'Literal[value=/^rgb\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*\\)$/]', // RGB colors
                 'Literal[value=/^rgba\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*[0-9.]+\\)$/]', // RGBA colors
                 'Literal[value=/^(red|green|blue|yellow|orange|purple|pink|brown|black|white|gray|grey|cyan|magenta|lime|navy|olive|teal|aqua|fuchsia|maroon|silver)$/i]', // Named colors
-                'CallExpression[callee.name=quizAuthFixture]', // All must be in one file
+                {
+                    // A process signs in once, for about three TOTP codes and 45 seconds, and
+                    // then caches the Google session, so every later test and fixture in that
+                    // process reuses it for free. What costs is a new process: each test file
+                    // is its own CI job, and the code service issues one code per period, so
+                    // concurrent jobs queue behind each other. That is why this counts files
+                    // rather than fixtures -- add all the fixtures you like to the two that
+                    // exist, but a third file buys another sign-in.
+                    selector: 'ImportSpecifier[imported.name=quizAuthFixture]',
+                    message: 'Auth tests are limited to the two quiz_auth files, because each file is a CI job that signs in, and TOTP codes serialize across jobs.',
+                },
                 'CallExpression[callee.name=useRef][typeArguments.params.0.typeName.name=MapRef]', // Use state instead to avoid races
                 // Should use the zIndex manifest for zIndexes
                 'Property[key.name=zIndex]:not([value.object.name=zIndex])',
