@@ -283,9 +283,9 @@ function formatNumberWithUnit(value: number, unit: InferredUnit): HumanReadableE
     }
     if (custom) {
         const quantity = displayQuantity(value, unit, false, { includeTiers: false })
-        return [{ type: 'atom', value: `${quantity.value}${unitSuffix(quantity.unit, attached)}` }]
+        return [{ type: 'atom', value: quantity.value }, ...unitSuffix(quantity.unit, attached)]
     }
-    return [...formatNumber(value * scale), { type: 'atom', value: unitSuffix(name, attached) }]
+    return [...formatNumber(value * scale), ...unitSuffix(name, attached)]
 }
 
 function formatNumber(number: number): HumanReadableElement[] {

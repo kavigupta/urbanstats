@@ -5,10 +5,17 @@ import { defaultTypeEnvironment } from '../src/mapper/context'
 import { mapUSSFromString } from '../src/mapper/settings/map-uss'
 import { parse } from '../src/urban-stats-script/parser'
 import { deriveMapUnit, deriveTableColumnUnit, inferUnit, InferredUnit } from '../src/urban-stats-script/unit-inference'
+import { reifyString } from '../src/utils/human-readable-name'
 import { combineUnits, displayQuantity, displayUnitFor, powerUnit, Unit, unitSuffix, unitTypeToUnit } from '../src/utils/unit'
 
 function getTypeEnvironment(): ReturnType<typeof defaultTypeEnvironment> {
     return defaultTypeEnvironment('USA')
+}
+
+function renderQuantity(value: number, unit: Unit): string {
+    const { value: rendered, unit: name } = displayQuantity(value, unit, false)
+    const { attached } = displayUnitFor(value, unit, false)
+    return `${rendered}${reifyString(unitSuffix(name, attached))}`
 }
 
 function unitOf(code: string): InferredUnit {
@@ -118,23 +125,21 @@ function testMapUnit(code: string, expected: string | undefined): void {
             return
         }
         assert.ok(mapUnit)
-        const rendered = displayQuantity(1234, mapUnit, false)
-        const { attached } = displayUnitFor(1234, mapUnit, false)
-        assert.equal(`${rendered.value}${unitSuffix(rendered.unit, attached)}`, expected)
+        assert.equal(renderQuantity(1234, mapUnit), expected)
     })
 }
 
-testMapUnit('cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', '1\u202f234/\u00a0km^2')
-testMapUnit('cMap(data=population / area, scale=linearScale(), ramp=rampUridis)', '1\u202f234/\u00a0km^2')
+testMapUnit('cMap(data=density_pw_1km, scale=linearScale(), ramp=rampUridis)', '1\u202f234/\u00a0km^{2}')
+testMapUnit('cMap(data=population / area, scale=linearScale(), ramp=rampUridis)', '1\u202f234/\u00a0km^{2}')
 testMapUnit('cMap(data=density_pw_1km / density_pw_2km, scale=linearScale(), ramp=rampUridis)', '1230')
 testMapUnit('cMap(data=pres_2020_margin, scale=linearScale(), ramp=rampUridis)', '123400.00%')
 testMapUnit('cMap(data=commute_time_median, scale=linearScale(), ramp=rampUridis)', '20:34')
 testMapUnit('cMap(data=elevation, scale=linearScale(), ramp=rampUridis)', '1\u202f234 m')
 // A quantity with no display units of its own is displayed in base units
-testMapUnit('cMap(data=population * area, scale=linearScale(), ramp=rampUridis)', '1\u202f230\u202f000\u202f000 m^2·person')
+testMapUnit('cMap(data=population * area, scale=linearScale(), ramp=rampUridis)', '1\u202f230\u202f000\u202f000 m^{2}·person')
 testMapUnit('cMap(data=[1, 2, 3], scale=linearScale(), ramp=rampUridis)', undefined)
 testMapUnit('cMapRGB(dataR=population, dataG=population, dataB=population)', undefined)
-testMapUnit('pMap(data=population / area, scale=linearScale(), ramp=rampUridis)', '1\u202f234/\u00a0km^2')
+testMapUnit('pMap(data=population / area, scale=linearScale(), ramp=rampUridis)', '1\u202f234/\u00a0km^{2}')
 testMapUnit(`condition (population > 1000)
 cMap(data=commute_bike, scale=linearScale(), ramp=rampUridis)`, '123400.00%')
 
@@ -148,13 +153,11 @@ function testColumnUnit(code: string, columnIndex: number, expected: string | un
             return
         }
         assert.ok(columnUnit)
-        const rendered = displayQuantity(1234, columnUnit, false)
-        const { attached } = displayUnitFor(1234, columnUnit, false)
-        assert.equal(`${rendered.value}${unitSuffix(rendered.unit, attached)}`, expected)
+        assert.equal(renderQuantity(1234, columnUnit), expected)
     })
 }
 
 testColumnUnit('table(columns=[column(values=population), column(values=population / area)])', 0, '1\u202f234')
-testColumnUnit('table(columns=[column(values=population), column(values=population / area)])', 1, '1\u202f234/\u00a0km^2')
+testColumnUnit('table(columns=[column(values=population), column(values=population / area)])', 1, '1\u202f234/\u00a0km^{2}')
 testColumnUnit('table(columns=[column(values=population)])', 1, undefined)
 testColumnUnit('table(columns=[column(values=[1, 2, 3])])', 0, undefined)

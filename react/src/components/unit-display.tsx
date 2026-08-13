@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react'
 
+import { HumanReadableName, reifyReact } from '../utils/human-readable-name'
 import { convertTemperature, displayQuantity, Unit, unitTypeToUnit, UnitType } from '../utils/unit'
 
 import { ElectionResult, GenericPartyChange, GenericPartyPercentage, LeftMargin } from './display-stats'
@@ -37,19 +38,9 @@ const renderMarginInequality: RenderInequality = (value, inequality) => {
     return renderInequality(value, inequality)
 }
 
-/**
- * Renders a unit name, where `^n` denotes a superscript, e.g., km^2.
- */
-export function renderUnitName(name: string): ReactNode {
-    if (name === '') {
-        return <span>&nbsp;</span>
-    }
-    const parts = name.split(/\^(-?[\d.]+)/)
-    return (
-        <span>
-            {parts.map((part, index) => index % 2 === 0 ? part : <sup key={index}>{part}</sup>)}
-        </span>
-    )
+function unitName(name: HumanReadableName): ReactNode {
+    // an empty unit still occupies its column
+    return <span>{name === '' ? '\u00a0' : reifyReact(name)}</span>
 }
 
 const percentageDisplay = (renderNumber: (value: number) => ReactNode, inequality = renderInequality): UnitDisplay => ({
@@ -105,7 +96,7 @@ export function getQuantityDisplay(unit: Unit): UnitDisplay {
                     const rendered = displayQuantity(value, unit, useImperial ?? false)
                     return {
                         value: <span>{rendered.value}</span>,
-                        unit: renderUnitName(rendered.unit),
+                        unit: unitName(rendered.unit),
                     }
                 },
                 renderInequality,

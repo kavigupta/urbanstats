@@ -4,7 +4,8 @@ import assert from 'assert/strict'
 import test from 'node:test'
 
 import { getUnit, getUnitDisplay } from '../src/components/unit-display'
-import { allUnitTypes, displayQuantity, displayUnitFor, unitSuffix, unitTypeToUnit, UnitType } from '../src/utils/unit'
+import { reifyString } from '../src/utils/human-readable-name'
+import { allUnitTypes, displayQuantity, displayUnitFor, unitTypeToUnit, UnitType } from '../src/utils/unit'
 
 // Flatten a React element tree into its text content.
 function textOf(node: unknown): string {
@@ -18,7 +19,8 @@ function textOf(node: unknown): string {
 function renderValue(unitType: UnitType, value: number, useImperial = false): string {
     const { value: valueEl, unit: unitEl } = getUnitDisplay(unitType).renderValue(value, useImperial)
     const { attached } = displayUnitFor(value, unitTypeToUnit(unitType), useImperial)
-    return `${textOf(valueEl)}${unitSuffix(textOf(unitEl), attached)}`.trim()
+    const unit = textOf(unitEl)
+    return `${textOf(valueEl)}${attached ? '' : ' '}${unit}`.trim()
 }
 
 // Regression tests for toPrecision(3) emitting scientific notation at tier boundaries.
@@ -129,10 +131,9 @@ void test('temperature is rendered in the reader\'s temperature unit', () => {
 // Anything without a unit type of its own is displayed in base units
 void test('a quantity with no display units is displayed in base units', () => {
     const personSquareMeters = { dimensions: { person: 1, length: 2 }, multiplier: 1e6 }
-    assert.deepEqual(displayQuantity(1234, personSquareMeters, false), {
-        value: '1\u202f230\u202f000\u202f000',
-        unit: 'm^2·person',
-    })
+    const { value, unit } = displayQuantity(1234, personSquareMeters, false)
+    assert.equal(value, '1\u202f230\u202f000\u202f000')
+    assert.equal(reifyString(unit), 'm^{2}·person')
 })
 
 // Every unit type has to be renderable, or a statistic displays as undefined
