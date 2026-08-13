@@ -3,9 +3,9 @@ import './util/localStorage'
 import assert from 'assert/strict'
 import test from 'node:test'
 
-import { getUnit, getUnitDisplay } from '../src/components/unit-display'
+import { getUnit, renderInequality } from '../src/components/unit-display'
 import { reifyString } from '../src/utils/human-readable-name'
-import { allUnitTypes, displayQuantity, displayUnitFor, unitTypeToUnit, UnitType } from '../src/utils/unit'
+import { allUnitTypes, ReaderSettings, unitSuffix, unitTypeToUnit, UnitType, writeQuantity } from '../src/utils/unit'
 
 // Flatten a React element tree into its text content.
 function textOf(node: unknown): string {
@@ -16,11 +16,9 @@ function textOf(node: unknown): string {
     return textOf((node as { props?: { children?: unknown } }).props?.children)
 }
 
-function renderValue(unitType: UnitType, value: number, useImperial = false): string {
-    const { value: valueEl, unit: unitEl } = getUnitDisplay(unitType).renderValue(value, useImperial)
-    const { attached } = displayUnitFor(value, unitTypeToUnit(unitType), useImperial)
-    const unit = textOf(unitEl)
-    return `${textOf(valueEl)}${attached ? '' : ' '}${unit}`.trim()
+function renderValue(unitType: UnitType, value: number, settings: ReaderSettings = {}): string {
+    const { number, name, attached } = writeQuantity(value, unitTypeToUnit(unitType), settings)
+    return `${number}${reifyString(unitSuffix(name, attached))}`
 }
 
 // Regression tests for toPrecision(3) emitting scientific notation at tier boundaries.
@@ -66,18 +64,18 @@ for (const [unitType, value, expected] of [
     ['distanceInM', 543, '543 m'],
     ['distanceInM', 1234, '1\u202f234 m'],
     ['distanceInKm', 3.42, '3.42 km'],
-    ['density', 1234, '1\u202f234/\u00a0km2'],
-    ['area', 0.005, '5\u202f000 m2'],
-    ['area', 12.5, '12.5 km2'],
+    ['density', 1234, '1\u202f234/\u00a0km^{2}'],
+    ['area', 0.005, '5\u202f000 m^{2}'],
+    ['area', 12.5, '12.5 km^{2}'],
     ['usd', 75000, '$75.0k'],
     ['percentage', 0.125, '12.50%'],
     ['percentageChange', 0.125, '+12.50%'],
     ['population', 1234, '1\u202f234'],
-    ['density', 5.67, '5.7/\u00a0km2'],
-    ['area', 0.5, '0.500 km2'],
+    ['density', 5.67, '5.7/\u00a0km^{2}'],
+    ['area', 0.5, '0.500 km^{2}'],
     ['fatalities', 1234, '1\u202f234'],
     ['fatalitiesPerCapita', 1.2e-5, '1.20/100k'],
-    ['contaminantLevel', 8.2, '8.20 \u03bcg/m3'],
+    ['contaminantLevel', 8.2, '8.20 \u03bcg/m^{3}'],
     ['distancePerYear', 1.2, '120.0 cm/yr'],
     ['number', 1234, '1230'],
 ] as const) {
@@ -89,13 +87,13 @@ for (const [unitType, value, expected] of [
 for (const [unitType, value, expected] of [
     ['distanceInKm', 3.42, '2.13 mi'],
     ['distanceInM', 543, '1\u202f781 ft'],
-    ['area', 12.5, '4.83 mi2'],
-    ['density', 1234, '3\u202f196/\u00a0mi2'],
+    ['area', 12.5, '4.83 mi^{2}'],
+    ['density', 1234, '3\u202f196/\u00a0mi^{2}'],
     ['area', 0.5, '124 acres'],
     ['distancePerYear', 1.2, '47.2 in/yr'],
 ] as const) {
     void test(`${unitType} renders ${value} in imperial as ${expected}`, () => {
-        assert.equal(renderValue(unitType, value, true), expected)
+        assert.equal(renderValue(unitType, value, { useImperial: true }), expected)
     })
 }
 
@@ -105,8 +103,8 @@ for (const [unitType, value, expected] of [
     ['population', -1234, '-1\u202f234'],
     ['population', -12345, '-12.3k'],
     ['population', NaN, 'NaN'],
-    ['density', 0, '0.00/\u00a0km2'],
-    ['density', -5.67, '-5.7/\u00a0km2'],
+    ['density', 0, '0.00/\u00a0km^{2}'],
+    ['density', -5.67, '-5.7/\u00a0km^{2}'],
     ['percentage', -0.125, '-12.50%'],
     ['percentageChange', -0.125, '-12.50%'],
     ['usd', -12345, '$-12.3k'],
@@ -119,19 +117,9 @@ for (const [unitType, value, expected] of [
     })
 }
 
-void test('temperature is rendered in the reader\'s temperature unit', () => {
-    const { value, unit } = getUnitDisplay('temperature').renderValue(50, false, 'celsius')
-    assert.equal(`${textOf(value)} ${textOf(unit)}`, '10.0 °C')
-    const fahrenheit = getUnitDisplay('temperature').renderValue(50, false, 'fahrenheit')
-    assert.equal(`${textOf(fahrenheit.value)} ${textOf(fahrenheit.unit)}`, '50.0 °F')
-})
-
-// Anything without a unit type of its own is displayed in base units
-void test('a quantity with no display units is displayed in base units', () => {
-    const personSquareMeters = { dimensions: { person: 1, length: 2 }, multiplier: 1e6 }
-    const { value, unit } = displayQuantity(1234, personSquareMeters, false)
-    assert.equal(value, '1\u202f230\u202f000\u202f000')
-    assert.equal(reifyString(unit), 'm^{2}·person')
+void test('temperature is written in the reader\'s temperature unit', () => {
+    assert.equal(renderValue('temperature', 50, { temperatureUnit: 'celsius' }), '10.0 °C')
+    assert.equal(renderValue('temperature', 50, { temperatureUnit: 'fahrenheit' }), '50.0 °F')
 })
 
 // Every unit type has to be renderable, or a statistic displays as undefined
@@ -156,6 +144,27 @@ for (const [unitType, value, inequality, expected] of [
     ['leftMargin', -0.5, 'geq', '\u2264'],
 ] as const) {
     void test(`${unitType} renders a ${inequality} at ${value} as ${expected}`, () => {
-        assert.equal(getUnitDisplay(unitType).renderInequality(value, inequality), expected)
+        assert.equal(renderInequality(value, unitTypeToUnit(unitType), inequality), expected)
     })
 }
+
+// The quantities written in a party's color say which party, and are blank when missing
+/* eslint-disable no-restricted-syntax -- these name the theme's hues, they are not css colors */
+for (const [unitType, value, expected, hue] of [
+    ['democraticMargin', 0.123, 'D+12.3%', 'blue'],
+    ['democraticMargin', -0.081, 'R+8.10%', 'red'],
+    ['democraticMargin', 0.0005, 'D+0.0500%', 'blue'],
+    ['democraticMargin', NaN, 'N/A%', undefined],
+    ['leftMargin', 0.123, 'L+12.3%', 'red'],
+    ['leftMargin', -0.123, 'R+12.3%', 'blue'],
+    ['partyPctOrange', 0.125, '12.50%', 'orange'],
+    ['partyChangeTeal', 0.125, '+12.50%', 'cyan'],
+    ['partyChangeTeal', -0.125, '-12.50%', 'cyan'],
+] as const) {
+    void test(`${unitType} writes ${value} as ${expected} in ${hue ?? 'no color'}`, () => {
+        const written = writeQuantity(value, unitTypeToUnit(unitType))
+        assert.equal(`${written.number}${reifyString(unitSuffix(written.name, written.attached))}`, expected)
+        assert.equal(written.hue, hue)
+    })
+}
+/* eslint-enable no-restricted-syntax */

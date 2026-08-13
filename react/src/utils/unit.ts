@@ -1,3 +1,5 @@
+import { HueColors } from '../page_template/color-themes'
+
 import { HumanReadableElement, HumanReadableName } from './human-readable-name'
 import { hre } from './human-readable-template'
 import { formatToSignificantFigures, separateNumber } from './text'
@@ -48,247 +50,210 @@ function checkAllIncluded(unitType: UnitType): (typeof allUnitTypes)[number] {
     return unitType
 }
 
-/**
- * The exponent of each base dimension, e.g., a density is { person: 1, length: -2 }.
- * Dimensionless is {}.
- */
-export type Dimensions = Record<string, number>
+export type Hue = keyof HueColors
 
 /**
- * The unit a quantity is measured in: its dimensions, and the multiplier that converts a
- * stored value into base units (person, meter, second, dollar, gram, fatality, degree
- * fahrenheit). E.g., a density is stored per square kilometer, so its multiplier is 1e-6.
+ * How the number itself is written.
  */
-export interface Unit {
-    dimensions: Dimensions
-    multiplier: number
+export interface NumberFormat {
     /**
-     * Set for quantities that are displayed as something other than a scaled number, such as
-     * percentages and election margins. Only preserved by operations that keep the quantity the
-     * same kind of thing, i.e., addition and subtraction.
+     * Decimal places: a fixed count; enough places that the number is written to
+     * `significantDigits` digits, between `minDecimals` and `maxDecimals` of them (which default
+     * to none and to `significantDigits`); three significant figures wherever they fall; three
+     * significant figures of a number known to be at least one; or a duration written as h:mm.
      */
-    presentation?: PresentationUnitType
-}
-
-const presentationUnitTypes = [
-    'percentage',
-    'percentageChange',
-    'democraticMargin',
-    'leftMargin',
-    'partyPctBlue',
-    'partyPctRed',
-    'partyPctOrange',
-    'partyPctTeal',
-    'partyPctGreen',
-    'partyPctPurple',
-    'partyChangeBlue',
-    'partyChangeRed',
-    'partyChangeOrange',
-    'partyChangeTeal',
-    'partyChangeGreen',
-    'partyChangePurple',
-    'temperature',
-] as const satisfies readonly UnitType[]
-
-export type PresentationUnitType = typeof presentationUnitTypes[number]
-
-function presentationOf(unitType: UnitType): PresentationUnitType | undefined {
-    return (presentationUnitTypes as readonly UnitType[]).includes(unitType) ? unitType as PresentationUnitType : undefined
-}
-
-const secondsPerYear = 365.25 * 24 * 60 * 60
-const meterPerMile = 1609.34
-const meterPerFoot = 1 / 3.28084
-const squareMeterPerSquareMile = meterPerMile * meterPerMile
-const squareMeterPerAcre = squareMeterPerSquareMile / 640
-
-const dimensionsAndMultiplier: Record<UnitType, { dimensions: Dimensions, multiplier: number }> = {
-    percentage: { dimensions: {}, multiplier: 1 },
-    percentageChange: { dimensions: {}, multiplier: 1 },
-    democraticMargin: { dimensions: {}, multiplier: 1 },
-    leftMargin: { dimensions: {}, multiplier: 1 },
-    partyPctBlue: { dimensions: {}, multiplier: 1 },
-    partyPctRed: { dimensions: {}, multiplier: 1 },
-    partyPctOrange: { dimensions: {}, multiplier: 1 },
-    partyPctTeal: { dimensions: {}, multiplier: 1 },
-    partyPctGreen: { dimensions: {}, multiplier: 1 },
-    partyPctPurple: { dimensions: {}, multiplier: 1 },
-    partyChangeBlue: { dimensions: {}, multiplier: 1 },
-    partyChangeRed: { dimensions: {}, multiplier: 1 },
-    partyChangeOrange: { dimensions: {}, multiplier: 1 },
-    partyChangeTeal: { dimensions: {}, multiplier: 1 },
-    partyChangeGreen: { dimensions: {}, multiplier: 1 },
-    partyChangePurple: { dimensions: {}, multiplier: 1 },
-    number: { dimensions: {}, multiplier: 1 },
-    population: { dimensions: { person: 1 }, multiplier: 1 },
-    fatalities: { dimensions: { fatality: 1 }, multiplier: 1 },
-    fatalitiesPerCapita: { dimensions: { fatality: 1, person: -1 }, multiplier: 1 },
-    density: { dimensions: { person: 1, length: -2 }, multiplier: 1e-6 },
-    area: { dimensions: { length: 2 }, multiplier: 1e6 },
-    distanceInKm: { dimensions: { length: 1 }, multiplier: 1e3 },
-    distanceInM: { dimensions: { length: 1 }, multiplier: 1 },
-    // temperature is affine rather than scalable, so it is only ever displayed via its presentation
-    temperature: { dimensions: { temperature: 1 }, multiplier: 1 },
-    time: { dimensions: { time: 1 }, multiplier: 60 * 60 },
-    minutes: { dimensions: { time: 1 }, multiplier: 60 },
-    distancePerYear: { dimensions: { length: 1, time: -1 }, multiplier: 1 / secondsPerYear },
-    contaminantLevel: { dimensions: { mass: 1, length: -3 }, multiplier: 1e-6 },
-    usd: { dimensions: { money: 1 }, multiplier: 1 },
-}
-
-export function unitTypeToUnit(unitType: UnitType): Unit {
-    const presentation = presentationOf(unitType)
-    const { dimensions, multiplier } = dimensionsAndMultiplier[unitType]
-    return presentation === undefined ? { dimensions, multiplier } : { dimensions, multiplier, presentation }
-}
-
-export function renderDimensions(dimensions: Dimensions): string {
-    return Object.entries(dimensions)
-        .filter(([, exponent]) => exponent !== 0)
-        .sort(([a], [b]) => a < b ? -1 : 1)
-        .map(([base, exponent]) => `${base}^${exponent}`)
-        .join(' ')
-}
-
-/**
- * A unit a quantity can be displayed in. `multiplier` is its size in base units, so a value in
- * base units is divided by it to get the displayed number.
- */
-interface DisplayUnit {
-    multiplier: number
-    name: HumanReadableName
-    /** Rendered immediately before the number, e.g., a dollar sign */
-    prefix?: string
-    /** Whether non-negative values are rendered with a leading plus sign */
-    signed?: boolean
-    /**
-     * Whether this is a magnitude prefix on the unit below it, such as thousands, rather than a
-     * unit in its own right.
-     */
-    tier?: boolean
+    decimals: number | SignificantDigits | 'significantFigures' | 'precision' | 'hoursMinutes'
     /** Whether groups of three digits are separated. Defaults to true. */
     separators?: boolean
+}
+
+/**
+ * One of the units a quantity can be written in. The number written is
+ * (value - offset) * factor / divisor, followed by the unit's name. Both a factor and a divisor
+ * because which one a conversion is written with decides how it rounds.
+ */
+interface SignificantDigits {
+    significantDigits: number
+    minDecimals?: number
+    maxDecimals?: number
+}
+
+export interface UnitScale {
+    factor?: number
+    divisor?: number
+    offset?: number
+    name: HumanReadableName
     /** Whether the name is written directly after the number, rather than after a space */
     attached?: boolean
+    /** Written immediately before the number, e.g., a dollar sign */
+    prefix?: string
+    format: NumberFormat
     /**
-     * Decimal places: a fixed count, 'sigFigs' for 3 significant figures, 'precision' for 3
-     * significant figures of a number that is at least 1, 'hoursMinutes' for a duration written
-     * as h:mm, or a number of significant digits before the decimal point counts against the
-     * places shown.
-     */
-    decimals: number | 'sigFigs' | 'precision' | 'hoursMinutes' | { significantDigits: number }
-    /**
-     * The smallest value (in base units) displayed in this unit. Defaults to just below the
-     * multiplier, i.e., the unit is used once the displayed number reaches 1.
+     * The smallest value written in this scale, so that a quantity is written in the largest of
+     * its scales that it reaches. Defaults to zero, i.e., the scale is always usable.
      */
     threshold?: number
+    /** Only used by a reader reading in these units */
     system?: 'metric' | 'imperial'
+    temperature?: 'fahrenheit' | 'celsius'
 }
 
 /**
- * Abbreviations for large numbers, which each unit below either uses or writes out in full.
+ * How the written number is marked up, for quantities that are more than a number, such as a
+ * party's share of the vote or the margin between two parties.
  */
-function magnitudeTiers(prefix: string | undefined, thousandsThreshold: number): DisplayUnit[] {
-    return [
-        { multiplier: 1e3, name: 'k', prefix, decimals: 'precision', threshold: thousandsThreshold, tier: true, attached: true },
-        { multiplier: 1e6, name: 'm', prefix, decimals: 'precision', threshold: 999.5e3, tier: true, attached: true },
-        { multiplier: 1e9, name: 'B', prefix, decimals: 'precision', threshold: 999.5e6, tier: true, attached: true },
-    ]
+export interface Emphasis {
+    /** Non-negative values are written with a leading plus sign */
+    explicitSign?: boolean
+    /**
+     * The number is written as a magnitude labelled by its sign, e.g., D+12.3 against R+8.1.
+     * Such a quantity is compared by its labelled magnitude, so inequalities flip below zero.
+     */
+    signLabels?: { positive: string, negative: string }
+    /** The hue the number is written in, either the same always or one per sign */
+    hue?: Hue | { positive: Hue, negative: Hue }
 }
 
 /**
- * The units each kind of quantity can be displayed in, smallest first. The largest one the value
- * reaches is the one used, so 600 minutes is displayed as 10 hours.
+ * How a quantity is written: the units it can be written in, and the markup they are written with.
  */
-const displayUnits: Record<string, DisplayUnit[] | undefined> = {
-    '': [{ multiplier: 1, name: '', decimals: 'sigFigs', separators: false }],
-    'person^1': [{ multiplier: 1, name: '', decimals: 0 }, ...magnitudeTiers(undefined, 1e4)],
-    'money^1': [{ multiplier: 1, name: '', prefix: '$', decimals: 0 }, ...magnitudeTiers('$', 1e3)],
-    'length^2': [
-        { multiplier: 1, name: hre`m^{2}`, decimals: { significantDigits: 3 }, system: 'metric' },
-        { multiplier: 1e6, name: hre`km^{2}`, decimals: { significantDigits: 3 }, threshold: 1e4, system: 'metric' },
-        { multiplier: squareMeterPerAcre, name: 'acres', decimals: { significantDigits: 3 }, system: 'imperial' },
-        { multiplier: squareMeterPerSquareMile, name: hre`mi^{2}`, decimals: { significantDigits: 3 }, system: 'imperial' },
-    ],
-    'length^-2 person^1': [
-        { multiplier: 1e-6, name: hre`/\u00a0km^{2}`, decimals: { significantDigits: 2 }, attached: true, system: 'metric' },
-        { multiplier: 1 / squareMeterPerSquareMile, name: hre`/\u00a0mi^{2}`, decimals: { significantDigits: 2 }, attached: true, system: 'imperial' },
-    ],
-    // durations are written as h:mm, dropping the hours when there are none
-    'time^1': [{ multiplier: 60 * 60, name: '', decimals: 'hoursMinutes' }],
-    'length^1 time^-1': [
-        { multiplier: 0.01 / secondsPerYear, name: 'cm/yr', decimals: 1, separators: false, system: 'metric' },
-        { multiplier: 0.0254 / secondsPerYear, name: 'in/yr', decimals: 1, separators: false, system: 'imperial' },
-    ],
-    'length^-3 mass^1': [{ multiplier: 1e-6, name: hre`\u03bcg/m^{3}`, decimals: 2, separators: false }],
-    'fatality^1': [{ multiplier: 1, name: '', decimals: 0 }],
-    'fatality^1 person^-1': [{ multiplier: 1e-5, name: '/100k', decimals: 2, separators: false, attached: true }],
+export interface Unit {
+    scales: UnitScale[]
+    emphasis?: Emphasis
+}
+
+const mileInKm = 1.60934
+const squareMileInSquareKm = mileInKm * mileInKm
+const footPerM = 3.28084
+
+const percent: UnitScale = { factor: 100, name: '%', attached: true, format: { decimals: 2, separators: false } }
+
+/** A margin is written as the size of the lead, labelled with whoever holds it. */
+function margin(signLabels: { positive: string, negative: string }, hue: { positive: Hue, negative: Hue }): Unit {
+    return {
+        scales: [{ ...percent, format: { decimals: { significantDigits: 3, minDecimals: 1, maxDecimals: 4 }, separators: false } }],
+        emphasis: { signLabels, hue },
+    }
+}
+
+/** Numbers too long to read are abbreviated, e.g., 12.3k rather than 12 345. */
+function magnitudeScales(prefix: string | undefined, thousandsThreshold: number): UnitScale[] {
+    const tier = (divisor: number, name: string, threshold: number): UnitScale =>
+        ({ divisor, name, prefix, attached: true, threshold, format: { decimals: 'precision' } })
+    return [tier(1e3, 'k', thousandsThreshold), tier(1e6, 'm', 999.5e3), tier(1e9, 'B', 999.5e6)]
+}
+
+function partyShare(hue: Hue): Unit {
+    return { scales: [percent], emphasis: { hue } }
+}
+
+function partyChange(hue: Hue): Unit {
+    return { scales: [percent], emphasis: { hue, explicitSign: true } }
+}
+
+/* eslint-disable no-restricted-syntax -- these name the theme's hues, they are not css colors */
+const units: Record<UnitType, Unit> = {
+    percentage: { scales: [percent] },
+    percentageChange: { scales: [percent], emphasis: { explicitSign: true } },
+    // the left is drawn in red, as it is outside the US
+    democraticMargin: margin({ positive: 'D', negative: 'R' }, { positive: 'blue', negative: 'red' }),
+    leftMargin: margin({ positive: 'L', negative: 'R' }, { positive: 'red', negative: 'blue' }),
+    partyPctBlue: partyShare('blue'),
+    partyPctRed: partyShare('red'),
+    partyPctOrange: partyShare('orange'),
+    partyPctTeal: partyShare('cyan'),
+    partyPctGreen: partyShare('green'),
+    partyPctPurple: partyShare('purple'),
+    partyChangeBlue: partyChange('blue'),
+    partyChangeRed: partyChange('red'),
+    partyChangeOrange: partyChange('orange'),
+    partyChangeTeal: partyChange('cyan'),
+    partyChangeGreen: partyChange('green'),
+    partyChangePurple: partyChange('purple'),
+    number: { scales: [{ name: '', format: { decimals: 'significantFigures', separators: false } }] },
+    population: { scales: [{ name: '', format: { decimals: 0 } }, ...magnitudeScales(undefined, 1e4)] },
+    usd: { scales: [{ name: '', prefix: '$', format: { decimals: 0 } }, ...magnitudeScales('$', 1e3)] },
+    fatalities: { scales: [{ name: '', format: { decimals: 0 } }] },
+    fatalitiesPerCapita: { scales: [{ factor: 1e5, name: '/100k', attached: true, format: { decimals: 2, separators: false } }] },
+    density: {
+        scales: [
+            { name: hre`/\u00a0km^{2}`, attached: true, format: { decimals: { significantDigits: 2 } }, system: 'metric' },
+            { factor: squareMileInSquareKm, name: hre`/\u00a0mi^{2}`, attached: true, format: { decimals: { significantDigits: 2 } }, system: 'imperial' },
+        ],
+    },
+    area: {
+        scales: [
+            { factor: 1e6, name: hre`m^{2}`, format: { decimals: { significantDigits: 3 } }, system: 'metric' },
+            { name: hre`km^{2}`, threshold: 0.01, format: { decimals: { significantDigits: 3 } }, system: 'metric' },
+            { divisor: squareMileInSquareKm, factor: 640, name: 'acres', format: { decimals: { significantDigits: 3 } }, system: 'imperial' },
+            { divisor: squareMileInSquareKm, name: hre`mi^{2}`, threshold: squareMileInSquareKm, format: { decimals: { significantDigits: 3 } }, system: 'imperial' },
+        ],
+    },
+    distanceInKm: {
+        scales: [
+            { name: 'km', format: { decimals: 2, separators: false }, system: 'metric' },
+            { divisor: mileInKm, name: 'mi', format: { decimals: 2, separators: false }, system: 'imperial' },
+        ],
+    },
+    distanceInM: {
+        scales: [
+            { name: 'm', format: { decimals: 0 }, system: 'metric' },
+            { factor: footPerM, name: 'ft', format: { decimals: 0 }, system: 'imperial' },
+        ],
+    },
+    temperature: {
+        scales: [
+            { name: '°F', format: { decimals: 1, separators: false }, temperature: 'fahrenheit' },
+            { factor: 5 / 9, offset: 32, name: '°C', format: { decimals: 1, separators: false }, temperature: 'celsius' },
+        ],
+    },
+    time: { scales: [{ name: '', format: { decimals: 'hoursMinutes' } }] },
+    minutes: { scales: [{ divisor: 60, name: '', format: { decimals: 'hoursMinutes' } }] },
+    distancePerYear: {
+        scales: [
+            { factor: 100, name: 'cm/yr', format: { decimals: 1, separators: false }, system: 'metric' },
+            { factor: 100, divisor: 2.54, name: 'in/yr', format: { decimals: 1, separators: false }, system: 'imperial' },
+        ],
+    },
+    contaminantLevel: { scales: [{ name: hre`\u03bcg/m^{3}`, format: { decimals: 2, separators: false } }] },
+}
+/* eslint-enable no-restricted-syntax */
+
+export function unitTypeToUnit(unitType: UnitType): Unit {
+    return units[unitType]
+}
+
+export interface ReaderSettings {
+    useImperial?: boolean
+    temperatureUnit?: string
+}
+
+function scaleApplies(scale: UnitScale, settings: ReaderSettings): boolean {
+    if (scale.system !== undefined && scale.system !== (settings.useImperial === true ? 'imperial' : 'metric')) {
+        return false
+    }
+    return scale.temperature === undefined || scale.temperature === (settings.temperatureUnit ?? 'fahrenheit')
 }
 
 /**
- * Quantities that are displayed in the unit they are stored in, rather than in whichever unit
- * fits their magnitude: an elevation stays in meters, and a distance stays in kilometers, however
- * large or small it is. Keyed by dimensions and stored multiplier.
+ * The scale a value is written in: the largest of the unit's applicable scales that it reaches.
  */
-const displayUnitsForStoredUnit: Record<string, DisplayUnit[] | undefined> = {
-    'length^1@1': [
-        { multiplier: 1, name: 'm', decimals: 0, system: 'metric' },
-        { multiplier: meterPerFoot, name: 'ft', decimals: 0, system: 'imperial' },
-    ],
-    'length^1@1000': [
-        { multiplier: 1e3, name: 'km', decimals: 2, separators: false, system: 'metric' },
-        { multiplier: meterPerMile, name: 'mi', decimals: 2, separators: false, system: 'imperial' },
-    ],
+export function scaleFor(value: number, unit: Unit, settings: ReaderSettings): UnitScale {
+    const applicable = unit.scales.filter(scale => scaleApplies(scale, settings))
+    let selected = applicable[0]
+    for (const scale of applicable) {
+        if (Math.abs(value) >= (scale.threshold ?? 0)) {
+            selected = scale
+        }
+    }
+    return selected
 }
 
-const percentDisplay: DisplayUnit[] = [{ multiplier: 0.01, name: '%', decimals: 2, separators: false, attached: true }]
-const percentChangeDisplay: DisplayUnit[] = [{ multiplier: 0.01, name: '%', decimals: 2, separators: false, signed: true, attached: true }]
-
-/**
- * How each specially displayed quantity is rendered as a number. The ones that are rendered with
- * party colors are overridden by the components that can render them.
- */
-const presentationDisplayUnits: Record<PresentationUnitType, DisplayUnit[]> = {
-    percentage: percentDisplay,
-    democraticMargin: percentDisplay,
-    leftMargin: percentDisplay,
-    partyPctBlue: percentDisplay,
-    partyPctRed: percentDisplay,
-    partyPctOrange: percentDisplay,
-    partyPctTeal: percentDisplay,
-    partyPctGreen: percentDisplay,
-    partyPctPurple: percentDisplay,
-    percentageChange: percentChangeDisplay,
-    partyChangeBlue: percentChangeDisplay,
-    partyChangeRed: percentChangeDisplay,
-    partyChangeOrange: percentChangeDisplay,
-    partyChangeTeal: percentChangeDisplay,
-    partyChangeGreen: percentChangeDisplay,
-    partyChangePurple: percentChangeDisplay,
-    temperature: [{ multiplier: 1, name: '°F', decimals: 1 }],
-}
-
-/**
- * The base units themselves, used to name a quantity whose dimensions have no display units.
- */
-const baseUnitNames: Record<string, string> = {
-    person: 'person',
-    length: 'm',
-    time: 's',
-    money: '$',
-    mass: 'g',
-    fatality: 'fatalities',
-    temperature: '°F',
-}
-
-function nameOfDimensions(dimensions: Dimensions): HumanReadableName {
-    return Object.entries(dimensions)
-        .sort(([a, aExponent], [b, bExponent]) => aExponent !== bExponent ? bExponent - aExponent : (a < b ? -1 : 1))
-        .flatMap(([base, exponent], index): HumanReadableElement[] => [
-            ...index === 0 ? [] : [{ type: 'atom', value: '·' } satisfies HumanReadableElement],
-            { type: 'atom', value: baseUnitNames[base] ?? base },
-            ...exponent === 1 ? [] : [{ type: 'superscript', value: [{ type: 'atom', value: exponent.toString() }] } satisfies HumanReadableElement],
-        ])
+// e.g., to 3 significant digits, 123.4 is written with no decimal places and 1.234 with two
+function decimalPlaces(value: number, { significantDigits, minDecimals, maxDecimals }: SignificantDigits): number {
+    const most = maxDecimals ?? significantDigits
+    const places = value === 0 ? most : significantDigits - Math.ceil(Math.log10(Math.abs(value)))
+    return Math.min(Math.max(places, minDecimals ?? 0), most)
 }
 
 // separateNumber groups digits from the left, so it needs the integer part on its own
@@ -298,102 +263,79 @@ function separateDigits(value: string): string {
     return sign + [separateNumber(integerPart), ...rest].join('.')
 }
 
-// e.g., with 3 significant digits, 123.4 has no decimal places and 1.234 has two
-function decimalPlacesFor(value: number, significantDigits: number): number {
-    const digitsBeforePoint = Math.max(0, Math.ceil(Math.log10(Math.abs(value))))
-    return Math.max(0, significantDigits - digitsBeforePoint)
-}
-
-function formatQuantity(value: number, displayUnit: { decimals: DisplayUnit['decimals'], separators?: boolean }): string {
+function formatNumber(value: number, { decimals, separators }: NumberFormat): string {
     if (!isFinite(value)) {
         return value.toString()
     }
-    const decimals = displayUnit.decimals
-    let formatted: string
-    if (decimals === 'sigFigs') {
-        formatted = formatToSignificantFigures(value, 3)
-    }
-    else if (decimals === 'precision') {
-        formatted = value.toPrecision(3)
-    }
-    else if (decimals === 'hoursMinutes') {
-        const sign = value < 0 ? '-' : ''
+    if (decimals === 'hoursMinutes') {
         const totalMinutes = Math.round(Math.abs(value) * 60)
+        const sign = value < 0 && totalMinutes > 0 ? '-' : ''
         const hours = Math.floor(totalMinutes / 60)
         const minutes = totalMinutes % 60
         return hours > 0 ? `${sign}${hours}:${minutes.toString().padStart(2, '0')}` : `${sign}${minutes}`
     }
-    else if (typeof decimals === 'object') {
-        formatted = value.toFixed(decimalPlacesFor(value, decimals.significantDigits))
+    let written: string
+    if (decimals === 'significantFigures') {
+        written = formatToSignificantFigures(value, 3)
+    }
+    else if (decimals === 'precision') {
+        written = value.toPrecision(3)
     }
     else {
-        formatted = value.toFixed(decimals)
+        written = value.toFixed(typeof decimals === 'number' ? decimals : decimalPlaces(value, decimals))
     }
-    return displayUnit.separators === false ? formatted : separateDigits(formatted)
+    return separators === false ? written : separateDigits(written)
 }
 
-function candidateDisplayUnits(unit: Unit, useImperial: boolean): DisplayUnit[] {
-    const candidates = unit.presentation !== undefined
-        ? presentationDisplayUnits[unit.presentation]
-        : displayUnitsForStoredUnit[`${renderDimensions(unit.dimensions)}@${unit.multiplier}`]
-        ?? displayUnits[renderDimensions(unit.dimensions)]
-        ?? []
-    return candidates.filter(candidate => candidate.system !== (useImperial ? 'metric' : 'imperial'))
-}
-
-function prefixOf(displayUnit: DisplayUnit, value: number): string {
-    const prefix = displayUnit.prefix ?? ''
-    return displayUnit.signed === true && value >= 0 ? `+${prefix}` : prefix
-}
-
-function selectDisplayUnit(valueInBaseUnits: number, candidates: DisplayUnit[]): DisplayUnit | undefined {
-    let selected: DisplayUnit | undefined = candidates[0]
-    for (const candidate of candidates) {
-        // 0.9995 rather than 1 so that a value that rounds up to the next unit is displayed in it
-        if (Math.abs(valueInBaseUnits) >= (candidate.threshold ?? candidate.multiplier * 0.9995)) {
-            selected = candidate
-        }
+function hueFor(emphasis: Emphasis, value: number): Hue | undefined {
+    if (emphasis.hue === undefined || typeof emphasis.hue === 'string') {
+        return emphasis.hue
     }
-    return selected
+    return value > 0 ? emphasis.hue.positive : emphasis.hue.negative
 }
 
 /**
- * The unit a value is displayed in: the largest of its unit's display units that it reaches, so
- * a value of 600 in minutes is displayed in hours. `scale` is what the stored value is multiplied
- * by to get the displayed number. Quantities with no display units are displayed in base units,
- * e.g., person·m^2.
+ * A quantity written out: the number as it reads, the name of the unit it is written in, and the
+ * hue to write it in, for the quantities that are written in a party's color.
  */
-export function displayUnitFor(value: number, unit: Unit, useImperial: boolean): { scale: number, name: HumanReadableName, prefix: string, attached: boolean } {
-    const displayUnit = selectDisplayUnit(value * unit.multiplier, candidateDisplayUnits(unit, useImperial))
-    if (displayUnit === undefined) {
-        return { scale: unit.multiplier, name: nameOfDimensions(unit.dimensions), prefix: '', attached: false }
-    }
-    return {
-        scale: unit.multiplier / displayUnit.multiplier,
-        name: displayUnit.name,
-        prefix: prefixOf(displayUnit, value),
-        attached: displayUnit.attached ?? false,
-    }
+export interface WrittenQuantity {
+    number: string
+    name: HumanReadableName
+    /** Whether the name is written directly after the number, rather than after a space */
+    attached: boolean
+    hue?: Hue
 }
 
-export function displayQuantity(value: number, unit: Unit, useImperial: boolean): { value: string, unit: HumanReadableName } {
-    const displayUnit = selectDisplayUnit(value * unit.multiplier, candidateDisplayUnits(unit, useImperial))
-    if (displayUnit === undefined) {
-        return {
-            value: formatQuantity(value * unit.multiplier, { decimals: 'sigFigs' }),
-            unit: nameOfDimensions(unit.dimensions),
-        }
+export function writeQuantity(value: number, unit: Unit, settings: ReaderSettings = {}): WrittenQuantity {
+    const scale = scaleFor(value, unit, settings)
+    const emphasis = unit.emphasis ?? {}
+    const hue = hueFor(emphasis, value)
+    const written = { name: scale.name, attached: scale.attached ?? false, hue }
+    if (hue !== undefined && !isFinite(value)) {
+        // a quantity written in a party's color has no party, and no color, when it is missing
+        return { ...written, number: 'N/A', hue: undefined }
     }
-    // divided rather than scaled by the reciprocal, which rounds differently at tier boundaries
-    const displayed = value * unit.multiplier / displayUnit.multiplier
-    return { value: `${prefixOf(displayUnit, value)}${formatQuantity(displayed, displayUnit)}`, unit: displayUnit.name }
+    const labelled = emphasis.signLabels !== undefined
+    const scaled = ((labelled ? Math.abs(value) : value) - (scale.offset ?? 0)) * (scale.factor ?? 1) / (scale.divisor ?? 1)
+    const label = labelled ? `${value > 0 ? emphasis.signLabels!.positive : emphasis.signLabels!.negative}+` : ''
+    const sign = emphasis.explicitSign === true && scaled >= 0 ? '+' : ''
+    return { ...written, number: `${label}${sign}${scale.prefix ?? ''}${formatNumber(scaled, scale.format)}` }
+}
+
+/**
+ * Whether a comparison against a quantity of this unit reads as its opposite, which is the case
+ * below zero for a quantity written as a magnitude labelled by its sign.
+ */
+export function flipsInequality(unit: Unit, value: number): boolean {
+    return unit.emphasis?.signLabels !== undefined && value <= 0
 }
 
 /**
  * A unit name as it is written after a number, e.g., " hours" but "%".
  */
-export function unitSuffix(name: string, attached: boolean): string {
-    return name === '' || attached ? name : ` ${name}`
+export function unitSuffix(name: HumanReadableName, attached: boolean): HumanReadableElement[] {
+    const elements = typeof name === 'string' ? (name === '' ? [] : [{ type: 'atom', value: name } satisfies HumanReadableElement]) : name
+    return elements.length === 0 || attached ? elements : [{ type: 'atom', value: ' ' }, ...elements]
 }
 
 function fahrenheitToCelsius(value: number): number {

@@ -1,111 +1,40 @@
 import React, { ReactNode } from 'react'
 
-import { HumanReadableName, reifyReact } from '../utils/human-readable-name'
-import { convertTemperature, displayQuantity, Unit, unitTypeToUnit, UnitType } from '../utils/unit'
-
-import { ElectionResult, GenericPartyChange, GenericPartyPercentage, LeftMargin } from './display-stats'
-
-type RenderInequality = (value: number, inequality: 'leq' | 'geq') => string
-
-export interface UnitDisplay {
-    renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
-        value: ReactNode
-        unit: ReactNode
-    }
-    renderInequality: RenderInequality
-}
-
-// Default render inequality
-const renderInequality: RenderInequality = (value, inequality) => {
-    switch (inequality) {
-        case 'leq':
-            return '\u2264' /* ≤ */
-        case 'geq':
-            return '\u2265' /* ≥ */
-    }
-}
-
-const renderMarginInequality: RenderInequality = (value, inequality) => {
-    // Negative values actually display as positive for election results, and default to R for 0, which means that greater than 0 is less than R margin
-    if (value <= 0) {
-        switch (inequality) {
-            case 'geq':
-                return renderInequality(value, 'leq')
-            case 'leq':
-                return renderInequality(value, 'geq')
-        }
-    }
-    return renderInequality(value, inequality)
-}
-
-function unitName(name: HumanReadableName): ReactNode {
-    // an empty unit still occupies its column
-    return <span>{name === '' ? '\u00a0' : reifyReact(name)}</span>
-}
-
-const percentageDisplay = (renderNumber: (value: number) => ReactNode, inequality = renderInequality): UnitDisplay => ({
-    renderValue: (value: number) => ({ value: renderNumber(value), unit: <span>%</span> }),
-    renderInequality: inequality,
-})
+import { Colors } from '../page_template/color-themes'
+import { reifyReact } from '../utils/human-readable-name'
+import { flipsInequality, ReaderSettings, Unit, UnitType, writeQuantity } from '../utils/unit'
 
 /**
- * Renders a quantity in whichever of its unit's display units fits its magnitude, e.g., a value
- * of 600 minutes as 10 hours. Quantities displayed in party colors are rendered here rather than
- * as plain numbers, as is a temperature, which the reader can ask for in celsius.
+ * A quantity as it is displayed: the number and its unit, which are shown in separate columns of
+ * a table and so are rendered separately.
  */
-export function getQuantityDisplay(unit: Unit): UnitDisplay {
-    switch (unit.presentation) {
-        case 'democraticMargin':
-            return percentageDisplay(value => <ElectionResult value={value} />, renderMarginInequality)
-        case 'leftMargin':
-            return percentageDisplay(value => <LeftMargin value={value} />, renderMarginInequality)
-        case 'partyPctBlue':
-        case 'partyPctRed':
-        case 'partyPctOrange':
-        case 'partyPctTeal':
-        case 'partyPctGreen':
-        case 'partyPctPurple': {
-            const unitType = unit.presentation
-            return percentageDisplay(value => <GenericPartyPercentage value={value} unitType={unitType} />)
-        }
-        case 'partyChangeBlue':
-        case 'partyChangeRed':
-        case 'partyChangeOrange':
-        case 'partyChangeTeal':
-        case 'partyChangeGreen':
-        case 'partyChangePurple': {
-            const unitType = unit.presentation
-            return percentageDisplay(value => <GenericPartyChange value={value} unitType={unitType} />)
-        }
-        case 'temperature':
-            return {
-                renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
-                    const { value: converted, unit: temperatureName } = convertTemperature(value, temperatureUnit ?? 'fahrenheit')
-                    return {
-                        value: <span>{converted.toFixed(1)}</span>,
-                        unit: <span>{temperatureName}</span>,
-                    }
-                },
-                renderInequality,
-            }
-        case undefined:
-        case 'percentage':
-        case 'percentageChange':
-            return {
-                renderValue: (value: number, useImperial?: boolean) => {
-                    const rendered = displayQuantity(value, unit, useImperial ?? false)
-                    return {
-                        value: <span>{rendered.value}</span>,
-                        unit: unitName(rendered.unit),
-                    }
-                },
-                renderInequality,
-            }
+export interface DisplayedQuantity {
+    value: ReactNode
+    unit: ReactNode
+}
+
+export function renderQuantity(value: number, unit: Unit, colors: Colors, settings: ReaderSettings = {}): DisplayedQuantity {
+    const { number, name, hue } = writeQuantity(value, unit, settings)
+    return {
+        value: hue === undefined
+            ? <span>{number}</span>
+            : (
+                    <span style={{ color: colors.hueColors[hue], display: 'flex', justifyContent: 'flex-end' }}>
+                        {number}
+                    </span>
+                ),
+        // an empty unit still occupies its column
+        unit: <span>{name === '' ? ' ' : reifyReact(name)}</span>,
     }
 }
 
-export function getUnitDisplay(unitType: UnitType): UnitDisplay {
-    return getQuantityDisplay(unitTypeToUnit(unitType))
+/**
+ * How a comparison against a quantity of this unit reads, which is its opposite where the
+ * quantity is written as a magnitude, as a margin is.
+ */
+export function renderInequality(value: number, unit: Unit, inequality: 'leq' | 'geq'): string {
+    const reads = flipsInequality(unit, value) ? (inequality === 'leq' ? 'geq' : 'leq') : inequality
+    return reads === 'leq' ? '≤' : '≥'
 }
 
 // Describes a unit type in prose, for the documentation of the unit constants
