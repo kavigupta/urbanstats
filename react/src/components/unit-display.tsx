@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react'
 
 import { Colors } from '../page_template/color-themes'
 import { reifyReact } from '../utils/human-readable-name'
-import { flipsInequality, ReaderSettings, Unit, UnitType, writeQuantity } from '../utils/unit'
+import { flipsInequality, ReaderSettings, StoredUnit, UnitType, writeQuantity } from '../utils/unit'
 
 /**
  * A quantity as it is displayed: the number and its unit, which are shown in separate columns of
@@ -13,7 +13,7 @@ export interface DisplayedQuantity {
     unit: ReactNode
 }
 
-export function renderQuantity(value: number, unit: Unit, colors: Colors, settings: ReaderSettings = {}): DisplayedQuantity {
+export function renderQuantity(value: number, unit: StoredUnit, colors: Colors, settings: ReaderSettings = {}): DisplayedQuantity {
     const { number, name, hue } = writeQuantity(value, unit, settings)
     return {
         value: hue === undefined
@@ -32,8 +32,8 @@ export function renderQuantity(value: number, unit: Unit, colors: Colors, settin
  * How a comparison against a quantity of this unit reads, which is its opposite where the
  * quantity is written as a magnitude, as a margin is.
  */
-export function renderInequality(value: number, unit: Unit, inequality: 'leq' | 'geq'): string {
-    const reads = flipsInequality(unit, value) ? (inequality === 'leq' ? 'geq' : 'leq') : inequality
+export function renderInequality(value: number, unit: StoredUnit, inequality: 'leq' | 'geq'): string {
+    const reads = flipsInequality(unit.unit, value) ? (inequality === 'leq' ? 'geq' : 'leq') : inequality
     return reads === 'leq' ? '≤' : '≥'
 }
 

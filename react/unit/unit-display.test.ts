@@ -5,7 +5,7 @@ import test from 'node:test'
 
 import { getUnit, renderInequality } from '../src/components/unit-display'
 import { reifyString } from '../src/utils/human-readable-name'
-import { allUnitTypes, ReaderSettings, unitSuffix, unitTypeToUnit, UnitType, writeQuantity } from '../src/utils/unit'
+import { allUnitTypes, ReaderSettings, unitSuffix, unitTypeToStoredUnit, UnitType, writeQuantity } from '../src/utils/unit'
 
 // Flatten a React element tree into its text content.
 function textOf(node: unknown): string {
@@ -17,7 +17,7 @@ function textOf(node: unknown): string {
 }
 
 function renderValue(unitType: UnitType, value: number, settings: ReaderSettings = {}): string {
-    const { number, name, attached } = writeQuantity(value, unitTypeToUnit(unitType), settings)
+    const { number, name, attached } = writeQuantity(value, unitTypeToStoredUnit(unitType), settings)
     return `${number}${reifyString(unitSuffix(name, attached))}`
 }
 
@@ -61,9 +61,11 @@ for (const [unitType, value, expected] of [
     ['minutes', 5000, '83:20'],
     ['time', 7.5, '7:30'],
     ['time', 0.5, '30'],
+    // a length is a length: an elevation and a distance are written the same way
     ['distanceInM', 543, '543 m'],
-    ['distanceInM', 1234, '1\u202f234 m'],
+    ['distanceInM', 1234, '1.23 km'],
     ['distanceInKm', 3.42, '3.42 km'],
+    ['distanceInKm', 0.543, '543 m'],
     ['density', 1234, '1\u202f234/\u00a0km^{2}'],
     ['area', 0.005, '5\u202f000 m^{2}'],
     ['area', 12.5, '12.5 km^{2}'],
@@ -144,7 +146,7 @@ for (const [unitType, value, inequality, expected] of [
     ['leftMargin', -0.5, 'geq', '\u2264'],
 ] as const) {
     void test(`${unitType} renders a ${inequality} at ${value} as ${expected}`, () => {
-        assert.equal(renderInequality(value, unitTypeToUnit(unitType), inequality), expected)
+        assert.equal(renderInequality(value, unitTypeToStoredUnit(unitType), inequality), expected)
     })
 }
 
@@ -162,7 +164,7 @@ for (const [unitType, value, expected, hue] of [
     ['partyChangeTeal', -0.125, '-12.50%', 'cyan'],
 ] as const) {
     void test(`${unitType} writes ${value} as ${expected} in ${hue ?? 'no color'}`, () => {
-        const written = writeQuantity(value, unitTypeToUnit(unitType))
+        const written = writeQuantity(value, unitTypeToStoredUnit(unitType))
         assert.equal(`${written.number}${reifyString(unitSuffix(written.name, written.attached))}`, expected)
         assert.equal(written.hue, hue)
     })
