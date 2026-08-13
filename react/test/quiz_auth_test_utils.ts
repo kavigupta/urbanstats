@@ -36,7 +36,7 @@ async function popTOTP(t: TestController): Promise<string> {
     }
     catch (error) {
         console.warn(`TOTP endpoint failed: ${response.status} ${response.statusText}, redirected to ${response.url}`)
-        console.warn(`headers: ${JSON.stringify(Object.fromEntries(response.headers))}`)
+        console.warn(`headers: ${JSON.stringify(response.headers)}`)
         console.warn(`body: ${body}`)
         throw error
     }
