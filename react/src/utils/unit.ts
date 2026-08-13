@@ -1,3 +1,5 @@
+import { HumanReadableElement, HumanReadableName } from './human-readable-name'
+import { hre } from './human-readable-template'
 import { formatToSignificantFigures, separateNumber } from './text'
 
 export type UnitType = 'percentage' | 'percentageChange' | 'fatalities' | 'fatalitiesPerCapita' | 'density' | 'population'
@@ -150,12 +152,11 @@ export function renderDimensions(dimensions: Dimensions): string {
 
 /**
  * A unit a quantity can be displayed in. `multiplier` is its size in base units, so a value in
- * base units is divided by it to get the displayed number. `name` may contain `^n`, which is
- * displayed as a superscript.
+ * base units is divided by it to get the displayed number.
  */
 interface DisplayUnit {
     multiplier: number
-    name: string
+    name: HumanReadableName
     /** Rendered immediately before the number, e.g., a dollar sign */
     prefix?: string
     /** Whether non-negative values are rendered with a leading plus sign */
@@ -210,14 +211,14 @@ const displayUnits: Record<string, DisplayUnit[] | undefined> = {
         { multiplier: meterPerMile, name: 'mi', decimals: 2, system: 'imperial' },
     ],
     'length^2': [
-        { multiplier: 1, name: 'm^2', decimals: { significantDigits: 3 }, system: 'metric' },
-        { multiplier: 1e6, name: 'km^2', decimals: { significantDigits: 3 }, threshold: 1e4, system: 'metric' },
+        { multiplier: 1, name: hre`m^{2}`, decimals: { significantDigits: 3 }, system: 'metric' },
+        { multiplier: 1e6, name: hre`km^{2}`, decimals: { significantDigits: 3 }, threshold: 1e4, system: 'metric' },
         { multiplier: squareMeterPerAcre, name: 'acres', decimals: { significantDigits: 3 }, system: 'imperial' },
-        { multiplier: squareMeterPerSquareMile, name: 'mi^2', decimals: { significantDigits: 3 }, system: 'imperial' },
+        { multiplier: squareMeterPerSquareMile, name: hre`mi^{2}`, decimals: { significantDigits: 3 }, system: 'imperial' },
     ],
     'length^-2 person^1': [
-        { multiplier: 1e-6, name: '/\u00a0km^2', decimals: { significantDigits: 2 }, system: 'metric' },
-        { multiplier: 1 / squareMeterPerSquareMile, name: '/\u00a0mi^2', decimals: { significantDigits: 2 }, system: 'imperial' },
+        { multiplier: 1e-6, name: hre`/\u00a0km^{2}`, decimals: { significantDigits: 2 }, attached: true, system: 'metric' },
+        { multiplier: 1 / squareMeterPerSquareMile, name: hre`/\u00a0mi^{2}`, decimals: { significantDigits: 2 }, attached: true, system: 'imperial' },
     ],
     // durations are written as h:mm, dropping the hours when there are none
     'time^1': [{ multiplier: 60 * 60, name: '', decimals: 'hoursMinutes' }],
@@ -225,9 +226,9 @@ const displayUnits: Record<string, DisplayUnit[] | undefined> = {
         { multiplier: 0.01 / secondsPerYear, name: 'cm/yr', decimals: 1, separators: false, system: 'metric' },
         { multiplier: 0.0254 / secondsPerYear, name: 'in/yr', decimals: 1, separators: false, system: 'imperial' },
     ],
-    'length^-3 mass^1': [{ multiplier: 1e-6, name: '\u03bcg/m^3', decimals: 2, separators: false }],
+    'length^-3 mass^1': [{ multiplier: 1e-6, name: hre`\u03bcg/m^{3}`, decimals: 2, separators: false }],
     'fatality^1': [{ multiplier: 1, name: '', decimals: 0 }],
-    'fatality^1 person^-1': [{ multiplier: 1e-5, name: '/100k', decimals: 2, separators: false }],
+    'fatality^1 person^-1': [{ multiplier: 1e-5, name: '/100k', decimals: 2, separators: false, attached: true }],
 }
 
 /**
@@ -246,8 +247,8 @@ const displayUnitsForStoredUnit: Record<string, DisplayUnit[] | undefined> = {
     ],
 }
 
-const percentDisplay: DisplayUnit[] = [{ multiplier: 0.01, name: '%', decimals: 2, separators: false }]
-const percentChangeDisplay: DisplayUnit[] = [{ multiplier: 0.01, name: '%', decimals: 2, separators: false, signed: true }]
+const percentDisplay: DisplayUnit[] = [{ multiplier: 0.01, name: '%', decimals: 2, separators: false, attached: true }]
+const percentChangeDisplay: DisplayUnit[] = [{ multiplier: 0.01, name: '%', decimals: 2, separators: false, signed: true, attached: true }]
 
 /**
  * How each specially displayed quantity is rendered as a number. The ones that are rendered with
@@ -286,11 +287,14 @@ const baseUnitNames: Record<string, string> = {
     temperature: '°F',
 }
 
-function nameOfDimensions(dimensions: Dimensions): string {
+function nameOfDimensions(dimensions: Dimensions): HumanReadableName {
     return Object.entries(dimensions)
         .sort(([a, aExponent], [b, bExponent]) => aExponent !== bExponent ? bExponent - aExponent : (a < b ? -1 : 1))
-        .map(([base, exponent]) => `${baseUnitNames[base] ?? base}${exponent === 1 ? '' : `^${exponent}`}`)
-        .join('·')
+        .flatMap(([base, exponent], index): HumanReadableElement[] => [
+            ...index === 0 ? [] : [{ type: 'atom', value: '·' } satisfies HumanReadableElement],
+            { type: 'atom', value: baseUnitNames[base] ?? base },
+            ...exponent === 1 ? [] : [{ type: 'superscript', value: [{ type: 'atom', value: exponent.toString() }] } satisfies HumanReadableElement],
+        ])
 }
 
 // separateNumber groups digits from the left, so it needs the integer part on its own
@@ -365,7 +369,7 @@ function selectDisplayUnit(valueInBaseUnits: number, candidates: DisplayUnit[]):
  * by to get the displayed number. Quantities with no display units are displayed in base units,
  * e.g., person·m^2.
  */
-export function displayUnitFor(value: number, unit: Unit, useImperial: boolean): { scale: number, name: string, prefix: string, attached: boolean } {
+export function displayUnitFor(value: number, unit: Unit, useImperial: boolean): { scale: number, name: HumanReadableName, prefix: string, attached: boolean } {
     const displayUnit = selectDisplayUnit(value * unit.multiplier, candidateDisplayUnits(unit, useImperial))
     if (displayUnit === undefined) {
         return { scale: unit.multiplier, name: nameOfDimensions(unit.dimensions), prefix: '', attached: false }
@@ -374,11 +378,11 @@ export function displayUnitFor(value: number, unit: Unit, useImperial: boolean):
         scale: unit.multiplier / displayUnit.multiplier,
         name: displayUnit.name,
         prefix: prefixOf(displayUnit, value),
-        attached: displayUnit.attached ?? /^[%/]/.test(displayUnit.name),
+        attached: displayUnit.attached ?? false,
     }
 }
 
-export function displayQuantity(value: number, unit: Unit, useImperial: boolean): { value: string, unit: string } {
+export function displayQuantity(value: number, unit: Unit, useImperial: boolean): { value: string, unit: HumanReadableName } {
     const displayUnit = selectDisplayUnit(value * unit.multiplier, candidateDisplayUnits(unit, useImperial))
     if (displayUnit === undefined) {
         return {
