@@ -135,6 +135,10 @@ testMapUnit('cMap(data=density_pw_1km / density_pw_2km, scale=linearScale(), ram
 testMapUnit('cMap(data=pres_2020_margin, scale=linearScale(), ramp=rampUridis)', '123400.00%')
 testMapUnit('cMap(data=commute_time_median, scale=linearScale(), ramp=rampUridis)', '20:34')
 testMapUnit('cMap(data=elevation, scale=linearScale(), ramp=rampUridis)', '1\u202f234 m')
+// a length that comes out in kilometers is displayed like a distance that is stored in them
+testMapUnit('cMap(data=area ** 0.5, scale=linearScale(), ramp=rampUridis)', '1234.00 km')
+// one that is in no particular unit is displayed in whichever unit fits
+testMapUnit('cMap(data=area / elevation, scale=linearScale(), ramp=rampUridis)', '1\u202f234\u202f000 km')
 // A quantity with no display units of its own is displayed in base units
 testMapUnit('cMap(data=population * area, scale=linearScale(), ramp=rampUridis)', '1\u202f230\u202f000\u202f000 m^{2}·person')
 testMapUnit('cMap(data=[1, 2, 3], scale=linearScale(), ramp=rampUridis)', undefined)
