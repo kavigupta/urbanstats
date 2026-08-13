@@ -17,6 +17,7 @@ import { AssignmentsResult, executeAsync } from '../urban-stats-script/workerMan
 import { assert } from '../utils/defensive'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { pluralize } from '../utils/text'
+import { unitTypeToUnit } from '../utils/unit'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
 import { StatData, Statistic } from './types'
@@ -128,7 +129,7 @@ async function makeStatGenerator({ stat, typeEnvironment, previousGenerator }: {
                 populationPercentile: col.populationPercentiles,
                 ordinal: computeOrdinals(col.values),
                 name,
-                unit: col.unit,
+                unit: col.unit === undefined ? undefined : unitTypeToUnit(col.unit),
             }
         })
 

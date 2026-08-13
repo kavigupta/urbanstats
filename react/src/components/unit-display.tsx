@@ -1,7 +1,6 @@
 import React, { ReactNode } from 'react'
 
-import { formatToSignificantFigures, separateNumber } from '../utils/text'
-import { convertPrecipitation, convertTemperature, UnitType } from '../utils/unit'
+import { convertTemperature, displayQuantity, Unit, unitTypeToUnit, UnitType } from '../utils/unit'
 
 import { ElectionResult, GenericPartyChange, GenericPartyPercentage, LeftMargin } from './display-stats'
 
@@ -38,238 +37,45 @@ const renderMarginInequality: RenderInequality = (value, inequality) => {
     return renderInequality(value, inequality)
 }
 
-export function getUnitDisplay(unitType: UnitType): UnitDisplay {
-    switch (unitType) {
-        case 'percentage':
-            return {
-                renderValue: (value: number) => {
-                    return {
-                        value: <span>{(value * 100).toFixed(2)}</span>,
-                        unit: <span>%</span>,
-                    }
-                },
-                renderInequality,
-            }
-        case 'percentageChange':
-            return {
-                renderValue: (value: number) => {
-                    const displayValue = (value * 100).toFixed(2)
-                    const sign = value >= 0 ? '+' : ''
-                    return {
-                        value: (
-                            <span>
-                                {sign}
-                                {displayValue}
-                            </span>
-                        ),
-                        unit: <span>%</span>,
-                    }
-                },
-                renderInequality,
-            }
-        case 'fatalities':
-            return {
-                renderValue: (value: number) => {
-                    return {
-                        value: <span>{separateNumber(value.toFixed(0))}</span>,
-                        unit: <span>&nbsp;</span>,
-                    }
-                },
-                renderInequality,
-            }
-        case 'fatalitiesPerCapita':
-            return {
-                renderValue: (value: number) => {
-                    return {
-                        value: <span>{(100_000 * value).toFixed(2)}</span>,
-                        unit: <span>/100k</span>,
-                    }
-                },
-                renderInequality,
-            }
-        case 'density':
-            return {
-                renderValue: (value: number, useImperial?: boolean) => {
-                    let unitName = 'km'
-                    let adjustedValue = value
-                    if (useImperial) {
-                        unitName = 'mi'
-                        adjustedValue *= 1.60934 * 1.60934
-                    }
-                    let places = 2
-                    if (adjustedValue > 10) {
-                        places = 0
-                    }
-                    else if (adjustedValue > 1) {
-                        places = 1
-                    }
-                    return {
-                        value: <span>{separateNumber(adjustedValue.toFixed(places))}</span>,
-                        unit: (
-                            <span>
-                                /&nbsp;
-                                {unitName}
-                                <sup>2</sup>
-                            </span>
-                        ),
-                    }
-                },
-                renderInequality,
-            }
-        case 'population':
-            return {
-                renderValue: (value: number) => {
-                    /*
-                     * Boundaries are at 999.5 * scale rather than 1000 * scale so that a value that
-                     * rounds up to 4 significant digits (e.g. 999999 → 1000k) is promoted to the next
-                     * tier instead. This keeps (value / divisor).toPrecision(3) below 1000, which
-                     * avoids toPrecision returning scientific notation (e.g. "1.00e+3").
-                     */
-                    if (value >= 999.5e6) {
-                        return {
-                            value: <span>{(value / 1e9).toPrecision(3)}</span>,
-                            unit: <span>B</span>,
-                        }
-                    }
-                    if (value >= 999.5e3) {
-                        return {
-                            value: <span>{(value / 1e6).toPrecision(3)}</span>,
-                            unit: <span>m</span>,
-                        }
-                    }
-                    else if (value > 1e4) {
-                        return {
-                            value: <span>{(value / 1e3).toPrecision(3)}</span>,
-                            unit: <span>k</span>,
-                        }
-                    }
-                    else {
-                        return {
-                            value: <span>{separateNumber(value.toFixed(0))}</span>,
-                            unit: <span>&nbsp;</span>,
-                        }
-                    }
-                },
-                renderInequality,
-            }
-        case 'area':
-            return {
-                renderValue: (value: number, useImperial?: boolean) => {
-                    let adjustedValue = value
-                    let unit: React.ReactElement
-                    if (useImperial) {
-                        adjustedValue /= 1.60934 * 1.60934
-                        if (adjustedValue < 1) {
-                            unit = <span>acres</span>
-                            adjustedValue *= 640
-                        }
-                        else {
-                            unit = (
-                                <span>
-                                    mi
-                                    <sup>2</sup>
-                                </span>
-                            )
-                        }
-                    }
-                    else {
-                        if (adjustedValue < 0.01) {
-                            adjustedValue *= 1000 * 1000
-                            unit = (
-                                <span>
-                                    m
-                                    <sup>2</sup>
-                                </span>
-                            )
-                        }
-                        else {
-                            unit = (
-                                <span>
-                                    km
-                                    <sup>2</sup>
-                                </span>
-                            )
-                        }
-                    }
-                    let places = 3
-                    if (adjustedValue > 100) {
-                        places = 0
-                    }
-                    else if (adjustedValue > 10) {
-                        places = 1
-                    }
-                    else if (adjustedValue > 1) {
-                        places = 2
-                    }
-                    let rendered = adjustedValue.toFixed(places)
-                    if (places === 0) {
-                        rendered = separateNumber(rendered)
-                    }
-                    return {
-                        value: <span>{rendered}</span>,
-                        unit,
-                    }
-                },
-                renderInequality,
-            }
-        case 'distanceInKm':
-            return {
-                renderValue: (value: number, useImperial?: boolean) => {
-                    let unit = <span>km</span>
-                    let adjustedValue = value
-                    if (useImperial) {
-                        unit = <span>mi</span>
-                        adjustedValue /= 1.60934
-                    }
-                    return {
-                        value: <span>{adjustedValue.toFixed(2)}</span>,
-                        unit,
-                    }
-                },
-                renderInequality,
-            }
-        case 'distanceInM':
-            return {
-                renderValue: (value: number, useImperial?: boolean) => {
-                    let unitName = 'm'
-                    let adjustedValue = value
-                    if (useImperial) {
-                        unitName = 'ft'
-                        adjustedValue *= 3.28084
-                    }
-                    return {
-                        value: <span>{separateNumber(adjustedValue.toFixed(0))}</span>,
-                        unit: <span>{unitName}</span>,
-                    }
-                },
-                renderInequality,
-            }
+/**
+ * Renders a unit name, where `^n` denotes a superscript, e.g., km^2.
+ */
+export function renderUnitName(name: string): ReactNode {
+    if (name === '') {
+        return <span>&nbsp;</span>
+    }
+    const parts = name.split(/\^(-?[\d.]+)/)
+    return (
+        <span>
+            {parts.map((part, index) => index % 2 === 0 ? part : <sup key={index}>{part}</sup>)}
+        </span>
+    )
+}
+
+const percentageDisplay = (renderNumber: (value: number) => ReactNode, inequality = renderInequality): UnitDisplay => ({
+    renderValue: (value: number) => ({ value: renderNumber(value), unit: <span>%</span> }),
+    renderInequality: inequality,
+})
+
+/**
+ * Renders a quantity in whichever of its unit's display units fits its magnitude, e.g., a value
+ * of 600 minutes as 10 hours. Quantities displayed in party colors are rendered here rather than
+ * as plain numbers, as is a temperature, which the reader can ask for in celsius.
+ */
+export function getQuantityDisplay(unit: Unit): UnitDisplay {
+    switch (unit.presentation) {
         case 'democraticMargin':
-            return {
-                renderValue: (value: number) => {
-                    return {
-                        value: <ElectionResult value={value} />,
-                        unit: <span>%</span>,
-                    }
-                },
-                renderInequality: renderMarginInequality,
-            }
+            return percentageDisplay(value => <ElectionResult value={value} />, renderMarginInequality)
+        case 'leftMargin':
+            return percentageDisplay(value => <LeftMargin value={value} />, renderMarginInequality)
         case 'partyPctBlue':
         case 'partyPctRed':
         case 'partyPctOrange':
         case 'partyPctTeal':
         case 'partyPctGreen':
         case 'partyPctPurple': {
-            const capturedUnitType = unitType
-            return {
-                renderValue: (value: number) => {
-                    return {
-                        value: <GenericPartyPercentage value={value} unitType={capturedUnitType} />,
-                        unit: <span>%</span>,
-                    }
-                },
-                renderInequality,
-            }
+            const unitType = unit.presentation
+            return percentageDisplay(value => <GenericPartyPercentage value={value} unitType={unitType} />)
         }
         case 'partyChangeBlue':
         case 'partyChangeRed':
@@ -277,176 +83,29 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
         case 'partyChangeTeal':
         case 'partyChangeGreen':
         case 'partyChangePurple': {
-            const capturedUnitType = unitType
-            return {
-                renderValue: (value: number) => {
-                    return {
-                        value: <GenericPartyChange value={value} unitType={capturedUnitType} />,
-                        unit: <span>%</span>,
-                    }
-                },
-                renderInequality,
-            }
+            const unitType = unit.presentation
+            return percentageDisplay(value => <GenericPartyChange value={value} unitType={unitType} />)
         }
-        case 'leftMargin':
-            return {
-                renderValue: (value: number) => {
-                    return {
-                        value: <LeftMargin value={value} />,
-                        unit: <span>%</span>,
-                    }
-                },
-                renderInequality: renderMarginInequality,
-            }
         case 'temperature':
             return {
                 renderValue: (value: number, useImperial?: boolean, temperatureUnit?: string) => {
-                    const { value: adjustedValue, unit } = convertTemperature(value, temperatureUnit ?? 'fahrenheit')
+                    const { value: converted, unit: temperatureName } = convertTemperature(value, temperatureUnit ?? 'fahrenheit')
                     return {
-                        value: <span>{adjustedValue.toFixed(1)}</span>,
-                        unit: <span>{unit}</span>,
+                        value: <span>{converted.toFixed(1)}</span>,
+                        unit: <span>{temperatureName}</span>,
                     }
                 },
                 renderInequality,
             }
-        case 'time':
-            return {
-                renderValue: (value: number) => {
-                    const hours = Math.floor(value)
-                    const minutes = Math.floor((value - hours) * 60)
-                    return {
-                        value: (
-                            <span>
-                                {hours}
-                                :
-                                {minutes.toString().padStart(2, '0')}
-                            </span>
-                        ),
-                        unit: <span>&nbsp;</span>,
-                    }
-                },
-                renderInequality,
-            }
-        case 'distancePerYear':
+        case undefined:
+        case 'percentage':
+        case 'percentageChange':
             return {
                 renderValue: (value: number, useImperial?: boolean) => {
-                    const { value: adjustedValue, unit } = convertPrecipitation(value, useImperial ?? false)
+                    const rendered = displayQuantity(value, unit, useImperial ?? false)
                     return {
-                        value: <span>{adjustedValue.toFixed(1)}</span>,
-                        unit: (
-                            <span>
-                                {unit}
-                                /yr
-                            </span>
-                        ),
-                    }
-                },
-                renderInequality,
-            }
-        case 'contaminantLevel':
-            return {
-                renderValue: (value: number) => {
-                    return {
-                        value: <span>{value.toFixed(2)}</span>,
-                        unit: (
-                            <span>
-                                &mu;g/m
-                                <sup>3</sup>
-                            </span>
-                        ),
-                    }
-                },
-                renderInequality,
-            }
-        case 'number':
-            return {
-                renderValue: (value: number) => {
-                    return {
-                        value: <span>{formatToSignificantFigures(value, 3)}</span>,
-                        unit: <span>&nbsp;</span>,
-                    }
-                },
-                renderInequality,
-            }
-        case 'usd':
-            return {
-                renderValue: (value: number) => {
-                    /*
-                     * Boundaries are at 999.5 * scale rather than 1000 * scale so that a value that
-                     * rounds up to 4 significant digits (e.g. 999999 → 1000k) is promoted to the next
-                     * tier instead. This keeps (value / divisor).toPrecision(3) below 1000, which
-                     * avoids toPrecision returning scientific notation (e.g. "1.00e+3").
-                     */
-                    if (value >= 999.5e6) {
-                        return {
-                            value: (
-                                <span>
-                                    $
-                                    {(value / 1e9).toPrecision(3)}
-                                </span>
-                            ),
-                            unit: <span>B</span>,
-                        }
-                    }
-                    if (value >= 999.5e3) {
-                        return {
-                            value: (
-                                <span>
-                                    $
-                                    {(value / 1e6).toPrecision(3)}
-                                </span>
-                            ),
-                            unit: <span>m</span>,
-                        }
-                    }
-                    else if (value > 1e3) {
-                        return {
-                            value: (
-                                <span>
-                                    $
-                                    {(value / 1e3).toPrecision(3)}
-                                </span>
-                            ),
-                            unit: <span>k</span>,
-                        }
-                    }
-                    else {
-                        return {
-                            value: (
-                                <span>
-                                    $
-                                    {separateNumber(value.toFixed(0))}
-                                </span>
-                            ),
-                            unit: <span>&nbsp;</span>,
-                        }
-                    }
-                },
-                renderInequality,
-            }
-        case 'minutes':
-            return {
-                renderValue: (value: number) => {
-                    const hours = Math.floor(value / 60)
-                    const minutes = Math.floor(value % 60)
-
-                    if (hours > 0) {
-                        return {
-                            value: (
-                                <span>
-                                    {hours}
-                                    :
-                                    {minutes.toString().padStart(2, '0')}
-                                </span>
-                            ),
-                            unit: <span>&nbsp;</span>,
-                        }
-                    }
-                    else {
-                        return {
-                            value: <span>{minutes}</span>,
-                            unit: <span>&nbsp;</span>,
-                        }
+                        value: <span>{rendered.value}</span>,
+                        unit: renderUnitName(rendered.unit),
                     }
                 },
                 renderInequality,
@@ -454,6 +113,11 @@ export function getUnitDisplay(unitType: UnitType): UnitDisplay {
     }
 }
 
+export function getUnitDisplay(unitType: UnitType): UnitDisplay {
+    return getQuantityDisplay(unitTypeToUnit(unitType))
+}
+
+// Describes a unit type in prose, for the documentation of the unit constants
 export function getUnit(unit: UnitType): ReactNode {
     switch (unit) {
         case 'percentage':

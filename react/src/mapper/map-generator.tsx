@@ -36,6 +36,7 @@ import { makeDebugLogger } from '../utils/debug-logging'
 import { HumanReadableName } from '../utils/human-readable-name'
 import { ConsolidatedShapes, Feature, ICoordinate } from '../utils/protos'
 import { NormalizeProto } from '../utils/types'
+import { unitTypeToUnit } from '../utils/unit'
 import { useDebouncedResolve } from '../utils/useDebouncedResolve'
 
 import { Colorbar, RampToDisplay, styleFromBasemap } from './components/Colorbar'
@@ -583,7 +584,8 @@ function computeRampToDisplay(value: CommonMap, label: HumanReadableName): RampT
     const hasValuesClampedToStart = value.data.some(val => scale.forward(val) < 0)
     const hasValuesClampedToEnd = value.data.some(val => scale.forward(val) > 1)
     const interpolations = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map(scale.inverse)
-    return { type: 'ramp', value: { ramp: value.ramp, interpolations, scale, label, unit: value.unit, hasValuesClampedToStart, hasValuesClampedToEnd } }
+    const unit = value.unit === undefined ? undefined : unitTypeToUnit(value.unit)
+    return { type: 'ramp', value: { ramp: value.ramp, interpolations, scale, label, unit, hasValuesClampedToStart, hasValuesClampedToEnd } }
 }
 
 const canonicalWidth = 1200
