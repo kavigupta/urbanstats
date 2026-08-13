@@ -239,12 +239,6 @@ const displayUnits: Record<string, DisplayUnit[] | undefined> = {
     '': [{ multiplier: 1, name: '', decimals: 'sigFigs', separators: false }],
     'person^1': [{ multiplier: 1, name: '', decimals: 0 }, ...magnitudeTiers(undefined, 1e4)],
     'money^1': [{ multiplier: 1, name: '', prefix: '$', decimals: 0 }, ...magnitudeTiers('$', 1e3)],
-    'length^1': [
-        { multiplier: 1, name: 'm', decimals: 0, system: 'metric' },
-        { multiplier: 1e3, name: 'km', decimals: 2, system: 'metric' },
-        { multiplier: meterPerFoot, name: 'ft', decimals: 0, system: 'imperial' },
-        { multiplier: meterPerMile, name: 'mi', decimals: 2, system: 'imperial' },
-    ],
     'length^2': [
         { multiplier: 1, name: hre`m^{2}`, decimals: { significantDigits: 3 }, system: 'metric' },
         { multiplier: 1e6, name: hre`km^{2}`, decimals: { significantDigits: 3 }, threshold: 1e4, system: 'metric' },
